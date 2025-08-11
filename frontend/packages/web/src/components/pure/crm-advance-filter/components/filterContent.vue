@@ -170,27 +170,16 @@
                   : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
               "
             />
-            <n-tree-select
+            <CrmTreeSelect
               v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
               v-model:value="item.value"
-              filterable
-              clearable
+              v-model:contain-child-ids="item.containChildIds"
               :disabled="isValueDisabled(item)"
-              max-tag-count="responsive"
               :placeholder="t('common.pleaseSelect')"
-              cascade
+              :type="item.treeSelectProps?.options ? 'custom' : 'department'"
               v-bind="item.treeSelectProps"
               @update:value="valueChange"
             />
-            <!-- TODO 参数没有加 先不上 -->
-            <!-- <CrmTreeSelect
-              v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
-              v-model:value="item.value"
-              :disabled="isValueDisabled(item)"
-              :placeholder="t('common.pleaseSelect')"
-              v-bind="item.treeSelectProps"
-              @update:value="valueChange"
-            /> -->
             <CrmUserSelect
               v-else-if="item.type === FieldTypeEnum.USER_SELECT"
               v-model:value="item.value"
@@ -256,7 +245,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NIcon, NInput, NSelect, NTreeSelect } from 'naive-ui';
+  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
@@ -269,7 +258,7 @@
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';
-  // import CrmTreeSelect from '@/components/pure/crm-tree-select/index.vue';
+  import CrmTreeSelect from '@/components/pure/crm-tree-select/index.vue';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';

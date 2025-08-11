@@ -110,7 +110,6 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
-  import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -129,13 +128,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
 
-  import {
-    batchDeleteCustomer,
-    batchTransferCustomer,
-    deleteCustomer,
-    getFieldDeptTree,
-    updateCustomer,
-  } from '@/api/modules';
+  import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
@@ -393,7 +386,7 @@
   const customerCardRef = ref<HTMLElement | null>(null);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
-  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
@@ -508,16 +501,6 @@
     showExportModal.value = true;
   }
 
-  const department = ref<DeptUserTreeNode[]>([]);
-  async function initDepartList() {
-    try {
-      department.value = await getFieldDeptTree();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('opportunity.department'),
@@ -528,7 +511,7 @@
         keyField: 'id',
         multiple: true,
         clearFilterAfterSelect: false,
-        options: department.value,
+        type: 'department',
         checkable: true,
         showContainChildModule: true,
       },
@@ -579,10 +562,6 @@
       searchData();
     }
   );
-
-  onMounted(() => {
-    initDepartList();
-  });
 </script>
 
 <style lang="less" scoped>

@@ -137,7 +137,6 @@
   import type { ClueListItem } from '@lib/shared/models/clue';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
-  import { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -160,7 +159,6 @@
     batchTransferClue,
     deleteClue,
     downloadLeadTemplate,
-    getFieldDeptTree,
     importLead,
     preCheckImportLead,
     reTransitionCustomer,
@@ -572,7 +570,6 @@
     loadList();
   }
 
-  const department = ref<DeptUserTreeNode[]>([]);
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('opportunity.department'),
@@ -583,9 +580,9 @@
         keyField: 'id',
         multiple: true,
         clearFilterAfterSelect: false,
-        options: department.value,
         checkable: true,
         showContainChildModule: true,
+        type: 'department',
       },
     },
     {
@@ -632,19 +629,6 @@
     isInitCustomerDrawer.value = true;
     showCustomerDrawer.value = true;
   }
-
-  async function initDepartList() {
-    try {
-      department.value = await getFieldDeptTree();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  onBeforeMount(() => {
-    initDepartList();
-  });
 
   watch(
     () => activeTab.value,

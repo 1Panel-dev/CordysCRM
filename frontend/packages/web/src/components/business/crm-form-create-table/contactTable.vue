@@ -111,7 +111,6 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
-  import { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -130,7 +129,6 @@
     deleteCustomerContact,
     disableCustomerContact,
     enableCustomerContact,
-    getFieldDeptTree,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -364,7 +362,6 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
-  const department = ref<DeptUserTreeNode[]>([]);
   const filterConfigList = computed(() => [
     {
       title: t('opportunity.department'),
@@ -375,9 +372,9 @@
         keyField: 'id',
         multiple: true,
         clearFilterAfterSelect: false,
-        options: department.value,
         checkable: true,
         showContainChildModule: true,
+        type: 'department',
       },
     },
     ...baseFilterConfigList,
@@ -401,15 +398,6 @@
       backupData.value = cloneDeep(propsRes.value.data);
     }
     crmTableRef.value?.scrollTo({ top: 0 });
-  }
-
-  async function initDepartList() {
-    try {
-      department.value = await getFieldDeptTree();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
@@ -440,7 +428,6 @@
   );
 
   onMounted(() => {
-    initDepartList();
     if (!props.sourceId) return;
     searchData();
   });

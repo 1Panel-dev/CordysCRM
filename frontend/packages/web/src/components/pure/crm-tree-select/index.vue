@@ -1,6 +1,7 @@
 <template>
   <div ref="treeSelectWrapperRef" class="crm-select-tree w-full">
     <n-tree-select
+      v-bind="attrs"
       v-model:half-checked-keys="halfCheckedKeys"
       v-model:value="checkedKeys"
       :render-suffix="renderSuffix"
@@ -8,11 +9,12 @@
       filterable
       clearable
       max-tag-count="responsive"
-      v-bind="$attrs"
       :render-switcher-icon="renderSwitcherIconDom"
       :render-label="renderLabel"
       :node-props="nodeProps"
       :show="showSelectOptionsMenu"
+      :disabled="props.disabled"
+      checkable
       @update:show="handleUpdateShow"
       @update:value="updateCheckedKeys"
       @clear="handleClear"
@@ -32,31 +34,54 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
 
+  import { getFieldDeptTree } from '@/api/modules';
+
   import useTreeSelection, { CheckedNodes } from './useTreeSelection';
 
   const props = defineProps<{
     showContainChildModule?: boolean;
     options?: TreeSelectOption[];
+    disabled?: boolean;
+    type?: 'department' | 'custom';
   }>();
 
   const attrs = useAttrs();
 
   const { t } = useI18n();
 
-  const treeData = ref(cloneDeep(props.options || []));
-
-  const selectedModuleProps = ref({
-    modulesTree: treeData.value,
-    moduleCount: {},
+  const treeData = ref<any[]>(cloneDeep(props.options || []));
+  const containChildIds = defineModel<string[]>('containChildIds', {
+    default: [],
   });
 
-  const { selectedModulesMaps, selectParent, checkNode, halfCheckedKeys, checkedKeys, clearSelector } =
-    useTreeSelection(selectedModuleProps.value);
+  async function initDepartList() {
+    try {
+      const tree = await getFieldDeptTree();
+      containChildIds.value = [];
+      treeData.value = mapTree(tree, (node) => ({
+        ...node,
+        containChildModule: !!containChildIds.value.includes(node.id as string),
+        disabled: false,
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   const selectValue = defineModel<string | number | (string | number)[] | null>('value', {
     required: true,
     default: [],
   });
+
+  const selectedModuleProps = ref({
+    modulesTree: treeData.value,
+    moduleCount: {},
+    value: selectValue.value,
+  });
+
+  const { selectedModulesMaps, selectParent, checkNode, halfCheckedKeys, checkedKeys, clearSelector } =
+    useTreeSelection(selectedModuleProps.value);
 
   const showSelectOptionsMenu = ref(false);
   function handleUpdateShow(show: boolean) {
@@ -66,8 +91,8 @@
   }
   const focusNodeKeys = ref(new Set());
 
-  function handleShowPop(e: Event) {
-    if (attrs.checkable) {
+  function handleShowPop() {
+    if (attrs.checkable && !props.disabled) {
       showSelectOptionsMenu.value = !showSelectOptionsMenu.value;
     }
   }
@@ -105,7 +130,6 @@
     checkNode(_checkedKeys, checkedNodes);
   }
 
-  // TODO清空有问题
   function handleClear() {
     if (props.showContainChildModule) {
       treeData.value = mapTree<TreeSelectOption>(treeData.value, (node) => ({
@@ -168,10 +192,12 @@
     realNode.containChildModule = containChildModule;
     if (containChildModule) {
       handleCheck(selectValue.value as string[], { checked: true, node: realNode, id: realNode.id });
+      containChildIds.value.push(realNode.id as string);
     } else {
       realNode.children?.forEach((child) => {
         child.disabled = false;
       });
+      containChildIds.value = containChildIds.value.filter((id) => id !== realNode.id);
     }
   }
 
@@ -359,6 +385,9 @@
   }
 
   onMounted(() => {
+    if (props.type === 'department') {
+      initDepartList();
+    }
     document.addEventListener('mousedown', handleClickOutside);
   });
 

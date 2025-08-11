@@ -39,6 +39,7 @@ export interface FilterFormItem {
   scopeProps?: Partial<ScopeProps>;
   dataSourceProps?: Partial<DataSourceProps>; // 数据源
   rule?: FormItemRule[];
+  containChildIds?: string[]; // 用于树形选择器，存储包含子级新增的节点 id 集合
 }
 
 export type CombineItem = Pick<FilterFormItem, 'value' | 'operator'>;

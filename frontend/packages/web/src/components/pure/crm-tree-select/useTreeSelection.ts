@@ -11,6 +11,7 @@ export interface moduleKeysType {
 export interface SelectedModuleProps {
   modulesTree: TreeSelectOption[];
   moduleCount: Record<string, any>;
+  value: string | number | (string | number)[] | null;
 }
 
 export interface CheckedNodes {
@@ -26,7 +27,9 @@ export default function useTreeSelection(selectedModuleProps: SelectedModuleProp
 
   const modulesCount = ref<Record<string, any>>(moduleCount);
   // 模块全选keys
-  const checkedKeys = ref<Array<string | number>>([]);
+  const checkedKeys = ref<Array<string | number>>(
+    Array.isArray(selectedModuleProps.value) ? selectedModuleProps.value : [selectedModuleProps.value as string]
+  );
   // 模块半选keys
   const halfCheckedKeys = ref<Array<string | number>>([]);
   // 模块配置集合

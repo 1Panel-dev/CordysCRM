@@ -118,7 +118,6 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
-  import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -138,7 +137,7 @@
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
+  import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -590,8 +589,6 @@
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
-  const department = ref<DeptUserTreeNode[]>([]);
-
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
       {
@@ -619,9 +616,9 @@
           keyField: 'id',
           multiple: true,
           clearFilterAfterSelect: false,
-          options: department.value,
           checkable: true,
           showContainChildModule: true,
+          type: 'department',
         },
       },
       {
@@ -696,17 +693,7 @@
     }
   );
 
-  async function initDepartList() {
-    try {
-      department.value = await getFieldDeptTree();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   onBeforeMount(() => {
-    initDepartList();
     if (props.isCustomerTab) {
       searchData();
     }

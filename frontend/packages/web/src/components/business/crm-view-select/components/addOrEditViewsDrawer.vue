@@ -125,6 +125,7 @@
       name: item.dataIndex ?? '',
       multipleValue: multipleValueTypeList.includes(item.type),
       type: item.type,
+      containChildIds: item.containChildIds || [],
     }));
 
     return {
