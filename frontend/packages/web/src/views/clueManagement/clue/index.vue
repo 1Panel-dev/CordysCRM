@@ -49,6 +49,7 @@
             <CrmAdvanceFilter
               ref="tableAdvanceFilterRef"
               v-model:keyword="keyword"
+              :search-placeholder="t('common.searchByNamePhone')"
               :custom-fields-config-list="filterConfigList"
               :filter-config-list="customFieldsFilterConfig"
               @adv-search="handleAdvSearch"

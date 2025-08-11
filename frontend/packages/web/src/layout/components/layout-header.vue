@@ -28,7 +28,7 @@
           class="cursor-pointer"
           @click="showDuplicateCheckDrawer = true"
         >
-          {{ t('workbench.duplicateCheck') }}
+          {{ t('common.search') }}
         </CrmTag>
         <!-- <n-popselect
           v-model:value="currentLocale"

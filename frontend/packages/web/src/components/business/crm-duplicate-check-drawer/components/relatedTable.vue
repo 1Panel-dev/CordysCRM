@@ -4,10 +4,7 @@
       {{ props.title }}
       <div class="text-[var(--text-n4)]"> （{{ propsRes.crmPagination?.itemCount || 0 }}） </div>
     </div>
-    <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
-      {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
-    </div>
-    <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+    <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
       <CrmTable
         ref="crmTableRef"
         v-bind="propsRes"
@@ -22,7 +19,6 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CommonList } from '@lib/shared/models/common';
 
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -33,21 +29,17 @@
     api: (data: any) => Promise<CommonList<any>>;
     columns: CrmDataTableColumn[];
     title: string;
-    isReturnNativeResponse?: boolean;
     class: string;
   }>();
 
-  const { t } = useI18n();
-
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const { propsRes, propsEvent, loadList, setLoadListParams, code } = useTable(props.api, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(props.api, {
     showSetting: false,
     columns: props.columns,
     crmPagination: {
       size: 'small',
     },
     hiddenRefresh: true,
-    isReturnNativeResponse: props.isReturnNativeResponse,
     hiddenTotal: true,
     containerClass: props.class,
   });
@@ -61,6 +53,5 @@
   defineExpose({
     searchData,
     propsRes,
-    code,
   });
 </script>

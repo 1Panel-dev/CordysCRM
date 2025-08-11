@@ -6,7 +6,7 @@
     :default-width="1000"
     :footer="false"
     class="min-w-[1000px]"
-    :title="t('workbench.duplicateCheck')"
+    :title="t('common.search')"
   >
     <n-scrollbar content-class="p-[24px]">
       <CrmSearchInput
@@ -16,50 +16,31 @@
         :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
         @search="(val) => searchData(val)"
       />
-      <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
-        {{
-          validatePhone(keywordVal)
-            ? t('workbench.duplicateCheck.noDuplicateContacts')
-            : t('workbench.duplicateCheck.noDuplicateCustomers')
-        }}
-      </div>
       <!-- 查询结果 -->
-      <div v-show="showResult" class="mb-[24px]">
-        <div class="flex items-center font-semibold">
-          {{
-            validatePhone(keywordVal)
-              ? t('workbench.duplicateCheck.contactResult')
-              : t('workbench.duplicateCheck.result')
-          }}
-          <div class="text-[var(--text-n4)]"> （{{ repeatTable.propsRes.crmPagination.itemCount || 0 }}） </div>
+      <template v-for="table in activeTables" :key="table.key">
+        <div v-show="table.instance.propsRes.value.crmPagination?.itemCount" class="mb-[24px]">
+          <div class="flex items-center font-semibold">
+            {{ table.label }}
+            <div class="text-[var(--text-n4)]"> ({{ table.instance.propsRes.value.crmPagination?.itemCount }}) </div>
+          </div>
+          <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+            <CrmTable
+              v-bind="table.instance.propsRes.value"
+              class="h-[205px]"
+              @page-size-change="table.instance.propsEvent.value.pageSizeChange"
+              @sorter-change="table.instance.propsEvent.value.sorterChange"
+              @filter-change="table.instance.propsEvent.value.filterChange"
+              @page-change="table.instance.propsEvent.value.pageChange"
+            />
+
+            <div class="flex justify-end">
+              <n-button text type="primary" @click="openGlobalSearch">
+                {{ t('common.ViewMore') }}
+              </n-button>
+            </div>
+          </div>
         </div>
-        <div v-show="repeatTable.code === 101003" class="text-center text-[var(--text-n4)]">
-          {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
-        </div>
-        <div
-          v-show="repeatTable.code !== 101003"
-          class="crm-repeat-table mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
-        >
-          <CrmTable
-            ref="crmTableRef"
-            v-bind="repeatTable.propsRes"
-            class="!min-h-[548px]"
-            @page-change="repeatTable.propsEvent.pageChange"
-            @page-size-change="repeatTable.propsEvent.pageSizeChange"
-            @sorter-change="repeatTable.propsEvent.sorterChange"
-            @filter-change="repeatTable.propsEvent.filterChange"
-          />
-        </div>
-      </div>
-      <RelatedTable
-        v-show="showClue"
-        ref="clueTableRef"
-        :api="GetRepeatClueList"
-        :columns="clueColumns"
-        :title="t('workbench.duplicateCheck.relatedClues')"
-        class="crm-clue-related-table"
-        is-return-native-response
-      />
+      </template>
     </n-scrollbar>
   </CrmDrawer>
 
@@ -84,7 +65,6 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { validatePhone } from '@lib/shared/method/validate';
   import { RepeatContactItem, RepeatCustomerItem } from '@lib/shared/models/system/business';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -92,19 +72,16 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import { getFormListApiMap } from '@/components/business/crm-form-create/config';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
 
-  import {
-    GetRepeatClueDetailList,
-    GetRepeatClueList,
-    getRepeatContactList,
-    GetRepeatCustomerList,
-    GetRepeatOpportunityDetailList,
-  } from '@/api/modules';
+  import { GetRepeatClueDetailList, GetRepeatOpportunityDetailList } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { scopedOptions } from './config';
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -114,14 +91,9 @@
 
   const keyword = ref('');
 
-  const noDuplicateCustomers = ref(false);
-  const showResult = ref(false);
-  const showClue = ref(false);
-
   const activeCustomer = ref();
   const showDetailDrawer = ref(false);
   const detailType = ref<'opportunity' | 'clue'>('clue');
-  const keywordVal = computed(() => keyword.value.replace(/[\s\uFEFF\xA0]+/g, ''));
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
   function showDetail(row: RepeatCustomerItem, type: 'opportunity' | 'clue') {
@@ -366,64 +338,46 @@
     },
   ];
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
-  const repeatAccountTable = useTable(GetRepeatCustomerList, {
-    showSetting: false,
-    columns,
-    isReturnNativeResponse: true,
-    crmPagination: {
-      size: 'small',
-    },
-    hiddenTotal: true,
-    hiddenRefresh: true,
-    containerClass: '.crm-repeat-table',
-  });
+  const columnsMap: Partial<Record<FormDesignKeyEnum, CrmDataTableColumn[]>> = {
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: columns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactColumn,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: columns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: clueColumns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: columns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityColumns,
+  };
 
-  const repeatContactTable = useTable(getRepeatContactList, {
-    showSetting: false,
-    columns: contactColumn,
-    isReturnNativeResponse: true,
-    crmPagination: {
-      size: 'small',
-    },
-    hiddenTotal: true,
-    hiddenRefresh: true,
-    containerClass: '.crm-detail-related-table',
-  });
+  const tables = scopedOptions.value.map((config) => ({
+    ...config,
+    instance: useTable(getFormListApiMap[config.value], {
+      showSetting: false,
+      columns: columnsMap[config.value],
+      crmPagination: { size: 'small' },
+      hiddenTotal: true,
+      hiddenRefresh: true,
+      hiddenAllScreen: true,
+    }),
+    enable: true, // TODO 模块是否开启
+  }));
 
-  const repeatTable = ref<Record<string, any>>(repeatAccountTable);
+  const activeTables = computed(() => tables.filter((table) => table.enable));
 
-  watch(
-    () => keyword.value,
-    (val) => {
-      const newKeywordVal = val.replace(/[\s\uFEFF\xA0]+/g, '');
-      repeatTable.value = validatePhone(newKeywordVal) ? repeatContactTable : repeatAccountTable;
-    },
-    { immediate: true }
-  );
-
-  async function searchData(val: string) {
-    repeatTable.value.setLoadListParams({ name: val.replace(/[\s\uFEFF\xA0]+/g, '') });
-    repeatTable.value.loadList().finally(() => {
-      showResult.value = !!repeatTable.value.propsRes.data.length || repeatTable.value.code === 101003;
-      noDuplicateCustomers.value = !showResult.value && !showClue.value;
+  const searchData = (val: string) => {
+    const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
+    activeTables.value.forEach(async (table) => {
+      table.instance.setLoadListParams({ name: searchTerm });
+      await table.instance.loadList();
+      if (table.instance.propsRes.value.data) {
+        table.instance.propsRes.value.data = table.instance.propsRes.value.data.slice(0, 3);
+      }
     });
-    clueTableRef.value?.searchData(keywordVal.value).finally(() => {
-      showClue.value = !!clueTableRef.value?.propsRes.data.length || clueTableRef.value?.code === 101003;
-      noDuplicateCustomers.value = !showResult.value && !showClue.value;
-    });
-    crmTableRef.value?.scrollTo({ top: 0 });
-  }
+  };
 
   watch(
     () => visible.value,
     (val) => {
       if (!val) {
         keyword.value = '';
-        showResult.value = false;
-        showClue.value = false;
-        noDuplicateCustomers.value = false;
       }
     }
   );

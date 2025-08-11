@@ -73,6 +73,8 @@
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
+  import { scopedOptions } from '../config';
+
   const { t } = useI18n();
 
   const props = defineProps<{
@@ -100,33 +102,6 @@
   }>({
     scoped: null,
   });
-
-  const scopedOptions = ref([
-    {
-      label: t('crmFormDesign.customer'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER,
-    },
-    {
-      label: t('crmFormDesign.contract'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT,
-    },
-    {
-      label: t('module.openSea'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC,
-    },
-    {
-      label: t('crmFormDesign.clue'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
-    },
-    {
-      label: t('module.cluePool'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
-    },
-    {
-      label: t('module.businessManagement'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
-    },
-  ]);
 
   const opportunityTableRef = ref<InstanceType<typeof opportunityTable>>();
 
