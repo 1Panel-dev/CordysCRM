@@ -86,6 +86,7 @@ export const {
   updateBusinessView,
   enableBusinessView,
   dragBusinessView,
+  globalSearchOptPage,
 } = opportunityApi;
 
 export const {
@@ -140,6 +141,8 @@ export const {
   preCheckImportLead,
   downloadLeadTemplate,
   importLead,
+  getGlobalSearchClueList,
+  getGlobalCluePoolList,
 } = clueApi;
 
 export const {
@@ -223,6 +226,9 @@ export const {
   dragCustomerView,
   dragContactView,
   enableContactView,
+  geGlobalCustomerList,
+  getGlobalCustomerContactList,
+  getGlobalOpenSeaCustomerList,
 } = customerApi;
 
 export const {

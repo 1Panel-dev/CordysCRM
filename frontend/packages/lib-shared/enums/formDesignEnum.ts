@@ -16,6 +16,13 @@ export enum FormDesignKeyEnum {
   PRODUCT = 'product', // 产品
   BUSINESS_CONTACT = 'opportunityContact', // 商机联系人
   CUSTOMER_OPPORTUNITY = 'customerOpportunity', // 客户商机
+  // 全局搜索
+  SEARCH_GLOBAL_CLUE = 'searchGlobalClue', // 线索
+  SEARCH_GLOBAL_CUSTOMER = 'searchGlobalCustomer', // 客户
+  SEARCH_GLOBAL_CONTACT = 'searchGlobalContact', // 联系人
+  SEARCH_GLOBAL_PUBLIC = 'searchGlobalPublic', // 公海
+  SEARCH_GLOBAL_CLUE_POOL = 'searchGlobalCluePool', // 线索池
+  SEARCH_GLOBAL_OPPORTUNITY = 'searchGlobalOpportunity', // 商机
 }
 
 export enum FieldTypeEnum {

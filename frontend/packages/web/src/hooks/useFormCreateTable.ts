@@ -32,7 +32,13 @@ type FormKey =
   | FormDesignKeyEnum.CUSTOMER_CONTACT
   | FormDesignKeyEnum.BUSINESS_CONTACT
   | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
-  | FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+  | FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER
+  | FormDesignKeyEnum.SEARCH_GLOBAL_CLUE
+  | FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER
+  | FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT
+  | FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC
+  | FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL
+  | FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -67,6 +73,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: undefined,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: TableKeyEnum.SEARCH_GLOBAL_CLUE,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: TableKeyEnum.SEARCH_GLOBAL_CUSTOMER,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: TableKeyEnum.SEARCH_GLOBAL_CONTACT,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: TableKeyEnum.SEARCH_GLOBAL_PUBLIC,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: TableKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: TableKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -417,6 +429,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
+    // TODO  xinxinwu
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityInternalColumns,
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

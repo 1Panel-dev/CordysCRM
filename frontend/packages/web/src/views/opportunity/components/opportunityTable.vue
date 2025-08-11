@@ -28,7 +28,7 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <n-button
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT'])"
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -48,6 +48,7 @@
     </template>
     <template #actionRight>
       <CrmAdvanceFilter
+        v-if="!props.hiddenAdvanceFilter"
         ref="tableAdvanceFilterRef"
         v-model:keyword="keyword"
         :search-placeholder="t('opportunity.searchPlaceholder')"
@@ -59,7 +60,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isCustomerTab"
+        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.BUSINESS"
         :internal-list="tabList"
@@ -151,6 +152,11 @@
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
     openseaHiddenColumns?: string[];
+    formKey:
+      | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
+      | FormDesignKeyEnum.BUSINESS
+      | FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY;
+    hiddenAdvanceFilter?: boolean;
   }>();
   const emit = defineEmits<{
     (
@@ -461,8 +467,19 @@
   const showOpenSeaOverviewDrawer = ref<boolean>(false);
   const openSea = ref<string | number>('');
 
+  const originFilterConfigList = ref<FilterFormItem[]>([]);
+  const originCustomFieldsFilterConfig = ref<FilterFormItem[]>([]);
+
+  const setAdvanceFilterParams = ref<null | ((...args: any[]) => void)>(null);
+
+  defineExpose({
+    originFilterConfigList,
+    originCustomFieldsFilterConfig,
+    setAdvanceFilterParams,
+  });
+
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
-    formKey: props.isCustomerTab ? FormDesignKeyEnum.CUSTOMER_OPPORTUNITY : FormDesignKeyEnum.BUSINESS,
+    formKey: props.formKey,
     excludeFieldIds: ['customerId'],
     containerClass: '.crm-opportunity-table',
     operationColumn: props.readonly
@@ -586,6 +603,8 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
+  setAdvanceFilterParams.value = handleAdvSearch;
+
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
@@ -656,6 +675,23 @@
       ...baseFilterConfigList,
     ] as FilterFormItem[];
   });
+
+  watch(
+    () => filterConfigList.value,
+    (newVal) => {
+      originFilterConfigList.value = newVal;
+    }
+  );
+
+  watch(
+    () => customFieldsFilterConfig.value,
+    (newVal) => {
+      originCustomFieldsFilterConfig.value = newVal;
+    },
+    {
+      immediate: true,
+    }
+  );
 
   function searchData() {
     setLoadListParams({

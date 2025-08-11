@@ -71,6 +71,7 @@
           <opportunityTable
             :source-id="props.sourceId"
             is-customer-tab
+            :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
             :readonly="collaborationType === 'READ_ONLY' || props.readonly"
           />
         </CrmCard>

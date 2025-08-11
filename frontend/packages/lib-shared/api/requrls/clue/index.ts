@@ -14,6 +14,7 @@ export const ExportClueAllUrl = '/clue/export'; // 导出全部线索
 export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线索
 export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并线索转为客户
 export const MoveToPoolLeadUrl = '/clue/to-pool'; // 移入线索池
+export const GetGlobalSearchClueListUrl = '/global/search/clue'; // 全局搜索线索分页查询线索
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录
@@ -44,6 +45,7 @@ export const GetPoolOptionsUrl = '/pool/clue/options'; // 获取当前用户线�
 export const DeleteCluePoolUrl = '/pool/clue/delete'; // 删除线索池线索
 export const GetPoolClueUrl = '/pool/clue/get'; // 获取线索池详情
 export const ClueTransitionCustomerUrl = '/clue/transition/customer'; // 转为客户
+export const GetGlobalCluePoolListUrl = '/global/search/clue-pool'; // 全局搜索分页查询线索池线索
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/clue/follow/record/pool/page'; // 获取跟进记录列表

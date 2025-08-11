@@ -76,11 +76,13 @@
       class="crm-detail-related-table"
     />
   </CrmDrawer>
+  <GlobalSearchDrawer v-model:visible="showGlobalSearchDrawer" :form-key="globalSearchFormKey" />
 </template>
 
 <script setup lang="ts">
   import { NButton, NScrollbar } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { validatePhone } from '@lib/shared/method/validate';
   import { RepeatContactItem, RepeatCustomerItem } from '@lib/shared/models/system/business';
@@ -90,6 +92,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
 
   import {
@@ -424,4 +427,10 @@
       }
     }
   );
+
+  const showGlobalSearchDrawer = ref(false);
+  const globalSearchFormKey = ref(FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY);
+  function openGlobalSearch() {
+    showGlobalSearchDrawer.value = true;
+  }
 </script>

@@ -65,6 +65,9 @@ import {
   GetCustomerUrl,
   GetCustomerViewDetailUrl,
   GetCustomerViewListUrl,
+  GetGlobalCustomerContactListUrl,
+  GetGlobalCustomerListUrl,
+  GetGlobalOpenSeaCustomerListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
@@ -537,6 +540,18 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragContactViewUrl, data });
   }
 
+  function geGlobalCustomerList(data: CustomerTableParams) {
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data });
+  }
+
+  function getGlobalOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>({ url: GetGlobalOpenSeaCustomerListUrl, data });
+  }
+
+  function getGlobalCustomerContactList(data: CustomerContractTableParams) {
+    return CDR.post<CommonList<CustomerContractListItem>>({ url: GetGlobalCustomerContactListUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -621,5 +636,8 @@ export default function useProductApi(CDR: CordysAxios) {
     enableContactView,
     dragCustomerView,
     dragContactView,
+    geGlobalCustomerList,
+    getGlobalOpenSeaCustomerList,
+    getGlobalCustomerContactList,
   };
 }

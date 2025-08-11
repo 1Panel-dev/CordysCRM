@@ -5,6 +5,7 @@
         <CrmOpportunityTable
           :fullscreen-target-ref="opportunityCardRef"
           :opensea-hidden-columns="hiddenColumns"
+          :form-key="FormDesignKeyEnum.BUSINESS"
           @open-customer-drawer="handleOpenCustomerDrawer"
         />
       </div>
@@ -27,6 +28,7 @@
 <script setup lang="ts">
   import { useMessage } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 

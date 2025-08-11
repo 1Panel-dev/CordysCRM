@@ -66,6 +66,7 @@ export const {
   getOptTab,
   getOpportunityContactList,
   updateOptFollowPlanStatus,
+  globalSearchOptPage,
 } = opportunityApi;
 
 export const {
@@ -105,6 +106,8 @@ export const {
   getClueTab,
   getClueTransitionCustomerList,
   updateClueFollowPlanStatus,
+  getGlobalCluePoolList,
+  getGlobalSearchClueList,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;
@@ -174,6 +177,9 @@ export const {
   getCustomerContactTab,
   updateCustomerFollowPlanStatus,
   getCustomerOpportunityPage,
+  geGlobalCustomerList,
+  getGlobalCustomerContactList,
+  getGlobalOpenSeaCustomerList,
 } = customerApi;
 
 export const {

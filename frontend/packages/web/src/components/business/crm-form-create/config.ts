@@ -20,6 +20,7 @@ import {
   addOptFollowRecord,
   addProduct,
   ClueTransitionCustomer,
+  geGlobalCustomerList,
   getClue,
   getClueFollowPlan,
   getClueFollowRecord,
@@ -39,6 +40,10 @@ import {
   getCustomerFormConfig,
   getCustomerList,
   getCustomerOpportunityPage,
+  getGlobalCluePoolList,
+  getGlobalCustomerContactList,
+  getGlobalOpenSeaCustomerList,
+  getGlobalSearchClueList,
   getOpenSeaCustomer,
   getOpenSeaCustomerList,
   getOpportunityContactList,
@@ -51,6 +56,7 @@ import {
   getProduct,
   getProductFormConfig,
   getProductList,
+  globalSearchOptPage,
   updateClue,
   updateClueFollowPlan,
   updateClueFollowRecord,
@@ -507,6 +513,12 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getCustomerContactFormConfig,
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getOptFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: getClueFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: getCustomerFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: getCustomerContactFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: getCustomerFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: getClueFormConfig,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: getOptFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -527,6 +539,12 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRODUCT]: addProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无添加
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: addOpportunity,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: addClue,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: addCustomer,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: addCustomerContact,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: async () => ({}),
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: async () => ({}),
+  [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: addOpportunity,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -547,6 +565,12 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无更新
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: updateOpportunity,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: updateClue,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: updateCustomer,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: updateCustomerContact,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: async () => ({}),
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: async () => ({}),
+  [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: updateOpportunity,
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -565,6 +589,12 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.PRODUCT]: getProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomer,
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getOpportunityDetail,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: getClue,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: getCustomer,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: getCustomerContact,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: getOpenSeaCustomer,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: getPoolClue,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: getOpportunityDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -579,6 +609,12 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getCustomerOpportunityPage,
   [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: getClueTransitionCustomerList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: getGlobalSearchClueList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: geGlobalCustomerList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: getGlobalCustomerContactList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: getGlobalOpenSeaCustomerList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: getGlobalCluePoolList,
+  [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: globalSearchOptPage,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
