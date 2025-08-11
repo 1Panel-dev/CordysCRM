@@ -194,6 +194,13 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
             BeanUtils.copyBean(globalClueResponse, clueListResponse);
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_ADD);
             globalClueResponse.setHasPermission(hasPermission);
+            if (!hasPermission) {
+                globalClueResponse.setPhone(null);
+                globalClueResponse.setContact(null);
+                globalClueResponse.setModuleFields(new ArrayList<>());
+                globalClueResponse.setReasonName(null);
+                globalClueResponse.setRecyclePoolName(null);
+            }
             returnList.add(globalClueResponse);
         });
         return returnList;

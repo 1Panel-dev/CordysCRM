@@ -151,6 +151,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         Map<String, String> userPoolMap = getUserPool(orgId, userId);
 
         list.forEach(customerListResponse -> {
+            boolean hasPermission = getHasPermission(userId, orgId, customerListResponse, userPoolMap);
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
@@ -178,7 +179,12 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
             String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
             customerListResponse.setReasonName(reasonName);
 
-            customerListResponse.setHasPermission(getHasPermission(userId, orgId, customerListResponse, userPoolMap));
+            customerListResponse.setHasPermission(hasPermission);
+            if (!hasPermission) {
+                customerListResponse.setModuleFields(new ArrayList<>());
+                customerListResponse.setReasonName(null);
+                customerListResponse.setRecyclePoolName(null);
+            }
             customerListResponse.setPoolName(userPoolMap.get(customerListResponse.getPoolId()));
         });
 

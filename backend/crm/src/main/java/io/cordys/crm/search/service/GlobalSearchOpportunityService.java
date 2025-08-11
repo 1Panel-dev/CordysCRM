@@ -3,7 +3,10 @@ package io.cordys.crm.search.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.cordys.common.constants.*;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.ModuleKey;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
@@ -25,7 +28,6 @@ import io.cordys.crm.system.domain.Dict;
 import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
-import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.service.DictService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -36,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -144,16 +147,24 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
             opportunityListResponse.setReservedDays(BooleanUtils.isFalse(opportunityListResponse.getStatus()) ? null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
-            opportunityListResponse.setModuleFields(opportunityFields);
-
+            if (!hasPermission) {
+                opportunityListResponse.setModuleFields(new ArrayList<>());
+                opportunityListResponse.setFailureReason(dictMap.get(null));
+                opportunityListResponse.setAmount(null);
+                opportunityListResponse.setContactName(null);
+            } else {
+                opportunityListResponse.setModuleFields(opportunityFields);
+                opportunityListResponse.setFailureReason(dictMap.get(opportunityListResponse.getFailureReason()));
+                opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
+            }
             opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
             opportunityListResponse.setCreateUserName(userNameMap.get(opportunityListResponse.getCreateUser()));
             opportunityListResponse.setUpdateUserName(userNameMap.get(opportunityListResponse.getUpdateUser()));
             opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
-            opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -161,9 +172,6 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
                 opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
-            opportunityListResponse.setFailureReason(dictMap.get(opportunityListResponse.getFailureReason()));
-
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             opportunityListResponse.setHasPermission(hasPermission);
         });
         return baseService.setCreateAndUpdateUserName(list);

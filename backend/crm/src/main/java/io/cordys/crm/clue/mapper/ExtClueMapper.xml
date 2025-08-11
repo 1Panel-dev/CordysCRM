@@ -56,7 +56,7 @@
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
-            and c.name like concat('%', #{request.keyword},'%')
+            and (c.name like concat('%', #{request.keyword},'%') or c.phone like concat('%', #{request.keyword},'%'))
         </if>
 
         <if test="request.viewId == 'CUSTOMER_TRANSITION'">

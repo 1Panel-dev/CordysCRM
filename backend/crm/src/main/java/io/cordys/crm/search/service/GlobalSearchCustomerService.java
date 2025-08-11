@@ -163,26 +163,33 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
         // 处理每个客户返回结果
         return customers.stream()
                 .peek(customer -> {
-                    // 设置商机数量
-                    customer.setOpportunityCount(parseCount(opportunityCounts.get(customer.getId())));
-                    // 设置线索数量
-                    customer.setClueCount(parseCount(clueCounts.get(customer.getName())));
-                    // 设置模块启用状态
-                    customer.setOpportunityModuleEnable(isOpportunityModuleEnabled);
-                    customer.setClueModuleEnable(isClueModuleEnabled);
                     boolean hasPermission = dataScopeService.hasDataPermission(userId, organizationId, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-                    customer.setHasPermission(hasPermission);
-                    // 获取自定义字段
-                    List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customer.getId());
-                    customer.setModuleFields(customerFields);
-                    // 设置回收公海
+                    // 设置商机数量
                     CustomerPool reservePool = ownersDefaultPoolMap.get(customer.getOwner());
-                    customer.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+                    if (!hasPermission) {
+                        customer.setOpportunityCount(null);
+                        // 设置线索数量
+                        customer.setClueCount(null);
+                        customer.setModuleFields(new ArrayList<>());
+                        customer.setRecyclePoolName(null);
+                        customer.setReasonName(null);
+                    }else {
+                        customer.setOpportunityCount(parseCount(opportunityCounts.get(customer.getId())));
+                        customer.setClueCount(parseCount(clueCounts.get(customer.getName())));
+                        // 获取自定义字段
+                        List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customer.getId());
+                        customer.setModuleFields(customerFields);
+                        // 设置回收公海
+                        customer.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+                    }
                     // 计算剩余归属天数
                     customer.setReservedDays(customerPoolService.calcReservedDay(reservePool,
                             reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
                             customer));
-
+                    // 设置模块启用状态
+                    customer.setOpportunityModuleEnable(isOpportunityModuleEnabled);
+                    customer.setClueModuleEnable(isClueModuleEnabled);
+                    customer.setHasPermission(hasPermission);
                     UserDeptDTO userDeptDTO = userDeptMap.get(customer.getOwner());
                     if (userDeptDTO != null) {
                         customer.setDepartmentId(userDeptDTO.getDeptId());

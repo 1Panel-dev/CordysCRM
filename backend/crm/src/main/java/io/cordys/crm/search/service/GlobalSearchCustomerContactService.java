@@ -132,6 +132,11 @@ public class GlobalSearchCustomerContactService extends GlobalSearchBaseService<
             BeanUtils.copyBean(globalCustomerContactResponse, customerListResponse);
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, globalCustomerContactResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
             globalCustomerContactResponse.setHasPermission(hasPermission);
+            if (!hasPermission) {
+                globalCustomerContactResponse.setModuleFields(new ArrayList<>());
+                globalCustomerContactResponse.setPhone(null);
+                globalCustomerContactResponse.setDisableReason(null);
+            }
             returnList.add(globalCustomerContactResponse);
         });
 

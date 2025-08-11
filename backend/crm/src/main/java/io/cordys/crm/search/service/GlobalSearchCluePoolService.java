@@ -154,13 +154,23 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         Map<String, String> userPoolMap = getUserPool(orgId, userId);
 
         list.forEach(clueListResponse -> {
-            // 获取自定义字段
-            List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
-            clueListResponse.setModuleFields(clueFields);
-
+            boolean hasPermission = getHasPermission(userId, orgId, clueListResponse, userPoolMap);
             // 设置回收公海
             CluePool reservePool = ownersDefaultPoolMap.get(clueListResponse.getOwner());
-            clueListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+            // 获取自定义字段
+            if (hasPermission) {
+                List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
+                clueListResponse.setModuleFields(clueFields);
+                clueListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+                clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
+
+            } else {
+                clueListResponse.setModuleFields(new ArrayList<>());
+                clueListResponse.setRecyclePoolName(null);
+                clueListResponse.setReasonName(null);
+                clueListResponse.setPhone(null);
+                clueListResponse.setContact(null);
+            }
             // 计算剩余归属天数
             clueListResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
@@ -175,9 +185,9 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
             clueListResponse.setCreateUserName(userNameMap.get(clueListResponse.getCreateUser()));
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
-            clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
 
-            clueListResponse.setHasPermission(getHasPermission(userId, orgId, clueListResponse, userPoolMap));
+
+            clueListResponse.setHasPermission(hasPermission);
             clueListResponse.setPoolName(userPoolMap.get(clueListResponse.getPoolId()));
         });
 

@@ -8,10 +8,10 @@ import lombok.Data;
 public class GlobalCustomerResponse extends CustomerListResponse {
 
     @Schema(description = "线索重复数据数量")
-    private int clueCount;
+    private Integer clueCount;
 
     @Schema(description = "商机重复数据数量")
-    private int opportunityCount;
+    private Integer opportunityCount;
 
     @Schema(description = "线索模块是否开启")
     private boolean clueModuleEnable;
