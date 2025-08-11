@@ -555,9 +555,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 150,
               key: field.businessKey || field.id,
               fieldId: field.id,
-              ellipsis: {
-                tooltip: true,
-              },
+              ellipsis: ![FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)
+                ? {
+                    tooltip: true,
+                  }
+                : undefined,
               isTag: field.type === FieldTypeEnum.CHECKBOX || field.type === FieldTypeEnum.SELECT_MULTIPLE,
               filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
               filter: true,

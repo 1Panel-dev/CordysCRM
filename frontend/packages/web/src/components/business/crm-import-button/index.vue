@@ -72,10 +72,14 @@
     validateModal.value = false;
   }
 
-  const validateInfo = ref<ValidateInfo>({
+  const initValidateInfo: ValidateInfo = {
     failCount: 0,
     successCount: 0,
     errorMessages: [],
+  };
+
+  const validateInfo = ref<ValidateInfo>({
+    ...initValidateInfo,
   });
 
   const validateResultModal = ref<boolean>(false);
@@ -111,6 +115,9 @@
   // 校验导入模板
   async function validateTemplate(files: CrmFileItem[]) {
     fileList.value = files;
+    validateInfo.value = {
+      ...initValidateInfo,
+    };
     validateLoading.value = true;
     try {
       validateModal.value = true;
@@ -120,6 +127,7 @@
       validateInfo.value = result.data;
       finish();
     } catch (error) {
+      validateResultModal.value = false;
       validateModal.value = false;
       // eslint-disable-next-line no-console
       console.log(error);
