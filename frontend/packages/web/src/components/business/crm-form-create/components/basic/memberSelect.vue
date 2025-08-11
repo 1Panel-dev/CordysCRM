@@ -78,11 +78,11 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(
-          props.fieldConfig.type
-        )
-          ? [val]
-          : val || value.value || [];
+        value.value =
+          [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type) &&
+          !Array.isArray(val)
+            ? [val]
+            : val || value.value || [];
         emit('change', value.value);
       }
     },
