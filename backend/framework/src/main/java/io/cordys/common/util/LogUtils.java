@@ -79,6 +79,12 @@ public class LogUtils {
         }
     }
 
+    public static void debug(String message, Object... args) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(message, args);
+        }
+    }
+
     /**
      * 输出带有两个参数的 INFO 级别日志。
      *
