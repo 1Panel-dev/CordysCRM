@@ -289,6 +289,7 @@
     customList?: FilterFormItem[];
     keepOneLine?: boolean; // 至少保留一行
     readonly?: boolean;
+    noFilterOption?: boolean; // 第一列取消过滤
   }>();
 
   const formModel = defineModel<FilterForm>('formModel', {
@@ -326,6 +327,9 @@
   // 第一列下拉数据
   const currentOptions = computed(() => {
     const allOptions = [...props.configList, ...(props.customList || [])];
+    if (props.noFilterOption) {
+      return () => allOptions.map((item) => ({ ...item, label: t(item.title as string) }));
+    }
     const formItems = formModel.value.list;
 
     return (currentDataIndex: string) => {

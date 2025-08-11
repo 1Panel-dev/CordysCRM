@@ -4,6 +4,7 @@
       <FilterContent
         ref="filterContentRef"
         v-model:form-model="formModel"
+        no-filter-option
         :config-list="props.configList"
         :custom-list="props.customList"
       />
