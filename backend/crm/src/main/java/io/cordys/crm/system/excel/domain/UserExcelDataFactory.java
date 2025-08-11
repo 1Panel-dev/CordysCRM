@@ -11,7 +11,7 @@ import java.util.Locale;
 public class UserExcelDataFactory implements ExcelDataFactory {
 
     @Override
-    public Class getExcelDataByLocal() {
+    public Class<?> getExcelDataByLocal() {
         Locale locale = LocaleContextHolder.getLocale();
         if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
             return UserExcelDataUs.class;

@@ -16,9 +16,6 @@ import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
-import io.cordys.crm.customer.dto.request.CustomerExportRequest;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
@@ -34,9 +31,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

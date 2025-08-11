@@ -5,8 +5,8 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.ContactUniqueRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
-import io.cordys.crm.search.response.GlobalCustomerContactResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
+import io.cordys.crm.search.response.GlobalCustomerContactResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -2,7 +2,6 @@ package io.cordys.crm.search;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
-import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;

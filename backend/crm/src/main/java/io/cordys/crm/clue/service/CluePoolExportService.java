@@ -4,27 +4,18 @@ import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
-import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
-import io.cordys.common.constants.FormKey;
-import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.ExportSelectRequest;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.service.BaseExportService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.ClueExportRequest;
-import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
-import io.cordys.crm.clue.utils.ClueFieldUtils;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
-import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.ExportTaskService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.registry.ExportThreadRegistry;
@@ -34,9 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional(rollbackFor = Exception.class)

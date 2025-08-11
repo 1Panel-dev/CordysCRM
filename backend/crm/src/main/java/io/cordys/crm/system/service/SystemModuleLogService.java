@@ -3,13 +3,9 @@ package io.cordys.crm.system.service;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ModuleField;
-import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.form.FormProp;
-import io.cordys.crm.system.dto.form.base.LinkProp;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

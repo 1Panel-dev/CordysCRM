@@ -5,7 +5,6 @@ import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
-import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;

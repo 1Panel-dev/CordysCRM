@@ -1,6 +1,5 @@
 package io.cordys.crm.clue.dto.response;
 
-import io.cordys.crm.system.excel.domain.UserExcelData;
 import io.cordys.excel.domain.ExcelErrData;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

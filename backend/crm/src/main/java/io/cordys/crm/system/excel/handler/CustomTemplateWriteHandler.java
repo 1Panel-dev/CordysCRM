@@ -14,7 +14,6 @@ import cn.idev.excel.write.metadata.holder.WriteWorkbookHolder;
 import cn.idev.excel.write.metadata.style.WriteCellStyle;
 import cn.idev.excel.write.metadata.style.WriteFont;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.DateTimeField;
 import io.cordys.crm.system.dto.field.InputNumberField;
 import io.cordys.crm.system.dto.field.LocationField;

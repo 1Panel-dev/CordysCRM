@@ -4,8 +4,6 @@ import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class GlobalOpportunityResponse extends OpportunityListResponse {
 
