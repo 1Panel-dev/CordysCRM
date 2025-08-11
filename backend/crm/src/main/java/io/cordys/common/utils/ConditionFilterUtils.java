@@ -2,10 +2,13 @@ package io.cordys.common.utils;
 
 
 import io.cordys.common.constants.InternalUserView;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.condition.BaseCondition;
 import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.UserViewService;
 import io.cordys.security.SessionUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -13,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +46,11 @@ public class ConditionFilterUtils {
             }
             List<FilterCondition> newConditions = baseCondition.getCombineSearch()
                     .getConditions();
+
+            //新增子节点数据
+            List<BaseTreeNode> tree = CommonBeanFactory.getBean(DepartmentService.class).getTree(OrganizationContext.getOrganizationId());
+            buildConditions(conditions, tree);
+
             newConditions.addAll(conditions);
             baseCondition.getCombineSearch().setConditions(newConditions);
             baseCondition.getCombineSearch().setSearchMode(searchMode);
@@ -68,9 +77,63 @@ public class ConditionFilterUtils {
         replaceCurrentUser(validConditions);
     }
 
+
+    /**
+     * 包含新增子节点数据
+     *
+     * @param conditions
+     */
+    private static void buildConditions(List<FilterCondition> conditions, List<BaseTreeNode> tree) {
+        if (CollectionUtils.isNotEmpty(conditions)) {
+            conditions.forEach(condition -> {
+                if (CollectionUtils.isNotEmpty(condition.getContainChildIds())) {
+                    condition.getContainChildIds().forEach(id -> {
+                        List<String> ids = getIds(tree, id);
+                        ids.addAll(condition.getContainChildIds());
+                        condition.setValue(ids.stream().distinct().toList());
+                    });
+                }
+            });
+        }
+    }
+
+
+    public static List<String> getIds(List<BaseTreeNode> tree, String targetId) {
+        List<String> ids = new ArrayList<>();
+        for (BaseTreeNode node : tree) {
+            BaseTreeNode targetNode = findNode(node, targetId);
+            if (targetNode != null) {
+                collectIds(targetNode, ids);
+                break;
+            }
+        }
+        return ids;
+    }
+
+    private static BaseTreeNode findNode(BaseTreeNode node, String targetId) {
+        if (node.getId().equals(targetId)) {
+            return node;
+        }
+        for (BaseTreeNode child : node.getChildren()) {
+            BaseTreeNode result = findNode(child, targetId);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static void collectIds(BaseTreeNode node, List<String> ids) {
+        ids.add(node.getId());
+        for (BaseTreeNode child : node.getChildren()) {
+            collectIds(child, ids);
+        }
+    }
+
     /**
      * 处理成员选项中的 CURRENT_USER
      * 替换当前用户的用户ID
+     *
      * @param validConditions
      */
     private static void replaceCurrentUser(List<FilterCondition> validConditions) {

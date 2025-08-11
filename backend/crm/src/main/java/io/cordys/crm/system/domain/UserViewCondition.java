@@ -30,4 +30,7 @@ public class UserViewCondition extends BaseModel {
 
     @Schema(description = "操作符")
     private String operator;
+
+    @Schema(description = "参数值列表")
+    private String childrenValue;
 }

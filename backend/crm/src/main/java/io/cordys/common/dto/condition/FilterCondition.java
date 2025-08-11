@@ -42,6 +42,9 @@ public class FilterCondition {
     @Schema(description = "类型")
     private String type;
 
+    @Schema(description = "包含新增子部门集合")
+    private List<String> containChildIds;
+
     /**
      * 校验条件是否合法，检查字段名称、操作符和值的有效性。
      *

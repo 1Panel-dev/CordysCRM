@@ -10,7 +10,8 @@
             value_type,
             type,
             multiple_value,
-            operator
+            operator,
+            children_value
         FROM
             sys_user_view_condition
         where sys_user_view_id = #{viewId}

@@ -113,6 +113,9 @@ public class UserViewService {
                     userViewCondition.setValue(condition.getValue().toString());
                 }
             }
+            if (CollectionUtils.isNotEmpty(condition.getContainChildIds())) {
+                userViewCondition.setChildrenValue(JSON.toJSONString(condition.getContainChildIds()));
+            }
             userViewCondition.setName(condition.getName());
             userViewCondition.setType(condition.getType());
             userViewCondition.setMultipleValue(condition.getMultipleValue());
@@ -265,6 +268,9 @@ public class UserViewService {
             FilterCondition filterCondition = BeanUtils.copyBean(new FilterCondition(), condition);
             Object value = getConditionValueByType(condition.getValueType(), condition.getValue());
             filterCondition.setValue(value);
+            if (StringUtils.isNotBlank(condition.getChildrenValue())) {
+                filterCondition.setContainChildIds(JSON.parseArray(condition.getChildrenValue()));
+            }
             return filterCondition;
         }).toList();
         return conditions;
