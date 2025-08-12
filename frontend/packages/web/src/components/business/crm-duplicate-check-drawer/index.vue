@@ -25,25 +25,31 @@
       <template v-if="keyword.length">
         <template v-for="table in activeTables" :key="table.key">
           <div class="mb-[24px]">
-            <div class="flex items-center font-semibold">
-              {{ table.label }}
-              <div class="text-[var(--text-n4)]"> ({{ table.instance.propsRes.value.crmPagination?.itemCount }}) </div>
+            <div class="flex justify-between">
+              <div class="flex items-center font-semibold">
+                {{ table.label }}
+                <div class="text-[var(--text-n4)]">
+                  ({{ table.instance.propsRes.value.crmPagination?.itemCount }})
+                </div>
+              </div>
+              <n-button
+                v-show="table.instance.propsRes.value.crmPagination?.itemCount"
+                text
+                type="primary"
+                @click="openGlobalSearch(table.value)"
+              >
+                {{ t('common.ViewMore') }}
+              </n-button>
             </div>
             <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
               <CrmTable
                 v-bind="table.instance.propsRes.value"
-                class="h-[205px]"
+                class="!h-[205px]"
                 @page-size-change="table.instance.propsEvent.value.pageSizeChange"
                 @sorter-change="table.instance.propsEvent.value.sorterChange"
                 @filter-change="table.instance.propsEvent.value.filterChange"
                 @page-change="table.instance.propsEvent.value.pageChange"
               />
-
-              <div v-show="table.instance.propsRes.value.crmPagination?.itemCount" class="flex justify-end">
-                <n-button text type="primary" @click="openGlobalSearch(table.value)">
-                  {{ t('common.ViewMore') }}
-                </n-button>
-              </div>
             </div>
           </div>
         </template>
@@ -65,14 +71,75 @@
     />
   </CrmDrawer>
   <GlobalSearchDrawer v-model:visible="showGlobalSearchDrawer" :keyword="keyword" :form-key="globalSearchFormKey" />
+  <!-- 详情 -->
+  <Suspense>
+    <div>
+      <customerOverviewDrawer
+        v-model:show="showCustomerOverviewDrawer"
+        :source-id="activeSourceId"
+        :readonly="isCustomerReadonly"
+        @saved="searchData(keyword)"
+      />
+      <openSeaOverviewDrawer
+        v-model:show="showCustomerOpenseaOverviewDrawer"
+        :source-id="activeSourceId"
+        :readonly="isCustomerReadonly"
+        :pool-id="poolId"
+        :hidden-columns="hiddenColumns"
+        @change="searchData(keyword)"
+      />
+
+      <optOverviewDrawer
+        v-model:show="showOptOverviewDrawer"
+        :detail="activeOpportunity"
+        @refresh="searchData(keyword)"
+        @open-customer-drawer="handleOpenCustomerDrawer($event, true)"
+      />
+      <ClueOverviewDrawer
+        v-if="isInitOverviewDrawer"
+        v-model:show="showClueOverviewDrawer"
+        :detail="activeClue"
+        @refresh="searchData(keyword)"
+        @open-customer-drawer="handleOpenCustomerDrawer($event, true)"
+        @convert-to-customer="() => handleConvertToCustomer(activeClue)"
+      />
+      <CluePoolOverviewDrawer
+        v-model:show="showCluePoolOverviewDrawer"
+        :pool-id="poolId"
+        :detail="activeClue as CluePoolListItem"
+        :hidden-columns="cluePoolHiddenColumns"
+        @refresh="searchData(keyword)"
+      />
+      <convertToCustomerDrawer
+        v-if="isInitConvertDrawer"
+        v-model:show="showConvertToCustomerDrawer"
+        :clue-id="otherFollowRecordSaveParams.clueId"
+        @finish="searchData(keyword)"
+        @new="handleNewCustomer"
+      />
+      <CrmFormCreateDrawer
+        v-if="isInitFormCreateDrawer"
+        v-model:visible="formCreateDrawerVisible"
+        :form-key="formKey"
+        :need-init-detail="false"
+        :initial-source-name="activeRowName"
+        :other-save-params="otherFollowRecordSaveParams"
+        :link-form-info="linkFormInfo"
+        @saved="handleFormSaved"
+      />
+    </div>
+  </Suspense>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NScrollbar } from 'naive-ui';
+  import { NButton, NScrollbar, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ClueListItem, CluePoolListItem } from '@lib/shared/models/clue';
+  import type { OpportunityItem } from '@lib/shared/models/opportunity';
   import { RepeatContactItem, RepeatCustomerItem } from '@lib/shared/models/system/business';
+  import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -81,21 +148,46 @@
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import { getFormListApiMap } from '@/components/business/crm-form-create/config';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
 
-  import { getGlobalSearchClueDetail, globalSearchOptDetail } from '@/api/modules';
+  import {
+    getGlobalSearchClueDetail,
+    getOpenSeaOptions,
+    getPoolOptions,
+    globalSearchOptDetail,
+    reTransitionCustomer,
+  } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { lastScopedOptions } from './config';
 
+  const customerOverviewDrawer = defineAsyncComponent(
+    () => import('@/views/customer/components/customerOverviewDrawer.vue')
+  );
+  const openSeaOverviewDrawer = defineAsyncComponent(
+    () => import('@/views/customer/components/openSeaOverviewDrawer.vue')
+  );
+  const ClueOverviewDrawer = defineAsyncComponent(
+    () => import('@/views/clueManagement/clue/components/clueOverviewDrawer.vue')
+  );
+  const CluePoolOverviewDrawer = defineAsyncComponent(
+    () => import('@/views/clueManagement/cluePool/components/cluePoolOverviewDrawer.vue')
+  );
+  const convertToCustomerDrawer = defineAsyncComponent(
+    () => import('@/views/clueManagement/clue/components/convertToCustomerDrawer.vue')
+  );
+  const optOverviewDrawer = defineAsyncComponent(() => import('@/views/opportunity/components/optOverviewDrawer.vue'));
+
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const keyword = ref('');
 
@@ -113,6 +205,106 @@
     });
   }
 
+  // 概览
+  const showCustomerOverviewDrawer = ref(false);
+  const showCustomerOpenseaOverviewDrawer = ref(false);
+  const poolId = ref<string>('');
+  const activeSourceId = ref<string>('');
+
+  const isCustomerReadonly = ref(false);
+  function handleOpenCustomerDrawer(
+    params: { customerId: string; inCustomerPool: boolean; poolId: string },
+    readonly = false
+  ) {
+    activeSourceId.value = params.customerId;
+    if (params.inCustomerPool) {
+      if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+        showCustomerOpenseaOverviewDrawer.value = true;
+        poolId.value = params.poolId;
+      } else {
+        Message.warning(t('opportunity.noOpenSeaPermission'));
+      }
+    } else {
+      showCustomerOverviewDrawer.value = true;
+    }
+    isCustomerReadonly.value = readonly;
+  }
+
+  const openSeaOptions = ref<CluePoolItem[]>([]);
+  async function initOpenSeaOptions() {
+    if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+      const res = await getOpenSeaOptions();
+      openSeaOptions.value = res;
+    }
+  }
+  const hiddenColumns = computed<string[]>(() => {
+    const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
+    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+
+  const showOptOverviewDrawer = ref<boolean>(false);
+  const activeOpportunity = ref<OpportunityItem>();
+
+  const isInitOverviewDrawer = ref(false);
+  const showClueOverviewDrawer = ref(false);
+  const showCluePoolOverviewDrawer = ref(false);
+  const activeClue = ref<ClueListItem | CluePoolListItem>();
+
+  const cluePoolOptions = ref<CluePoolItem[]>([]);
+  async function getCluePoolOptions() {
+    try {
+      cluePoolOptions.value = await getPoolOptions();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+  const cluePoolHiddenColumns = computed<string[]>(() => {
+    const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
+    return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+
+  const isInitConvertDrawer = ref(false);
+  const showConvertToCustomerDrawer = ref(false);
+  const otherFollowRecordSaveParams = ref({
+    type: 'CLUE',
+    clueId: '',
+    id: '',
+  });
+  const formKey = ref(FormDesignKeyEnum.CLUE);
+  const activeRowName = ref('');
+  function handleConvertToCustomer(row?: ClueListItem) {
+    isInitConvertDrawer.value = true;
+    formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+    activeRowName.value = row?.name || '';
+    otherFollowRecordSaveParams.value.clueId = row?.id || '';
+    showConvertToCustomerDrawer.value = true;
+  }
+
+  const formCreateDrawerVisible = ref(false);
+  const isInitFormCreateDrawer = ref(false);
+  const linkFormInfo = ref<Record<string, any> | undefined>({});
+  function handleNewCustomer(formInfo: Record<string, any>) {
+    isInitFormCreateDrawer.value = true;
+    linkFormInfo.value = formInfo;
+    formKey.value = FormDesignKeyEnum.CUSTOMER;
+    formCreateDrawerVisible.value = true;
+  }
+
+  async function handleFormSaved(res: any) {
+    if (linkFormInfo.value) {
+      await reTransitionCustomer({
+        clueId: otherFollowRecordSaveParams.value.clueId,
+        customerId: res.id,
+      });
+    }
+  }
+
+  onBeforeMount(() => {
+    initOpenSeaOptions();
+    getCluePoolOptions();
+  });
+
   const clueColumns: CrmDataTableColumn[] = [
     {
       title: t('workbench.duplicateCheck.company'),
@@ -127,7 +319,9 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO 跳转详情
+              activeClue.value = row;
+              isInitOverviewDrawer.value = true;
+              showClueOverviewDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -142,7 +336,15 @@
         tooltip: true,
       },
     },
-    // TODO 区域
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => row.departmentName || '-',
+    },
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNameList',
@@ -168,14 +370,23 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO 跳转详情
+              activeClue.value = row;
+              showCluePoolOverviewDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
         );
       },
     },
-    // TODO 区域
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => row.departmentName || '-',
+    },
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNameList',
@@ -209,7 +420,9 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO 跳转详情
+              activeSourceId.value = row.id;
+              activeOpportunity.value = row;
+              showOptOverviewDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -224,7 +437,15 @@
         tooltip: true,
       },
     },
-    // TODO 区域
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => row.departmentName || '-',
+    },
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNames',
@@ -265,7 +486,8 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO 跳转详情
+              activeSourceId.value = row.id;
+              showCustomerOverviewDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -280,7 +502,15 @@
         tooltip: true,
       },
     },
-    // TODO 区域
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => row.departmentName || '-',
+    },
     {
       title: t('workbench.duplicateCheck.relatedOpportunity'),
       key: 'opportunityCount',
@@ -345,21 +575,23 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO 跳转详情
+              activeSourceId.value = row.id;
+              poolId.value = row.poolId;
+              showCustomerOpenseaOverviewDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
         );
       },
     },
-    // TODO 区域和类型
     {
-      title: t('common.type'),
-      key: 'name',
-      width: 100,
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
       ellipsis: {
         tooltip: true,
       },
+      render: (row: any) => row.departmentName || '-',
     },
     {
       title: t('common.creator'),
@@ -379,18 +611,6 @@
       width: 100,
       ellipsis: {
         tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.customerName;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              // TODO 跳转详情
-            },
-          },
-          { default: () => row.customerName, trigger: () => row.customerName }
-        );
       },
     },
     {
@@ -417,7 +637,15 @@
         tooltip: true,
       },
     },
-    // TODO 部门
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => row.departmentName || '-',
+    },
     {
       title: t('common.status'),
       width: 50,
