@@ -436,7 +436,32 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactInternalColumns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: [
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'reasonId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: (row: any) => row.reasonName || '-',
+      },
+      {
+        title: t('customer.recycleOpenSeaName'),
+        width: 120,
+        key: 'poolId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.recyclePoolName || '-',
+      },
+    ],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityInternalColumns,
   };

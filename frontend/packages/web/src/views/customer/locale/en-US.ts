@@ -46,4 +46,5 @@ export default {
   'customer.contacts.mine': 'My contacts',
   'customer.contacts.department': 'Department contacts',
   'customer.recycleReason': 'Reason for recycling',
+  'customer.recycleOpenSeaName': 'Belonging public pool',
 };

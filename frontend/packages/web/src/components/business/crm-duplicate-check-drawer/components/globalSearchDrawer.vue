@@ -71,6 +71,15 @@
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
               @init="setFilterConfigList"
             />
+            <openSeaTable
+              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              ref="openSeaTableRef"
+              readonly
+              hidden-open-sea-select
+              hidden-advance-filter
+              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              @init="setFilterConfigList"
+            />
           </Suspense>
         </div>
       </div>
@@ -93,6 +102,7 @@
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import customerTable from '@/views/customer/components/customerTable.vue';
+  import openSeaTable from '@/views/customer/components/openSeaTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
   import { useAppStore } from '@/store';
@@ -188,6 +198,7 @@
   const opportunityTableRef = ref<InstanceType<typeof opportunityTable>>();
   const customerTableRef = ref<InstanceType<typeof customerTable>>();
   const contactTableRef = ref<InstanceType<typeof ContactTable>>();
+  const openSeaTableRef = ref<InstanceType<typeof openSeaTable>>();
 
   function loadList(filter: FilterResult) {
     switch (form.value.scoped) {
@@ -199,6 +210,9 @@
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
         contactTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
+        openSeaTableRef.value?.handleAdvanceFilter?.(filter);
         break;
       default:
         break;
@@ -218,8 +232,6 @@
   };
 
   function handleFilter() {
-    console.log(222);
-
     filterContentRef.value?.formRef?.validate((errors) => {
       if (!errors) {
         handleFilterConditions(getParams());
