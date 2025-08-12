@@ -63,6 +63,14 @@
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               @init="setFilterConfigList"
             />
+            <ContactTable
+              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
+              ref="contactTableRef"
+              readonly
+              hidden-advance-filter
+              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
+              @init="setFilterConfigList"
+            />
           </Suspense>
         </div>
       </div>
@@ -83,6 +91,7 @@
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
+  import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import customerTable from '@/views/customer/components/customerTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
@@ -155,9 +164,6 @@
     scopedOptions.filter((e) => appStore.moduleConfigList.find((m) => m.moduleKey === e.moduleKey && m.enable))
   );
 
-  const opportunityTableRef = ref<InstanceType<typeof opportunityTable>>();
-  const customerTableRef = ref<InstanceType<typeof customerTable>>();
-
   function getParams(): FilterResult {
     const conditions: ConditionsItem[] = formModel.value.list.map((item: any) => ({
       value: item.value,
@@ -179,6 +185,10 @@
     return item.value?.length;
   };
 
+  const opportunityTableRef = ref<InstanceType<typeof opportunityTable>>();
+  const customerTableRef = ref<InstanceType<typeof customerTable>>();
+  const contactTableRef = ref<InstanceType<typeof ContactTable>>();
+
   function loadList(filter: FilterResult) {
     switch (form.value.scoped) {
       case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
@@ -186,6 +196,9 @@
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
         customerTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
+        contactTableRef.value?.handleAdvanceFilter?.(filter);
         break;
       default:
         break;

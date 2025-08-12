@@ -228,54 +228,57 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
     },
   ];
+
+  const contactInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('common.status'),
+      width: 120,
+      key: 'enable',
+      ellipsis: {
+        tooltip: true,
+      },
+      filterOptions: [
+        {
+          label: t('common.enable'),
+          value: true,
+        },
+        {
+          label: t('common.disable'),
+          value: false,
+        },
+      ],
+      sortOrder: false,
+      sorter: true,
+      filter: true,
+      render: props.specialRender?.status,
+    },
+    {
+      title: t('customer.disableReason'),
+      width: 120,
+      key: 'disableReason',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      filter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+  ];
+
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: customerInternalColumns,
-    [FormDesignKeyEnum.CONTACT]: [
-      {
-        title: t('common.status'),
-        width: 120,
-        key: 'enable',
-        ellipsis: {
-          tooltip: true,
-        },
-        filterOptions: [
-          {
-            label: t('common.enable'),
-            value: true,
-          },
-          {
-            label: t('common.disable'),
-            value: false,
-          },
-        ],
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: props.specialRender?.status,
-      },
-      {
-        title: t('customer.disableReason'),
-        width: 120,
-        key: 'disableReason',
-        sortOrder: false,
-        sorter: true,
-        ellipsis: {
-          tooltip: true,
-        },
-      },
-      {
-        title: t('org.department'),
-        width: 120,
-        key: 'departmentId',
-        ellipsis: {
-          tooltip: true,
-        },
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: (row: any) => row.departmentName || '-',
-      },
-    ],
+    [FormDesignKeyEnum.CONTACT]: contactInternalColumns,
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: [
       {
         title: t('common.status'),
@@ -432,7 +435,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     // TODO  xinxinwu
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: [],
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactInternalColumns,
     [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [],
     [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityInternalColumns,

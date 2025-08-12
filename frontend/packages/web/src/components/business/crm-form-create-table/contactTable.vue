@@ -29,7 +29,7 @@
             @search="searchData"
           />
           <CrmAdvanceFilter
-            v-else
+            v-if="!props.hiddenAdvanceFilter && !props.sourceId"
             ref="tableAdvanceFilterRef"
             v-model:keyword="keyword"
             :custom-fields-config-list="filterConfigList"
@@ -113,7 +113,7 @@
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -143,8 +143,17 @@
     refreshKey?: number;
     initialSourceName?: string;
     readonly?: boolean;
-    formKey: FormDesignKeyEnum.CONTACT | FormDesignKeyEnum.CUSTOMER_CONTACT | FormDesignKeyEnum.BUSINESS_CONTACT;
+    formKey:
+      | FormDesignKeyEnum.CONTACT
+      | FormDesignKeyEnum.CUSTOMER_CONTACT
+      | FormDesignKeyEnum.BUSINESS_CONTACT
+      | FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT;
     specialHeight?: number;
+    hiddenAdvanceFilter?: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
   }>();
 
   const Message = useMessage();
@@ -321,7 +330,11 @@
         break;
     }
   }
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
 
+  defineExpose({
+    handleAdvanceFilter,
+  });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     showPagination: !props.sourceId,
@@ -359,6 +372,7 @@
       owner: (row: CustomerContractListItem) => row.ownerName ?? '-',
     },
   });
+
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
@@ -408,6 +422,7 @@
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+  handleAdvanceFilter.value = handleAdvSearch;
 
   watch(
     () => tableRefreshId.value,
@@ -428,6 +443,12 @@
   );
 
   onMounted(() => {
+    if (props.hiddenAdvanceFilter) {
+      emit('init', {
+        filterConfigList: filterConfigList.value,
+        customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
+      });
+    }
     if (!props.sourceId) return;
     searchData();
   });
