@@ -22,29 +22,31 @@
         </n-button>
       </div>
       <!-- 查询结果 -->
-      <template v-for="table in activeTables" :key="table.key">
-        <div v-show="table.instance.propsRes.value.crmPagination?.itemCount" class="mb-[24px]">
-          <div class="flex items-center font-semibold">
-            {{ table.label }}
-            <div class="text-[var(--text-n4)]"> ({{ table.instance.propsRes.value.crmPagination?.itemCount }}) </div>
-          </div>
-          <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-            <CrmTable
-              v-bind="table.instance.propsRes.value"
-              class="h-[205px]"
-              @page-size-change="table.instance.propsEvent.value.pageSizeChange"
-              @sorter-change="table.instance.propsEvent.value.sorterChange"
-              @filter-change="table.instance.propsEvent.value.filterChange"
-              @page-change="table.instance.propsEvent.value.pageChange"
-            />
+      <template v-if="keyword.length">
+        <template v-for="table in activeTables" :key="table.key">
+          <div class="mb-[24px]">
+            <div class="flex items-center font-semibold">
+              {{ table.label }}
+              <div class="text-[var(--text-n4)]"> ({{ table.instance.propsRes.value.crmPagination?.itemCount }}) </div>
+            </div>
+            <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+              <CrmTable
+                v-bind="table.instance.propsRes.value"
+                class="h-[205px]"
+                @page-size-change="table.instance.propsEvent.value.pageSizeChange"
+                @sorter-change="table.instance.propsEvent.value.sorterChange"
+                @filter-change="table.instance.propsEvent.value.filterChange"
+                @page-change="table.instance.propsEvent.value.pageChange"
+              />
 
-            <div class="flex justify-end">
-              <n-button text type="primary" @click="openGlobalSearch(table.value)">
-                {{ t('common.ViewMore') }}
-              </n-button>
+              <div v-show="table.instance.propsRes.value.crmPagination?.itemCount" class="flex justify-end">
+                <n-button text type="primary" @click="openGlobalSearch(table.value)">
+                  {{ t('common.ViewMore') }}
+                </n-button>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
       </template>
     </n-scrollbar>
   </CrmDrawer>
@@ -52,7 +54,7 @@
   <CrmDrawer v-model:show="showDetailDrawer" :width="800" :footer="false" :title="activeCustomer?.name">
     <RelatedTable
       ref="detailTableRef"
-      :api="detailType === 'opportunity' ? GetRepeatOpportunityDetailList : GetRepeatClueDetailList"
+      :api="detailType === 'opportunity' ? globalSearchOptDetail : getGlobalSearchClueDetail"
       :columns="detailType === 'opportunity' ? opportunityColumns : clueColumns"
       :title="
         detailType === 'opportunity'
@@ -77,16 +79,17 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import { getFormListApiMap } from '@/components/business/crm-form-create/config';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
 
-  import { GetRepeatClueDetailList, GetRepeatOpportunityDetailList } from '@/api/modules';
+  import { getGlobalSearchClueDetail, globalSearchOptDetail } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { scopedOptions } from './config';
+  import { lastScopedOptions } from './config';
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -118,17 +121,19 @@
       ellipsis: {
         tooltip: true,
       },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
     },
-    // TODO 先不要了
-    // {
-    //   title: t('workbench.duplicateCheck.clueStage'),
-    //   key: 'stage',
-    //   width: 100,
-    //   render: (row) => {
-    //     const step = [...clueBaseSteps, ...opportunityResultSteps].find((e: any) => e.value === row.stage);
-    //     return step ? step.label : '-';
-    //   },
-    // },
     {
       title: t('common.head'),
       key: 'ownerName',
@@ -137,23 +142,7 @@
         tooltip: true,
       },
     },
-    // TODO 先不要了
-    // {
-    //   title: t('workbench.duplicateCheck.contactorName'),
-    //   key: 'contact',
-    //   width: 100,
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    // },
-    // {
-    //   title: t('workbench.duplicateCheck.contactorPhoneNumber'),
-    //   key: 'phone',
-    //   width: 100,
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    // },
+    // TODO 区域
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNameList',
@@ -161,6 +150,47 @@
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
+      },
+    },
+  ];
+
+  const cluePoolColumns: CrmDataTableColumn[] = [
+    {
+      title: t('workbench.duplicateCheck.company'),
+      key: 'name',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+    },
+    // TODO 区域
+    {
+      title: t('opportunity.intendedProducts'),
+      key: 'productNameList',
+      width: 100,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
+    },
+    {
+      title: t('common.creator'),
+      key: 'createUserName',
+      width: 200,
+      ellipsis: {
+        tooltip: true,
       },
     },
   ];
@@ -173,6 +203,18 @@
       ellipsis: {
         tooltip: true,
       },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
     },
     {
       title: t('opportunity.customerName'),
@@ -182,6 +224,7 @@
         tooltip: true,
       },
     },
+    // TODO 区域
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNames',
@@ -207,11 +250,6 @@
     },
   ];
 
-  const statusOption = [
-    { label: t('workbench.duplicateCheck.duplicate'), value: 'ALL' },
-    { label: t('workbench.duplicateCheck.similar'), value: 'PART' },
-  ];
-
   // 客户相关
   const columns: CrmDataTableColumn[] = [
     {
@@ -221,14 +259,17 @@
       ellipsis: {
         tooltip: true,
       },
-    },
-    {
-      title: t('workbench.duplicateCheck.status'),
-      key: 'repeatType',
-      width: 70,
-      render: (row) => {
-        const statusOptionItem = statusOption.find((e) => e.value === row.repeatType);
-        return statusOptionItem ? statusOptionItem.label : '-';
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
       },
     },
     {
@@ -239,6 +280,7 @@
         tooltip: true,
       },
     },
+    // TODO 区域
     {
       title: t('workbench.duplicateCheck.relatedOpportunity'),
       key: 'opportunityCount',
@@ -288,6 +330,47 @@
     },
   ];
 
+  // 公海
+  const openSeaColumns: CrmDataTableColumn[] = [
+    {
+      title: t('opportunity.customerName'),
+      key: 'name',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+    },
+    // TODO 区域和类型
+    {
+      title: t('common.type'),
+      key: 'name',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.creator'),
+      key: 'createUserName',
+      width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+  ];
+
   // 联系人相关
   const contactColumn: CrmDataTableColumn[] = [
     {
@@ -296,6 +379,18 @@
       width: 100,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.customerName;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO 跳转详情
+            },
+          },
+          { default: () => row.customerName, trigger: () => row.customerName }
+        );
       },
     },
     {
@@ -322,6 +417,7 @@
         tooltip: true,
       },
     },
+    // TODO 部门
     {
       title: t('common.status'),
       width: 50,
@@ -346,31 +442,29 @@
   const columnsMap: Partial<Record<FormDesignKeyEnum, CrmDataTableColumn[]>> = {
     [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: columns,
     [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactColumn,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: columns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: openSeaColumns,
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: clueColumns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: columns,
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: cluePoolColumns,
     [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityColumns,
   };
 
-  const tables = scopedOptions.value.map((config) => ({
-    ...config,
-    instance: useTable(getFormListApiMap[config.value], {
-      showSetting: false,
-      columns: columnsMap[config.value],
-      crmPagination: { size: 'small' },
-      hiddenTotal: true,
-      hiddenRefresh: true,
-      hiddenAllScreen: true,
-    }),
-    enable: true, // TODO 模块是否开启
-  }));
-
-  const activeTables = computed(() => tables.filter((table) => table.enable));
+  const activeTables = computed(() => {
+    return lastScopedOptions.value.map((config) => ({
+      ...config,
+      instance: useTable(getFormListApiMap[config.value], {
+        showSetting: false,
+        columns: columnsMap[config.value],
+        crmPagination: { size: 'small' },
+        hiddenTotal: true,
+        hiddenRefresh: true,
+        hiddenAllScreen: true,
+      }),
+    }));
+  });
 
   const searchData = (val: string) => {
-    const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
     activeTables.value.forEach(async (table) => {
-      table.instance.setLoadListParams({ name: searchTerm });
+      table.instance.setLoadListParams({ keyword: val });
       await table.instance.loadList();
       if (table.instance.propsRes.value.data) {
         table.instance.propsRes.value.data = table.instance.propsRes.value.data.slice(0, 3);

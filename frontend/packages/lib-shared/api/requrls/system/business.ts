@@ -24,7 +24,7 @@ export const SendEmailCodeUrl = '/personal/center/mail/code/send';
 export const UpdateUserPasswordUrl = '/personal/center/info/reset';
 export const GetPersonalFollowUrl = '/personal/center/follow/plan/list'; // 用户跟进计划列表
 
-// 查重
+// 查重 TODO 可删
 export const GetRepeatCustomerUrl = '/personal/center/repeat/customer';
 export const GetRepeatContactUrl = '/personal/center/repeat/contact';
 export const GetRepeatClueUrl = '/personal/center/repeat/clue';

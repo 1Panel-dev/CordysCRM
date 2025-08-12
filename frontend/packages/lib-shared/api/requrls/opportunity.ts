@@ -24,6 +24,7 @@ export const UpdateOptFollowPlanStatusUrl = '/opportunity/follow/plan/status/upd
 export const ExportOpportunityAllUrl = '/opportunity/export-all'; // 商机导出
 export const ExportOpportunitySelectedUrl = '/opportunity/export-select'; // 商机导出选中
 export const GlobalSearchOptPageUrl = '/global/search/opportunity'; // 全局搜索商机列表
+export const GlobalSearchOptDetailUrl = '/global/search/opportunity/detail'; // 全局搜索商机详情
 
 // 视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';

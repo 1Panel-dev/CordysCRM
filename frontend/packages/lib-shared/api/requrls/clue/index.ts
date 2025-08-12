@@ -15,6 +15,7 @@ export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线�
 export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并线索转为客户
 export const MoveToPoolLeadUrl = '/clue/to-pool'; // 移入线索池
 export const GetGlobalSearchClueListUrl = '/global/search/clue'; // 全局搜索线索分页查询线索
+export const GetGlobalSearchClueDetailUrl = '/global/search/clue/detail'; // 全局搜索线索详情
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录

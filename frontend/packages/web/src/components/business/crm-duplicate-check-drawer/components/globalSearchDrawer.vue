@@ -93,7 +93,6 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
@@ -105,10 +104,9 @@
   import openSeaTable from '@/views/customer/components/openSeaTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
-  import { useAppStore } from '@/store';
+  import { lastScopedOptions } from '../config';
 
   const { t } = useI18n();
-  const appStore = useAppStore();
 
   const props = defineProps<{
     formKey?: FormDesignKeyEnum | null;
@@ -136,43 +134,6 @@
   }>({
     scoped: null,
   });
-
-  const scopedOptions = [
-    {
-      label: t('crmFormDesign.customer'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER,
-      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
-    },
-    {
-      label: t('crmFormDesign.contract'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT,
-      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
-    },
-    {
-      label: t('module.openSea'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC,
-      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
-    },
-    {
-      label: t('crmFormDesign.clue'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
-      moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
-    },
-    {
-      label: t('module.cluePool'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
-      moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
-    },
-    {
-      label: t('module.businessManagement'),
-      value: FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
-      moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
-    },
-  ];
-
-  const lastScopedOptions = computed(() =>
-    scopedOptions.filter((e) => appStore.moduleConfigList.find((m) => m.moduleKey === e.moduleKey && m.enable))
-  );
 
   function getParams(): FilterResult {
     const conditions: ConditionsItem[] = formModel.value.list.map((item: any) => ({

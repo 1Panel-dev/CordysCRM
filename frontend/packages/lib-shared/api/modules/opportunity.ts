@@ -20,6 +20,7 @@ import {
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
   GetOptTabUrl,
+  GlobalSearchOptDetailUrl,
   GlobalSearchOptPageUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
@@ -227,6 +228,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptPageUrl, data });
   }
 
+  function globalSearchOptDetail(data: TableQueryParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptDetailUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -262,5 +267,6 @@ export default function useProductApi(CDR: CordysAxios) {
     enableBusinessView,
     dragBusinessView,
     globalSearchOptPage,
+    globalSearchOptDetail,
   };
 }
