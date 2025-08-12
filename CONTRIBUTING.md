@@ -1,6 +1,6 @@
 # Contributing
 
-As a contributor, you should agree that:
+As a contributor, you should agree that: 
 
 - The producer can adjust the open-source agreement to be more strict or relaxed as deemed necessary.
 - Your contributed code may be used for commercial purposes, including but not limited to its cloud business operations.
