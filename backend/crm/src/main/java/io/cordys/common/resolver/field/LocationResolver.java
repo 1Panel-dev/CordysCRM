@@ -63,13 +63,6 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         String detail = value.substring(value.indexOf(SPILT_STR) + 1);
 
         String regionName = StringUtils.EMPTY;
-
-    /*    Pattern pattern = Pattern.compile("\\b\\d{6}\\b");
-        Matcher matcher = pattern.matcher(code);
-        while (matcher.find()) {
-            regionName = "中国-";
-        }*/
-
         List<RegionCode> regionCode = getRegionCodes();
 
         for (RegionCode country : regionCode) {
@@ -85,14 +78,14 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
                         regionName = country.getName() + "-" + province.getName();
                         break;
                     }
-
+                    // 检查市级编码
                     if (province.getChildren() != null) {
                         for (RegionCode city : province.getChildren()) {
                             if (city.getCode().equals(code)) {
                                 regionName = country.getName() + "-" + province.getName() + "-" + city.getName();
                                 break;
                             }
-
+                            // 检查区级编码
                             if (city.getChildren() != null) {
                                 for (RegionCode area : city.getChildren()) {
                                     if (area.getCode().equals(code)) {
@@ -101,41 +94,12 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
                                     }
                                 }
                             }
-
                         }
                     }
                 }
             }
         }
 
-
-        /*for (RegionCode province : regionCode) {
-            // 检查省级编码
-            if (province.getCode().equals(code)) {
-                regionName += province.getName();
-                break;
-            }
-
-            // 检查市级编码
-            if (province.getChildren() != null) {
-                for (RegionCode city : province.getChildren()) {
-                    if (city.getCode().equals(code)) {
-                        regionName += province.getName() + "-" + city.getName();
-                        break;
-                    }
-
-                    if (city.getChildren() != null) {
-                        for (RegionCode area : city.getChildren()) {
-                            if (area.getCode().equals(code)) {
-                                regionName += province.getName() + "-" + city.getName() + "-" + area.getName();
-                                break;
-                            }
-                        }
-                    }
-
-                }
-            }
-        }*/
 
         return regionName + detail;
     }
