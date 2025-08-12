@@ -21,7 +21,7 @@ import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.ClueExportRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
-import io.cordys.crm.clue.utils.ClueFieldUtils;
+import io.cordys.crm.clue.utils.PoolClueFieldUtils;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
@@ -170,7 +170,7 @@ public class ClueExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = ClueFieldUtils.getSystemFieldMap(data, optionMap);
+        LinkedHashMap<String, Object> systemFiledMap = PoolClueFieldUtils.getSystemFieldMap(data, optionMap);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));

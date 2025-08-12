@@ -19,7 +19,7 @@ import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.customer.dto.request.CustomerExportRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
-import io.cordys.crm.customer.utils.CustomerFieldUtils;
+import io.cordys.crm.customer.utils.PoolCustomerFieldUtils;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
@@ -123,7 +123,7 @@ public class CustomerExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, CustomerListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = CustomerFieldUtils.getSystemFieldMap(data);
+        LinkedHashMap<String, Object> systemFiledMap = PoolCustomerFieldUtils.getSystemFieldMap(data);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
