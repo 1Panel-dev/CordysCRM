@@ -24,7 +24,6 @@
             o.products,
             o.last_stage,
             o.stage,
-            o.status,
             o.contact_id,
             o.expected_end_time,
             o.actual_end_time,
@@ -112,9 +111,6 @@
                     <when test="${sort}.name == 'possible'">
                         o.`possible` ${sortType},  o.id ASC
                     </when>
-                    <when test="${sort}.name == 'status'">
-                        o.`status` ${sortType},  o.id ASC
-                    </when>
                     <when test="${sort}.name == 'stage'">
                         o.`stage` ${sortType},  o.id ASC
                     </when>
@@ -180,7 +176,6 @@
                 and condition.name != 'products'
                 and condition.name != 'contactId'
                 and condition.name != 'followTime'
-                and condition.name != 'status'
                 and condition.name != 'updateUser'
                 and condition.name != 'createTime'
                 and condition.name != 'updateTime'
@@ -209,7 +204,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'follower', 'status',
+                {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'follower',
                  'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', 'expected_end_time', 'actual_end_time', 'failure_reason'}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
@@ -271,12 +266,6 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="o.stage"/>
-                </include>
-            </when>
-            <when test="condition.name == 'status'">
-                <include refid="io.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="o.status"/>
                 </include>
             </when>
             <when test="condition.name == 'amount'">
@@ -416,7 +405,7 @@
 
     <update id="batchTransfer">
         update opportunity
-        set owner = #{request.owner}, stage = 'CREATE', last_stage = Null, update_user = #{userId}, update_time = #{updateTime}, status = 1
+        set owner = #{request.owner}, stage = 'CREATE', last_stage = Null, update_user = #{userId}, update_time = #{updateTime}
         where id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
@@ -438,7 +427,6 @@
             o.last_stage,
             o.stage,
             o.owner,
-            o.status,
             o.create_time,
             o.update_time,
             o.create_user,
@@ -460,8 +448,7 @@
             o.products,
             o.stage,
             o.owner,
-            u.NAME AS ownerName,
-            o.status
+            u.NAME AS ownerName
         FROM
             opportunity o
                 INNER JOIN sys_user u ON o.owner = u.id
@@ -511,7 +498,6 @@
     o.products,
     o.last_stage,
     o.stage,
-    o.status,
     o.contact_id,
     o.expected_end_time,
     o.actual_end_time,
@@ -581,7 +567,6 @@
         o.products,
         o.last_stage,
         o.stage,
-        o.status,
         o.contact_id,
         o.expected_end_time,
         o.actual_end_time,

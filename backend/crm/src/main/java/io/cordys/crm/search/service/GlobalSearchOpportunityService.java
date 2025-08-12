@@ -15,6 +15,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
@@ -150,7 +151,8 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            opportunityListResponse.setReservedDays(BooleanUtils.isFalse(opportunityListResponse.getStatus()) ? null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+            opportunityListResponse.setReservedDays(StringUtils.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             if (!hasPermission) {
                 opportunityListResponse.setModuleFields(new ArrayList<>());
                 opportunityListResponse.setFailureReason(dictMap.get(null));

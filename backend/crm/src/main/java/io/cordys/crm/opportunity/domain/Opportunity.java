@@ -41,9 +41,6 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "商机阶段")
 	private String stage;
 
-	@Schema(description = "状态")
-	private Boolean status;
-
 	@Schema(description = "联系人")
 	private String contactId;
 

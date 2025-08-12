@@ -179,8 +179,9 @@ public class OpportunityService {
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
-
-            opportunityListResponse.setReservedDays(BooleanUtils.isFalse(opportunityListResponse.getStatus()) ? null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+            // 计算保留天数(成功失败阶段不计算)
+            opportunityListResponse.setReservedDays(StringUtils.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             opportunityListResponse.setModuleFields(opportunityFields);
 
             opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
@@ -228,7 +229,6 @@ public class OpportunityService {
         opportunity.setCreateUser(operatorId);
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
-        opportunity.setStatus(true);
         opportunity.setExpectedEndTime(request.getExpectedEndTime());
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
@@ -457,9 +457,6 @@ public class OpportunityService {
     public void updateStage(OpportunityStageRequest request) {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Opportunity newOpportunity = new Opportunity();
-        if (StringUtils.equalsAnyIgnoreCase(request.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name())) {
-            newOpportunity.setStatus(false);
-        }
         //如果是反签 成功->失败 lastStage= BUSINESS_PROCUREMENT
         if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name()) &&
                 StringUtils.equalsIgnoreCase(oldOpportunity.getStage(), StageType.SUCCESS.name())) {

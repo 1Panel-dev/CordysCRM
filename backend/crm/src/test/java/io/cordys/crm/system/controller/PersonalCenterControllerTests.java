@@ -173,7 +173,6 @@ public class PersonalCenterControllerTests extends BaseTest {
         opportunity.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         opportunity.setAmount(BigDecimal.ONE);
         opportunity.setPossible(BigDecimal.TEN);
-        opportunity.setStatus(true);
         opportunity.setStage(StageType.CREATE.name());
         opportunity.setProducts(List.of("1","2"));
         opportunity.setContactId("admin");

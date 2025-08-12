@@ -55,9 +55,6 @@ public class OpportunityListResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
-    @Schema(description = "商机状态")
-    private Boolean status;
-
     @Schema(description = "创建人")
     private String createUser;
 

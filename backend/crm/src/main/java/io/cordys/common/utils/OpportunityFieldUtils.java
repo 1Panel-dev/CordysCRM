@@ -34,7 +34,6 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("followerName", data.getFollowerName());
         systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
-        systemFiledMap.put("status", Translator.get("log.opportunity.status." + data.getStatus().toString()));
         systemFiledMap.put("departmentId", data.getDepartmentName());
 
         systemFiledMap.put("createUser", data.getCreateUserName());

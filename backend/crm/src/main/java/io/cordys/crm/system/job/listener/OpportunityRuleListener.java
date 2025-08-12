@@ -96,7 +96,6 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
                 if (closed) {
                     opportunity.setLastStage(opportunity.getStage());
                     opportunity.setStage(StageType.FAIL.name());
-                    opportunity.setStatus(false);
                     opportunity.setFailureReason("system");
                     opportunityMapper.updateById(opportunity);
                 }

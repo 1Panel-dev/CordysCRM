@@ -159,7 +159,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         opportunity.setProducts(List.of("123456"));
         opportunity.setOrganizationId("100001");
         opportunity.setStage("STAGE_1");
-        opportunity.setStatus(true);
         opportunity.setContactId("1233");
         opportunity.setOwner("admin");
         opportunity.setCreateUser("admin");
