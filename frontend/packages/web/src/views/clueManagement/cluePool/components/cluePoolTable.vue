@@ -14,6 +14,9 @@
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
+    <template v-if="props.readonly" #tableTop>
+      <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
+    </template>
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-select
@@ -147,6 +150,7 @@
     hiddenPoolSelect?: boolean;
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
+    hiddenTotal?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -484,6 +488,7 @@
       },
     },
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
+    hiddenTotal: !!props.hiddenTotal,
   });
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

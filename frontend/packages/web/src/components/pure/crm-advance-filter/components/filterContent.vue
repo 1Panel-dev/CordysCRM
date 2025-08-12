@@ -227,23 +227,26 @@
           </n-button>
         </div>
       </n-form>
-      <n-button
-        v-if="!props.readonly"
-        type="primary"
-        :disabled="
-          maxFilterFieldNumber
-            ? formModel.list?.length >= maxFilterFieldNumber
-            : formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length
-        "
-        text
-        class="mt-[5px] w-[fit-content]"
-        @click="handleAddItem"
-      >
-        <template #icon>
-          <n-icon><Add /></n-icon>
-        </template>
-        {{ t('advanceFilter.addCondition') }}
-      </n-button>
+      <div class="mt-[5px] flex items-center justify-between">
+        <n-button
+          v-if="!props.readonly"
+          type="primary"
+          :disabled="
+            maxFilterFieldNumber
+              ? formModel.list?.length >= maxFilterFieldNumber
+              : formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length
+          "
+          text
+          class="w-[fit-content]"
+          @click="handleAddItem"
+        >
+          <template #icon>
+            <n-icon><Add /></n-icon>
+          </template>
+          {{ t('advanceFilter.addCondition') }}
+        </n-button>
+        <slot name="addButtonRight"></slot>
+      </div>
     </div>
   </div>
 </template>

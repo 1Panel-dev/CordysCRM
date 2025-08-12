@@ -51,6 +51,7 @@ export interface FormCreateTableProps {
   readonly?: boolean;
   radio?: boolean; // 是否单选
   containerClass: string; // 容器元素类名
+  hiddenTotal?: boolean;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -828,6 +829,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       permission: props.permission,
       // virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // TODO:横向滚动有问题
       containerClass: props.containerClass,
+      hiddenTotal: props.hiddenTotal,
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

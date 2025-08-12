@@ -9,101 +9,132 @@
     @cancel="handleCancel"
   >
     <div class="global-search-wrapper">
-      <div class="global-search h-full bg-[var(--text-n10)] p-[16px] pb-0">
-        <n-form
-          ref="formRef"
-          :model="form"
-          class="max-w-[60%]"
-          label-placement="left"
-          require-mark-placement="left"
-          :label-width="70"
-        >
-          <n-form-item path="scoped" :label="t('workbench.duplicateCheck.searchScoped')">
-            <n-select
-              v-model:value="form.scoped"
-              class="w-[300px]"
-              :options="lastScopedOptions"
-              :placeholder="t('common.pleaseSelect')"
-              @update-value="() => handleReset()"
-            />
-          </n-form-item>
-          <n-form-item path="conditions" :label="t('workbench.duplicateCheck.searchConditions')">
-            <FilterContent
-              ref="filterContentRef"
-              v-model:form-model="formModel"
-              :config-list="configList"
-              :custom-list="customList"
-              :max-filter-field-number="5"
-            />
-          </n-form-item>
-          <div class="mb-[22px] flex items-center gap-[12px]">
-            <n-button type="default" class="outline--secondary" @click="clearFilter">
-              {{ t('common.reset') }}
-            </n-button>
-            <n-button class="mr-[12px]" type="primary" @click="handleFilter">
-              {{ t('advanceFilter.filter') }}
-            </n-button>
+      <div class="global-search">
+        <CrmCard hide-footer auto-height class="mb-[16px]">
+          <div class="w-full bg-[var(--text-n10)]">
+            <div class="mb-[16px] flex w-full items-center gap-[12px]">
+              <div class="flex flex-nowrap">{{ t('workbench.duplicateCheck.searchScoped') }}</div>
+              <div>
+                <CrmTab
+                  v-model:active-tab="activeTab"
+                  no-content
+                  :tab-list="tabList"
+                  type="segment"
+                  @change="() => handleReset()"
+                />
+              </div>
+            </div>
+            <div class="w-[50%]">
+              <FilterContent
+                ref="filterContentRef"
+                v-model:form-model="formModel"
+                :config-list="configList"
+                :custom-list="customList"
+                :max-filter-field-number="5"
+              >
+                <template #addButtonRight>
+                  <div class="flex items-center gap-[12px]">
+                    <n-button type="default" class="outline--secondary" @click="clearFilter">
+                      {{ t('common.reset') }}
+                    </n-button>
+                    <n-button class="mr-[12px]" type="primary" @click="handleFilter">
+                      {{ t('advanceFilter.filter') }}
+                    </n-button>
+                  </div>
+                </template>
+              </FilterContent>
+            </div>
           </div>
-        </n-form>
-        <div class="h-full w-full">
+        </CrmCard>
+        <CrmCard hide-footer :special-height="totalCount > 0 ? 0 : 228">
           <Suspense>
-            <div v-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY" class="h-full w-full">
+            <div v-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY" class="h-full w-full">
               <opportunityTable
                 ref="opportunityTableRef"
                 readonly
+                hidden-total
                 is-limit-show-detail
                 hidden-advance-filter
                 :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
                 @init="setFilterConfigList"
-              />
+              >
+                <template #searchTableTotal="{ total }">
+                  <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+                </template>
+              </opportunityTable>
             </div>
 
             <customerTable
-              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               ref="customerTableRef"
               readonly
+              hidden-total
               is-limit-show-detail
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               @init="setFilterConfigList"
-            />
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </customerTable>
             <ContactTable
-              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
               ref="contactTableRef"
               readonly
+              hidden-total
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
               @init="setFilterConfigList"
-            />
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </ContactTable>
             <openSeaTable
-              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
               ref="openSeaTableRef"
               readonly
-              hidden-open-sea-select
+              hidden-total
+              hidden-pool-select
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
               @init="setFilterConfigList"
-            />
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </openSeaTable>
             <clueTable
-              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
               ref="clueTableRef"
               readonly
+              hidden-total
               is-limit-show-detail
               hidden-advance-filter
               :table-form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
               @init="setFilterConfigList"
-            />
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </clueTable>
             <cluePoolTable
-              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
               ref="cluePoolTableRef"
               readonly
+              hidden-total
               hidden-pool-select
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
               @init="setFilterConfigList"
-            />
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </cluePoolTable>
           </Suspense>
-        </div>
+        </CrmCard>
       </div>
     </div>
   </CrmDrawer>
@@ -111,7 +142,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { NButton } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -119,9 +150,12 @@
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
+  import globalSearchResult from './globalSearchResult.vue';
   import clueTable from '@/views/clueManagement/clue/components/clueTable.vue';
   import cluePoolTable from '@/views/clueManagement/cluePool/components/cluePoolTable.vue';
   import customerTable from '@/views/customer/components/customerTable.vue';
@@ -153,11 +187,13 @@
   const isAdvancedSearchMode = ref(false);
   const filterResult = ref<FilterResult>({ searchMode: 'AND', conditions: [] });
 
-  const form = ref<{
-    scoped: null | FormDesignKeyEnum;
-  }>({
-    scoped: null,
-  });
+  // const form = ref<{
+  //   scoped: null | FormDesignKeyEnum;
+  // }>({
+  //   scoped: null,
+  // });
+
+  const activeTab = ref(FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER);
 
   function getParams(): FilterResult {
     const conditions: ConditionsItem[] = formModel.value.list.map((item: any) => ({
@@ -188,7 +224,7 @@
   const cluePoolTableRef = ref<InstanceType<typeof cluePoolTable>>();
 
   function loadList(filter: FilterResult) {
-    switch (form.value.scoped) {
+    switch (activeTab.value) {
       case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
         opportunityTableRef.value?.handleAdvanceFilter?.(filter);
         break;
@@ -255,14 +291,22 @@
     () => props.formKey,
     (val) => {
       if (val) {
-        form.value.scoped = val as FormDesignKeyEnum;
+        activeTab.value = val as FormDesignKeyEnum;
       }
     }
   );
 
+  const tabList = computed(() => lastScopedOptions.value.map((e) => ({ name: e.value, tab: e.label })));
+
+  const currentTitle = computed(() => lastScopedOptions.value.find((e) => e.value === activeTab.value)?.label ?? '');
+
+  const totalCount = ref(0);
+  function initTotal(val: number) {
+    totalCount.value = val;
+  }
   function handleCancel() {
     clearFilter();
-    form.value.scoped = null;
+    activeTab.value = lastScopedOptions.value[0]?.value;
   }
 </script>
 
@@ -272,7 +316,7 @@
     background: var(--text-n9);
     @apply h-full w-full;
     .global-search {
-      @apply overflow-y-auto;
+      @apply h-full  w-full overflow-y-auto;
       .crm-scroll-bar();
     }
   }

@@ -12,6 +12,7 @@
       @refresh="searchData"
     >
       <template #tableTop>
+        <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
         <div class="flex w-full items-center justify-between">
           <n-button
             v-if="!props.readonly"
@@ -150,6 +151,7 @@
       | FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT;
     specialHeight?: number;
     hiddenAdvanceFilter?: boolean;
+    hiddenTotal?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -340,6 +342,7 @@
     showPagination: !props.sourceId,
     readonly: props.readonly,
     containerClass: '.crm-contact-table',
+    hiddenTotal: !!props.hiddenTotal,
     operationColumn: props.readonly
       ? undefined
       : {

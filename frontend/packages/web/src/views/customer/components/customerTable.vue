@@ -14,6 +14,9 @@
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
+    <template v-if="props.readonly" #tableTop>
+      <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
+    </template>
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
@@ -143,6 +146,7 @@
     hiddenAdvanceFilter?: boolean;
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
+    hiddenTotal?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -504,6 +508,7 @@
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
     containerClass: '.crm-customer-table',
+    hiddenTotal: !!props.hiddenTotal,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
