@@ -114,6 +114,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import { CrmPopConfirmIconType } from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
@@ -138,9 +139,10 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const props = defineProps<{
-    readonly?: boolean;
     formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER;
     hiddenAdvanceFilter?: boolean;
+    readonly?: boolean;
+    isLimitShowDetail?: boolean; // 是否根据权限限查看详情
   }>();
 
   const emit = defineEmits<{
@@ -452,17 +454,52 @@
         },
     specialRender: {
       name: (row: any) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
-              activeSourceId.value = row.id;
-              showOverviewDrawer.value = true;
-            },
-          },
-          { trigger: () => row.name, default: () => row.name }
-        );
+        return props.isLimitShowDetail && row.hasPermission === false
+          ? h(CrmNameTooltip, { text: row.name })
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+                  activeSourceId.value = row.id;
+                  showOverviewDrawer.value = true;
+                },
+              },
+              { trigger: () => row.name, default: () => row.name }
+            );
+      },
+      opportunityCount: (row: any) => {
+        return !row.opportunityCount
+          ? row.opportunityCount ?? '-'
+          : h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                disabled: !row.opportunityModuleEnable || !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
+                onClick: () => {
+                  // TODO showDetail(row, 'opportunity') xinxinwu
+                },
+              },
+              { default: () => row.opportunityCount }
+            );
+      },
+      clueCount: (row: any) => {
+        return !row.clueCount
+          ? row.clueCount ?? '-'
+          : h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                disabled:
+                  !row.clueModuleEnable || !hasAnyPermission(['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']),
+                onClick: () => {
+                  // TODO showDetail(row, 'clue') xinxinwu
+                },
+              },
+              { default: () => row.clueCount }
+            );
       },
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],

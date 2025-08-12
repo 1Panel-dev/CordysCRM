@@ -29,4 +29,5 @@ export default {
   'clue.convertToCustomerSuccess': '转为客户成功',
   'clue.moveToLeadPoolTip': '移入后，线索将无负责人，请谨慎操作！',
   'clue.moveIntoCluePoolTitle': '确认 {name} 移入至线索池吗？',
+  'clue.belongingCluePool': '归属线索池',
 };

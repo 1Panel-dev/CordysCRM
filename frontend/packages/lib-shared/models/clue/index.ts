@@ -42,6 +42,7 @@ export interface ClueListItem extends ClueDetail {
   collectionTime: number;
   reservedDays: number;
   reasonName?: string;
+  hasPermission?: boolean;
 }
 
 export interface CluePoolTableParams extends TableQueryParams {

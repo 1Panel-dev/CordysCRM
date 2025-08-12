@@ -19,6 +19,7 @@ export interface OpportunityItem {
   inCustomerPool: boolean;
   poolId?: string;
   failureReason: string;
+  hasPermission?: boolean;
   moduleFields: ModuleField[]; // 自定义字段
 }
 

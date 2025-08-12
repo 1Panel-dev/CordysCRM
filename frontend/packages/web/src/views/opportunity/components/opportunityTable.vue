@@ -157,6 +157,7 @@
       | FormDesignKeyEnum.BUSINESS
       | FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY;
     hiddenAdvanceFilter?: boolean;
+    isLimitShowDetail?: boolean; // 是否根据权限限查看详情
   }>();
   const emit = defineEmits<{
     (
@@ -196,7 +197,9 @@
   ];
   const { tabList, activeTab } = useHiddenTab(
     allTabList,
-    !props.isCustomerTab ? FormDesignKeyEnum.BUSINESS : undefined
+    !props.isCustomerTab && props.formKey !== FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY
+      ? FormDesignKeyEnum.BUSINESS
+      : undefined
   );
 
   const actionConfig = computed<BatchActionConfig>(() => {
@@ -509,23 +512,27 @@
         },
     specialRender: {
       name: (row: OpportunityItem) => {
-        return props.readonly
-          ? row.name
-          : h(
-              CrmTableButton,
-              {
-                onClick: () => {
-                  activeSourceId.value = row.id;
-                  activeOpportunity.value = row;
-                  realFormKey.value = FormDesignKeyEnum.BUSINESS;
-                  showOverviewDrawer.value = true;
-                },
+        const createNameButton = () =>
+          h(
+            CrmTableButton,
+            {
+              onClick: () => {
+                activeSourceId.value = row.id;
+                activeOpportunity.value = row;
+                realFormKey.value = FormDesignKeyEnum.BUSINESS;
+                showOverviewDrawer.value = true;
               },
-              { default: () => row.name, trigger: () => row.name }
-            );
+            },
+            { default: () => row.name, trigger: () => row.name }
+          );
+
+        if (props.isLimitShowDetail) {
+          return row.hasPermission ? createNameButton() : h(CrmNameTooltip, { text: row.name });
+        }
+        return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       customerId: (row: OpportunityItem) => {
-        return props.isCustomerTab
+        return props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY
           ? h(
               CrmNameTooltip,
               { text: row.customerName },
@@ -692,7 +699,7 @@
   );
 
   onBeforeMount(() => {
-    if (props.isCustomerTab) {
+    if (props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY) {
       searchData();
     }
   });

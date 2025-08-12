@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    class="crm-open-sea-table"
+    class="crm-clue-pool-table"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
     :columns="filterColumns"
@@ -15,19 +15,20 @@
     @refresh="searchData"
   >
     <template #actionLeft>
-      <div v-if="!props.hiddenPoolSelect" class="flex items-center gap-[12px]">
+      <div class="flex items-center gap-[12px]">
         <n-select
-          v-model:value="openSea"
-          :options="openSeaOptions"
+          v-if="!props.hiddenPoolSelect"
+          v-model:value="poolId"
+          :options="cluePoolOptions"
+          value-field="id"
           :render-option="renderOption"
           :show-checkmark="false"
-          value-field="id"
           label-field="name"
           class="w-[150px]"
           @update-value="(e) => searchData(undefined, e)"
         />
         <n-button
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:EXPORT']) && props.readonly"
+          v-if="hasAnyPermission(['CLUE_MANAGEMENT_POOL:EXPORT']) && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -37,33 +38,28 @@
           {{ t('common.exportAll') }}
         </n-button>
       </div>
+      <!-- 先不上 -->
+      <!-- <CrmImportButton
+          :validate-api="importUserPreCheck"
+          :import-save-api="importUsers"
+         :title="t('module.clueManagement')"
+          @import-success="() => searchData()"
+        /> -->
     </template>
     <template #actionRight>
-      <CrmAdvanceFilter
-        v-if="!props.hiddenAdvanceFilter"
-        ref="tableAdvanceFilterRef"
-        v-model:keyword="keyword"
-        :custom-fields-config-list="filterConfigList"
-        :filter-config-list="customFieldsFilterConfig"
-        @adv-search="handleAdvSearch"
-        @keyword-search="searchData"
-      />
+      <div class="flex gap-[12px]">
+        <CrmAdvanceFilter
+          v-if="!props.hiddenAdvanceFilter"
+          ref="tableAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          @adv-search="handleAdvSearch"
+          @keyword-search="searchData"
+        />
+      </div>
     </template>
   </CrmTable>
-  <addOrEditPoolDrawer
-    v-model:visible="drawerVisible"
-    :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
-    :row="openSeaRow"
-    quick
-    @refresh="init"
-  />
-  <openSeaOverviewDrawer
-    v-model:show="showOverviewDrawer"
-    :source-id="activeCustomerId"
-    :pool-id="openSea"
-    :hidden-columns="hiddenColumns"
-    @change="searchData"
-  />
   <TransferModal
     v-model:show="showDistributeModal"
     :source-ids="checkedRowKeys"
@@ -71,12 +67,26 @@
     :positive-text="t('common.distribute')"
     @confirm="handleBatchAssign"
   />
+  <CluePoolOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :pool-id="poolId"
+    :detail="activeClue"
+    :hidden-columns="hiddenColumns"
+    @refresh="handleRefresh"
+  />
+  <addOrEditPoolDrawer
+    v-model:visible="drawerVisible"
+    :type="ModuleConfigEnum.CLUE_MANAGEMENT"
+    :row="cluePoolRow"
+    quick
+    @refresh="init"
+  />
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
     :export-columns="exportColumns"
     :is-export-all="isExportAll"
-    type="openSea"
+    type="cluePool"
     @create-success="handleExportCreateSuccess"
   />
 </template>
@@ -89,8 +99,10 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import { ExportTableColumnItem, TableQueryParams } from '@lib/shared/models/common';
-  import { CluePoolItem } from '@lib/shared/models/system/module';
+  import type { CluePoolListItem } from '@lib/shared/models/clue';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import type { TransferParams } from '@lib/shared/models/customer/index';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -100,31 +112,37 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
-  import openSeaOverviewDrawer from './openSeaOverviewDrawer.vue';
+  import CluePoolOverviewDrawer from './cluePoolOverviewDrawer.vue';
   import addOrEditPoolDrawer from '@/views/system/module/components/addOrEditPoolDrawer.vue';
 
   import {
-    assignOpenSeaCustomer,
-    batchAssignOpenSeaCustomer,
-    batchDeleteOpenSeaCustomer,
-    batchPickOpenSeaCustomer,
-    deleteOpenSeaCustomer,
-    getOpenSeaOptions,
-    pickOpenSeaCustomer,
+    assignClue,
+    batchAssignClue,
+    batchDeleteCluePool,
+    batchPickClue,
+    deleteCluePool,
+    getPoolOptions,
+    pickClue,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
+  const { t } = useI18n();
+  const { openModal } = useModal();
+  const Message = useMessage();
+
   const props = defineProps<{
-    formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA | FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC;
+    formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL;
     hiddenAdvanceFilter?: boolean;
     hiddenPoolSelect?: boolean;
     readonly?: boolean;
@@ -135,19 +153,10 @@
     (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
   }>();
 
-  const { t } = useI18n();
-  const { openModal } = useModal();
-  const Message = useMessage();
-
-  const openSea = ref<string | number>('');
-  const openSeaOptions = ref<CluePoolItem[]>([]);
-  const keyword = ref('');
+  const poolId = ref('');
+  const cluePoolOptions = ref<CluePoolItem[]>([]);
+  const cluePoolRow = ref<any>({});
   const drawerVisible = ref(false);
-  const openSeaRow = ref<any>({});
-  const checkedRowKeys = ref<DataTableRowKey[]>([]);
-  const activeCustomerId = ref('');
-  const showOverviewDrawer = ref(false);
-  const batchTableQueryParams = ref<TableQueryParams>({});
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
     if (option.editable) {
@@ -157,7 +166,7 @@
           class: 'openSea-setting-icon',
           onClick: (e: Event) => {
             e.stopPropagation();
-            openSeaRow.value = { ...option };
+            cluePoolRow.value = { ...option };
             drawerVisible.value = true;
           },
         })
@@ -169,50 +178,66 @@
     });
   }
 
+  async function getCluePoolOptions() {
+    try {
+      cluePoolOptions.value = await getPoolOptions();
+      poolId.value = cluePoolOptions.value[0]?.id || '';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  const keyword = ref('');
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const showOverviewDrawer = ref(false);
+
   const actionConfig: BatchActionConfig = {
     baseAction: [
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:EXPORT'],
+        permission: ['CLUE_MANAGEMENT_POOL:EXPORT'],
       },
       {
         label: t('common.batchClaim'),
         key: 'batchClaim',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
+        permission: ['CLUE_MANAGEMENT_POOL:PICK'],
       },
       {
         label: t('common.batchDistribute'),
         key: 'batchDistribute',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
+        permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
+        permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
       },
     ],
   };
 
   const tableRefreshId = ref(0);
 
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
   // 批量领取
   function handleBatchClaim() {
     openModal({
       type: 'default',
-      title: t('customer.batchClaimTip', { count: checkedRowKeys.value.length }),
-      content: t('customer.claimTipContent'),
+      title: t('clue.batchClaimTip', { count: checkedRowKeys.value.length }),
       positiveText: t('common.confirmClaim'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await batchPickOpenSeaCustomer({
-            ...batchTableQueryParams.value,
+          await batchPickClue({
             batchIds: checkedRowKeys.value,
-            poolId: openSea.value,
+            poolId: poolId.value,
           });
-          tableRefreshId.value += 1;
-          checkedRowKeys.value = [];
+          handleRefresh();
           Message.success(t('common.claimSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -223,29 +248,19 @@
   }
 
   // 批量分配
-  const distributeLoading = ref(false);
-  const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
-  const distributeForm = ref<any>({
-    owner: null,
-  });
   const showDistributeModal = ref<boolean>(false);
   async function handleBatchAssign(owner: string | null) {
     try {
-      distributeLoading.value = true;
-      await batchAssignOpenSeaCustomer({
-        ...batchTableQueryParams.value,
+      await batchAssignClue({
         batchIds: checkedRowKeys.value,
         assignUserId: owner || '',
       });
-      checkedRowKeys.value = [];
       Message.success(t('common.distributeSuccess'));
+      handleRefresh();
       showDistributeModal.value = false;
-      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
-    } finally {
-      distributeLoading.value = false;
     }
   }
 
@@ -253,19 +268,14 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
-      title: t('customer.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('customer.batchDeleteContentTip'),
+      title: t('clue.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
+      content: t('clue.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await batchDeleteOpenSeaCustomer({
-            ...batchTableQueryParams.value,
-            batchIds: checkedRowKeys.value,
-            poolId: openSea.value,
-          });
-          checkedRowKeys.value = [];
-          tableRefreshId.value += 1;
+          await batchDeleteCluePool(checkedRowKeys.value as string[]);
+          handleRefresh();
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -276,52 +286,19 @@
   }
 
   const claimLoading = ref(false);
-
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      {
-        label: t('common.claim'),
-        key: 'claim',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
-        popConfirmProps: {
-          loading: claimLoading.value,
-          title: t('customer.claimTip'),
-          content: t('customer.claimTipContent'),
-          positiveText: t('common.claim'),
-          iconType: 'primary',
-        },
-      },
-      {
-        label: t('common.distribute'),
-        key: 'distribute',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
-        popConfirmProps: {
-          loading: distributeLoading.value,
-          title: t('common.distribute'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotContent: 'distributePopContent',
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
-      },
-    ];
-  });
+  const distributeLoading = ref(false);
 
   // 删除
-  function handleDelete(row: any) {
+  function handleDelete(row: CluePoolListItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('customer.batchDeleteContentTip'),
+      content: t('clue.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await deleteOpenSeaCustomer(row.id);
+          await deleteCluePool(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -332,12 +309,13 @@
     });
   }
 
+  // 领取
   async function handleClaim(id: string) {
     try {
       claimLoading.value = true;
-      await pickOpenSeaCustomer({
-        customerId: id,
-        poolId: openSea.value,
+      await pickClue({
+        clueId: id,
+        poolId: poolId.value,
       });
       Message.success(t('common.claimSuccess'));
       tableRefreshId.value += 1;
@@ -349,21 +327,31 @@
     }
   }
 
-  async function handleDistribute(id: string) {
-    try {
-      distributeLoading.value = true;
-      await assignOpenSeaCustomer({
-        customerId: id,
-        assignUserId: distributeForm.value.owner,
-      });
-      Message.success(t('common.distributeSuccess'));
-      tableRefreshId.value += 1;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      distributeLoading.value = false;
-    }
+  // 分配
+  const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
+  const distributeForm = ref<TransferParams>({
+    ...defaultTransferForm,
+  });
+  function handleDistribute(id: string) {
+    distributeFormRef.value?.formRef?.validate(async (error) => {
+      if (!error) {
+        try {
+          distributeLoading.value = true;
+          await assignClue({
+            assignUserId: distributeForm.value.owner || '',
+            clueId: id,
+          });
+          Message.success(t('common.distributeSuccess'));
+          distributeForm.value = { ...defaultTransferForm };
+          tableRefreshId.value += 1;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          distributeLoading.value = false;
+        }
+      }
+    });
   }
 
   const isExportAll = ref(false);
@@ -398,7 +386,7 @@
     }
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleActionSelect(row: CluePoolListItem, actionKey: string) {
     switch (actionKey) {
       case 'pop-claim':
         handleClaim(row.id);
@@ -414,33 +402,58 @@
     }
   }
 
-  const hiddenColumns = computed<string[]>(() => {
-    const openSeaSetting = openSeaOptions.value.find((item) => item.id === openSea.value);
-    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
-  });
+  const activeClue = ref<CluePoolListItem>();
 
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
   defineExpose({
     handleAdvanceFilter,
   });
-
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.formKey,
-    containerClass: '.crm-open-sea-table',
+    containerClass: '.crm-clue-pool-table',
     operationColumn: props.readonly
       ? undefined
       : {
           key: 'operation',
-          width: 150,
+          width: 200,
           fixed: 'right',
-          render: (row: any) =>
+          render: (row: CluePoolListItem) =>
             h(
               CrmOperationButton,
               {
-                groupList: operationGroupList.value,
+                groupList: [
+                  {
+                    label: t('common.claim'),
+                    key: 'claim',
+                    permission: ['CLUE_MANAGEMENT_POOL:PICK'],
+                    popConfirmProps: {
+                      loading: claimLoading.value,
+                      title: t('clue.claimTip', { name: characterLimit(row.name) }),
+                      positiveText: t('common.claim'),
+                      iconType: 'primary',
+                    },
+                  },
+                  {
+                    label: t('common.distribute'),
+                    key: 'distribute',
+                    permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
+                    popConfirmProps: {
+                      loading: distributeLoading.value,
+                      title: t('common.distribute'),
+                      positiveText: t('common.confirm'),
+                      iconType: 'primary',
+                    },
+                    popSlotContent: 'distributePopContent',
+                  },
+                  {
+                    label: t('common.delete'),
+                    key: 'delete',
+                    permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
+                  },
+                ],
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
-                  distributeForm.value.owner = null;
+                  distributeForm.value = { ...defaultTransferForm };
                 },
               },
               {
@@ -455,14 +468,14 @@
             ),
         },
     specialRender: {
-      name: (row: any) => {
+      name: (row: CluePoolListItem) => {
         return props.isLimitShowDetail && row.hasPermission === false
           ? h(CrmNameTooltip, { text: row.name })
           : h(
               CrmTableButton,
               {
                 onClick: () => {
-                  activeCustomerId.value = row.id;
+                  activeClue.value = row;
                   showOverviewDrawer.value = true;
                 },
               },
@@ -470,12 +483,16 @@
             );
       },
     },
-    permission: ['CUSTOMER_MANAGEMENT_POOL:PICK', 'CUSTOMER_MANAGEMENT_POOL:ASSIGN', 'CUSTOMER_MANAGEMENT_POOL:DELETE'],
+    permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
   });
+
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  batchTableQueryParams.value = tableQueryParams;
+  const hiddenColumns = computed<string[]>(() => {
+    const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
+    return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
   const filterColumns = computed(() => {
-    return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.key as string));
+    return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.fieldId as string));
   });
 
   const exportColumns = computed<ExportTableColumnItem[]>(() => {
@@ -498,7 +515,7 @@
     return {
       ...tableQueryParams.value,
       ids: checkedRowKeys.value,
-      poolId: openSea.value,
+      poolId: poolId.value,
     };
   });
 
@@ -509,31 +526,16 @@
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+
   handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
-  function searchData(_keyword?: string, poolId?: string) {
-    setLoadListParams({
-      keyword: _keyword ?? keyword.value,
-      poolId: props.hiddenPoolSelect ? undefined : poolId || openSea.value,
-    });
+
+  function searchData(_keyword?: string, id?: string) {
+    setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
-  }
-
-  watch(
-    () => tableRefreshId.value,
-    () => {
-      crmTableRef.value?.clearCheckedRowKeys();
-      searchData();
-    }
-  );
-
-  async function initOpenSeaOptions() {
-    const res = await getOpenSeaOptions();
-    openSeaOptions.value = res;
-    openSea.value = openSeaOptions.value[0]?.id || '';
   }
 
   const filterConfigList = computed(() => [
@@ -548,8 +550,16 @@
     ...baseFilterConfigList,
   ]);
 
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData();
+    }
+  );
+
   async function init() {
-    await initOpenSeaOptions();
+    await getCluePoolOptions();
     searchData();
   }
 

@@ -2,10 +2,11 @@
   <CrmDrawer
     v-model:show="visible"
     width="100%"
-    :title="t('workbench.duplicateCheck.globalSearchTitle')"
+    :title="t('workbench.duplicateCheck.searchInCordys')"
     :footer="false"
     no-padding
     :show-back="true"
+    @cancel="handleCancel"
   >
     <div class="global-search-wrapper">
       <div class="global-search h-full bg-[var(--text-n10)] p-[16px] pb-0">
@@ -44,21 +45,24 @@
             </n-button>
           </div>
         </n-form>
-        <div v-if="visible" class="h-full w-full">
-          <!-- table TODO -->
+        <div class="h-full w-full">
           <Suspense>
-            <opportunityTable
-              v-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
-              ref="opportunityTableRef"
-              readonly
-              hidden-advance-filter
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
-              @init="setFilterConfigList"
-            />
+            <div v-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY" class="h-full w-full">
+              <opportunityTable
+                ref="opportunityTableRef"
+                readonly
+                is-limit-show-detail
+                hidden-advance-filter
+                :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+                @init="setFilterConfigList"
+              />
+            </div>
+
             <customerTable
               v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               ref="customerTableRef"
               readonly
+              is-limit-show-detail
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               @init="setFilterConfigList"
@@ -78,6 +82,24 @@
               hidden-open-sea-select
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              @init="setFilterConfigList"
+            />
+            <clueTable
+              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
+              ref="clueTableRef"
+              readonly
+              is-limit-show-detail
+              hidden-advance-filter
+              :table-form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
+              @init="setFilterConfigList"
+            />
+            <cluePoolTable
+              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
+              ref="cluePoolTableRef"
+              readonly
+              hidden-pool-select
+              hidden-advance-filter
+              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
               @init="setFilterConfigList"
             />
           </Suspense>
@@ -100,6 +122,8 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
+  import clueTable from '@/views/clueManagement/clue/components/clueTable.vue';
+  import cluePoolTable from '@/views/clueManagement/cluePool/components/cluePoolTable.vue';
   import customerTable from '@/views/customer/components/customerTable.vue';
   import openSeaTable from '@/views/customer/components/openSeaTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
@@ -160,6 +184,8 @@
   const customerTableRef = ref<InstanceType<typeof customerTable>>();
   const contactTableRef = ref<InstanceType<typeof ContactTable>>();
   const openSeaTableRef = ref<InstanceType<typeof openSeaTable>>();
+  const clueTableRef = ref<InstanceType<typeof clueTable>>();
+  const cluePoolTableRef = ref<InstanceType<typeof cluePoolTable>>();
 
   function loadList(filter: FilterResult) {
     switch (form.value.scoped) {
@@ -174,6 +200,12 @@
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
         openSeaTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
+        clueTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
+        cluePoolTableRef.value?.handleAdvanceFilter?.(filter);
         break;
       default:
         break;
@@ -227,6 +259,11 @@
       }
     }
   );
+
+  function handleCancel() {
+    clearFilter();
+    form.value.scoped = null;
+  }
 </script>
 
 <style scoped lang="less">

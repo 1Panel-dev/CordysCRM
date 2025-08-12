@@ -449,7 +449,7 @@
         customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
       });
     }
-    if (!props.sourceId) return;
+    if (!props.sourceId && !props.hiddenAdvanceFilter) return;
     searchData();
   });
 

@@ -434,7 +434,21 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
     // TODO  xinxinwu
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: [],
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: [
+      {
+        title: t('workbench.duplicateCheck.relatedOpportunity'),
+        key: 'opportunityCount',
+        width: 60,
+        render: props.specialRender?.opportunityCount,
+      },
+      {
+        title: t('workbench.duplicateCheck.relatedClue'),
+        key: 'clueCount',
+        width: 60,
+        render: props.specialRender?.clueCount,
+      },
+      ...customerInternalColumns,
+    ],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactInternalColumns,
     [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: [
       {
@@ -462,7 +476,32 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         render: (row: any) => row.recyclePoolName || '-',
       },
     ],
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [],
+    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'reasonId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: (row: any) => row.reasonName || '-',
+      },
+      {
+        title: t('clue.belongingCluePool'),
+        width: 120,
+        key: 'poolId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.recyclePoolName || '-',
+      },
+    ],
     [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityInternalColumns,
   };
   const staticColumns: CrmDataTableColumn[] = [
