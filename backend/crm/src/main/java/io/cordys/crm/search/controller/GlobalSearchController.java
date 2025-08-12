@@ -83,7 +83,6 @@ public class GlobalSearchController {
 
     @PostMapping("/opportunity")
     @Operation(summary = "全局搜索-商机")
-    @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
     public PagerWithOption<List<GlobalOpportunityResponse>> globalSearchOpportunity(@Validated @RequestBody OpportunityPageRequest request) {
         GlobalSearchBaseService<OpportunityPageRequest, GlobalOpportunityResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.OPPORTUNITY);
         return searchService.globalSearch(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());

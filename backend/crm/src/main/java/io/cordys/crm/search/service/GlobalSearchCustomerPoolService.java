@@ -198,8 +198,8 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
         List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
         pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), userId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), userId);
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
             if (scopeIds.contains(userId) || ownerIds.contains(userId) || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
                 poolMap.put(pool.getId(), pool.getName());
             }
