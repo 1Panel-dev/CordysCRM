@@ -80,7 +80,7 @@ public class CluePoolExportService extends ClueExportService {
                 //从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
                 //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_INDEX, request.getFileName());
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_POOL_INDEX, request.getFileName());
             }
         });
         return exportTask.getId();
@@ -125,14 +125,14 @@ public class CluePoolExportService extends ClueExportService {
                 //更新导出任务状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
             } catch (Exception e) {
-                LogUtils.error("导出线索异常", e);
+                LogUtils.error("导出线索池异常", e);
                 //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
                 //从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
                 //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_INDEX, request.getFileName());
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_POOL_INDEX, request.getFileName());
             }
         });
         return exportTask.getId();

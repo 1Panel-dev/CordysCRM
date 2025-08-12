@@ -30,7 +30,7 @@
             and file_name like concat('%', #{request.keyword},'%')
         </if>
         <if test="request.exportType != null and request.exportType != ''">
-            and resource_type = #{request.exportType}
+            and resource_type like concat(#{request.exportType},'%')
         </if>
         <if test="request.exportStatus != null and request.exportStatus != ''">
             and status = #{request.exportStatus}

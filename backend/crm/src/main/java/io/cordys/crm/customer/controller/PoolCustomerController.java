@@ -113,7 +113,7 @@ public class PoolCustomerController {
 	@PostMapping("/export-all")
 	@Operation(summary = "客户导出全部")
 	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
-	public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
+	public String customerPoolExportAll(@Validated @RequestBody CustomerExportRequest request) {
 		ConditionFilterUtils.parseCondition(request);
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
@@ -123,7 +123,7 @@ public class PoolCustomerController {
 	@PostMapping("/export-select")
 	@Operation(summary = "导出选中客户")
 	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
-	public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
+	public String customerPoolExportSelect(@Validated @RequestBody ExportSelectRequest request) {
 		return customerPoolExportService.exportCrossSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
 	}
 }

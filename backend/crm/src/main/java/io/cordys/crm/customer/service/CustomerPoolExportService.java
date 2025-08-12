@@ -65,19 +65,19 @@ public class CustomerPoolExportService extends CustomerExportService {
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
         String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_POOL.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
                 this.exportSelectData(exportTask, userId, request, orgId, locale);
             } catch (Exception e) {
-                LogUtils.error("导出客户异常", e);
+                LogUtils.error("导出公海客户异常", e);
                 //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
                 //从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
                 //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_INDEX, request.getFileName());
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_POOL, request.getFileName());
             }
         });
         return exportTask.getId();
