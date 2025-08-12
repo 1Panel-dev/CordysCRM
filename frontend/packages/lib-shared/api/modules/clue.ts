@@ -24,6 +24,8 @@ import {
   DragClueViewUrl,
   EnableClueViewUrl,
   ExportClueAllUrl,
+  ExportCluePoolAllUrl,
+  ExportCluePoolSelectedUrl,
   ExportClueSelectedUrl,
   FixedClueViewUrl,
   GetClueFollowPlanListUrl,
@@ -85,6 +87,7 @@ import type {
   CustomerTableParams,
   FollowDetailItem,
   MoveToPublicPoolParams,
+  PoolTableExportParams,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
   TransferParams,
@@ -139,6 +142,16 @@ export default function useProductApi(CDR: CordysAxios) {
   // 移入线索池
   function moveToLeadPool(data: MoveToPublicPoolParams) {
     return CDR.post({ url: MoveToPoolLeadUrl, data });
+  }
+
+  // 导出全量线索池列表
+  function exportCluePoolAll(data: PoolTableExportParams) {
+    return CDR.post({ url: ExportCluePoolAllUrl, data });
+  }
+
+  // 导出选中线索池列表
+  function exportCluePoolSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportCluePoolSelectedUrl, data });
   }
 
   // 批量删除线索
@@ -414,5 +427,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getGlobalSearchClueList,
     getGlobalCluePoolList,
     getGlobalSearchClueDetail,
+    exportCluePoolAll,
+    exportCluePoolSelected,
   };
 }

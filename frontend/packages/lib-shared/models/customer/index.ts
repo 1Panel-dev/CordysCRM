@@ -1,5 +1,5 @@
 import type { CustomerFollowPlanStatusEnum, CustomerSearchTypeEnum } from '../../enums/customerEnum';
-import type { TableQueryParams } from '../common';
+import type { TableExportParams, TableQueryParams } from '../common';
 
 export interface ModuleField {
   fieldId: string;
@@ -340,4 +340,8 @@ export interface MoveToPublicPoolParams {
 export interface BatchMoveToPublicPoolParams {
   ids: (string | number)[];
   reasonId?: string | null;
+}
+
+export interface PoolTableExportParams extends TableExportParams {
+  poolId?: string;
 }

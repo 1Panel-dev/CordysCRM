@@ -17,7 +17,9 @@ export enum SystemMessageTypeEnum {
 
 export enum SystemResourceMessageTypeEnum {
   CUSTOMER = 'CUSTOMER',
+  CUSTOMER_POOL = 'CUSTOMER_POOL',
   CLUE = 'CLUE',
+  CLUE_POOL = 'CLUE_POOL',
   OPPORTUNITY = 'OPPORTUNITY',
   SYSTEM = 'SYSTEM',
 }

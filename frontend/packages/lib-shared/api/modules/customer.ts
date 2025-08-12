@@ -38,6 +38,8 @@ import {
   EnableCustomerViewUrl,
   ExportCustomerAllUrl,
   ExportCustomerSelectedUrl,
+  ExportOpenSeaCustomerAllUrl,
+  ExportOpenSeaCustomerSelectedUrl,
   FixedContactViewUrl,
   FixedCustomerViewUrl,
   GetContactViewDetailUrl,
@@ -119,6 +121,7 @@ import type {
   MoveToPublicPoolParams,
   OpenSeaCustomerTableParams,
   PickOpenSeaCustomerParams,
+  PoolTableExportParams,
   RelationItem,
   RelationListItem,
   SaveCustomerContractParams,
@@ -380,6 +383,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteOpenSeaCustomerUrl}/${id}` });
   }
 
+  // 导出全量客户列表
+  function exportCustomerOpenSeaAll(data: PoolTableExportParams) {
+    return CDR.post({ url: ExportOpenSeaCustomerAllUrl, data });
+  }
+
+  // 导出选中客户列表
+  function exportCustomerOpenSeaSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportOpenSeaCustomerSelectedUrl, data });
+  }
+
   // 获取客户负责人列表
   function getCustomerHeaderList(data: CustomerContractTableParams) {
     return CDR.get({ url: `${GetCustomerHeaderListUrl}/${data.sourceId}` });
@@ -639,5 +652,7 @@ export default function useProductApi(CDR: CordysAxios) {
     geGlobalCustomerList,
     getGlobalOpenSeaCustomerList,
     getGlobalCustomerContactList,
+    exportCustomerOpenSeaAll,
+    exportCustomerOpenSeaSelected,
   };
 }

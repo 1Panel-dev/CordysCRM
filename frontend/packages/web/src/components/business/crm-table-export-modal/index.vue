@@ -49,8 +49,12 @@
 
   import {
     exportClueAll,
+    exportCluePoolAll,
+    exportCluePoolSelected,
     exportClueSelected,
     exportCustomerAll,
+    exportCustomerOpenSeaAll,
+    exportCustomerOpenSeaSelected,
     exportCustomerSelected,
     exportOpportunityAll,
     exportOpportunitySelected,
@@ -58,7 +62,7 @@
 
   const props = defineProps<{
     params: Record<string, any>;
-    type: 'customer' | 'clue' | 'opportunity';
+    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
   }>();
@@ -78,6 +82,8 @@
     customer: t('menu.customer'),
     clue: t('menu.clue'),
     opportunity: t('menu.opportunity'),
+    cluePool: t('module.cluePool'),
+    openSea: t('module.openSea'),
   };
 
   const loading = ref<boolean>(false);
@@ -103,12 +109,16 @@
     customer: exportCustomerAll,
     clue: exportClueAll,
     opportunity: exportOpportunityAll,
+    cluePool: exportCluePoolAll,
+    openSea: exportCustomerOpenSeaAll,
   };
 
   const exportSelectedApiMap = {
     customer: exportCustomerSelected,
     clue: exportClueSelected,
     opportunity: exportOpportunitySelected,
+    cluePool: exportCluePoolSelected,
+    openSea: exportCustomerOpenSeaSelected,
   };
 
   function confirmHandler() {

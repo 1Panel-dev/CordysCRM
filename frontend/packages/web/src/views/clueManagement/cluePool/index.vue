@@ -16,16 +16,28 @@
       @refresh="searchData"
     >
       <template #actionLeft>
-        <n-select
-          v-model:value="poolId"
-          :options="cluePoolOptions"
-          value-field="id"
-          :render-option="renderOption"
-          :show-checkmark="false"
-          label-field="name"
-          class="w-[240px]"
-          @update-value="(e) => searchData(undefined, e)"
-        />
+        <div class="flex items-center gap-[12px]">
+          <n-select
+            v-model:value="poolId"
+            :options="cluePoolOptions"
+            value-field="id"
+            :render-option="renderOption"
+            :show-checkmark="false"
+            label-field="name"
+            class="w-[150px]"
+            @update-value="(e) => searchData(undefined, e)"
+          />
+          <n-button
+            v-permission="['CLUE_MANAGEMENT_POOL:EXPORT']"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            :disabled="propsRes.data.length === 0"
+            @click="handleExportAllClick"
+          >
+            {{ t('common.exportAll') }}
+          </n-button>
+        </div>
         <!-- 先不上 -->
         <!-- <CrmImportButton
           :validate-api="importUserPreCheck"
@@ -69,17 +81,26 @@
     quick
     @refresh="init"
   />
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-columns="exportColumns"
+    :is-export-all="isExportAll"
+    type="cluePool"
+    @create-success="handleExportCreateSuccess"
+  />
 </template>
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
-  import { DataTableRowKey, NSelect, NTooltip, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NSelect, NTooltip, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CluePoolListItem } from '@lib/shared/models/clue';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { CluePoolItem } from '@lib/shared/models/system/module';
 
@@ -93,6 +114,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CluePoolOverviewDrawer from './components/cluePoolOverviewDrawer.vue';
@@ -159,6 +181,11 @@
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['CLUE_MANAGEMENT_POOL:EXPORT'],
+      },
       {
         label: t('common.batchClaim'),
         key: 'batchClaim',
@@ -245,22 +272,6 @@
     });
   }
 
-  function handleBatchAction(item: ActionsItem) {
-    switch (item.key) {
-      case 'batchClaim':
-        handleBatchClaim();
-        break;
-      case 'batchDistribute':
-        showDistributeModal.value = true;
-        break;
-      case 'batchDelete':
-        handleBatchDelete();
-        break;
-      default:
-        break;
-    }
-  }
-
   const claimLoading = ref(false);
   const distributeLoading = ref(false);
 
@@ -328,6 +339,38 @@
         }
       }
     });
+  }
+
+  const isExportAll = ref(false);
+  const showExportModal = ref<boolean>(false);
+
+  function handleExportAllClick() {
+    isExportAll.value = true;
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchClaim':
+        handleBatchClaim();
+        break;
+      case 'batchDistribute':
+        showDistributeModal.value = true;
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
+        break;
+      case 'exportChecked':
+        isExportAll.value = false;
+        showExportModal.value = true;
+        break;
+      default:
+        break;
+    }
   }
 
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
@@ -420,13 +463,37 @@
     },
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const hiddenColumns = computed<string[]>(() => {
     const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
     return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
   });
   const filterColumns = computed(() => {
     return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.fieldId as string));
+  });
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => {
+    return propsRes.value.columns
+      .filter(
+        (item: any) =>
+          item.key !== 'operation' &&
+          item.type !== 'selection' &&
+          item.key !== 'crmTableOrder' &&
+          item.filedType !== FieldTypeEnum.PICTURE
+      )
+      .map((e) => {
+        return {
+          key: e.key?.toString() || '',
+          title: (e.title as string) || '',
+        };
+      });
+  });
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+      poolId: poolId.value,
+    };
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

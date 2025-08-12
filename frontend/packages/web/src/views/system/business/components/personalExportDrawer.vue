@@ -184,8 +184,12 @@
     switch (type) {
       case SystemResourceMessageTypeEnum.CUSTOMER:
         return t('menu.customer');
+      case SystemResourceMessageTypeEnum.CUSTOMER_POOL:
+        return t('module.openSea');
       case SystemResourceMessageTypeEnum.CLUE:
         return t('menu.clue');
+      case SystemResourceMessageTypeEnum.CLUE_POOL:
+        return t('module.cluePool');
       default:
         return t('menu.opportunity');
     }
