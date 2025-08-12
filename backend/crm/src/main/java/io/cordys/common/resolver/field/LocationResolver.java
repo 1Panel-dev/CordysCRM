@@ -64,12 +64,55 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
         String regionName = StringUtils.EMPTY;
 
+    /*    Pattern pattern = Pattern.compile("\\b\\d{6}\\b");
+        Matcher matcher = pattern.matcher(code);
+        while (matcher.find()) {
+            regionName = "中国-";
+        }*/
+
         List<RegionCode> regionCode = getRegionCodes();
 
-        for (RegionCode province : regionCode) {
+        for (RegionCode country : regionCode) {
+            // 检查国家编码
+            if (country.getCode().equals(code)) {
+                regionName = country.getName();
+                break;
+            }
+            // 检查省级编码
+            if (country.getChildren() != null) {
+                for (RegionCode province : country.getChildren()) {
+                    if (province.getCode().equals(code)) {
+                        regionName = country.getName() + "-" + province.getName();
+                        break;
+                    }
+
+                    if (province.getChildren() != null) {
+                        for (RegionCode city : province.getChildren()) {
+                            if (city.getCode().equals(code)) {
+                                regionName = country.getName() + "-" + province.getName() + "-" + city.getName();
+                                break;
+                            }
+
+                            if (city.getChildren() != null) {
+                                for (RegionCode area : city.getChildren()) {
+                                    if (area.getCode().equals(code)) {
+                                        regionName = country.getName() + "-" + province.getName() + "-" + city.getName() + "-" + area.getName();
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /*for (RegionCode province : regionCode) {
             // 检查省级编码
             if (province.getCode().equals(code)) {
-                regionName = province.getName();
+                regionName += province.getName();
                 break;
             }
 
@@ -77,20 +120,22 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
             if (province.getChildren() != null) {
                 for (RegionCode city : province.getChildren()) {
                     if (city.getCode().equals(code)) {
-                        regionName = province.getName() + "-" + city.getName();
+                        regionName += province.getName() + "-" + city.getName();
                         break;
                     }
 
-                    for (RegionCode area : city.getChildren()) {
-                        if (area.getCode().equals(code)) {
-                            regionName = province.getName() + "-" + city.getName() + "-" + area.getName();
-                            break;
+                    if (city.getChildren() != null) {
+                        for (RegionCode area : city.getChildren()) {
+                            if (area.getCode().equals(code)) {
+                                regionName += province.getName() + "-" + city.getName() + "-" + area.getName();
+                                break;
+                            }
                         }
                     }
 
                 }
             }
-        }
+        }*/
 
         return regionName + detail;
     }
