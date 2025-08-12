@@ -9,13 +9,18 @@
     :title="t('common.search')"
   >
     <n-scrollbar content-class="p-[24px]">
-      <CrmSearchInput
-        v-model:value="keyword"
-        class="mb-[24px] !w-full"
-        auto-search
-        :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
-        @search="(val) => searchData(val)"
-      />
+      <div class="mb-[24px] flex items-center justify-between gap-[12px]">
+        <CrmSearchInput
+          v-model:value="keyword"
+          class="!w-full"
+          auto-search
+          :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
+          @search="(val) => searchData(val)"
+        />
+        <n-button type="primary" @click="() => openGlobalSearch()">
+          {{ t('workbench.duplicateCheck.searchInCordys') }}
+        </n-button>
+      </div>
       <!-- 查询结果 -->
       <template v-for="table in activeTables" :key="table.key">
         <div v-show="table.instance.propsRes.value.crmPagination?.itemCount" class="mb-[24px]">
@@ -34,7 +39,7 @@
             />
 
             <div class="flex justify-end">
-              <n-button text type="primary" @click="openGlobalSearch">
+              <n-button text type="primary" @click="openGlobalSearch(table.value)">
                 {{ t('common.ViewMore') }}
               </n-button>
             </div>
@@ -57,7 +62,7 @@
       class="crm-detail-related-table"
     />
   </CrmDrawer>
-  <GlobalSearchDrawer v-model:visible="showGlobalSearchDrawer" :form-key="globalSearchFormKey" />
+  <GlobalSearchDrawer v-model:visible="showGlobalSearchDrawer" :keyword="keyword" :form-key="globalSearchFormKey" />
 </template>
 
 <script setup lang="ts">
@@ -383,8 +388,9 @@
   );
 
   const showGlobalSearchDrawer = ref(false);
-  const globalSearchFormKey = ref(FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY);
-  function openGlobalSearch() {
+  const globalSearchFormKey = ref();
+  function openGlobalSearch(value?: FormDesignKeyEnum) {
+    globalSearchFormKey.value = value;
     showGlobalSearchDrawer.value = true;
   }
 </script>

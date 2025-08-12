@@ -21,7 +21,7 @@
             <n-select
               v-model:value="form.scoped"
               class="w-[300px]"
-              :options="scopedOptions"
+              :options="lastScopedOptions"
               :placeholder="t('common.pleaseSelect')"
               @update-value="() => handleReset()"
             />
@@ -32,6 +32,7 @@
               v-model:form-model="formModel"
               :config-list="configList"
               :custom-list="customList"
+              :max-filter-field-number="5"
             />
           </n-form-item>
           <div class="mb-[22px] flex items-center gap-[12px]">
@@ -47,10 +48,20 @@
           <!-- table TODO -->
           <Suspense>
             <opportunityTable
+              v-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
               ref="opportunityTableRef"
               readonly
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              @init="setFilterConfigList"
+            />
+            <customerTable
+              v-else-if="form.scoped === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
+              ref="customerTableRef"
+              readonly
+              hidden-advance-filter
+              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
+              @init="setFilterConfigList"
             />
           </Suspense>
         </div>
@@ -65,20 +76,24 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
+  import customerTable from '@/views/customer/components/customerTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
-  import { scopedOptions } from '../config';
+  import { useAppStore } from '@/store';
 
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   const props = defineProps<{
-    formKey: FormDesignKeyEnum | null;
+    formKey?: FormDesignKeyEnum | null;
+    keyword: string;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -103,21 +118,45 @@
     scoped: null,
   });
 
+  const scopedOptions = [
+    {
+      label: t('crmFormDesign.customer'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER,
+      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    },
+    {
+      label: t('crmFormDesign.contract'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT,
+      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    },
+    {
+      label: t('module.openSea'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC,
+      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    },
+    {
+      label: t('crmFormDesign.clue'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
+      moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
+    },
+    {
+      label: t('module.cluePool'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
+      moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
+    },
+    {
+      label: t('module.businessManagement'),
+      value: FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
+      moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
+    },
+  ];
+
+  const lastScopedOptions = computed(() =>
+    scopedOptions.filter((e) => appStore.moduleConfigList.find((m) => m.moduleKey === e.moduleKey && m.enable))
+  );
+
   const opportunityTableRef = ref<InstanceType<typeof opportunityTable>>();
-
-  const configList = computed<FilterFormItem[]>(() => {
-    if (props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY) {
-      return (opportunityTableRef.value?.originFilterConfigList ?? []) as FilterFormItem[];
-    }
-    return [];
-  });
-
-  const customList = computed<FilterFormItem[]>(() => {
-    if (props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY) {
-      return (opportunityTableRef.value?.originCustomFieldsFilterConfig ?? []) as FilterFormItem[];
-    }
-    return [];
-  });
+  const customerTableRef = ref<InstanceType<typeof customerTable>>();
 
   function getParams(): FilterResult {
     const conditions: ConditionsItem[] = formModel.value.list.map((item: any) => ({
@@ -140,6 +179,19 @@
     return item.value?.length;
   };
 
+  function loadList(filter: FilterResult) {
+    switch (form.value.scoped) {
+      case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
+        opportunityTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
+        customerTableRef.value?.handleAdvanceFilter?.(filter);
+        break;
+      default:
+        break;
+    }
+  }
+
   const handleFilterConditions = (filter: FilterResult) => {
     const haveConditions: boolean =
       filter.conditions?.some((item) => {
@@ -149,13 +201,12 @@
 
     isAdvancedSearchMode.value = haveConditions;
     filterResult.value = filter;
-    // TODO xinxinwu
-    if (opportunityTableRef.value?.setAdvanceFilterParams) {
-      opportunityTableRef.value?.setAdvanceFilterParams(filter);
-    }
+    loadList(filter);
   };
 
   function handleFilter() {
+    console.log(222);
+
     filterContentRef.value?.formRef?.validate((errors) => {
       if (!errors) {
         handleFilterConditions(getParams());
@@ -173,10 +224,21 @@
     handleFilterConditions({ searchMode: 'AND', conditions: [] });
   }
 
+  const configList = ref<FilterFormItem[]>([]);
+  const customList = ref<FilterFormItem[]>([]);
+
+  function setFilterConfigList(params: Record<string, any>) {
+    const { filterConfigList, customFieldsFilterConfig } = params;
+    configList.value = filterConfigList;
+    customList.value = customFieldsFilterConfig;
+  }
+
   watch(
     () => props.formKey,
     (val) => {
-      form.value.scoped = val;
+      if (val) {
+        form.value.scoped = val as FormDesignKeyEnum;
+      }
     }
   );
 </script>

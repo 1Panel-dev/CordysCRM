@@ -21,6 +21,7 @@ export default {
   'workbench.duplicateCheck.globalSearchTitle': 'Global search',
   'workbench.duplicateCheck.searchScoped': 'Search scoped',
   'workbench.duplicateCheck.searchConditions': 'Search conditions',
+  'workbench.duplicateCheck.searchInCordys': 'Search in cordys',
   'workbench.quickAccess': 'Quick access',
   'workbench.nearlyThreeDays': 'Last 3 days',
   'workbench.nearlySevenDays': 'Last 7 days',

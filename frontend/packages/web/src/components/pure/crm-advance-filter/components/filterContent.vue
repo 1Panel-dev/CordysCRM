@@ -230,7 +230,11 @@
       <n-button
         v-if="!props.readonly"
         type="primary"
-        :disabled="formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length"
+        :disabled="
+          maxFilterFieldNumber
+            ? formModel.list?.length >= maxFilterFieldNumber
+            : formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length
+        "
         text
         class="mt-[5px] w-[fit-content]"
         @click="handleAddItem"
@@ -279,6 +283,7 @@
     keepOneLine?: boolean; // 至少保留一行
     readonly?: boolean;
     noFilterOption?: boolean; // 第一列取消过滤
+    maxFilterFieldNumber?: number; // 最大限制条件数量
   }>();
 
   const formModel = defineModel<FilterForm>('formModel', {

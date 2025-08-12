@@ -164,6 +164,7 @@
       params: { customerId: string; inCustomerPool: boolean; poolId: string },
       readonly: boolean
     ): void;
+    (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
   }>();
 
   const Message = useMessage();
@@ -467,15 +468,10 @@
   const showOpenSeaOverviewDrawer = ref<boolean>(false);
   const openSea = ref<string | number>('');
 
-  const originFilterConfigList = ref<FilterFormItem[]>([]);
-  const originCustomFieldsFilterConfig = ref<FilterFormItem[]>([]);
-
-  const setAdvanceFilterParams = ref<null | ((...args: any[]) => void)>(null);
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
 
   defineExpose({
-    originFilterConfigList,
-    originCustomFieldsFilterConfig,
-    setAdvanceFilterParams,
+    handleAdvanceFilter,
   });
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
@@ -603,7 +599,7 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  setAdvanceFilterParams.value = handleAdvSearch;
+  handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
@@ -676,23 +672,6 @@
     ] as FilterFormItem[];
   });
 
-  watch(
-    () => filterConfigList.value,
-    (newVal) => {
-      originFilterConfigList.value = newVal;
-    }
-  );
-
-  watch(
-    () => customFieldsFilterConfig.value,
-    (newVal) => {
-      originCustomFieldsFilterConfig.value = newVal;
-    },
-    {
-      immediate: true,
-    }
-  );
-
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
@@ -733,6 +712,13 @@
     if (props.isCustomerTab) {
       searchData();
     }
+  });
+
+  onMounted(() => {
+    emit('init', {
+      filterConfigList: filterConfigList.value,
+      customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
+    });
   });
 </script>
 

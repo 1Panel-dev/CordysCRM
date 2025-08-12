@@ -21,6 +21,7 @@ export default {
   'workbench.duplicateCheck.globalSearchTitle': '全局搜索',
   'workbench.duplicateCheck.searchScoped': '查询范围',
   'workbench.duplicateCheck.searchConditions': '查询条件',
+  'workbench.duplicateCheck.searchInCordys': '在Cordys中搜索',
   'workbench.quickAccess': '快捷入口',
   'workbench.nearlyThreeDays': '近 3 天',
   'workbench.nearlySevenDays': '近 7 天',
