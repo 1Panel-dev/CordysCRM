@@ -74,10 +74,6 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
     @Override
     public PagerWithOption<List<GlobalCluePoolResponse>> globalSearch(BasePageRequest request, String orgId, String userId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        // 如果手机号为空，直接返回空列表
-        if (StringUtils.isBlank(request.getKeyword())) {
-            return PageUtils.setPageInfoWithOption(page, null, null);
-        }
 
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
