@@ -54,21 +54,6 @@
     default: [],
   });
 
-  async function initDepartList() {
-    try {
-      const tree = await getFieldDeptTree();
-      containChildIds.value = [];
-      treeData.value = mapTree(tree, (node) => ({
-        ...node,
-        containChildModule: !!containChildIds.value.includes(node.id as string),
-        disabled: false,
-      }));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   const selectValue = defineModel<string | number | (string | number)[] | null>('value', {
     required: true,
     default: [],
@@ -108,6 +93,27 @@
         child.disabled = state;
         updateChildNodesState(child, state);
       });
+    }
+  }
+
+  async function initDepartList() {
+    try {
+      const tree = await getFieldDeptTree();
+      treeData.value = mapTree(tree, (node) => {
+        const isContainChild = !!containChildIds.value?.includes(node.id as string);
+        updateChildNodesState(node, isContainChild);
+        if (isContainChild) {
+          checkNode(selectValue.value as (string | number)[], { checked: true, node, id: node.id });
+        }
+        return {
+          disabled: false,
+          ...node,
+          containChildModule: isContainChild,
+        };
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 
