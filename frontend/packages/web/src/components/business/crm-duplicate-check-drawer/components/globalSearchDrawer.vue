@@ -50,22 +50,20 @@
         </CrmCard>
         <CrmCard hide-footer :special-height="totalCount > 0 ? 0 : 228">
           <Suspense>
-            <div v-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY" class="h-full w-full">
-              <opportunityTable
-                ref="opportunityTableRef"
-                readonly
-                hidden-total
-                is-limit-show-detail
-                hidden-advance-filter
-                :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
-                @init="setFilterConfigList"
-              >
-                <template #searchTableTotal="{ total }">
-                  <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
-                </template>
-              </opportunityTable>
-            </div>
-
+            <opportunityTable
+              v-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              ref="opportunityTableRef"
+              readonly
+              hidden-total
+              is-limit-show-detail
+              hidden-advance-filter
+              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              @init="setFilterConfigList"
+            >
+              <template #searchTableTotal="{ total }">
+                <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
+              </template>
+            </opportunityTable>
             <customerTable
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               ref="customerTableRef"
@@ -101,6 +99,7 @@
               hidden-total
               hidden-pool-select
               hidden-advance-filter
+              is-limit-show-detail
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
               @init="setFilterConfigList"
             >
@@ -129,6 +128,7 @@
               hidden-total
               hidden-pool-select
               hidden-advance-filter
+              is-limit-show-detail
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
               @init="setFilterConfigList"
             >
