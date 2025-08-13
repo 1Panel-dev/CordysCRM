@@ -247,7 +247,7 @@
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value });
-    loadList();
+    loadList(true);
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
