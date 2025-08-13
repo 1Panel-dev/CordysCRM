@@ -26,10 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -199,7 +196,7 @@ public class DictService {
 	 * @return 字典配置
 	 */
 	public DictConfigDTO getDictConf(String module, String orgId) {
-		List<Dict> dictList = getDictListByType(module, orgId);
+		List<Dict> dictList = new ArrayList<>(getDictListByType(module, orgId));
 		Dict sysDt = new Dict();
 		sysDt.setId("system");
 		if (StringUtils.equalsAny(module, DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name())) {

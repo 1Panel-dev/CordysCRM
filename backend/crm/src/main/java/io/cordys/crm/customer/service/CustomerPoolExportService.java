@@ -50,6 +50,7 @@ public class CustomerPoolExportService extends CustomerExportService {
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
             } catch (Exception e) {
                 //更新任务
+                LogUtils.error("任务停止中断", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
                 //从注册中心移除
