@@ -30,7 +30,7 @@
           @update-value="(e) => searchData(undefined, e)"
         />
         <n-button
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:EXPORT']) && props.readonly"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:EXPORT']) && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
