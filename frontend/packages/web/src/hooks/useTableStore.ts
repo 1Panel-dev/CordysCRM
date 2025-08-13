@@ -43,10 +43,12 @@ export default function useTableStore() {
   function sortByOldOrder(oldArr: CrmDataTableColumn[], newArr: CrmDataTableColumn[]): CrmDataTableColumn[] {
     const mapNew = new Map(newArr.map((item) => [item.key, item]));
     // 先按 old 顺序排列 new 中存在的项
-    const sorted = oldArr.map((item) => mapNew.get(item.key)).filter(Boolean) as CrmDataTableColumn[];
+    const sorted = oldArr
+      .map((item) => mapNew.get(item.key))
+      .filter((e) => e && e.key !== 'operation') as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
     const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key));
-    return [...sorted, ...extra];
+    return [...sorted, ...extra, mapNew.get('operation')].filter(Boolean) as CrmDataTableColumn[];
   }
 
   async function initColumn(tableKey: TableKeyEnum, column: CrmDataTableColumn[]) {
@@ -75,7 +77,7 @@ export default function useTableStore() {
                 ...e,
                 width: sameItem.width,
                 showInTable: sameItem.showInTable,
-                fixed: sameItem.fixed,
+                fixed: sameItem.fixed || e.fixed,
               };
             }
             return e;
