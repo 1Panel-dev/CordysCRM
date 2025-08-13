@@ -505,7 +505,7 @@
   });
 
   const exportColumns = computed<ExportTableColumnItem[]>(() => {
-    return propsRes.value.columns
+    return filterColumns.value
       .filter(
         (item: any) =>
           item.key !== 'operation' &&
