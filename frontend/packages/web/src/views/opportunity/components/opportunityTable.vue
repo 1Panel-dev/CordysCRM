@@ -14,10 +14,12 @@
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
-    <template v-if="props.readonly && props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY" #tableTop>
-      <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
-    </template>
     <template #actionLeft>
+      <slot
+        v-if="props.readonly && props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+        name="searchTableTotal"
+        :total="propsRes.crmPagination?.itemCount || 0"
+      />
       <div class="flex items-center gap-[12px]">
         <n-button
           v-if="

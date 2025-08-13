@@ -458,7 +458,7 @@
         customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
       });
     }
-    if (!props.sourceId && !props.hiddenAdvanceFilter) return;
+    if (!props.sourceId) return;
     searchData();
   });
 
