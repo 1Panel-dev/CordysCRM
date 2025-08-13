@@ -13,6 +13,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.JSON;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
@@ -79,6 +80,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
+        ConditionFilterUtils.parseCondition(request);
         // 查询重复公海客户列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);

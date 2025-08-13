@@ -15,6 +15,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -61,6 +62,7 @@ public class GlobalSearchCustomerContactService extends GlobalSearchBaseService<
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
+        ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null);
         List<GlobalCustomerContactResponse> buildListData = buildCustomerContactData(list, orgId, userId);

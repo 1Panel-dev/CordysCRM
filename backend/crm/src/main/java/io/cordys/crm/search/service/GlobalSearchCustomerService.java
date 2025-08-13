@@ -11,6 +11,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
@@ -88,6 +89,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
 
         boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
 
+        ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 查询重复客户列表
         List<GlobalCustomerResponse> customers = extCustomerMapper.checkRepeatCustomer(request, orgId, userId);

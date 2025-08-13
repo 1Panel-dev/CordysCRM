@@ -15,6 +15,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
@@ -85,6 +86,7 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
+        ConditionFilterUtils.parseCondition(request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalOpportunityResponse> list = extOpportunityMapper.globalSearchList(request, orgId);

@@ -13,6 +13,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.JSON;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
@@ -80,6 +81,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         if (!enabledModules.contains(ModuleKey.CLUE.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
+        ConditionFilterUtils.parseCondition(request);
         // 查询重复线索池线索列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);

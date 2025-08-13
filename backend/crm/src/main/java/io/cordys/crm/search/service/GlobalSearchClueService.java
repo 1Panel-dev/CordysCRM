@@ -15,6 +15,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
@@ -80,6 +81,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         request.setPoolId(null);
+        ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 4. 查询并返回相似线索列表
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, null);
