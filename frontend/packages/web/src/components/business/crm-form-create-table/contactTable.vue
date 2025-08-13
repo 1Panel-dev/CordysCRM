@@ -59,7 +59,7 @@
       :source-id="activeContactId"
       :need-init-detail="needInitDetail"
       :initial-source-name="props.initialSourceName"
-      @saved="loadList"
+      @saved="() => searchData()"
     />
     <!-- 停用 -->
     <CrmModal
@@ -413,7 +413,7 @@
       }
     } else {
       setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-      await loadList(true);
+      await loadList();
       backupData.value = cloneDeep(propsRes.value.data);
     }
     crmTableRef.value?.scrollTo({ top: 0 });
