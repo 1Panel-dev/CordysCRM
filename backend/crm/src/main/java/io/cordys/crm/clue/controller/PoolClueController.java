@@ -1,10 +1,8 @@
 package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.pager.PagerWithOption;
-import io.cordys.common.service.DataScopeService;
 import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.CluePoolDTO;
@@ -40,8 +38,6 @@ public class PoolClueController {
 	private PoolClueService poolClueService;
 	@Resource
 	private ClueService clueService;
-    @Resource
-    private DataScopeService dataScopeService;
     @Resource
     private CluePoolExportService cluePoolExportService;
 
@@ -114,9 +110,7 @@ public class PoolClueController {
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
         ConditionFilterUtils.parseCondition(request);
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return cluePoolExportService.exportCrossPage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+		return cluePoolExportService.exportCrossPage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, LocaleContextHolder.getLocale());
     }
 
     @PostMapping("/export-select")
