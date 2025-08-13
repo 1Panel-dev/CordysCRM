@@ -311,8 +311,8 @@
 
   function setFilterConfigList(params: Record<string, any>) {
     const { filterConfigList, customFieldsFilterConfig } = params;
-    configList.value = filterConfigList;
-    customList.value = customFieldsFilterConfig;
+    configList.value = customFieldsFilterConfig;
+    customList.value = filterConfigList;
     initSearchData();
   }
 
