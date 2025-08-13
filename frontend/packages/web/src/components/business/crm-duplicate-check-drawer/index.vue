@@ -312,7 +312,7 @@
 
   const clueColumns: CrmDataTableColumn[] = [
     {
-      title: t('workbench.duplicateCheck.company'),
+      title: t('crmFollowRecord.companyName'),
       key: 'name',
       width: 100,
       ellipsis: {
@@ -363,7 +363,7 @@
 
   const cluePoolColumns: CrmDataTableColumn[] = [
     {
-      title: t('workbench.duplicateCheck.company'),
+      title: t('crmFollowRecord.companyName'),
       key: 'name',
       width: 100,
       ellipsis: {
@@ -616,6 +616,19 @@
       width: 100,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.customerName;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              activeSourceId.value = row.customerId;
+              showCustomerOverviewDrawer.value = true;
+            },
+          },
+          { default: () => row.customerName, trigger: () => row.customerName }
+        );
       },
     },
     {

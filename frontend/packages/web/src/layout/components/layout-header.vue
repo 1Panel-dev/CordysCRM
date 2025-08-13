@@ -15,14 +15,7 @@
       <CrmTopMenu />
       <div class="flex items-center gap-[8px]">
         <CrmTag
-          v-if="
-            hasAnyPermission([
-              'CUSTOMER_MANAGEMENT:READ',
-              'CUSTOMER_MANAGEMENT_POOL:READ',
-              'CLUE_MANAGEMENT:READ',
-              'CLUE_MANAGEMENT_POOL:READ',
-            ])
-          "
+          v-if="showSearch"
           theme="light"
           type="primary"
           class="cursor-pointer"
@@ -76,6 +69,7 @@
   import { NBadge, NButton, NLayoutHeader, NPopover, NPopselect, NTooltip, useMessage } from 'naive-ui';
   import { InformationCircleOutline, LanguageOutline } from '@vicons/ionicons5';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   // import { LOCALE_OPTIONS } from '@lib/shared/locale';
@@ -89,7 +83,6 @@
 
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -120,6 +113,16 @@
     showMessageDrawer.value = true;
   }
 
+  const showSearch = computed(() =>
+    appStore.moduleConfigList.some(
+      (i) =>
+        [
+          ModuleConfigEnum.BUSINESS_MANAGEMENT,
+          ModuleConfigEnum.CLUE_MANAGEMENT,
+          ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+        ].includes(i.moduleKey as ModuleConfigEnum) && i.enable
+    )
+  );
   const showDuplicateCheckDrawer = ref(false);
 
   const { copy, isSupported } = useClipboard({ legacy: true });
