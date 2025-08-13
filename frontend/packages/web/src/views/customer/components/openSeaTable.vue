@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    class="crm-open-sea-table"
+    :class="`crm-open-sea-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
     :columns="filterColumns"
@@ -433,7 +433,7 @@
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.formKey,
-    containerClass: '.crm-open-sea-table',
+    containerClass: `.crm-open-sea-table-${props.formKey}`,
     operationColumn: props.readonly
       ? undefined
       : {

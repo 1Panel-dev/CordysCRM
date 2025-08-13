@@ -474,7 +474,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
         sortOrder: false,
         sorter: true,
-        render: (row: any) => row.recyclePoolName || '-',
+        render: (row: any) => row.poolName || '-',
       },
     ],
     [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: [
@@ -500,7 +500,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
         sortOrder: false,
         sorter: true,
-        render: (row: any) => row.recyclePoolName || '-',
+        render: (row: any) => row.poolName || '-',
       },
     ],
     [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityInternalColumns,

@@ -24,7 +24,7 @@
                 />
               </div>
             </div>
-            <div class="w-[50%]">
+            <div class="w-[50%] min-w-[800px]">
               <FilterContent
                 ref="filterContentRef"
                 v-model:form-model="formModel"

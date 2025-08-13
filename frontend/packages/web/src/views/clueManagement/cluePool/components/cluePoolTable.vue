@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    class="crm-clue-pool-table"
+    :class="`crm-clue-pool-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
     :columns="filterColumns"
@@ -417,7 +417,7 @@
   });
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.formKey,
-    containerClass: '.crm-clue-pool-table',
+    containerClass: `.crm-clue-pool-table-${props.formKey}`,
     operationColumn: props.readonly
       ? undefined
       : {
