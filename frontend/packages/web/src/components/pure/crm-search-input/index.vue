@@ -40,7 +40,8 @@
   });
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
+    // 防止autoSearch开启后，中文输入法下回车emit两次
+    if (e.key === 'Enter' && !props.autoSearch) {
       emit('search', keyword.value);
     }
   }
