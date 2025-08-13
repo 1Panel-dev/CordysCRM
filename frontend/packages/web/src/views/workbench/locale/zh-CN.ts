@@ -23,6 +23,7 @@ export default {
   'workbench.duplicateCheck.searchConditions': '查询条件',
   'workbench.duplicateCheck.searchInCordys': '在Cordys中搜索',
   'workbench.duplicateCheck.searchInCordysResult': '在Cordys中搜索查询{name}结果',
+  'workbench.duplicateCheck.maxConditionTooltip': '最多允许添加5个条件',
   'workbench.quickAccess': '快捷入口',
   'workbench.nearlyThreeDays': '近 3 天',
   'workbench.nearlySevenDays': '近 7 天',

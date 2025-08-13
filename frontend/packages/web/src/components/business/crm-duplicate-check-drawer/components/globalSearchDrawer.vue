@@ -31,13 +31,15 @@
                 :config-list="configList"
                 :custom-list="customList"
                 :max-filter-field-number="5"
+                keep-one-line
+                :max-filter-field-add-tooltip="t('workbench.duplicateCheck.maxConditionTooltip')"
               >
                 <template #addButtonRight>
                   <div class="flex items-center gap-[12px]">
-                    <n-button type="default" class="outline--secondary" @click="clearFilter">
+                    <n-button size="small" type="default" class="outline--secondary" @click="clearFilter">
                       {{ t('common.reset') }}
                     </n-button>
-                    <n-button class="mr-[12px]" type="primary" @click="handleFilter">
+                    <n-button size="small" type="primary" @click="handleFilter">
                       {{ t('advanceFilter.filter') }}
                     </n-button>
                   </div>

@@ -228,23 +228,24 @@
         </div>
       </n-form>
       <div class="mt-[5px] flex items-center justify-between">
-        <n-button
-          v-if="!props.readonly"
-          type="primary"
-          :disabled="
-            maxFilterFieldNumber
-              ? formModel.list?.length >= maxFilterFieldNumber
-              : formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length
-          "
-          text
-          class="w-[fit-content]"
-          @click="handleAddItem"
-        >
-          <template #icon>
-            <n-icon><Add /></n-icon>
+        <n-tooltip :delay="300" :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd">
+          <template #trigger>
+            <n-button
+              v-if="!props.readonly"
+              type="primary"
+              :disabled="isDisabledAdd"
+              text
+              class="w-[fit-content]"
+              @click="handleAddItem"
+            >
+              <template #icon>
+                <n-icon><Add /></n-icon>
+              </template>
+              {{ t('advanceFilter.addCondition') }}
+            </n-button>
           </template>
-          {{ t('advanceFilter.addCondition') }}
-        </n-button>
+          {{ props.maxFilterFieldAddTooltip }}
+        </n-tooltip>
         <slot name="addButtonRight"></slot>
       </div>
     </div>
@@ -252,7 +253,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
+  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NIcon, NInput, NSelect, NTooltip } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
@@ -287,6 +288,7 @@
     readonly?: boolean;
     noFilterOption?: boolean; // 第一列取消过滤
     maxFilterFieldNumber?: number; // 最大限制条件数量
+    maxFilterFieldAddTooltip?: string; // 添加最大限制文本提示
   }>();
 
   const formModel = defineModel<FilterForm>('formModel', {
@@ -492,6 +494,12 @@
     ];
   }
 
+  const isDisabledAdd = computed(() =>
+    props.maxFilterFieldNumber
+      ? formModel.value.list?.length >= props.maxFilterFieldNumber
+      : formModel.value.list?.length === [...props.configList, ...(props.customList ?? [])].length
+  );
+
   function validateForm(cb: (res?: Record<string, any>) => void) {
     formRef.value?.validate(async (errors) => {
       if (errors) {
@@ -543,5 +551,8 @@
     :deep(.n-tag__content) {
       margin: 0 auto;
     }
+  }
+  :deep(.n-form-item-feedback-wrapper) {
+    min-height: 8px;
   }
 </style>
