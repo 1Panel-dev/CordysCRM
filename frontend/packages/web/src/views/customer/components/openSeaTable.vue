@@ -482,7 +482,7 @@
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  batchTableQueryParams.value = tableQueryParams;
+  batchTableQueryParams.value = tableQueryParams.value;
   const filterColumns = computed(() => {
     return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.key as string));
   });
