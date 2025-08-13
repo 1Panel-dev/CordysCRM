@@ -95,7 +95,12 @@ public class RegionUtils {
             }
         }
 
-        code = code + "-";
-        return queue.isEmpty() ? code : code.concat(queue.poll());
+        if (!queue.isEmpty()) {
+            for (String s : queue) {
+                code += SPILT_STR + s;
+            }
+        }
+
+        return code;
     }
 }
