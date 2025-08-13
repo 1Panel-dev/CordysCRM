@@ -144,7 +144,6 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem, CluePoolListItem } from '@lib/shared/models/clue';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
-  import { RepeatContactItem, RepeatCustomerItem } from '@lib/shared/models/system/business';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -202,7 +201,7 @@
   const detailType = ref<'opportunity' | 'clue'>('clue');
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
-  function showDetail(row: RepeatCustomerItem, type: 'opportunity' | 'clue') {
+  function showDetail(row: any, type: 'opportunity' | 'clue') {
     activeCustomer.value = row;
     detailType.value = type;
     showDetailDrawer.value = true;
@@ -521,9 +520,9 @@
       title: t('workbench.duplicateCheck.relatedOpportunity'),
       key: 'opportunityCount',
       width: 60,
-      render: (row: RepeatCustomerItem) => {
+      render: (row: any) => {
         return !row.opportunityCount
-          ? row.opportunityCount
+          ? row.opportunityCount ?? '-'
           : h(
               NButton,
               {
@@ -540,9 +539,9 @@
       title: t('workbench.duplicateCheck.relatedClue'),
       key: 'clueCount',
       width: 60,
-      render: (row: RepeatCustomerItem) => {
+      render: (row: any) => {
         return !row.clueCount
-          ? row.clueCount
+          ? row.clueCount ?? '-'
           : h(
               NButton,
               {
@@ -618,19 +617,6 @@
       ellipsis: {
         tooltip: true,
       },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.customerName;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.customerId;
-              showCustomerOverviewDrawer.value = true;
-            },
-          },
-          { default: () => row.customerName, trigger: () => row.customerName }
-        );
-      },
     },
     {
       title: t('workbench.duplicateCheck.contactName'),
@@ -672,7 +658,7 @@
       ellipsis: {
         tooltip: true,
       },
-      render: (row: RepeatContactItem) => {
+      render: (row: any) => {
         return row.enable ? t('common.open') : t('common.close');
       },
     },
