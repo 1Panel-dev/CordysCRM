@@ -17,7 +17,7 @@
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
           @search="(val) => searchData(val)"
         />
-        <n-button type="primary" @click="() => openGlobalSearch()">
+        <n-button v-if="lastScopedOptions.length > 0" type="primary" @click="() => openGlobalSearch()">
           {{ t('workbench.duplicateCheck.searchInCordys') }}
         </n-button>
       </div>

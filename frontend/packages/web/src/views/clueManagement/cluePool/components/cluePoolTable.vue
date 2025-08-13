@@ -492,6 +492,7 @@
     },
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
     hiddenTotal: !!props.hiddenTotal,
+    readonly: props.readonly,
   });
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

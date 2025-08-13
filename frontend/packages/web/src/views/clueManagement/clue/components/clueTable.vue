@@ -560,6 +560,7 @@
     },
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
     hiddenTotal: !!props.hiddenTotal,
+    readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 

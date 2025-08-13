@@ -2,7 +2,8 @@
   <div class="flex h-full flex-col gap-[16px] overflow-hidden">
     <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
       <CrmAvatar :is-word="false" @click="goMine" />
-      <van-search
+      <!-- TODO 下个版本重构先不开放入口 -->
+      <!-- <van-search
         v-if="
           hasAnyPermission([
             'CUSTOMER_MANAGEMENT:READ',
@@ -16,7 +17,7 @@
         :placeholder="t('workbench.searchPlaceholder')"
         class="flex-1 !p-0"
         @click="goDuplicateCheck"
-      />
+      /> -->
       <van-badge :dot="showBadge">
         <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
       </van-badge>

@@ -577,6 +577,7 @@
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
     hiddenTotal: !!props.hiddenTotal,
+    readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
