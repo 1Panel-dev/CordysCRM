@@ -78,8 +78,6 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
      */
     @Override
     public PagerWithOption<List<GlobalOpportunityResponse>> globalSearch(OpportunityPageRequest request, String orgId, String userId) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果有商机读取权限但商机模块未启用，抛出异常
@@ -88,6 +86,7 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
         }
 
         // 查询重复商机列表
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalOpportunityResponse> list = extOpportunityMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);

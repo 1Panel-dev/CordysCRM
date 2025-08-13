@@ -70,7 +70,6 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
 
     @Override
     public PagerWithOption<List<GlobalCustomerPoolResponse>> globalSearch(BasePageRequest request, String orgId, String userId) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
 
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -81,6 +80,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         }
 
         // 查询重复公海客户列表
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);

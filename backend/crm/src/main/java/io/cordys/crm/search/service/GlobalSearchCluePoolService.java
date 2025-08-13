@@ -73,8 +73,6 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
 
     @Override
     public PagerWithOption<List<GlobalCluePoolResponse>> globalSearch(BasePageRequest request, String orgId, String userId) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
 
@@ -82,8 +80,8 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         if (!enabledModules.contains(ModuleKey.CLUE.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
-
         // 查询重复线索池线索列表
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);
