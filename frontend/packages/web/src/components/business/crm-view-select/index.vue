@@ -310,43 +310,37 @@
         return dragMoveValidator(fromRow, toRow);
       },
       onEnd(evt) {
-        const { oldIndex, newIndex, item, to } = evt;
-        if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+        const { oldDraggableIndex, newDraggableIndex } = evt;
+        if (oldDraggableIndex == null || newDraggableIndex == null || oldDraggableIndex === newDraggableIndex) return;
 
-        const draggedEl = item as HTMLElement;
-        const moveId = draggedEl.dataset.id;
+        const data = sortData.value as any[];
+        const rowKey = 'id';
 
-        const newOrderEls = Array.from(to.children) as HTMLElement[];
-
-        const newIds = newOrderEls.map((childrenEl) => childrenEl.dataset.id);
-
-        if (!moveId) return;
-
-        let targetId: string | undefined;
-        let moveMode: 'AFTER' | 'BEFORE' = 'BEFORE';
-
-        // 优先取后一项作为目标
-        const nextId = newIds[newIndex + 1];
-        const prevId = newIds[newIndex - 1];
-
-        if (nextId) {
-          targetId = nextId;
-          moveMode = 'BEFORE';
-        } else if (prevId) {
-          targetId = prevId;
+        const moveId = data[oldDraggableIndex][rowKey];
+        let targetId;
+        let moveMode: 'AFTER' | 'BEFORE';
+        if (newDraggableIndex >= data.length) {
+          targetId = data[data.length - 1][rowKey];
           moveMode = 'AFTER';
+        } else if (newDraggableIndex === 0) {
+          targetId = data[0][rowKey];
+          moveMode = 'BEFORE';
+        } else if (oldDraggableIndex < newDraggableIndex) {
+          targetId = data[newDraggableIndex][rowKey];
+          moveMode = 'AFTER';
+        } else {
+          targetId = data[newDraggableIndex][rowKey];
+          moveMode = 'BEFORE';
         }
 
-        if (targetId) {
-          dragHandler?.({
-            moveId,
-            targetId,
-            moveMode,
-            oldIndex,
-            newIndex,
-            orgId: appStore.orgId,
-          });
-        }
+        dragHandler?.({
+          moveId,
+          targetId,
+          moveMode,
+          oldIndex: oldDraggableIndex,
+          newIndex: newDraggableIndex,
+          orgId: appStore.orgId,
+        });
       },
     });
   }

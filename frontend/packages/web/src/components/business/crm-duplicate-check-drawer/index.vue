@@ -710,6 +710,7 @@
   });
 
   const searchData = (val: string) => {
+    if (!val) return;
     activeTables.value.forEach(async (table) => {
       table.instance.setLoadListParams({ keyword: val });
       await table.instance.loadList();
