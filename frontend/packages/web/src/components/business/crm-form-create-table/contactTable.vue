@@ -333,9 +333,11 @@
     }
   }
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
   defineExpose({
     handleAdvanceFilter,
+    handleSearchData,
   });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
@@ -416,6 +418,8 @@
     }
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+
+  handleSearchData.value = searchData;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = ref(false);

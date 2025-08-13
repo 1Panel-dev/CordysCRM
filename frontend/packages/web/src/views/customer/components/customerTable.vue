@@ -172,7 +172,10 @@
       tab: t('customer.cooperationCustomer'),
     },
   ];
-  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CUSTOMER);
+  const { tabList, activeTab } = useHiddenTab(
+    allTabList,
+    props.formKey === FormDesignKeyEnum.CUSTOMER ? FormDesignKeyEnum.CUSTOMER : undefined
+  );
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
@@ -400,9 +403,11 @@
   const showOverviewDrawer = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
   defineExpose({
     handleAdvanceFilter,
+    handleSearchData,
   });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
@@ -599,10 +604,11 @@
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
   function searchData(val?: string) {
-    setLoadListParams({ keyword: val, viewId: activeTab.value });
+    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+  handleSearchData.value = searchData;
 
   watch(
     () => activeTab.value,

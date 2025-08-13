@@ -424,8 +424,11 @@
   });
 
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+
   defineExpose({
     handleAdvanceFilter,
+    handleSearchData,
   });
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
@@ -528,6 +531,8 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
+  handleSearchData.value = searchData;
+
   watch(
     () => tableRefreshId.value,
     () => {
@@ -560,7 +565,9 @@
   }
 
   onBeforeMount(() => {
-    init();
+    if (!props.hiddenPoolSelect) {
+      init();
+    }
   });
 
   onMounted(() => {

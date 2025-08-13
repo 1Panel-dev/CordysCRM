@@ -476,9 +476,11 @@
   const openSea = ref<string | number>('');
 
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
   defineExpose({
     handleAdvanceFilter,
+    handleSearchData,
   });
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
@@ -604,8 +606,10 @@
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  function handleAdvSearch(filter: FilterResult) {
+  const isAdvancedSearchMode = ref(false);
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
     keyword.value = '';
+    isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -614,7 +618,6 @@
   handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
@@ -667,15 +670,17 @@
     ] as FilterFormItem[];
   });
 
-  function searchData() {
+  function searchData(_keyword?: string) {
     setLoadListParams({
-      keyword: keyword.value,
+      keyword: _keyword ?? keyword.value,
       viewId: activeTab.value,
       customerId: props.sourceId,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+
+  handleSearchData.value = searchData;
 
   function searchByKeyword(val: string) {
     keyword.value = val;
@@ -704,7 +709,7 @@
   );
 
   onBeforeMount(() => {
-    if (props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY) {
+    if (props.isCustomerTab) {
       searchData();
     }
   });

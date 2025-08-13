@@ -188,6 +188,7 @@
   const formModel = ref<FilterForm>(cloneDeep(defaultFormModel));
   const savedFormModel = ref(cloneDeep(formModel.value));
   const filterContentRef = ref<InstanceType<typeof FilterContent>>();
+  const globalKeyword = ref('');
 
   const isAdvancedSearchMode = ref(false);
   const filterResult = ref<FilterResult>({ searchMode: 'AND', conditions: [] });
@@ -225,22 +226,47 @@
   function loadList(filter: FilterResult) {
     switch (activeTab.value) {
       case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
-        opportunityTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        opportunityTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
-        customerTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        customerTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
-        contactTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        contactTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
-        openSeaTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        openSeaTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
-        clueTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        clueTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
-        cluePoolTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
+        cluePoolTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function initSearchData() {
+    switch (activeTab.value) {
+      case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
+        opportunityTableRef.value?.handleSearchData?.(globalKeyword.value);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
+        customerTableRef.value?.handleSearchData?.(globalKeyword.value);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
+        contactTableRef.value?.handleSearchData?.(globalKeyword.value);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
+        openSeaTableRef.value?.handleSearchData?.(globalKeyword.value);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
+        clueTableRef.value?.handleSearchData?.(globalKeyword.value);
+        break;
+      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
+        cluePoolTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
       default:
         break;
@@ -284,14 +310,19 @@
     const { filterConfigList, customFieldsFilterConfig } = params;
     configList.value = filterConfigList;
     customList.value = customFieldsFilterConfig;
+    initSearchData();
   }
 
   watch(
     () => props.formKey,
     (val) => {
       if (val) {
+        globalKeyword.value = props.keyword;
         activeTab.value = val as FormDesignKeyEnum;
       }
+    },
+    {
+      immediate: true,
     }
   );
 
@@ -306,6 +337,7 @@
   function handleCancel() {
     clearFilter();
     activeTab.value = lastScopedOptions.value[0]?.value;
+    globalKeyword.value = '';
   }
 </script>
 

@@ -456,8 +456,10 @@
   const showOverviewDrawer = ref(false);
 
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
   defineExpose({
     handleAdvanceFilter,
+    handleSearchData,
   });
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -648,6 +650,8 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
+  handleSearchData.value = searchData;
+
   const showCustomerDrawer = ref(false);
   const customerId = ref('');
   const isInitCustomerDrawer = ref(false);
@@ -681,10 +685,6 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
-    if (props.tableFormKey === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE) {
-      checkedRowKeys.value = [];
-      searchData();
-    }
   });
 </script>
 
