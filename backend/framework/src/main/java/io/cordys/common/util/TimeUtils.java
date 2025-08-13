@@ -15,6 +15,7 @@ public abstract class TimeUtils extends DateUtils {
     /**
      * Patterns
      */
+    public static final String MONTH_PATTERN = "yyyy-MM";
     public static final String DAY_PATTERN = "yyyy-MM-dd";
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
@@ -47,6 +48,13 @@ public abstract class TimeUtils extends DateUtils {
         return DateFormatUtils.format(date, DATETIME_PATTERN);
     }
 
+    public static String getMonthStr(Long timeStamp) {
+        if (timeStamp == null) {
+            return StringUtils.EMPTY;
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat(MONTH_PATTERN);
+        return dateFormat.format(timeStamp);
+    }
 
     public static String getDataStr(Long timeStamp) {
         if (timeStamp == null) {

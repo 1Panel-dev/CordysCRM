@@ -41,6 +41,9 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
         if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "datetime")) {
             return TimeUtils.getDataTimeStr(Long.valueOf(value));
         }
+        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "month")) {
+            return TimeUtils.getMonthStr(Long.valueOf(value));
+        }
         return value;
     }
 
