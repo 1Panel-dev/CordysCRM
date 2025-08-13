@@ -151,6 +151,7 @@
 
   const emit = defineEmits<{
     (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
+    (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
   }>();
 
   const allTabList: TabPaneProps[] = [
@@ -482,7 +483,7 @@
                 type: 'primary',
                 disabled: !row.opportunityModuleEnable || !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
                 onClick: () => {
-                  // TODO showDetail(row, 'opportunity') xinxinwu
+                  emit('showCountDetail', row, 'opportunity');
                 },
               },
               { default: () => row.opportunityCount }
@@ -499,7 +500,7 @@
                 disabled:
                   !row.clueModuleEnable || !hasAnyPermission(['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']),
                 onClick: () => {
-                  // TODO showDetail(row, 'clue') xinxinwu
+                  emit('showCountDetail', row, 'clue');
                 },
               },
               { default: () => row.clueCount }
@@ -584,8 +585,10 @@
     ...baseFilterConfigList,
   ]);
 
-  function handleAdvSearch(filter: FilterResult) {
+  const isAdvancedSearchMode = ref(false);
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
     keyword.value = '';
+    isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -594,7 +597,6 @@
   handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   function searchData(val?: string) {
     setLoadListParams({ keyword: val, viewId: activeTab.value });

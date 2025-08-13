@@ -629,8 +629,10 @@
   ]);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  function handleAdvSearch(filter: FilterResult) {
+  const isAdvancedSearchMode = ref(false);
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
     keyword.value = '';
+    isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -639,7 +641,6 @@
   handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });

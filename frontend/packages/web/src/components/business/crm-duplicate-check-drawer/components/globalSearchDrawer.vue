@@ -73,6 +73,7 @@
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
               @init="setFilterConfigList"
+              @show-count-detail="(row, type) => emit('showCountDetail', row, type)"
             >
               <template #searchTableTotal="{ total }">
                 <globalSearchResult :title="currentTitle" :total="total" @init-total="initTotal" />
@@ -171,6 +172,10 @@
     keyword: string;
   }>();
 
+  const emit = defineEmits<{
+    (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
+  }>();
+
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
@@ -186,12 +191,6 @@
 
   const isAdvancedSearchMode = ref(false);
   const filterResult = ref<FilterResult>({ searchMode: 'AND', conditions: [] });
-
-  // const form = ref<{
-  //   scoped: null | FormDesignKeyEnum;
-  // }>({
-  //   scoped: null,
-  // });
 
   const activeTab = ref(FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER);
 
@@ -226,22 +225,22 @@
   function loadList(filter: FilterResult) {
     switch (activeTab.value) {
       case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
-        opportunityTableRef.value?.handleAdvanceFilter?.(filter);
+        opportunityTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
-        customerTableRef.value?.handleAdvanceFilter?.(filter);
+        customerTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
-        contactTableRef.value?.handleAdvanceFilter?.(filter);
+        contactTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
-        openSeaTableRef.value?.handleAdvanceFilter?.(filter);
+        openSeaTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
-        clueTableRef.value?.handleAdvanceFilter?.(filter);
+        clueTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
-        cluePoolTableRef.value?.handleAdvanceFilter?.(filter);
+        cluePoolTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value);
         break;
       default:
         break;

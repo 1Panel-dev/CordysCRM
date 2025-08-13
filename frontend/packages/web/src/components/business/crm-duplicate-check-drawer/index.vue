@@ -70,7 +70,12 @@
       class="crm-detail-related-table"
     />
   </CrmDrawer>
-  <GlobalSearchDrawer v-model:visible="showGlobalSearchDrawer" :keyword="keyword" :form-key="globalSearchFormKey" />
+  <GlobalSearchDrawer
+    v-model:visible="showGlobalSearchDrawer"
+    :keyword="keyword"
+    :form-key="globalSearchFormKey"
+    @show-count-detail="(row:any,type:'opportunity' | 'clue')=>showDetail(row,type)"
+  />
   <!-- 详情 -->
   <Suspense>
     <div>
