@@ -67,9 +67,9 @@
   watch(
     () => value.value,
     () => {
-      const [cityValue, detailValue] = value.value.split('-');
-      city.value = cityValue || null;
-      detail.value = detailValue || '';
+      const localArr = value.value.split('-');
+      city.value = localArr[0] || null;
+      detail.value = localArr.filter((e, i) => i > 0).join('-') || ''; // 避免输入了-
     },
     { immediate: true }
   );

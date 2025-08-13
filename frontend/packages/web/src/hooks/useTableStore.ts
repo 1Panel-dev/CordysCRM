@@ -40,6 +40,15 @@ export default function useTableStore() {
     return columns;
   }
 
+  function sortByOldOrder(oldArr: CrmDataTableColumn[], newArr: CrmDataTableColumn[]): CrmDataTableColumn[] {
+    const mapNew = new Map(newArr.map((item) => [item.key, item]));
+    // 先按 old 顺序排列 new 中存在的项
+    const sorted = oldArr.map((item) => mapNew.get(item.key)).filter(Boolean) as CrmDataTableColumn[];
+    // 再把 new 中 old 没有的项追加在最后
+    const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key));
+    return [...sorted, ...extra];
+  }
+
   async function initColumn(tableKey: TableKeyEnum, column: CrmDataTableColumn[]) {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
@@ -58,9 +67,22 @@ export default function useTableStore() {
         const isEqual = isArraysEqualWithOrder(oldColumn, column);
         if (!isEqual) {
           // 如果不相等，说明有变动将新的column存入indexDB
+          const newColumns = sortByOldOrder(tableColumnsMap.column, column).map((e) => {
+            const sameItem = tableColumnsMap.column.find((item) => item.key === e.key);
+            if (sameItem) {
+              // 如果是相同的列，则更新除了宽度、显隐、固定以外的属性
+              return {
+                ...e,
+                width: sameItem.width,
+                showInTable: sameItem.showInTable,
+                fixed: sameItem.fixed,
+              };
+            }
+            return e;
+          });
           setTableColumnsMap(tableKey, {
             ...tableColumnsMap,
-            column,
+            column: newColumns,
             columnBackup: cloneDeep(column),
           });
         }
