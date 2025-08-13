@@ -576,6 +576,7 @@
         type: 'department',
         checkable: true,
         showContainChildModule: true,
+        containChildIds: [],
       },
     },
     {

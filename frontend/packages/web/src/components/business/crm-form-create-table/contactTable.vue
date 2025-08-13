@@ -394,6 +394,7 @@
         checkable: true,
         showContainChildModule: true,
         type: 'department',
+        containChildIds: [],
       },
     },
     ...baseFilterConfigList,

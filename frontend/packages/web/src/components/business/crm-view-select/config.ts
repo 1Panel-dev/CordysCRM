@@ -112,6 +112,7 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
       type: FieldTypeEnum.TREE_SELECT,
       operator: OperatorEnum.IN,
       value: [userStore.userInfo.departmentId],
+      containChildIds: [],
     },
   ],
   [CustomerSearchTypeEnum.SELF]: [
