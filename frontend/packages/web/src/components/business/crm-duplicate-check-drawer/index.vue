@@ -74,6 +74,7 @@
     v-model:visible="showGlobalSearchDrawer"
     :keyword="keyword"
     :form-key="globalSearchFormKey"
+    @close="handleClose"
     @show-count-detail="(row:any,type:'opportunity' | 'clue')=>showDetail(row,type)"
   />
   <!-- 详情 -->
@@ -732,5 +733,9 @@
   function openGlobalSearch(value?: FormDesignKeyEnum) {
     globalSearchFormKey.value = value;
     showGlobalSearchDrawer.value = true;
+  }
+
+  function handleClose() {
+    globalSearchFormKey.value = undefined;
   }
 </script>

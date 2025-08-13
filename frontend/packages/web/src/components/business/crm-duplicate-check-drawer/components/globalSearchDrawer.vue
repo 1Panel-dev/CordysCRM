@@ -176,6 +176,7 @@
 
   const emit = defineEmits<{
     (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
+    (e: 'close'): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -318,6 +319,7 @@
   watch(
     () => props.formKey,
     (val) => {
+      globalKeyword.value = '';
       if (val) {
         globalKeyword.value = props.keyword;
         activeTab.value = val as FormDesignKeyEnum;
@@ -339,7 +341,7 @@
   function handleCancel() {
     clearFilter();
     activeTab.value = lastScopedOptions.value[0]?.value;
-    globalKeyword.value = '';
+    emit('close');
   }
 </script>
 
