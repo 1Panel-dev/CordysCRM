@@ -48,7 +48,8 @@ export default function useTableStore() {
       .filter((e) => e && e.key !== 'operation') as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
     const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key));
-    return [...sorted, ...extra, mapNew.get('operation')].filter(Boolean) as CrmDataTableColumn[];
+    const operationColumn = oldArr.find((item) => item.key === SpecialColumnEnum.OPERATION);
+    return [...sorted, ...extra, operationColumn].filter(Boolean) as CrmDataTableColumn[];
   }
 
   async function initColumn(tableKey: TableKeyEnum, column: CrmDataTableColumn[]) {
