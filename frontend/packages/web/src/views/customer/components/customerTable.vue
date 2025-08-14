@@ -84,7 +84,7 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :other-save-params="otherFollowRecordSaveParams"
-    @saved="searchData"
+    @saved="() => searchData()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
