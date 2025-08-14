@@ -61,7 +61,7 @@
     <RelatedTable
       ref="detailTableRef"
       :api="detailType === 'opportunity' ? globalSearchOptDetail : getGlobalSearchClueDetail"
-      :columns="detailType === 'opportunity' ? opportunityColumns : clueColumns"
+      :columns="relatedColumns"
       :title="
         detailType === 'opportunity'
           ? t('workbench.duplicateCheck.relatedOpportunity')
@@ -384,15 +384,6 @@
       },
     },
     {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
       title: t('opportunity.intendedProducts'),
       key: 'productNameList',
       width: 100,
@@ -590,15 +581,6 @@
       },
     },
     {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
       title: t('common.creator'),
       key: 'createUserName',
       width: 200,
@@ -671,6 +653,12 @@
       },
     },
   ];
+
+  const relatedColumns = computed(() => {
+    return (detailType.value === 'opportunity' ? opportunityColumns : clueColumns).filter(
+      (i) => i.key !== 'departmentId'
+    );
+  });
 
   const columnsMap: Partial<Record<FormDesignKeyEnum, CrmDataTableColumn[]>> = {
     [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: columns,
