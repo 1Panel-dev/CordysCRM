@@ -444,7 +444,7 @@
     },
     {
       title: t('opportunity.intendedProducts'),
-      key: 'productNames',
+      key: 'productNameList',
       width: 100,
       isTag: true,
     },
