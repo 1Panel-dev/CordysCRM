@@ -522,7 +522,9 @@
   function initModuleConfigList() {
     const newList = cloneDeep(moduleConfigList.value);
     const dashboardList: ModuleConfigItem[] =
-      licenseStore.hasLicense() && !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
+      // TODO license 先放开
+      // licenseStore.hasLicense() && !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
+      !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
         ? [
             {
               label: t('common.dashboard'),

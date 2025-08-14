@@ -173,13 +173,14 @@
   }
 
   function transferData(permissions: PermissionTreeNode[], isNew = false) {
-    const isEnterprise = licenseStore.hasLicense();
-
+    // TODO license 先放开
+    // const isEnterprise = licenseStore.hasLicense();
     permissions.forEach((item) => {
-      if (!isEnterprise && item.license) return;
+      // TODO license 先放开
+      // if (!isEnterprise && item.license) return;
+      // const children = isEnterprise ? item.children || [] : item.children?.filter((child) => !child.license) || [];
 
-      const children = isEnterprise ? item.children || [] : item.children?.filter((child) => !child.license) || [];
-
+      const children = item.children || [];
       if (!children.length) return;
 
       children.forEach((child) => {

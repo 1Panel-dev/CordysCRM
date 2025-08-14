@@ -270,9 +270,11 @@
 
   onBeforeMount(() => {
     initCheckSyncType();
-    if (licenseStore.hasLicense()) {
-      initIntegration();
-    }
+    // TODO license 先放开
+    // if (licenseStore.hasLicense()) {
+    //   initIntegration();
+    // }
+    initIntegration();
     initMessageList();
   });
 </script>

@@ -53,12 +53,15 @@ export default function useMenuTree() {
         if (!permission.accessRouter(element)) {
           return null;
         }
-
+        // TODO license 先放开
+        // if (
+        //   (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) ||
+        //   (!licenseStore.hasLicense() && element.name === DashboardRouteEnum.DASHBOARD)
+        // ) {
+        //   return null;
+        // }
         //  社区版去掉license菜单
-        if (
-          (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) ||
-          (!licenseStore.hasLicense() && element.name === DashboardRouteEnum.DASHBOARD)
-        ) {
+        if (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) {
           return null;
         }
 

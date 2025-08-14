@@ -158,7 +158,9 @@
   const licenseStore = useLicenseStore();
 
   const userStore = useUserStore();
-  const xPack = computed(() => licenseStore.hasLicense());
+  // TODO license 先放开
+  // const xPack = computed(() => licenseStore.hasLicense());
+  const xPack = ref(true);
 
   const Message = useMessage();
 
@@ -822,33 +824,44 @@
   const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
   const moreActions = computed(() => {
-    if (licenseStore.hasLicense()) {
-      return [
-        ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
-          ? [
-              {
-                label: t('org.enterpriseWhatSync'),
-                key: 'sync',
-                render: renderSyncResult.value,
-                disabled: !isHasConfig.value,
-              },
-            ]
-          : []),
-        {
-          label: t('common.import'),
-          key: 'import',
-          tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
-          disabled: props.isSyncFromThirdChecked && xPack.value,
-          permission: ['SYS_ORGANIZATION:IMPORT'],
-        },
-        // TOTO  不上
-        // {
-        //   label: t('common.export'),
-        //   key: 'export',
-        // },
-      ];
-    }
+    // TODO license 先放开
+    // if (licenseStore.hasLicense()) {
+    //   return [
+    //     ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
+    //       ? [
+    //           {
+    //             label: t('org.enterpriseWhatSync'),
+    //             key: 'sync',
+    //             render: renderSyncResult.value,
+    //             disabled: !isHasConfig.value,
+    //           },
+    //         ]
+    //       : []),
+    //     {
+    //       label: t('common.import'),
+    //       key: 'import',
+    //       tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
+    //       disabled: props.isSyncFromThirdChecked && xPack.value,
+    //       permission: ['SYS_ORGANIZATION:IMPORT'],
+    //     },
+    //     // TOTO  不上
+    //     // {
+    //     //   label: t('common.export'),
+    //     //   key: 'export',
+    //     // },
+    //   ];
+    // }
     return [
+      ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
+        ? [
+            {
+              label: t('org.enterpriseWhatSync'),
+              key: 'sync',
+              render: renderSyncResult.value,
+              disabled: !isHasConfig.value,
+            },
+          ]
+        : []),
       {
         label: t('common.import'),
         key: 'import',
@@ -856,6 +869,13 @@
         disabled: props.isSyncFromThirdChecked && xPack.value,
         permission: ['SYS_ORGANIZATION:IMPORT'],
       },
+      // {
+      //   label: t('common.import'),
+      //   key: 'import',
+      //   tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
+      //   disabled: props.isSyncFromThirdChecked && xPack.value,
+      //   permission: ['SYS_ORGANIZATION:IMPORT'],
+      // },
       // TOTO  不上
       // {
       //   label: t('common.export'),
@@ -1048,9 +1068,11 @@
   }
 
   onBeforeMount(() => {
-    if (isHasConfigPermission.value && licenseStore.hasLicense()) {
-      initIntegration();
-    }
+    // TODO license 先放开
+    // if (isHasConfigPermission.value && licenseStore.hasLicense()) {
+    //   initIntegration();
+    // }
+    initIntegration();
   });
 
   onMounted(() => {

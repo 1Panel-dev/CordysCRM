@@ -7,9 +7,11 @@
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
     </CrmCard>
     <PageSettings v-if="activeTab === 'pageSettings'" />
-    <AuthenticationSettings v-if="activeTab === 'authenticationSettings' && xPack" />
+    <!-- TODO license 先放开 <AuthenticationSettings v-if="activeTab === 'authenticationSettings' && xPack" /> -->
+    <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
     <MailSettings v-if="activeTab === 'mailSettings'" />
-    <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" />
+    <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
+    <IntegrationList v-if="activeTab === 'syncOrganization'" />
   </n-scrollbar>
 </template>
 
@@ -33,26 +35,34 @@
   const xPack = computed(() => licenseStore.hasLicense());
 
   const activeTab = ref('syncOrganization');
-  const tabList = ref([{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }]);
-  watch(
-    () => xPack.value,
-    async (val) => {
-      if (val) {
-        tabList.value = [
-          { name: 'syncOrganization', tab: t('system.business.tab.third') },
-          { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
-          { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
-        ];
-        activeTab.value = 'syncOrganization';
-      } else {
-        tabList.value = [{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }];
-        activeTab.value = 'mailSettings';
-      }
-    },
-    {
-      immediate: true,
-    }
-  );
+
+  // TODO license 先放开
+  // const tabList = ref([{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }]);
+  const tabList = ref([
+    { name: 'syncOrganization', tab: t('system.business.tab.third') },
+    { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
+    { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
+  ]);
+  // TODO license 先放开
+  // watch(
+  //   () => xPack.value,
+  //   async (val) => {
+  //     if (val) {
+  //       tabList.value = [
+  //         { name: 'syncOrganization', tab: t('system.business.tab.third') },
+  //         { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
+  //         { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
+  //       ];
+  //       activeTab.value = 'syncOrganization';
+  //     } else {
+  //       tabList.value = [{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }];
+  //       activeTab.value = 'mailSettings';
+  //     }
+  //   },
+  //   {
+  //     immediate: true,
+  //   }
+  // );
 </script>
 
 <style lang="less" scoped>

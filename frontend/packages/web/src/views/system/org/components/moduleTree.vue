@@ -88,7 +88,9 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   const licenseStore = useLicenseStore();
-  const xPack = computed(() => licenseStore.hasLicense());
+  // TODO license 先放开
+  // const xPack = computed(() => licenseStore.hasLicense());
+  const xPack = ref(true);
 
   const { openModal } = useModal();
 

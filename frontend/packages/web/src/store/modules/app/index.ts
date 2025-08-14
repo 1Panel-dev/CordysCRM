@@ -182,9 +182,10 @@ const useAppStore = defineStore('app', {
         this.moduleConfigList = await getModuleNavConfigList({
           organizationId: this.orgId,
         });
-        if (!useLicenseStore().hasLicense()) {
-          this.moduleConfigList = this.moduleConfigList.filter((e) => e.moduleKey !== ModuleConfigEnum.DASHBOARD);
-        }
+        // TODO license 先放开
+        // if (!useLicenseStore().hasLicense()) {
+        //   this.moduleConfigList = this.moduleConfigList.filter((e) => e.moduleKey !== ModuleConfigEnum.DASHBOARD);
+        // }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -292,8 +293,9 @@ const useAppStore = defineStore('app', {
     },
     // 显示 SQLBot
     async showSQLBot() {
-      const licenseStore = useLicenseStore();
-      if (!licenseStore.hasLicense()) return;
+      // TODO license 先放开
+      // const licenseStore = useLicenseStore();
+      // if (!licenseStore.hasLicense()) return;
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
       await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     },

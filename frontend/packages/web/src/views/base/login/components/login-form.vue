@@ -332,9 +332,11 @@
   onMounted(async () => {
     if (!props.isPreview) {
       // userStore.getAuthentication();
-      if (licenseStore.hasLicense()) {
-        initPlatformInfo();
-      }
+      // TODO license 先放开
+      // if (licenseStore.hasLicense()) {
+      //   initPlatformInfo();
+      // }
+      initPlatformInfo();
       appStore.initPublicKey();
       try {
         if (isLoginExpires()) {

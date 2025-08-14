@@ -131,8 +131,9 @@ const useAppStore = defineStore('app', {
     },
     // 显示 SQLBot
     async showSQLBot() {
-      const licenseStore = useLicenseStore();
-      if (!licenseStore.hasLicense()) return;
+      // TODO license 先放开
+      // const licenseStore = useLicenseStore();
+      // if (!licenseStore.hasLicense()) return;
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
       await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     },
