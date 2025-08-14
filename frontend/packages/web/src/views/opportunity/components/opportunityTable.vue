@@ -95,7 +95,7 @@
     :source-id="activeSourceId"
     :initial-source-name="initialSourceName"
     :need-init-detail="needInitDetail"
-    @saved="searchData"
+    @saved="() => searchData()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
