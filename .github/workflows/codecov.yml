@@ -35,7 +35,7 @@ jobs:
           distribution: 'zulu'
           java-version: 21
           cache: 'maven'
-          cache-dependency-path: '**/pom.xml'
+          cache-dependency-path: 'backend/pom.xml'
           check-latest: false
 
       - name: Build with Maven - other
