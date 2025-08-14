@@ -841,8 +841,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         }));
         if (addressFieldIds.value.includes(fieldId)) {
           // 地址类型字段，解析代码替换成省市区
-          const address = item[fieldId]?.split('-') || [];
-          const value = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
+          const addressArr: string[] = item[fieldId]?.split('-') || [];
+          const value = addressArr.length
+            ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+            : '-';
           businessFieldAttr[fieldId] = value;
         } else if (options && options.length > 0) {
           let name: string | string[] = '';
@@ -879,8 +881,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         }));
         if (addressFieldIds.value.includes(field.fieldId)) {
           // 地址类型字段，解析代码替换成省市区
-          const address = (field.fieldValue as string)?.split('-') || [];
-          const value = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
+          const addressArr = (field?.fieldValue as string).split('-') || [];
+          const value = addressArr.length
+            ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+            : '-';
           customFieldAttr[field.fieldId] = value;
         } else if (options && options.length > 0) {
           let name: string | string[] = '';

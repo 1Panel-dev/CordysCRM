@@ -260,8 +260,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 value = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
               }
             } else if (item.type === FieldTypeEnum.LOCATION) {
-              const address = (field?.fieldValue as string)?.split('-');
-              value = address ? `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}` : '-';
+              const addressArr: string[] = (field?.fieldValue as string)?.split('-') || [];
+              value = addressArr.length
+                ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                : '-';
             } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
               value = formatNumberValue(field?.fieldValue as string, item);
             } else if (item.type === FieldTypeEnum.DATE_TIME) {
@@ -380,8 +382,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               }
             } else if (linkField.type === FieldTypeEnum.LOCATION) {
               // 联动的字段是省市区则填充城市路径
-              const address = linkField.value.split('-');
-              formDetail.value[field.id] = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
+              const addressArr: string[] = linkField.value.split('-') || [];
+              formDetail.value[field.id] = addressArr.length
+                ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                : '-';
             } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
               formDetail.value[field.id] = linkField.value.slice(0, 255);
             } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {

@@ -84,8 +84,10 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
         businessFieldAttr[fieldId] = name;
       } else if (addressFieldIds.value.includes(fieldId)) {
         // 地址类型字段，解析代码替换成省市区
-        const address = data[fieldId]?.split('-');
-        const value = `${getCityPath(address[0])}-${address[1]}`;
+        const addressArr: string[] = data[fieldId]?.split('-') || [];
+        const value = addressArr.length
+          ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+          : '-';
         businessFieldAttr[fieldId] = value;
       }
     });
@@ -100,8 +102,10 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
         }
       } else if (addressFieldIds.value.includes(field.fieldId)) {
         // 地址类型字段，解析代码替换成省市区
-        const address = (field?.fieldValue as string)?.split('-');
-        const value = `${getCityPath(address[0])}-${address[1]}`;
+        const addressArr: string[] = (field?.fieldValue as string)?.split('-') || [];
+        const value = addressArr.length
+          ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+          : '-';
         customFieldAttr[field.fieldId] = value;
       } else {
         customFieldAttr[field.fieldId] = field.fieldValue;

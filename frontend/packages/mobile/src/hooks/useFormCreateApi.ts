@@ -179,8 +179,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 value = options.find((e) => e.id === field.fieldValue)?.name;
               }
             } else if (item.type === FieldTypeEnum.LOCATION) {
-              const address = (field?.fieldValue as string)?.split('-');
-              value = address ? `${getCityPath(address[0])}-${address[1]}` : '-';
+              const addressArr = (field?.fieldValue as string).split('-') || [];
+              value = addressArr.length
+                ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                : '-';
             } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
               value = formatNumberValue(field?.fieldValue as string, item);
             } else if (item.type === FieldTypeEnum.DATE_TIME) {
