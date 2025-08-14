@@ -1,7 +1,6 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
@@ -115,9 +114,7 @@ public class PoolCustomerController {
 	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
 	public String customerPoolExportAll(@Validated @RequestBody CustomerExportRequest request) {
 		ConditionFilterUtils.parseCondition(request);
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-		return customerPoolExportService.exportCrossPage(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+        return customerPoolExportService.exportCrossPage(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), null, LocaleContextHolder.getLocale());
 	}
 
 	@PostMapping("/export-select")
