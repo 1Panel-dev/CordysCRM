@@ -361,7 +361,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getGlobalSearchClueList(data: CustomerTableParams) {
-    return CDR.post<CommonList<ClueListItem>>({ url: GetGlobalSearchClueListUrl, data });
+    return CDR.post<CommonList<ClueListItem>>({ url: GetGlobalSearchClueListUrl, data }, { ignoreCancelToken: true });
   }
 
   function getGlobalSearchClueDetail(data: CustomerTableParams) {
@@ -369,7 +369,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getGlobalCluePoolList(data: CluePoolTableParams) {
-    return CDR.post<CommonList<CluePoolListItem>>({ url: GetGlobalCluePoolListUrl, data });
+    return CDR.post<CommonList<CluePoolListItem>>({ url: GetGlobalCluePoolListUrl, data }, { ignoreCancelToken: true });
   }
 
   return {

@@ -14,6 +14,7 @@
           v-model:value="keyword"
           class="!w-full"
           auto-search
+          :debounce-time="500"
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
           @search="(val) => searchData(val)"
         />
@@ -707,6 +708,8 @@
   const searchData = (val: string) => {
     if (!val) return;
     activeTables.value.forEach(async (table) => {
+      // 后端上一个不一定执行完了，loading还是true的时候不执行后面接口，这里手动设置成false
+      table.instance.setLoading(false);
       table.instance.setLoadListParams({ keyword: val });
       await table.instance.loadList();
       if (table.instance.propsRes.value.data) {

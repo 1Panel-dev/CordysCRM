@@ -225,7 +225,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function globalSearchOptPage(data: TableQueryParams) {
-    return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptPageUrl, data });
+    return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptPageUrl, data }, { ignoreCancelToken: true });
   }
 
   function globalSearchOptDetail(data: TableQueryParams) {

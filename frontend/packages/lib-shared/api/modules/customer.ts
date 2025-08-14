@@ -554,15 +554,21 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function geGlobalCustomerList(data: CustomerTableParams) {
-    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data });
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data }, { ignoreCancelToken: true });
   }
 
   function getGlobalOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
-    return CDR.post<CommonList<CustomerOpenSeaListItem>>({ url: GetGlobalOpenSeaCustomerListUrl, data });
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>(
+      { url: GetGlobalOpenSeaCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
   }
 
   function getGlobalCustomerContactList(data: CustomerContractTableParams) {
-    return CDR.post<CommonList<CustomerContractListItem>>({ url: GetGlobalCustomerContactListUrl, data });
+    return CDR.post<CommonList<CustomerContractListItem>>(
+      { url: GetGlobalCustomerContactListUrl, data },
+      { ignoreCancelToken: true }
+    );
   }
 
   return {
