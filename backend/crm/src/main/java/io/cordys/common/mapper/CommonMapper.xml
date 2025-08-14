@@ -100,13 +100,18 @@
                     <choose>
                         <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
-                                <if test="'${column}' == 'value'">
-                                    `value`
+                                <if test="v == 'CHN'">
+                                    ${column} REGEXP '^[0-9]{6}'
+                                 </if>
+                                <if test="v != 'CHN'">
+                                    <if test="'${column}' == 'value'">
+                                        `value`
+                                    </if>
+                                    <if test="'${column}' != 'value'">
+                                        ${column}
+                                    </if>
+                                    LIKE CONCAT(#{v}, '%')
                                 </if>
-                                <if test="'${column}' != 'value'">
-                                    ${column}
-                                </if>
-                                 LIKE CONCAT(#{v}, '%')
                             </foreach>
                         </when>
                         <otherwise>
@@ -128,13 +133,18 @@
                         <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
                             !(
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
-                                <if test="'${column}' == 'value'">
-                                    `value`
+                                <if test="v == 'CHN'">
+                                    ${column} REGEXP '^[0-9]{6}'
                                 </if>
-                                <if test="'${column}' != 'value'">
-                                    ${column}
+                                <if test="v != 'CHN'">
+                                    <if test="'${column}' == 'value'">
+                                        `value`
+                                    </if>
+                                    <if test="'${column}' != 'value'">
+                                        ${column}
+                                    </if>
+                                    LIKE CONCAT(#{v}, '%')
                                 </if>
-                                LIKE CONCAT(#{v}, '%')
                             </foreach>
                             )
                             or ${column} is null
