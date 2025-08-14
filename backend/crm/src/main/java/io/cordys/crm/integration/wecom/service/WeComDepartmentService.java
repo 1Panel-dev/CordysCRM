@@ -1,6 +1,5 @@
 package io.cordys.crm.integration.wecom.service;
 
-
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
@@ -9,10 +8,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.constants.OrganizationConfigConstants;
-import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
-import io.cordys.crm.system.service.IntegrationConfigService;
 import io.cordys.crm.integration.sso.service.TokenService;
 import io.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import io.cordys.crm.integration.wecom.dto.WeComDepartment;
@@ -21,6 +17,9 @@ import io.cordys.crm.integration.wecom.response.DepartmentListResponse;
 import io.cordys.crm.integration.wecom.response.UserListResponse;
 import io.cordys.crm.integration.wecom.utils.DataHandleUtils;
 import io.cordys.crm.integration.wecom.utils.HttpRequestUtil;
+import io.cordys.crm.system.constants.OrganizationConfigConstants;
+import io.cordys.crm.system.service.IntegrationConfigService;
+import io.cordys.crm.system.service.LogService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,146 +43,221 @@ import java.util.Objects;
 @Transactional(rollbackFor = Exception.class)
 public class WeComDepartmentService {
 
+    private static final String LOCK_PREFIX = "orgId_sync_";
+    private static final String DEPT_TREE_CACHE_KEY = "dept_tree_cache::";
+    private static final String PERMISSION_CACHE_PATTERN = "permission_cache*%s";
+    private static final int SCAN_COUNT = 100;
+
     @Resource
     private TokenService tokenService;
+
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 企业微信同步组织架构
      *
-     * @param operatorId
-     * @param orgId
+     * @param operatorId 操作人ID
+     * @param orgId      组织ID
      */
     public void syncUser(String operatorId, String orgId) {
         Redisson redisson = CommonBeanFactory.getBean(Redisson.class);
-        RLock lock = redisson.getLock("orgId_sync_" + orgId);
-        if (lock.tryLock()) {
-            try {
-                IntegrationConfigService organizationConfigService = CommonBeanFactory.getBean(IntegrationConfigService.class);
-                LogService logService = CommonBeanFactory.getBean(LogService.class);
-                //获取配置信息
-                List<ThirdConfigurationDTO> synOrganizationConfigs = organizationConfigService.getThirdConfig(orgId);
-                if (CollectionUtils.isEmpty(synOrganizationConfigs)) {
-                    throw new GenericException("未配置企业信息");
-                }
-                ThirdConfigurationDTO weComConfig = synOrganizationConfigs.stream().filter(config -> StringUtils.equalsIgnoreCase(config.getType(), DepartmentConstants.WECOM.name())).toList().getFirst();
-                if (weComConfig == null) {
-                    throw new GenericException("未配置企业微信信息");
-                }
-                boolean syncStatus = organizationConfigService.getSyncStatus(orgId, OrganizationConfigConstants.ConfigType.THIRD.name(), DepartmentConstants.WECOM.name());
-                //1. 获取assess_token
-                String assessToken = tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
-                if (StringUtils.isNotBlank(assessToken)) {
-                    //2. 获取部门列表
-                    List<WeComDepartment> weComDepartments = getDepartmentList(assessToken);
-                    //3. 获取部门成员
-                    Map<String, List<WeComUser>> departmentUserMap = getDepartmentUser(assessToken, weComDepartments.stream().map(WeComDepartment::getId).toList());
-                    //4. 同步用户
-                    DataHandleUtils dataHandleUtils = new DataHandleUtils(orgId, departmentUserMap);
-                    if (syncStatus) {
-                        //多次同步 更新
-                        dataHandleUtils.handleUpdateData(weComDepartments, operatorId);
-                    } else {
-                        //首次同步 新增
-                        dataHandleUtils.handleAddData(weComDepartments, operatorId);
-                    }
+        assert redisson != null;
+        RLock lock = redisson.getLock(LOCK_PREFIX + orgId);
 
-                    LogDTO logDTO = new LogDTO(orgId, operatorId, operatorId, LogType.SYNC, LogModule.SYSTEM_ORGANIZATION, Translator.get("log.syncOrganization"));
-                    String detail = Translator.get("log.syncOrganization");
-                    logDTO.setDetail(detail);
-                    logService.add(logDTO);
-                }
-                stringRedisTemplate.delete("dept_tree_cache::" + orgId);
-                deleteKeysByPrefixSafely(orgId);
-            } finally {
-                lock.unlock();
-            }
-        } else {
+        // 尝试获取锁，避免并发同步
+        if (!lock.tryLock()) {
             throw new GenericException("当前正在执行同步任务！");
         }
 
+        try {
+            performSync(operatorId, orgId);
+            clearCaches(orgId);
+        } finally {
+            lock.unlock();
+        }
     }
 
+    /**
+     * 执行同步操作
+     */
+    private void performSync(String operatorId, String orgId) {
+        IntegrationConfigService configService = CommonBeanFactory.getBean(IntegrationConfigService.class);
+        LogService logService = CommonBeanFactory.getBean(LogService.class);
+
+        // 获取企业微信配置信息
+        assert configService != null;
+        ThirdConfigurationDTO weComConfig = getWeComConfig(orgId, configService);
+        boolean syncStatus = configService.getSyncStatus(orgId,
+                OrganizationConfigConstants.ConfigType.THIRD.name(),
+                DepartmentConstants.WECOM.name());
+
+        // 获取访问令牌
+        String accessToken = tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
+        if (StringUtils.isBlank(accessToken)) {
+            throw new GenericException("获取企业微信访问令牌失败");
+        }
+
+        // 获取部门和用户数据
+        List<WeComDepartment> departments = getDepartmentList(accessToken);
+        List<Long> departmentIds = departments.stream().map(WeComDepartment::getId).toList();
+        Map<String, List<WeComUser>> departmentUserMap = getDepartmentUser(accessToken, departmentIds);
+
+        // 处理同步数据
+        syncDepartmentsAndUsers(orgId, departments, departmentUserMap, syncStatus, operatorId);
+
+        // 记录日志
+        assert logService != null;
+        logSyncOperation(logService, orgId, operatorId);
+    }
+
+    /**
+     * 获取企业微信配置
+     */
+    private ThirdConfigurationDTO getWeComConfig(String orgId, IntegrationConfigService configService) {
+        List<ThirdConfigurationDTO> configs = configService.getThirdConfig(orgId);
+        if (CollectionUtils.isEmpty(configs)) {
+            throw new GenericException("未配置企业信息");
+        }
+
+        return configs.stream()
+                .filter(config -> StringUtils.equalsIgnoreCase(config.getType(), DepartmentConstants.WECOM.name()))
+                .findFirst()
+                .orElseThrow(() -> new GenericException("未配置企业微信信息"));
+    }
+
+    /**
+     * 同步部门和用户数据
+     */
+    private void syncDepartmentsAndUsers(String orgId, List<WeComDepartment> departments,
+                                         Map<String, List<WeComUser>> departmentUserMap,
+                                         boolean isUpdate, String operatorId) {
+        DataHandleUtils dataHandleUtils = new DataHandleUtils(orgId, departmentUserMap);
+
+        if (isUpdate) {
+            // 多次同步 更新
+            dataHandleUtils.handleUpdateData(departments, operatorId);
+        } else {
+            // 首次同步 新增
+            dataHandleUtils.handleAddData(departments, operatorId);
+        }
+    }
+
+    /**
+     * 记录同步操作日志
+     */
+    private void logSyncOperation(LogService logService, String orgId, String operatorId) {
+        String detail = Translator.get("log.syncOrganization");
+        LogDTO logDTO = new LogDTO(orgId, operatorId, operatorId,
+                LogType.SYNC, LogModule.SYSTEM_ORGANIZATION, detail);
+        logDTO.setDetail(detail);
+        logService.add(logDTO);
+    }
+
+    /**
+     * 清理相关缓存
+     */
+    private void clearCaches(String orgId) {
+        // 清理部门树缓存
+        stringRedisTemplate.delete(DEPT_TREE_CACHE_KEY + orgId);
+        // 清理权限缓存
+        deleteKeysByPrefixSafely(orgId);
+    }
 
     /**
      * 清理权限缓存
      *
-     * @param orgId
+     * @param orgId 组织ID
      */
     public void deleteKeysByPrefixSafely(String orgId) {
-        String pattern = "permission_cache" + "*" + orgId;
-        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();
+        String pattern = String.format(PERMISSION_CACHE_PATTERN, orgId);
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(SCAN_COUNT).build();
+
         try (Cursor<String> cursor = stringRedisTemplate.scan(options)) {
             while (cursor.hasNext()) {
-                String key = cursor.next();
-                stringRedisTemplate.delete(key);
+                stringRedisTemplate.delete(cursor.next());
             }
         }
     }
 
-    String urlTransfer(Object... params) {
-        Object[] vars = new Object[params.length];
+    /**
+     * URL参数转换
+     */
+    private String urlTransfer(Object... params) {
+        Object[] encodedParams = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
             if (Objects.isNull(params[i])) {
-                vars[i] = "";
+                encodedParams[i] = "";
                 continue;
             }
-            String var = StringUtils.stripToEmpty(params[i].toString());
-            vars[i] = URLEncoder.encode(var, StandardCharsets.UTF_8);
+            String value = StringUtils.stripToEmpty(params[i].toString());
+            encodedParams[i] = URLEncoder.encode(value, StandardCharsets.UTF_8);
         }
-        return MessageFormat.format(WeComApiPaths.USER_LIST, vars);
+        return MessageFormat.format(WeComApiPaths.USER_LIST, encodedParams);
     }
-
 
     /**
      * 获取部门用户详情
      *
-     * @param assessToken
-     * @param departmentIds
-     * @return
+     * @param accessToken   访问令牌
+     * @param departmentIds 部门ID列表
+     * @return 部门ID与用户列表的映射
      */
-    private Map<String, List<WeComUser>> getDepartmentUser(String assessToken, List<Long> departmentIds) {
+    private Map<String, List<WeComUser>> getDepartmentUser(String accessToken, List<Long> departmentIds) {
         Map<String, List<WeComUser>> weComUserMap = new HashMap<>();
-        departmentIds.forEach(departmentId -> {
-            UserListResponse userListResponse = new UserListResponse();
-            String url = urlTransfer(assessToken, departmentId);
-            try {
-                String response = HttpRequestUtil.sendGetRequest(url, null);
-                userListResponse = JSON.parseObject(response, UserListResponse.class);
-            } catch (Exception e) {
-                throw new GenericException("调用接口获取用户列表失败", e);
+
+        for (Long departmentId : departmentIds) {
+            String url = urlTransfer(accessToken, departmentId);
+            UserListResponse response = fetchUserList(url);
+
+            if (response.getErrCode() != 0) {
+                throw new GenericException("获取用户接口返回结果失败: " + response.getErrMsg());
             }
-            if (userListResponse.getErrCode() != 0) {
-                throw new GenericException("获取用户接口返回结果失败:" + userListResponse.getErrMsg());
-            }
-            weComUserMap.put(departmentId.toString(), userListResponse.getUserList());
-        });
+
+            weComUserMap.put(departmentId.toString(), response.getUserList());
+        }
+
         return weComUserMap;
     }
 
     /**
-     * 获取部门id列表
-     *
-     * @param assessToken
-     * @return
+     * 获取用户列表
      */
-    private List<WeComDepartment> getDepartmentList(String assessToken) {
-        String url = HttpRequestUtil.urlTransfer(WeComApiPaths.DEPARTMENT_LIST, assessToken, null);
-        DepartmentListResponse departmentListResponse = new DepartmentListResponse();
+    private UserListResponse fetchUserList(String url) {
         try {
-            String response = HttpRequestUtil.sendGetRequest(url, null);
-            departmentListResponse = JSON.parseObject(response, DepartmentListResponse.class);
+            String responseStr = HttpRequestUtil.sendGetRequest(url, null);
+            return JSON.parseObject(responseStr, UserListResponse.class);
+        } catch (Exception e) {
+            throw new GenericException("调用接口获取用户列表失败", e);
+        }
+    }
+
+    /**
+     * 获取部门列表
+     *
+     * @param accessToken 访问令牌
+     * @return 部门列表
+     */
+    private List<WeComDepartment> getDepartmentList(String accessToken) {
+        String url = HttpRequestUtil.urlTransfer(WeComApiPaths.DEPARTMENT_LIST, accessToken, null);
+        DepartmentListResponse response = fetchDepartmentList(url);
+
+        if (response.getErrCode() != 0) {
+            throw new GenericException("获取部门接口返回结果失败: " + response.getErrMsg());
+        }
+
+        return response.getDepartment();
+    }
+
+    /**
+     * 获取部门列表
+     */
+    private DepartmentListResponse fetchDepartmentList(String url) {
+        try {
+            String responseStr = HttpRequestUtil.sendGetRequest(url, null);
+            return JSON.parseObject(responseStr, DepartmentListResponse.class);
         } catch (Exception e) {
             throw new GenericException("调用接口获取部门列表失败", e);
         }
-
-        if (departmentListResponse.getErrCode() != 0) {
-            throw new GenericException("获取部门接口返回结果失败:" + departmentListResponse.getErrMsg());
-        }
-
-        return departmentListResponse.getDepartment();
     }
-
-
 }
