@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.cordys.crm.integration.sqlbot.mapper.ExtDataSourceMapper">
+
+    <select id="selectSchemaByDbName" resultType="java.lang.String">
+        SELECT JSON_PRETTY(
+                       JSON_ARRAYAGG(
+                               JSON_OBJECT(
+                                       'name', t.TABLE_NAME,
+                                       'comment', t.TABLE_COMMENT,
+                                       'rule', NULL,
+                                       'sql', NULL,
+                                       'fields',
+                                       (
+                                           SELECT JSON_ARRAYAGG(
+                                                          JSON_OBJECT(
+                                                                  'name',    c.COLUMN_NAME,
+                                                                  'type',      c.COLUMN_TYPE,
+                                                                  'comment', c.COLUMN_COMMENT
+                                                          )
+                                                  )
+                                           FROM information_schema.COLUMNS c
+                                           WHERE c.TABLE_SCHEMA = #{dbName}
+                                             AND c.TABLE_NAME   = t.TABLE_NAME
+                                       )
+                               )
+                       )
+               ) AS full_schema_json
+        FROM information_schema.TABLES t
+        WHERE t.TABLE_SCHEMA = #{dbName};
+    </select>
+
+
+</mapper> 

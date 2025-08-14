@@ -2,12 +2,12 @@ package io.cordys.crm.system.notice;
 
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.integration.wecom.service.WeComNoticeSender;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.message.MessageDetailDTOService;
 import io.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
-import io.cordys.crm.system.notice.sender.wecom.WeComNoticeSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,9 +69,7 @@ public class NoticeSendService {
                     weComNoticeSender.sendWeCom(clonedMessageDetail, clonedNoticeModel);
                 } else {
                     LogUtils.warn("WeComNoticeSender bean not found, skipping WeCom notification.");
-
                 }
-
             }
         } catch (Exception e) {
             LogUtils.error("Error sending individual notification", e);
@@ -103,7 +101,7 @@ public class NoticeSendService {
         noticeModel.setExcludeSelf(excludeSelf);
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate,template, organizationId)
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
                     .stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
