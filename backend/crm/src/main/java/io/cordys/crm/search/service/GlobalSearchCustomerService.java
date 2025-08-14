@@ -311,7 +311,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
                     productNames.add(productMap.get(product));
                 }
             });
-            clue.setProducts(productNames);
+            clue.setProductNameList(productNames);
         });
     }
 
