@@ -194,7 +194,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
             clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
             GlobalClueResponse globalClueResponse = new GlobalClueResponse();
             BeanUtils.copyBean(globalClueResponse, clueListResponse);
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_ADD);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
             globalClueResponse.setHasPermission(hasPermission);
             if (!hasPermission) {
                 globalClueResponse.setPhone(null);

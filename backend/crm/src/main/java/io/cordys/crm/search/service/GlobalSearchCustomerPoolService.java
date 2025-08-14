@@ -233,7 +233,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         }
 
         boolean hasPool = userPoolMap.containsKey(customerPoolResponse.getPoolId());
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
 
         if (hasPool && hasPermission) {
             return true;
