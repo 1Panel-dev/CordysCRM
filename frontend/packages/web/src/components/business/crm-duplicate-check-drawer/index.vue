@@ -444,9 +444,12 @@
     },
     {
       title: t('opportunity.intendedProducts'),
-      key: 'productNameList',
+      key: 'productNames',
       width: 100,
       isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
     },
     {
       title: t('opportunity.stage'),
@@ -672,14 +675,32 @@
   const activeTables = computed(() => {
     return lastScopedOptions.value.map((config) => ({
       ...config,
-      instance: useTable(getFormListApiMap[config.value], {
-        showSetting: false,
-        columns: columnsMap[config.value],
-        crmPagination: { size: 'small' },
-        hiddenTotal: true,
-        hiddenRefresh: true,
-        hiddenAllScreen: true,
-      }),
+      instance: useTable(
+        getFormListApiMap[config.value],
+        {
+          showSetting: false,
+          columns: columnsMap[config.value],
+          crmPagination: { size: 'small' },
+          hiddenTotal: true,
+          hiddenRefresh: true,
+          hiddenAllScreen: true,
+        },
+        [
+          FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
+          FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
+          FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
+        ].includes(config.value)
+          ? (item, originalData) => {
+              return {
+                ...item,
+                [config.value !== FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY ? 'productNameList' : 'productNames']:
+                  item.products.map((product: string) => {
+                    return originalData?.optionMap?.products.find((i) => i.id === product);
+                  }),
+              };
+            }
+          : undefined
+      ),
     }));
   });
 
