@@ -319,7 +319,7 @@
   {
     "id": "DASHBOARD_MANAGEMENT",
     "name": "permission.dashboard_management.name",
-    "license": true,
+    "license": false,
     "children": [
       {
         "id": "DASHBOARD",
@@ -327,19 +327,19 @@
         "permissions": [
           {
             "id": "DASHBOARD:READ",
-            "license": true
+            "license": false
           },
           {
             "id": "DASHBOARD:ADD",
-            "license": true
+            "license": false
           },
           {
             "id": "DASHBOARD:UPDATE",
-            "license": true
+            "license": false
           },
           {
             "id": "DASHBOARD:DELETE",
-            "license": true
+            "license": false
           }
         ]
       }
