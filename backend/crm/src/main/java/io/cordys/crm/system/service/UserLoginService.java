@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class UserLoginService {
     @Resource
-    private BaseMapper<User> sysUserMapper;
+    private BaseMapper<User> userMapper;
 
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
@@ -69,13 +69,10 @@ public class UserLoginService {
     private BaseMapper<LoginLog> loginLogMapper;
 
     @Resource
-    private BaseMapper<OrganizationUser> organizationUserBaseMapper;
+    private BaseMapper<Department> departmentMapper;
 
     @Resource
     private PermissionCache permissionCache;
-
-    @Resource
-    private BaseMapper<Department> departmentBaseMapper;
 
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
@@ -84,152 +81,32 @@ public class UserLoginService {
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     /**
-     * 认证用户并获取用户详细信息
-     *
-     * @param userKey 用户标识（用户名/手机号/邮箱）
-     * @return 用户详细信息
-     * @throws AuthenticationException 如果用户不存在或被禁用
-     */
-    public UserDTO authenticateUser(String userKey) {
-        // 获取用户信息
-        UserDTO userDTO = Optional.ofNullable(extUserMapper.selectByPhoneOrEmail(userKey))
-                .orElseThrow(() -> new AuthenticationException(Translator.get("user_not_exist")));
-
-        // 非管理员用户需要检查是否被禁用
-        if (!StringUtils.equals(userDTO.getId(), InternalUser.ADMIN.getValue())) {
-            checkUserStatus(userDTO);
-        }
-
-        // 获取用户所属组织列表
-        Set<String> orgIds = getOrgIdsByUserId(userDTO.getId());
-
-        // 确定当前使用的组织ID
-        String organizationId = determineOrganizationId(userDTO, orgIds);
-
-        // 设置用户权限和角色信息
-        setupUserPermissions(userDTO, organizationId, orgIds);
-
-        return userDTO;
-    }
-
-    /**
-     * 检查用户状态是否正常
-     *
-     * @param userDTO 用户信息
-     * @throws DisabledAccountException 如果用户被禁用
-     */
-    private void checkUserStatus(UserDTO userDTO) {
-        LambdaQueryWrapper<OrganizationUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(OrganizationUser::getUserId, userDTO.getId());
-        queryWrapper.eq(OrganizationUser::getEnable, true);
-
-        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
-            queryWrapper.eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId());
-        }
-
-        List<OrganizationUser> organizationUsers = organizationUserBaseMapper.selectListByLambda(queryWrapper);
-
-        if (CollectionUtils.isEmpty(organizationUsers)) {
-            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
-        }
-
-        // 设置部门信息
-        OrganizationUser orgUser = organizationUsers.getFirst();
-        userDTO.setDepartmentId(orgUser.getDepartmentId());
-
-        Optional.ofNullable(departmentBaseMapper.selectByPrimaryKey(orgUser.getDepartmentId()))
-                .ifPresent(department -> userDTO.setDepartmentName(department.getName()));
-    }
-
-    /**
-     * 确定用户当前使用的组织ID
-     *
-     * @param userDTO 用户信息
-     * @param orgIds  用户所属的所有组织ID
-     * @return 确定的组织ID
-     */
-    private String determineOrganizationId(UserDTO userDTO, Set<String> orgIds) {
-        String organizationId = OrganizationContext.getOrganizationId();
-
-        if (StringUtils.isBlank(organizationId) && CollectionUtils.isNotEmpty(orgIds)) {
-            // 上下文中无组织ID时，选取一个可用的组织ID
-            organizationId = orgIds.contains(userDTO.getLastOrganizationId())
-                    ? userDTO.getLastOrganizationId()
-                    : orgIds.iterator().next();
-        }
-
-        return organizationId;
-    }
-
-    /**
-     * 设置用户的权限和角色信息
-     *
-     * @param userDTO        用户信息
-     * @param organizationId 组织ID
-     * @param orgIds         用户所属的所有组织ID
-     */
-    private void setupUserPermissions(UserDTO userDTO, String organizationId, Set<String> orgIds) {
-        // 设置用户角色
-        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(userDTO.getId(), organizationId);
-        userDTO.setRoles(roleOptions);
-
-        // 更新最后登录的组织ID
-        userDTO.setLastOrganizationId(organizationId);
-
-        // 设置用户权限
-        userDTO.setPermissionIds(permissionCache.getPermissionIds(userDTO.getId(), organizationId));
-
-        // 设置用户所属的所有组织
-        userDTO.setOrganizationIds(orgIds);
-    }
-
-    /**
-     * 获取用户所属的所有组织ID
-     *
-     * @param userId 用户ID
-     * @return 组织ID集合
-     */
-    private Set<String> getOrgIdsByUserId(String userId) {
-        // 管理员可以访问所有组织
-        if (StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
-            return extOrganizationMapper.selectAllOrganizationIds();
-        }
-
-        // 普通用户只能访问已授权且启用的组织
-        OrganizationUser example = new OrganizationUser();
-        example.setUserId(userId);
-        example.setEnable(true);
-
-        return organizationUserMapper.select(example).stream()
-                .map(OrganizationUser::getOrganizationId)
-                .collect(Collectors.toSet());
-    }
-
-    /**
      * 用户登录
      *
      * @param request 登录请求
      * @return 会话用户信息
-     * @throws GenericException 登录失败时抛出相应异常
+     * @throws AuthenticationException 登录失败时抛出相应异常
      */
     public SessionUser login(LoginRequest request) {
         String username = StringUtils.trim(request.getUsername());
         String password = StringUtils.trim(request.getPassword());
 
-        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
         Subject subject = SecurityUtils.getSubject();
+        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
 
         try {
             subject.login(token);
 
-            if (subject.isAuthenticated()) {
-                SessionUser sessionUser = SessionUtils.getUser();
-                SessionUtils.putUser(sessionUser);
-                insertLoginLog(request);
-                return sessionUser;
-            } else {
+            if (!subject.isAuthenticated()) {
                 throw new GenericException(Translator.get("login_fail"));
             }
+
+            // 登录成功，记录会话用户并添加登录日志
+            SessionUser sessionUser = SessionUtils.getUser();
+            SessionUtils.putUser(sessionUser);
+            recordLoginLog(request);
+
+            return sessionUser;
         } catch (ExcessiveAttemptsException e) {
             throw new ExcessiveAttemptsException(Translator.get("excessive_attempts"));
         } catch (LockedAccountException e) {
@@ -246,45 +123,32 @@ public class UserLoginService {
     }
 
     /**
-     * 插入登录日志
+     * 认证用户并获取用户详细信息
      *
-     * @param request 登录请求
+     * @param userKey 用户标识（用户名/手机号/邮箱）
+     * @return 用户详细信息
+     * @throws AuthenticationException 如果用户不存在或被禁用
      */
-    private void insertLoginLog(LoginRequest request) {
-        LoginLog loginLog = new LoginLog();
-        loginLog.setId(IDGenerator.nextStr());
-        loginLog.setLoginAddress(request.getLoginAddress());
-        loginLog.setOperator(SessionUtils.getUserId());
-        loginLog.setCreateTime(System.currentTimeMillis());
+    public UserDTO authenticateUser(String userKey) {
+        // 获取用户信息
+        UserDTO userDTO = Optional.ofNullable(extUserMapper.selectByPhoneOrEmail(userKey))
+                .orElseThrow(() -> new AuthenticationException(Translator.get("user_not_exist")));
 
-        // 设置登录平台
-        setPlatform(loginLog);
-
-        loginLogMapper.insert(loginLog);
-    }
-
-    /**
-     * 根据User-Agent设置登录平台信息
-     *
-     * @param loginLog 登录日志对象
-     */
-    private void setPlatform(LoginLog loginLog) {
-        String userAgent = ServletUtils.getUserAgent();
-
-        if (StringUtils.isBlank(userAgent)) {
-            loginLog.setPlatform(LoginType.WEB.getName());
-            return;
+        // 非管理员用户需要检查是否被禁用
+        if (!isAdminUser(userDTO.getId())) {
+            checkUserStatus(userDTO);
         }
 
-        // 检测移动端特征
-        boolean isMobile = userAgent.contains("miniprogram") ||
-                userAgent.contains("MicroMessenger") ||
-                userAgent.contains("Android") ||
-                userAgent.contains("iPhone") ||
-                userAgent.contains("iPad") ||
-                userAgent.contains("ipod");
+        // 获取用户所属组织列表
+        Set<String> orgIds = getUserOrganizations(userDTO.getId());
 
-        loginLog.setPlatform(isMobile ? LoginType.MOBILE.getName() : LoginType.WEB.getName());
+        // 确定当前使用的组织ID
+        String organizationId = determineOrganizationId(userDTO, orgIds);
+
+        // 设置用户权限和角色信息
+        setupUserPermissions(userDTO, organizationId, orgIds);
+
+        return userDTO;
     }
 
     /**
@@ -306,56 +170,193 @@ public class UserLoginService {
         User example = new User();
         example.setId(userId);
         example.setPassword(CodingUtils.md5(password));
-        return sysUserMapper.exist(example);
+        return userMapper.exist(example);
     }
 
     /**
      * 检查移动端认证配置
-     * <p>
-     * 当请求来自移动端时，检查是否配置了相应的认证方式
-     * </p>
      *
+     * @param organizationId 组织ID
      * @throws AuthenticationException 如果未配置移动端认证或配置无效
      */
     public void checkMobileAuthConfig(String organizationId) {
-        String userAgent = ServletUtils.getUserAgent();
-
-        // 如果User-Agent为空或不是移动端，不进行检查
-        if (StringUtils.isBlank(userAgent) || !isMobileUserAgent(userAgent)) {
+        // 如果不是移动端请求，直接返回
+        if (!isMobileRequest()) {
             return;
         }
 
-        // 检查组织配置是否存在
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
-                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
-
-        if (organizationConfig == null) {
+        // 检查组织认证配置
+        OrganizationConfig orgConfig = getOrganizationAuthConfig(organizationId);
+        if (orgConfig == null) {
             throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
         }
 
-        // 检查是否启用了企业微信认证
-        List<OrganizationConfigDetail> enabledConfigs = extOrganizationConfigDetailMapper
-                .getEnableOrganizationConfigDetails(organizationConfig.getId(), UserSource.WE_COM_OAUTH2.toString());
-
+        // 检查企业微信认证配置
+        List<OrganizationConfigDetail> enabledConfigs = getEnabledWeComOauthConfigs(orgConfig.getId());
         if (CollectionUtils.isEmpty(enabledConfigs)) {
             throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
         }
 
         // 验证配置内容
-        OrganizationConfigDetail configDetail = enabledConfigs.getFirst();
-        String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
+        validateAuthConfig(enabledConfigs.getFirst());
+    }
 
-        ThirdAuthConfigDTO weComConfig = JSON.parseObject(content, ThirdAuthConfigDTO.class);
-        if (weComConfig == null) {
+    /**
+     * 检查用户状态是否正常
+     */
+    private void checkUserStatus(UserDTO userDTO) {
+        LambdaQueryWrapper<OrganizationUser> queryWrapper = new LambdaQueryWrapper<OrganizationUser>()
+                .eq(OrganizationUser::getUserId, userDTO.getId())
+                .eq(OrganizationUser::getEnable, true);
+
+        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
+            queryWrapper.eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId());
+        }
+
+        List<OrganizationUser> orgUsers = organizationUserMapper.selectListByLambda(queryWrapper);
+        if (CollectionUtils.isEmpty(orgUsers)) {
+            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
+        }
+
+        // 设置用户部门信息
+        setUserDepartmentInfo(userDTO, orgUsers.getFirst());
+    }
+
+    /**
+     * 设置用户的部门信息
+     */
+    private void setUserDepartmentInfo(UserDTO userDTO, OrganizationUser orgUser) {
+        userDTO.setDepartmentId(orgUser.getDepartmentId());
+
+        Optional.ofNullable(departmentMapper.selectByPrimaryKey(orgUser.getDepartmentId()))
+                .ifPresent(department -> userDTO.setDepartmentName(department.getName()));
+    }
+
+    /**
+     * 确定用户当前使用的组织ID
+     */
+    private String determineOrganizationId(UserDTO userDTO, Set<String> orgIds) {
+        String orgId = OrganizationContext.getOrganizationId();
+
+        if (StringUtils.isBlank(orgId) && CollectionUtils.isNotEmpty(orgIds)) {
+            // 上下文中无组织ID时，优先使用用户最后访问的组织，否则取第一个可用组织
+            return orgIds.contains(userDTO.getLastOrganizationId())
+                    ? userDTO.getLastOrganizationId()
+                    : orgIds.iterator().next();
+        }
+
+        return orgId;
+    }
+
+    /**
+     * 设置用户的权限和角色信息
+     */
+    private void setupUserPermissions(UserDTO userDTO, String organizationId, Set<String> orgIds) {
+        // 设置用户角色
+        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(userDTO.getId(), organizationId);
+        userDTO.setRoles(roleOptions);
+
+        // 更新最后登录的组织ID
+        userDTO.setLastOrganizationId(organizationId);
+
+        // 设置用户权限
+        userDTO.setPermissionIds(permissionCache.getPermissionIds(userDTO.getId(), organizationId));
+
+        // 设置用户所属的所有组织
+        userDTO.setOrganizationIds(orgIds);
+    }
+
+    /**
+     * 获取用户所属的所有组织ID
+     */
+    private Set<String> getUserOrganizations(String userId) {
+        // 管理员可以访问所有组织
+        if (isAdminUser(userId)) {
+            return extOrganizationMapper.selectAllOrganizationIds();
+        }
+
+        // 普通用户只能访问已授权且启用的组织
+        return organizationUserMapper.select(createOrgUserExample(userId)).stream()
+                .map(OrganizationUser::getOrganizationId)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 创建组织用户查询条件
+     */
+    private OrganizationUser createOrgUserExample(String userId) {
+        OrganizationUser example = new OrganizationUser();
+        example.setUserId(userId);
+        example.setEnable(true);
+        return example;
+    }
+
+    /**
+     * 记录登录日志
+     */
+    private void recordLoginLog(LoginRequest request) {
+        LoginLog log = new LoginLog();
+        log.setId(IDGenerator.nextStr());
+        log.setLoginAddress(request.getLoginAddress());
+        log.setOperator(SessionUtils.getUserId());
+        log.setCreateTime(System.currentTimeMillis());
+        log.setPlatform(determinePlatform());
+
+        loginLogMapper.insert(log);
+    }
+
+    /**
+     * 获取组织认证配置
+     */
+    private OrganizationConfig getOrganizationAuthConfig(String organizationId) {
+        return extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+    }
+
+    /**
+     * 获取启用的企业微信OAuth配置
+     */
+    private List<OrganizationConfigDetail> getEnabledWeComOauthConfigs(String configId) {
+        return extOrganizationConfigDetailMapper
+                .getEnableOrganizationConfigDetails(configId, UserSource.WE_COM_OAUTH2.toString());
+    }
+
+    /**
+     * 验证认证配置是否有效
+     */
+    private void validateAuthConfig(OrganizationConfigDetail configDetail) {
+        String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
+        ThirdAuthConfigDTO authConfig = JSON.parseObject(content, ThirdAuthConfigDTO.class);
+
+        if (authConfig == null) {
             throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
         }
     }
 
     /**
+     * 根据User-Agent确定登录平台类型
+     */
+    private String determinePlatform() {
+        return isMobileRequest() ? LoginType.MOBILE.getName() : LoginType.WEB.getName();
+    }
+
+    /**
+     * 判断是否为移动端请求
+     */
+    private boolean isMobileRequest() {
+        String userAgent = ServletUtils.getUserAgent();
+        return StringUtils.isNotBlank(userAgent) && isMobileUserAgent(userAgent);
+    }
+
+    /**
+     * 判断是否为管理员用户
+     */
+    private boolean isAdminUser(String userId) {
+        return StringUtils.equals(userId, InternalUser.ADMIN.getValue());
+    }
+
+    /**
      * 判断是否为移动端User-Agent
-     *
-     * @param userAgent User-Agent字符串
-     * @return 是否为移动端
      */
     private boolean isMobileUserAgent(String userAgent) {
         return userAgent.contains("miniprogram") ||
@@ -364,6 +365,9 @@ public class UserLoginService {
                 userAgent.contains("iOS") ||
                 userAgent.contains("Mobile") ||
                 userAgent.contains("MQQBrowser") ||
-                userAgent.contains("Mobile Safari");
+                userAgent.contains("Mobile Safari") ||
+                userAgent.contains("iPhone") ||
+                userAgent.contains("iPad") ||
+                userAgent.contains("ipod");
     }
 }
