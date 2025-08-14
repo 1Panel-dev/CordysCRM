@@ -28,6 +28,7 @@
               <FilterContent
                 ref="filterContentRef"
                 v-model:form-model="formModel"
+                no-filter-option
                 :config-list="configList"
                 :custom-list="customList"
                 :max-filter-field-number="5"
