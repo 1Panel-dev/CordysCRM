@@ -60,7 +60,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         //编码
         String code = value.substring(0, value.indexOf(SPILT_STR));
         //描述
-        String detail = value.substring(value.indexOf(SPILT_STR));
+        String detail = value.substring(value.indexOf(SPILT_STR) + 1);
 
         String regionName = StringUtils.EMPTY;
         List<RegionCode> regionCode = getRegionCodes();
@@ -101,6 +101,9 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         }
 
 
+        if (StringUtils.isBlank(detail)) {
+            return regionName;
+        }
         return regionName + detail;
     }
 
