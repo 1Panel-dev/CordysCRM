@@ -341,9 +341,17 @@
   }
   function handleCancel() {
     clearFilter();
-    activeTab.value = lastScopedOptions.value[0]?.value;
     emit('close');
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        activeTab.value = props.formKey ?? lastScopedOptions.value[0]?.value;
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">
