@@ -14,7 +14,7 @@
     required: true,
   });
 
-  const title = ref(t('customManagement.newContact'));
+  const title = ref(t('module.newContactForm'));
 </script>
 
 <style lang="less" scoped></style>
