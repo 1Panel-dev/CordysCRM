@@ -104,7 +104,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         if (StringUtils.isBlank(detail)) {
             return regionName;
         }
-        return regionName + detail;
+        return regionName + SPILT_STR + detail;
     }
 
     @Override
