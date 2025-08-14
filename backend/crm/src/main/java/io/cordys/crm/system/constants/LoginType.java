@@ -1,5 +1,8 @@
 package io.cordys.crm.system.constants;
 
+import lombok.Getter;
+
+@Getter
 public enum LoginType {
     /**
      * 电脑端
@@ -16,7 +19,4 @@ public enum LoginType {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
 }
