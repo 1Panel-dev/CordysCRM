@@ -1,5 +1,7 @@
 on:
-  workflow_dispatch:
+  issue_comment:
+    types:
+      - created
 
 name: Add Labels to PR
 
