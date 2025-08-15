@@ -77,6 +77,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlan.setId(IDGenerator.nextStr());
         followUpPlan.setOrganizationId(orgId);
         followUpPlan.setStatus(FollowUpPlanStatusType.PREPARED.name());
+        followUpPlan.setConverted(false);
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
@@ -137,6 +138,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         plan.setEstimatedTime(request.getEstimatedTime());
         plan.setUpdateTime(System.currentTimeMillis());
         plan.setUpdateUser(userId);
+        plan.setConverted(request.getConverted());
         return plan;
     }
 

@@ -75,6 +75,7 @@ public class ClueFollowPlanControllerTests extends BaseTest {
         request.setType("CUSTOMER");
         request.setContent("计划两下");
         request.setEstimatedTime(System.currentTimeMillis());
+        request.setConverted(false);
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         this.requestPost(DEFAULT_UPDATE, request);
 

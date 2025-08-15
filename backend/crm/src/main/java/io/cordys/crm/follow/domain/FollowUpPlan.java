@@ -42,4 +42,7 @@ public class FollowUpPlan extends BaseModel {
 
 	@Schema(description = "状态")
 	private String status;
+
+	@Schema(description = "是否转为跟进记录")
+	private Boolean converted;
 }

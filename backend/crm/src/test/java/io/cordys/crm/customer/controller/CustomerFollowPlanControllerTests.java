@@ -73,6 +73,7 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
         request.setContactId("1234567");
         request.setType("CUSTOMER");
         request.setContent("计划两下");
+        request.setConverted(false);
         request.setEstimatedTime(System.currentTimeMillis());
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         this.requestPost(DEFAULT_UPDATE, request);
