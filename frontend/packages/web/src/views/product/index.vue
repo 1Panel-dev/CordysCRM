@@ -1,40 +1,43 @@
 <template>
   <CrmCard hide-footer no-content-bottom-padding>
-    <CrmTable
-      ref="crmTableRef"
-      v-model:checked-row-keys="checkedRowKeys"
-      v-bind="propsRes"
-      class="crm-product-table"
-      :action-config="actionConfig"
-      :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
-      @page-change="propsEvent.pageChange"
-      @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
-      @batch-action="handleBatchAction"
-      @drag="dragHandler"
-      @refresh="searchData"
-    >
-      <template #actionLeft>
-        <div class="flex items-center">
-          <n-button
-            v-permission="['PRODUCT_MANAGEMENT:ADD']"
-            type="primary"
-            @click="
-              {
-                activeProductId = '';
-                formCreateDrawerVisible = true;
-              }
-            "
-          >
-            {{ t('product.createProduct') }}
-          </n-button>
-        </div>
-      </template>
-      <template #actionRight>
-        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-      </template>
-    </CrmTable>
+    <div :key="tableRefreshIdKey" class="h-full">
+      <CrmTable
+        ref="crmTableRef"
+        v-model:checked-row-keys="checkedRowKeys"
+        v-bind="propsRes"
+        class="crm-product-table"
+        :action-config="actionConfig"
+        :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
+        @page-change="propsEvent.pageChange"
+        @page-size-change="propsEvent.pageSizeChange"
+        @sorter-change="propsEvent.sorterChange"
+        @filter-change="propsEvent.filterChange"
+        @batch-action="handleBatchAction"
+        @drag="dragHandler"
+        @refresh="searchData"
+      >
+        <template #actionLeft>
+          <div class="flex items-center">
+            <n-button
+              v-permission="['PRODUCT_MANAGEMENT:ADD']"
+              type="primary"
+              @click="
+                {
+                  activeProductId = '';
+                  formCreateDrawerVisible = true;
+                }
+              "
+            >
+              {{ t('product.createProduct') }}
+            </n-button>
+          </div>
+        </template>
+        <template #actionRight>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </template>
+      </CrmTable>
+    </div>
+
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.PRODUCT"
@@ -79,6 +82,7 @@
   const formCreateDrawerVisible = ref(false);
   const activeProductId = ref('');
   const tableRefreshId = ref(0);
+  const tableRefreshIdKey = ref(0);
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -189,6 +193,7 @@
     try {
       await dragSortProduct(params);
       Message.success(t('common.operationSuccess'));
+      tableRefreshIdKey.value += 1;
       tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -247,7 +252,7 @@
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value });
-    loadList(true);
+    loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
