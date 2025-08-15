@@ -59,6 +59,7 @@
               is-limit-show-detail
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              @open-customer-drawer="handleOpenCustomerDrawer"
               @init="setFilterConfigList"
             >
               <template #searchTableTotal="{ total }">
@@ -141,6 +142,12 @@
         </CrmCard>
       </div>
     </div>
+
+    <customerOverviewDrawer
+      v-model:show="showCustomerOverviewDrawer"
+      :source-id="activeSourceId"
+      :readonly="isCustomerReadonly"
+    />
   </CrmDrawer>
 </template>
 
@@ -162,6 +169,7 @@
   import globalSearchResult from './globalSearchResult.vue';
   import clueTable from '@/views/clueManagement/clue/components/clueTable.vue';
   import cluePoolTable from '@/views/clueManagement/cluePool/components/cluePoolTable.vue';
+  import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import customerTable from '@/views/customer/components/customerTable.vue';
   import openSeaTable from '@/views/customer/components/openSeaTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
@@ -315,6 +323,19 @@
     configList.value = customFieldsFilterConfig;
     customList.value = filterConfigList;
     initSearchData();
+  }
+
+  const activeSourceId = ref<string>('');
+  const isCustomerReadonly = ref(false);
+  const showCustomerOverviewDrawer = ref(false);
+
+  function handleOpenCustomerDrawer(
+    params: { customerId: string; inCustomerPool: boolean; poolId: string },
+    readonly = false
+  ) {
+    activeSourceId.value = params.customerId;
+    showCustomerOverviewDrawer.value = true;
+    isCustomerReadonly.value = readonly;
   }
 
   watch(
