@@ -89,7 +89,16 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NIcon, NSelect, SelectGroupOption, SelectOption, TabPaneProps, useMessage } from 'naive-ui';
+  import {
+    NButton,
+    NIcon,
+    NSelect,
+    NTooltip,
+    SelectGroupOption,
+    SelectOption,
+    TabPaneProps,
+    useMessage,
+  } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
@@ -216,21 +225,31 @@
               e.stopPropagation();
             },
           }),
-          h(CrmIcon, {
-            type: option.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
-            class: `${option.id !== CustomerSearchTypeEnum.ALL ? 'cursor-pointer' : 'cursor-not-allowed'} ${
-              option.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
-            }`,
-            size: 12,
-            onClick: (e: MouseEvent) => {
-              e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
-              if (option.id === CustomerSearchTypeEnum.ALL) {
-                Message.warning(t('crmViewSelect.cannotCancelFixation'));
-                return;
-              }
-              viewStore.toggleFixed(props.type, option);
+          h(
+            NTooltip,
+            {
+              delay: 300,
+              disabled: tags.value.length > 1 || !option.fixed,
             },
-          }),
+            {
+              trigger: () =>
+                h(CrmIcon, {
+                  type: option.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
+                  class: `${tags.value.length > 1 || !option.fixed ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                    option.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
+                  }`,
+                  size: 12,
+                  onClick: (e: MouseEvent) => {
+                    e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+                    if (tags.value.length <= 1 && option.fixed) {
+                      return;
+                    }
+                    viewStore.toggleFixed(props.type, option);
+                  },
+                }),
+              default: () => t('crmViewSelect.keepAFixedViewTip'),
+            }
+          ),
           h('span', {
             class: 'one-line-text',
             innerText: option.name,
