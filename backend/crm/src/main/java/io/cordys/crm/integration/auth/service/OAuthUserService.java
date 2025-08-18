@@ -102,7 +102,7 @@ public class OAuthUserService {
         }
     }
 
-    private <T> T postWithWrap(String url, Object body) {
+    private WeComUserResponse postWithWrap(String url, Object body) {
         try {
             String response = qrCodeClient.postExchange(
                     url, null, null,
@@ -110,13 +110,13 @@ public class OAuthUserService {
                     MediaType.APPLICATION_JSON,
                     MediaType.APPLICATION_JSON
             );
-            return JSON.parseObject(response, (Class<T>) WeComUserResponse.class);
+            return JSON.parseObject(response, WeComUserResponse.class);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
         }
     }
 
-    private <T> T exchangeWithWrap(String token) {
+    private DingTalkUserResponse exchangeWithWrap(String token) {
         try {
             String body = qrCodeClient.exchange(
                     DingTalkApiPaths.DING_USER_INFO,
@@ -125,7 +125,7 @@ public class OAuthUserService {
                     MediaType.APPLICATION_JSON,
                     MediaType.APPLICATION_JSON
             );
-            return JSON.parseObject(body, (Class<T>) DingTalkUserResponse.class);
+            return JSON.parseObject(body, DingTalkUserResponse.class);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
         }
