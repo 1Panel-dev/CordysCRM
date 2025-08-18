@@ -136,6 +136,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
+  import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
@@ -535,22 +536,6 @@
     return propsRes.value.columns;
   });
 
-  const exportColumns = computed<ExportTableColumnItem[]>(() => {
-    return propsRes.value.columns
-      .filter(
-        (item: any) =>
-          item.key !== 'operation' &&
-          item.type !== 'selection' &&
-          item.key !== 'crmTableOrder' &&
-          item.filedType !== FieldTypeEnum.PICTURE
-      )
-      .map((e) => {
-        return {
-          key: e.key?.toString() || '',
-          title: (e.title as string) || '',
-        };
-      });
-  });
   const exportParams = computed(() => {
     return {
       ...tableQueryParams.value,
@@ -591,6 +576,10 @@
     },
     ...baseFilterConfigList,
   ]);
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() =>
+    getExportColumns(filterConfigList.value, customFieldsFilterConfig.value as FilterFormItem[])
+  );
 
   const isAdvancedSearchMode = ref(false);
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {

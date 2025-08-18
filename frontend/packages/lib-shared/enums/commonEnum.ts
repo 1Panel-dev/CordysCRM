@@ -29,3 +29,8 @@ export enum OperatorEnum {
   DYNAMICS = 'DYNAMICS',
   FIXED = 'FIXED',
 }
+
+export enum ColumnTypeEnum {
+  SYSTEM = 'system',
+  CUSTOM = 'custom',
+}

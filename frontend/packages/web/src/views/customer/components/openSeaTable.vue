@@ -122,6 +122,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
@@ -487,22 +488,6 @@
     return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.key as string));
   });
 
-  const exportColumns = computed<ExportTableColumnItem[]>(() => {
-    return filterColumns.value
-      .filter(
-        (item: any) =>
-          item.key !== 'operation' &&
-          item.type !== 'selection' &&
-          item.key !== 'crmTableOrder' &&
-          item.filedType !== FieldTypeEnum.PICTURE
-      )
-      .map((e) => {
-        return {
-          key: e.key?.toString() || '',
-          title: (e.title as string) || '',
-        };
-      });
-  });
   const exportParams = computed(() => {
     return {
       ...tableQueryParams.value,
@@ -559,6 +544,10 @@
     },
     ...baseFilterConfigList,
   ]);
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() =>
+    getExportColumns(filterConfigList.value, customFieldsFilterConfig.value as FilterFormItem[])
+  );
 
   async function init() {
     await initOpenSeaOptions();

@@ -1,4 +1,4 @@
-import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import { ColumnTypeEnum, OperatorEnum } from '@lib/shared/enums/commonEnum';
 
 // 请求返回结构
 export default interface CommonResponse<T> {
@@ -47,6 +47,7 @@ export interface FilterConditionItem {
 export interface ExportTableColumnItem {
   key: string;
   title: string;
+  columnType: ColumnTypeEnum;
 }
 
 export interface TableExportParams extends TableQueryParams {
