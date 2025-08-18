@@ -325,4 +325,18 @@
         set owner = #{owner}
         where id = #{id}
     </update>
+
+
+    <select id="getListByIds" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+        cc.enable, cc.owner, cc.disable_reason, cc.phone
+
+        from customer_contact cc
+        where cc.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by cc.create_time desc
+
+    </select>
 </mapper>

@@ -96,7 +96,7 @@ public class CustomerContactService {
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
-    private Map<String, List<OptionDTO>> getListOptionMap(String orgId, List<CustomerContactListResponse> list) {
+    public Map<String, List<OptionDTO>> getListOptionMap(String orgId, List<CustomerContactListResponse> list) {
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerContactListResponse::getModuleFields);
@@ -115,7 +115,7 @@ public class CustomerContactService {
         return optionMap;
     }
 
-    private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {
+    public List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return List.of();
         }

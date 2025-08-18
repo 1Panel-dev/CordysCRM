@@ -44,4 +44,6 @@ public interface ExtCustomerContactMapper {
     void updateContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
 
     void updateContactById(@Param("id") String id, @Param("owner") String owner);
+
+    List<CustomerContactListResponse> getListByIds(@Param("ids")List<String> ids);
 }

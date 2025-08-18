@@ -199,6 +199,9 @@
           },
           {
             "id": "CUSTOMER_MANAGEMENT_CONTACT:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:EXPORT"
           }
         ]
       }
