@@ -40,13 +40,38 @@
             <CrmIcon type="iconicon-alarmclock" :size="16" />
           </n-badge>
         </n-button>
-        <n-popover position="left">
-          <div
-            class="flex cursor-pointer items-center gap-[4px] text-[14px] text-[var(--color-text-1)]"
-            @click="copyVersion"
-          >
-            <div class="text-[var(--color-text-4)]">{{ t('settings.help.version') }}：</div>
-            {{ appStore.version }}
+        <n-popover position="left" content-class="w-[320px]" class="!p-[16px]">
+          <div class="flex flex-col gap-[8px]">
+            <div class="flex items-center gap-[4px]">
+              <img :src="props.logo ?? '/logo.svg'" width="32px" height="32px" />
+              <div class="one-line-text text-[20px] font-semibold leading-[32px]">
+                {{ props.name ?? 'CORDYS' }}
+              </div>
+            </div>
+            <div
+              class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
+              @click="copyVersion(appStore.versionInfo.currentVersion)"
+            >
+              <div class="text-[12px] leading-[20px]">
+                {{ t('settings.help.currentVersion') }}
+              </div>
+              <div class="font-semibold">
+                {{ appStore.versionInfo.currentVersion }}({{ appStore.versionInfo.architecture }})
+              </div>
+            </div>
+            <div
+              class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
+              @click="copyVersion(appStore.versionInfo.latestVersion)"
+            >
+              <div class="text-[12px] leading-[20px]">
+                {{ t('settings.help.latestVersion') }}
+              </div>
+              <div class="font-semibold">{{ appStore.versionInfo.latestVersion }}</div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">CORDYS CRM</div>
+              <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">{{ appStore.versionInfo.copyright }}</div>
+            </div>
           </div>
           <template #trigger>
             <n-button class="p-[8px]" quaternary>
@@ -66,8 +91,7 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
-  import { NBadge, NButton, NLayoutHeader, NPopover, NPopselect, NTooltip, useMessage } from 'naive-ui';
-  import { InformationCircleOutline, LanguageOutline } from '@vicons/ionicons5';
+  import { NBadge, NButton, NLayoutHeader, NPopover, NTooltip, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -93,7 +117,7 @@
     name?: string;
   }>();
 
-  const { success, warning, loading } = useMessage();
+  const { success, warning } = useMessage();
   const { t } = useI18n();
   // const { changeLocale, currentLocale } = useLocale(loading);
 
@@ -126,9 +150,9 @@
   const showDuplicateCheckDrawer = ref(false);
 
   const { copy, isSupported } = useClipboard({ legacy: true });
-  function copyVersion() {
+  function copyVersion(version: string) {
     if (isSupported) {
-      copy(appStore.version);
+      copy(version);
       success(t('common.copySuccess'));
     } else {
       warning(t('common.copyNotSupport'));

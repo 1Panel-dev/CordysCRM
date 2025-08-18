@@ -21,7 +21,6 @@ import {
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
-import useLicenseStore from '../setting/license';
 import type { AppState, PageConfig, Style, Theme } from './types';
 import type { RouteRecordRaw } from 'vue-router';
 
@@ -103,7 +102,14 @@ const useAppStore = defineStore('app', {
     eventSource: null,
     menuIconStatus: {},
     restoreMenuTimeStamp: 0,
-    version: '',
+    versionInfo: {
+      currentVersion: '',
+      releaseDate: '',
+      latestVersion: '',
+      architecture: '',
+      copyright: '',
+      hasNewVersion: false,
+    },
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -285,7 +291,7 @@ const useAppStore = defineStore('app', {
     },
     async getVersion() {
       try {
-        this.version = await getSystemVersion();
+        this.versionInfo = await getSystemVersion();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

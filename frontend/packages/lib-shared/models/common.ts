@@ -68,3 +68,12 @@ export interface TableDraggedParams {
   oldIndex: number;
   newIndex: number;
 }
+
+export interface SystemVersion {
+  currentVersion: string; // 当前版本
+  releaseDate: string; // 发行日期
+  latestVersion: string; // 最新版本
+  architecture: string; // 系统架构
+  copyright: string; // 版权信息
+  hasNewVersion: boolean; // 是否有新版本
+}

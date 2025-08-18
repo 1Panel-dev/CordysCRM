@@ -1,4 +1,4 @@
-export const VersionUrl = '/system/version/current'; // 获取当前版本号
+export const VersionUrl = '/system/version'; // 获取版本信息
 
 export default {
   VersionUrl,
