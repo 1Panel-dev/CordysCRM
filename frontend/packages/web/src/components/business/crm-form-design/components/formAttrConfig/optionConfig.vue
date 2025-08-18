@@ -11,7 +11,7 @@
       <div
         v-for="(item, i) in fieldConfig.options"
         :key="item.value"
-        class="flex items-center gap-[8px]"
+        class="flex flex-wrap items-center gap-[8px]"
         :class="item.value === 'other' ? '' : 'draggable'"
       >
         <n-tooltip
@@ -38,7 +38,16 @@
           :disabled="props.disabled"
           @click="() => handleRadioOptionClick(item.value)"
         />
-        <n-input v-model:value="item.label" :maxlength="50" :disabled="props.disabled" clearable></n-input>
+        <n-input
+          v-model:value="item.label"
+          :maxlength="50"
+          :disabled="props.disabled"
+          :status="
+            fieldConfig.options.some((e) => e.value !== item.value && e.label === item.label) ? 'error' : undefined
+          "
+          class="flex-1"
+          clearable
+        ></n-input>
         <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
             <n-button
@@ -54,6 +63,12 @@
           </template>
           {{ t('common.delete') }}
         </n-tooltip>
+        <div
+          v-if="fieldConfig.options.some((e) => e.value !== item.value && e.label === item.label)"
+          class="ml-[48px] w-full text-[12px] text-[var(--error-red)]"
+        >
+          {{ t('crmFormDesign.repeatOptionName') }}
+        </div>
       </div>
     </VueDraggable>
   </component>

@@ -129,4 +129,6 @@ export default {
   'crmFormDesign.linkSettingTip': '已设置{count}条联动',
   'crmFormDesign.linkSettingClearTip': '确定清空表单联动吗？',
   'crmFormDesign.linkSettingClearTipContent': '清空后，表单将不再联动显示值',
+  'crmFormDesign.repeatFieldName': '已存在相同的字段名，请重新输入',
+  'crmFormDesign.repeatOptionName': '选项名重复，请重新输入',
 };

@@ -67,6 +67,14 @@
     },
     { immediate: true }
   );
+
+  function setActiveField(item: FormCreateField) {
+    field.value = item;
+  }
+
+  defineExpose({
+    setActiveField,
+  });
 </script>
 
 <style lang="less" scoped>

@@ -131,4 +131,6 @@ export default {
   'crmFormDesign.linkSettingTip': 'Set {count} linkages',
   'crmFormDesign.linkSettingClearTip': 'Are you sure you want to clear the form linkage?',
   'crmFormDesign.linkSettingClearTipContent': 'After clearing, the form will no longer display linked values',
+  'crmFormDesign.repeatFieldName': 'A field with the same name already exists, please re-enter',
+  'crmFormDesign.repeatOptionName': 'An option with the same name already exists, please re-enter',
 };

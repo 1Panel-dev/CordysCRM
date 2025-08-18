@@ -35,6 +35,7 @@
     </template>
     <CrmFormDesign
       v-if="visible"
+      ref="formDesignRef"
       v-model:form-config="formConfig"
       v-model:field-list="fieldList"
       :form-key="props.formKey"
@@ -130,7 +131,46 @@
     }
   }
 
+  const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
+
+  function checkRepeat() {
+    const fieldNameSet = new Set<string>();
+    for (let i = 0; i < fieldList.value.length; i++) {
+      const field = fieldList.value[i];
+      if (fieldNameSet.has(field.name)) {
+        Message.error(t('crmFormDesign.repeatFieldName'));
+        formDesignRef.value?.setActiveField(field);
+        return false;
+      }
+      fieldNameSet.add(field.name);
+    }
+    const optionsFields = fieldList.value.filter((e) =>
+      [FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(
+        e.type
+      )
+    );
+    for (let i = 0; i < optionsFields.length; i++) {
+      const field = optionsFields[i];
+      if (field.options) {
+        const optionLabelSet = new Set<string>();
+        for (let j = 0; j < field.options.length; j++) {
+          const option = field.options[j];
+          if (optionLabelSet.has(option.label)) {
+            Message.error(t('crmFormDesign.repeatOptionName'));
+            formDesignRef.value?.setActiveField(field);
+            return false;
+          }
+          optionLabelSet.add(option.label);
+        }
+      }
+    }
+    return true;
+  }
+
   async function handleSave() {
+    if (!checkRepeat()) {
+      return;
+    }
     try {
       loading.value = true;
       await saveFormDesignConfig({

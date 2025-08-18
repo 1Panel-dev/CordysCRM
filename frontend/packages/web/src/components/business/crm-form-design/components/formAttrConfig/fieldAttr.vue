@@ -8,8 +8,12 @@
           :disabled="fieldConfig.disabledProps?.includes('name')"
           :maxlength="255"
           :placeholder="t('common.pleaseInput')"
+          :status="isNameRepeat ? 'error' : undefined"
           clearable
         />
+        <div v-if="isNameRepeat" class="text-[12px] text-[var(--error-red)]">
+          {{ t('crmFormDesign.repeatFieldName') }}
+        </div>
         <n-checkbox
           v-model:checked="fieldConfig.showLabel"
           :disabled="fieldConfig.disabledProps?.includes('showLabel')"
@@ -834,6 +838,10 @@
       checkedRules.value = arr?.map((e) => e.key);
     }
   );
+
+  const isNameRepeat = computed(() => {
+    return props.list.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
+  });
 
   function handleRuleChange(val: (string | number)[]) {
     fieldConfig.value.rules = val
