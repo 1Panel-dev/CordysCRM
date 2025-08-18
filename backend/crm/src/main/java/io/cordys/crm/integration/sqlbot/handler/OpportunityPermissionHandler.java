@@ -63,6 +63,8 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
             sqlBotField.setName("contact_name");
             sqlBotField.setComment("联系人名称");
             return getContactFieldSql();
+        } else if (StringUtils.equals(fieldName, "products")) {
+            return getProductsFieldSql();
         } else {
             return getDefaultFieldSql(sqlBotField);
         }
