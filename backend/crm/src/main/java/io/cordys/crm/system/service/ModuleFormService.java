@@ -23,6 +23,7 @@ import io.cordys.crm.system.domain.ModuleFormBlob;
 import io.cordys.crm.system.dto.field.*;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.ControlRuleProp;
+import io.cordys.crm.system.dto.field.base.HasOption;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
@@ -138,10 +139,7 @@ public class ModuleFormService {
 		if (CollectionUtils.isEmpty(forms)) {
 			throw new GenericException(Translator.get("module.form.not_exist"));
 		}
-		boolean businessDeleted = BusinessModuleField.isBusinessDeleted(saveParam.getFormKey(), saveParam.getFields());
-		if (businessDeleted) {
-			throw new GenericException(Translator.get("module.form.business_field.deleted"));
-		}
+		preCheckForFieldSave(saveParam);
 		ModuleFormConfigDTO oldConfig = new ModuleFormConfigDTO();
 		oldConfig.setFields(getAllFields(saveParam.getFormKey(), currentOrgId));
 		ModuleForm form = forms.getFirst();
@@ -511,5 +509,46 @@ public class ModuleFormService {
 			return null;
 		}
 		return allFields.stream().filter(BaseField::canImport).toList();
+	}
+
+	/**
+	 * 字段保存预检查
+	 * @param saveParam 保存参数
+	 */
+	private void preCheckForFieldSave(ModuleFormSaveRequest saveParam) {
+		boolean businessDeleted = BusinessModuleField.isBusinessDeleted(saveParam.getFormKey(), saveParam.getFields());
+		if (businessDeleted) {
+			throw new GenericException(Translator.get("module.form.business_field.deleted"));
+		}
+		boolean hasRepeatName = BusinessModuleField.hasRepeatName(saveParam.getFields());
+		if (hasRepeatName) {
+			throw new GenericException(Translator.get("module.form.fields.repeat"));
+		}
+		Optional<BaseField> repeatOptional = saveParam.getFields().stream().filter(field -> {
+			if (field instanceof HasOption optionField) {
+				List<OptionProp> options = optionField.getOptions();
+				return CollectionUtils.isNotEmpty(options) && hasRepeatOption(options);
+			}
+			return false;
+		}).findAny();
+		if (repeatOptional.isPresent()) {
+			BaseField field = repeatOptional.get();
+			throw new GenericException(Translator.getWithArgs("module.form.fields.option.repeat", field.getName()));
+		}
+	}
+
+	/**
+	 * 包含重复选项
+	 * @param options 选项
+	 * @return 是否重复选项
+	 */
+	private boolean hasRepeatOption(List<OptionProp> options) {
+		if (CollectionUtils.isEmpty(options)) {
+			return false;
+		}
+		return options.stream()
+				.collect(Collectors.groupingBy(OptionProp::getLabel, Collectors.counting()))
+				.values().stream()
+				.anyMatch(count -> count > 1);
 	}
 }

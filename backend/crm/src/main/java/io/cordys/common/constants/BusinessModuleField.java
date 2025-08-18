@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 业务模块字段（定义在主表中，有特定业务含义）(标准字段)
@@ -238,5 +239,17 @@ public enum BusinessModuleField {
         return formBusinessFields.stream()
                 .anyMatch(businessField ->
                         fields.stream().noneMatch(field -> StringUtils.equals(businessField.getKey(), field.getInternalKey())));
+    }
+
+    /**
+     * 判断是否有重复的字段
+     * @param fields 字段集合
+     * @return 是否有重复的字段
+     */
+    public static boolean hasRepeatName(List<BaseField> fields) {
+        return fields.stream()
+                .collect(Collectors.groupingBy(BaseField::getName, Collectors.counting()))
+                .values().stream()
+                .anyMatch(count -> count > 1);
     }
 }
