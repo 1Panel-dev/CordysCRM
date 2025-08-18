@@ -277,6 +277,13 @@
 
   // 拖拽限制
   let warningInstance: ReturnType<typeof Message.warning> | null = null;
+
+  function clearWarningInstance() {
+    if (warningInstance) {
+      warningInstance.destroy();
+      warningInstance = null;
+    }
+  }
   function dragMoveValidator(fromRow: ViewItem, toRow: ViewItem) {
     if (fromRow?.type !== toRow?.type) {
       if (!warningInstance) {
@@ -286,20 +293,14 @@
       }
       return false;
     }
-    if (warningInstance) {
-      warningInstance.destroy();
-      warningInstance = null;
-    }
+    clearWarningInstance();
 
     return true;
   }
 
   // 拖拽结束
   async function dragHandler(params: TableDraggedParams) {
-    if (warningInstance) {
-      warningInstance.destroy();
-      warningInstance = null;
-    }
+    clearWarningInstance();
     viewStore.toggleDrag(props.type, params);
   }
 
@@ -330,7 +331,10 @@
       },
       onEnd(evt) {
         const { oldDraggableIndex, newDraggableIndex } = evt;
-        if (oldDraggableIndex == null || newDraggableIndex == null || oldDraggableIndex === newDraggableIndex) return;
+        if (oldDraggableIndex == null || newDraggableIndex == null || oldDraggableIndex === newDraggableIndex) {
+          clearWarningInstance();
+          return;
+        }
 
         const data = sortData.value as any[];
         const rowKey = 'id';
