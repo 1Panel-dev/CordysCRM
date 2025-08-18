@@ -141,6 +141,10 @@
     }
   }
 
+  const tags = computed(() =>
+    [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable && item.fixed)
+  );
+
   const columns: CrmDataTableColumn[] = [
     {
       title: t('crmViewSelect.viewName'),
@@ -151,21 +155,31 @@
       },
       render: (row) =>
         h('div', { class: 'flex items-center gap-[8px] overflow-hidden flex-1' }, [
-          h(CrmIcon, {
-            type: row.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
-            class: `${row.id !== CustomerSearchTypeEnum.ALL ? 'cursor-pointer' : 'cursor-not-allowed'} ${
-              row.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
-            }`,
-            size: 16,
-            onClick: (e: MouseEvent) => {
-              e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
-              if (row.id === CustomerSearchTypeEnum.ALL) {
-                Message.warning(t('crmViewSelect.cannotCancelFixation'));
-                return;
-              }
-              viewStore.toggleFixed(props.type, row);
+          h(
+            NTooltip,
+            {
+              delay: 300,
+              disabled: tags.value.length > 1 || !row.fixed,
             },
-          }),
+            {
+              trigger: () =>
+                h(CrmIcon, {
+                  type: row.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
+                  class: `${tags.value.length > 1 || !row.fixed ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                    row.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
+                  }`,
+                  size: 16,
+                  onClick: (e: MouseEvent) => {
+                    e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+                    if (tags.value.length <= 1 && row.fixed) {
+                      return;
+                    }
+                    viewStore.toggleFixed(props.type, row);
+                  },
+                }),
+              default: () => t('crmViewSelect.keepAFixedViewTip'),
+            }
+          ),
           h(
             NTooltip,
             { delay: 300 },

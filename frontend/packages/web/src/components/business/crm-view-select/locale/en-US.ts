@@ -9,7 +9,6 @@ export default {
   'crmViewSelect.viewName': 'View name',
   'crmViewSelect.viewType': 'View type',
   'crmViewSelect.readOnly': 'View',
-  'crmViewSelect.cannotCancelFixation': 'System default view cannot be unpinned',
   'crmViewSelect.deleteConfirmTitle': 'Confirm to delete view {name}?',
   'crmViewSelect.dragTip': 'Cannot sort across view attributes!',
   'crmViewSelect.keepAFixedViewTip': 'A fixed view must be retained',
