@@ -1,7 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import { WorkbenchRouteEnum } from '@/enums/routeEnum';
-
 import 'nprogress/nprogress.css';
 import createRouteGuard from './guard/index';
 import appRoutes from './routes';
@@ -15,7 +13,15 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: WorkbenchRouteEnum.WORKBENCH_INDEX,
+      redirect: 'login',
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/base/login/index.vue'),
+      meta: {
+        requiresAuth: false,
+      },
     },
     ...appRoutes,
     NO_RESOURCE_ROUTE,

@@ -1,0 +1,18 @@
+export default {
+  'login.form.title': 'Welcome to CORDYS',
+  'login.form.userName.errMsg': 'Username cannot be empty',
+  'login.form.password.errMsg': 'Password cannot be empty',
+  'login.form.login.errMsg': 'Login error, refresh and try again',
+  'login.form.userName.placeholder': 'Please enter your phone number or email',
+  'login.form.userName.placeholderOther': 'Please enter your account',
+  'login.form.password.placeholder': 'Please enter your password',
+  'login.form.rememberPassword': 'Remember password',
+  'login.form.forgetPassword': 'Forgot password',
+  'login.form.login': 'login',
+  'login.form.username': 'Username',
+  'login.form.password': 'Password',
+  'login.form.loading': 'Logging in',
+  'login.form.WECOM': 'WECOM',
+  'login.form.DINGTALK': 'DINGTALK',
+  'login.form.LARK': 'LARK',
+};

@@ -1,10 +1,20 @@
 import { defineStore } from 'pinia';
+import { showToast } from 'vant';
 
+import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
+import { removeRouteListener } from '@lib/shared/method/route-listener';
+import { removeScript } from '@lib/shared/method/scriptLoader';
+import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 
-import { isLogin } from '@/api/modules';
+import { isLogin, login, signout } from '@/api/modules';
+import useUser from '@/hooks/useUser';
+import router from '@/router';
+
+import { AppRouteEnum } from '@/enums/routeEnum';
 
 import useAppStore from '../app';
 
@@ -89,8 +99,46 @@ const useUserStore = defineStore('user', {
       }
     },
     async checkIsLogin() {
+      const { isLoginPage } = useUser();
       const isLoginStatus = await this.isLogin();
-      return isLoginStatus;
+      if (isLoginStatus) {
+        if (isLoginPage()) {
+          router.replace({ name: AppRouteEnum.WORKBENCH });
+        }
+      } else if (!isLoginPage()) {
+        router.replace({ name: 'login' });
+      }
+    },
+    async login(params: LoginParams) {
+      try {
+        const res = await login(params);
+        setToken(res.sessionId, res.csrfToken);
+        this.setInfo(res);
+        const appStore = useAppStore();
+        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        this.clientIdRandomId = getGenerateId();
+        appStore.setOrgId(lastOrganizationId);
+      } catch (error) {
+        clearToken();
+        throw error;
+      }
+    },
+    logoutCallBack() {
+      this.$reset();
+      clearToken();
+      removeRouteListener();
+      removeScript(CompanyTypeEnum.SQLBot);
+    },
+    async logout(silence = false) {
+      try {
+        const { t } = useI18n();
+        if (!silence) {
+          showToast(t('message.logouting'));
+        }
+        await signout();
+      } finally {
+        this.logoutCallBack();
+      }
     },
   },
 });

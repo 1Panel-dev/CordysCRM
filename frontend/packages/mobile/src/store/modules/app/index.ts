@@ -3,12 +3,17 @@ import { defineStore } from 'pinia';
 import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { getSSE } from '@lib/shared/method/index';
+import { setLocalStorage } from '@lib/shared/method/local-storage';
 import { loadScript } from '@lib/shared/method/scriptLoader';
 
-import { closeMessageSubscribe, getHomeMessageList, getThirdConfigByType, getUnReadAnnouncement } from '@/api/modules';
-import useLicenseStore from '@/store/modules/setting/license';
+import {
+  closeMessageSubscribe,
+  getHomeMessageList,
+  getKey,
+  getThirdConfigByType,
+  getUnReadAnnouncement,
+} from '@/api/modules';
 import useUserStore from '@/store/modules/user';
-import { hasAnyPermission } from '@/utils/permission';
 
 import type { AppState } from './types';
 
@@ -136,6 +141,15 @@ const useAppStore = defineStore('app', {
       // if (!licenseStore.hasLicense()) return;
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
       await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
+    },
+    async initPublicKey() {
+      try {
+        const res = await getKey();
+        setLocalStorage('publicKey', res);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
     },
   },
   persist: {

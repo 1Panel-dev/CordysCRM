@@ -20,12 +20,8 @@
   const licenseStore = useLicenseStore();
 
   onBeforeMount(async () => {
-    const loginStatus = await userStore.checkIsLogin();
+    const loginStatus = await userStore.isLogin();
     if (loginStatus) {
-      router.replace({
-        name: AppRouteEnum.WORKBENCH,
-      });
-    } else if (import.meta.env.DEV) {
       router.replace({
         name: AppRouteEnum.WORKBENCH,
       });
