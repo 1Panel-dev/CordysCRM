@@ -10,7 +10,7 @@
           </div>
           <div class="max-w-full">
             <CrmTag
-              :tag="personalInfo?.departmentName"
+              :tag="personalInfo?.departmentName ?? ''"
               color="var(--text-n9)"
               text-color="var(--text-n1)"
               class="one-line-text max-w-full rounded-[var(--border-radius-small)] !p-[2px_6px]"
@@ -62,6 +62,10 @@
           @click="handleEditInfo('resetPassWord')"
         />
       </van-cell-group>
+
+      <van-button block type="primary" :loading="loading" native-type="submit" @click="handleLogout">
+        {{ t('login.form.logout') }}
+      </van-button>
     </div>
   </div>
 </template>
@@ -72,16 +76,21 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { getNotificationCount, getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/mine';
+  import useUser from '@/hooks/useUser';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { MineRouteEnum } from '@/enums/routeEnum';
+
+  const { logout } = useUser();
+
+  const userStore = useUserStore();
 
   const { t } = useI18n();
   const router = useRouter();
@@ -150,6 +159,20 @@
     if (clickCount.value >= 10) {
       import('eruda').then((eruda) => eruda.default.init());
       clickCount.value = 0; // 重置计数
+    }
+  }
+
+  const loading = ref(false);
+  async function handleLogout() {
+    loading.value = true;
+    try {
+      await userStore.logout();
+      logout();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 

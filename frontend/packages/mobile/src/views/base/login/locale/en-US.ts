@@ -15,4 +15,5 @@ export default {
   'login.form.WECOM': 'WECOM',
   'login.form.DINGTALK': 'DINGTALK',
   'login.form.LARK': 'LARK',
+  'login.form.logout': 'Log out',
 };

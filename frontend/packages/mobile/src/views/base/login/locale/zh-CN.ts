@@ -15,4 +15,5 @@ export default {
   'login.form.WECOM': '企业微信',
   'login.form.DINGTALK': '钉钉',
   'login.form.LARK': '飞书',
+  'login.form.logout': '退出登录',
 };
