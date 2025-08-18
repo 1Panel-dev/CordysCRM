@@ -28,7 +28,7 @@ import java.util.List;
 
 @Tag(name = "企业设置")
 @RestController
-@RequestMapping("/system/authsource")
+@RequestMapping("/system/auth-sources")
 public class AuthSourceController {
     @Resource
     private AuthSourceService authSourceService;
