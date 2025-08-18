@@ -47,7 +47,7 @@
       </n-spin>
       <template v-if="footer" #footer>
         <slot name="footer">
-          <div class="flex items-center justify-between">
+          <div class="flex w-full items-center justify-between">
             <slot name="footerLeft"></slot>
 
             <div class="flex gap-[8px]">

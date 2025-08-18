@@ -126,4 +126,7 @@ export default {
   'crmFormDesign.currentForm': '当前表单',
   'crmFormDesign.addLink': '添加联动',
   'crmFormDesign.fieldNotExist': '字段不存在',
+  'crmFormDesign.linkSettingTip': '已设置{count}条联动',
+  'crmFormDesign.linkSettingClearTip': '确定清空表单联动吗？',
+  'crmFormDesign.linkSettingClearTipContent': '清空后，表单将不再联动显示值',
 };

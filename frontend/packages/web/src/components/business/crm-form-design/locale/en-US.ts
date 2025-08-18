@@ -128,4 +128,7 @@ export default {
   'crmFormDesign.currentForm': 'Current Form',
   'crmFormDesign.addLink': 'Add Linkage',
   'crmFormDesign.fieldNotExist': 'Field does not exist',
+  'crmFormDesign.linkSettingTip': 'Set {count} linkages',
+  'crmFormDesign.linkSettingClearTip': 'Are you sure you want to clear the form linkage?',
+  'crmFormDesign.linkSettingClearTipContent': 'After clearing, the form will no longer display linked values',
 };

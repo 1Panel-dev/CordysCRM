@@ -54,7 +54,7 @@
       margin-top: 24px;
     }
     .crm-form-design-config-item-title {
-      @apply flex items-center font-semibold;
+      @apply flex items-center justify-between font-semibold;
 
       gap: 4px;
     }

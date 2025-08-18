@@ -114,12 +114,39 @@
       </n-radio-group>
     </div>
     <!-- 表单联动 -->
-    <div v-if="props.formKey === FormDesignKeyEnum.CUSTOMER" class="crm-form-design-config-item">
+    <div
+      v-if="
+        [
+          FormDesignKeyEnum.CUSTOMER,
+          FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
+          FormDesignKeyEnum.FOLLOW_RECORD_CLUE,
+          FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+        ].includes(props.formKey)
+      "
+      class="crm-form-design-config-item"
+    >
       <div class="crm-form-design-config-item-title">
         {{ t('crmFormDesign.formLink') }}
+        <CrmPopConfirm
+          v-model:show="linkClearPop"
+          :title="t('crmFormDesign.linkSettingClearTip')"
+          icon-type="warning"
+          :content="t('crmFormDesign.linkSettingClearTipContent')"
+          :positive-text="t('common.confirm')"
+          trigger="click"
+          :negative-text="t('common.cancel')"
+          placement="right-end"
+          @confirm="clearLink"
+        >
+          <n-button type="primary" text>{{ t('common.clear') }}</n-button>
+        </CrmPopConfirm>
       </div>
       <n-button @click="showLinkConfig">
-        {{ t('common.setting') }}
+        {{
+          formConfig.linkProp?.linkFields?.length
+            ? t('crmFormDesign.linkSettingTip', { count: formConfig.linkProp.linkFields.length })
+            : t('common.setting')
+        }}
       </n-button>
     </div>
     <!-- 表单联动 End -->
@@ -140,11 +167,12 @@
   import { FormConfig, FormConfigLinkProp } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import formLinkModal from './formLinkModal.vue';
 
   const props = defineProps<{
-    formKey: string;
+    formKey: FormDesignKeyEnum;
   }>();
 
   const { t } = useI18n();
@@ -171,6 +199,12 @@
 
   function handleLinkConfigSave(value: FormConfigLinkProp) {
     formConfig.value.linkProp = value;
+  }
+
+  const linkClearPop = ref(false);
+  function clearLink() {
+    formConfig.value.linkProp = undefined;
+    linkClearPop.value = false;
   }
 </script>
 

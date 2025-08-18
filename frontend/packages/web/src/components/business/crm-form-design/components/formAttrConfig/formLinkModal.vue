@@ -1,9 +1,9 @@
 <template>
-  <CrmModal
+  <CrmDrawer
     v-model:show="visible"
-    size="large"
+    :width="800"
     :title="t('crmFormDesign.formLinkSetting')"
-    :positive-text="t('common.save')"
+    :ok-text="t('common.save')"
     footer
     @confirm="save"
     @cancel="handleCancel"
@@ -29,7 +29,7 @@
           @update-value="handleFormKeyChange"
         />
       </n-form-item>
-      <div class="mt-[16px] flex flex-col gap-[12px]">
+      <div class="mt-[16px] flex flex-col gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
         <div class="flex items-center justify-between">
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentForm') }}</div>
           <div class="w-[80px]"></div>
@@ -52,7 +52,7 @@
                 @update-value="line.link = ''"
               />
             </n-form-item>
-            <div class="flex w-[80px] items-center justify-center text-[var(--text-n1)]">
+            <div class="flex w-[60px] items-center justify-center text-[var(--text-n1)]">
               {{ t('crmFormDesign.fill') }}
             </div>
             <n-form-item
@@ -76,7 +76,7 @@
               @click="handleDeleteListItem(index)"
             >
               <template #icon>
-                <CrmIcon type="iconicon_delete" :size="16" />
+                <CrmIcon type="iconicon_minus_circle" class="text-[var(--text-n4)]" :size="16" />
               </template>
             </n-button>
           </div>
@@ -95,7 +95,10 @@
         </n-button>
       </div>
     </n-form>
-  </CrmModal>
+    <template #footerLeft>
+      <n-button secondary @click="handleCancel">{{ t('common.clear') }}</n-button>
+    </template>
+  </CrmDrawer>
 </template>
 
 <script lang="ts" setup>
@@ -107,7 +110,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormConfigLinkProp } from '@lib/shared/models/system/module';
 
-  import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -140,6 +143,10 @@
     {
       label: t('crmFormDesign.clue'),
       value: FormDesignKeyEnum.CLUE,
+    },
+    {
+      label: t('common.plan'),
+      value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
     },
   ];
   const defaultFormModel: FormConfigLinkProp = {
