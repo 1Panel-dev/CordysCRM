@@ -19,6 +19,7 @@
         create_user,
         update_user,
         method,
+        converted,
         status
         FROM
         follow_up_plan

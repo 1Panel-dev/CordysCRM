@@ -87,6 +87,9 @@ public class FollowUpPlanListResponse {
     @Schema(description = "跟进方式")
     private String method;
 
+    @Schema(description = "是否转为跟进记录")
+    private Boolean converted;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }
