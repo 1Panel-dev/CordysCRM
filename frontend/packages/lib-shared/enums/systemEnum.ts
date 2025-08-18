@@ -22,6 +22,7 @@ export enum SystemResourceMessageTypeEnum {
   CLUE_POOL = 'CLUE_POOL',
   OPPORTUNITY = 'OPPORTUNITY',
   SYSTEM = 'SYSTEM',
+  CUSTOMER_CONTACT = 'CUSTOMER_CONTACT',
 }
 
 export enum SystemMessageStatusEnum {

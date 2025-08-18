@@ -134,6 +134,8 @@
     exportCluePoolAll,
     exportCluePoolSelected,
     exportClueSelected,
+    exportContactAll,
+    exportContactSelected,
     exportCustomerAll,
     exportCustomerOpenSeaAll,
     exportCustomerOpenSeaSelected,
@@ -144,7 +146,7 @@
 
   const props = defineProps<{
     params: Record<string, any>;
-    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea';
+    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea' | 'contact';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
   }>();
@@ -166,6 +168,7 @@
     opportunity: t('menu.opportunity'),
     cluePool: t('module.cluePool'),
     openSea: t('module.openSea'),
+    contact: t('menu.contact'),
   };
 
   const loading = ref<boolean>(false);
@@ -238,6 +241,7 @@
 
   const exportAllApiMap = {
     customer: exportCustomerAll,
+    contact: exportContactAll,
     clue: exportClueAll,
     opportunity: exportOpportunityAll,
     cluePool: exportCluePoolAll,
@@ -246,6 +250,7 @@
 
   const exportSelectedApiMap = {
     customer: exportCustomerSelected,
+    contact: exportContactSelected,
     clue: exportClueSelected,
     opportunity: exportOpportunitySelected,
     cluePool: exportCluePoolSelected,

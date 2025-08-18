@@ -36,6 +36,8 @@ import {
   EnableContactViewUrl,
   EnableCustomerContactUrl,
   EnableCustomerViewUrl,
+  ExportContactAllUrl,
+  ExportContactSelectedUrl,
   ExportCustomerAllUrl,
   ExportCustomerSelectedUrl,
   ExportOpenSeaCustomerAllUrl,
@@ -488,6 +490,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportCustomerSelectedUrl, data });
   }
 
+  // 导出全量联系人列表
+  function exportContactAll(data: TableExportParams) {
+    return CDR.post({ url: ExportContactAllUrl, data });
+  }
+
+  // 导出选中联系人列表
+  function exportContactSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportContactSelectedUrl, data });
+  }
+
   // 视图
   function addCustomerView(data: ViewParams) {
     return CDR.post({ url: AddCustomerViewUrl, data });
@@ -637,6 +649,8 @@ export default function useProductApi(CDR: CordysAxios) {
     getCustomerTab,
     updateCustomerFollowPlanStatus,
     exportCustomerAll,
+    exportContactAll,
+    exportContactSelected,
     exportCustomerSelected,
     moveCustomerToPool,
     addCustomerView,

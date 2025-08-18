@@ -2,44 +2,57 @@
   <CrmCard hide-footer no-content-bottom-padding :special-height="props.specialHeight">
     <CrmTable
       ref="crmTableRef"
+      v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       class="crm-contact-table"
       :not-show-table-filter="isAdvancedSearchMode"
+      :action-config="props.readonly ? undefined : actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
+      @batch-action="handleBatchAction"
       @refresh="searchData"
     >
-      <template #tableTop>
+      <template v-if="props.readonly" #tableTop>
         <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
-        <div class="flex w-full items-center justify-between">
-          <n-button
-            v-if="!props.readonly"
-            v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
-            type="primary"
-            @click="handleCreate"
-          >
+      </template>
+      <template #actionLeft>
+        <div v-if="!props.readonly" class="flex items-center gap-[12px]">
+          <n-button v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
             {{ t('overviewDrawer.addContract') }}
           </n-button>
-          <CrmSearchInput
-            v-if="props.sourceId"
-            v-model:value="keyword"
-            class="!w-[240px]"
-            :placeholder="t('common.searchByNamePhone')"
-            @search="searchData"
-          />
-          <CrmAdvanceFilter
-            v-if="!props.hiddenAdvanceFilter && !props.sourceId"
-            ref="tableAdvanceFilterRef"
-            v-model:keyword="keyword"
-            :custom-fields-config-list="filterConfigList"
-            :filter-config-list="customFieldsFilterConfig"
-            :search-placeholder="t('common.searchByNamePhone')"
-            @adv-search="handleAdvSearch"
-            @keyword-search="searchData"
-          />
+          <n-button
+            v-if="!props.sourceId"
+            v-permission="['CUSTOMER_MANAGEMENT_CONTACT:EXPORT']"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            :disabled="propsRes.data.length === 0"
+            @click="handleExportAllClick"
+          >
+            {{ t('common.exportAll') }}
+          </n-button>
         </div>
+      </template>
+      <template #actionRight>
+        <CrmSearchInput
+          v-if="props.sourceId"
+          v-model:value="keyword"
+          class="!w-[240px]"
+          :placeholder="t('common.searchByNamePhone')"
+          @search="searchData"
+        />
+        <CrmAdvanceFilter
+          v-if="!props.hiddenAdvanceFilter && !props.sourceId"
+          ref="tableAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          :search-placeholder="t('common.searchByNamePhone')"
+          @adv-search="handleAdvSearch"
+          @keyword-search="searchData"
+        />
       </template>
       <template #view>
         <CrmViewSelect
@@ -99,18 +112,39 @@
         </n-form-item>
       </n-form>
     </CrmModal>
+
+    <CrmTableExportModal
+      v-model:show="showExportModal"
+      :params="exportParams"
+      :export-columns="exportColumns"
+      :is-export-all="isExportAll"
+      type="contact"
+      @create-success="handleExportCreateSuccess"
+    />
   </CrmCard>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, TabPaneProps, useMessage } from 'naive-ui';
+  import {
+    DataTableRowKey,
+    FormInst,
+    FormRules,
+    NButton,
+    NForm,
+    NFormItem,
+    NInput,
+    NSwitch,
+    TabPaneProps,
+    useMessage,
+  } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -121,8 +155,10 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
 
   import {
@@ -201,6 +237,18 @@
       permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'],
     },
   ];
+
+  const actionConfig = computed<BatchActionConfig>(() => ({
+    baseAction: !props.sourceId
+      ? [
+          {
+            label: t('common.exportChecked'),
+            key: 'exportChecked',
+            permission: ['CUSTOMER_MANAGEMENT_CONTACT:EXPORT'],
+          },
+        ]
+      : [],
+  }));
 
   function handleCreate() {
     if (props.sourceId) {
@@ -378,7 +426,7 @@
     },
   });
 
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, tableQueryParams } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
   const filterConfigList = computed(() => [
@@ -399,6 +447,56 @@
     },
     ...baseFilterConfigList,
   ]);
+
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => {
+    return propsRes.value.columns
+      .filter(
+        (item: any) =>
+          item.key !== 'operation' &&
+          item.type !== 'selection' &&
+          item.key !== 'crmTableOrder' &&
+          item.filedType !== FieldTypeEnum.PICTURE
+      )
+      .map((e) => {
+        return {
+          key: e.key?.toString() || '',
+          title: (e.title as string) || '',
+        };
+      });
+  });
+
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
+  });
+
+  const isExportAll = ref(false);
+  const showExportModal = ref<boolean>(false);
+
+  function handleExportAllClick() {
+    isExportAll.value = true;
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'exportChecked':
+        isExportAll.value = false;
+        showExportModal.value = true;
+        break;
+      default:
+        break;
+    }
+  }
+
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData(val?: string) {
     if (props.sourceId) {

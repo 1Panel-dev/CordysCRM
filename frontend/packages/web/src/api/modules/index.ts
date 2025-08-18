@@ -235,6 +235,8 @@ export const {
   getGlobalOpenSeaCustomerList,
   exportCustomerOpenSeaAll,
   exportCustomerOpenSeaSelected,
+  exportContactAll,
+  exportContactSelected,
 } = customerApi;
 
 export const {

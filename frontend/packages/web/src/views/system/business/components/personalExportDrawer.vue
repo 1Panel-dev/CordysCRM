@@ -190,6 +190,8 @@
         return t('menu.clue');
       case SystemResourceMessageTypeEnum.CLUE_POOL:
         return t('module.cluePool');
+      case SystemResourceMessageTypeEnum.CUSTOMER_CONTACT:
+        return t('menu.contact');
       default:
         return t('menu.opportunity');
     }
