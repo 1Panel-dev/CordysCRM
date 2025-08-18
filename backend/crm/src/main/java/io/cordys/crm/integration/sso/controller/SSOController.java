@@ -23,7 +23,12 @@ public class SSOController {
         return ssoService.exchangeWeComCode(code);
     }
 
-    @GetMapping(value = "/dingding")
+    @GetMapping("/oauth/wecom")
+    public SessionUser callbackWeComOauth(@RequestParam("code") String code) {
+        return ssoService.exchangeWeComOauth2(code);
+    }
+
+    @GetMapping(value = "/ding-talk")
     @Operation(summary = "获取钉钉扫码登陆验证")
     public SessionUser callbackDingTalk(@RequestParam("code") String code) {
         return ssoService.exchangeDingTalkCode(code);
@@ -33,10 +38,5 @@ public class SSOController {
     public ModelAndView callbackOauth(@RequestParam("code") String code) {
         SessionUser sessionUser = ssoService.exchangeGitOauth2(code);
         return new ModelAndView("redirect:/#/?_token=" + CodingUtils.base64Encoding(sessionUser.getSessionId()) + "&_csrf=" + sessionUser.getCsrfToken());
-    }
-
-    @GetMapping("/oauth/wecom")
-    public SessionUser callbackWeComOauth(@RequestParam("code") String code) {
-        return ssoService.exchangeWeComOauth2(code);
     }
 }

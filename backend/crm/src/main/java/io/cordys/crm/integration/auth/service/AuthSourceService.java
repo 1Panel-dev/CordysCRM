@@ -1,6 +1,5 @@
 package io.cordys.crm.integration.auth.service;
 
-
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -11,17 +10,17 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.integration.auth.request.AuthSourceEditRequest;
+import io.cordys.crm.integration.auth.response.AuthSourceDTO;
+import io.cordys.crm.integration.auth.response.AuthSourceLogDTO;
+import io.cordys.crm.integration.wecom.dto.WeComConfigurationDTO;
 import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.domain.OrganizationConfig;
 import io.cordys.crm.system.domain.OrganizationConfigDetail;
 import io.cordys.crm.system.dto.request.AuthSourceRequest;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
-import io.cordys.crm.integration.auth.request.AuthSourceEditRequest;
-import io.cordys.crm.integration.auth.response.AuthSourceDTO;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.crm.integration.auth.response.AuthSourceLogDTO;
-import io.cordys.crm.integration.wecom.dto.WeComConfigurationDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -36,15 +35,16 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AuthSourceService {
+
+    private static final String ENABLED_LABEL = "开启";
+    private static final String DISABLED_LABEL = "关闭";
+
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
-
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
-
     @Resource
     private BaseMapper<OrganizationConfigDetail> organizationConfigDetailBaseMapper;
-
     @Resource
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
 
@@ -53,54 +53,36 @@ public class AuthSourceService {
     }
 
     public AuthSourceDTO getAuthSource(String id) {
-        OrganizationConfigDetail source = organizationConfigDetailBaseMapper.selectByPrimaryKey(id);
-        if (source == null) {
+        OrganizationConfigDetail detail = organizationConfigDetailBaseMapper.selectByPrimaryKey(id);
+        if (detail == null) {
             throw new GenericException(Translator.get("auth.source.blank"));
         }
-        AuthSourceDTO authSourceDTO = new AuthSourceDTO();
-        BeanUtils.copyBean(authSourceDTO, source);
-        authSourceDTO.setConfiguration(new String(source.getContent(), StandardCharsets.UTF_8));
-        return authSourceDTO;
+        AuthSourceDTO dto = new AuthSourceDTO();
+        BeanUtils.copyBean(dto, detail);
+        dto.setConfiguration(new String(detail.getContent(), StandardCharsets.UTF_8));
+        return dto;
     }
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.ADD, operator = "{#userId}")
     public void addAuthSource(AuthSourceEditRequest authSource, String organizationId, String userId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+
         if (organizationConfig == null) {
-            organizationConfig = new OrganizationConfig();
-            organizationConfig.setId(IDGenerator.nextStr());
-            organizationConfig.setOrganizationId(organizationId);
-            organizationConfig.setType(OrganizationConfigConstants.ConfigType.AUTH.name());
-            organizationConfig.setCreateTime(System.currentTimeMillis());
-            organizationConfig.setUpdateTime(System.currentTimeMillis());
-            organizationConfig.setCreateUser(userId);
-            organizationConfig.setUpdateUser(userId);
-            organizationConfigBaseMapper.insert(organizationConfig);
+            organizationConfig = createOrganizationConfig(organizationId, userId);
         } else {
             checkAuthSource(authSource);
         }
 
-        OrganizationConfigDetail organizationConfigDetail;
-        organizationConfigDetail = new OrganizationConfigDetail();
-        organizationConfigDetail.setId(IDGenerator.nextStr());
-        organizationConfigDetail.setName(authSource.getName());
-        organizationConfigDetail.setDescription(authSource.getDescription());
-        organizationConfigDetail.setContent(authSource.getConfiguration().getBytes(StandardCharsets.UTF_8));
-        organizationConfigDetail.setCreateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setCreateUser(userId);
-        organizationConfigDetail.setUpdateUser(userId);
-        organizationConfigDetail.setConfigId(organizationConfig.getId());
-        organizationConfigDetail.setType(authSource.getType());
-        organizationConfigDetail.setEnable(authSource.getEnable());
-        organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
-        // 添加日志上下文
-        AuthSourceLogDTO authSourceLogDTO = getAuthSourceLogDTOByRequest(authSource);
+        OrganizationConfigDetail detail = buildDetailForInsert(authSource, organizationConfig.getId(), userId);
+        organizationConfigDetailBaseMapper.insert(detail);
+
+        AuthSourceLogDTO logDTO = getAuthSourceLogDTOByRequest(authSource);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(null)
                 .resourceName(authSource.getName())
-                .resourceId(organizationConfigDetail.getId())
-                .modifiedValue(authSourceLogDTO)
+                .resourceId(detail.getId())
+                .modifiedValue(logDTO)
                 .build());
     }
 
@@ -119,96 +101,82 @@ public class AuthSourceService {
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteAuthSource(String id) {
-        OrganizationConfigDetail originCustomerPool = organizationConfigDetailBaseMapper.selectByPrimaryKey(id);
-
+        OrganizationConfigDetail origin = organizationConfigDetailBaseMapper.selectByPrimaryKey(id);
         organizationConfigDetailBaseMapper.deleteByPrimaryKey(id);
-        // 设置日志操作对象
-        OperationLogContext.setResourceName(originCustomerPool.getName());
-
+        // 保持原逻辑（可能为 null 时抛出 NPE）
+        OperationLogContext.setResourceName(origin.getName());
     }
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.UPDATE, operator = "{#userId}")
     public void updateAuthSource(AuthSourceEditRequest authSource, String userId) {
         checkAuthSource(authSource);
-        AuthSourceDTO authSourceOld = getAuthSource(authSource.getId());
-        OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
-        organizationConfigDetail.setId(authSource.getId());
-        organizationConfigDetail.setDescription(authSource.getDescription());
-        organizationConfigDetail.setName(authSource.getName());
-        organizationConfigDetail.setEnable(authSource.getEnable());
-        organizationConfigDetail.setContent(authSource.getConfiguration().getBytes(StandardCharsets.UTF_8));
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateUser(userId);
-        organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        // 添加日志上下文
-        AuthSourceLogDTO authSourceDTO = getAuthSourceLogDTOByRequest(authSource);
-        // 旧的认证源日志对象
-        AuthSourceLogDTO authSourceOldDTO = getAuthSourceLogDTOAuthDTO(authSourceOld);
+        AuthSourceDTO old = getAuthSource(authSource.getId());
+
+        OrganizationConfigDetail record = new OrganizationConfigDetail();
+        record.setId(authSource.getId());
+        record.setDescription(authSource.getDescription());
+        record.setName(authSource.getName());
+        record.setEnable(authSource.getEnable());
+        record.setContent(authSource.getConfiguration().getBytes(StandardCharsets.UTF_8));
+        record.setUpdateTime(now());
+        record.setUpdateUser(userId);
+        organizationConfigDetailBaseMapper.update(record);
+
+        AuthSourceLogDTO newLog = getAuthSourceLogDTOByRequest(authSource);
+        AuthSourceLogDTO oldLog = getAuthSourceLogDTOAuthDTO(old);
         OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(authSourceOldDTO)
+                .originalValue(oldLog)
                 .resourceName(authSource.getName())
                 .resourceId(authSource.getId())
-                .modifiedValue(authSourceDTO)
+                .modifiedValue(newLog)
                 .build());
-
     }
 
     @NotNull
     private static AuthSourceLogDTO getAuthSourceLogDTOAuthDTO(AuthSourceDTO authSourceOld) {
-        AuthSourceLogDTO authSourceOldDTO = new AuthSourceLogDTO();
-        BeanUtils.copyBean(authSourceOldDTO, authSourceOld);
-        authSourceOldDTO.setConfiguration(JSON.parseObject(authSourceOld.getConfiguration(), WeComConfigurationDTO.class));
-        if (authSourceOld.getEnable()) {
-            authSourceOldDTO.setEnable("开启");
-        } else {
-            authSourceOldDTO.setEnable("关闭");
-        }
-        return authSourceOldDTO;
+        AuthSourceLogDTO dto = new AuthSourceLogDTO();
+        BeanUtils.copyBean(dto, authSourceOld);
+        dto.setConfiguration(JSON.parseObject(authSourceOld.getConfiguration(), WeComConfigurationDTO.class));
+        dto.setEnable(Boolean.TRUE.equals(authSourceOld.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
+        return dto;
     }
 
     @NotNull
     private static AuthSourceLogDTO getAuthSourceLogDTOByRequest(AuthSourceEditRequest authSource) {
-        AuthSourceLogDTO authSourceDTO = new AuthSourceLogDTO();
-        BeanUtils.copyBean(authSourceDTO, authSource);
-        authSourceDTO.setConfiguration(JSON.parseObject(authSource.getConfiguration(), WeComConfigurationDTO.class));
-        if (BooleanUtils.isTrue(authSource.getEnable())) {
-            authSourceDTO.setEnable("开启");
-        } else {
-            authSourceDTO.setEnable("关闭");
-        }
-        return authSourceDTO;
+        AuthSourceLogDTO dto = new AuthSourceLogDTO();
+        BeanUtils.copyBean(dto, authSource);
+        dto.setConfiguration(JSON.parseObject(authSource.getConfiguration(), WeComConfigurationDTO.class));
+        dto.setEnable(BooleanUtils.isTrue(authSource.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
+        return dto;
     }
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.UPDATE, resourceId = "{#id}", operator = "{#userId}")
     public void updateStatus(String id, Boolean status) {
-        AuthSourceDTO authSourceOld = getAuthSource(id);
+        AuthSourceDTO old = getAuthSource(id);
         OrganizationConfigDetail source = organizationConfigDetailBaseMapper.selectByPrimaryKey(id);
+
         if (BooleanUtils.isTrue(status)) {
             extOrganizationConfigDetailMapper.updateStatus(id, false, source.getType(), source.getConfigId());
         }
+
         OrganizationConfigDetail record = new OrganizationConfigDetail();
         record.setId(id);
         record.setEnable(BooleanUtils.toBooleanDefaultIfNull(status, false));
-        record.setUpdateTime(System.currentTimeMillis());
+        record.setUpdateTime(now());
         organizationConfigDetailBaseMapper.update(record);
-        // 添加日志上下文
-        AuthSourceLogDTO authSourceOldDTO = getAuthSourceLogDTOAuthDTO(authSourceOld);
-        AuthSourceLogDTO authSourceDTO = new AuthSourceLogDTO();
-        BeanUtils.copyBean(authSourceDTO, authSourceOldDTO);
-        if (BooleanUtils.isTrue(status)) {
-            authSourceDTO.setEnable("开启");
-        } else {
-            authSourceDTO.setEnable("关闭");
-        }
+
+        AuthSourceLogDTO oldLog = getAuthSourceLogDTOAuthDTO(old);
+        AuthSourceLogDTO newLog = new AuthSourceLogDTO();
+        BeanUtils.copyBean(newLog, oldLog);
+        newLog.setEnable(BooleanUtils.isTrue(status) ? ENABLED_LABEL : DISABLED_LABEL);
+
         OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(authSourceOldDTO)
+                .originalValue(oldLog)
                 .resourceName(source.getName())
                 .resourceId(source.getId())
-                .modifiedValue(authSourceDTO)
+                .modifiedValue(newLog)
                 .build());
-
     }
-
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.UPDATE, resourceId = "{#id}", operator = "{#userId}")
     public void updateName(String id, String name, String userId) {
@@ -216,50 +184,90 @@ public class AuthSourceService {
         if (repeatDetails > 0) {
             throw new GenericException(Translator.get("auth.source.name.exists"));
         }
-        AuthSourceDTO authSourceOld = getAuthSource(id);
-        OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
-        organizationConfigDetail.setId(id);
-        organizationConfigDetail.setName(name);
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateUser(userId);
-        organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        // 添加日志上下文
-        // 旧的认证源日志对象
-        AuthSourceLogDTO authSourceOldDTO = getAuthSourceLogDTOAuthDTO(authSourceOld);
-        AuthSourceLogDTO authSourceDTO = new AuthSourceLogDTO();
-        BeanUtils.copyBean(authSourceDTO, authSourceOldDTO);
-        authSourceDTO.setName(name);
+
+        AuthSourceDTO old = getAuthSource(id);
+
+        OrganizationConfigDetail record = new OrganizationConfigDetail();
+        record.setId(id);
+        record.setName(name);
+        record.setUpdateTime(now());
+        record.setUpdateUser(userId);
+        organizationConfigDetailBaseMapper.update(record);
+
+        AuthSourceLogDTO oldLog = getAuthSourceLogDTOAuthDTO(old);
+        AuthSourceLogDTO newLog = new AuthSourceLogDTO();
+        BeanUtils.copyBean(newLog, oldLog);
+        newLog.setName(name);
+
         OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(authSourceOldDTO)
+                .originalValue(oldLog)
                 .resourceName(name)
                 .resourceId(id)
-                .modifiedValue(authSourceDTO)
+                .modifiedValue(newLog)
                 .build());
-
     }
 
     public List<String> getEnableAuthSourceTypeList(String organizationId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
-        if (organizationConfig == null) {
+        OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+        if (config == null) {
             throw new GenericException(Translator.get("auth.setting.no.exists"));
         }
-        List<OrganizationConfigDetail> enableOrganizationConfigDetails = extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(organizationConfig.getId(), null);
-        return enableOrganizationConfigDetails.stream().map(OrganizationConfigDetail::getType).toList();
+        List<OrganizationConfigDetail> details =
+                extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(config.getId(), null);
+        return details.stream().map(OrganizationConfigDetail::getType).toList();
     }
 
     public AuthSourceDTO getAuthSourceByType(String organizationId, String type) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
-        if (organizationConfig == null) {
+        OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+        if (config == null) {
             throw new GenericException(Translator.get("auth.setting.no.exists"));
         }
-        List<OrganizationConfigDetail> enableOrganizationConfigDetails = extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(organizationConfig.getId(), type);
-        if (CollectionUtils.isEmpty(enableOrganizationConfigDetails)) {
+        List<OrganizationConfigDetail> details =
+                extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(config.getId(), type);
+        if (CollectionUtils.isEmpty(details)) {
             throw new GenericException(Translator.get("auth.source.blank"));
         }
-        OrganizationConfigDetail organizationConfigDetail = enableOrganizationConfigDetails.getFirst();
-        AuthSourceDTO authSourceDTO = new AuthSourceDTO();
-        BeanUtils.copyBean(authSourceDTO, organizationConfigDetail);
-        authSourceDTO.setConfiguration(new String(organizationConfigDetail.getContent(), StandardCharsets.UTF_8));
-        return authSourceDTO;
+        OrganizationConfigDetail detail = details.getFirst();
+        AuthSourceDTO dto = new AuthSourceDTO();
+        BeanUtils.copyBean(dto, detail);
+        dto.setConfiguration(new String(detail.getContent(), StandardCharsets.UTF_8));
+        return dto;
+    }
+
+    // helpers
+
+    private static long now() {
+        return System.currentTimeMillis();
+    }
+
+    private OrganizationConfig createOrganizationConfig(String organizationId, String userId) {
+        OrganizationConfig config = new OrganizationConfig();
+        config.setId(IDGenerator.nextStr());
+        config.setOrganizationId(organizationId);
+        config.setType(OrganizationConfigConstants.ConfigType.AUTH.name());
+        config.setCreateTime(now());
+        config.setUpdateTime(now());
+        config.setCreateUser(userId);
+        config.setUpdateUser(userId);
+        organizationConfigBaseMapper.insert(config);
+        return config;
+    }
+
+    private OrganizationConfigDetail buildDetailForInsert(AuthSourceEditRequest authSource, String configId, String userId) {
+        OrganizationConfigDetail detail = new OrganizationConfigDetail();
+        detail.setId(IDGenerator.nextStr());
+        detail.setName(authSource.getName());
+        detail.setDescription(authSource.getDescription());
+        detail.setContent(authSource.getConfiguration().getBytes(StandardCharsets.UTF_8));
+        detail.setCreateTime(now());
+        detail.setUpdateTime(now());
+        detail.setCreateUser(userId);
+        detail.setUpdateUser(userId);
+        detail.setConfigId(configId);
+        detail.setType(authSource.getType());
+        detail.setEnable(authSource.getEnable());
+        return detail;
     }
 }
