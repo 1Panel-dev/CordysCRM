@@ -1,40 +1,65 @@
+name: Add Labels to PR
+
 on:
   issue_comment:
-    types:
-      - created
+    types: [created]
 
-name: Add Labels to PR
+permissions:
+  issues: write
+  pull-requests: write
 
 jobs:
   add_labels:
+    # 只处理 PR 上、且以 "/" 开头的评论
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Extract and format the labels from the comment as "username: label"
-      - name: Extract reviewer and labels
-        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
-        id: extract_labels
+      - name: Parse labels from comment
+        id: parse
         run: |
-          comment_body="${{ github.event.comment.body }}"
-          reviewer="${{ github.event.comment.user.login }}"
-          # Clean up comment and extract labels
-          raw_labels=$(echo "$comment_body" | sed 's|^/||')
-          formatted_labels=$(echo "$raw_labels" | awk -v reviewer="$reviewer" '{split($0, arr, ","); for (i in arr) {gsub(/^ +| +$/, "", arr[i]); print reviewer ": " arr[i]}}')
-          
-          # Set the formatted labels as an environment variable (new way, not using set-output)
-          echo "labels=$formatted_labels" >> $GITHUB_ENV
-          
-          # Output labels for debugging
-          echo "Formatted labels: $formatted_labels"
+          body='${{ github.event.comment.body }}'
+          # 去掉前导 "/"，支持中文逗号，去重与修剪空白
+          raw="${body#/}"
+          labels=$(echo "$raw" \
+            | tr '，' ',' \
+            | tr ',' '\n' \
+            | sed 's/^ *//;s/ *$//' \
+            | sed '/^$/d' \
+            | sort -u)
 
-      # Add the extracted labels to the PR
-      - name: Add labels via PR comment
-        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
+          # 供 action-add-labels 使用（逐行一个标签，支持包含空格的标签）
+          {
+            echo 'LABELS<<EOF'
+            echo "$labels"
+            echo 'EOF'
+          } >> "$GITHUB_ENV"
+
+          # 用于评论展示的一行文本
+          echo "LABEL_LINE=$(echo "$labels" | paste -sd ', ' -)" >> "$GITHUB_ENV"
+
+      - name: Add labels
         uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUBTOKEN }}
-          labels: ${{ env.labels }}
+          github_token: ${{ github.token }}
+          labels: ${{ env.LABELS }}
+
+      - name: Comment who added labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+        env:
+          LABEL_LINE: ${{ env.LABEL_LINE }}
+        script: |
+          const actor = context.payload.comment.user.login;
+          const issue_number = context.payload.issue.number;
+          const body = `由 @${actor} 添加标签: ${process.env.LABEL_LINE}`;
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number,
+            body
+          });
