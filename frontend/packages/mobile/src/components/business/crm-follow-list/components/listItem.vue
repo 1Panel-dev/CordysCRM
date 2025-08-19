@@ -11,6 +11,13 @@
     <div class="flex flex-1 flex-col gap-[8px] overflow-hidden">
       <div class="flex h-[24px] items-center justify-between gap-[16px]">
         <div class="flex items-center gap-[8px]">
+          <CrmTag
+            v-if="item.converted && isPlan"
+            plain
+            :tag="t('common.hasConvertToRecord')"
+            text-color="var(--primary-8)"
+            color="var(--primary-8)"
+          />
           <div>{{ getShowTime(item) }} </div>
           <div class="text-[14px] font-semibold text-[var(--text-n1)]">
             {{ (!isPlan ? item.followMethod : item.method) ?? '-' }}
@@ -20,7 +27,7 @@
           <van-dropdown-menu class="status-select-menu" @click.stop>
             <van-dropdown-item
               v-model="status"
-              :disabled="props.readonly"
+              :disabled="props.readonly || item.converted"
               :options="statusOptions"
               @change="changeStatus"
             />
@@ -41,6 +48,13 @@
                 icon-size="16px"
                 @click="emit('edit')"
               />
+              <!-- TODO先不上 -->
+              <!-- <CrmTextButton
+                icon="iconicon_login"
+                color="var(--primary-8)"
+                icon-size="16px"
+                @click="emit('convertToRecord')"
+              /> -->
             </div>
           </div>
         </div>
@@ -59,6 +73,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FollowDetailItem, StatusTagKey } from '@lib/shared/models/customer';
 
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 

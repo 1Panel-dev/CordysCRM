@@ -1,6 +1,6 @@
 import { useRouter } from 'vue-router';
 
-import type { FollowDetailItem } from '@lib/shared/models/customer';
+import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
 import { PlanEnumType, RecordEnumType } from '@/config/follow';
 
@@ -36,6 +36,13 @@ export default function useFollowApi(followProps: {
         id: followProps.sourceId,
         initialSourceName: followProps.initialSourceName,
       },
+      ...(followProps.type === 'followPlan'
+        ? {
+            state: {
+              params: JSON.stringify({ converted: false }),
+            },
+          }
+        : {}),
     });
   }
 
@@ -47,6 +54,13 @@ export default function useFollowApi(followProps: {
         id: item.id,
         needInitDetail: 'Y',
       },
+      ...(followProps.type === 'followPlan'
+        ? {
+            state: {
+              params: JSON.stringify({ converted: (item as CustomerFollowPlanListItem).converted }),
+            },
+          }
+        : {}),
     });
   }
 

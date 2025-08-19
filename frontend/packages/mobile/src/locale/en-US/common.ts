@@ -92,4 +92,6 @@ export default {
   'common.optionNotExist': 'Option does not exist',
   'common.open': 'Open',
   'common.close': 'Closed',
+  'common.convertPlanToRecord': 'Plan transfer record',
+  'common.hasConvertToRecord': 'Have record',
 };

@@ -93,4 +93,6 @@ export default {
   'common.optionNotExist': '选项不存在',
   'common.open': '开启',
   'common.close': '关闭',
+  'common.convertPlanToRecord': '计划转记录',
+  'common.hasConvertToRecord': '已转记录',
 };
