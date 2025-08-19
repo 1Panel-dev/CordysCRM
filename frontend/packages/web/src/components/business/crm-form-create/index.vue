@@ -162,18 +162,22 @@
   function applyFieldLink(item: FormCreateField) {
     const currentFieldValue = formDetail.value[item.id];
     const linkField = fieldList.value.find((f) => f.id === item.linkProp?.targetField);
-    item.linkProp?.linkOptions.forEach((option) => {
-      if (isEqual(currentFieldValue, option.current)) {
-        if (linkField) {
-          if (option.method === 'HIDDEN') {
-            linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
-          } else {
-            linkField.linkRange = undefined;
-            formDetail.value[linkField.id] = option.target;
+    if (item.linkProp?.linkOptions) {
+      for (let i = 0; i < item.linkProp?.linkOptions.length; i++) {
+        const option = item.linkProp?.linkOptions[i];
+        if (isEqual(currentFieldValue, option.current)) {
+          if (linkField) {
+            if (option.method === 'HIDDEN') {
+              linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
+            } else {
+              linkField.linkRange = undefined;
+              formDetail.value[linkField.id] = option.target;
+            }
+            return;
           }
         }
       }
-    });
+    }
   }
 
   function handleFieldChange(value: any, item: FormCreateField) {
