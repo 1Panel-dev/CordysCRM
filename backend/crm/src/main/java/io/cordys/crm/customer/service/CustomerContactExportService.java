@@ -21,7 +21,6 @@ import io.cordys.crm.customer.dto.request.CustomerContactExportRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.utils.CustomerContactFieldUtils;
-import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
@@ -120,7 +119,7 @@ public class CustomerContactExportService extends BaseExportService {
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, CustomerContactExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         //获取数据
-        List<CustomerContactListResponse> allList = extCustomerContactMapper.list(request, orgId, userId, deptDataPermission);
+        List<CustomerContactListResponse> allList = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
         allList = customerContactService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = customerContactService.getListOptionMap(orgId, allList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
@@ -212,12 +211,12 @@ public class CustomerContactExportService extends BaseExportService {
         return exportTask.getId();
     }
 
-    private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException{
+    private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
         //获取数据
         List<CustomerContactListResponse> allList = extCustomerContactMapper.getListByIds(ids);
         allList = customerContactService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = customerContactService.getListOptionMap(orgId, allList);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);
+        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
         for (CustomerContactListResponse response : allList) {

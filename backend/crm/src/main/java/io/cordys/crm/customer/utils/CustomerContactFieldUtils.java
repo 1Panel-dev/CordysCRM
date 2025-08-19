@@ -1,6 +1,8 @@
 package io.cordys.crm.customer.utils;
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.util.TimeUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 
 import java.util.LinkedHashMap;
@@ -16,6 +18,14 @@ public class CustomerContactFieldUtils {
         systemFiledMap.put("phone", data.getPhone());
         systemFiledMap.put("owner", data.getOwnerName());
         systemFiledMap.put("owner", data.getOwnerName());
+        systemFiledMap.put("enable", Translator.get("log.enable." + data.getEnable()));
+        systemFiledMap.put("disableReason", data.getDisableReason());
+        systemFiledMap.put("departmentId", data.getDepartmentName());
+
+        systemFiledMap.put("createUser", data.getCreateUserName());
+        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFiledMap.put("updateUser", data.getUpdateUserName());
+        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
         return systemFiledMap;
     }
 }
