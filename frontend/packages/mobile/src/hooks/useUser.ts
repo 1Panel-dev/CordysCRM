@@ -44,26 +44,9 @@ export default function useUser() {
     return WHITE_LIST.some((e) => e.path.includes(currentRoute.path));
   };
 
-  const goUserHasPermissionPage = () => {
-    const { redirect, ...othersQuery } = router.currentRoute.value.query;
-
-    const redirectHasPermission =
-      redirect &&
-      !redirect.includes(NO_RESOURCE_ROUTE_NAME) &&
-      routerNameHasPermission(redirect as string, router.getRoutes());
-
-    router.push({
-      name: redirectHasPermission ? (redirect as string) : AppRouteEnum.WORKBENCH,
-      query: {
-        ...othersQuery,
-      },
-    });
-  };
-
   return {
     logout,
     isLoginPage,
     isWhiteListPage,
-    goUserHasPermissionPage,
   };
 }

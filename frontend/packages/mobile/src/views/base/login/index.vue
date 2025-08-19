@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
   import { FormInstance } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -56,11 +57,12 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
 
-  const { goUserHasPermissionPage } = useUser();
+  import { AppRouteEnum } from '@/enums/routeEnum';
+
+  const router = useRouter();
 
   const appStore = useAppStore();
 
@@ -108,7 +110,9 @@
       });
       setLoginExpires();
       setLoginType(userInfo.value.authenticate);
-      goUserHasPermissionPage();
+      router.replace({
+        name: AppRouteEnum.WORKBENCH,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
