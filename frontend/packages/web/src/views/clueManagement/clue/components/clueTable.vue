@@ -61,7 +61,6 @@
         v-if="!props.hiddenAdvanceFilter"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CLUE"
-        :internal-list="tabList"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         @refresh-table-data="searchData"
@@ -126,7 +125,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -166,7 +165,6 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -193,27 +191,9 @@
     (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
   }>();
 
-  const allTabList: TabPaneProps[] = [
-    {
-      name: CustomerSearchTypeEnum.ALL,
-      tab: t('clue.allClues'),
-    },
-    {
-      name: CustomerSearchTypeEnum.SELF,
-      tab: t('clue.myClues'),
-    },
-    {
-      name: CustomerSearchTypeEnum.DEPARTMENT,
-      tab: t('clue.departmentClues'),
-    },
-  ];
-
   const leadCardRef = ref<HTMLElement | null>(null);
 
-  const { tabList, activeTab } = useHiddenTab(
-    allTabList,
-    props.tableFormKey === FormDesignKeyEnum.CLUE ? FormDesignKeyEnum.CLUE : undefined
-  );
+  const activeTab = ref();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');

@@ -112,7 +112,7 @@
   import AddOrEditViewsDrawer from './components/addOrEditViewsDrawer.vue';
   import ManageViewsDrawer from './components/manageViewsDrawer.vue';
 
-  import { TabType } from '@/hooks/useHiddenTab';
+  import useHiddenTab, { TabType } from '@/hooks/useHiddenTab';
   import useHorizontalScrollArrows from '@/hooks/useHorizontalScrollArrows';
   import useAppStore from '@/store/modules/app';
   import useViewStore from '@/store/modules/view';
@@ -126,7 +126,6 @@
 
   const props = defineProps<{
     type: TabType;
-    internalList: TabPaneProps[];
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
   }>();
@@ -154,19 +153,21 @@
     }
   }
 
-  watch(
-    () => props.internalList,
-    async (val: TabPaneProps[]) => {
-      viewStore.loadInternalViews(props.type, val);
-    }
-  );
-  onMounted(async () => {
-    viewStore.loadCustomViews(props.type);
-  });
-
   const tags = computed(() =>
     [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable && item.fixed)
   );
+
+  const { tabList, initTab } = useHiddenTab(props.type);
+
+  onMounted(async () => {
+    await initTab();
+    await viewStore.loadInternalViews(props.type, tabList.value as TabPaneProps[]);
+    await viewStore.loadCustomViews(props.type);
+    nextTick(() => {
+      // 默认视图是固定视图的第一个
+      activeTab.value = tags.value[0].id;
+    });
+  });
 
   const scrollWrapperRef = ref<HTMLDivElement | null>(null);
   const { showArrows, scrollLeft, scrollRight, updateScrollStatus, canScrollLeft, canScrollRight } =

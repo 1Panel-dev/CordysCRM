@@ -68,7 +68,6 @@
         v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.BUSINESS"
-        :internal-list="tabList"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         @refresh-table-data="searchData"
@@ -115,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -147,7 +146,6 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -184,30 +182,7 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
-  const allTabList: TabPaneProps[] = [
-    {
-      name: OpportunitySearchTypeEnum.ALL,
-      tab: t('opportunity.allOpportunities'),
-    },
-    {
-      name: OpportunitySearchTypeEnum.SELF,
-      tab: t('opportunity.myOpportunities'),
-    },
-    {
-      name: OpportunitySearchTypeEnum.DEPARTMENT,
-      tab: t('opportunity.departmentOpportunities'),
-    },
-    {
-      name: OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS,
-      tab: t('opportunity.convertedOpportunities'),
-    },
-  ];
-  const { tabList, activeTab } = useHiddenTab(
-    allTabList,
-    !props.isCustomerTab && props.formKey !== FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY
-      ? FormDesignKeyEnum.BUSINESS
-      : undefined
-  );
+  const activeTab = ref();
 
   const actionConfig = computed<BatchActionConfig>(() => {
     if (props.readonly) {

@@ -66,7 +66,6 @@
           v-if="props.formKey === FormDesignKeyEnum.CONTACT"
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.CONTACT"
-          :internal-list="tabList as TabPaneProps[]"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
           @refresh-table-data="searchData"
@@ -142,12 +141,10 @@
     NFormItem,
     NInput,
     NSwitch,
-    TabPaneProps,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -176,7 +173,6 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -214,24 +210,7 @@
   const needInitDetail = ref(false);
   const tableRefreshId = ref(0);
 
-  const allTabList: TabPaneProps[] = [
-    {
-      name: CustomerSearchTypeEnum.ALL,
-      tab: t('customer.contacts.all'),
-    },
-    {
-      name: CustomerSearchTypeEnum.SELF,
-      tab: t('customer.contacts.mine'),
-    },
-    {
-      name: CustomerSearchTypeEnum.DEPARTMENT,
-      tab: t('customer.contacts.department'),
-    },
-  ];
-  const { tabList, activeTab } = useHiddenTab(
-    allTabList,
-    props.formKey === FormDesignKeyEnum.CONTACT ? FormDesignKeyEnum.CONTACT : undefined
-  );
+  const activeTab = ref();
 
   const operationGroupList: ActionsItem[] = [
     {

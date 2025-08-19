@@ -62,7 +62,6 @@
         v-if="!props.hiddenAdvanceFilter"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CUSTOMER"
-        :internal-list="tabList"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         @refresh-table-data="searchData"
@@ -105,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -134,7 +133,6 @@
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -155,28 +153,7 @@
     (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
   }>();
 
-  const allTabList: TabPaneProps[] = [
-    {
-      name: CustomerSearchTypeEnum.ALL,
-      tab: t('customer.all'),
-    },
-    {
-      name: CustomerSearchTypeEnum.SELF,
-      tab: t('customer.mine'),
-    },
-    {
-      name: CustomerSearchTypeEnum.DEPARTMENT,
-      tab: t('customer.deptCustomer'),
-    },
-    {
-      name: CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
-      tab: t('customer.cooperationCustomer'),
-    },
-  ];
-  const { tabList, activeTab } = useHiddenTab(
-    allTabList,
-    props.formKey === FormDesignKeyEnum.CUSTOMER ? FormDesignKeyEnum.CUSTOMER : undefined
-  );
+  const activeTab = ref();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
