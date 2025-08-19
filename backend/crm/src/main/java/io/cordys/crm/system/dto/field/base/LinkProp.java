@@ -13,7 +13,7 @@ public class LinkProp implements Serializable {
 
 	@NotEmpty
 	@Schema(description = "联动字段", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String target;
+	private String targetField;
 	@Schema(description = "联动选项配置")
 	private List<LinkOption> linkOptions;
 
