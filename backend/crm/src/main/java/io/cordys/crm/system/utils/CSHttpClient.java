@@ -79,7 +79,7 @@ public class CSHttpClient {
      * @param queryParams 查询参数 Map（null/空值将被忽略）
      * @return 下载信息
      */
-    public static DownloadInfo sendGetRequest(Map<String, ?> queryParams) {
+    public static DownloadInfo sendGetRequest(Map<String, String> queryParams) {
         String baseUrl = "https://community.fit2cloud.com/api/version";
         String url = buildUrl(baseUrl, queryParams);
         return sendGetRequest(url);
@@ -92,24 +92,23 @@ public class CSHttpClient {
      * @param params  参数
      * @return 完整 URL
      */
-    private static String buildUrl(String baseUrl, Map<String, ?> params) {
+    private static String buildUrl(String baseUrl, Map<String, String> params) {
         if (params == null || params.isEmpty()) {
             return baseUrl;
         }
         StringBuilder sb = new StringBuilder(baseUrl);
         boolean hasQuery = baseUrl.contains("?");
-        for (Map.Entry<String, ?> e : params.entrySet()) {
+        for (Map.Entry<String, String> e : params.entrySet()) {
             String key = e.getKey();
-            Object val = e.getValue();
-            String strVal = val == null ? null : String.valueOf(val);
-            if (StringUtils.isAnyBlank(key, strVal)) {
+            String val = e.getValue();
+            if (StringUtils.isAnyBlank(key, val)) {
                 continue;
             }
             sb.append(hasQuery ? '&' : '?');
             hasQuery = true;
             sb.append(URLEncoder.encode(key, StandardCharsets.UTF_8))
                     .append('=')
-                    .append(URLEncoder.encode(strVal, StandardCharsets.UTF_8));
+                    .append(URLEncoder.encode(val, StandardCharsets.UTF_8));
         }
         return sb.toString();
     }
