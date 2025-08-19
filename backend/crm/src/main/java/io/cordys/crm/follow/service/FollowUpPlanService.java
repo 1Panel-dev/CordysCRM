@@ -293,6 +293,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (followUpPlan == null) {
             throw new GenericException("plan_not_found");
         }
+        //检查跟进计划是否可以取消,如果是已完成，并且已转记录的跟进计划，则不允许取消
+        if(followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
+            return;
+        }
         FollowUpPlan plan = new FollowUpPlan();
         plan.setId(followUpPlan.getId());
         plan.setStatus(FollowUpPlanStatusType.CANCELLED.name());
@@ -328,7 +332,15 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param userId
      */
     public void updateStatus(FollowUpPlanStatusRequest request, String userId) {
-        FollowUpPlan followUpPlan = new FollowUpPlan();
+        //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
+        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
+        if (followUpPlan == null) {
+            throw new GenericException("plan_not_found");
+        }
+        if(followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
+            return;
+        }
+        followUpPlan = new FollowUpPlan();
         followUpPlan.setStatus(request.getStatus());
         followUpPlan.setId(request.getId());
         followUpPlan.setUpdateUser(userId);
