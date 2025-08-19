@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   add_labels:
-    # 只处理 PR 上、且以 "/" 开头的评论
     if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
     runs-on: ubuntu-latest
 
@@ -21,8 +20,7 @@ jobs:
       - name: Parse labels from comment
         id: parse
         run: |
-          body='${{ github.event.comment.body }}'
-          # 去掉前导 "/"，支持中文逗号，去重与修剪空白
+          body="${{ github.event.comment.body }}"
           raw="${body#/}"
           labels=$(echo "$raw" \
             | tr '，' ',' \
@@ -30,15 +28,13 @@ jobs:
             | sed 's/^ *//;s/ *$//' \
             | sed '/^$/d' \
             | sort -u)
-
-          # 供 action-add-labels 使用（逐行一个标签，支持包含空格的标签）
+          
           {
             echo 'LABELS<<EOF'
             echo "$labels"
             echo 'EOF'
           } >> "$GITHUB_ENV"
-
-          # 用于评论展示的一行文本
+          
           echo "LABEL_LINE=$(echo "$labels" | paste -sd ', ' -)" >> "$GITHUB_ENV"
 
       - name: Add labels
@@ -49,17 +45,17 @@ jobs:
 
       - name: Comment who added labels
         uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
         env:
           LABEL_LINE: ${{ env.LABEL_LINE }}
-        script: |
-          const actor = context.payload.comment.user.login;
-          const issue_number = context.payload.issue.number;
-          const body = `由 @${actor} 添加标签: ${process.env.LABEL_LINE}`;
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number,
-            body
-          });
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const actor = context.payload.comment.user.login;
+            const issue_number = context.payload.issue.number;
+            const body = `由 @${actor} 添加标签: ${process.env.LABEL_LINE}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              body
+            });
