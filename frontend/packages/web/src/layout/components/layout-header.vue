@@ -76,7 +76,9 @@
           <template #trigger>
             <n-button class="p-[8px]" quaternary>
               <template #icon>
-                <CrmIcon type="iconicon_info_circle" :size="16" />
+                <n-badge value="1" dot :show="appStore.versionInfo.hasNewVersion">
+                  <CrmIcon type="iconicon_info_circle" :size="16" />
+                </n-badge>
               </template>
             </n-button>
           </template>
