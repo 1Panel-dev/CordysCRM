@@ -16,6 +16,13 @@
     >
       <template v-if="props.readonly" #tableTop>
         <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
+        <CrmSearchInput
+          v-if="props.sourceId"
+          v-model:value="keyword"
+          class="!w-[240px]"
+          :placeholder="t('common.searchByNamePhone')"
+          @search="searchData"
+        />
       </template>
       <template #actionLeft>
         <div v-if="!props.readonly" class="flex items-center gap-[12px]">
