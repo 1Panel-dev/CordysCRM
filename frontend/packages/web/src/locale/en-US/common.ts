@@ -314,4 +314,6 @@ export default {
   'common.exportTaskCreate': 'Export task created, please check the export task list for details',
   'common.exportTaskTip': '[Avatar in the lower left corner > My Export] View the progress of the export task',
   'common.dashboard': 'Dashboard',
+  'common.convertPlanToRecord': 'Plan transfer record',
+  'common.hasConvertToRecord': 'Have record',
 };

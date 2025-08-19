@@ -316,4 +316,6 @@ export default {
   'common.formFields': '表单字段',
   'common.exportTaskTip': '【左下角头像 > 我的导出】查看导出任务进度',
   'common.dashboard': '仪表板',
+  'common.convertPlanToRecord': '计划转记录',
+  'common.hasConvertToRecord': '已转记录',
 };

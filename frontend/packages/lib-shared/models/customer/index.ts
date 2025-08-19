@@ -121,6 +121,7 @@ export interface CustomerFollowPlanListItem extends CustomerFollowRecordListItem
   estimatedTime: number;
   status: StatusTagKey;
   method: string;
+  converted: boolean;
 }
 
 export interface SaveCustomerContractParams {

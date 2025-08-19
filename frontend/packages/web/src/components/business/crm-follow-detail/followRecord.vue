@@ -20,9 +20,10 @@
               <StatusTagSelect
                 v-if="item.status"
                 v-model:status="item.status"
-                :disabled="!props.getDisabledFun(item)"
+                :disabled="!props.getDisabledFun(item) || !!item.converted"
                 @change="() => emit('change', item)"
               />
+              <CrmTag v-if="item.status && item.converted"> {{ t('common.hasConvertToRecord') }} </CrmTag>
               <div class="text-[var(--text-n1)]">{{ getShowTime(item) }}</div>
               <div class="crm-follow-record-method">
                 {{ (props.type === 'followRecord' ? item.followMethod : item.method) ?? '-' }}
@@ -65,13 +66,16 @@
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import StatusTagSelect from './statusTagSelect.vue';
 
+  const { t } = useI18n();
   const props = defineProps<{
     type: 'followRecord' | 'followPlan';
     keyField: string;

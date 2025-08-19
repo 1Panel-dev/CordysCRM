@@ -40,6 +40,19 @@
           <div v-if="getShowAction(item)" class="flex items-center gap-[12px]">
             <n-button
               v-if="
+                props.activeType === 'followPlan' &&
+                [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) &&
+                !item.converted
+              "
+              type="primary"
+              class="text-btn-primary"
+              quaternary
+              @click="handleConvert(item)"
+            >
+              {{ t('common.convertPlanToRecord') }}
+            </n-button>
+            <n-button
+              v-if="
                 props.activeType === 'followRecord' ||
                 (props.activeType === 'followPlan' &&
                   ![CustomerFollowPlanStatusEnum.CANCELLED, CustomerFollowPlanStatusEnum.CANCELLED].includes(
@@ -76,7 +89,9 @@
       :source-id="realFollowSourceId"
       :initial-source-name="props.initialSourceName"
       :need-init-detail="needInitDetail"
-      @saved="() => loadFollowList()"
+      :link-form-info="linkFormInfo"
+      :other-save-params="props.activeType === 'followPlan' ? otherFollowRecordSaveParams : undefined"
+      @saved="handleAfterSave"
     />
   </div>
 </template>
@@ -86,9 +101,9 @@
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { FollowDetailItem } from '@lib/shared/models/customer';
+  import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -96,6 +111,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
 
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
   import useFollowApi, { type followEnumType } from './useFollowApi';
@@ -139,6 +155,21 @@
     type: toRef(props, 'activeType'),
     followApiKey: props.followApiKey,
     sourceId: toRef(props, 'sourceId'),
+  });
+
+  const needInitDetail = ref(false);
+  const activePlan = ref();
+  const otherFollowRecordSaveParams = ref({
+    converted: false,
+  });
+
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const planFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const { fieldList, formDetail, initFormDetail, initFormConfig, linkFormFieldMap, saveForm } = useFormCreateApi({
+    formKey: computed(() => planFormKey.value),
+    sourceId: computed(() => activePlan.value.id),
+    needInitDetail: computed(() => needInitDetail.value),
+    otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
   });
 
   // 跟进计划状态
@@ -225,10 +256,8 @@
   }
 
   // 编辑记录或计划
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const realFollowSourceId = ref<string | undefined>('');
-  const needInitDetail = ref(false);
-
+  const isConverted = ref(false);
   function handleAdd() {
     realFormKey.value =
       (followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
@@ -236,6 +265,27 @@
       ] as FormDesignKeyEnum) ?? realFormKey.value;
     realFollowSourceId.value = props.sourceId;
     needInitDetail.value = false;
+    formDrawerVisible.value = true;
+    if (props.activeType === 'followPlan') {
+      isConverted.value = false;
+      otherFollowRecordSaveParams.value.converted = isConverted.value;
+    }
+  }
+
+  const linkFormInfo = ref<Record<string, any> | undefined>({});
+  async function handleConvert(item: FollowDetailItem) {
+    activePlan.value = item;
+    isConverted.value = true;
+    otherFollowRecordSaveParams.value.converted = isConverted.value;
+    realFollowSourceId.value = '';
+    realFormKey.value =
+      followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followRecord ?? realFormKey.value;
+    planFormKey.value =
+      followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followPlan ?? realFormKey.value;
+    needInitDetail.value = false;
+    await initFormConfig();
+    initFormDetail(false, true);
+    linkFormInfo.value = linkFormFieldMap.value;
     formDrawerVisible.value = true;
   }
 
@@ -246,6 +296,10 @@
     realFollowSourceId.value = item.id;
     needInitDetail.value = true;
     formDrawerVisible.value = true;
+    if (props.activeType === 'followPlan') {
+      isConverted.value = false;
+      otherFollowRecordSaveParams.value.converted = (item as CustomerFollowPlanListItem).converted;
+    }
   }
 
   const emptyText = computed(() => {
@@ -267,6 +321,37 @@
       return hasAnyPermission(permission);
     }
     return props.showAction;
+  }
+
+  // 更新计划为已转记录
+  async function updatePlan() {
+    planFormKey.value = followFormKeyMap[getApiKey(activePlan.value) as keyof typeof followFormKeyMap]?.[
+      props.activeType
+    ] as FormDesignKeyEnum;
+    realFollowSourceId.value = activePlan.value.id;
+    needInitDetail.value = true;
+    initFormConfig();
+    await initFormDetail();
+    fieldList.value.forEach((item) => {
+      if (
+        [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+        Array.isArray(formDetail.value[item.id])
+      ) {
+        formDetail.value[item.id] = formDetail.value[item.id]?.[0];
+      }
+    });
+    await saveForm(formDetail.value, false, () => ({}), true);
+    isConverted.value = false;
+    otherFollowRecordSaveParams.value.converted = isConverted.value;
+    loadFollowList();
+  }
+
+  function handleAfterSave() {
+    if (isConverted.value) {
+      updatePlan();
+    } else {
+      loadFollowList();
+    }
   }
 
   onBeforeMount(() => {
