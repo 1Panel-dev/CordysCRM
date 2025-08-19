@@ -1,44 +1,47 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <div class="login-wrapper w-full">
-      <CrmPageHeader :title="''" />
       <div class="login-title text-[28px] font-semibold text-[var(--text-n1)]">{{ t('login.form.title') }}</div>
     </div>
-    <van-form ref="formRef" required class="crm-form">
-      <van-cell-group inset>
-        <van-field
-          v-model="userInfo.username"
-          name="username"
-          :label="t('login.form.username')"
-          :placeholder="t('login.form.userName.placeholderOther')"
-          :rules="[{ required: true, message: t('login.form.userName.errMsg') }]"
-          class="!p-[16px] !text-[16px]"
-        />
-        <van-field
-          v-model="userInfo.password"
-          name="password"
-          :type="visible ? undefined : 'password'"
-          :label="t('login.form.password')"
-          :placeholder="t('login.form.password.placeholder')"
-          :rules="[{ required: true, message: t('login.form.password.errMsg') }]"
-          class="!p-[16px] !text-[16px]"
-        >
-          <template #button>
-            <CrmIcon
-              :name="visible ? 'iconicon_browse' : 'iconicon_browse_off'"
-              width="24px"
-              height="24px"
-              color="var(--text-n4)"
-              @click="handleToggleVisible"
-            />
-          </template>
-        </van-field>
-      </van-cell-group>
-    </van-form>
-    <div class="p-[16px]">
-      <van-button block type="primary" :loading="loading" native-type="submit" @click="login">
-        {{ t('login.form.login') }}
-      </van-button>
+    <div class="flex-1">
+      <van-form ref="formRef" required class="crm-form">
+        <van-cell-group inset>
+          <van-field
+            v-model="userInfo.username"
+            :required="false"
+            name="username"
+            :label="t('login.form.username')"
+            :placeholder="t('login.form.userName.placeholderOther')"
+            :rules="[{ required: true, message: t('login.form.userName.errMsg') }]"
+            class="!p-[16px] !text-[16px]"
+          />
+          <van-field
+            v-model="userInfo.password"
+            name="password"
+            :required="false"
+            :type="visible ? undefined : 'password'"
+            :label="t('login.form.password')"
+            :placeholder="t('login.form.password.placeholder')"
+            :rules="[{ required: true, message: t('login.form.password.errMsg') }]"
+            class="!p-[16px] !text-[16px]"
+          >
+            <template #button>
+              <CrmIcon
+                :name="visible ? 'iconicon_browse' : 'iconicon_browse_off'"
+                width="24px"
+                height="24px"
+                color="var(--text-n4)"
+                @click="handleToggleVisible"
+              />
+            </template>
+          </van-field>
+        </van-cell-group>
+      </van-form>
+      <div class="p-[16px]">
+        <van-button block type="primary" :loading="loading" native-type="submit" @click="login">
+          {{ t('login.form.login') }}
+        </van-button>
+      </div>
     </div>
   </div>
 </template>
@@ -52,7 +55,6 @@
   import { encrypted } from '@lib/shared/method/index';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
@@ -138,8 +140,5 @@
       bottom: 16px;
       @apply absolute;
     }
-  }
-  :deep(.crm-page-header) {
-    background: transparent;
   }
 </style>
