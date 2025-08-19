@@ -22,7 +22,7 @@ public class LinkProp implements Serializable {
 
 		@NotBlank
 		@Schema(description = "当前字段选项", requiredMode = Schema.RequiredMode.REQUIRED)
-		private List<String> current;
+		private Object current;
 
 		@NotEmpty
 		@Schema(description = "联动方式", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"AUTO", "HIDDEN"})
@@ -30,6 +30,6 @@ public class LinkProp implements Serializable {
 
 		@NotBlank
 		@Schema(description = "联动字段选项", requiredMode = Schema.RequiredMode.REQUIRED)
-		private List<String> target;
+		private Object target;
 	}
 }
