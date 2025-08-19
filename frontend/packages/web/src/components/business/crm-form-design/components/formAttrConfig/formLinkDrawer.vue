@@ -37,7 +37,7 @@
           <div :class="formModel.linkFields.length > 1 ? 'w-[86px]' : 'w-[42px]'"></div>
         </div>
         <n-scrollbar ref="linkFieldsScrollbar" class="max-h-[40vh] pr-[6px]" content-class="flex flex-col gap-[12px]">
-          <div v-for="(line, index) of formModel.linkFields" :key="index" class="flex items-center justify-between">
+          <div v-for="(line, index) of formModel.linkFields" :key="index" class="flex items-start justify-between">
             <n-form-item
               :path="`linkFields.${index}.current`"
               class="flex-1"
@@ -47,7 +47,7 @@
                 v-model:value="line.current"
                 :options="getCurrentFieldOptions(line.current)"
                 :fallback-option="
-                  line.link !== null && line.link !== undefined && line.link !== '' ? fallbackOption : false
+                  line.current !== null && line.current !== undefined && line.current !== '' ? fallbackOption : false
                 "
                 @update-value="line.link = ''"
               />

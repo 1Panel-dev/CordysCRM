@@ -189,6 +189,35 @@
         </n-button>
       </div>
       <!-- 显隐规则 End -->
+      <!-- 字段联动 -->
+      <div v-if="isShowLinkField" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.fieldLink') }}
+          <CrmPopConfirm
+            v-model:show="linkClearPop"
+            :title="t('crmFormDesign.linkFieldSettingClearTip')"
+            icon-type="warning"
+            :content="t('crmFormDesign.linkFieldSettingClearTipContent')"
+            :positive-text="t('common.confirm')"
+            trigger="click"
+            :negative-text="t('common.cancel')"
+            placement="right-end"
+            @confirm="clearLink"
+          >
+            <n-button type="primary" text :disabled="!fieldConfig.linkProp?.linkOptions?.length">
+              {{ t('common.clear') }}
+            </n-button>
+          </CrmPopConfirm>
+        </div>
+        <n-button :disabled="fieldConfig.disabledProps?.includes('linkProp')" @click="showLinkConfig">
+          {{
+            fieldConfig.linkProp?.linkOptions?.length
+              ? t('crmFormDesign.linkSettingTip', { count: fieldConfig.linkProp.linkOptions.length })
+              : t('common.setting')
+          }}
+        </n-button>
+      </div>
+      <!-- 字段联动 End -->
       <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.style') }}
@@ -746,6 +775,13 @@
     :form-fields="props.list"
     @save="handleDataSourceFilterSave"
   />
+  <fieldLinkDrawer
+    v-if="fieldConfig"
+    v-model:visible="showLinkConfigVisible"
+    :field-config="fieldConfig"
+    :form-fields="props.list"
+    @save="handleLinkConfigSave"
+  />
 </template>
 
 <script setup lang="ts">
@@ -780,16 +816,19 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,
+    FieldLinkProp,
     FormCreateField,
     FormCreateFieldRule,
     FormCreateFieldShowControlRule,
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+  import fieldLinkDrawer from './fieldLinkDrawer.vue';
   import FilterModal from './filterModal.vue';
   import optionConfig from './optionConfig.vue';
 
@@ -1002,6 +1041,35 @@
   function handleShowRuleConfigConfirm() {
     showRuleConfigVisible.value = false;
     fieldConfig.value.showControlRules = cloneDeep(tempShowRules.value);
+  }
+
+  const isShowLinkField = computed(() => {
+    return [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type);
+  });
+  const showLinkConfigVisible = ref(false);
+  const tempLinks = ref<FieldLinkProp>({
+    targetField: '',
+    linkOptions: [],
+  });
+  const linkClearPop = ref(false);
+
+  function clearLink() {
+    fieldConfig.value.linkProp = {
+      targetField: '',
+      linkOptions: [],
+    };
+    linkClearPop.value = false;
+  }
+  function showLinkConfig() {
+    tempLinks.value = fieldConfig.value.linkProp || {
+      targetField: '',
+      linkOptions: [],
+    };
+    showLinkConfigVisible.value = true;
+  }
+
+  function handleLinkConfigSave(value: FieldLinkProp) {
+    fieldConfig.value.linkProp = value;
   }
 
   const showDataSourceFilterModal = ref(false);

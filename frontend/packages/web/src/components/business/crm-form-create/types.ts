@@ -37,6 +37,17 @@ export interface DataSourceFilterCombine {
   conditions: DataSourceFilterItem[]; // 条件集合
 }
 
+export interface FieldLinkOption {
+  current: string[]; // 当前选项 value 集合
+  method: 'AUTO' | 'HIDDEN'; // 联动方式
+  target: string | string[]; // 目标选项 value 集合
+}
+
+export interface FieldLinkProp {
+  targetField: string; // 目标字段id
+  linkOptions: FieldLinkOption[]; // 联动选项
+}
+
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -94,9 +105,12 @@ export interface FormCreateField {
   showControlRules?: FormCreateFieldShowControlRule[];
   // 流水号属性
   serialNumberRules?: (string | number)[]; // 流水号规则
+  // 字段联动属性
+  linkProp?: FieldLinkProp;
   // 前端渲染属性
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
+  linkRange?: (string | number)[]; // 联动限制可选范围
 }
 
 export interface FormDetail {

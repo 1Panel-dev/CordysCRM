@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
   import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
+  import { cloneDeep, isEqual } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -159,6 +159,23 @@
     }
   }
 
+  function applyFieldLink(item: FormCreateField) {
+    const currentFieldValue = formDetail.value[item.id];
+    const linkField = fieldList.value.find((f) => f.id === item.linkProp?.targetField);
+    item.linkProp?.linkOptions.forEach((option) => {
+      if (isEqual(currentFieldValue, option.current)) {
+        if (linkField) {
+          if (option.method === 'HIDDEN') {
+            linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
+          } else {
+            linkField.linkRange = undefined;
+            formDetail.value[linkField.id] = option.target;
+          }
+        }
+      }
+    });
+  }
+
   function handleFieldChange(value: any, item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
@@ -173,6 +190,10 @@
           });
         }
       });
+    }
+    // 字段联动
+    if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
+      applyFieldLink(item);
     }
     unsaved.value = true;
   }

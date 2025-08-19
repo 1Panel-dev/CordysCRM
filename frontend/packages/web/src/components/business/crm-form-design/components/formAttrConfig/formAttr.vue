@@ -138,7 +138,9 @@
           placement="right-end"
           @confirm="clearLink"
         >
-          <n-button type="primary" text>{{ t('common.clear') }}</n-button>
+          <n-button type="primary" text :disabled="!formConfig.linkProp?.linkFields?.length">
+            {{ t('common.clear') }}
+          </n-button>
         </CrmPopConfirm>
       </div>
       <n-button @click="showLinkConfig">
@@ -151,7 +153,7 @@
     </div>
     <!-- 表单联动 End -->
   </div>
-  <formLinkModal
+  <formLinkDrawer
     v-model:visible="linkConfigVisible"
     :form-fields="list"
     :link-prop="formConfig.linkProp"
@@ -169,7 +171,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
-  import formLinkModal from './formLinkModal.vue';
+  import formLinkDrawer from './formLinkDrawer.vue';
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum;

@@ -14,7 +14,7 @@
     <n-select
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false"
-      :options="props.fieldConfig.options"
+      :options="options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
@@ -44,6 +44,13 @@
 
   const value = defineModel<string | number | (string | number)[]>('value', {
     default: '',
+  });
+
+  const options = computed(() => {
+    if (props.fieldConfig.linkRange) {
+      return props.fieldConfig.options?.filter((option) => props.fieldConfig.linkRange?.includes(option.value)) || [];
+    }
+    return props.fieldConfig.options;
   });
 
   watch(
