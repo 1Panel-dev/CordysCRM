@@ -548,7 +548,7 @@
   ]);
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
-    getExportColumns(filterConfigList.value, customFieldsFilterConfig.value as FilterFormItem[])
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
   );
 
   watch(
