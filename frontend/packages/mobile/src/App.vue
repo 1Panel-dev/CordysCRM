@@ -21,13 +21,11 @@
 
   onBeforeMount(async () => {
     const loginStatus = await userStore.isLogin();
-    if (loginStatus) {
-      router.replace({
-        name: AppRouteEnum.WORKBENCH,
-      });
-    } else {
+    if (!loginStatus) {
       await oAuthLogin();
+      return;
     }
+    router.replace({ name: AppRouteEnum.WORKBENCH });
     licenseStore.getValidateLicense();
   });
 </script>
