@@ -9,12 +9,11 @@ import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
 import io.cordys.crm.system.service.ExportTaskStopService;
 import io.cordys.crm.system.service.ExtScheduleService;
+import io.cordys.crm.system.service.SystemService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +34,7 @@ class AppListener implements ApplicationRunner {
     @Resource
     private ExportTaskStopService exportTaskStopService;
     @Resource
-    private CacheManager cacheManager;
+    private SystemService systemService;
 
     /**
      * 应用启动后执行的初始化方法。
@@ -68,30 +67,9 @@ class AppListener implements ApplicationRunner {
         exportTaskStopService.stopPreparedAll();
 
         LogUtils.info("清理表单缓存");
-        clearFormCache();
+        systemService.clearFormCache();
 
         LogUtils.info("===== 完成初始化配置 =====");
-    }
-
-    /**
-     * 清理表单相关缓存
-     * <p>
-     * 清理表单缓存和表结构缓存，确保应用使用最新的表单配置和结构
-     * </p>
-     */
-    public void clearFormCache() {
-        final String[] cacheNames = {"form_cache", "table_schema_cache"};
-
-        for (String cacheName : cacheNames) {
-            try {
-                Cache cache = cacheManager.getCache(cacheName);
-                if (cache != null) {
-                    cache.clear();
-                    LogUtils.info("成功清理缓存：{}", cacheName);
-                }
-            } catch (Exception ignored) {
-            }
-        }
     }
 
     /**

@@ -3,6 +3,7 @@ package io.cordys.crm.system.job;
 import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.system.service.SystemService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.data.redis.core.Cursor;
@@ -25,6 +26,9 @@ public class SessionJob {
     @Resource
     private RedisIndexedSessionRepository redisIndexedSessionRepository;
 
+    @Resource
+    private SystemService systemService;
+
     /**
      * 定时清理没有绑定用户的会话。
      * <p>
@@ -35,7 +39,7 @@ public class SessionJob {
      * <p>
      * 该方法使用 {@link QuartzScheduled} 注解定时执行，并使用 {@link ScanOptions} 扫描 Redis 中的会话。
      * </p>
-     *
+     * <p>
      * spring.session.timeout=30d
      * server.servlet.session.timeout=30d
      */
@@ -75,6 +79,8 @@ public class SessionJob {
                     }
                 }
             }
+            // 清理缓存
+            systemService.clearFormCache();
             LogUtils.info("用户会话统计: {}", JSON.toJSONString(userCount));
         } catch (Exception e) {
             LogUtils.error(e);
