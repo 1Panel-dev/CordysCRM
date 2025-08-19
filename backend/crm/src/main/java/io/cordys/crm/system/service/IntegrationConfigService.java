@@ -645,6 +645,11 @@ public class IntegrationConfigService {
         dto.setDeAccount(config.getDeAccount());
         dto.setDeBoardEnable(config.getDeBoardEnable());
         dto.setDeUrl(config.getRedirectUrl());
+        dto.setDeModuleEmbedding(config.getDeModuleEmbedding());
+        dto.setDeLinkIntegration(config.getDeLinkIntegration());
+        dto.setDeAutoSync(config.getDeAutoSync());
+        dto.setDeAccessKey(config.getDeAccessKey());
+        dto.setDeSecretKey(config.getDeSecretKey());
         return dto;
     }
 

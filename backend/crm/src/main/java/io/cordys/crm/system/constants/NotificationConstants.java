@@ -65,6 +65,9 @@ public class NotificationConstants {
         //转为客户
         @Schema(description = "message.clue_convert_customer")
         String CLUE_CONVERT_CUSTOMER="CLUE_CONVERT_CUSTOMER";
+        ///转为商机
+        @Schema(description = "message.clue_convert_business")
+        String CLUE_CONVERT_BUSINESS="CLUE_CONVERT_BUSINESS";
         //转移线索
         @Schema(description = "message.transfer_clue")
         String TRANSFER_CLUE="TRANSFER_CLUE";
@@ -141,6 +144,10 @@ public class NotificationConstants {
         //请注意！您负责的${clueName}的销售线索，已成功转为客户！请知悉！
         @Schema(description = "message.clue_convert_customer_text")
         String CLUE_CONVERT_CUSTOMER_TEXT = "CLUE_CONVERT_CUSTOMER_TEXT";
+
+        //请注意！您负责的${clueName}的销售线索，已成功转为商机！请知悉！
+        @Schema(description = "message.clue_convert_business_text")
+        String CLUE_CONVERT_BUSINESS_TEXT = "CLUE_CONVERT_BUSINESS_TEXT";
 
         //请注意！${OPERATOR}将${clueName}线索转移给您，请知悉！
         @Schema(description = "message.transfer_clue_text")

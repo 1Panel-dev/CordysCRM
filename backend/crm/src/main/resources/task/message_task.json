@@ -82,6 +82,13 @@
         "weComEnable":false
       },
       {
+        "event": "CLUE_CONVERT_BUSINESS",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false,
+        "weComEnable":false
+      },
+      {
         "event": "TRANSFER_CLUE",
         "eventName": "",
         "emailEnable":false,
