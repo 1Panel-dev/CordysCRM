@@ -650,6 +650,7 @@ public class IntegrationConfigService {
         dto.setDeAutoSync(config.getDeAutoSync());
         dto.setDeAccessKey(config.getDeAccessKey());
         dto.setDeSecretKey(config.getDeSecretKey());
+        dto.setDeOrgID(config.getDeOrgID());
         return dto;
     }
 

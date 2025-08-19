@@ -43,6 +43,7 @@ public class ThirdConfigurationDTO {
     private String deAccessKey;
     @Schema(description = "DESecretKey")
     private String deSecretKey;
-
+    @Schema(description = "DE组织id")
+    private String deOrgID;
 
 }

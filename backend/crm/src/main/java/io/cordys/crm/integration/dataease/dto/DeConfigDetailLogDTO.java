@@ -26,4 +26,6 @@ public class DeConfigDetailLogDTO {
 	private String deAccessKey;
 	@Schema(description = "DESecretKey")
 	private String deSecretKey;
+	@Schema(description = "DE组织id")
+	private String deOrgID;
 }
