@@ -10,7 +10,7 @@
     </div>
     <div class="flex flex-1 flex-col gap-[8px] overflow-hidden">
       <div class="flex h-[24px] items-center justify-between gap-[16px]">
-        <div class="flex items-center gap-[8px]">
+        <div class="flex h-[24px] items-center gap-[8px]">
           <CrmTag
             v-if="item.converted && isPlan"
             plain

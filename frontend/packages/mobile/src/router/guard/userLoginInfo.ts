@@ -5,7 +5,7 @@ import useUser from '@/hooks/useUser';
 import { AppRouteEnum } from '@/enums/routeEnum';
 
 import NProgress from 'nprogress';
-import type { LocationQueryRaw, Router } from 'vue-router';
+import type { Router } from 'vue-router';
 
 export default function setupUserLoginInfoGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
@@ -23,10 +23,6 @@ export default function setupUserLoginInfoGuard(router: Router) {
     if (!tokenExists && to.name !== 'login' && !isWhiteListPage()) {
       next({
         name: 'login',
-        query: {
-          redirect: to.name,
-          ...to.query,
-        } as LocationQueryRaw,
       });
       NProgress.done();
       return;
