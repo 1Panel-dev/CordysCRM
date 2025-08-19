@@ -1,15 +1,7 @@
 <template>
   <n-layout-header class="flex" bordered>
-    <div class="flex w-[200px] items-center gap-[4px] px-[30px] py-[12px]">
-      <img :src="props.logo ?? '/logo.svg'" width="32px" height="32px" />
-      <n-tooltip :delay="300">
-        <template #trigger>
-          <div class="one-line-text text-[20px] font-semibold leading-[32px]">
-            {{ props.name ?? 'CORDYS' }}
-          </div>
-        </template>
-        {{ props.name ?? 'CORDYS' }}
-      </n-tooltip>
+    <div class="flex px-[24px] py-[14px]">
+      <CrmSvg name="logo_CORDYS" height="28px" width="130px" />
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
@@ -42,12 +34,7 @@
         </n-button>
         <n-popover position="left" content-class="w-[320px]" class="!p-[16px]">
           <div class="flex flex-col gap-[8px]">
-            <div class="flex items-center gap-[4px]">
-              <img :src="props.logo ?? '/logo.svg'" width="32px" height="32px" />
-              <div class="one-line-text text-[20px] font-semibold leading-[32px]">
-                {{ props.name ?? 'CORDYS' }}
-              </div>
-            </div>
+            <CrmSvg name="logo_CORDYS" height="22px" width="100px" />
             <div
               class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
               @click="copyVersion(appStore.versionInfo.currentVersion)"
@@ -56,7 +43,7 @@
                 {{ t('settings.help.currentVersion') }}
               </div>
               <div class="font-semibold">
-                {{ appStore.versionInfo.currentVersion }}({{ appStore.versionInfo.architecture }})
+                {{ appStore.versionInfo.currentVersion }} ({{ appStore.versionInfo.architecture }})
               </div>
             </div>
             <div
@@ -93,7 +80,7 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
-  import { NBadge, NButton, NLayoutHeader, NPopover, NTooltip, useMessage } from 'naive-ui';
+  import { NBadge, NButton, NLayoutHeader, NPopover, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -102,6 +89,7 @@
   // import useLocale from '@lib/shared/locale/useLocale';
   // import { LocaleType } from '@lib/shared/types/global';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
@@ -113,11 +101,6 @@
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const route = useRoute();
-
-  const props = defineProps<{
-    logo?: string;
-    name?: string;
-  }>();
 
   const { success, warning } = useMessage();
   const { t } = useI18n();
