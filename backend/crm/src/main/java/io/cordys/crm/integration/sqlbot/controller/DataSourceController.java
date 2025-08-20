@@ -1,8 +1,6 @@
 package io.cordys.crm.integration.sqlbot.controller;
 
 import io.cordys.common.response.handler.NoResultHolder;
-import io.cordys.common.util.JSON;
-import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.integration.sqlbot.dto.SQLBotDTO;
 import io.cordys.crm.integration.sqlbot.service.DataSourceService;
@@ -12,8 +10,6 @@ import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 @RestController
 @RequestMapping
@@ -34,8 +30,6 @@ public class DataSourceController {
     @Operation(summary = "获取数据库结构")
     @NoResultHolder
     public SQLBotDTO getDBSchema() {
-        SQLBotDTO databaseSchema = dataSourceService.getDatabaseSchema(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        LogUtils.info("当前用户：{} : {} 的数据结构：{} ", Objects.requireNonNull(SessionUtils.getUser()).getName(), SessionUtils.getUserId(), JSON.toFormatJSONString(databaseSchema));
-        return databaseSchema;
+        return dataSourceService.getDatabaseSchema(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
