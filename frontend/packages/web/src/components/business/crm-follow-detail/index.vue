@@ -284,7 +284,7 @@
       followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followPlan ?? realFormKey.value;
     needInitDetail.value = false;
     await initFormConfig();
-    initFormDetail(false, true);
+    await initFormDetail(false, true);
     linkFormInfo.value = linkFormFieldMap.value;
     formDrawerVisible.value = true;
   }
