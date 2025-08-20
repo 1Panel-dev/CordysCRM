@@ -280,8 +280,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
         PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
         personalPasswordRequest.setPassword("Gyq124");
-        personalPasswordRequest.setEmail("3Gyq3@Cordys.com");
-        personalPasswordRequest.setCode("253574");
+        personalPasswordRequest.setOriginPassword("678911");
         this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
         extUserMapper.updateUserPassword(CodingUtils.md5(DEFAULT_USER_PASSWORD), "admin");
        // personalPasswordRequest.setPassword(DEFAULT_USER_PASSWORD);
