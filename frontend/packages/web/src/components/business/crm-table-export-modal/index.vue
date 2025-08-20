@@ -53,6 +53,8 @@
             v-model:selected-ids="selectedSystemIds"
             :items="systemList"
             :title="t('common.systemFields')"
+            @select-part="(ids) => updateSelectedList(ids, systemList)"
+            @select-item="(meta) => selectItem(ColumnTypeEnum.SYSTEM, meta)"
           />
 
           <FieldSection
@@ -60,6 +62,8 @@
             v-model:selected-ids="selectedCustomIds"
             :items="customList"
             :title="t('common.formFields')"
+            @select-part="(ids) => updateSelectedList(ids, customList)"
+            @select-item="(meta) => selectItem(ColumnTypeEnum.CUSTOM, meta)"
           />
         </n-scrollbar>
       </div>
@@ -199,15 +203,28 @@
     selectedList.value = [...remainingItems, ...newItems];
   };
 
-  const selectedSystemIds = computed({
-    get: () => selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.SYSTEM).map((e) => e.key),
-    set: (ids) => updateSelectedList(ids, systemList.value),
-  });
+  const selectedSystemIds = computed(() =>
+    selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.SYSTEM).map((e) => e.key)
+  );
 
-  const selectedCustomIds = computed({
-    get: () => selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.CUSTOM).map((e) => e.key),
-    set: (ids) => updateSelectedList(ids, customList.value),
-  });
+  const selectedCustomIds = computed(() =>
+    selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.CUSTOM).map((e) => e.key)
+  );
+
+  function selectItem(columnType: ColumnTypeEnum, meta: { actionType: 'check' | 'uncheck'; value: string | number }) {
+    if (meta.actionType === 'check') {
+      // 添加选中的项
+      const itemToAdd = (columnType === ColumnTypeEnum.SYSTEM ? systemList.value : customList.value).find(
+        (i) => i.key === meta.value
+      );
+      if (itemToAdd) {
+        selectedList.value.push(itemToAdd);
+      }
+    } else {
+      // 移除取消选中的项
+      selectedList.value = selectedList.value.filter((item) => item.key !== meta.value);
+    }
+  }
 
   // 全选
   const isCheckedAll = computed(() => {

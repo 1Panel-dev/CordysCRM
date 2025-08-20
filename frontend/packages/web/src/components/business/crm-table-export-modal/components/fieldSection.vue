@@ -32,6 +32,11 @@
 
   const selectedIds = defineModel<string[]>('selectedIds', { required: true });
 
+  const emit = defineEmits<{
+    (e: 'selectItem', meta: { actionType: 'check' | 'uncheck'; value: string | number }): void;
+    (e: 'selectPart', ids: string[]): void;
+  }>();
+
   const isAllSelected = computed(() => {
     return props.items.length > 0 && selectedIds.value.length === props.items.length;
   });
@@ -41,14 +46,13 @@
   });
 
   const handleMasterChange = (checked: boolean) => {
-    if (checked) {
-      selectedIds.value = props.items.map((item) => item.key);
-    } else {
-      selectedIds.value = [];
-    }
+    emit('selectPart', checked ? props.items.map((item) => item.key) : []);
   };
 
-  const handleSelectionChange = (newSelection: (string | number)[]) => {
-    selectedIds.value = newSelection as string[];
+  const handleSelectionChange = (
+    value: (string | number)[],
+    meta: { actionType: 'check' | 'uncheck'; value: string | number }
+  ) => {
+    emit('selectItem', meta);
   };
 </script>
