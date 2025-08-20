@@ -148,7 +148,31 @@ public class UserLoginService {
         // 设置用户权限和角色信息
         setupUserPermissions(userDTO, organizationId, orgIds);
 
+        //默认密码检查
+        checkDefaultPwd(userDTO);
+
         return userDTO;
+    }
+
+    /**
+     * 检查默认密码
+     *
+     * @param userDTO
+     */
+    private void checkDefaultPwd(UserDTO userDTO) {
+        String defaultPwd = "";
+        if (StringUtils.equalsIgnoreCase(userDTO.getId(), InternalUser.ADMIN.getValue())) {
+            defaultPwd = CodingUtils.md5("CordysCRM");
+        } else {
+            if (StringUtils.isNotBlank(userDTO.getPhone())) {
+                defaultPwd = CodingUtils.md5(userDTO.getPhone().substring(userDTO.getPhone().length() - 6));
+            }
+        }
+
+        if (StringUtils.equalsIgnoreCase(defaultPwd, userDTO.getPassword())) {
+            userDTO.setDefaultPwd(true);
+        }
+
     }
 
     /**

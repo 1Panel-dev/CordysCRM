@@ -87,4 +87,7 @@ public class UserDTO implements java.io.Serializable {
 
     @Schema(description = "部门名称")
     private String departmentName;
+
+    @Schema(description = "是否是默认密码")
+    private Boolean defaultPwd = false;
 }
