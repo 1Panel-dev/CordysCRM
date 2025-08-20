@@ -316,6 +316,16 @@
 
   async function initColumn(hasInitStore = false) {
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);
+    const dragColumn: CrmDataTableColumn[] = props.draggable
+      ? [
+          {
+            title: '',
+            key: SpecialColumnEnum.DRAG,
+            width: 40,
+            resizable: false,
+          },
+        ]
+      : [];
     // 无任何权限不展示选择列
     const propsColumns =
       !hasAnyPermission((attrs?.permission || []) as string[]) && hasSelectedColumn
@@ -323,7 +333,8 @@
         : props.columns;
 
     // 将render去掉，防止报错
-    let columns = cloneDeep(propsColumns).map((column: CrmDataTableColumn) => {
+    let columns = dragColumn.concat(propsColumns);
+    columns = cloneDeep(columns).map((column: CrmDataTableColumn) => {
       const _col = { ...column };
       Object.keys(_col).forEach((key) => {
         if (typeof _col[key as keyof CrmDataTableColumn] === 'function') {
@@ -339,7 +350,7 @@
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
 
-    const noDragColumns = columns.map((column) => {
+    currentColumns.value = columns.map((column) => {
       const defaultRender = (row: Record<string, any>) => row[column.key as string] || '-';
       // 添加上render
       let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
@@ -356,6 +367,24 @@
             : '-';
         // 预留标签组最小列宽
         column.minWidth = 90;
+      }
+
+      if (column.key === SpecialColumnEnum.DRAG) {
+        render = () =>
+          h(
+            'div',
+            { class: 'crm-table-data-draggable-handle' },
+            h(CrmIcon, {
+              type: 'iconicon_move',
+              size: 14,
+              class: 'sort-handle text-[var(--text-n4)]',
+            })
+          );
+
+        return {
+          ...column,
+          render,
+        };
       }
 
       // 选择列
@@ -443,29 +472,6 @@
         minWidth: calculateColumnMinWidth(column),
       };
     });
-
-    currentColumns.value = [
-      ...(props.draggable
-        ? [
-            {
-              title: '',
-              key: SpecialColumnEnum.SELECTION,
-              width: 40,
-              render: () =>
-                h(
-                  'div',
-                  { class: 'crm-table-data-draggable-handle' },
-                  h(CrmIcon, {
-                    type: 'iconicon_move',
-                    size: 14,
-                    class: 'sort-handle text-[var(--text-n4)]',
-                  })
-                ),
-            },
-          ]
-        : []),
-      ...noDragColumns,
-    ] as CrmDataTableColumn[];
   }
 
   function getRowKey(rowData: Record<string, any>) {

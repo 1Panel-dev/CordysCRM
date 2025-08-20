@@ -101,7 +101,10 @@ export default function useTableStore() {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     if (tableColumnsMap) {
       return tableColumnsMap.column.filter(
-        (item) => item.type !== SpecialColumnEnum.SELECTION && item.key !== SpecialColumnEnum.ORDER
+        (item) =>
+          item.type !== SpecialColumnEnum.SELECTION &&
+          item.key !== SpecialColumnEnum.ORDER &&
+          item.key !== SpecialColumnEnum.DRAG
       );
     }
     return [];
@@ -124,9 +127,11 @@ export default function useTableStore() {
         const newOperationColumn = columns.find((i) => i.key === SpecialColumnEnum.OPERATION);
         const selectColumn = tableColumnsMap.column.find((i) => i.type === SpecialColumnEnum.SELECTION);
         const orderColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.ORDER);
+        const dragColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.DRAG);
         columns = columns.filter((col) => col.key !== SpecialColumnEnum.OPERATION);
         if (selectColumn) columns.unshift(selectColumn);
         if (orderColumn) columns.unshift(orderColumn);
+        if (dragColumn) columns.unshift(dragColumn);
         if (operationColumn) {
           columns.push({
             ...operationColumn,
