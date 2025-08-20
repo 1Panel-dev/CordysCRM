@@ -41,7 +41,14 @@
             <n-form-item
               :path="`linkOptions.${index}.current`"
               class="flex-1"
-              :rule="[{ required: true, message: t('common.required'), trigger: 'change', type: 'array' }]"
+              :rule="[
+                {
+                  required: true,
+                  message: t('common.required'),
+                  trigger: 'change',
+                  type: fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? 'array' : 'string',
+                },
+              ]"
             >
               <n-select
                 v-model:value="line.current"
@@ -51,7 +58,7 @@
                     ? fallbackOption
                     : false
                 "
-                multiple
+                :multiple="fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
                 max-tag-count="responsive"
               />
             </n-form-item>
