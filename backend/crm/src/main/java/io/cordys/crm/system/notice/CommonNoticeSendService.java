@@ -20,7 +20,7 @@ public class CommonNoticeSendService {
     @Resource
     private NoticeSendService noticeSendService;
     @Resource
-    private BaseMapper<User>userBaseMapper;
+    private BaseMapper<User> userBaseMapper;
 
     @Async
     public void sendNotice(String module, String event, List<Map> resources, String userId, String currentOrganizationId) {
@@ -28,7 +28,7 @@ public class CommonNoticeSendService {
         setLanguage(operator.getLanguage());
         // 有批量操作发送多次
         for (Map resource : resources) {
-            Map paramMap = new HashMap<>();
+            Map<String, Object> paramMap = new HashMap<>();
             paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
             paramMap.put("Language", operator.getLanguage());
             paramMap.putAll(resource);
@@ -60,11 +60,12 @@ public class CommonNoticeSendService {
 
     /**
      * 发送通知
-     * @param taskType 发送类型
-     * @param event 发送事件
-     * @param currentOrgId  当前组织id
+     *
+     * @param taskType     发送类型
+     * @param event        发送事件
+     * @param currentOrgId 当前组织id
      * @param resourceName 资源名称
-     * @param users   需要通知的用户
+     * @param users        需要通知的用户
      * @param excludeSelf  是否排除自己
      */
     public void sendNotice(String taskType, String event, String resourceName, String operatorId, String currentOrgId,
@@ -74,20 +75,21 @@ public class CommonNoticeSendService {
 
     /**
      * 发送通知
-     * @param taskType 发送类型
-     * @param event 发送事件
-     * @param currentOrgId  当前组织id
-     * @param resource 消息变量的名称 以及其他变量 eg: xxxx 的名称，resource.put("name", "名称");
-     * @param users   需要通知的用户
+     *
+     * @param taskType     发送类型
+     * @param event        发送事件
+     * @param currentOrgId 当前组织id
+     * @param resource     消息变量的名称 以及其他变量 eg: xxxx 的名称，resource.put("name", "名称");
+     * @param users        需要通知的用户
      * @param excludeSelf  是否排除自己
      */
-    public void sendNotice(String taskType, String event, Map resource, String operatorId, String currentOrgId,
+    public void sendNotice(String taskType, String event, Map<String, Object> resource, String operatorId, String currentOrgId,
                            List<String> users, boolean excludeSelf) {
-        Map paramMap = new HashMap<>();
+        Map<String, Object> paramMap = new HashMap<>();
         User operator = userBaseMapper.selectByPrimaryKey(operatorId);
         paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
         paramMap.put("Language", operator.getLanguage());
-         paramMap.putAll(resource);
+        paramMap.putAll(resource);
         paramMap.putIfAbsent("organizationId", currentOrgId);
 
         String context = getContext(event);
@@ -127,6 +129,6 @@ public class CommonNoticeSendService {
 
     private String getContext(String event) {
         Map<String, String> defaultTemplateMap = MessageTemplateUtils.getDefaultTemplateMap();
-        return defaultTemplateMap.get(event+"_TEXT");
+        return defaultTemplateMap.get(event + "_TEXT");
     }
 }

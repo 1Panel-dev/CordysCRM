@@ -6,7 +6,6 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.domain.MessageTask;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
-import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.utils.MessageTemplateUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class MessageDetailDTOService {
+public class MessageDetailService {
 
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
@@ -74,21 +73,6 @@ public class MessageDetailDTOService {
             }
             messageDetailDTOS.add(messageDetailDTO);
         });
-    }
-
-
-
-    public MessageDetailDTO buildMessageTailDTO(String module, NoticeModel noticeModel, String organizationId) {
-        MessageDetailDTO m = new MessageDetailDTO();
-        Map<String, String> defaultTemplateMap = MessageTemplateUtils.getDefaultTemplateMap();
-        String defaultTemplate = defaultTemplateMap.get(noticeModel.getEvent()+"_TEXT");
-        m.setOrganizationId(organizationId);
-        m.setEvent(noticeModel.getEvent());
-        m.setTaskType(module);
-        m.setTemplate(defaultTemplate);
-        m.setSysEnable(true);
-        m.setEmailEnable(false);
-        return m;
     }
 
 }

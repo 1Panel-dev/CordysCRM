@@ -5,7 +5,7 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.crm.integration.wecom.service.WeComNoticeSender;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
-import io.cordys.crm.system.notice.message.MessageDetailDTOService;
+import io.cordys.crm.system.notice.message.MessageDetailService;
 import io.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class NoticeSendService {
 
     private final MailNoticeSender mailNoticeSender;
     private final InSiteNoticeSender inSiteNoticeSender;
-    private final MessageDetailDTOService messageDetailDTOService;
+    private final MessageDetailService messageDetailService;
 
     @Async("threadPoolTaskExecutor")
     public void send(String module, NoticeModel noticeModel) {
@@ -33,7 +33,7 @@ public class NoticeSendService {
         String template = (String) noticeModel.getParamMap().get("template");
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
@@ -82,7 +82,7 @@ public class NoticeSendService {
         boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
         String template = (String) noticeModel.getParamMap().get("template");
         try {
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
@@ -101,7 +101,7 @@ public class NoticeSendService {
         noticeModel.setExcludeSelf(excludeSelf);
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
                     .stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
