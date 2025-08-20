@@ -1,13 +1,13 @@
-export const GetConfigEmailUrl = '/organization/config/email'; // 获取邮件设置
-export const UpdateConfigEmailUrl = '/organization/config/edit/email'; // 更新邮件设置
-export const TestConfigEmailUrl = '/organization/config/test/email'; // 邮件设置-测试连接
+export const GetConfigEmailUrl = '/organization/settings/email'; // 获取邮件设置
+export const UpdateConfigEmailUrl = '/organization/settings/email/edit'; // 更新邮件设置
+export const TestConfigEmailUrl = '/organization/settings/email/test'; // 邮件设置-测试连接
 
-export const GetConfigSynchronizationUrl = '/organization/config/third'; // 获取三方设置
-export const UpdateConfigSynchronizationUrl = '/organization/config/edit/third'; // 更新三方设置
-export const TestConfigSynchronizationUrl = '/organization/config/test'; // 三方设置-测试连接
-export const GetThirdConfigByTypeUrl = '/organization/config/third/by'; // 根据类型获取开启的三方扫码设置
-export const GetThirdTypeListUrl = '/organization/config/third/type/list'; // 获取三方应用扫码类型集合
-export const GetDETokenUrl = '/organization/config/de-token'; // 获取DEToken
+export const GetConfigSynchronizationUrl = '/organization/settings/third-party'; // 获取三方设置
+export const UpdateConfigSynchronizationUrl = '/organization/settings/third-party/edit'; // 更新三方设置
+export const TestConfigSynchronizationUrl = '/organization/settings/third-party/test'; // 三方设置-测试连接
+export const GetThirdConfigByTypeUrl = '/organization/settings/third-party/get'; // 根据类型获取开启的三方扫码设置
+export const GetThirdTypeListUrl = '/organization/settings/third-party/types'; // 获取三方应用扫码类型集合
+export const GetDETokenUrl = '/organization/settings/de-token'; // 获取DEToken
 
 export const GetAuthsUrl = '/system/auth-sources/list'; //  认证设置-列表查询
 export const GetAuthDetailUrl = '/system/auth-sources/get'; // 认证设置-详情

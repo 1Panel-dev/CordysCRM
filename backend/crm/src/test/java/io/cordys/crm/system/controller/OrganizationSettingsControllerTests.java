@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OrganizationConfigControllerTests extends BaseTest {
+public class OrganizationSettingsControllerTests extends BaseTest {
 
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
@@ -33,7 +33,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setHost("test.com");
         emailDTO.setPort("25");   
         emailDTO.setPassword("test");
-        this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
+        this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
     }
 
@@ -52,7 +52,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setRecipient("sddd");
         emailDTO.setSsl("true");
         emailDTO.setTsl("true");
-        this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
+        this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
     }
 
@@ -60,7 +60,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
     @Test
     @Order(3)
     public void testGetEmail() throws Exception {
-        this.requestGet("/organization/config/email").andExpect(status().isOk());
+        this.requestGet("/organization/settings/email").andExpect(status().isOk());
     }
 
 
@@ -76,7 +76,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setRecipient("aaa@fit2cloud.com");
         emailDTO.setSsl("true");
         emailDTO.setTsl("false");
-        this.requestPost("/organization/config/test/email", emailDTO, status().is5xxServerError());
+        this.requestPost("/organization/settings/email/test", emailDTO, status().is5xxServerError());
     }
 
    

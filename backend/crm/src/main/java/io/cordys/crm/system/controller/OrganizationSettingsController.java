@@ -21,8 +21,8 @@ import java.util.List;
 
 @Tag(name = "企业设置")
 @RestController
-@RequestMapping("/organization/config")
-public class OrganizationConfigController {
+@RequestMapping("/organization/settings")
+public class OrganizationSettingsController {
     @Resource
     private IntegrationConfigService integrationConfigService;
 
@@ -40,14 +40,14 @@ public class OrganizationConfigController {
         return organizationConfigService.getEmail(OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/edit/email")
+    @PostMapping("/email/edit")
     @Operation(summary = "编辑邮件设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void editEmail(@Validated @RequestBody EmailDTO emailDTO) {
         organizationConfigService.editEmail(emailDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @PostMapping("/test/email")
+    @PostMapping("/email/test")
     @Operation(summary = "系统设置-系统-系统参数-基本设置-邮件设置-测试连接")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public void verifyEmailConnection(@Validated @RequestBody EmailDTO emailDTO) {
@@ -55,21 +55,21 @@ public class OrganizationConfigController {
     }
 
     //获取同步组织设置
-    @GetMapping("/third")
+    @GetMapping("/third-party")
     @Operation(summary = "获取三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public List<ThirdConfigurationDTO> getThirdConfig() {
         return integrationConfigService.getThirdConfig(OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/edit/third")
+    @PostMapping("/third-party/edit")
     @Operation(summary = "编辑三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void editThirdConfig(@Validated @RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
         integrationConfigService.editThirdConfig(thirdConfigurationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @PostMapping(value = "/test")
+    @PostMapping(value = "/third-party/test")
     @Operation(summary = "校验配置是否链接成功")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public boolean validate(@RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
@@ -83,13 +83,13 @@ public class OrganizationConfigController {
         return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId());
     }
 
-    @GetMapping("/third/by/{type}")
+    @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
     public ThirdConfigurationDTO getThirdConfigByType(@PathVariable String type) {
         return integrationConfigService.getThirdConfigByType(type);
     }
 
-    @GetMapping("/third/type/list")
+    @GetMapping("/third-party/types")
     @Operation(summary = "获取三方应用扫码类型集合")
     public List<OptionDTO> getThirdTypeList() {
         return integrationConfigService.getThirdTypeList();

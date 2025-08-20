@@ -64,8 +64,8 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/sse/broadcast/**", "anon");
 
         filterChainDefinitionMap.put("/sso/callback/**", "anon");
-        filterChainDefinitionMap.put("/organization/config/third/type/list", "anon");
-        filterChainDefinitionMap.put("/organization/config/third/by/**", "anon");
+        filterChainDefinitionMap.put("/organization/settings/third-party/types", "anon");
+        filterChainDefinitionMap.put("/organization/settings/third-party/get/**", "anon");
 
         // 验证 License 的路径
         filterChainDefinitionMap.put("/license/validate/**", "anon");

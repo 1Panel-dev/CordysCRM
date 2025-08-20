@@ -141,7 +141,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         emailDTO.setPassword("ABCDEFGHI");
         emailDTO.setSsl("true");
         emailDTO.setTsl("true");
-        this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
+        this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
 
         this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().is5xxServerError());
