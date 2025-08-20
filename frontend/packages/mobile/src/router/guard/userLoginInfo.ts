@@ -23,6 +23,12 @@ export default function setupUserLoginInfoGuard(router: Router) {
 
     // 未登录访问受限页面重定向登录页
     if (!tokenExists) {
+      if (to.name === 'login') {
+        // 允许主动退出后访问 login
+        next();
+        NProgress.done();
+        return;
+      }
       // 企业微信进入，未登录则进去loading页面
       if (isWeComBrowser()) {
         if (to.name !== LOGIN_LOADING) {
