@@ -1,5 +1,6 @@
 package io.cordys.crm.integration.sqlbot.service;
 
+import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.BaseTreeNode;
@@ -10,15 +11,17 @@ import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
-import io.cordys.crm.integration.sqlbot.dto.*;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.RoleScopeDept;
-import io.cordys.crm.system.service.DepartmentService;
-import io.cordys.crm.system.service.RoleService;
+import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
+import io.cordys.crm.integration.sqlbot.dto.*;
 import io.cordys.crm.integration.sqlbot.handler.TablePermissionHandler;
 import io.cordys.crm.integration.sqlbot.handler.TablePermissionHandlerFactory;
 import io.cordys.crm.integration.sqlbot.mapper.ExtDataSourceMapper;
+import io.cordys.crm.system.domain.OrganizationUser;
+import io.cordys.crm.system.domain.RoleScopeDept;
+import io.cordys.crm.system.service.DepartmentService;
+import io.cordys.crm.system.service.IntegrationConfigService;
+import io.cordys.crm.system.service.RoleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +48,8 @@ public class DataSourceService {
     private DepartmentService departmentService;
     @Resource
     private RoleService roleService;
+    @Resource
+    private IntegrationConfigService integrationConfigService;
 
     /**
      * 获取当前数据库模式信息
@@ -53,6 +58,11 @@ public class DataSourceService {
      */
     public SQLBotDTO getDatabaseSchema(String userId, String orgId) {
         try {
+            // 验证是否启用了 SQL Bot 功能
+            List<ThirdConfigurationDTO> configs = integrationConfigService.getThirdConfig(orgId);
+            configs.stream().filter(config -> StringUtils.equalsIgnoreCase(config.getType(), DepartmentConstants.SQLBOT.name()) && config.getSqlBotChatEnable())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("当前组织未配置 SQL Bot 功能"));
 
             var databaseName = extractDatabaseName();
             var allTables = Objects.requireNonNull(CommonBeanFactory.getBean(DataSourceService.class)).tableList(databaseName);
@@ -156,6 +166,7 @@ public class DataSourceService {
 
     /**
      * 添加虚拟表
+     *
      * @param filteredTables
      * @param sqlBotTables
      */
@@ -320,7 +331,7 @@ public class DataSourceService {
             var database = matcher.group(3);
             var params = matcher.groupCount() >= 4 && matcher.group(4) != null
                     ? matcher.group(4)
-                    : "" ;
+                    : "";
 
             dataSourceDTO.setHost(host);
             dataSourceDTO.setPort(port);
@@ -343,7 +354,7 @@ public class DataSourceService {
         var urlParts = strippedUrl.split("\\?", 2);
 
         var hostPortDb = urlParts[0];
-        var extraParams = urlParts.length > 1 ? urlParts[1] : "" ;
+        var extraParams = urlParts.length > 1 ? urlParts[1] : "";
 
         var hostAndRest = hostPortDb.split("/", 2);
         var hostPort = hostAndRest[0].split(":", 2);
