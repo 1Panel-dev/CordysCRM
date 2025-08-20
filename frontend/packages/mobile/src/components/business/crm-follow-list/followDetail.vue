@@ -96,6 +96,13 @@
         id: sourceId.value,
         needInitDetail: 'Y',
       },
+      ...(detail.value.converted === undefined
+        ? {}
+        : {
+            state: {
+              params: JSON.stringify({ converted: detail.value.converted }),
+            },
+          }),
     });
   }
 </script>

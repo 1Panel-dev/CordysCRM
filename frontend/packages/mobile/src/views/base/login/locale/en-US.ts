@@ -16,4 +16,5 @@ export default {
   'login.form.DINGTALK': 'DINGTALK',
   'login.form.LARK': 'LARK',
   'login.form.logout': 'Log out',
+  'login.form.loadingTip': 'Loading, please wait...',
 };

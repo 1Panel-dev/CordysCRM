@@ -16,4 +16,5 @@ export default {
   'login.form.DINGTALK': '钉钉',
   'login.form.LARK': '飞书',
   'login.form.logout': '退出登录',
+  'login.form.loadingTip': '正在加载中，请稍候...',
 };

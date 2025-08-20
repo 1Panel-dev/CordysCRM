@@ -585,3 +585,8 @@ export function addCommasToNumber(number: number) {
 
   return result;
 }
+// 是否是企业微信端打开
+export function isWeComBrowser() {
+  const ua = window.navigator.userAgent.toLowerCase();
+  return ua.includes('wxwork'); // 企业微信 UA 一定包含 wxwork
+}

@@ -23,3 +23,6 @@ export const AUTH_DISABLED_ROUTE_NAME = 'auth-disabled';
 
 // 首页路由
 export const DEFAULT_ROUTE_NAME = 'workbench';
+
+// 登录加载路由
+export const LOGIN_LOADING = 'loading';

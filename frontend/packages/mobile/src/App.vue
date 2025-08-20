@@ -23,6 +23,9 @@
     const loginStatus = await userStore.isLogin();
     if (!loginStatus) {
       await oAuthLogin();
+      router.replace({
+        name: AppRouteEnum.WORKBENCH,
+      });
       return;
     }
     router.replace({ name: AppRouteEnum.WORKBENCH });

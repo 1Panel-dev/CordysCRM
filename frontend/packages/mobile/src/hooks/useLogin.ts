@@ -1,10 +1,11 @@
 import { useRouter } from 'vue-router';
 
-import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method';
+import { getQueryVariable, getUrlParameterWidthRegExp, isWeComBrowser } from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 import type { Result } from '@lib/shared/types/axios';
 
 import { getThirdConfigByType, getWeComOauthCallback } from '@/api/modules';
+import { AUTH_DISABLED_ROUTE_NAME } from '@/router/constants';
 import useUserStore from '@/store/modules/user';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
@@ -12,11 +13,6 @@ import { AppRouteEnum } from '@/enums/routeEnum';
 export default function useLogin() {
   const userStore = useUserStore();
   const router = useRouter();
-
-  function isWeComBrowser() {
-    const ua = window.navigator.userAgent.toLowerCase();
-    return ua.includes('wxwork'); // 企业微信 UA 一定包含 "wxwork"
-  }
 
   async function weComAuthLogin(code: string) {
     try {
@@ -73,7 +69,7 @@ export default function useLogin() {
       // eslint-disable-next-line no-console
       console.log(error);
       if ((error as Result).code === 401) {
-        router.replace('login');
+        router.replace(AUTH_DISABLED_ROUTE_NAME);
       }
     }
   }
