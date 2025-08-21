@@ -5,15 +5,15 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.system.service.UserExtendService;
-import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.service.UserExtendService;
+import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -70,14 +70,14 @@ public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
     @Override
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
-        if (StringUtils.equals(fieldName, "stage")) {
+        if (Strings.CS.equals(fieldName, "stage")) {
             return getSystemOptionFileSql(Arrays.stream(ClueStatus.values()),
                     ClueStatus::getKey,
                     ClueStatus::getName,
                     fieldName);
-        } else if (StringUtils.equals(fieldName, "products")) {
+        } else if (Strings.CS.equals(fieldName, "products")) {
             return getProductsFieldSql();
-        } else if (StringUtils.equals(fieldName, "pool_id")) {
+        } else if (Strings.CS.equals(fieldName, "pool_id")) {
             sqlBotField.setName("pool_name");
             sqlBotField.setComment("线索池名称");
             return "(select pool.name from clue_pool pool where c.pool_id = pool.id limit 1) as pool_name" ;
@@ -96,7 +96,7 @@ public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
         cluePools.forEach(pool -> {
             List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || StringUtils.equals(currentUser, InternalUser.ADMIN.getValue())) {
+            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
                 clueIds.add(pool.getId());
             }
         });

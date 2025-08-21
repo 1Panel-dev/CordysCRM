@@ -1,14 +1,15 @@
 package io.cordys.crm.integration.sqlbot.handler;
 
-import io.cordys.crm.system.constants.FieldType;
-import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 import io.cordys.crm.integration.sqlbot.handler.field.api.ModuleFieldParser;
 import io.cordys.crm.integration.sqlbot.handler.field.api.ModuleFieldParserFactory;
+import io.cordys.crm.system.constants.FieldType;
+import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -90,7 +91,7 @@ public class ModuleFieldTablePermissionHandler extends OrgTablePermissionHandler
                         // 分割线、图片、位置等字段不支持
                         // 不可见的字段不处理
                         // 业务字段不处理
-                        !StringUtils.equalsAny(field.getType(), FieldType.DIVIDER.name(), FieldType.PICTURE.name(), FieldType.LOCATION.name(), FieldType.TEXTAREA.name())
+                        !Strings.CS.equalsAny(field.getType(), FieldType.DIVIDER.name(), FieldType.PICTURE.name(), FieldType.LOCATION.name(), FieldType.TEXTAREA.name())
                                 && field.getReadable()
                                 && StringUtils.isBlank(field.getBusinessKey())
                 ).toList();

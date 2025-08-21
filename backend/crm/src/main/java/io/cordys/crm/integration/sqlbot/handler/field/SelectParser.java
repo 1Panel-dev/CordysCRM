@@ -1,9 +1,9 @@
 package io.cordys.crm.integration.sqlbot.handler.field;
 
 
-import io.cordys.crm.system.dto.field.SelectField;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.handler.field.api.OptionFieldParser;
+import io.cordys.crm.system.dto.field.SelectField;
 
 public class SelectParser extends OptionFieldParser<SelectField> {
 

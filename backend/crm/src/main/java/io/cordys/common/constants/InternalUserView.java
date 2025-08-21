@@ -2,6 +2,7 @@ package io.cordys.common.constants;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,18 +45,18 @@ public enum InternalUserView {
     }
 
     public static boolean isAll(String searchType) {
-        return StringUtils.equals(ALL.name(), searchType);
+        return Strings.CS.equals(ALL.name(), searchType);
     }
 
     public static boolean isSelf(String searchType) {
-        return StringUtils.equals(SELF.name(), searchType);
+        return Strings.CS.equals(SELF.name(), searchType);
     }
 
     public static boolean isDepartment(String searchType) {
-        return StringUtils.equals(DEPARTMENT.name(), searchType);
+        return Strings.CS.equals(DEPARTMENT.name(), searchType);
     }
 
     public static boolean isVisible(String searchType) {
-        return StringUtils.equals(CUSTOMER_COLLABORATION.name(), searchType);
+        return Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
     }
 }

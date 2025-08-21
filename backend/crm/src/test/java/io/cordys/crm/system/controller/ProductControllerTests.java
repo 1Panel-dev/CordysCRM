@@ -19,11 +19,11 @@ import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -112,12 +112,12 @@ class ProductControllerTests extends BaseTest {
         List<ModuleField> select = moduleFieldMapper.select(example);
         ModuleField moduleFieldPrice= select
                 .stream()
-                .filter(field -> StringUtils.equals(field.getInternalKey(), "productPrice"))
+                .filter(field -> Strings.CS.equals(field.getInternalKey(), "productPrice"))
                 .findFirst().orElse(null);
         moduleFieldPriceId = moduleFieldPrice.getId();
         ModuleField moduleFieldStatus= select
                 .stream()
-                .filter(field -> StringUtils.equals(field.getInternalKey(), "productStatus"))
+                .filter(field -> Strings.CS.equals(field.getInternalKey(), "productStatus"))
                 .findFirst().orElse(null);
         moduleFieldStatusId = moduleFieldStatus.getId();
         request = new ProductEditRequest();
@@ -177,7 +177,7 @@ class ProductControllerTests extends BaseTest {
         request.setStatus("2");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
-        Assertions.assertTrue(StringUtils.equalsIgnoreCase(product.getStatus(),"2"));
+        Assertions.assertTrue(Strings.CI.equals(product.getStatus(),"2"));
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
 
@@ -247,7 +247,7 @@ class ProductControllerTests extends BaseTest {
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
         Assertions.assertEquals(BigDecimal.valueOf(30000,4), getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
-            if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
+            if (Strings.CI.equalsAny(moduleField.getFieldId(), moduleFieldStatusId)) {
                 Assertions.assertEquals("1",moduleField.getFieldValue());
             }
         }

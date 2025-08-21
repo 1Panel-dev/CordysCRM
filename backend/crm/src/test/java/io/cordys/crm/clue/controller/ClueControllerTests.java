@@ -98,7 +98,7 @@ class ClueControllerTests extends BaseTest {
         example.setFormId(moduleForm.getId());
 //        ModuleField moduleField = moduleFieldMapper.select(example)
 //                .stream()
-//                .filter(field -> StringUtils.equals(field.getInternalKey(), "clueSource"))
+//                .filter(field -> Strings.CS.equals(field.getInternalKey(), "clueSource"))
 //                .findFirst().orElse(null);
 
         // 请求成功

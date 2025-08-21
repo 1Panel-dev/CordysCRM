@@ -3,7 +3,7 @@ package io.cordys.common.constants;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.List;
@@ -232,13 +232,13 @@ public enum BusinessModuleField {
      * @return 是否被删除
      */
     public static boolean isBusinessDeleted(String formKey, List<BaseField> fields) {
-        List<BusinessModuleField> formBusinessFields = Arrays.stream(BusinessModuleField.values()).filter(field -> StringUtils.equals(formKey, field.getFormKey())).toList();
+        List<BusinessModuleField> formBusinessFields = Arrays.stream(BusinessModuleField.values()).filter(field -> Strings.CS.equals(formKey, field.getFormKey())).toList();
         if (CollectionUtils.isEmpty(formBusinessFields)) {
             return false;
         }
         return formBusinessFields.stream()
                 .anyMatch(businessField ->
-                        fields.stream().noneMatch(field -> StringUtils.equals(businessField.getKey(), field.getInternalKey())));
+                        fields.stream().noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey())));
     }
 
     /**

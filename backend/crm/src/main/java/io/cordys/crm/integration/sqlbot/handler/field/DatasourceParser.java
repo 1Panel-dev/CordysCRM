@@ -1,10 +1,10 @@
 package io.cordys.crm.integration.sqlbot.handler.field;
 
 
+import io.cordys.crm.integration.sqlbot.handler.field.api.TextFieldParser;
 import io.cordys.crm.system.constants.FieldSourceType;
 import io.cordys.crm.system.dto.field.DatasourceField;
-import io.cordys.crm.integration.sqlbot.handler.field.api.TextFieldParser;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.MessageFormat;
 
@@ -23,7 +23,7 @@ public class DatasourceParser extends TextFieldParser<DatasourceField> {
     @Override
     public String parseSql(String fieldValueTable, DatasourceField field) {
         String datasourceTableName = field.getDataSourceType().toLowerCase();
-        if (StringUtils.equalsIgnoreCase(datasourceTableName, FieldSourceType.CONTACT.name())) {
+        if (Strings.CI.equals(datasourceTableName, FieldSourceType.CONTACT.name())) {
             datasourceTableName = "customer_contact";
         }
         return MessageFormat.format(MEMBER_OPTION_FIELD_SQL_TEMPLATE,

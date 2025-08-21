@@ -5,7 +5,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.service.BaseModuleLogService;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,39 +21,39 @@ public class FollowUpPlanLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.FOLLOW_PLAN.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CUSTOMER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CUSTOMER.getBusinessKey())) {
                 setCustomerName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CLUE.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CLUE.getBusinessKey())) {
                 setClueName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTENT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTENT.getBusinessKey())) {
                 differ.setColumnName(Translator.get("log.follow_record_content"));
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTACT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTACT.getBusinessKey())) {
                 setContactFieldName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_ESTIMATED_TIME.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_ESTIMATED_TIME.getBusinessKey())) {
                 differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
                 differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
                 continue;
             }
 
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
                 continue;
             }

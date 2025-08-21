@@ -20,11 +20,11 @@ import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -346,14 +346,14 @@ class RoleControllerTests extends BaseTest {
 
         // 校验数据
         deptUserTreeNodes.forEach(deptUserTreeNode -> {
-            if (StringUtils.equals(deptUserTreeNode.getNodeType(), "ORG")) {
+            if (Strings.CS.equals(deptUserTreeNode.getNodeType(), "ORG")) {
                 OrganizationUser organizationUser = new OrganizationUser();
                 organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
                 organizationUser.setDepartmentId(deptUserTreeNode.getId());
                 List<OrganizationUser> organizationUsers = organizationUserMapper.select(organizationUser);
                 organizationUsers.forEach(user -> {
                     Assertions.assertTrue(deptUserTreeNode.getChildren().stream()
-                            .anyMatch(child -> StringUtils.equals(child.getId(), user.getUserId())));
+                            .anyMatch(child -> Strings.CS.equals(child.getId(), user.getUserId())));
                 });
             }
         });
@@ -380,13 +380,13 @@ class RoleControllerTests extends BaseTest {
 
         // 校验数据
         deptUserTreeNodes.forEach(roleNode -> {
-            if (StringUtils.equals(roleNode.getNodeType(), "ROLE")) {
+            if (Strings.CS.equals(roleNode.getNodeType(), "ROLE")) {
                 UserRole userRole = new UserRole();
                 userRole.setRoleId(roleNode.getId());
                 if (userRole.getRoleId().equals(PERMISSION_USER_NAME)) {
                     return;
                 }
-                if (StringUtils.equalsAny(roleNode.getId(),
+                if (Strings.CS.equalsAny(roleNode.getId(),
                         InternalRole.ORG_ADMIN.getValue(),
                         InternalRole.SALES_MANAGER.getValue(),
                         InternalRole.SALES_STAFF.getValue())) {
@@ -395,7 +395,7 @@ class RoleControllerTests extends BaseTest {
                 List<UserRole> userRoles = userRoleMapper.select(userRole);
                 userRoles.forEach(user -> {
                     Assertions.assertTrue(roleNode.getChildren().stream()
-                            .anyMatch(child -> StringUtils.equals(child.getId(), user.getUserId())));
+                            .anyMatch(child -> Strings.CS.equals(child.getId(), user.getUserId())));
                 });
             }
         });

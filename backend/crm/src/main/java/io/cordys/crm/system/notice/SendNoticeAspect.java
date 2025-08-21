@@ -10,6 +10,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -111,7 +112,7 @@ public class SendNoticeAspect {
                 Object v = titleExp.getValue(context, Object.class);
                 // 查询结果如果是null或者是{}，不使用这个值
                 String jsonObject = JSON.toJSONString(v);
-                if (v != null && !StringUtils.equals("{}", jsonObject) && !StringUtils.equals("[]", jsonObject)) {
+                if (v != null && !Strings.CS.equals("{}", jsonObject) && !Strings.CS.equals("[]", jsonObject)) {
                     source.set(JSON.toJSONString(v));
                 }
             }

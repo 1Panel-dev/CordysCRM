@@ -6,7 +6,7 @@ import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.system.service.BaseModuleLogService;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +22,16 @@ public class ClueLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.CLUE.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
                 setProductName(differ);
             }
 
-            if (StringUtils.equals(differ.getColumn(), "stage")) {
+            if (Strings.CS.equals(differ.getColumn(), "stage")) {
                 differ.setColumnName(Translator.get("clue.stage"));
                 differ.setNewValueName(ClueStatus.getByKey((String) differ.getNewValue()));
                 differ.setOldValueName(ClueStatus.getByKey((String) differ.getOldValue()));

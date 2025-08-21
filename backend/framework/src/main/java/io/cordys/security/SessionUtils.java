@@ -3,7 +3,7 @@ package io.cordys.security;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
@@ -89,7 +89,7 @@ public class SessionUtils {
      */
     public static void kickOutUser(String operatorId, String kickUserId) {
         // 处理用户会话
-        boolean isSelfReset = StringUtils.equals(operatorId, kickUserId);
+        boolean isSelfReset = Strings.CS.equals(operatorId, kickUserId);
         if (isSelfReset) {
             // 当前用户重置自己的密码，直接登出
             SecurityUtils.getSubject().logout();

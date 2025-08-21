@@ -5,7 +5,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.service.BaseModuleLogService;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,37 +20,37 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.FOLLOW_RECORD.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CUSTOMER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CUSTOMER.getBusinessKey())) {
                 setCustomerName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CLUE.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CLUE.getBusinessKey())) {
                 setClueName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CONTENT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CONTENT.getBusinessKey())) {
                 differ.setColumnName(Translator.get("log.follow_record_content"));
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CONTACT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CONTACT.getBusinessKey())) {
                 setContactFieldName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_TIME.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_TIME.getBusinessKey())) {
                 setFormatDataTimeFieldValueName(differ);
                 continue;
             }
 
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
                 continue;
             }

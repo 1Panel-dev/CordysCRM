@@ -28,6 +28,7 @@ import io.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -161,7 +162,7 @@ public class UserLoginService {
      */
     private void checkDefaultPwd(UserDTO userDTO) {
         String defaultPwd = "";
-        if (StringUtils.equalsIgnoreCase(userDTO.getId(), InternalUser.ADMIN.getValue())) {
+        if (Strings.CI.equals(userDTO.getId(), InternalUser.ADMIN.getValue())) {
             defaultPwd = CodingUtils.md5("CordysCRM");
         } else {
             if (StringUtils.isNotBlank(userDTO.getPhone())) {
@@ -169,7 +170,7 @@ public class UserLoginService {
             }
         }
 
-        if (StringUtils.equalsIgnoreCase(defaultPwd, userDTO.getPassword())) {
+        if (Strings.CI.equals(defaultPwd, userDTO.getPassword())) {
             userDTO.setDefaultPwd(true);
         }
 
@@ -376,7 +377,7 @@ public class UserLoginService {
      * 判断是否为管理员用户
      */
     private boolean isAdminUser(String userId) {
-        return StringUtils.equals(userId, InternalUser.ADMIN.getValue());
+        return Strings.CS.equals(userId, InternalUser.ADMIN.getValue());
     }
 
     /**

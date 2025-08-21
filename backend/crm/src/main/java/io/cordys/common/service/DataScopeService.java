@@ -13,7 +13,7 @@ import io.cordys.crm.system.service.RoleService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +70,7 @@ public class DataScopeService {
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String permission) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
 
-        if (StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+        if (Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             // 超级管理员查看所有数据
             deptDataPermission.setAll(true);
             return deptDataPermission;
@@ -238,14 +238,14 @@ public class DataScopeService {
 
     public boolean hasDataPermission(String userId, String orgId, List<String> owners, String permission) {
         DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId, permission);
-        if (deptDataPermission.getAll() || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+        if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
 
         if (deptDataPermission.getSelf()) {
             for (String owner : owners) {
                 // 是否是自己的客户
-                if (!StringUtils.equals(owner, userId)) {
+                if (!Strings.CS.equals(owner, userId)) {
                     return false;
                 }
             }
@@ -258,7 +258,7 @@ public class DataScopeService {
                 UserDeptDTO customerOwnerDept = userDeptMapByUserIds.get(owner);
                 // 部门权限是否有该客户的权限
                 if (customerOwnerDept == null || !deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId())) {
-                    if (!StringUtils.equals(owner, userId)) {
+                    if (!Strings.CS.equals(owner, userId)) {
                         return false;
                     }
                 }

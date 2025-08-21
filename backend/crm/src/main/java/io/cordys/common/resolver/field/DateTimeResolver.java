@@ -2,7 +2,7 @@ package io.cordys.common.resolver.field;
 
 import io.cordys.common.util.TimeUtils;
 import io.cordys.crm.system.dto.field.DateTimeField;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -35,13 +35,13 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
 
     @Override
     public Object trans2Value(DateTimeField dateTimeField, String value) {
-        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "date")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), "date")) {
             return TimeUtils.getDataStr(Long.valueOf(value));
         }
-        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "datetime")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), "datetime")) {
             return TimeUtils.getDataTimeStr(Long.valueOf(value));
         }
-        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "month")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), "month")) {
             return TimeUtils.getMonthStr(Long.valueOf(value));
         }
         return value;

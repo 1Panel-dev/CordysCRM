@@ -35,8 +35,7 @@ import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -149,7 +148,7 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            opportunityListResponse.setReservedDays(StringUtils.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+            opportunityListResponse.setReservedDays(Strings.CS.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
                     null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             if (!hasPermission) {
                 opportunityListResponse.setModuleFields(new ArrayList<>());

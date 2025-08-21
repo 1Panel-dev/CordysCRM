@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
@@ -56,7 +57,7 @@ public class FilterCondition {
         }
 
         // 针对空值判断操作符
-        if (StringUtils.equalsAny(operator, CombineConditionOperator.EMPTY.name(), CombineConditionOperator.NOT_EMPTY.name())) {
+        if (Strings.CS.equalsAny(operator, CombineConditionOperator.EMPTY.name(), CombineConditionOperator.NOT_EMPTY.name())) {
             return true;
         }
 
@@ -74,12 +75,12 @@ public class FilterCondition {
     }
 
     public boolean expectMulti() {
-        return StringUtils.equalsAny(operator, CombineConditionOperator.IN.name(), CombineConditionOperator.NOT_IN.name(), CombineConditionOperator.BETWEEN.name(), CombineConditionOperator.DYNAMICS.name());
+        return Strings.CS.equalsAny(operator, CombineConditionOperator.IN.name(), CombineConditionOperator.NOT_IN.name(), CombineConditionOperator.BETWEEN.name(), CombineConditionOperator.DYNAMICS.name());
     }
 
 
     public Object getCombineValue() {
-        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name())) {
+        if (Strings.CI.equals(operator, CombineConditionOperator.DYNAMICS.name())) {
             // value 转为string 类型
             String strValue = (String) value;
             String[] split = strValue.split(",");
@@ -228,7 +229,7 @@ public class FilterCondition {
     }
 
     public String getCombineOperator() {
-        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name())) {
+        if (Strings.CI.equals(operator, CombineConditionOperator.DYNAMICS.name())) {
             String strValue = (String) value;
             String[] split = strValue.split(",");
             if (split.length == 1) {

@@ -39,6 +39,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -412,7 +413,7 @@ public class OrganizationUserService {
      * @param operatorId
      */
     public void resetPassword(String userId, String operatorId, String orgId) {
-        if (!StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             User user = userMapper.selectByPrimaryKey(userId);
             if (StringUtils.isBlank(user.getPhone())) {
                 throw new GenericException(Translator.get("user_phone_not_exist"));
@@ -487,7 +488,7 @@ public class OrganizationUserService {
         User newPasswdUser = new User();
         newPasswdUser.setPassword("************");
         userList.forEach(user -> {
-            if (!StringUtils.equalsIgnoreCase(user.getId(), InternalUser.ADMIN.getValue())) {
+            if (!Strings.CI.equals(user.getId(), InternalUser.ADMIN.getValue())) {
                 user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
             }
             user.setUpdateTime(System.currentTimeMillis());
@@ -782,7 +783,7 @@ public class OrganizationUserService {
         if (StringUtils.isBlank(name)) {
             return null;
         }
-        List<UserImportDTO> departmentUsers = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name) && StringUtils.equalsIgnoreCase(supervisor.getDepartmentId(), departmentId)).toList();
+        List<UserImportDTO> departmentUsers = supervisorList.stream().filter(supervisor -> Strings.CI.equals(supervisor.getName(), name) && Strings.CI.equals(supervisor.getDepartmentId(), departmentId)).toList();
         if (CollectionUtils.isNotEmpty(departmentUsers)) {
             List<String> userIds = departmentUsers.stream().map(UserImportDTO::getUserId).toList();
             List<DepartmentCommander> commanders = extDepartmentCommanderMapper.selectCommanderByUsers(departmentId, userIds);
@@ -792,7 +793,7 @@ public class OrganizationUserService {
             return departmentUsers.getFirst().getUserId();
         }
 
-        List<UserImportDTO> unDepartmentUsers = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name)).toList();
+        List<UserImportDTO> unDepartmentUsers = supervisorList.stream().filter(supervisor -> Strings.CI.equals(supervisor.getName(), name)).toList();
         if (CollectionUtils.isNotEmpty(unDepartmentUsers)) {
             return unDepartmentUsers.getFirst().getUserId();
         }
@@ -966,7 +967,7 @@ public class OrganizationUserService {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
         List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
         userNodes.forEach(userNode -> {
-            if (!StringUtils.equals(userNode.getParentId(), departmentId)) {
+            if (!Strings.CS.equals(userNode.getParentId(), departmentId)) {
                 userNode.setEnabled(false);
             }
         });

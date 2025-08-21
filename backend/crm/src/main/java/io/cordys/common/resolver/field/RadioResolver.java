@@ -4,6 +4,7 @@ package io.cordys.common.resolver.field;
 import io.cordys.crm.system.dto.field.RadioField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * @author jianxing
@@ -36,7 +37,7 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     @Override
     public Object trans2Value(RadioField radioField, String value) {
         return radioField.getOptions().stream()
-                .filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value))
+                .filter(option -> Strings.CI.equals(option.getValue(), value))
                 .map(OptionProp::getLabel)
                 .findFirst()
                 .orElse(StringUtils.EMPTY);
@@ -45,7 +46,7 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     @Override
     public Object text2Value(RadioField field, String text) {
         return field.getOptions().stream()
-                .filter(option -> StringUtils.equalsIgnoreCase(option.getLabel(), text))
+                .filter(option -> Strings.CI.equals(option.getLabel(), text))
                 .map(OptionProp::getValue)
                 .findFirst()
                 .orElse(text);

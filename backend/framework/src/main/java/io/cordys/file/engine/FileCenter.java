@@ -2,7 +2,7 @@ package io.cordys.file.engine;
 
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import static io.cordys.file.engine.StorageType.LOCAL;
 import static io.cordys.file.engine.StorageType.S3;
@@ -28,7 +28,7 @@ public class FileCenter {
      * @return 返回对应的 {@link FileRepository} 实现，如果存储类型未知，则返回默认的仓库。
      */
     public static FileRepository getRepository(String storage) {
-        if (StringUtils.equals(S3.name(), storage)) {
+        if (Strings.CS.equals(S3.name(), storage)) {
             return CommonBeanFactory.getBean(S3Repository.class);
         } else {
             return CommonBeanFactory.getBean(LocalRepository.class);

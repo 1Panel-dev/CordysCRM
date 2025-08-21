@@ -30,7 +30,7 @@ import io.cordys.crm.system.service.RoleService;
 import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -186,7 +186,7 @@ public class HomeStatisticService {
 	 */
 	public Long getTotalCustomerCapacityCount(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
+		if (request.getStaticRequest() != null && Strings.CS.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
 			return poolCustomerService.getRemainCapacity(request.getUserId(), request.getOrgId());
 		}
 		return null;
@@ -227,7 +227,7 @@ public class HomeStatisticService {
 	 * @return 剩余库容数量
 	 */
 	public Long getTotalClueCapacityCount(HomeStatisticSearchWrapperRequest request) {
-		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
+		if (request.getStaticRequest() != null && Strings.CS.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
 			return poolClueService.getRemainCapacity(request.getUserId(), request.getOrgId());
 		}
 		return null;
@@ -331,7 +331,7 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public DeptDataPermissionDTO getDeptDataPermissionDTO(HomeStatisticSearchRequest request, String permission) {
-		if (StringUtils.equals(request.getSearchType(), BusinessSearchType.DEPARTMENT.name())) {
+		if (Strings.CS.equals(request.getSearchType(), BusinessSearchType.DEPARTMENT.name())) {
 			DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 					OrganizationContext.getOrganizationId(), permission);
 			if (deptDataPermission.getAll()) {
@@ -347,7 +347,7 @@ public class HomeStatisticService {
 				deptDataPermission.setDeptIds(deptIds);
 			}
 			return deptDataPermission;
-		} else if (StringUtils.equals(request.getSearchType(), BusinessSearchType.ALL.name())) {
+		} else if (Strings.CS.equals(request.getSearchType(), BusinessSearchType.ALL.name())) {
 			DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 					OrganizationContext.getOrganizationId(), permission);
 			return deptDataPermission;
@@ -367,7 +367,7 @@ public class HomeStatisticService {
 		boolean hasDeptAndChildPermission = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name()) != null;
 		boolean hasDeptCustomPermission = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name()) != null;
 
-		if (hasAllPermission || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+		if (hasAllPermission || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
 			// 如果有全部数据权限，则返回所有部门树
 			return departmentService.getTree(orgId);
 		}
@@ -439,7 +439,7 @@ public class HomeStatisticService {
 	}
 
 	public boolean isEmptyDeptData(HomeStatisticSearchWrapperRequest wrapperRequest) {
-		return StringUtils.equals(wrapperRequest.getStaticRequest().getSearchType(), BusinessSearchType.DEPARTMENT.name())
+		return Strings.CS.equals(wrapperRequest.getStaticRequest().getSearchType(), BusinessSearchType.DEPARTMENT.name())
 				&& CollectionUtils.isEmpty(wrapperRequest.getDataPermission().getDeptIds());
 	}
 }

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,7 +60,7 @@ public class CombineSearch {
             }
 
             Object value = condition.getCombineValue();
-            boolean isBetween = StringUtils.equals(condition.getCombineOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
+            boolean isBetween = Strings.CS.equals(condition.getCombineOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
 
             if (value instanceof List<?> valueList) {
                 if (CollectionUtils.isEmpty(valueList)) {

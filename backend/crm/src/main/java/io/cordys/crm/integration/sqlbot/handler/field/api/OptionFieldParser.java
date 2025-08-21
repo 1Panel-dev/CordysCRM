@@ -1,9 +1,9 @@
 package io.cordys.crm.integration.sqlbot.handler.field.api;
 
 
+import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
-import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 

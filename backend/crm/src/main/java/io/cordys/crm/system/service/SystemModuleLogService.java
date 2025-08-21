@@ -6,7 +6,7 @@ import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +26,11 @@ public class SystemModuleLogService extends BaseModuleLogService{
 	@Override
 	public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
 		differenceDTOS.forEach(differ -> {
-			if (StringUtils.equals("linkFields", differ.getColumn())) {
+			if (Strings.CS.equals("linkFields", differ.getColumn())) {
 				differ.setColumnName(Translator.get("log." + differ.getColumn()));
 				handleLinkFieldsLogDetail(differ);
 			}
-			if (StringUtils.equals("module.switch", differ.getColumn())) {
+			if (Strings.CS.equals("module.switch", differ.getColumn())) {
 				differ.setColumnName(Translator.get(differ.getColumn()));
 				differ.setOldValueName(differ.getOldValue());
 				differ.setNewValueName(differ.getNewValue());

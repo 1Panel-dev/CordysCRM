@@ -4,7 +4,7 @@ import io.cordys.crm.system.constants.MoveTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 @Data
 public class NodeMoveRequest {
@@ -21,7 +21,7 @@ public class NodeMoveRequest {
 
 
     public void setAndConvertDropPosition(String position, boolean isSortDesc) {
-        if (StringUtils.equals(MoveTypeEnum.BEFORE.name(), position)) {
+        if (Strings.CS.equals(MoveTypeEnum.BEFORE.name(), position)) {
             this.dropPosition = isSortDesc ? 1 : -1;
         } else {
             this.dropPosition = isSortDesc ? -1 : 1;

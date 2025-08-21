@@ -11,7 +11,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,13 +56,13 @@ public class ProductLogService extends BaseModuleLogService {
 
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.PRODUCT_STATUS.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.PRODUCT_STATUS.getBusinessKey())) {
                 setProductFieldName(differ);
             }
-            if (StringUtils.equals(differ.getColumn(), pictureModuleFieldId)) {
+            if (Strings.CS.equals(differ.getColumn(), pictureModuleFieldId)) {
                 setProductPicName(differ);
             }
-            if (StringUtils.equals(differ.getColumn(), timeModuleFieldId)) {
+            if (Strings.CS.equals(differ.getColumn(), timeModuleFieldId)) {
                 if (differ.getOldValue()!=null) {
                     differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
                 }
@@ -90,12 +90,12 @@ public class ProductLogService extends BaseModuleLogService {
      * @param differ businessModuleField
      */
     private void setProductFieldName(JsonDifferenceDTO differ) {
-        if (StringUtils.equalsIgnoreCase(differ.getOldValue().toString(), "1")){
+        if (Strings.CI.equals(differ.getOldValue().toString(), "1")){
             differ.setOldValueName(Translator.get("product.shelves"));
         }else{
             differ.setOldValueName(Translator.get("product.unShelves"));
         }
-        if (StringUtils.equalsIgnoreCase(differ.getNewValue().toString(), "1")){
+        if (Strings.CI.equals(differ.getNewValue().toString(), "1")){
             differ.setNewValueName(Translator.get("product.shelves"));
         }else{
             differ.setNewValueName(Translator.get("product.unShelves"));

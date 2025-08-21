@@ -20,6 +20,7 @@ import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -117,17 +118,17 @@ public abstract class BaseModuleLogService {
         List<String> oldNameList = new ArrayList<>();
         List<String> newNameList = new ArrayList<>();
         for (OptionDTO option : options) {
-            if (differ.getOldValue() instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+            if (differ.getOldValue() instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
                 // 设置旧值名称
                 differ.setOldValueName(option.getName());
             }
-            if (differ.getNewValue() instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+            if (differ.getNewValue() instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
                 // 设置新值名称
                 differ.setNewValueName(option.getName());
             }
             if (differ.getOldValue() instanceof List<?> oldValueList) {
                 for (Object oldValue : oldValueList) {
-                    if (oldValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+                    if (oldValue instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
                         // 设置旧值名称
                         oldNameList.add(option.getName());
                     }
@@ -137,7 +138,7 @@ public abstract class BaseModuleLogService {
             if (differ.getNewValue() instanceof List<?> newValueList) {
 
                 for (Object newValue : newValueList) {
-                    if (newValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+                    if (newValue instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
                         // 设置新值名称
                         newNameList.add(option.getName());
                     }
@@ -156,7 +157,7 @@ public abstract class BaseModuleLogService {
 
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
         if (moduleField != null) {
-            if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATE_TIME.name())) {
+            if (Strings.CI.equalsAny(moduleField.getType(), FieldType.DATE_TIME.name())) {
                 // 日期时间类型
                 setFormatDataTimeFieldValueName(differ);
             } else if (moduleField instanceof DatasourceMultipleField || moduleField instanceof DatasourceField) {
@@ -189,7 +190,7 @@ public abstract class BaseModuleLogService {
     }
 
     private String formatDataTime(String value) {
-        if(StringUtils.isBlank(value)||StringUtils.equalsIgnoreCase(value, "null")){
+        if(StringUtils.isBlank(value)||Strings.CI.equals(value, "null")){
             return StringUtils.EMPTY;
         }
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));

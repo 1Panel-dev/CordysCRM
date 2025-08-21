@@ -4,14 +4,14 @@ package io.cordys.crm.integration.sqlbot.handler;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public class ProductPermissionHandler extends ModuleFieldTablePermissionHandler 
     @Override
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
-        if (StringUtils.equals(fieldName, "status")) {
+        if (Strings.CS.equals(fieldName, "status")) {
             List<OptionDTO> options = List.of(new OptionDTO("1", "上架"), new OptionDTO("2", "下架"));
             return getSystemOptionFileSql(options.stream(),
                     OptionDTO::getId,

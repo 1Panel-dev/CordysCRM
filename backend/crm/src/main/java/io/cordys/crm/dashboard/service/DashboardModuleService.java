@@ -14,12 +14,6 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.dto.request.NodeMoveRequest;
-import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
-import io.cordys.crm.system.service.DepartmentService;
-import io.cordys.crm.system.service.LogService;
-import io.cordys.crm.system.service.MoveNodeService;
-import io.cordys.mybatis.BaseMapper;
 import io.cordys.crm.dashboard.domain.DashboardModule;
 import io.cordys.crm.dashboard.dto.DashboardTreeNode;
 import io.cordys.crm.dashboard.dto.request.DashboardModuleAddRequest;
@@ -27,9 +21,16 @@ import io.cordys.crm.dashboard.dto.request.DashboardModuleRenameRequest;
 import io.cordys.crm.dashboard.mapper.ExtDashboardCollectionMapper;
 import io.cordys.crm.dashboard.mapper.ExtDashboardMapper;
 import io.cordys.crm.dashboard.mapper.ExtDashboardModuleMapper;
+import io.cordys.crm.system.dto.request.NodeMoveRequest;
+import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
+import io.cordys.crm.system.service.DepartmentService;
+import io.cordys.crm.system.service.LogService;
+import io.cordys.crm.system.service.MoveNodeService;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -213,7 +214,7 @@ public class DashboardModuleService extends MoveNodeService {
 
     private List<String> getDepartmentIds(String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
-        if (!StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
             List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
             departmentIds = getParentIds(departmentTree, departmentId);

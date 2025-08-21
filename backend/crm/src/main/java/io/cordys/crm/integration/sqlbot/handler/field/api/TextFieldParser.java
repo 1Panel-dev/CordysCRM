@@ -1,10 +1,10 @@
 package io.cordys.crm.integration.sqlbot.handler.field.api;
 
 
+import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.MessageFormat;
 
@@ -32,7 +32,7 @@ public abstract class TextFieldParser<T extends BaseField> implements ModuleFiel
     public FieldDTO parse2SQLBotField(BaseField field) {
         FieldDTO fieldDTO = new FieldDTO();
         fieldDTO.setName(field.getId());
-        if (field.multiple() || StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+        if (field.multiple() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
             fieldDTO.setType("text");
         } else {
             fieldDTO.setType("varchar(255)");

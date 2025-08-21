@@ -13,6 +13,7 @@ import io.cordys.crm.system.service.UserViewService;
 import io.cordys.security.SessionUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +69,7 @@ public class ConditionFilterUtils {
             item.setValue(combineValue);
             item.setOperator(combineOperator);
             if (item.getValue() != null && item.getCombineValue() instanceof String strValue
-                    && StringUtils.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.CONTAINS.name(),
+                    && Strings.CS.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.CONTAINS.name(),
                     FilterCondition.CombineConditionOperator.NOT_CONTAINS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(BaseCondition.transferKeyword(strValue));
@@ -142,7 +143,7 @@ public class ConditionFilterUtils {
             if (value instanceof List arrayValues) {
                 for (int i = 0; i < arrayValues.size(); i++) {
                     Object arrayValue = arrayValues.get(i);
-                    if (arrayValue != null && StringUtils.equals(arrayValue.toString(), InternalUserView.CURRENT_USER)) {
+                    if (arrayValue != null && Strings.CS.equals(arrayValue.toString(), InternalUserView.CURRENT_USER)) {
                         // 替换当前用户的用户ID
                         arrayValues.set(i, SessionUtils.getUserId());
                     }

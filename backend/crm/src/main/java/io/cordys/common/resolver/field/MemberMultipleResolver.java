@@ -7,6 +7,7 @@ import io.cordys.crm.system.dto.field.MemberMultipleField;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
 
     @Override
     public Object trans2Value(MemberMultipleField memberMultipleField, String value) {
-        if (StringUtils.isBlank(value) || StringUtils.equals(value, "[]")) {
+        if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
         List ids = JSON.parseArray(value,String.class);
@@ -57,7 +58,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
 
     @Override
     public Object text2Value(MemberMultipleField field, String text) {
-        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+        if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }
         List<String> names = parseFakeJsonArray(text);

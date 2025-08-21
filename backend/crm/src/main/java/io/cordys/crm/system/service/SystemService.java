@@ -7,6 +7,7 @@ import io.cordys.crm.system.utils.ArchUtils;
 import io.cordys.crm.system.utils.CSHttpClient;
 import io.cordys.crm.system.utils.CopyrightUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
@@ -96,7 +97,7 @@ public class SystemService {
     private String getEdition() {
         try {
             String status = Objects.toString(licenseService.validate().getStatus(), "");
-            return StringUtils.equalsIgnoreCase(status, LicenseStatus.NOT_FOUND.getName()) ? EDITION_CE : EDITION_EE;
+            return Strings.CI.equals(status, LicenseStatus.NOT_FOUND.getName()) ? EDITION_CE : EDITION_EE;
         } catch (Exception e) {
             // 许可异常时默认为 CE
             LogUtils.info("获取许可状态失败，默认使用 CE：{}", e.getMessage());

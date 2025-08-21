@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * @author jianxing
@@ -30,7 +31,7 @@ public class SortRequest {
     }
 
     public String getType() {
-        if (StringUtils.equalsIgnoreCase(type, "asc")) {
+        if (Strings.CI.equals(type, "asc")) {
             return "asc";
         } else {
             return "desc";

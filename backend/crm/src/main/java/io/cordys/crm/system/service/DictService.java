@@ -22,7 +22,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -199,7 +199,7 @@ public class DictService {
 		List<Dict> dictList = new ArrayList<>(getDictListByType(module, orgId));
 		Dict sysDt = new Dict();
 		sysDt.setId("system");
-		if (StringUtils.equalsAny(module, DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name())) {
+		if (Strings.CS.equalsAny(module, DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name())) {
 			sysDt.setName(Translator.get("system.auto.recycle"));
 		} else {
 			sysDt.setName(Translator.get("system.auto.closed"));

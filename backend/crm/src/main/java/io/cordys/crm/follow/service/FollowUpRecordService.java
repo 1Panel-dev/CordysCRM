@@ -36,6 +36,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -334,7 +335,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @return
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
-        if (StringUtils.equals(resourceType, "CUSTOMER")) {
+        if (Strings.CS.equals(resourceType, "CUSTOMER")) {
             // 如果是客户类型，查询所有转移的线索来源ID的记录
             LambdaQueryWrapper<Clue> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Clue::getTransitionId, request.getSourceId());

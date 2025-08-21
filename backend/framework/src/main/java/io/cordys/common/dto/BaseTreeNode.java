@@ -5,7 +5,7 @@ import jodd.util.StringUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ public class BaseTreeNode {
 
         // 2. 遍历节点列表，构建父子关系
         for (T node : nodeList) {
-            if (StringUtil.isBlank(node.getParentId()) || StringUtils.equalsIgnoreCase(node.getParentId(), "NONE")) {
+            if (StringUtil.isBlank(node.getParentId()) || Strings.CI.equals(node.getParentId(), "NONE")) {
                 // 没有父节点，则为根节点
                 rootNodes.add(node);
             } else {

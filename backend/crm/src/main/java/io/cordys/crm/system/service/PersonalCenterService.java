@@ -17,7 +17,6 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
@@ -37,7 +36,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +76,7 @@ public class PersonalCenterService {
 
 
     public UserResponse getUserDetail(String id, String orgId) {
-        if (StringUtils.equals(id, InternalUser.ADMIN.getValue())) {
+        if (Strings.CS.equals(id, InternalUser.ADMIN.getValue())) {
             return BeanUtils.copyBean(new UserResponse(), userBaseMapper.selectByPrimaryKey(id));
         }
         String orgUserIdByUserId = extOrganizationUserMapper.getOrgUserIdByUserId(orgId, id);
@@ -233,7 +232,7 @@ public class PersonalCenterService {
 
         // 1. 获取用户权限和模块信息
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
-        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+        boolean isAdmin = Strings.CI.equals(userId, InternalUser.ADMIN.getValue());
 
         // 2. 查询已启用的模块
         List<String> enabledModules = moduleMapper.selectListByLambda(

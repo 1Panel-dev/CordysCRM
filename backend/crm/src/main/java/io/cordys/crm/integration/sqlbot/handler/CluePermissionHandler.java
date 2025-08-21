@@ -4,14 +4,14 @@ package io.cordys.crm.integration.sqlbot.handler;
 import io.cordys.common.constants.FormKey;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.constants.ClueStatus;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -45,12 +45,12 @@ public class CluePermissionHandler extends DataScopeTablePermissionHandler {
     @Override
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
-        if (StringUtils.equals(fieldName, "stage")) {
+        if (Strings.CS.equals(fieldName, "stage")) {
             return getSystemOptionFileSql(Arrays.stream(ClueStatus.values()),
                     ClueStatus::getKey,
                     ClueStatus::getName,
                     fieldName);
-        } else if (StringUtils.equals(fieldName, "products")) {
+        } else if (Strings.CS.equals(fieldName, "products")) {
             return getProductsFieldSql();
         } else {
             return getDefaultFieldSql(sqlBotField);

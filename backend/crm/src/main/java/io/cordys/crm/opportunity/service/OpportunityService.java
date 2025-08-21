@@ -45,8 +45,8 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,7 +180,7 @@ public class OpportunityService {
             // 获取自定义字段
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
             // 计算保留天数(成功失败阶段不计算)
-            opportunityListResponse.setReservedDays(StringUtils.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+            opportunityListResponse.setReservedDays(Strings.CS.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
                     null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             opportunityListResponse.setModuleFields(opportunityFields);
 
@@ -458,18 +458,18 @@ public class OpportunityService {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Opportunity newOpportunity = new Opportunity();
         //如果是反签 成功->失败 lastStage= BUSINESS_PROCUREMENT
-        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name()) &&
-                StringUtils.equalsIgnoreCase(oldOpportunity.getStage(), StageType.SUCCESS.name())) {
+        if (Strings.CI.equals(request.getStage(), StageType.FAIL.name()) &&
+                Strings.CI.equals(oldOpportunity.getStage(), StageType.SUCCESS.name())) {
             newOpportunity.setLastStage(StageType.BUSINESS_PROCUREMENT.name());
         } else {
             newOpportunity.setLastStage(oldOpportunity.getStage());
         }
 
-        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.SUCCESS.name())) {
+        if (Strings.CI.equals(request.getStage(), StageType.SUCCESS.name())) {
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         }
 
-        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name())) {
+        if (Strings.CI.equals(request.getStage(), StageType.FAIL.name())) {
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
             newOpportunity.setFailureReason(request.getFailureReason());
         }

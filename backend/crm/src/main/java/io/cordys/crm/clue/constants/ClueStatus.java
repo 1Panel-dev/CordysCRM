@@ -1,6 +1,6 @@
 package io.cordys.crm.clue.constants;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * @Author: jianxing
@@ -39,7 +39,7 @@ public enum ClueStatus {
 
     public static String getByKey(String key) {
         for (ClueStatus status : ClueStatus.values()) {
-            if (StringUtils.equals(key, status.key)) {
+            if (Strings.CS.equals(key, status.key)) {
                 return status.name;
             }
         }

@@ -69,6 +69,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -323,7 +324,7 @@ public class ClueService {
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
-        if (!StringUtils.equals(originClue.getOwner(), request.getOwner())) {
+        if (!Strings.CS.equals(originClue.getOwner(), request.getOwner())) {
             poolClueService.validateCapacity(1, request.getOwner(), orgId);
         }
         dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner(), PermissionConstants.CLUE_MANAGEMENT_UPDATE);
@@ -333,7 +334,7 @@ public class ClueService {
         clue.setUpdateUser(userId);
 
         if (StringUtils.isNotBlank(request.getOwner())) {
-            if (!StringUtils.equals(request.getOwner(), originClue.getOwner())) {
+            if (!Strings.CS.equals(request.getOwner(), originClue.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
                 clueOwnerHistoryService.add(originClue, userId);
                 sendTransferNotice(List.of(originClue), request.getOwner(), userId, orgId);
@@ -464,7 +465,7 @@ public class ClueService {
     public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         List<String> ownerIds = getOwners(clues);
-        long processCount = clues.stream().filter(clue -> !StringUtils.equals(clue.getOwner(), request.getOwner())).count();
+        long processCount = clues.stream().filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner())).count();
         poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
         dataScopeService.checkDataPermission(userId, orgId, ownerIds, PermissionConstants.CLUE_MANAGEMENT_UPDATE);
 
@@ -622,7 +623,7 @@ public class ClueService {
             pickRequest.setPoolId(customer.getPoolId());
             poolCustomerService.pick(pickRequest, clue.getOwner(), orgId);
         } else {
-            if (!StringUtils.equals(customer.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), request.getCustomerId())) {
+            if (!Strings.CS.equals(customer.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), request.getCustomerId())) {
                 // 如果非客户负责人，且非客户协作人, 则添加协作关系
                 CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
                 collaborationAddRequest.setCustomerId(request.getCustomerId());

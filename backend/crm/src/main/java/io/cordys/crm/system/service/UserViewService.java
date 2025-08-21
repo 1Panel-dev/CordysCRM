@@ -26,6 +26,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -234,7 +235,7 @@ public class UserViewService {
 
         // 获取数据源类型的字段值
         List<BaseModuleFieldValue> moduleFieldValues = conditions.stream()
-                .filter(condition -> StringUtils.equalsAny(condition.getType(),
+                .filter(condition -> Strings.CS.equalsAny(condition.getType(),
                         FieldType.DATA_SOURCE.name(),
                         FieldType.DATA_SOURCE_MULTIPLE.name(),
                         FieldType.MEMBER.name(),

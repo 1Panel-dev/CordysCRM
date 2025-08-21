@@ -1,8 +1,8 @@
 package io.cordys.crm.integration.sqlbot.handler.field.api;
 
 
-import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
+import io.cordys.crm.system.dto.field.base.BaseField;
 
 import java.text.MessageFormat;
 

@@ -7,7 +7,7 @@ import io.cordys.crm.system.domain.Module;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,13 +37,13 @@ public class SendModuleService {
 
         List<String> modules = new ArrayList<>();
         for (String enabledModule : enabledModules) {
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
+            if (Strings.CI.equals(enabledModule, ModuleKey.BUSINESS.getKey())) {
                 modules.add(NotificationConstants.Module.OPPORTUNITY);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CUSTOMER.getKey())) {
+            if (Strings.CI.equals(enabledModule, ModuleKey.CUSTOMER.getKey())) {
                 modules.add(NotificationConstants.Module.CUSTOMER);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CLUE.getKey())) {
+            if (Strings.CI.equals(enabledModule, ModuleKey.CLUE.getKey())) {
                 modules.add(NotificationConstants.Module.CLUE);
             }
 

@@ -30,7 +30,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +76,7 @@ public class ModuleService {
                 .map(module -> {
                     ModuleDTO dto = new ModuleDTO();
                     BeanUtils.copyProperties(module, dto);
-                    dto.setDisabled(StringUtils.equals(dto.getModuleKey(), "dashboard") && !isDashboardEnabled(request.getOrganizationId()));
+                    dto.setDisabled(Strings.CS.equals(dto.getModuleKey(), "dashboard") && !isDashboardEnabled(request.getOrganizationId()));
                     return dto;
                 })
                 .sorted(Comparator.comparing(ModuleDTO::getPos))

@@ -52,6 +52,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -312,7 +313,7 @@ public class CustomerService {
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
-        if (!StringUtils.equals(originCustomer.getOwner(), request.getOwner())) {
+        if (!Strings.CS.equals(originCustomer.getOwner(), request.getOwner())) {
             poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         }
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
@@ -322,7 +323,7 @@ public class CustomerService {
         customer.setUpdateUser(userId);
 
         if (StringUtils.isNotBlank(request.getOwner())) {
-            if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
+            if (!Strings.CS.equals(request.getOwner(), originCustomer.getOwner())) {
                 //客户负责人变更，联系人同步更新
                 customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(), orgId);
 
@@ -386,7 +387,7 @@ public class CustomerService {
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         List<String> owners = getOwners(originCustomers);
-        long processCount = originCustomers.stream().filter(customer -> !StringUtils.equals(customer.getOwner(), request.getOwner())).count();
+        long processCount = originCustomers.stream().filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);

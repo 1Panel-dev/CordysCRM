@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.crm.system.domain.Department;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,7 +92,7 @@ public class WeComDepartment {
             departmentMap.put(department.getId(), department);
 
             currentDepartmentList.stream()
-                    .filter(dept -> StringUtils.equalsAnyIgnoreCase(dept.getResourceId(), department.getId().toString()))
+                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getId().toString()))
                     .findFirst()
                     .ifPresentOrElse(dept -> {
                         department.setCrmId(dept.getId());
@@ -103,7 +103,7 @@ public class WeComDepartment {
                             department.setCrmParentId(internalId);
                         } else {
                             currentDepartmentList.stream()
-                                    .filter(dept -> StringUtils.equalsAnyIgnoreCase(dept.getResourceId(), department.getParentId().toString()))
+                                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getParentId().toString()))
                                     .findFirst()
                                     .ifPresentOrElse(parent -> {
                                         department.setCrmId(IDGenerator.nextStr());

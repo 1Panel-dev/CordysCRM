@@ -37,6 +37,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -140,7 +141,7 @@ public class CustomerPoolService {
 
 	private void delOldTime(CustomerPoolRecycleRuleDTO recycleRule) {
 		recycleRule.getConditions().forEach(condition -> {
-			if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
+			if (Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
 				String[] split = condition.getValue().split(",");
 				if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
 					String dateValue = split[0];
@@ -164,7 +165,7 @@ public class CustomerPoolService {
 			hiddenFieldDTO.setFieldId(field.getId());
 			hiddenFieldDTO.setFieldName(field.getName());
 			hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-			hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
+			hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
 			return hiddenFieldDTO;
 		}).toList();
 		return hiddenFields;
@@ -449,7 +450,7 @@ public class CustomerPoolService {
 	 * @return 是否回收
 	 */
 	public boolean checkRecycled(Customer customer, CustomerPoolRecycleRule recycleRule) {
-		boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
+		boolean allMatch = Strings.CS.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
 		if (allMatch) {
 			return conditions.stream().allMatch(condition -> matchTime(condition, customer));
@@ -465,7 +466,7 @@ public class CustomerPoolService {
 	 * @return 是否匹配
 	 */
 	private boolean matchTime(RuleConditionDTO condition, Customer customer) {
-		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
+		if (Strings.CS.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
 			if (condition.getScope().contains(RecycleConditionScopeKey.CREATED)) {
 				return RecycleConditionUtils.matchTime(condition, customer.getCreateTime());
 			} else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {

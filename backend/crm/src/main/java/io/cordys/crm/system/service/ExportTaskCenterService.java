@@ -15,7 +15,7 @@ import io.cordys.file.engine.StorageType;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +60,7 @@ public class ExportTaskCenterService {
         if (exportTask == null) {
             throw new GenericException(Translator.get("task_not_found"));
         }
-        if (StringUtils.equalsIgnoreCase(exportTask.getStatus(), ExportConstants.ExportStatus.SUCCESS.name())) {
+        if (Strings.CI.equals(exportTask.getStatus(), ExportConstants.ExportStatus.SUCCESS.name())) {
             throw new GenericException(Translator.get("task_already_stopped"));
         }
         exportTask.setStatus(ExportConstants.ExportStatus.STOP.name());

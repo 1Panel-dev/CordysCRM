@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
@@ -31,7 +31,7 @@ public class RuleConditionDTO {
 	 * @return 动态时间
 	 */
 	public LocalDateTime getDynamicTime() {
-		if (!StringUtils.equals(this.operator, RecycleConditionOperator.DYNAMICS.name())) {
+		if (!Strings.CS.equals(this.operator, RecycleConditionOperator.DYNAMICS.name())) {
 			return null;
 		}
 		LocalDateTime now = LocalDateTime.now();
@@ -63,7 +63,7 @@ public class RuleConditionDTO {
 
 
 	public List<Long> getDynamicTimeList() {
-		if (!StringUtils.equals(this.operator, RecycleConditionOperator.DYNAMICS.name())) {
+		if (!Strings.CS.equals(this.operator, RecycleConditionOperator.DYNAMICS.name())) {
 			return null;
 		}
 		List<Long> timestamps = new ArrayList<>();

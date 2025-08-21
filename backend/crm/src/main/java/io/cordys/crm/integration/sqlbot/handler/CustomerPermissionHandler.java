@@ -3,12 +3,12 @@ package io.cordys.crm.integration.sqlbot.handler;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 

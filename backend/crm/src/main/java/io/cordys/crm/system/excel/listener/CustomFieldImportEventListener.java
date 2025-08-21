@@ -22,6 +22,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -118,15 +119,15 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			if (field.needRepeatCheck()) {
 				uniques.put(field.getName(), field);
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
+			if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
 					FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
 					FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name())) {
 				fieldLenLimit.put(field.getName(), 255);
 			}
-			if (StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+			if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
 				fieldLenLimit.put(field.getName(), 1000);
 			}
-			if (StringUtils.equals(field.getType(), FieldType.PHONE.name())) {
+			if (Strings.CS.equals(field.getType(), FieldType.PHONE.name())) {
 				regexMap.put(field.getName(), PHONE_PATTERN);
 			}
 		});
@@ -406,7 +407,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	private String checkIllegalHead(Map<Integer, String> headMap) {
 		Collection<String> values = headMap.values();
 		for (BaseField field : fieldMap.values()) {
-			if (!field.canImport() || StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+			if (!field.canImport() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
 				continue;
 			}
 			if (!values.contains(field.getName())) {

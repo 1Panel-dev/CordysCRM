@@ -5,11 +5,11 @@ import io.cordys.common.dto.NodeSortQueryParam;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import io.cordys.crm.dashboard.dto.DropNode;
 import io.cordys.crm.dashboard.dto.MoveNodeSortDTO;
 import io.cordys.crm.dashboard.dto.request.DashboardEditPosRequest;
-import org.apache.commons.lang3.StringUtils;
+import io.cordys.crm.system.dto.request.NodeMoveRequest;
+import org.apache.commons.lang3.Strings;
 
 import java.util.function.Function;
 
@@ -48,7 +48,7 @@ public abstract class DashboardSortService {
      * @param selectPosNodeFunc 通过parentId和pos运算符查询节点的函数
      */
     public MoveNodeSortDTO getNodeSortDTO(String sortRangeId, NodeMoveRequest request, Function<String, DropNode> selectIdNodeFunc, Function<NodeSortQueryParam, DropNode> selectPosNodeFunc) {
-        if (StringUtils.equals(request.getDragNodeId(), request.getDropNodeId())) {
+        if (Strings.CS.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
         }

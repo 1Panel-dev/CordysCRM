@@ -29,6 +29,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,8 +77,8 @@ public class OpportunityRuleService {
 		List<RuleConditionDTO> ruleConditionDTOS = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
 		if (CollectionUtils.isNotEmpty(ruleConditionDTOS)) {
 			for (RuleConditionDTO condition : ruleConditionDTOS) {
-				if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.CREATE_TIME)
-						&& StringUtils.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
+				if (Strings.CS.equals(condition.getColumn(), RecycleConditionColumnKey.CREATE_TIME)
+						&& Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
 					String[] split = condition.getValue().split(",");
 					if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
 						String dateValue = split[0];
@@ -274,7 +275,7 @@ public class OpportunityRuleService {
 	 * @return 是否回收
 	 */
 	public boolean checkClosed(Opportunity opportunity, OpportunityRule rule) {
-		boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), rule.getOperator());
+		boolean allMatch = Strings.CS.equals(CombineSearch.SearchMode.AND.name(), rule.getOperator());
 		List<RuleConditionDTO> conditions = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
 		if (allMatch) {
 			return conditions.stream().allMatch(condition -> isConditionMatched(condition, opportunity));
@@ -293,8 +294,8 @@ public class OpportunityRuleService {
 		if (StringUtils.isEmpty(condition.getValue())) {
 			return false;
 		}
-		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.OPPORTUNITY_STAGE)) {
-			if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.IN.name())) {
+		if (Strings.CS.equals(condition.getColumn(), RecycleConditionColumnKey.OPPORTUNITY_STAGE)) {
+			if (Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.IN.name())) {
 				return condition.getValue().contains(opportunity.getStage());
 			} else {
 				return !condition.getValue().contains(opportunity.getStage());

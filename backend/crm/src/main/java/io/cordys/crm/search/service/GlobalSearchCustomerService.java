@@ -40,6 +40,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +88,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
-        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+        boolean isAdmin = Strings.CI.equals(userId, InternalUser.ADMIN.getValue());
 
         ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());

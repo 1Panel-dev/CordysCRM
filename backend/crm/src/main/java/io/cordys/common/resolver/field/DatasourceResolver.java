@@ -14,6 +14,7 @@ import io.cordys.crm.system.dto.field.DatasourceField;
 import io.cordys.crm.system.service.ProductService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.List;
 
@@ -45,15 +46,15 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 			return StringUtils.EMPTY;
 		}
 
-		if (StringUtils.equalsIgnoreCase(datasourceField.getDataSourceType(), "CUSTOMER")) {
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CUSTOMER")) {
 			return customerService.getCustomerName(value);
 		}
 
-		if(StringUtils.equalsIgnoreCase(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
+		if(Strings.CI.equals(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
 			return opportunityService.getOpportunityName(value);
 		}
 
-		if (StringUtils.equalsIgnoreCase(datasourceField.getDataSourceType(), "CLUE")) {
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CLUE")) {
 			return clueService.getClueName(value);
 		}
 
@@ -65,23 +66,23 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		if (StringUtils.isBlank(text)) {
 			return StringUtils.EMPTY;
 		}
-		if (StringUtils.equalsIgnoreCase(field.getDataSourceType(), "CUSTOMER")) {
+		if (Strings.CI.equals(field.getDataSourceType(), "CUSTOMER")) {
 			List<Customer> customerList = customerService.getCustomerListByNames(List.of(text));
 			return CollectionUtils.isEmpty(customerList) ? text : customerList.getFirst().getId();
 		}
-		if(StringUtils.equalsIgnoreCase(field.getDataSourceType(), "OPPORTUNITY")) {
+		if(Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
 			List<Opportunity> opportunityList = opportunityService.getOpportunityListByNames(List.of(text));
 			return CollectionUtils.isEmpty(opportunityList) ? text : opportunityList.getFirst().getId();
 		}
-		if (StringUtils.equalsIgnoreCase(field.getDataSourceType(), "CLUE")) {
+		if (Strings.CI.equals(field.getDataSourceType(), "CLUE")) {
 			List<Clue> clueList = clueService.getClueListByNames(List.of(text));
 			return CollectionUtils.isEmpty(clueList) ? text : clueList.getFirst().getId();
 		}
-		if (StringUtils.equalsIgnoreCase(field.getDataSourceType(), "CONTACT")) {
+		if (Strings.CI.equals(field.getDataSourceType(), "CONTACT")) {
 			List<CustomerContact> contactList = contactService.getContactListByNames(List.of(text));
 			return CollectionUtils.isEmpty(contactList) ? text : contactList.getFirst().getId();
 		}
-		if (StringUtils.equalsIgnoreCase(field.getDataSourceType(), "PRODUCT")) {
+		if (Strings.CI.equals(field.getDataSourceType(), "PRODUCT")) {
 			List<Product> productList = productService.getProductListByNames(List.of(text));
 			return CollectionUtils.isEmpty(productList) ? text : productList.getFirst().getId();
 		}

@@ -10,6 +10,7 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.RoleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +29,11 @@ public class RoleLogService extends BaseModuleLogService {
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS.forEach(differ -> {
-            if (StringUtils.equals(differ.getColumn(), "deptIds")) {
+            if (Strings.CS.equals(differ.getColumn(), "deptIds")) {
                 handleDeptIdsLogDetail(differ);
-            } else if (StringUtils.equals(differ.getColumn(), "permissions")) {
+            } else if (Strings.CS.equals(differ.getColumn(), "permissions")) {
                 handlePermissionSettingLogDetail(differ);
-            } else if (StringUtils.equals(differ.getColumn(), "dataScope")) {
+            } else if (Strings.CS.equals(differ.getColumn(), "dataScope")) {
                 if (differ.getOldValue() != null) {
                     differ.setOldValueName(Translator.get("role.data_permission." + differ.getOldValue().toString().toLowerCase()));
                 }

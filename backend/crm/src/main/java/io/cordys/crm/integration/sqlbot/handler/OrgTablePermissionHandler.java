@@ -4,6 +4,7 @@ import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -60,7 +61,7 @@ public class OrgTablePermissionHandler implements TablePermissionHandler {
             sqlBotField.setType("varchar(50)");
             sqlBotField.setComment(sqlBotField.getComment() + ",时间格式：%Y-%m-%d %H:%i:%s");
             return getTimeFieldSql(fieldName);
-        } else if (StringUtils.endsWith(fieldName, "_user") || StringUtils.equalsAny(fieldName, "follower")) {
+        } else if (StringUtils.endsWith(fieldName, "_user") || Strings.CS.equalsAny(fieldName, "follower")) {
             return getUserFieldSql(fieldName);
         } else {
             return "c." + fieldName;

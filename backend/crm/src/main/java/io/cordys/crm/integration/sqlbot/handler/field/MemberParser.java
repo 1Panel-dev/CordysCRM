@@ -1,8 +1,8 @@
 package io.cordys.crm.integration.sqlbot.handler.field;
 
 
-import io.cordys.crm.system.dto.field.MemberField;
 import io.cordys.crm.integration.sqlbot.handler.field.api.TextFieldParser;
+import io.cordys.crm.system.dto.field.MemberField;
 
 import java.text.MessageFormat;
 

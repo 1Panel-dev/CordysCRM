@@ -34,7 +34,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -125,7 +125,7 @@ public class PoolClueService {
 		pools.forEach(pool -> {
 			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
 			List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || StringUtils.equals(currentUser, InternalUser.ADMIN.getValue())) {
+			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
 				CluePoolDTO poolDTO = new CluePoolDTO();
 				BeanUtils.copyBean(poolDTO, pool);
 				poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -343,7 +343,7 @@ public class PoolClueService {
 			if (CollectionUtils.isNotEmpty(clueOwners)) {
 				clueOwners.sort(Comparator.comparingLong(ClueOwner::getCollectionTime).reversed());
 				ClueOwner lastOwner = clueOwners.getFirst();
-				if (StringUtils.equals(lastOwner.getOwner(), ownerId) &&
+				if (Strings.CS.equals(lastOwner.getOwner(), ownerId) &&
 						System.currentTimeMillis()  < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()) {
 					LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()),
 							ZoneId.systemDefault());
@@ -365,7 +365,7 @@ public class PoolClueService {
 		logService.add(logDTO);
 
 		// 分配通知
-		if (StringUtils.equals(logType, LogType.ASSIGN)) {
+		if (Strings.CS.equals(logType, LogType.ASSIGN)) {
 			commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_DISTRIBUTED,
 					clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
 		}

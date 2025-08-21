@@ -4,14 +4,14 @@ package io.cordys.crm.integration.sqlbot.handler;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class ContactPermissionHandler extends DataScopeTablePermissionHandler {
     @Override
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
-        if (StringUtils.equals(fieldName, "enable")) {
+        if (Strings.CS.equals(fieldName, "enable")) {
             List<OptionDTO> options = List.of(new OptionDTO("1", "启用"), new OptionDTO("2", "停用"));
             return getSystemOptionFileSql(options.stream(),
                     OptionDTO::getId,

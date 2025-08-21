@@ -7,6 +7,7 @@ import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public class OrganizationContext {
             return orgId;
         }
 
-        boolean isAdmin = StringUtils.equals(InternalUser.ADMIN.getValue(), user.getId());
+        boolean isAdmin = Strings.CS.equals(InternalUser.ADMIN.getValue(), user.getId());
 
         if (StringUtils.isBlank(orgId)) {
             Set<String> organizationIds = user.getOrganizationIds();

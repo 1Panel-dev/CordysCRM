@@ -4,7 +4,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,33 +25,33 @@ public class OrganizationLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
 
         differenceDTOS.forEach(differ -> {
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.roles"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.roles"))) {
                 handRoleValueName(differ);
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.commander"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.commander"))) {
                 setUserFieldName(differ);
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
                 setDepartmentName(differ);
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
                 setSupervisorName(differ);
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.enable"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.enable"))) {
                 differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
                 differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.gender"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.gender"))) {
                 differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
                 differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
             }
 
-            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
                 differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
                 differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
             }

@@ -6,6 +6,7 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
+import io.cordys.common.constants.ThirdConstants;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
@@ -15,7 +16,6 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import io.cordys.crm.integration.auth.dto.ThirdEnableDTO;
-import io.cordys.common.constants.ThirdConstants;
 import io.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
 import io.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
 import io.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
@@ -34,6 +34,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -230,11 +231,11 @@ public class IntegrationConfigService {
 
         String type = configDTO.getType();
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.WECOM.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             addWeComDetail(configDTO, userId, token, types, organizationConfig, typeEnableMap);
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DE.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             addDeDetail(configDTO, userId, token, organizationConfig, types, typeEnableMap);
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             addSqlBotDetail(configDTO, userId, token, types, organizationConfig, typeEnableMap);
         }
     }
@@ -265,11 +266,11 @@ public class IntegrationConfigService {
         for (String type : types) {
             if (!existDetailTypeMap.containsKey(type)) {
                 // 不存在的类型，需要新建
-                if (StringUtils.equalsIgnoreCase(configDTO.getType(), DepartmentConstants.WECOM.name())) {
+                if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.WECOM.name())) {
                     addWeComDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
-                } else if (StringUtils.equalsIgnoreCase(configDTO.getType(), DepartmentConstants.DE.name())) {
+                } else if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.DE.name())) {
                     addDeDetail(configDTO, userId, token, organizationConfig, List.of(type), typeEnableMap);
-                } else if (StringUtils.equalsIgnoreCase(configDTO.getType(), DepartmentConstants.SQLBOT.name())) {
+                } else if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.SQLBOT.name())) {
                     addSqlBotDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
                 }
             } else {
@@ -296,11 +297,11 @@ public class IntegrationConfigService {
 
         String type = configDTO.getType();
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.WECOM.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             updateWeCom(configDTO, userId, token, oldConfig, detail, enable);
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DE.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             updateDe(configDTO, userId, token, oldConfig, detail, enable);
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             updateSqlBot(configDTO, userId, token, oldConfig, detail, enable);
         }
     }
@@ -400,7 +401,7 @@ public class IntegrationConfigService {
     }
 
     private void verifyDe(String token, DeConfigDetailDTO deConfig) {
-        deConfig.setVerify(StringUtils.isNotBlank(token) && StringUtils.equalsIgnoreCase(token, "true"));
+        deConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
     private void saveDetail(String userId, OrganizationConfig organizationConfig, List<String> types, Map<String, Boolean> typeEnableMap, String jsonString, Boolean verify) {
@@ -476,7 +477,7 @@ public class IntegrationConfigService {
     }
 
     private void verifySqlBot(String token, SqlBotConfigDetailDTO sqlBotConfig) {
-        sqlBotConfig.setVerify(StringUtils.isNotBlank(token) && StringUtils.equalsIgnoreCase(token, "true"));
+        sqlBotConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
     /**
@@ -486,7 +487,7 @@ public class IntegrationConfigService {
     private List<String> getDetailTypes(ThirdConfigurationDTO configDTO) {
         String type = configDTO.getType();
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.WECOM.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(),
                     ThirdConstants.ThirdDetailType.WECOM_CODE.toString(),
@@ -494,25 +495,25 @@ public class IntegrationConfigService {
             );
         }
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DINGTALK.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(),
                     ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString()
             );
         }
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.LARK.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.LARK_SYNC.toString(),
                     ThirdConstants.ThirdDetailType.LARK_CODE.toString()
             );
         }
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DE.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             return List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString());
         }
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(),
                     ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString()
@@ -529,20 +530,20 @@ public class IntegrationConfigService {
         Map<String, Boolean> map = new HashMap<>();
         String type = configDTO.getType();
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.WECOM.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getSyncEnable());
             map.put(ThirdConstants.ThirdDetailType.WECOM_CODE.toString(), configDTO.getQrcodeEnable());
             map.put(ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(), configDTO.getWeComEnable());
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DINGTALK.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getSyncEnable());
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(), configDTO.getQrcodeEnable());
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.LARK.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getSyncEnable());
             map.put(ThirdConstants.ThirdDetailType.LARK_CODE.toString(), configDTO.getQrcodeEnable());
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DE.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(),
                     configDTO.getDeBoardEnable() != null && configDTO.getDeBoardEnable());
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             map.put(ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(), configDTO.getSqlBotChatEnable());
             map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), configDTO.getSqlBotBoardEnable());
         }
@@ -607,19 +608,19 @@ public class IntegrationConfigService {
 
         String type = newConfig.getType();
 
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.WECOM.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             WeComConfigDetailLogDTO oldDTO = new WeComConfigDetailLogDTO();
             WeComConfigDetailLogDTO newDTO = new WeComConfigDetailLogDTO();
             BeanUtils.copyBean(oldDTO, oldConfig);
             BeanUtils.copyBean(newDTO, newConfig);
             oldLog = oldDTO;
             newLog = newDTO;
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.DE.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             DeConfigDetailLogDTO oldDTO = getDeConfigDetailLogDTO(oldConfig);
             DeConfigDetailLogDTO newDTO = getDeConfigDetailLogDTO(newConfig);
             oldLog = oldDTO;
             newLog = newDTO;
-        } else if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             SqlBotConfigDetailLogDTO oldDTO = getSqlBotConfigDetailLogDTO(oldConfig);
             SqlBotConfigDetailLogDTO newDTO = getSqlBotConfigDetailLogDTO(newConfig);
             oldLog = oldDTO;
@@ -731,7 +732,7 @@ public class IntegrationConfigService {
      */
     public ThirdConfigurationDTO getThirdConfigByType(String type) {
         // 确定配置类型和组织ID
-        String configType = StringUtils.equalsIgnoreCase(type, UserSource.WE_COM_OAUTH2.toString())
+        String configType = Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())
                 ? OrganizationConfigConstants.ConfigType.AUTH.name()
                 : OrganizationConfigConstants.ConfigType.THIRD.name();
 
@@ -756,7 +757,7 @@ public class IntegrationConfigService {
         ThirdConfigurationDTO configDTO = getConfigurationByType(type, config, details);
 
         // 隐藏敏感信息
-        if (!StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        if (!Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             configDTO.setAppSecret(null);
         }
 
@@ -767,7 +768,7 @@ public class IntegrationConfigService {
      * 根据类型获取配置
      */
     private ThirdConfigurationDTO getConfigurationByType(String type, OrganizationConfig config, List<OrganizationConfigDetail> details) {
-        if (StringUtils.equalsIgnoreCase(type, UserSource.WE_COM_OAUTH2.toString())) {
+        if (Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())) {
             return getOAuth2Configuration(type, config.getId());
         } else {
             return getNormalConfiguration(type, details);
@@ -809,7 +810,7 @@ public class IntegrationConfigService {
         }
 
         // 检查是否启用
-        if (StringUtils.equalsIgnoreCase(type, DepartmentConstants.SQLBOT.name())) {
+        if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             if (configDTO.getSqlBotChatEnable() == null || !configDTO.getSqlBotChatEnable()) {
                 throw new GenericException(Translator.get("third.config.un.enable"));
             }

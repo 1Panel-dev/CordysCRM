@@ -11,6 +11,7 @@ import io.cordys.crm.system.utils.MessageTemplateUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         List<Receiver> realReceivers = new ArrayList<>();
         if (excludeSelf) {
             for (Receiver receiver : receivers) {
-                if (!StringUtils.equals(receiver.getUserId(), operator)) {
+                if (!Strings.CS.equals(receiver.getUserId(), operator)) {
                     realReceivers.add(receiver);
                 }
             }

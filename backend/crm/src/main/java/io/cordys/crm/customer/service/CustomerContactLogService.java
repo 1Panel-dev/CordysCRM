@@ -7,7 +7,7 @@ import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.system.service.BaseModuleLogService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +25,10 @@ public class CustomerContactLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.CONTACT.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
             }
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
                 if (differ.getOldValue() != null) {
                     Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
                     if (customer != null) {

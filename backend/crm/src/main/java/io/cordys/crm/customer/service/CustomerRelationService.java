@@ -15,6 +15,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,7 +108,7 @@ public class CustomerRelationService {
      */
     private void checkTargetCustomer(String customerId, List<CustomerRelation> relations) {
         List<String> targetCustomerIds = relations.stream()
-                .filter(item -> !StringUtils.equals(item.getTargetCustomerId(), customerId))
+                .filter(item -> !Strings.CS.equals(item.getTargetCustomerId(), customerId))
                 .map(CustomerRelation::getTargetCustomerId).toList();
 
         if (CollectionUtils.isEmpty(targetCustomerIds)) {
@@ -118,7 +119,7 @@ public class CustomerRelationService {
         customerRelation.in(CustomerRelation::getSourceCustomerId, targetCustomerIds);
         List<CustomerRelation> customerRelations = customerRelationMapper.selectListByLambda(customerRelation)
                 .stream()
-                .filter(item -> !StringUtils.equals(item.getSourceCustomerId(), customerId))
+                .filter(item -> !Strings.CS.equals(item.getSourceCustomerId(), customerId))
                 .collect(Collectors.toList());
         if (!customerRelations.isEmpty()) {
             List<String> sourceIds = customerRelations.stream()
@@ -161,7 +162,7 @@ public class CustomerRelationService {
         CustomerRelation customerRelation = new CustomerRelation();
         customerRelation.setId(IDGenerator.nextStr());
         customerRelation.setCreateTime(System.currentTimeMillis());
-        if (StringUtils.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
+        if (Strings.CS.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
             customerRelation.setSourceCustomerId(request.getCustomerId());
             customerRelation.setTargetCustomerId(customerId);
         } else {
@@ -175,7 +176,7 @@ public class CustomerRelationService {
         CustomerRelation customerRelation = getCustomerRelation(request, customerId);
         customerRelation.setId(request.getId());
         customerRelation.setCreateTime(null);
-        if (StringUtils.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
+        if (Strings.CS.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
             customerRelation.setSourceCustomerId(request.getCustomerId());
             customerRelation.setTargetCustomerId(customerId);
         } else {

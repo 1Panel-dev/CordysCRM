@@ -19,7 +19,15 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.dashboard.domain.Dashboard;
+import io.cordys.crm.dashboard.domain.DashboardCollection;
+import io.cordys.crm.dashboard.dto.DashboardLogDTO;
+import io.cordys.crm.dashboard.dto.MoveNodeSortDTO;
 import io.cordys.crm.dashboard.dto.request.*;
+import io.cordys.crm.dashboard.dto.response.DashboardDetailResponse;
+import io.cordys.crm.dashboard.dto.response.DashboardPageResponse;
+import io.cordys.crm.dashboard.mapper.ExtDashboardCollectionMapper;
+import io.cordys.crm.dashboard.mapper.ExtDashboardMapper;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -27,17 +35,10 @@ import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.crm.dashboard.domain.Dashboard;
-import io.cordys.crm.dashboard.domain.DashboardCollection;
-import io.cordys.crm.dashboard.dto.DashboardLogDTO;
-import io.cordys.crm.dashboard.dto.MoveNodeSortDTO;
-import io.cordys.crm.dashboard.dto.response.DashboardDetailResponse;
-import io.cordys.crm.dashboard.dto.response.DashboardPageResponse;
-import io.cordys.crm.dashboard.mapper.ExtDashboardCollectionMapper;
-import io.cordys.crm.dashboard.mapper.ExtDashboardMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -246,7 +247,7 @@ public class DashboardService extends DashboardSortService {
      */
     public Pager<List<DashboardPageResponse>> getList(DashboardPageRequest request, String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
-        if (!StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
             List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
             departmentIds = dashboardModuleService.getParentIds(departmentTree, departmentId);
@@ -347,7 +348,7 @@ public class DashboardService extends DashboardSortService {
      */
     public void editPos(DashboardEditPosRequest request, String userId, String orgId) {
         Dashboard dashboard = checkDashboard(request.getMoveId());
-        if (!StringUtils.equals(request.getDashboardModuleId(), dashboard.getDashboardModuleId())) {
+        if (!Strings.CS.equals(request.getDashboardModuleId(), dashboard.getDashboardModuleId())) {
             dashboardModuleService.checkDashboardModule(request.getDashboardModuleId());
             checkDashboardName(dashboard.getName(), request.getDashboardModuleId(), orgId, dashboard.getId());
 
@@ -356,7 +357,7 @@ public class DashboardService extends DashboardSortService {
             dashboard.setUpdateTime(System.currentTimeMillis());
             dashboardMapper.update(dashboard);
         }
-        if (StringUtils.equals(request.getTargetId(), request.getMoveId())) {
+        if (Strings.CS.equals(request.getTargetId(), request.getMoveId())) {
             return;
         }
         moveNode(request, orgId);

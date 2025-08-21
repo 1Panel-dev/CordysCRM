@@ -4,7 +4,7 @@ import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.crm.system.service.BaseModuleLogService;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +19,9 @@ public class CustomerLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.CUSTOMER.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-            } else if (StringUtils.equals(differ.getColumn(), "collectionTime")) {
+            } else if (Strings.CS.equals(differ.getColumn(), "collectionTime")) {
                 setFormatDataTimeFieldValueName(differ);
             }
         }

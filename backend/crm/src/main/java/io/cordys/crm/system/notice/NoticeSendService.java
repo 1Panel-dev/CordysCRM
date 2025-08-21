@@ -11,6 +11,7 @@ import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class NoticeSendService {
             List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
-                    .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
+                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
@@ -85,7 +86,7 @@ public class NoticeSendService {
             List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
-                    .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
+                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
@@ -103,7 +104,7 @@ public class NoticeSendService {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
             List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
                     .stream()
-                    .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
+                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
 
             messageDetailDTOS.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));

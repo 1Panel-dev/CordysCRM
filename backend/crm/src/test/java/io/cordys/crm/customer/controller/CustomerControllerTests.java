@@ -22,6 +22,7 @@ import io.cordys.crm.system.service.ExportTaskCenterService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -114,7 +114,7 @@ class CustomerControllerTests extends BaseTest {
         example.setFormId(moduleForm.getId());
         ModuleField moduleField = moduleFieldMapper.select(example)
                 .stream()
-                .filter(field -> StringUtils.equals(field.getInternalKey(), "customerLevel"))
+                .filter(field -> Strings.CS.equals(field.getInternalKey(), "customerLevel"))
                 .findFirst().orElse(null);
 
         // 请求成功

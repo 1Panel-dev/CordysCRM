@@ -13,7 +13,7 @@ import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +39,7 @@ public class BaseFollowUpService {
                 OrganizationContext.getOrganizationId(), permission);
 
         //全部数据
-        if (deptDataPermission.getAll() || StringUtils.equalsAnyIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
             customerDataDTO.setAll(true);
             return customerDataDTO;
         }
@@ -49,12 +49,12 @@ public class BaseFollowUpService {
         List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(sourceId);
 
         List<CustomerCollaboration> userList = collaborations.stream()
-                .filter(collaboration -> StringUtils.equals(collaboration.getUserId(), userId))
+                .filter(collaboration -> Strings.CS.equals(collaboration.getUserId(), userId))
                 .toList();
 
         if (CollectionUtils.isNotEmpty(userList)) {
             CustomerCollaboration first = userList.getFirst();
-            if (StringUtils.equals(first.getCollaborationType(), CustomerCollaborationType.READ_ONLY.name())) {
+            if (Strings.CS.equals(first.getCollaborationType(), CustomerCollaborationType.READ_ONLY.name())) {
                 customerDataDTO.setOwner(true);
             }
         } else {
@@ -65,7 +65,7 @@ public class BaseFollowUpService {
 
         // 获取协作类型的协作的联系人
         Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> StringUtils.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
+                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
 

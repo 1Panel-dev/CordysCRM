@@ -3,15 +3,15 @@ package io.cordys.crm.integration.sqlbot.handler;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.opportunity.constants.StageType;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.opportunity.constants.StageType;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
     @Override
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
-        if (StringUtils.equals(fieldName, "stage")) {
+        if (Strings.CS.equals(fieldName, "stage")) {
             return getSystemOptionFileSql(Arrays.stream(StageType.values()),
                     StageType::name,
                     (stageType) ->
@@ -55,15 +55,15 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
                                 case FAIL -> "失败";
                             },
                     fieldName);
-        } else if (StringUtils.equals(fieldName, "customer_id")) {
+        } else if (Strings.CS.equals(fieldName, "customer_id")) {
             sqlBotField.setName("customer_name");
             sqlBotField.setComment("客户名称");
             return getCustomerFieldSql();
-        } else if (StringUtils.equals(fieldName, "contact_id")) {
+        } else if (Strings.CS.equals(fieldName, "contact_id")) {
             sqlBotField.setName("contact_name");
             sqlBotField.setComment("联系人名称");
             return getContactFieldSql();
-        } else if (StringUtils.equals(fieldName, "products")) {
+        } else if (Strings.CS.equals(fieldName, "products")) {
             return getProductsFieldSql();
         } else {
             return getDefaultFieldSql(sqlBotField);

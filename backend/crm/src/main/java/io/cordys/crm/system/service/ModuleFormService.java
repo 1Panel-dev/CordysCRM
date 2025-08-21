@@ -34,6 +34,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -262,30 +263,30 @@ public class ModuleFormService {
 		Map<String, List<OptionDTO>> optionMap = new HashMap<>(4);
 		Map<String, String> idTypeMap = new HashMap<>(8);
 		formConfig.getFields().forEach(field -> {
-			if (StringUtils.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
 				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(radioField.getOptions()));
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
 				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(checkBoxField.getOptions()));
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name()) ) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name()) ) {
 				if (field instanceof SelectField selectField) {
 					optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectField.getOptions()));
 				} else if (field instanceof SelectMultipleField selectMultipleField) {
 					optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectMultipleField.getOptions()));
 				}
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name())) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name())) {
 				if (field instanceof DatasourceField sourceField) {
 					idTypeMap.put(field.getId(), sourceField.getDataSourceType());
 				} else if (field instanceof DatasourceMultipleField sourceMultipleField) {
 					idTypeMap.put(field.getId(), sourceMultipleField.getDataSourceType());
 				}
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
 				idTypeMap.put(field.getId(), FieldType.MEMBER.name());
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
+			if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
 				idTypeMap.put(field.getId(), FieldType.DEPARTMENT.name());
 			}
 		});

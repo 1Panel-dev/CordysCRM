@@ -11,7 +11,7 @@ import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import io.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -60,7 +60,7 @@ public class LocalRealm extends AuthorizingRealm {
         String userId = token.getUsername();
         String password = String.valueOf(token.getPassword());
 
-        if (StringUtils.equals(login, UserSource.LOCAL.name())) {
+        if (Strings.CS.equals(login, UserSource.LOCAL.name())) {
             return loginLocalMode(userId, password);
         }
 

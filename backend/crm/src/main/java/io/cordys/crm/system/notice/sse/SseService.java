@@ -13,6 +13,7 @@ import io.cordys.crm.system.service.SendModuleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -145,7 +146,7 @@ public class SseService {
      */
     private SseMessageDTO buildMessage(String userId, String sendType) {
         SseMessageDTO dto = new SseMessageDTO();
-        if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.SYSTEM_NOTICE.toString())) {
+        if (Strings.CI.equals(sendType, NotificationConstants.Type.SYSTEM_NOTICE.toString())) {
             List<String> modules = sendModuleService.getNoticeModules();
             Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(sysValues)) {
@@ -159,7 +160,7 @@ public class SseService {
                 }
             }
         }
-        if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {
+        if (Strings.CI.equals(sendType, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {
             Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(values)) {
                 dto.setAnnouncementDTOList(buildDTOList(values, ANNOUNCE_PREFIX));

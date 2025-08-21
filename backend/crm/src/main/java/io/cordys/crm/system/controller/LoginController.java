@@ -14,7 +14,7 @@ import io.cordys.security.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +80,7 @@ public class LoginController {
         SessionUser sessionUser = SessionUtils.getUser();
         if (sessionUser != null) {
             // 如果当前用户已登录且用户名与请求用户名不匹配，抛出异常
-            if (!StringUtils.equals(sessionUser.getId(), request.getUsername())) {
+            if (!Strings.CS.equals(sessionUser.getId(), request.getUsername())) {
                 throw new GenericException(Translator.get("please_logout_current_user"));
             }
         }

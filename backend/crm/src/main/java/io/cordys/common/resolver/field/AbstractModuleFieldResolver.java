@@ -8,7 +8,7 @@ import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.cordys.crm.system.dto.field.base.RuleProp;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.List;
@@ -129,7 +129,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         if (CollectionUtils.isEmpty(rules)) {
             return false;
         }
-        return rules.stream().anyMatch(rule -> StringUtils.equals(rule.getKey(), validatorKey));
+        return rules.stream().anyMatch(rule -> Strings.CS.equals(rule.getKey(), validatorKey));
     }
 
     protected List<String> parseFakeJsonArray(String content) {

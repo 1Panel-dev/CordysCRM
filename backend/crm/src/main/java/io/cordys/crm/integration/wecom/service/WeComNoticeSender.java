@@ -1,7 +1,12 @@
 package io.cordys.crm.integration.wecom.service;
 
+import io.cordys.common.constants.ThirdConstants;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import io.cordys.crm.integration.sso.service.TokenService;
+import io.cordys.crm.integration.wecom.dto.Text;
+import io.cordys.crm.integration.wecom.dto.WeComSendDTO;
 import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.domain.OrganizationConfig;
 import io.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -11,11 +16,6 @@ import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import io.cordys.common.constants.ThirdConstants;
-import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
-import io.cordys.crm.integration.sso.service.TokenService;
-import io.cordys.crm.integration.wecom.dto.Text;
-import io.cordys.crm.integration.wecom.dto.WeComSendDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;

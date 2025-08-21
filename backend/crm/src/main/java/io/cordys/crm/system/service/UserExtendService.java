@@ -14,6 +14,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -47,9 +48,9 @@ public class UserExtendService {
 	 */
 	public List<String> getScopeOwnerIds(List<String> scopeIds, String  orgId) {
 		List<ScopeNameDTO> scopes = getScope(scopeIds);
-		List<String> ownerIds = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).collect(Collectors.toList());
-		List<ScopeNameDTO> roleList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
-		List<ScopeNameDTO> dptList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
+		List<String> ownerIds = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).collect(Collectors.toList());
+		List<ScopeNameDTO> roleList = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
+		List<ScopeNameDTO> dptList = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
 		if (!CollectionUtils.isEmpty(roleList)) {
 			List<String> roleIds = roleList.stream().map(ScopeNameDTO::getId).toList();
 			LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
@@ -83,7 +84,7 @@ public class UserExtendService {
 		}
 		List<ScopeNameDTO> scopeNameDTOS = extUserExtendMapper.groupByScopeIds(scopeIds);
 		return scopeNameDTOS.stream().peek(scope -> {
-			if (StringUtils.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(), InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
+			if (Strings.CS.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(), InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
 				scope.setName(Translator.get("role." + scope.getName()));
 			}
 		}).toList();
@@ -166,7 +167,7 @@ public class UserExtendService {
 		List<String> ancestors = new ArrayList<>();
 		ancestors.add(deptId);
 		String current = deptParentMap.get(deptId);
-		while (StringUtils.isNotEmpty(current) && !StringUtils.equals(current, ROOT_NODE_PARENT_ID)) {
+		while (StringUtils.isNotEmpty(current) && !Strings.CS.equals(current, ROOT_NODE_PARENT_ID)) {
 			ancestors.add(current);
 			current = deptParentMap.get(current);
 		}
@@ -201,7 +202,7 @@ public class UserExtendService {
 		// 加入当前节点
 		path.add(node.getId());
 		// 命中目标节点返回
-		if (StringUtils.equals(node.getId(), targetNode)) {
+		if (Strings.CS.equals(node.getId(), targetNode)) {
 			return true;
 		}
 		// 递归子节点
@@ -239,7 +240,7 @@ public class UserExtendService {
 	 * @return 树节点
 	 */
 	public BaseTreeNode findTargetById(BaseTreeNode node, String targetId) {
-		if (StringUtils.equals(node.getId(), targetId)) {
+		if (Strings.CS.equals(node.getId(), targetId)) {
 			return node;
 		}
 		for (BaseTreeNode child : node.getChildren()) {

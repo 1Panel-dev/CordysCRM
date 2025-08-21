@@ -25,6 +25,7 @@ import io.cordys.crm.system.service.RoleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -60,7 +61,7 @@ public class DataSourceService {
         try {
             // 验证是否启用了 SQL Bot 功能
             List<ThirdConfigurationDTO> configs = integrationConfigService.getThirdConfig(orgId);
-            configs.stream().filter(config -> StringUtils.equalsIgnoreCase(config.getType(), DepartmentConstants.SQLBOT.name()) && config.getSqlBotChatEnable())
+            configs.stream().filter(config -> Strings.CI.equals(config.getType(), DepartmentConstants.SQLBOT.name()) && config.getSqlBotChatEnable())
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("当前组织未配置 SQL Bot 功能"));
 
@@ -111,7 +112,7 @@ public class DataSourceService {
     }
 
     private boolean isAdmin(String userId) {
-        return StringUtils.equals(userId, InternalUser.ADMIN.getValue());
+        return Strings.CS.equals(userId, InternalUser.ADMIN.getValue());
     }
 
     /**

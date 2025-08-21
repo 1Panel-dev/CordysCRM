@@ -8,7 +8,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.dto.request.NodeMoveRequest;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.function.Function;
@@ -37,7 +37,7 @@ public abstract class MoveNodeService {
      * @return
      */
     public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc, boolean isDepartment) {
-        if (StringUtils.equals(request.getDragNodeId(), request.getDropNodeId())) {
+        if (Strings.CS.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
         }
@@ -69,7 +69,7 @@ public abstract class MoveNodeService {
                     throw new GenericException(Translator.get("illegal_operation"));
                 }
             } else {
-                if (StringUtils.equalsIgnoreCase(dropNode.getParentId(), ROOT_NODE_PARENT_ID)) {
+                if (Strings.CI.equals(dropNode.getParentId(), ROOT_NODE_PARENT_ID)) {
                     parentModule = new BaseTree(ROOT_NODE_PARENT_ID, ROOT_NODE_PARENT_ID, 0, dragNode.getOrganizationId(), ROOT_NODE_PARENT_ID);
                 } else {
                     parentModule = selectIdNodeFunc.apply(dropNode.getParentId());

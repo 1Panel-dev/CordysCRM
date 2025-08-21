@@ -7,6 +7,7 @@ import io.cordys.crm.system.service.UserKeyService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Objects;
 
@@ -90,7 +91,7 @@ public class ApiKeyHandler {
         }
 
         // 验证签名中的 accessKey 是否匹配
-        if (!StringUtils.equals(accessKey, signatureArray[0])) {
+        if (!Strings.CS.equals(accessKey, signatureArray[0])) {
             throw new RuntimeException("invalid signature");
         }
 

@@ -18,6 +18,7 @@ import io.cordys.excel.utils.ExcelValidateHelper;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -167,11 +168,11 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
      */
     private void handleEmployeeType(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getEmployeeType())) {
-            if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("formal"))) {
+            if (Strings.CI.equals(data.getEmployeeType(), Translator.get("formal"))) {
                 data.setEmployeeType("formal");
-            } else if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("internship"))) {
+            } else if (Strings.CI.equals(data.getEmployeeType(), Translator.get("internship"))) {
                 data.setEmployeeType("internship");
-            } else if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("outsourcing"))) {
+            } else if (Strings.CI.equals(data.getEmployeeType(), Translator.get("outsourcing"))) {
                 data.setEmployeeType("outsourcing");
             } else {
                 data.setEmployeeType(null);
@@ -233,7 +234,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         String departments = data.getDepartment();
         if (StringUtils.isNotEmpty(departments)) {
             String topDepartment = departments.split("/")[0];
-            if (!StringUtils.equalsIgnoreCase(departmentTree.getFirst().getName(), topDepartment)) {
+            if (!Strings.CI.equals(departmentTree.getFirst().getName(), topDepartment)) {
                 errMsg.append(Translator.get("top_department_not_exist"))
                         .append(ERROR_MSG_SEPARATOR);
             }
@@ -262,7 +263,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
 
         if (CollectionUtils.isNotEmpty(list)) {
             for (UserExcelData userExcelData : list) {
-                if (StringUtils.equalsIgnoreCase(userExcelData.getEmail(), data.getEmail())) {
+                if (Strings.CI.equals(userExcelData.getEmail(), data.getEmail())) {
                     errMsg.append(Translator.get("email.repeat") + data.getEmail())
                             .append(ERROR_MSG_SEPARATOR);
                     break;
@@ -294,7 +295,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
 
         if (CollectionUtils.isNotEmpty(list)) {
             for (UserExcelData userExcelData : list) {
-                if (StringUtils.equalsIgnoreCase(userExcelData.getPhone(), data.getPhone())) {
+                if (Strings.CI.equals(userExcelData.getPhone(), data.getPhone())) {
                     errMsg.append(Translator.get("phone.repeat") + data.getPhone())
                             .append(ERROR_MSG_SEPARATOR);
                     break;
@@ -337,25 +338,25 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
                 field = excelHeadToFieldNameDic.get(field);
             }
 
-            if (StringUtils.equals(field, "employeeId")) {
+            if (Strings.CS.equals(field, "employeeId")) {
                 data.setEmployeeId(value);
-            } else if (StringUtils.equals(field, "name")) {
+            } else if (Strings.CS.equals(field, "name")) {
                 data.setName(value);
-            } else if (StringUtils.equals(field, "gender")) {
+            } else if (Strings.CS.equals(field, "gender")) {
                 data.setGender(value);
-            } else if (StringUtils.equals(field, "department")) {
+            } else if (Strings.CS.equals(field, "department")) {
                 data.setDepartment(value);
-            } else if (StringUtils.equals(field, "position")) {
+            } else if (Strings.CS.equals(field, "position")) {
                 data.setPosition(value);
-            } else if (StringUtils.equals(field, "phone")) {
+            } else if (Strings.CS.equals(field, "phone")) {
                 data.setPhone(value);
-            } else if (StringUtils.equals(field, "email")) {
+            } else if (Strings.CS.equals(field, "email")) {
                 data.setEmail(value);
-            } else if (StringUtils.equals(field, "supervisor")) {
+            } else if (Strings.CS.equals(field, "supervisor")) {
                 data.setSupervisor(value);
-            } else if (StringUtils.equals(field, "workCity")) {
+            } else if (Strings.CS.equals(field, "workCity")) {
                 data.setWorkCity(value);
-            } else if (StringUtils.equals(field, "employeeType")) {
+            } else if (Strings.CS.equals(field, "employeeType")) {
                 data.setEmployeeType(value);
             }
         }

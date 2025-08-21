@@ -21,7 +21,7 @@ import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.HasOption;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
@@ -66,7 +66,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	@Override
 	public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
 		Sheet sheet = writeSheetHolder.getSheet();
-		if (StringUtils.equals(sheet.getSheetName(), Translator.get("sheet.comment"))) {
+		if (Strings.CS.equals(sheet.getSheetName(), Translator.get("sheet.comment"))) {
 			Row row1 = sheet.createRow(0);
 			row1.setHeightInPoints(80);
 			Cell cell1 = row1.createCell(0);
@@ -89,7 +89,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	@Override
 	public void afterRowDispose(RowWriteHandlerContext context) {
 		Sheet sheet = context.getWriteSheetHolder().getSheet();
-		if (BooleanUtils.isTrue(context.getHead()) && StringUtils.equals(sheet.getSheetName(), Translator.get("sheet.data"))) {
+		if (BooleanUtils.isTrue(context.getHead()) && Strings.CS.equals(sheet.getSheetName(), Translator.get("sheet.data"))) {
 			mainSheet = sheet;
 			drawingPatriarch = sheet.createDrawingPatriarch();
 			fieldIndexMap.forEach((k, v) -> {
@@ -153,7 +153,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getNumberComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		InputNumberField numberField = (InputNumberField) field;
-		if (StringUtils.equals(numberField.getNumberFormat(), "percent")) {
+		if (Strings.CS.equals(numberField.getNumberFormat(), "percent")) {
 			sb.append(Translator.get("format.preview")).append(": 99%, ");
 		} else {
 			sb.append(Translator.get("format.preview")).append(": 999, ");
@@ -167,9 +167,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getDateTimeComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		DateTimeField dateTimeField = (DateTimeField) field;
-		if (StringUtils.equals(dateTimeField.getDateType(), "datetime")) {
+		if (Strings.CS.equals(dateTimeField.getDateType(), "datetime")) {
 			sb.append(Translator.get("format.preview")).append(": 2025/8/6 20:23:59");
-		} else if (StringUtils.equals(dateTimeField.getDateType(), "date")) {
+		} else if (Strings.CS.equals(dateTimeField.getDateType(), "date")) {
 			sb.append(Translator.get("format.preview")).append(": 2025/8/6");
 		} else {
 			sb.append(Translator.get("format.preview")).append(": 2025/8");
@@ -180,9 +180,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getLocationComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		LocationField locationField = (LocationField) field;
-		if (StringUtils.equals(locationField.getLocationType(), "PC")) {
+		if (Strings.CS.equals(locationField.getLocationType(), "PC")) {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pc"));
-		} else if (StringUtils.equals(locationField.getLocationType(), "PCD")) {
+		} else if (Strings.CS.equals(locationField.getLocationType(), "PCD")) {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd"));
 		} else {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd.detail"));

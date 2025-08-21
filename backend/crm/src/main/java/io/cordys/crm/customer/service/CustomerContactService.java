@@ -41,6 +41,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -302,7 +303,7 @@ public class CustomerContactService {
     public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-        if (deptDataPermission.getAll() || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+        if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             // 全部数据权限，直接返回
             List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId);
             list = buildListData(list, orgId);
@@ -319,11 +320,11 @@ public class CustomerContactService {
 
         // 获取协作类型的协作的联系人
         Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> StringUtils.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
+                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
 
-        boolean isCustomerOwner = StringUtils.equals(customer.getOwner(), userId);
+        boolean isCustomerOwner = Strings.CS.equals(customer.getOwner(), userId);
         boolean isCollaborationUser = collaborationUserIds.contains(userId);
 
         // 部门数据权限
@@ -349,7 +350,7 @@ public class CustomerContactService {
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
-                        .filter(item -> StringUtils.equals(item.getOwner(), userId))
+                        .filter(item -> Strings.CS.equals(item.getOwner(), userId))
                         .collect(Collectors.toList());
             }
         }
@@ -359,12 +360,12 @@ public class CustomerContactService {
             if (isCustomerOwner) {
                 // 本人数据权限，则过滤协作人的联系人
                 list = list.stream()
-                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) || StringUtils.equals(item.getOwner(), userId))
+                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) || Strings.CS.equals(item.getOwner(), userId))
                         .collect(Collectors.toList());
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
-                        .filter(item -> StringUtils.equals(item.getOwner(), userId))
+                        .filter(item -> Strings.CS.equals(item.getOwner(), userId))
                         .collect(Collectors.toList());
             }
         }
@@ -428,10 +429,10 @@ public class CustomerContactService {
             BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
             String internalKey = baseField.getInternalKey();
             boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
-            if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
+            if (Strings.CI.equals(internalKey, BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
                 nameUnique = hasUnique;
             }
-            if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())) {
+            if (Strings.CI.equals(internalKey, BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())) {
                 phoneUnique = hasUnique;
             }
         }

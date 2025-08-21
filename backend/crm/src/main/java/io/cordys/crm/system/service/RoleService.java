@@ -36,6 +36,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,7 +116,7 @@ public class RoleService {
         RoleGetResponse roleGetResponse = BeanUtils.copyBean(new RoleGetResponse(), role);
         translateInternalRole(roleGetResponse);
         roleGetResponse.setPermissions(getPermissionSetting(id));
-        if (StringUtils.equals(role.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())) {
+        if (Strings.CS.equals(role.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())) {
             roleGetResponse.setDeptIds(getDeptIdsByRoleId(id));
         }
         return baseService.setCreateAndUpdateUserName(roleGetResponse);
@@ -165,7 +166,7 @@ public class RoleService {
         roleMapper.insert(role);
 
         // 配置指定部门权限
-        if (StringUtils.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isNotEmpty(request.getDeptIds())) {
+        if (Strings.CS.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isNotEmpty(request.getDeptIds())) {
             roleScopeDeptMapper.batchInsert(getRoleScopeDept(role.getId(), request.getDeptIds()));
         }
 
@@ -214,8 +215,8 @@ public class RoleService {
 
         String dataScope = request.getDataScope();
         if (StringUtils.isNotBlank(dataScope)
-                && StringUtils.equals(originRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())
-                && !StringUtils.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name())) {
+                && Strings.CS.equals(originRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())
+                && !Strings.CS.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name())) {
             // 如果从自定义部门改为其他数据权限，则删除部门关联关系
             deleteRoleScopeDeptByRoleId(role.getId());
         }
@@ -231,7 +232,7 @@ public class RoleService {
         }
 
         // 配置指定部门权限
-        if (StringUtils.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name()) && request.getDeptIds() != null) {
+        if (Strings.CS.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name()) && request.getDeptIds() != null) {
             // 先删除
             deleteRoleScopeDeptByRoleId(role.getId());
 
@@ -387,7 +388,7 @@ public class RoleService {
                     }
                     // 管理员默认勾选全部二级权限位
                     if (permissionIds.contains(p.getId()) ||
-                            (role != null && StringUtils.equals(role.getId(), InternalRole.ORG_ADMIN.getValue()))) {
+                            (role != null && Strings.CS.equals(role.getId(), InternalRole.ORG_ADMIN.getValue()))) {
                         p.setEnable(true);
                     } else {
                         // 如果权限有未勾选，则二级菜单设置为未勾选
@@ -549,7 +550,7 @@ public class RoleService {
         }
         List<Role> roles = getByIds(roleIds);
         return roles.stream()
-                .filter(role -> StringUtils.equals(role.getOrganizationId(), orgId))
+                .filter(role -> Strings.CS.equals(role.getOrganizationId(), orgId))
                 .map(role -> {
                     role = translateInternalRole(role);
                     return BeanUtils.copyBean(new RoleDataScopeDTO(), role);

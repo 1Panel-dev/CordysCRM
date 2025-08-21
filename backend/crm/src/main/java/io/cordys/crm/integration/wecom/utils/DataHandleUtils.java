@@ -12,7 +12,7 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationConfigService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -174,7 +174,7 @@ public class DataHandleUtils {
         // 需要禁用的用户（企业微信不存在而系统存在的用户）
         List<OrganizationUser> disableUserList = userList.stream()
                 .filter(user -> wecomUserList.stream()
-                        .noneMatch(weComUser -> StringUtils.equalsAnyIgnoreCase(weComUser.getUserId(), user.getResourceUserId())))
+                        .noneMatch(weComUser -> Strings.CI.equalsAny(weComUser.getUserId(), user.getResourceUserId())))
                 .collect(Collectors.toList());
 
         organizationUserService.disableUsers(disableUserList, operatorId);
@@ -291,7 +291,7 @@ public class DataHandleUtils {
         } else {
             // 查找是否已存在该部门
             Department existingDept = currentDepartmentList.stream()
-                    .filter(dept -> StringUtils.equalsAnyIgnoreCase(dept.getResourceId(), weComDepartment.getId().toString()))
+                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), weComDepartment.getId().toString()))
                     .findFirst()
                     .orElse(null);
 
@@ -380,7 +380,7 @@ public class DataHandleUtils {
         return Optional.ofNullable(currentUserList)
                 .orElse(Collections.emptyList())
                 .stream()
-                .filter(user -> StringUtils.equalsAnyIgnoreCase(user.getResourceUserId(), weComUser.getUserId()))
+                .filter(user -> Strings.CI.equalsAny(user.getResourceUserId(), weComUser.getUserId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -389,7 +389,7 @@ public class DataHandleUtils {
         return Optional.ofNullable(currentDepartmentList)
                 .orElse(Collections.emptyList())
                 .stream()
-                .filter(dept -> StringUtils.equalsAnyIgnoreCase(dept.getResourceId(), weComDepartment.getId().toString()))
+                .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), weComDepartment.getId().toString()))
                 .findFirst()
                 .orElse(null);
     }
@@ -424,8 +424,8 @@ public class DataHandleUtils {
             boolean commanderExists = Optional.ofNullable(currentCommander)
                     .orElse(Collections.emptyList())
                     .stream()
-                    .anyMatch(cmd -> StringUtils.equalsAnyIgnoreCase(cmd.getUserId(), userId) &&
-                            StringUtils.equalsAnyIgnoreCase(cmd.getDepartmentId(), departmentId));
+                    .anyMatch(cmd -> Strings.CI.equalsAny(cmd.getUserId(), userId) &&
+                            Strings.CI.equalsAny(cmd.getDepartmentId(), departmentId));
 
             if (!commanderExists) {
                 DepartmentCommander commander = new DepartmentCommander();
@@ -475,7 +475,7 @@ public class DataHandleUtils {
     private void updateExistingDepartment(Department existingDept, WeComDepartment weComDepartment,
                                           List<Department> currentDepartmentList, String operatorId, long timestamp) {
         Department parentDep = currentDepartmentList.stream()
-                .filter(dept -> StringUtils.equalsAnyIgnoreCase(dept.getId(), existingDept.getParentId()))
+                .filter(dept -> Strings.CI.equalsAny(dept.getId(), existingDept.getParentId()))
                 .findFirst()
                 .orElse(null);
 

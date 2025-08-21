@@ -3,13 +3,13 @@ package io.cordys.crm.integration.sqlbot.handler;
 
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableDTO;
 import io.cordys.crm.integration.sqlbot.dto.TableHandleParam;
+import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -60,7 +60,7 @@ public abstract class DataScopeTablePermissionHandler extends ModuleFieldTablePe
     protected String getTableSql(List<FieldDTO> sqlBotFields, TableHandleParam tableHandleParam, List<BaseField> moduleFields) {
         String fieldsSql = parseFieldsSql(tableHandleParam.getTableInfo().getTableName() + "_field", moduleFields);
         sqlBotFields = sqlBotFields.stream()
-                .filter(field -> !StringUtils.equals(field.getName(), "owner"))
+                .filter(field -> !Strings.CS.equals(field.getName(), "owner"))
                 .collect(Collectors.toList());
         String dataScopeSql = MessageFormat.format(DATA_SCOPE_SQL_TEMPLATE,
                 getSelectSystemFileSql(sqlBotFields),
@@ -70,7 +70,7 @@ public abstract class DataScopeTablePermissionHandler extends ModuleFieldTablePe
         );
 
         DeptDataPermissionDTO dataPermission = tableHandleParam.getDataPermission();
-        if (StringUtils.equals(tableHandleParam.getUserId(), InternalUser.ADMIN.getValue()) || dataPermission.getAll()) {
+        if (Strings.CS.equals(tableHandleParam.getUserId(), InternalUser.ADMIN.getValue()) || dataPermission.getAll()) {
             return dataScopeSql;
         } else if (CollectionUtils.isNotEmpty(dataPermission.getDeptIds())) {
             String deptIdStr = getInConditionStr(dataPermission.getDeptIds());

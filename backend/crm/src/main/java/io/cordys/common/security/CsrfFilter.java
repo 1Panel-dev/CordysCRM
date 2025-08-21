@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -118,13 +119,13 @@ public class CsrfFilter extends AnonymousFilter {
         }
 
         // 校验用户 ID 和会话 ID 是否匹配
-        if (!StringUtils.equals(SessionUtils.getUserId(), signatureArray[0])) {
+        if (!Strings.CS.equals(SessionUtils.getUserId(), signatureArray[0])) {
             throw new RuntimeException("CSRF token does not match the current user");
         }
 
         // 校验 sessionId 或 X-Auth-Token 是否匹配
-        if (!StringUtils.equals(SessionUtils.getSessionId(), signatureArray[2]) &&
-                !StringUtils.equals(xAuthToken, signatureArray[2])) {
+        if (!Strings.CS.equals(SessionUtils.getSessionId(), signatureArray[2]) &&
+                !Strings.CS.equals(xAuthToken, signatureArray[2])) {
             throw new RuntimeException("CSRF token does not match the current session");
         }
     }

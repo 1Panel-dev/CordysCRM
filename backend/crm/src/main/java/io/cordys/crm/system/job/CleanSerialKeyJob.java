@@ -3,7 +3,7 @@ package io.cordys.crm.system.job;
 import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.util.LogUtils;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +25,7 @@ public class CleanSerialKeyJob {
             for (String key : keys) {
                 String date = new SimpleDateFormat("yyyyMM").format(new Date());
                 String serialDate = key.substring(key.lastIndexOf(":") + 1);
-                if (!StringUtils.equals(date, serialDate)) {
+                if (!Strings.CS.equals(date, serialDate)) {
                     stringRedisTemplate.delete(key);
                 }
             }

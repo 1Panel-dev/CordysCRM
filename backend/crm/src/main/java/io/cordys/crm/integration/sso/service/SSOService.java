@@ -29,6 +29,7 @@ import io.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.DisabledAccountException;
@@ -149,7 +150,7 @@ public class SSOService {
         UserDTO enableUser = getUserAndValidateEnable(weComUser.getUserId());
 
         // 只有OAuth2登录时才更新用户信息
-        if (StringUtils.equalsIgnoreCase(authenticateType, UserSource.WE_COM_OAUTH2.toString())) {
+        if (Strings.CI.equals(authenticateType, UserSource.WE_COM_OAUTH2.toString())) {
             updateWeComUserInfo(enableUser, weComUser, email);
         }
 
@@ -347,7 +348,7 @@ public class SSOService {
         }
 
         ThirdConfigurationDTO config = synOrganizationConfigs.stream()
-                .filter(c -> StringUtils.equalsIgnoreCase(c.getType(), type))
+                .filter(c -> Strings.CI.equals(c.getType(), type))
                 .findFirst()
                 .orElse(null);
 

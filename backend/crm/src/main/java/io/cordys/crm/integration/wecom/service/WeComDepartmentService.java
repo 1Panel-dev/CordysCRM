@@ -23,6 +23,7 @@ import io.cordys.crm.system.service.LogService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.springframework.data.redis.core.Cursor;
@@ -121,7 +122,7 @@ public class WeComDepartmentService {
         }
 
         return configs.stream()
-                .filter(config -> StringUtils.equalsIgnoreCase(config.getType(), DepartmentConstants.WECOM.name()))
+                .filter(config -> Strings.CI.equals(config.getType(), DepartmentConstants.WECOM.name()))
                 .findFirst()
                 .orElseThrow(() -> new GenericException("未配置企业微信信息"));
     }

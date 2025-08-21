@@ -1,8 +1,8 @@
 package io.cordys.crm.integration.sqlbot.handler.field;
 
 
-import io.cordys.crm.system.dto.field.DateTimeField;
 import io.cordys.crm.integration.sqlbot.handler.field.api.TextFieldParser;
+import io.cordys.crm.system.dto.field.DateTimeField;
 
 import java.text.MessageFormat;
 

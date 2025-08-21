@@ -5,6 +5,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.InputMultipleField;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
 
     @Override
     public Object text2Value(InputMultipleField field, String text) {
-        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+        if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }
         List<String> textList = parseFakeJsonArray(text);

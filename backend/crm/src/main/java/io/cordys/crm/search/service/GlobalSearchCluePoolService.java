@@ -36,7 +36,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -191,7 +191,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
     }
 
     private boolean getHasPermission(String userId, String orgId, GlobalCluePoolResponse clueListResponse, Map<String, String> userPoolMap) {
-        if (StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
         if (MapUtils.isEmpty(userPoolMap)) {
@@ -215,7 +215,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         pools.forEach(pool -> {
             List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-            if (scopeIds.contains(userId) || ownerIds.contains(userId) || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
                 poolMap.put(pool.getId(), pool.getName());
             }
         });

@@ -18,6 +18,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -146,7 +147,7 @@ public class SysOperationLogService {
     private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differenceDTOS) {
         differenceDTOS = differenceDTOS.stream()
                 .filter(differ -> {
-                    return !StringUtils.equalsAny(differ.getColumn(),
+                    return !Strings.CS.equalsAny(differ.getColumn(),
                             "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage");
                 }).toList();
         return differenceDTOS;

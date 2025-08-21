@@ -29,6 +29,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -253,8 +254,8 @@ public class DepartmentService extends MoveNodeService {
         List<Department> departmentList = departmentMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(departmentList)) {
             departmentList.forEach(department -> {
-                if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
-                        && StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE")) {
+                if (Strings.CI.equalsAny(department.getResource(), DepartmentConstants.INTERNAL.name())
+                        && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
                     throw new GenericException(Translator.get("department.internal"));
                 }
             });
@@ -310,7 +311,7 @@ public class DepartmentService extends MoveNodeService {
                 currentDepName = itemIterator.next().trim();
                 departmentTree.forEach(department -> {
                     //根节点是否存在
-                    if (StringUtils.equalsIgnoreCase(currentDepName, department.getName())) {
+                    if (Strings.CI.equals(currentDepName, department.getName())) {
                         hasNode.set(true);
                         //根节点存在，检查子节点是否存在
                         createDepByPathIterator(itemIterator, "/" + currentDepName, department, departmentMap, orgId, operatorId, logs);
@@ -339,7 +340,7 @@ public class DepartmentService extends MoveNodeService {
         String nodeName = itemIterator.next().trim();
         AtomicReference<Boolean> hasNode = new AtomicReference<>(false);
         children.forEach(child -> {
-            if (StringUtils.equalsIgnoreCase(nodeName, child.getName())) {
+            if (Strings.CI.equals(nodeName, child.getName())) {
                 hasNode.set(true);
                 createDepByPathIterator(itemIterator, currentDepPath + "/" + child.getName(), child, departmentMap, orgId, operatorId, logs);
             }
@@ -507,7 +508,7 @@ public class DepartmentService extends MoveNodeService {
     public void deleteDepartments(List<Department> departmentList) {
         if (CollectionUtils.isNotEmpty(departmentList)) {
             List<String> ids = departmentList.stream()
-                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE"))
+                    .filter(department -> !Strings.CI.equalsAny(department.getParentId(), "NONE"))
                     .map(Department::getId).toList();
             if (CollectionUtils.isNotEmpty(ids)) {
                 extDepartmentMapper.deleteDepartmentByIds(ids);
