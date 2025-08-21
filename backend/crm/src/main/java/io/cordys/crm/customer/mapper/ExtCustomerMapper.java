@@ -8,8 +8,8 @@ import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
-import io.cordys.crm.search.response.GlobalCustomerPoolResponse;
-import io.cordys.crm.search.response.GlobalCustomerResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
 import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -32,8 +32,8 @@ public interface ExtCustomerMapper {
 
     void batchTransfer(@Param("request") CustomerBatchTransferRequest request, @Param("userId") String userId);
 
-    List<GlobalCustomerResponse> checkRepeatCustomer(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
-                                                     @Param("userId") String userId);
+    List<AdvancedCustomerResponse> checkRepeatCustomer(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
+                                                       @Param("userId") String userId);
 
     int countByOwner(@Param("owner") String owner);
 
@@ -61,5 +61,5 @@ public interface ExtCustomerMapper {
 
     Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
 
-    List<GlobalCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<AdvancedCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 }

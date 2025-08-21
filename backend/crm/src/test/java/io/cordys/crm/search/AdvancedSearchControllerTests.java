@@ -13,8 +13,8 @@ import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.search.response.GlobalCustomerContactResponse;
-import io.cordys.crm.search.response.GlobalCustomerResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerContactResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.mybatis.BaseMapper;
@@ -30,7 +30,7 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class GlobalSearchControllerTests extends BaseTest {
+public class AdvancedSearchControllerTests extends BaseTest {
 
 
     @Resource
@@ -112,13 +112,13 @@ public class GlobalSearchControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        this.requestPostWithOkAndReturn("/global/search/customer", request);
+        this.requestPostWithOkAndReturn("/advanced/search/customer", request);
 
         addCustomer();
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn("/global/search/customer", request);
-        Pager<List<GlobalCustomerResponse>> pageResult = getPageResult(mvcResult, GlobalCustomerResponse.class);
-        List<GlobalCustomerResponse> customerList = pageResult.getList();
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/advanced/search/customer", request);
+        Pager<List<AdvancedCustomerResponse>> pageResult = getPageResult(mvcResult, AdvancedCustomerResponse.class);
+        List<AdvancedCustomerResponse> customerList = pageResult.getList();
         Assertions.assertFalse(customerList.isEmpty());
     }
 
@@ -129,11 +129,11 @@ public class GlobalSearchControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        this.requestPostWithOkAndReturn("/global/search/contact", request);
+        this.requestPostWithOkAndReturn("/advanced/search/contact", request);
         addCustomerContact();
-        MvcResult mvcResult = this.requestPostWithOkAndReturn("/global/search/contact", request);
-        Pager<List<GlobalCustomerContactResponse>> pageResult = getPageResult(mvcResult, GlobalCustomerContactResponse.class);
-        List<GlobalCustomerContactResponse> customerList = pageResult.getList();
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/advanced/search/contact", request);
+        Pager<List<AdvancedCustomerContactResponse>> pageResult = getPageResult(mvcResult, AdvancedCustomerContactResponse.class);
+        List<AdvancedCustomerContactResponse> customerList = pageResult.getList();
         Assertions.assertFalse(customerList.isEmpty());
 
     }

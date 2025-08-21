@@ -16,7 +16,7 @@
   >
     <template #actionLeft>
       <slot
-        v-if="props.readonly && props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+        v-if="props.readonly && props.formKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY"
         name="searchTableTotal"
         :total="propsRes.crmPagination?.itemCount || 0"
       />
@@ -159,7 +159,7 @@
     formKey:
       | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
       | FormDesignKeyEnum.BUSINESS
-      | FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY;
+      | FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY;
     hiddenAdvanceFilter?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
@@ -516,7 +516,7 @@
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       customerId: (row: OpportunityItem) => {
-        return props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY
+        return props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY
           ? h(
               CrmNameTooltip,
               { text: row.customerName },

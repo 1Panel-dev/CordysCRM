@@ -20,8 +20,8 @@ import {
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
   GetOptTabUrl,
-  GlobalSearchOptDetailUrl,
-  GlobalSearchOptPageUrl,
+  AdvancedSearchOptDetailUrl,
+  AdvancedSearchOptPageUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
   OptBatchTransferUrl,
@@ -224,12 +224,12 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragBusinessViewUrl, data });
   }
 
-  function globalSearchOptPage(data: TableQueryParams) {
-    return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptPageUrl, data }, { ignoreCancelToken: true });
+  function advancedSearchOptPage(data: TableQueryParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: AdvancedSearchOptPageUrl, data }, { ignoreCancelToken: true });
   }
 
-  function globalSearchOptDetail(data: TableQueryParams) {
-    return CDR.post<CommonList<OpportunityItem>>({ url: GlobalSearchOptDetailUrl, data });
+  function advancedSearchOptDetail(data: TableQueryParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: AdvancedSearchOptDetailUrl, data });
   }
 
   return {
@@ -266,7 +266,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateBusinessView,
     enableBusinessView,
     dragBusinessView,
-    globalSearchOptPage,
-    globalSearchOptDetail,
+    advancedSearchOptPage,
+    advancedSearchOptDetail,
   };
 }

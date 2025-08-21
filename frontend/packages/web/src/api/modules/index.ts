@@ -13,6 +13,7 @@ import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
 import useRoleApi from '@lib/shared/api/modules/system/role';
+import { AdvancedSearchOptPageUrl } from '@lib/shared/api/requrls/opportunity';
 
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 
@@ -86,8 +87,8 @@ export const {
   updateBusinessView,
   enableBusinessView,
   dragBusinessView,
-  globalSearchOptPage,
-  globalSearchOptDetail,
+  advancedSearchOptPage,
+  advancedSearchOptDetail,
 } = opportunityApi;
 
 export const {
@@ -142,9 +143,9 @@ export const {
   preCheckImportLead,
   downloadLeadTemplate,
   importLead,
-  getGlobalSearchClueList,
-  getGlobalSearchClueDetail,
-  getGlobalCluePoolList,
+  getAdvancedSearchClueList,
+  getAdvancedSearchClueDetail,
+  getAdvancedCluePoolList,
   exportCluePoolAll,
   exportCluePoolSelected,
 } = clueApi;
@@ -230,9 +231,9 @@ export const {
   dragCustomerView,
   dragContactView,
   enableContactView,
-  geGlobalCustomerList,
-  getGlobalCustomerContactList,
-  getGlobalOpenSeaCustomerList,
+  geAdvancedCustomerList,
+  getAdvancedCustomerContactList,
+  getAdvancedOpenSeaCustomerList,
   exportCustomerOpenSeaAll,
   exportCustomerOpenSeaSelected,
   exportContactAll,

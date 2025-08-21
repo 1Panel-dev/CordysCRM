@@ -180,7 +180,7 @@
   const { t } = useI18n();
 
   const props = defineProps<{
-    tableFormKey: FormDesignKeyEnum.CLUE | FormDesignKeyEnum.SEARCH_GLOBAL_CLUE;
+    tableFormKey: FormDesignKeyEnum.CLUE | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE;
     hiddenAdvanceFilter?: boolean;
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情

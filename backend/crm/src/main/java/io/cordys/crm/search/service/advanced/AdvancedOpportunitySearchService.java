@@ -1,4 +1,4 @@
-package io.cordys.crm.search.service;
+package io.cordys.crm.search.service.advanced;
 
 
 import com.github.pagehelper.Page;
@@ -23,7 +23,8 @@ import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.opportunity.service.OpportunityFieldService;
 import io.cordys.crm.opportunity.service.OpportunityRuleService;
-import io.cordys.crm.search.response.GlobalOpportunityResponse;
+import io.cordys.crm.search.response.advanced.AdvancedOpportunityResponse;
+import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Dict;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class GlobalSearchOpportunityService extends GlobalSearchBaseService<OpportunityPageRequest, GlobalOpportunityResponse> {
+public class AdvancedOpportunitySearchService extends BaseSearchService<OpportunityPageRequest, AdvancedOpportunityResponse> {
 
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
@@ -77,7 +78,7 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
      * @return
      */
     @Override
-    public PagerWithOption<List<GlobalOpportunityResponse>> globalSearch(OpportunityPageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedOpportunityResponse>> startSearch(OpportunityPageRequest request, String orgId, String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果有商机读取权限但商机模块未启用，抛出异常
@@ -88,17 +89,17 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
         ConditionFilterUtils.parseCondition(request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<GlobalOpportunityResponse> list = extOpportunityMapper.globalSearchList(request, orgId);
+        List<AdvancedOpportunityResponse> list = extOpportunityMapper.advancedSearchList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);
         }
-        List<GlobalOpportunityResponse> buildList = buildListData(list, orgId, userId);
+        List<AdvancedOpportunityResponse> buildList = buildListData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
 
-    public List<GlobalOpportunityResponse> buildListData(List<GlobalOpportunityResponse> list, String orgId, String userId) {
+    public List<AdvancedOpportunityResponse> buildListData(List<AdvancedOpportunityResponse> list, String orgId, String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -177,7 +178,7 @@ public class GlobalSearchOpportunityService extends GlobalSearchBaseService<Oppo
     }
 
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<GlobalOpportunityResponse> list, List<GlobalOpportunityResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedOpportunityResponse> list, List<AdvancedOpportunityResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         // 获取所有模块字段的值

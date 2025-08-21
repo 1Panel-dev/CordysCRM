@@ -128,7 +128,7 @@
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
-    formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA | FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC;
+    formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA | FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC;
     hiddenAdvanceFilter?: boolean;
     hiddenPoolSelect?: boolean;
     readonly?: boolean;

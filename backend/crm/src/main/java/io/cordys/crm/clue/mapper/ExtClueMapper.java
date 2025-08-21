@@ -8,8 +8,8 @@ import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
-import io.cordys.crm.search.response.GlobalCluePoolResponse;
-import io.cordys.crm.search.response.GlobalClueResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCluePoolResponse;
+import io.cordys.crm.search.response.advanced.AdvancedClueResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -48,14 +48,14 @@ public interface ExtClueMapper {
      * @param customerName 客户名称
      * @return 相似线索列表
      */
-    List<GlobalClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
+    List<AdvancedClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 获取重复线索列表
      * @param customerName 客户名称
      * @return 重复线索列表
      */
-    List<GlobalClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
+    List<AdvancedClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 查询用户负责的线索条数
@@ -68,5 +68,5 @@ public interface ExtClueMapper {
 
     Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
 
-    List<GlobalCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 }

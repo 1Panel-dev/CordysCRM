@@ -69,9 +69,9 @@ import {
   GetCustomerUrl,
   GetCustomerViewDetailUrl,
   GetCustomerViewListUrl,
-  GetGlobalCustomerContactListUrl,
-  GetGlobalCustomerListUrl,
-  GetGlobalOpenSeaCustomerListUrl,
+  GetAdvancedCustomerContactListUrl,
+  GetAdvancedCustomerListUrl,
+  GetAdvancedOpenSeaCustomerListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
@@ -565,20 +565,20 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragContactViewUrl, data });
   }
 
-  function geGlobalCustomerList(data: CustomerTableParams) {
-    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data }, { ignoreCancelToken: true });
+  function geAdvancedCustomerList(data: CustomerTableParams) {
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetAdvancedCustomerListUrl, data }, { ignoreCancelToken: true });
   }
 
-  function getGlobalOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
+  function getAdvancedOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
     return CDR.post<CommonList<CustomerOpenSeaListItem>>(
-      { url: GetGlobalOpenSeaCustomerListUrl, data },
+      { url: GetAdvancedOpenSeaCustomerListUrl, data },
       { ignoreCancelToken: true }
     );
   }
 
-  function getGlobalCustomerContactList(data: CustomerContractTableParams) {
+  function getAdvancedCustomerContactList(data: CustomerContractTableParams) {
     return CDR.post<CommonList<CustomerContractListItem>>(
-      { url: GetGlobalCustomerContactListUrl, data },
+      { url: GetAdvancedCustomerContactListUrl, data },
       { ignoreCancelToken: true }
     );
   }
@@ -669,9 +669,9 @@ export default function useProductApi(CDR: CordysAxios) {
     enableContactView,
     dragCustomerView,
     dragContactView,
-    geGlobalCustomerList,
-    getGlobalOpenSeaCustomerList,
-    getGlobalCustomerContactList,
+    geAdvancedCustomerList,
+    getAdvancedOpenSeaCustomerList,
+    getAdvancedCustomerContactList,
     exportCustomerOpenSeaAll,
     exportCustomerOpenSeaSelected,
   };

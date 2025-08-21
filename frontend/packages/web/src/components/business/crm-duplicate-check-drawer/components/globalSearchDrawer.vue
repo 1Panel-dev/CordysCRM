@@ -52,13 +52,13 @@
         <CrmCard hide-footer :special-height="totalCount > 0 ? 0 : 228">
           <Suspense>
             <opportunityTable
-              v-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              v-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY"
               ref="opportunityTableRef"
               readonly
               hidden-total
               is-limit-show-detail
               hidden-advance-filter
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY"
+              :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY"
               @open-customer-drawer="handleOpenCustomerDrawer"
               @init="setFilterConfigList"
             >
@@ -67,13 +67,13 @@
               </template>
             </opportunityTable>
             <customerTable
-              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER"
               ref="customerTableRef"
               readonly
               hidden-total
               is-limit-show-detail
               hidden-advance-filter
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER"
+              :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER"
               @init="setFilterConfigList"
               @show-count-detail="(row, type) => emit('showCountDetail', row, type)"
             >
@@ -82,12 +82,12 @@
               </template>
             </customerTable>
             <ContactTable
-              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT"
               ref="contactTableRef"
               readonly
               hidden-total
               hidden-advance-filter
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT"
+              :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT"
               @init="setFilterConfigList"
             >
               <template #searchTableTotal="{ total }">
@@ -95,14 +95,14 @@
               </template>
             </ContactTable>
             <openSeaTable
-              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC"
               ref="openSeaTableRef"
               readonly
               hidden-total
               hidden-pool-select
               hidden-advance-filter
               is-limit-show-detail
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC"
+              :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC"
               @init="setFilterConfigList"
             >
               <template #searchTableTotal="{ total }">
@@ -110,13 +110,13 @@
               </template>
             </openSeaTable>
             <clueTable
-              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CLUE"
               ref="clueTableRef"
               readonly
               hidden-total
               is-limit-show-detail
               hidden-advance-filter
-              :table-form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE"
+              :table-form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CLUE"
               @init="setFilterConfigList"
             >
               <template #searchTableTotal="{ total }">
@@ -124,14 +124,14 @@
               </template>
             </clueTable>
             <cluePoolTable
-              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
+              v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL"
               ref="cluePoolTableRef"
               readonly
               hidden-total
               hidden-pool-select
               hidden-advance-filter
               is-limit-show-detail
-              :form-key="FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL"
+              :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL"
               @init="setFilterConfigList"
             >
               <template #searchTableTotal="{ total }">
@@ -205,7 +205,7 @@
   const isAdvancedSearchMode = ref(false);
   const filterResult = ref<FilterResult>({ searchMode: 'AND', conditions: [] });
 
-  const activeTab = ref(FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER);
+  const activeTab = ref(FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER);
 
   function getParams(): FilterResult {
     const conditions: ConditionsItem[] = formModel.value.list.map((item: any) => ({
@@ -237,22 +237,22 @@
 
   function loadList(filter: FilterResult) {
     switch (activeTab.value) {
-      case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY:
         opportunityTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER:
         customerTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT:
         contactTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC:
         openSeaTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CLUE:
         clueTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL:
         cluePoolTableRef.value?.handleAdvanceFilter?.(filter, isAdvancedSearchMode.value, globalKeyword.value);
         break;
       default:
@@ -262,22 +262,22 @@
 
   function initSearchData() {
     switch (activeTab.value) {
-      case FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY:
         opportunityTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER:
         customerTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT:
         contactTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC:
         openSeaTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CLUE:
         clueTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
-      case FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL:
+      case FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL:
         cluePoolTableRef.value?.handleSearchData?.(globalKeyword.value);
         break;
       default:

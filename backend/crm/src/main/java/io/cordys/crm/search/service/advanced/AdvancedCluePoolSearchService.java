@@ -1,4 +1,4 @@
-package io.cordys.crm.search.service;
+package io.cordys.crm.search.service.advanced;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -20,7 +20,8 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.clue.service.ClueFieldService;
 import io.cordys.crm.clue.service.CluePoolService;
-import io.cordys.crm.search.response.GlobalCluePoolResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCluePoolResponse;
+import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Dict;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePageRequest, GlobalCluePoolResponse> {
+public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageRequest, AdvancedCluePoolResponse> {
 
     @Resource
     private ExtClueMapper extClueMapper;
@@ -73,7 +74,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
     private DataScopeService dataScopeService;
 
     @Override
-    public PagerWithOption<List<GlobalCluePoolResponse>> globalSearch(BasePageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedCluePoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
 
@@ -84,17 +85,17 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         ConditionFilterUtils.parseCondition(request);
         // 查询重复线索池线索列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<GlobalCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);
+        List<AdvancedCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);
         }
-        List<GlobalCluePoolResponse> buildList = buildListData(list, orgId, userId);
+        List<AdvancedCluePoolResponse> buildList = buildListData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
 
-    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId) {
+    public List<AdvancedCluePoolResponse> buildListData(List<AdvancedCluePoolResponse> list, String orgId, String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -190,7 +191,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
         return list;
     }
 
-    private boolean getHasPermission(String userId, String orgId, GlobalCluePoolResponse clueListResponse, Map<String, String> userPoolMap) {
+    private boolean getHasPermission(String userId, String orgId, AdvancedCluePoolResponse clueListResponse, Map<String, String> userPoolMap) {
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
@@ -223,7 +224,7 @@ public class GlobalSearchCluePoolService extends GlobalSearchBaseService<BasePag
     }
 
     @NotNull
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<GlobalCluePoolResponse> list, List<GlobalCluePoolResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCluePoolResponse> list, List<AdvancedCluePoolResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
         // 获取所有模块字段的值

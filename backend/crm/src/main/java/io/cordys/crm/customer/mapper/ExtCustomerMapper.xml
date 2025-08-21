@@ -327,7 +327,7 @@
         </foreach>
     </select>
 
-    <select id="checkRepeatCustomer" resultType="io.cordys.crm.search.response.GlobalCustomerResponse">
+    <select id="checkRepeatCustomer" resultType="io.cordys.crm.search.response.advanced.AdvancedCustomerResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
         c.follower, c.follow_time, c.reason_id
         from customer c
@@ -462,7 +462,7 @@
     </select>
 
 
-    <select id="customerPoolList" resultType="io.cordys.crm.search.response.GlobalCustomerPoolResponse">
+    <select id="customerPoolList" resultType="io.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
         c.follower, c.follow_time, c.reason_id
         from customer c

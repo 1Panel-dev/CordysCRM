@@ -439,7 +439,7 @@
                 INNER JOIN customer c ON o.customer_id = c.id
         where o.id = #{id}
     </select>
-    <select id="getRepeatList" resultType="io.cordys.crm.search.response.OpportunityRepeatResponse">
+    <select id="getRepeatList" resultType="io.cordys.crm.search.response.advanced.OpportunityRepeatResponse">
         SELECT
             o.id,
             o.NAME,
@@ -547,7 +547,7 @@
 
 
 
-    <select id="globalSearchList" resultType="io.cordys.crm.search.response.GlobalOpportunityResponse">
+    <select id="advancedSearchList" resultType="io.cordys.crm.search.response.advanced.AdvancedOpportunityResponse">
         SELECT
         o.id,
         o.NAME,
@@ -604,6 +604,30 @@
 
         <include refid="sort">
             <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+
+    <select id="globalSearchList" resultType="io.cordys.crm.search.response.global.GlobalOpportunityResponse">
+        SELECT
+        o.id,
+        o.NAME,
+        c.id AS customerId,
+        c.NAME AS customerName,
+        o.create_time,
+        o.owner,
+        o.products,
+        o.stage
+        FROM
+        opportunity o
+        INNER JOIN customer c ON o.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where o.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
 </mapper>

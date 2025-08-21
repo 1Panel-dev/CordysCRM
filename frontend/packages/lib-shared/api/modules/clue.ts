@@ -42,9 +42,9 @@ import {
   GetClueUrl,
   GetClueViewDetailUrl,
   GetClueViewListUrl,
-  GetGlobalCluePoolListUrl,
-  GetGlobalSearchClueDetailUrl,
-  GetGlobalSearchClueListUrl,
+  GetAdvancedCluePoolListUrl,
+  GetAdvancedSearchClueDetailUrl,
+  GetAdvancedSearchClueListUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   ImportLeadUrl,
@@ -360,16 +360,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportLeadUrl }, { fileList: [file] }, 'file');
   }
 
-  function getGlobalSearchClueList(data: CustomerTableParams) {
-    return CDR.post<CommonList<ClueListItem>>({ url: GetGlobalSearchClueListUrl, data }, { ignoreCancelToken: true });
+  function getAdvancedSearchClueList(data: CustomerTableParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetAdvancedSearchClueListUrl, data }, { ignoreCancelToken: true });
   }
 
-  function getGlobalSearchClueDetail(data: CustomerTableParams) {
-    return CDR.post<CommonList<ClueListItem>>({ url: GetGlobalSearchClueDetailUrl, data });
+  function getAdvancedSearchClueDetail(data: CustomerTableParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetAdvancedSearchClueDetailUrl, data });
   }
 
-  function getGlobalCluePoolList(data: CluePoolTableParams) {
-    return CDR.post<CommonList<CluePoolListItem>>({ url: GetGlobalCluePoolListUrl, data }, { ignoreCancelToken: true });
+  function getAdvancedCluePoolList(data: CluePoolTableParams) {
+    return CDR.post<CommonList<CluePoolListItem>>({ url: GetAdvancedCluePoolListUrl, data }, { ignoreCancelToken: true });
   }
 
   return {
@@ -424,9 +424,9 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportLead,
     downloadLeadTemplate,
     importLead,
-    getGlobalSearchClueList,
-    getGlobalCluePoolList,
-    getGlobalSearchClueDetail,
+    getAdvancedSearchClueList,
+    getAdvancedCluePoolList,
+    getAdvancedSearchClueDetail,
     exportCluePoolAll,
     exportCluePoolSelected,
   };

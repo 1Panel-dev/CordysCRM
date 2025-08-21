@@ -11,37 +11,37 @@ const appStore = useAppStore();
 const scopedOptions = [
   {
     label: t('crmFormDesign.customer'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER,
     moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
     permission: ['CUSTOMER_MANAGEMENT:READ'],
   },
   {
     label: t('crmFormDesign.contract'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT,
     moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
     permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
   },
   {
     label: t('module.openSea'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC,
     moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
     permission: ['CUSTOMER_MANAGEMENT_POOL:READ'],
   },
   {
     label: t('crmFormDesign.clue'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_CLUE,
     moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
     permission: ['CLUE_MANAGEMENT:READ'],
   },
   {
     label: t('module.cluePool'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
     moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
     permission: ['CLUE_MANAGEMENT_POOL:READ'],
   },
   {
     label: t('module.businessManagement'),
-    value: FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
+    value: FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY,
     moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
     permission: ['OPPORTUNITY_MANAGEMENT:READ'],
   },

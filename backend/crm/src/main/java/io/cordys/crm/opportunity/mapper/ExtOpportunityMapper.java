@@ -1,6 +1,7 @@
 package io.cordys.crm.opportunity.mapper;
 
 
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
@@ -9,8 +10,9 @@ import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import io.cordys.crm.search.response.GlobalOpportunityResponse;
-import io.cordys.crm.search.response.OpportunityRepeatResponse;
+import io.cordys.crm.search.response.advanced.AdvancedOpportunityResponse;
+import io.cordys.crm.search.response.global.GlobalOpportunityResponse;
+import io.cordys.crm.search.response.advanced.OpportunityRepeatResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -40,5 +42,8 @@ public interface ExtOpportunityMapper {
 
     Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount")  boolean amount);
 
-    List<GlobalOpportunityResponse> globalSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
+    List<AdvancedOpportunityResponse> advancedSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
+
+    List<GlobalOpportunityResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
 }

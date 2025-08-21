@@ -141,7 +141,7 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const props = defineProps<{
-    formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER;
+    formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER;
     hiddenAdvanceFilter?: boolean;
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情

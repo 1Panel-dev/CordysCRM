@@ -10,12 +10,12 @@ import jakarta.annotation.Resource;
 
 import java.util.List;
 
-public abstract class GlobalSearchBaseService<T extends BasePageRequest, R> {
+public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     @Resource
     private BaseMapper<Module> moduleMapper;
 
-    abstract public PagerWithOption<List<R>> globalSearch(T request, String orgId, String userId);
+    abstract public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId);
 
 
     /**

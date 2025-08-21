@@ -333,7 +333,7 @@
         group by name
     </select>
 
-    <select id="getSimilarClueList" resultType="io.cordys.crm.search.response.GlobalClueResponse">
+    <select id="getSimilarClueList" resultType="io.cordys.crm.search.response.advanced.AdvancedClueResponse">
         select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and ( c.name like concat('%', #{customerName}, '%') or c.phone = #{customerName} )
@@ -341,7 +341,7 @@
         order by c.create_time desc 
     </select>
 
-    <select id="getRepeatClueList" resultType="io.cordys.crm.search.response.GlobalClueResponse">
+    <select id="getRepeatClueList" resultType="io.cordys.crm.search.response.advanced.AdvancedClueResponse">
         select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and (c.name = #{customerName} or c.phone = #{customerName})
@@ -400,7 +400,7 @@
     </select>
 
 
-    <select id="cluePoolList" resultType="io.cordys.crm.search.response.GlobalCluePoolResponse">
+    <select id="cluePoolList" resultType="io.cordys.crm.search.response.advanced.AdvancedCluePoolResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
         c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
         c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, c.reason_id

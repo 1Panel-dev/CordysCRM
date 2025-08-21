@@ -1,4 +1,4 @@
-package io.cordys.crm.search.service;
+package io.cordys.crm.search.service.advanced;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -20,9 +20,10 @@ import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.customer.service.CustomerPoolService;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
-import io.cordys.crm.search.response.GlobalClueResponse;
-import io.cordys.crm.search.response.GlobalCustomerResponse;
-import io.cordys.crm.search.response.OpportunityRepeatResponse;
+import io.cordys.crm.search.response.advanced.AdvancedClueResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
+import io.cordys.crm.search.response.advanced.OpportunityRepeatResponse;
+import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Dict;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class GlobalSearchCustomerService extends GlobalSearchBaseService<CustomerPageRequest, GlobalCustomerResponse> {
+public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPageRequest, AdvancedCustomerResponse> {
 
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
@@ -79,7 +80,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
     private ExtProductMapper extProductMapper;
 
     @Override
-    public PagerWithOption<List<GlobalCustomerResponse>> globalSearch(CustomerPageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedCustomerResponse>> startSearch(CustomerPageRequest request, String orgId, String userId) {
 
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -93,18 +94,18 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
         ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 查询重复客户列表
-        List<GlobalCustomerResponse> customers = extCustomerMapper.checkRepeatCustomer(request, orgId, userId);
+        List<AdvancedCustomerResponse> customers = extCustomerMapper.checkRepeatCustomer(request, orgId, userId);
         if (CollectionUtils.isEmpty(customers)) {
             return PageUtils.setPageInfoWithOption(
                     page, null, null);
         }
-        List<GlobalCustomerResponse> buildList = buildCustomerList(orgId, userId, isAdmin, customers, enabledModules);
+        List<AdvancedCustomerResponse> buildList = buildCustomerList(orgId, userId, isAdmin, customers, enabledModules);
         Map<String, List<OptionDTO>> optionMap = buildCustomerOptionMap(orgId, customers, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     @NotNull
-    private List<GlobalCustomerResponse> buildCustomerList(String organizationId, String userId, boolean isAdmin, List<GlobalCustomerResponse> customers, List<String> enabledModules) {
+    private List<AdvancedCustomerResponse> buildCustomerList(String organizationId, String userId, boolean isAdmin, List<AdvancedCustomerResponse> customers, List<String> enabledModules) {
         // 查询用户权限
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
         // 获取商机和线索的重复数量映射
@@ -115,26 +116,26 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
         boolean isClueModuleEnabled = enabledModules.contains(ModuleKey.CLUE.getKey());
         boolean isOpportunityModuleEnabled = enabledModules.contains(ModuleKey.BUSINESS.getKey());
 
-        List<String> customerIds = customers.stream().map(GlobalCustomerResponse::getId)
+        List<String> customerIds = customers.stream().map(AdvancedCustomerResponse::getId)
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
 
         List<String> ownerIds = customers.stream()
-                .map(GlobalCustomerResponse::getOwner)
+                .map(AdvancedCustomerResponse::getOwner)
                 .distinct()
                 .toList();
 
         List<String> followerIds = customers.stream()
-                .map(GlobalCustomerResponse::getFollower)
+                .map(AdvancedCustomerResponse::getFollower)
                 .distinct()
                 .toList();
         List<String> createUserIds = customers.stream()
-                .map(GlobalCustomerResponse::getCreateUser)
+                .map(AdvancedCustomerResponse::getCreateUser)
                 .distinct()
                 .toList();
         List<String> updateUserIds = customers.stream()
-                .map(GlobalCustomerResponse::getUpdateUser)
+                .map(AdvancedCustomerResponse::getUpdateUser)
                 .distinct()
                 .toList();
         List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
@@ -212,17 +213,17 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
                 .toList();
     }
 
-    public Map<String, List<OptionDTO>> buildCustomerOptionMap(String orgId, List<GlobalCustomerResponse> list, List<GlobalCustomerResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildCustomerOptionMap(String orgId, List<AdvancedCustomerResponse> list, List<AdvancedCustomerResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, GlobalCustomerResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, AdvancedCustomerResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
-                GlobalCustomerResponse::getOwner, GlobalCustomerResponse::getOwnerName);
+                AdvancedCustomerResponse::getOwner, AdvancedCustomerResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
 
         return optionMap;
@@ -239,7 +240,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
      */
     private Map<String, String> getOpportunityCounts(List<String> permissions,
                                                      boolean isAdmin,
-                                                     List<GlobalCustomerResponse> customers,
+                                                     List<AdvancedCustomerResponse> customers,
                                                      List<String> enabledModules) {
         // 没有商机读取权限且不是管理员返回空map
         if (!permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) && !isAdmin) {
@@ -252,7 +253,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
 
         // 获取客户ID列表并查询商机数量
         List<String> customerIds = customers.stream()
-                .map(GlobalCustomerResponse::getId)
+                .map(AdvancedCustomerResponse::getId)
                 .toList();
 
         return extOpportunityMapper.getRepeatCountMap(customerIds).stream()
@@ -270,7 +271,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
      */
     private Map<String, String> getClueCounts(List<String> permissions,
                                               boolean isAdmin,
-                                              List<GlobalCustomerResponse> customers,
+                                              List<AdvancedCustomerResponse> customers,
                                               List<String> enabledModules) {
         // 没有线索读取权限且不是管理员返回空map
         if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) && !permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) && !isAdmin) {
@@ -283,7 +284,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
 
         // 获取客户名称列表并查询线索数量
         List<String> customerNames = customers.stream()
-                .map(GlobalCustomerResponse::getName)
+                .map(AdvancedCustomerResponse::getName)
                 .toList();
 
         return extClueMapper.getRepeatCountMap(customerNames).stream()
@@ -300,7 +301,7 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
         return StringUtils.isBlank(count) ? 0 : Integer.parseInt(count);
     }
 
-    private void getProductNames(List<OptionDTO> productOption, List<GlobalClueResponse> list) {
+    private void getProductNames(List<OptionDTO> productOption, List<AdvancedClueResponse> list) {
         // 设置产品名称
         Map<String, String> productMap = productOption.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
         list.forEach(clue -> {
@@ -316,9 +317,9 @@ public class GlobalSearchCustomerService extends GlobalSearchBaseService<Custome
         });
     }
 
-    public List<GlobalClueResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
-                                                        String organizationId) {
-        List<GlobalClueResponse> repeatClueList = extClueMapper.getRepeatClueList(request.getName(), organizationId);
+    public List<AdvancedClueResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
+                                                          String organizationId) {
+        List<AdvancedClueResponse> repeatClueList = extClueMapper.getRepeatClueList(request.getName(), organizationId);
         if (CollectionUtils.isEmpty(repeatClueList)) {
             return repeatClueList;
         }

@@ -1,4 +1,4 @@
-package io.cordys.crm.search.response;
+package io.cordys.crm.search.response.advanced;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

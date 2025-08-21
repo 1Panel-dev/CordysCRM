@@ -188,7 +188,7 @@
       | FormDesignKeyEnum.CONTACT
       | FormDesignKeyEnum.CUSTOMER_CONTACT
       | FormDesignKeyEnum.BUSINESS_CONTACT
-      | FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT;
+      | FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT;
     specialHeight?: number;
     hiddenAdvanceFilter?: boolean;
     hiddenTotal?: boolean;

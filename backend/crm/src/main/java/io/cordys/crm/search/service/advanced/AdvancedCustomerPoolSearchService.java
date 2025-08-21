@@ -1,4 +1,4 @@
-package io.cordys.crm.search.service;
+package io.cordys.crm.search.service.advanced;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -20,7 +20,8 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.customer.service.CustomerPoolService;
-import io.cordys.crm.search.response.GlobalCustomerPoolResponse;
+import io.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse;
+import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Dict;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<BasePageRequest, GlobalCustomerPoolResponse> {
+public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> {
 
     @Resource
     private ExtCustomerMapper extCustomerMapper;
@@ -70,7 +71,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
 
 
     @Override
-    public PagerWithOption<List<GlobalCustomerPoolResponse>> globalSearch(BasePageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
 
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -83,17 +84,17 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         ConditionFilterUtils.parseCondition(request);
         // 查询重复公海客户列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<GlobalCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);
+        List<AdvancedCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);
         }
-        List<GlobalCustomerPoolResponse> buildList = buildListData(list, orgId, userId);
+        List<AdvancedCustomerPoolResponse> buildList = buildListData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
 
-    public List<GlobalCustomerPoolResponse> buildListData(List<GlobalCustomerPoolResponse> list, String orgId, String userId) {
+    public List<AdvancedCustomerPoolResponse> buildListData(List<AdvancedCustomerPoolResponse> list, String orgId, String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -206,7 +207,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
     }
 
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<GlobalCustomerPoolResponse> list, List<GlobalCustomerPoolResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCustomerPoolResponse> list, List<AdvancedCustomerPoolResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
         // 获取所有模块字段的值
@@ -222,7 +223,7 @@ public class GlobalSearchCustomerPoolService extends GlobalSearchBaseService<Bas
         return optionMap;
     }
 
-    private boolean getHasPermission(String userId, String orgId, GlobalCustomerPoolResponse customerPoolResponse, Map<String, String> userPoolMap) {
+    private boolean getHasPermission(String userId, String orgId, AdvancedCustomerPoolResponse customerPoolResponse, Map<String, String> userPoolMap) {
 
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;

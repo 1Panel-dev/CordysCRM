@@ -265,7 +265,7 @@
         </foreach>
     </select>
     <select id="getSimilarContactList"
-            resultType="io.cordys.crm.search.response.GlobalCustomerContactResponse">
+            resultType="io.cordys.crm.search.response.advanced.AdvancedCustomerContactResponse">
         select cc.id, cc.customer_id, cc.name, cc.create_time,
                cc.enable, cc.owner, cc.phone, su.name as ownerName, c.name as customerName
         from customer_contact cc

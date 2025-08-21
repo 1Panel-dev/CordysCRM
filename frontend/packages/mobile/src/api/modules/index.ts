@@ -13,6 +13,7 @@ import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
 
 import checkStatus from '../http/checkStatus';
+import {AdvancedSearchOptPageUrl} from "@lib/shared/api/requrls/opportunity";
 
 const CDR = createAxios({
   showErrorMsg: showFailToast,
@@ -66,7 +67,7 @@ export const {
   getOptTab,
   getOpportunityContactList,
   updateOptFollowPlanStatus,
-  globalSearchOptPage,
+  advancedSearchOptPage,
 } = opportunityApi;
 
 export const {
@@ -106,8 +107,8 @@ export const {
   getClueTab,
   getClueTransitionCustomerList,
   updateClueFollowPlanStatus,
-  getGlobalCluePoolList,
-  getGlobalSearchClueList,
+  getAdvancedCluePoolList,
+  getAdvancedSearchClueList,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;
@@ -177,9 +178,9 @@ export const {
   getCustomerContactTab,
   updateCustomerFollowPlanStatus,
   getCustomerOpportunityPage,
-  geGlobalCustomerList,
-  getGlobalCustomerContactList,
-  getGlobalOpenSeaCustomerList,
+  geAdvancedCustomerList,
+  getAdvancedCustomerContactList,
+  getAdvancedOpenSeaCustomerList,
 } = customerApi;
 
 export const {

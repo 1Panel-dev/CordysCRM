@@ -61,7 +61,7 @@
   <CrmDrawer v-model:show="showDetailDrawer" :width="800" :footer="false" :title="activeCustomer?.name">
     <RelatedTable
       ref="detailTableRef"
-      :api="detailType === 'opportunity' ? globalSearchOptDetail : getGlobalSearchClueDetail"
+      :api="detailType === 'opportunity' ? advancedSearchOptDetail : getAdvancedSearchClueDetail"
       :columns="relatedColumns"
       :title="
         detailType === 'opportunity'
@@ -141,6 +141,7 @@
 <script setup lang="ts">
   import { NButton, NScrollbar, useMessage } from 'naive-ui';
 
+  import { AdvancedSearchOptPageUrl } from '@lib/shared/api/requrls/opportunity';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem, CluePoolListItem } from '@lib/shared/models/clue';
@@ -159,10 +160,10 @@
   import RelatedTable from './components/relatedTable.vue';
 
   import {
-    getGlobalSearchClueDetail,
+    advancedSearchOptDetail,
+    getAdvancedSearchClueDetail,
     getOpenSeaOptions,
     getPoolOptions,
-    globalSearchOptDetail,
     reTransitionCustomer,
   } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
@@ -666,12 +667,12 @@
   });
 
   const columnsMap: Partial<Record<FormDesignKeyEnum, CrmDataTableColumn[]>> = {
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CUSTOMER]: columns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CONTACT]: contactColumn,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_PUBLIC]: openSeaColumns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE]: clueColumns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL]: cluePoolColumns,
-    [FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY]: opportunityColumns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: columns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: contactColumn,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: openSeaColumns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: clueColumns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: cluePoolColumns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityColumns,
   };
 
   const activeTables = computed(() => {
@@ -688,14 +689,14 @@
           hiddenAllScreen: true,
         },
         [
-          FormDesignKeyEnum.SEARCH_GLOBAL_CLUE,
-          FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY,
-          FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL,
+          FormDesignKeyEnum.SEARCH_ADVANCED_CLUE,
+          FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY,
+          FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
         ].includes(config.value)
           ? (item, originalData) => {
               return {
                 ...item,
-                [config.value !== FormDesignKeyEnum.SEARCH_GLOBAL_OPPORTUNITY ? 'productNameList' : 'productNames']:
+                [config.value !== FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY ? 'productNameList' : 'productNames']:
                   item.products.map((product: string) => {
                     return originalData?.optionMap?.products.find((i) => i.id === product);
                   }),

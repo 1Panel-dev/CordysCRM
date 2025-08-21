@@ -1,11 +1,11 @@
-package io.cordys.crm.search.response;
+package io.cordys.crm.search.response.advanced;
 
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class GlobalCluePoolResponse extends ClueListResponse {
+public class AdvancedCluePoolResponse extends ClueListResponse {
 
     @Schema(description = "线索池名称")
     private String poolName;

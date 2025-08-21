@@ -1,4 +1,4 @@
-package io.cordys.crm.search.response;
+package io.cordys.crm.search.response.advanced;
 
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +12,7 @@ import java.util.List;
  * @date 2025-02-08 16:24:22
  */
 @Data
-public class GlobalClueResponse extends ClueListResponse {
+public class AdvancedClueResponse extends ClueListResponse {
 
     @Schema(description = "是否有当前数据的权限")
     private boolean hasPermission;

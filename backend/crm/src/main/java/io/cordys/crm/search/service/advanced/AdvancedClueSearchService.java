@@ -1,4 +1,4 @@
-package io.cordys.crm.search.service;
+package io.cordys.crm.search.service.advanced;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -23,7 +23,8 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.clue.service.ClueFieldService;
 import io.cordys.crm.clue.service.CluePoolService;
-import io.cordys.crm.search.response.GlobalClueResponse;
+import io.cordys.crm.search.response.advanced.AdvancedClueResponse;
+import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Dict;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageRequest, GlobalClueResponse> {
+public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest, AdvancedClueResponse> {
 
     @Resource
     private ExtClueMapper extClueMapper;
@@ -72,7 +73,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
 
 
     @Override
-    public PagerWithOption<List<GlobalClueResponse>> globalSearch(CluePageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedClueResponse>> startSearch(CluePageRequest request, String orgId, String userId) {
 
         /// 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -88,14 +89,14 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, null, null);
         }
-        List<GlobalClueResponse> buildList = buildClueList(list, orgId, userId);
+        List<AdvancedClueResponse> buildList = buildClueList(list, orgId, userId);
 
         Map<String, List<OptionDTO>> optionMap = buildClueOptionMap(orgId, list, buildList);
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public Map<String, List<OptionDTO>> buildClueOptionMap(String orgId, List<ClueListResponse> list, List<GlobalClueResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildClueOptionMap(String orgId, List<ClueListResponse> list, List<AdvancedClueResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
         // 获取所有模块字段的值
@@ -105,7 +106,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
 
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
-                GlobalClueResponse::getOwner, GlobalClueResponse::getOwnerName);
+                AdvancedClueResponse::getOwner, AdvancedClueResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
 
         // 意向产品选项
@@ -115,7 +116,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
     }
 
 
-    public List<GlobalClueResponse> buildClueList(List<ClueListResponse> list, String orgId, String userId) {
+    public List<AdvancedClueResponse> buildClueList(List<ClueListResponse> list, String orgId, String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return new ArrayList<>();
         }
@@ -167,7 +168,7 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
-        List<GlobalClueResponse> returnList = new ArrayList<>();
+        List<AdvancedClueResponse> returnList = new ArrayList<>();
 
         list.forEach(clueListResponse -> {
             // 获取自定义字段
@@ -192,18 +193,18 @@ public class GlobalSearchClueService extends GlobalSearchBaseService<CluePageReq
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
             clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
-            GlobalClueResponse globalClueResponse = new GlobalClueResponse();
-            BeanUtils.copyBean(globalClueResponse, clueListResponse);
+            AdvancedClueResponse advancedClueResponse = new AdvancedClueResponse();
+            BeanUtils.copyBean(advancedClueResponse, clueListResponse);
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
-            globalClueResponse.setHasPermission(hasPermission);
+            advancedClueResponse.setHasPermission(hasPermission);
             if (!hasPermission) {
-                globalClueResponse.setPhone(null);
-                globalClueResponse.setContact(null);
-                globalClueResponse.setModuleFields(new ArrayList<>());
-                globalClueResponse.setReasonName(null);
-                globalClueResponse.setRecyclePoolName(null);
+                advancedClueResponse.setPhone(null);
+                advancedClueResponse.setContact(null);
+                advancedClueResponse.setModuleFields(new ArrayList<>());
+                advancedClueResponse.setReasonName(null);
+                advancedClueResponse.setRecyclePoolName(null);
             }
-            returnList.add(globalClueResponse);
+            returnList.add(advancedClueResponse);
         });
         return returnList;
     }

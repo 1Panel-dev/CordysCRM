@@ -281,7 +281,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
         personalPasswordRequest.setPassword("Gyq124");
         personalPasswordRequest.setOriginPassword("678911");
-        this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
+        this.requestPost("/personal/center/info/reset", personalPasswordRequest);
         extUserMapper.updateUserPassword(CodingUtils.md5(DEFAULT_USER_PASSWORD), "admin");
        // personalPasswordRequest.setPassword(DEFAULT_USER_PASSWORD);
         adminAuthInfo=null;

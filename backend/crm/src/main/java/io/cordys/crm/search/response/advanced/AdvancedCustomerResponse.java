@@ -1,11 +1,11 @@
-package io.cordys.crm.search.response;
+package io.cordys.crm.search.response.advanced;
 
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class GlobalCustomerResponse extends CustomerListResponse {
+public class AdvancedCustomerResponse extends CustomerListResponse {
 
     @Schema(description = "线索重复数据数量")
     private Integer clueCount;

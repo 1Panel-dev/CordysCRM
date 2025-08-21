@@ -1,5 +1,11 @@
 <template>
-  <n-radio-group v-if="activeName != '' && orgOptions.length>1" v-model="activeName" type="button" class="tabPlatform" @change="handleClick">
+  <n-radio-group
+    v-if="activeName != '' && orgOptions.length > 1"
+    v-model="activeName"
+    type="button"
+    class="tabPlatform"
+    @change="handleClick"
+  >
     <n-radio-button
       v-for="item of orgOptions"
       :key="item.value"

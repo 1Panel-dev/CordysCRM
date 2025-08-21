@@ -85,7 +85,7 @@
           <div class="text-[12px]">{{ t('common.dashboard') }}</div>
         </div>
         <div v-else-if="item.type === CompanyTypeEnum.SQLBot" class="flex justify-between">
-<!--          <div class="flex items-center gap-[8px]">
+          <!--          <div class="flex items-center gap-[8px]">
             <n-tooltip :disabled="item.response.verify">
               <template #trigger>
                 <n-switch

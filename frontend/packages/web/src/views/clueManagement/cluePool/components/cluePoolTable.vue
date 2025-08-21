@@ -146,7 +146,7 @@
   const Message = useMessage();
 
   const props = defineProps<{
-    formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.SEARCH_GLOBAL_CLUE_POOL;
+    formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL;
     hiddenAdvanceFilter?: boolean;
     hiddenPoolSelect?: boolean;
     readonly?: boolean;
