@@ -6,7 +6,7 @@ export default {
   'mine.changePassword': 'Change password',
   'mine.currentPassword': 'Current password',
   'mine.changePasswordTip':
-    'We detected that you are using the default initial password. To ensure account security, please change your password immediately',
+    'Detected that you are currently using the default initial password. For the security of your account, it is recommended to change your password immediately',
   'mime. PleaseInputVerificationCode': 'Please enter the authentication code',
   'mine.pleaseInputPassWord': 'Please enter your password ',
   'mime. PleaseInputConfirmPassWord': 'Please confirm password again',

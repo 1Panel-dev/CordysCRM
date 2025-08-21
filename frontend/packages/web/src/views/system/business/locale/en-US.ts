@@ -130,7 +130,7 @@ export default {
   'system.personal.retry': 'Reacquire',
   'system.personal.currentPassword': 'Current password',
   'system.personal.changePasswordTip':
-    'Detected that you are using, default initial password. To ensure account security, please change your password immediately',
+    'Detected that you are currently using the default initial password. For the security of your account, it is recommended to change your password immediately',
   'system.personal.password': 'New Password',
   'system.personal.reInput.password': 'Please enter password again',
   'system.personal.password.diff': 'Two passwords are inconsistent',
