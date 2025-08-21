@@ -35,7 +35,7 @@ public class OperationLogExpressionEvaluator extends CachedExpressionEvaluator {
     public EvaluationContext createEvaluationContext(Method method, Object[] args, Class<?> targetClass,
                                                      Object result, String errorMsg, BeanFactory beanFactory) {
         Method targetMethod = getTargetMethod(targetClass, method);
-        OperationLogEvaluationContext evaluationContext = new OperationLogEvaluationContext( targetMethod, args, getParameterNameDiscoverer(), result, errorMsg);
+        OperationLogEvaluationContext evaluationContext = new OperationLogEvaluationContext(targetClass, targetMethod, args, getParameterNameDiscoverer(), result, errorMsg);
         if (beanFactory != null) {
             evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory));
         }

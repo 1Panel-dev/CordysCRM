@@ -145,10 +145,10 @@ public class RestControllerExceptionHandler {
     @ExceptionHandler({EofException.class})
     public ResponseEntity<Object> handleEofException(HttpServletRequest request, Exception e) {
         String requestURI = request.getRequestURI();
-        if (StringUtils.startsWith(requestURI, "/assets")
-                || StringUtils.startsWith(requestURI, "/fonts")
-                || StringUtils.startsWith(requestURI, "/images")
-                || StringUtils.startsWith(requestURI, "/templates")) {
+        if (requestURI != null && (requestURI.startsWith("/assets")
+                || requestURI.startsWith("/fonts")
+                || requestURI.startsWith("/images")
+                || requestURI.startsWith("/templates"))) {
             return ResponseEntity.internalServerError().body(null);
         }
         return ResponseEntity.internalServerError()

@@ -17,7 +17,6 @@ public class CustomerContactFieldUtils {
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("phone", data.getPhone());
         systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("owner", data.getOwnerName());
         systemFiledMap.put("enable", Translator.get("log.enable." + data.getEnable()));
         systemFiledMap.put("disableReason", data.getDisableReason());
         systemFiledMap.put("departmentId", data.getDepartmentName());

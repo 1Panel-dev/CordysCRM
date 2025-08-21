@@ -23,10 +23,10 @@ public class OperationLogEvaluationContext extends MethodBasedEvaluationContext 
      * @param ret                     方法返回值
      * @param errorMsg                错误信息
      */
-    public OperationLogEvaluationContext(Method method, Object[] arguments,
+    public OperationLogEvaluationContext(Object target,Method method, Object[] arguments,
                                          ParameterNameDiscoverer parameterNameDiscoverer, Object ret, String errorMsg) {
         // 调用父类构造方法初始化
-        super(null, method, arguments, parameterNameDiscoverer);
+        super(target, method, arguments, parameterNameDiscoverer);
 
         // 获取日志记录上下文中的变量
         Map<String, Object> variables = OperationLogContext.getVariables();

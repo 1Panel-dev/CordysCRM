@@ -59,7 +59,7 @@ public class NamingThreadFactory implements ThreadFactory {
         this.name = name;
         this.daemon = daemon;
         this.uncaughtExceptionHandler = handler;
-        this.sequences = new ConcurrentHashMap<String, AtomicLong>();
+        this.sequences = new ConcurrentHashMap<>();
     }
 
     @Override

@@ -22,7 +22,7 @@ public class LogisticRegressionUtils {
      */
     public static double[] train(List<double[]> features, List<Integer> labels) {
         // 初始化权重
-        double[] weights = new double[features.get(0).length];
+        double[] weights = new double[features.getFirst().length];
 
         // 进行迭代优化
         for (int i = 0; i < ITERATIONS; i++) {

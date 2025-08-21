@@ -114,9 +114,7 @@ public class MybatisInterceptor implements Interceptor {
                     }
                 }
                 if (c.isInstance(p)) {
-                    if (result.get(attrName) == null) {
-                        result.put(attrName, new HashMap<>());
-                    }
+                    result.computeIfAbsent(attrName, k -> new HashMap<>());
                     if (StringUtils.isNotBlank(interceptorConfig.getInterceptorMethod())) {
                         result.get(attrName).put(Methods.encrypt.name(), interceptorConfig);
                     }

@@ -59,8 +59,7 @@ public class ModuleFieldTablePermissionHandler extends OrgTablePermissionHandler
      */
     protected String parseFieldsSql(String filedValueTableName, List<BaseField> fields) {
         StringBuilder fieldSqlBuilder = new StringBuilder();
-        for (int i = 0; i < fields.size(); i++) {
-            BaseField field = fields.get(i);
+        for (BaseField field : fields) {
             fieldSqlBuilder.append(",");
 
             ModuleFieldParser fieldParser = ModuleFieldParserFactory.getFieldParser(field.getType());
