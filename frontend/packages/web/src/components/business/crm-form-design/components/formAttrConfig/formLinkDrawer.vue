@@ -192,7 +192,7 @@
       if (val) {
         formModel.value = cloneDeep(props.linkProp || defaultFormModel);
         if (props.linkProp?.formKey === null) {
-          formModel.value.formKey = FormDesignKeyEnum.CLUE;
+          formModel.value.formKey = formKeyOptions.value[0].value;
           formModel.value.linkFields = [
             {
               current: '',
