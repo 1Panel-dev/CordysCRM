@@ -17,6 +17,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
@@ -162,19 +163,14 @@ public class PersonalCenterService {
             throw new GenericException(Translator.get("email_setting_verify_error"));
         }*/
 
-        try {
-            //检查原密码
-            if (checkPwd(personalPasswordRequest.getOriginPassword(), operatorId)) {
-                // 更新用户密码
-                extUserMapper.updateUserPassword(CodingUtils.md5(password), operatorId);
-                // 登出当前用户
-                kickOutUser(operatorId, operatorId);
-            } else {
-                throw new GenericException(Translator.get("password_reset_origin_error"));
-            }
-        } catch (Exception e) {
-            // 记录异常并重新抛出
-            throw new GenericException(Translator.get("password_reset_failed"), e);
+        //检查原密码
+        if (checkPwd(personalPasswordRequest.getOriginPassword(), operatorId)) {
+            // 更新用户密码
+            extUserMapper.updateUserPassword(CodingUtils.md5(password), operatorId);
+            // 登出当前用户
+            kickOutUser(operatorId, operatorId);
+        } else {
+            throw new GenericException(Translator.get("password_reset_error"));
         }
     }
 
@@ -186,8 +182,10 @@ public class PersonalCenterService {
      * @return
      */
     private boolean checkPwd(String originPassword, String userId) {
-        User user = userBaseMapper.selectByPrimaryKey(userId);
-        return StringUtils.equalsIgnoreCase(CodingUtils.md5(originPassword), user.getPassword());
+        User example = new User();
+        example.setId(userId);
+        example.setPassword(CodingUtils.md5(originPassword));
+        return userBaseMapper.exist(example);
     }
 
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#userId}")
