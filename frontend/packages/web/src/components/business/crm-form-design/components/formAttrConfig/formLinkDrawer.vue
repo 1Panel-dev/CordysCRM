@@ -135,24 +135,31 @@
   const props = defineProps<{
     linkProp?: FormConfigLinkProp;
     formFields: FormCreateField[];
+    formKey: FormDesignKeyEnum;
   }>();
 
   const emit = defineEmits<{
     (e: 'save', value: FormConfigLinkProp): void;
   }>();
 
-  const formKeyOptions = [
-    {
-      label: t('crmFormDesign.clue'),
-      value: FormDesignKeyEnum.CLUE,
-    },
-    {
-      label: t('common.plan'),
-      value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
-    },
-  ];
+  const formKeyOptions = computed(() => {
+    if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
+      return [
+        {
+          label: t('crmFormDesign.clue'),
+          value: FormDesignKeyEnum.CLUE,
+        },
+      ];
+    }
+    return [
+      {
+        label: t('common.plan'),
+        value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+      },
+    ];
+  });
   const defaultFormModel: FormConfigLinkProp = {
-    formKey: FormDesignKeyEnum.CLUE,
+    formKey: formKeyOptions.value[0].value,
     linkFields: [
       {
         current: '',
@@ -163,10 +170,10 @@
 
   const linkFieldsScrollbar = ref<ScrollbarInst>();
   const formModel = ref<FormConfigLinkProp>(cloneDeep(props.linkProp || defaultFormModel));
-  const formKey = computed(() => formModel.value.formKey);
+  const _formKey = computed(() => formModel.value.formKey);
 
   const { fieldList, initFormConfig } = useFormCreateApi({
-    formKey,
+    formKey: _formKey,
   });
 
   const formRef = ref<FormInst>();

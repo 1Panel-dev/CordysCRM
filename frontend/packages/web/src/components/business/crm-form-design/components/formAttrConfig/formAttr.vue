@@ -157,6 +157,7 @@
     v-model:visible="linkConfigVisible"
     :form-fields="list"
     :link-prop="formConfig.linkProp"
+    :form-key="props.formKey"
     @save="handleLinkConfigSave"
   />
 </template>
