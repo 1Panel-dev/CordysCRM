@@ -8,10 +8,12 @@ import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.context.CustomFunction;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.ExportHeadDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.LogService;
@@ -174,4 +176,10 @@ public abstract class BaseExportService {
         logService.add(logDTO);
     }
 
+
+    public void checkFileName(String fileName) {
+        if(fileName.contains("/")) {
+            throw new GenericException(Translator.get("file_name_illegal"));
+        }
+    }
 }

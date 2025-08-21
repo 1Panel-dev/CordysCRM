@@ -55,6 +55,7 @@ public class ClueExportService extends BaseExportService {
     private ExportTaskService exportTaskService;
 
     public String exportAll(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
+        checkFileName(request.getFileName());
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -98,6 +99,7 @@ public class ClueExportService extends BaseExportService {
     }
 
     public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
+        checkFileName(request.getFileName());
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 

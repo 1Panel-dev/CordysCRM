@@ -49,6 +49,7 @@ public class OpportunityExportService extends BaseExportService {
 
 
     public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
+        checkFileName(request.getFileName());
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制
@@ -151,6 +152,7 @@ public class OpportunityExportService extends BaseExportService {
      * @return
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
+        checkFileName(request.getFileName());
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制

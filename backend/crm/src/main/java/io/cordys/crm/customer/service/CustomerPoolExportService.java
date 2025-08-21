@@ -38,6 +38,7 @@ public class CustomerPoolExportService extends CustomerExportService {
      * @return
      */
     public String exportCrossPage(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
+        checkFileName(request.getFileName());
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
         String fileId = IDGenerator.nextStr();
@@ -63,6 +64,7 @@ public class CustomerPoolExportService extends CustomerExportService {
     }
 
     public String exportCrossSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
+        checkFileName(request.getFileName());
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
         String fileId = IDGenerator.nextStr();

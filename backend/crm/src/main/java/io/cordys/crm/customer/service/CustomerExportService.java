@@ -48,6 +48,7 @@ public class CustomerExportService extends BaseExportService {
 
 
     public String export(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
+        checkFileName(request.getFileName());
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -144,6 +145,7 @@ public class CustomerExportService extends BaseExportService {
      * @return 导出任务ID
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
+        checkFileName(request.getFileName());
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
