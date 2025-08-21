@@ -367,10 +367,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             // 文本输入类型可填充任何字段类型值
             if (dataSourceTypes.includes(linkField.type)) {
               // 联动的字段是数据源则填充选项名
-              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.name).join(',');
+              formDetail.value[field.id] = linkField.value
+                .map((e: Record<string, any>) => e.name)
+                .join(',')
+                .slice(0, 255);
             } else if (multipleTypes.includes(linkField.type)) {
               // 联动的字段是多选则拼接选项名
-              formDetail.value[field.id] = linkField.value.join(',');
+              formDetail.value[field.id] = linkField.value.join(',').slice(0, 255);
             } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
               // 联动的字段是日期时间则转换
               if (linkField.dateType === 'month') {
@@ -389,7 +392,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
               formDetail.value[field.id] = linkField.value.slice(0, 255);
             } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
-              formDetail.value[field.id] = linkField.initialOptions.map((e: any) => e.name).join(',');
+              formDetail.value[field.id] = linkField.initialOptions
+                .map((e: any) => e.name)
+                .join(',')
+                .slice(0, 255);
             } else if (linkField.type === FieldTypeEnum.INPUT_NUMBER) {
               formDetail.value[field.id] = linkField.value?.toString();
             } else {
