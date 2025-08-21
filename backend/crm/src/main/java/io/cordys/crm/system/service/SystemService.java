@@ -46,6 +46,7 @@ public class SystemService {
         try {
             info = CSHttpClient.sendGetRequest(Map.of(
                     "currentVersion", currentBase,
+                    "majorVersion", "v1",
                     "edition", edition,
                     "product", PRODUCT
             ));
