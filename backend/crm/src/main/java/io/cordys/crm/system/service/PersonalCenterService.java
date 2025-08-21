@@ -169,6 +169,8 @@ public class PersonalCenterService {
                 extUserMapper.updateUserPassword(CodingUtils.md5(password), operatorId);
                 // 登出当前用户
                 kickOutUser(operatorId, operatorId);
+            } else {
+                throw new GenericException(Translator.get("password_reset_origin_error"));
             }
         } catch (Exception e) {
             // 记录异常并重新抛出
@@ -185,7 +187,7 @@ public class PersonalCenterService {
      */
     private boolean checkPwd(String originPassword, String userId) {
         User user = userBaseMapper.selectByPrimaryKey(userId);
-        return StringUtils.equalsIgnoreCase(originPassword, user.getPassword());
+        return StringUtils.equalsIgnoreCase(CodingUtils.md5(originPassword), user.getPassword());
     }
 
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#userId}")
