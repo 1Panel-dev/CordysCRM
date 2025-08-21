@@ -47,8 +47,17 @@ export default function useTableStore() {
       .map((item) => mapNew.get(item.key))
       .filter((e) => e && e.key !== 'operation') as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
-    const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key));
+    const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key) && item.type !== 'selection');
     const operationColumn = oldArr.find((item) => item.key === SpecialColumnEnum.OPERATION);
+    const selectionColumn = newArr.find((item) => item.type === SpecialColumnEnum.SELECTION);
+    const orderColumn = newArr.find((item) => item.key === SpecialColumnEnum.ORDER);
+    if (orderColumn && selectionColumn) {
+      // 如果有排序列和选择列，则将选择列插入到排序列之前
+      sorted.splice(1, 0, selectionColumn);
+    } else if (selectionColumn) {
+      // 如果只有选择列，则将其放在最前面
+      sorted.unshift(selectionColumn);
+    }
     return [...sorted, ...extra, operationColumn].filter(Boolean) as CrmDataTableColumn[];
   }
 
