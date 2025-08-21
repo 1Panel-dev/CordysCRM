@@ -390,6 +390,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               formDetail.value[field.id] = linkField.value.slice(0, 255);
             } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
               formDetail.value[field.id] = linkField.initialOptions.map((e: any) => e.name).join(',');
+            } else if (linkField.type === FieldTypeEnum.INPUT_NUMBER) {
+              formDetail.value[field.id] = linkField.value?.toString();
             } else {
               formDetail.value[field.id] = linkField.value;
             }
