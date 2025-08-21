@@ -20,6 +20,9 @@
             required: true,
             message: t('common.nameNotNull'),
           },
+          {
+            validator,
+          },
         ],
       }"
       label-placement="left"
@@ -112,6 +115,7 @@
 <script setup lang="ts">
   import {
     FormInst,
+    FormItemRule,
     NButton,
     NCheckbox,
     NForm,
@@ -189,6 +193,13 @@
       }
     }
   );
+
+  function validator(rule: FormItemRule, value: string) {
+    if (/\//g.test(value)) {
+      return Promise.reject(new Error(t('common.notAllowForwardSlash')));
+    }
+    return Promise.resolve();
+  }
 
   const systemList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM));
   const customList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));

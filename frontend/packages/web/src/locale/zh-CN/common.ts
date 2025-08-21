@@ -318,4 +318,5 @@ export default {
   'common.dashboard': '仪表板',
   'common.convertPlanToRecord': '计划转记录',
   'common.hasConvertToRecord': '已转记录',
+  'common.notAllowForwardSlash': '不允许输入/',
 };
