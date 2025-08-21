@@ -142,7 +142,7 @@ public class OrganizationConfigService {
                 from.setPersonal(smtpFrom);
             }
             helper.setFrom(from);
-            helper.setSubject("CORDYS CRM 测试邮件");
+            helper.setSubject("Cordys CRM 测试邮件");
 
             LogUtils.info("收件人地址: {}", recipient);
             helper.setText("这是一封测试邮件，邮件发送成功", true);
