@@ -12,37 +12,14 @@
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
-      :label-width="70"
+      :label-width="80"
     >
-      <n-form-item path="email" :label="t('system.personal.email')">
-        <n-input v-model:value="form.email" :placeholder="t('common.pleaseInput')" @keydown.enter.prevent />
-      </n-form-item>
-
-      <n-form-item path="code" :label="t('system.personal.code')">
-        <div class="space-between flex w-full">
-          <n-input
-            v-model:value="form.code"
-            :placeholder="t('common.pleaseInput')"
-            :maxlength="6"
-            class="codeInput"
-            @keydown.enter.prevent
-          />
-          <n-button v-if="showRetryCode === 2" :loading="loading" type="primary" @click="sendCodeTip">
-            {{ t('system.personal.retry') }}
-            (<n-countdown
-              :render="renderCountdown"
-              :duration="60 * 1000"
-              :active="true"
-              :on-finish="finishCountdown"
-            />s)
-          </n-button>
-          <n-button v-if="showRetryCode === 1" :disabled="loading" secondary @click="sendCode">
-            {{ t('system.personal.getCode') }}
-          </n-button>
-          <n-button v-if="showRetryCode === 3" :disabled="loading" secondary @click="sendCode">
-            {{ t('system.personal.retry') }}
-          </n-button>
-        </div>
+      <n-form-item path="originPassword" :label="t('system.personal.currentPassword')">
+        <n-input
+          v-model:value="form.originPassword"
+          :placeholder="t('login.form.password.placeholder')"
+          @keydown.enter.prevent
+        />
       </n-form-item>
 
       <n-form-item path="password" :label="t('system.personal.password')">
@@ -73,7 +50,7 @@
         </n-button>
         <n-button
           :loading="loading"
-          :disabled="form.code === '' || form.password === '' || form.email === '' || form.confirmPassword === ''"
+          :disabled="form.originPassword === '' || form.password === '' || form.confirmPassword === ''"
           type="primary"
           @click="confirmHandler"
         >
@@ -92,7 +69,6 @@
     FormItemRule,
     FormRules,
     NButton,
-    NCountdown,
     NForm,
     NFormItem,
     NInput,
@@ -100,15 +76,12 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { validateEmail } from '@lib/shared/method/validate';
-  import { PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
+  import { PersonalPassword } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { sendEmailCode, updateUserPassword } from '@/api/modules';
+  import { updateUserPassword } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
-
-  import type { CountdownProps } from 'naive-ui';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -124,8 +97,7 @@
   });
 
   const form = ref<PersonalPassword>({
-    email: '',
-    code: '',
+    originPassword: '',
     password: '',
     confirmPassword: '',
   });
@@ -158,8 +130,9 @@
   const formRef = ref<FormInst | null>(null);
   const rPasswordFormItemRef = ref<FormItemInst | null>(null);
   const rules: FormRules = {
-    email: [{ required: true, message: t('common.notNull', { value: `${t('system.personal.email')} ` }) }],
-    code: [{ required: true, message: t('common.notNull', { value: `${t('system.personal.code')} ` }) }],
+    originPassword: [
+      { required: true, message: t('common.notNull', { value: `${t('system.personal.currentPassword')} ` }) },
+    ],
     password: [{ required: true, message: t('common.notNull', { value: `${t('system.personal.password')} ` }) }],
     confirmPassword: [
       { required: true, message: t('common.notNull') },
@@ -186,21 +159,9 @@
     ],
   };
 
-  const showRetryCode = ref<number>(1); // 已配置
-
-  const renderCountdown: CountdownProps['render'] = ({ hours, minutes, seconds }) => {
-    return hours * 60 * 60000 + minutes * 60 + seconds;
-  };
-
-  const finishCountdown: CountdownProps['onFinish'] = () => {
-    showRetryCode.value = 3;
-  };
-
   function cancel() {
-    showRetryCode.value = 1;
     form.value = {
-      email: props.integration?.email || '',
-      code: '',
+      originPassword: '',
       password: '',
       confirmPassword: '',
     };
@@ -230,31 +191,10 @@
       }
     });
   }
-  async function sendCode() {
-    if (form.value.email === '') {
-      Message.error(t('system.personal.email.empty'));
-      return;
-    }
-    if (!validateEmail(form.value.email)) {
-      Message.error(t('system.personal.email.style'));
-      return;
-    }
-    showRetryCode.value = 2;
-    const emailData: SendEmailDTO = {
-      email: form.value.email,
-    };
-    await sendEmailCode(emailData);
-  }
-  function sendCodeTip() {
-    Message.warning(t('system.personal.countdown'));
-  }
 </script>
 
 <style scoped lang="less">
   .confirm-password {
-    padding-left: 70px !important;
-  }
-  .codeInput {
-    margin-right: 16px !important;
+    padding-left: 80px !important;
   }
 </style>

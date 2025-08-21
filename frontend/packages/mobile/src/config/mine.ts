@@ -25,6 +25,7 @@ export const defaultUserInfo: OrgUserInfo = {
   userName: '',
   departmentName: '',
   departmentId: '',
+  defaultPwd: true,
 };
 
 export default {};

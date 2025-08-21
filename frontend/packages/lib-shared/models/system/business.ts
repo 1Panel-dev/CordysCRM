@@ -86,8 +86,7 @@ export interface PersonalInfoRequest {
 }
 
 export interface PersonalPassword {
-  email: string;
-  code: string;
+  originPassword: string;
   password: string;
   confirmPassword: string;
 }

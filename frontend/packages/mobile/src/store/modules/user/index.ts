@@ -51,6 +51,7 @@ const useUserStore = defineStore('user', {
       roles: [],
       departmentId: '',
       departmentName: '',
+      defaultPwd: true,
     },
     clientIdRandomId: '',
   }),
@@ -64,6 +65,9 @@ const useUserStore = defineStore('user', {
     // 设置用户信息
     setInfo(info: UserInfo) {
       this.$patch({ userInfo: info });
+    },
+    setDefaultPwd(value: boolean) {
+      this.userInfo.defaultPwd = value;
     },
     setLoginInfo(res: UserInfo) {
       try {

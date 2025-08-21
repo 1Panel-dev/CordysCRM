@@ -56,6 +56,7 @@ const useUserStore = defineStore('user', {
       roles: [],
       departmentId: '',
       departmentName: '',
+      defaultPwd: true,
     },
     clientIdRandomId: '',
     notify: null,

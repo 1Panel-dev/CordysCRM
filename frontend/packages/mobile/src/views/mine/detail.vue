@@ -30,38 +30,13 @@
       <div v-if="route.query.type === 'resetPassWord'">
         <van-cell-group inset>
           <van-field
-            v-model="form.email"
-            name="email"
-            :label="t('mine.email')"
+            v-model="form.originPassword"
+            name="originPassword"
+            :label="t('mine.currentPassword')"
             :placeholder="t('common.pleaseInput')"
-            :rules="[
-              { required: true, message: t('common.notNull', { value: `${t('mine.email')}` }) },
-              { validator: validateUserEmail },
-            ]"
+            :rules="[{ required: true, message: t('common.notNull', { value: `${t('mine.currentPassword')}` }) }]"
             class="!text-[16px]"
           />
-        </van-cell-group>
-        <van-cell-group inset>
-          <van-field
-            v-model="form.code"
-            name="code"
-            :label="t('mine.verificationCode')"
-            :placeholder="t('mine.pleaseInputVerificationCode')"
-            :rules="[{ required: true, message: t('common.notNull', { value: `${t('mine.verificationCode')}` }) }]"
-            class="!text-[16px]"
-            center
-          >
-            <template #button>
-              <div class="flex items-center gap-[8px]">
-                <van-divider class="!m-0 !h-[24px]" vertical :style="{ borderColor: 'var(--text-n7)' }" />
-                <CrmTextButton
-                  :color="`${isCounting ? 'var(--primary-4)' : 'var(--primary-8)'}`"
-                  :text="getCodeText"
-                  @click="sendCode"
-                />
-              </div>
-            </template>
-          </van-field>
         </van-cell-group>
         <van-cell-group inset>
           <CrmPasswordInput
@@ -129,20 +104,21 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { validateEmail, validatePhone } from '@lib/shared/method/validate';
-  import { PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
+  import { PersonalPassword } from '@lib/shared/models/system/business';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmPasswordInput from '@/components/pure/crm-password-input/index.vue';
-  import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  import { getPersonalInfo, sendEmailCode, updatePersonalInfo, updateUserPassword } from '@/api/modules/index';
+  import { getPersonalInfo, updatePersonalInfo, updateUserPassword } from '@/api/modules/index';
   import { defaultUserInfo } from '@/config/mine';
+  import useUserStore from '@/store/modules/user';
 
   const { t } = useI18n();
 
   const route = useRoute();
   const router = useRouter();
+  const useStore = useUserStore();
 
   const detailTitle = computed(() => {
     switch (route.query.type) {
@@ -157,7 +133,7 @@
 
   const form = ref<OrgUserInfo & PersonalPassword>({
     ...defaultUserInfo,
-    code: '',
+    originPassword: '',
     confirmPassword: '',
   });
 
@@ -201,14 +177,14 @@
   async function handleResetPassword() {
     try {
       loading.value = true;
-      const { email, code, password, confirmPassword } = form.value;
+      const { originPassword, password, confirmPassword } = form.value;
       await updateUserPassword({
-        email,
-        code,
+        originPassword,
         password,
         confirmPassword,
       });
       showToast(t('common.updateSuccess'));
+      useStore.setDefaultPwd(false);
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -235,43 +211,6 @@
   const personalInfo = ref<OrgUserInfo>({
     ...defaultUserInfo,
   });
-
-  let timer: ReturnType<typeof setInterval> | null = null;
-  const isCounting = ref(false);
-  const count = ref(60);
-
-  const getCodeText = computed(() =>
-    isCounting.value ? t('mine.retryGetCode', { count: count.value }) : t('mine.getCode')
-  );
-
-  function GetCodeStartCountdown() {
-    isCounting.value = true;
-    count.value = 60;
-    timer = setInterval(() => {
-      if (count.value <= 1) {
-        clearInterval(timer!);
-        timer = null;
-        isCounting.value = false;
-      } else {
-        count.value--;
-      }
-    }, 1000);
-  }
-
-  // 发送验证码
-  async function sendCode() {
-    if (isCounting.value) return;
-    try {
-      GetCodeStartCountdown();
-      const emailData: SendEmailDTO = {
-        email: form.value.email,
-      };
-      await sendEmailCode(emailData);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
 
   async function initPersonInfo() {
     try {

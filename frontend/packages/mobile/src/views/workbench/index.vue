@@ -1,9 +1,10 @@
 <template>
   <div class="flex h-full flex-col gap-[16px] overflow-hidden">
-    <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
-      <CrmAvatar :is-word="false" @click="goMine" />
-      <!-- TODO 下个版本重构先不开放入口 -->
-      <!-- <van-search
+    <div>
+      <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
+        <CrmAvatar :is-word="false" @click="goMine" />
+        <!-- TODO 下个版本重构先不开放入口 -->
+        <!-- <van-search
         v-if="
           hasAnyPermission([
             'CUSTOMER_MANAGEMENT:READ',
@@ -18,10 +19,22 @@
         class="flex-1 !p-0"
         @click="goDuplicateCheck"
       /> -->
-      <van-badge :dot="showBadge">
-        <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
-      </van-badge>
+        <van-badge :dot="showBadge">
+          <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
+        </van-badge>
+      </div>
+      <van-notice-bar
+        v-if="useStore.userInfo.defaultPwd"
+        :scrollable="false"
+        wrapable
+        mode="closeable"
+        @close="showAlert = false"
+      >
+        <span>{{ t('mine.changePasswordTip') }}</span>
+        <span class="ml-[8px] text-[var(--primary-8)]" @click="changePassword">{{ t('mine.changePassword') }}</span>
+      </van-notice-bar>
     </div>
+
     <van-cell-group inset class="py-[16px]">
       <van-cell :border="false" class="!py-0">
         <template #title>
@@ -74,6 +87,7 @@
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
   import useAppStore from '@/store/modules/app';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
@@ -82,6 +96,18 @@
 
   const { t } = useI18n();
   const router = useRouter();
+
+  const useStore = useUserStore();
+
+  const showAlert = ref(useStore.userInfo.defaultPwd);
+  function changePassword() {
+    router.push({
+      name: MineRouteEnum.MINE_DETAIL,
+      query: {
+        type: 'resetPassWord',
+      },
+    });
+  }
 
   const keyword = ref('');
   const entryCardList = [

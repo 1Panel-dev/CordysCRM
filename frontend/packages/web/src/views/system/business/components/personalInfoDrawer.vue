@@ -89,7 +89,7 @@
     </CrmCard>
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
-  <EditPasswordModal v-model:show="showEditPasswordModal" :integration="currentPassword" @init-sync="searchData()" />
+  <EditPasswordModal v-model:show="showEditPasswordModal" @init-sync="searchData()" />
 </template>
 
 <script setup lang="ts">
@@ -98,7 +98,7 @@
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
+  import { PersonalInfoRequest } from '@lib/shared/models/system/business';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -134,13 +134,6 @@
     email: '',
   });
 
-  const currentPassword = ref<PersonalPassword>({
-    email: '',
-    code: '',
-    password: '',
-    confirmPassword: '',
-  });
-
   const bodyClass = ref<string>('crm-drawer-content');
 
   const showEditPersonalModal = ref<boolean>(false); // 已配置
@@ -171,7 +164,6 @@
   }
 
   function changePassword() {
-    currentPassword.value.email = personalInfo.value.email;
     showEditPasswordModal.value = true;
   }
 

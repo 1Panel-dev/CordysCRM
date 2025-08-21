@@ -23,6 +23,7 @@ export interface UserInfo {
   roles: string[];
   departmentId: string;
   departmentName: string;
+  defaultPwd: boolean;
 }
 
 export interface MessageInfo {

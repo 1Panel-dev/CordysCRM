@@ -6,57 +6,75 @@
       <n-date-picker v-if="activeTab === 'custom'" v-model:value="rangeTime" type="datetimerange" class="w-[360px]" />
     </div>
   </CrmCard> -->
-  <n-scrollbar x-scrollable content-style="min-width: 1000px;height: 100%;width: 100%">
-    <div class="workbench-card">
-      <dataOverview />
-      <div class="flex h-full w-full">
-        <div class="h-full flex-1">
-          <QuickAccess @refresh="refresh" />
-          <CrmCard hide-footer :special-height="hasAnyPermission(quickAccessPermissionList) ? 177 : 160">
-            <div class="title">
-              <div class="title-name">{{ t('system.personal.plan') }}</div>
-              <div class="title-right" @click="showPersonalInfo = true">{{ t('common.ViewMore') }}</div>
-            </div>
-            <FollowDetail
-              :refresh-key="refreshKey"
-              class="mt-[16px]"
-              active-type="followPlan"
-              wrapper-class="h-[calc(100%-38px)] !p-[0px] !pr-[1px]"
-              :virtual-scroll-height="`${
-                hasAnyPermission(quickAccessPermissionList) ? 'calc(100vh - 402px)' : 'calc(100vh - 235px)'
-              }`"
-              follow-api-key="myPlan"
-              source-id="NULL"
-              :any-permission="['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']"
-            />
-          </CrmCard>
-        </div>
-        <CrmCard hide-footer no-content-padding class="ml-[16px] w-[400px]">
-          <div class="h-full p-[24px]">
-            <div class="title !mb-[8px]">
-              <div class="title-name">{{ t('system.message.notify') }}</div>
-              <div class="title-right" @click="showMessageDrawer = true">
-                {{ t('common.ViewMore') }}
+  <div class="flex h-full flex-col overflow-hidden">
+    <n-alert
+      v-if="useStore.userInfo.defaultPwd"
+      type="warning"
+      closable
+      class="mb-[16px]"
+      @after-leave="showAlert = false"
+    >
+      <span>{{ t('system.personal.changePasswordTip') }}</span>
+      <n-button class="ml-[8px]" text type="primary" @click="changePassword">
+        {{ t('system.personal.changePassword') }}
+      </n-button>
+    </n-alert>
+    <n-scrollbar x-scrollable content-style="min-width: 1000px;height: 100%;width: 100%">
+      <div class="workbench-card" :style="{ height: `calc(100vh - ${!showAlert ? 88 : 154}px)` }">
+        <dataOverview />
+        <div class="flex h-full w-full">
+          <div class="h-full flex-1">
+            <QuickAccess @refresh="refresh" />
+            <CrmCard hide-footer :special-height="hasAnyPermission(quickAccessPermissionList) ? 177 : 160">
+              <div class="title">
+                <div class="title-name">{{ t('system.personal.plan') }}</div>
+                <div class="title-right" @click="showPersonalInfo = true">{{ t('common.ViewMore') }}</div>
               </div>
-            </div>
-            <CrmMessageList
-              ref="messageListRef"
-              :message-list="messageList"
-              virtual-scroll-height="calc(100vh - 168px)"
-              key-field="id"
-            />
+              <FollowDetail
+                :refresh-key="refreshKey"
+                class="mt-[16px]"
+                active-type="followPlan"
+                wrapper-class="h-[calc(100%-38px)] !p-[0px] !pr-[1px]"
+                :virtual-scroll-height="`${
+                  hasAnyPermission(quickAccessPermissionList)
+                    ? `calc(100vh - ${!showAlert ? 402 : 464}px)`
+                    : `calc(100vh - ${!showAlert ? 235 : 297}px)`
+                }`"
+                follow-api-key="myPlan"
+                source-id="NULL"
+                :any-permission="['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']"
+              />
+            </CrmCard>
           </div>
-        </CrmCard>
-        <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
-        <MessageDrawer v-model:show="showMessageDrawer" />
+          <CrmCard hide-footer no-content-padding class="ml-[16px] w-[400px]">
+            <div class="h-full p-[24px]">
+              <div class="title !mb-[8px]">
+                <div class="title-name">{{ t('system.message.notify') }}</div>
+                <div class="title-right" @click="showMessageDrawer = true">
+                  {{ t('common.ViewMore') }}
+                </div>
+              </div>
+              <CrmMessageList
+                ref="messageListRef"
+                :message-list="messageList"
+                :virtual-scroll-height="`calc(100vh - ${!showAlert ? 168 : 230}px)`"
+                key-field="id"
+              />
+            </div>
+          </CrmCard>
+          <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
+          <MessageDrawer v-model:show="showMessageDrawer" />
+        </div>
       </div>
-    </div>
-  </n-scrollbar>
+    </n-scrollbar>
+
+    <EditPasswordModal v-model:show="showEditPasswordModal" />
+  </div>
 </template>
 
 <script setup lang="ts">
   // import { NDatePicker } from 'naive-ui';
-  import { NScrollbar } from 'naive-ui';
+  import { NAlert, NButton, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
@@ -68,15 +86,23 @@
   import CrmMessageList from '@/components/business/crm-message-list/index.vue';
   import dataOverview from './components/dataOverview.vue';
   import QuickAccess from './components/quickAccess.vue';
+  import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import { quickAccessList } from '@/config/workbench';
-  import useAppStore from '@/store/modules/app';
+  import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const appStore = useAppStore();
+  const useStore = useUserStore();
+
+  const showAlert = ref(useStore.userInfo.defaultPwd);
+  const showEditPasswordModal = ref<boolean>(false);
+  function changePassword() {
+    showEditPasswordModal.value = true;
+  }
 
   // 先不上
   // const activeTab = ref('3');
@@ -154,7 +180,6 @@
     padding: 8px 0;
   }
   .workbench-card {
-    height: calc(100vh - 88px);
     @apply w-full overflow-auto;
     .crm-scroll-bar();
   }

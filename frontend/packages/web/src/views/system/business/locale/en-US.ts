@@ -128,6 +128,9 @@ export default {
   'system.personal.code': 'Verification code',
   'system.personal.getCode': 'Get verification code',
   'system.personal.retry': 'Reacquire',
+  'system.personal.currentPassword': 'Current password',
+  'system.personal.changePasswordTip':
+    'Detected that you are using, default initial password. To ensure account security, please change your password immediately',
   'system.personal.password': 'New Password',
   'system.personal.reInput.password': 'Please enter password again',
   'system.personal.password.diff': 'Two passwords are inconsistent',

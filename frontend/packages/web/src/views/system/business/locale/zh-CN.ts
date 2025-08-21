@@ -122,6 +122,8 @@ export default {
   'system.personal.code': '验证码',
   'system.personal.getCode': '获取验证码',
   'system.personal.retry': '重新获取',
+  'system.personal.currentPassword': '当前密码',
+  'system.personal.changePasswordTip': '检测到您正在使用，默认初始密码。为保障账户安全，请立即修改密码',
   'system.personal.password': '新密码',
   'system.personal.reInput.password': '请再次输入密码',
   'system.personal.password.diff': '两次密码不一致',
