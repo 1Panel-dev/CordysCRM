@@ -6,16 +6,16 @@
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
       <div class="flex items-center gap-[8px]">
-        <CrmTag
-          v-if="showSearch"
-          theme="light"
-          type="primary"
-          class="cursor-pointer"
-          @click="showDuplicateCheckDrawer = true"
-        >
-          {{ t('common.search') }}
-        </CrmTag>
-        <!-- <n-popselect
+        <CrmButtonGroup not-show-divider class="gap-[8px]" :list="appStore.navTopConfigList">
+          <template #searchSlot>
+            <n-button v-if="showSearch" class="p-[8px]" quaternary @click="showDuplicateCheckDrawer = true">
+              <template #icon>
+                <CrmIcon type="iconicon_search-outline_outlined" :size="16" />
+              </template>
+            </n-button>
+          </template>
+
+          <!-- <n-popselect
           v-model:value="currentLocale"
           :options="LOCALE_OPTIONS"
           trigger="hover"
@@ -27,49 +27,57 @@
             </template>
           </n-button>
         </n-popselect> -->
-        <n-button class="p-[8px]" quaternary @click="showMessage">
-          <n-badge value="1" dot :show="showBadge">
-            <CrmIcon type="iconicon-alarmclock" :size="16" />
-          </n-badge>
-        </n-button>
-        <n-popover position="left" content-class="w-[320px]" class="!p-[16px]">
-          <div class="flex flex-col gap-[8px]">
-            <CrmSvg name="logo_CORDYS" height="22px" width="100px" />
-            <div
-              class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
-              @click="copyVersion(appStore.versionInfo.currentVersion)"
-            >
-              <div class="text-[12px] leading-[20px]">
-                {{ t('settings.help.currentVersion') }}
-              </div>
-              <div class="font-semibold">
-                {{ appStore.versionInfo.currentVersion }} ({{ appStore.versionInfo.architecture }})
-              </div>
-            </div>
-            <div
-              class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
-              @click="copyVersion(appStore.versionInfo.latestVersion)"
-            >
-              <div class="text-[12px] leading-[20px]">
-                {{ t('settings.help.latestVersion') }}
-              </div>
-              <div class="font-semibold">{{ appStore.versionInfo.latestVersion }}</div>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">Cordys CRM</div>
-              <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">{{ appStore.versionInfo.copyright }}</div>
-            </div>
-          </div>
-          <template #trigger>
-            <n-button class="p-[8px]" quaternary>
-              <template #icon>
-                <n-badge value="1" dot :show="appStore.versionInfo.hasNewVersion">
-                  <CrmIcon type="iconicon_info_circle" :size="16" />
-                </n-badge>
-              </template>
+          <template #alertsSlot>
+            <n-button class="p-[8px]" quaternary @click="showMessage">
+              <n-badge value="1" dot :show="showBadge">
+                <CrmIcon type="iconicon-alarmclock" :size="16" />
+              </n-badge>
             </n-button>
           </template>
-        </n-popover>
+
+          <template #versionInfoSlot>
+            <n-popover position="left" content-class="w-[320px]" class="!p-[16px]">
+              <div class="flex flex-col gap-[8px]">
+                <CrmSvg name="logo_CORDYS" height="22px" width="100px" />
+                <div
+                  class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
+                  @click="copyVersion(appStore.versionInfo.currentVersion)"
+                >
+                  <div class="text-[12px] leading-[20px]">
+                    {{ t('settings.help.currentVersion') }}
+                  </div>
+                  <div class="font-semibold">
+                    {{ appStore.versionInfo.currentVersion }} ({{ appStore.versionInfo.architecture }})
+                  </div>
+                </div>
+                <div
+                  class="flex cursor-pointer items-center gap-[8px] text-[14px] text-[var(--color-text-1)]"
+                  @click="copyVersion(appStore.versionInfo.latestVersion)"
+                >
+                  <div class="text-[12px] leading-[20px]">
+                    {{ t('settings.help.latestVersion') }}
+                  </div>
+                  <div class="font-semibold">{{ appStore.versionInfo.latestVersion }}</div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">Cordys CRM</div>
+                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                    {{ appStore.versionInfo.copyright }}
+                  </div>
+                </div>
+              </div>
+              <template #trigger>
+                <n-button class="p-[8px]" quaternary>
+                  <template #icon>
+                    <n-badge value="1" dot :show="appStore.versionInfo.hasNewVersion">
+                      <CrmIcon type="iconicon_info_circle" :size="16" />
+                    </n-badge>
+                  </template>
+                </n-button>
+              </template>
+            </n-popover>
+          </template>
+        </CrmButtonGroup>
       </div>
     </div>
     <MessageDrawer v-model:show="showMessageDrawer" />
@@ -85,12 +93,12 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   // import { LOCALE_OPTIONS } from '@lib/shared/locale';
   // import useLocale from '@lib/shared/locale/useLocale';
   // import { LocaleType } from '@lib/shared/types/global';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';

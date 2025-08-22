@@ -28,6 +28,9 @@ import {
   ExportCluePoolSelectedUrl,
   ExportClueSelectedUrl,
   FixedClueViewUrl,
+  GetAdvancedCluePoolListUrl,
+  GetAdvancedSearchClueDetailUrl,
+  GetAdvancedSearchClueListUrl,
   GetClueFollowPlanListUrl,
   GetClueFollowPlanUrl,
   GetClueFollowRecordListUrl,
@@ -42,9 +45,6 @@ import {
   GetClueUrl,
   GetClueViewDetailUrl,
   GetClueViewListUrl,
-  GetAdvancedCluePoolListUrl,
-  GetAdvancedSearchClueDetailUrl,
-  GetAdvancedSearchClueListUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   ImportLeadUrl,
@@ -369,7 +369,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getAdvancedCluePoolList(data: CluePoolTableParams) {
-    return CDR.post<CommonList<CluePoolListItem>>({ url: GetAdvancedCluePoolListUrl, data }, { ignoreCancelToken: true });
+    return CDR.post<CommonList<CluePoolListItem>>(
+      { url: GetAdvancedCluePoolListUrl, data },
+      { ignoreCancelToken: true }
+    );
   }
 
   return {

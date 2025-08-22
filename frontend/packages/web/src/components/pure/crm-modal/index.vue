@@ -27,10 +27,10 @@
     </div>
     <template v-if="props.footer" #action>
       <slot name="footer">
-        <div class="flex items-center justify-between">
-          <slot name="footerLeft"> </slot>
+        <div class="flex w-full items-center justify-between">
+          <slot name="footerLeft"></slot>
           <slot name="footerRight">
-            <div class="flex items-center gap-[12px]">
+            <div class="flex flex-1 items-center justify-end gap-[12px]">
               <n-button
                 :disabled="props.okLoading"
                 v-bind="{ secondary: true, ...props.cancelButtonProps }"

@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center font-semibold">
-    {{ t('workbench.duplicateCheck.searchInCordysResult', { name: props.title }) }}
+    {{ t('workbench.duplicateCheck.searchInAdvancedResult', { name: props.title }) }}
     <div class="text-[var(--text-n4)]"> （{{ props.total }}） </div>
   </div>
 </template>

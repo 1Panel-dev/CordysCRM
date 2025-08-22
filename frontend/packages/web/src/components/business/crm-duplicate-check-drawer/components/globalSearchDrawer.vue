@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     width="100%"
-    :title="t('workbench.duplicateCheck.searchInCordys')"
+    :title="t('workbench.duplicateCheck.advanced')"
     :footer="false"
     no-padding
     :show-back="true"

@@ -92,4 +92,5 @@ export default {
   'module.movePublicPoolReasonConfig': 'Move into the open sea cause setting',
   'module.failReasonConfig': 'Fail reason configuration',
   'module.configReasonTooltip': 'It can be enabled after configuration',
+  'module.topNavigationConfig': 'Top Navigation Settings',
 };

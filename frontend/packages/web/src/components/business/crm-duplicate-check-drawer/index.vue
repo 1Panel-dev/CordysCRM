@@ -18,8 +18,15 @@
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
           @search="(val) => searchData(val)"
         />
-        <n-button v-if="lastScopedOptions.length > 0" type="primary" @click="() => openGlobalSearch()">
-          {{ t('workbench.duplicateCheck.searchInCordys') }}
+        <searchSettingButton v-model:config-list="configList" @init="initAdvanceConfig" />
+        <n-button
+          v-if="lastScopedOptions.length > 0"
+          class="n-btn-outline-primary"
+          type="primary"
+          ghost
+          @click="() => openGlobalSearch()"
+        >
+          {{ t('workbench.duplicateCheck.advanced') }}
         </n-button>
       </div>
       <!-- 查询结果 -->
@@ -141,7 +148,6 @@
 <script setup lang="ts">
   import { NButton, NScrollbar, useMessage } from 'naive-ui';
 
-  import { AdvancedSearchOptPageUrl } from '@lib/shared/api/requrls/opportunity';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem, CluePoolListItem } from '@lib/shared/models/clue';
@@ -158,6 +164,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
+  import searchSettingButton from './searchConfig/index.vue';
 
   import {
     advancedSearchOptDetail,
@@ -205,6 +212,8 @@
   const activeCustomer = ref();
   const showDetailDrawer = ref(false);
   const detailType = ref<'opportunity' | 'clue'>('clue');
+
+  const configList = ref([]);
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
   function showDetail(row: any, type: 'opportunity' | 'clue') {
@@ -755,6 +764,7 @@
   );
 
   const showGlobalSearchDrawer = ref(false);
+
   const globalSearchFormKey = ref();
   function openGlobalSearch(value?: FormDesignKeyEnum) {
     globalSearchFormKey.value = value;
@@ -763,5 +773,9 @@
 
   function handleClose() {
     globalSearchFormKey.value = undefined;
+  }
+
+  function initAdvanceConfig(val: Record<string, any>) {
+    // console.log(val, '园园对接会用到');
   }
 </script>

@@ -25,15 +25,17 @@
           </CrmPopConfirm>
         </template>
         <template v-else>
-          <n-button
-            text
-            v-bind="item"
-            :class="item.text === false ? '' : '!p-0'"
-            :type="item.danger ? 'error' : 'primary'"
-            @click="() => emit('select', item.key as string)"
-          >
-            {{ item.label }}
-          </n-button>
+          <slot>
+            <n-button
+              text
+              v-bind="item"
+              :class="item.text === false ? '' : '!p-0'"
+              :type="item.danger ? 'error' : 'primary'"
+              @click="() => emit('select', item.key as string)"
+            >
+              {{ item.label }}
+            </n-button>
+          </slot>
         </template>
       </slot>
       <n-divider v-if="buttonGroupList[index + 1] && !props.notShowDivider" class="!mx-[8px]" vertical />

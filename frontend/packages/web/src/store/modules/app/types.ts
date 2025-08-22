@@ -37,6 +37,13 @@ export interface PlatformConfig {
   helpDoc: string;
 }
 
+export interface NavTopConfigItem {
+  label: string;
+  key: string;
+  slotName?: string;
+  iconType: string;
+}
+
 //  界面配置对象
 export interface PageConfig extends ThemeConfig, LoginConfig, PlatformConfig {}
 
@@ -63,4 +70,5 @@ export interface AppState {
   menuIconStatus: Record<string, boolean>;
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
   versionInfo: SystemVersion; // 版本信息
+  navTopConfigList: NavTopConfigItem[];
 }

@@ -2,8 +2,8 @@
   <n-scrollbar x-scrollable content-class="h-full !w-full" content-style="min-width: 800px">
     <div :class="`config-container  w-full ${licenseStore.expiredDuring ? 'h-[calc(100%-64px)]' : 'h-full'}`">
       <div class="left-box">
-        <CrmCard hide-footer>
-          <div class="h-full">
+        <CrmCard no-content-padding hide-footer>
+          <n-scrollbar content-class="!w-full p-[24px]">
             <div class="mb-[16px] flex items-center justify-between">
               <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
               <div class="text-[var(--text-n4)]">
@@ -26,7 +26,35 @@
                 </div>
               </VueDraggable>
             </div>
-          </div>
+            <n-divider />
+            <div class="font-medium text-[var(--text-n1)]">{{ t('module.topNavigationConfig') }}</div>
+            <div class="nav-list mt-[16px]">
+              <VueDraggable
+                v-model="appStore.navTopConfigList"
+                ghost-class="ghost"
+                handle=".nav-item"
+                :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+                @end="onDragEnd"
+              >
+                <div v-for="item in appStore.navTopConfigList" :key="item.key" class="nav-item justify-between">
+                  <div class="flex items-center gap-[8px]">
+                    <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
+                    <CrmIcon :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
+                    {{ t(item.label) }}
+                  </div>
+                  <n-button
+                    v-if="item.key === 'search'"
+                    text
+                    v-bind="item"
+                    type="primary"
+                    @click="handleDesensitization"
+                  >
+                    脱敏设置
+                  </n-button>
+                </div>
+              </VueDraggable>
+            </div>
+          </n-scrollbar>
         </CrmCard>
       </div>
       <div class="right-box">
@@ -41,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NScrollbar, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NDivider, NScrollbar, NSwitch, useMessage } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
@@ -161,6 +189,9 @@
       immediate: true,
     }
   );
+
+  // TODO
+  function handleDesensitization() {}
 </script>
 
 <style lang="less" scoped>

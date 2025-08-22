@@ -89,4 +89,5 @@ export default {
   'module.movePublicPoolReasonConfig': '移入公海原因设置',
   'module.failReasonConfig': '商机失败原因设置',
   'module.configReasonTooltip': '配置后可开启',
+  'module.topNavigationConfig': '顶部导航配置',
 };

@@ -13,7 +13,6 @@ import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
 
 import checkStatus from '../http/checkStatus';
-import {AdvancedSearchOptPageUrl} from "@lib/shared/api/requrls/opportunity";
 
 const CDR = createAxios({
   showErrorMsg: showFailToast,

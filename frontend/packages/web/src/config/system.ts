@@ -1,6 +1,8 @@
 import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
+import { NavTopConfigItem } from '@/store/modules/app/types';
+
 const { t } = useI18n();
 
 export const logTypeOption = [
@@ -51,6 +53,27 @@ export const logTypeOption = [
   {
     value: OperationTypeEnum.REMOVE_USER,
     label: t('common.removeUser'),
+  },
+];
+
+export const defaultNavList: NavTopConfigItem[] = [
+  {
+    label: t('settings.search'),
+    key: 'search',
+    iconType: 'iconicon_search-outline_outlined',
+    slotName: 'searchSlot',
+  },
+  {
+    label: t('settings.navbar.alerts'),
+    key: 'alerts',
+    iconType: 'iconicon-alarmclock',
+    slotName: 'alertsSlot',
+  },
+  {
+    label: t('settings.help.versionInfo'),
+    key: 'versionInfo',
+    iconType: 'iconicon_info_circle',
+    slotName: 'versionInfoSlot',
   },
 ];
 

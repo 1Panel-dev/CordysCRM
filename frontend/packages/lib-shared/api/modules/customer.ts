@@ -44,6 +44,9 @@ import {
   ExportOpenSeaCustomerSelectedUrl,
   FixedContactViewUrl,
   FixedCustomerViewUrl,
+  GetAdvancedCustomerContactListUrl,
+  GetAdvancedCustomerListUrl,
+  GetAdvancedOpenSeaCustomerListUrl,
   GetContactViewDetailUrl,
   GetContactViewListUrl,
   GetCustomerCollaborationListUrl,
@@ -69,9 +72,6 @@ import {
   GetCustomerUrl,
   GetCustomerViewDetailUrl,
   GetCustomerViewListUrl,
-  GetAdvancedCustomerContactListUrl,
-  GetAdvancedCustomerListUrl,
-  GetAdvancedOpenSeaCustomerListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
@@ -566,7 +566,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function geAdvancedCustomerList(data: CustomerTableParams) {
-    return CDR.post<CommonList<CustomerListItem>>({ url: GetAdvancedCustomerListUrl, data }, { ignoreCancelToken: true });
+    return CDR.post<CommonList<CustomerListItem>>(
+      { url: GetAdvancedCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
   }
 
   function getAdvancedOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {

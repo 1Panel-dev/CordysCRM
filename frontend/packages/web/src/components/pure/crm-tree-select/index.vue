@@ -43,6 +43,8 @@
     options?: TreeSelectOption[];
     disabled?: boolean;
     type?: 'department' | 'custom';
+    limitSelectCount?: number;
+    limitSelectTooltip?: string;
   }>();
 
   const attrs = useAttrs();
@@ -328,7 +330,15 @@
 
   function renderLabel(info: { option: TreeSelectOption; checked: boolean; selected: boolean }) {
     const { option } = info;
+    const optionId = option[keyField.value] as string;
     const optionLabel = option[labelField.value] as string | number;
+    // 是否达到上限且该项未被选中
+    const isLimitHit =
+      props.limitSelectCount &&
+      attrs.checkable &&
+      (selectValue.value as string[])?.length >= props.limitSelectCount &&
+      !(selectValue.value as string[])?.includes(optionId);
+
     return h(
       NTooltip,
       {
@@ -339,7 +349,7 @@
         trigger: () => {
           return h('div', { class: 'flex-1 m-w-0 one-line-text max-w-[300px] crm-tree-node-title' }, optionLabel);
         },
-        default: () => optionLabel,
+        default: () => (isLimitHit ? props.limitSelectTooltip : optionLabel),
       }
     );
   }
@@ -435,6 +445,18 @@
           selectValue.value = [...newValue];
         }
       }
+    }
+  );
+
+  watch(
+    () => props.options,
+    (val) => {
+      if (val) {
+        treeData.value = val;
+      }
+    },
+    {
+      deep: true,
     }
   );
 </script>
