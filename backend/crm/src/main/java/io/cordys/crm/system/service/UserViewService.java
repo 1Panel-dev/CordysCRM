@@ -265,7 +265,7 @@ public class UserViewService {
 
     public List<FilterCondition> getFilterConditions(String viewId) {
         List<UserViewCondition> viewConditions = extUserViewConditionMapper.getViewConditions(viewId);
-        List<FilterCondition> conditions = viewConditions.stream().map(condition -> {
+        return viewConditions.stream().map(condition -> {
             FilterCondition filterCondition = BeanUtils.copyBean(new FilterCondition(), condition);
             Object value = getConditionValueByType(condition.getValueType(), condition.getValue());
             filterCondition.setValue(value);
@@ -274,7 +274,6 @@ public class UserViewService {
             }
             return filterCondition;
         }).toList();
-        return conditions;
     }
 
 
@@ -283,18 +282,13 @@ public class UserViewService {
         if (StringUtils.isBlank(value)) {
             return null;
         }
-        switch (conditionValueType) {
-            case ARRAY:
-                return JSON.parseObject(value);
-            case INT:
-                return Long.valueOf(value);
-            case FLOAT:
-                return Double.valueOf(value);
-            case BOOLEAN:
-                return Boolean.valueOf(value);
-            default:
-                return value;
-        }
+        return switch (conditionValueType) {
+            case ARRAY -> JSON.parseObject(value);
+            case INT -> Long.valueOf(value);
+            case FLOAT -> Double.valueOf(value);
+            case BOOLEAN -> Boolean.valueOf(value);
+            default -> value;
+        };
     }
 
 
