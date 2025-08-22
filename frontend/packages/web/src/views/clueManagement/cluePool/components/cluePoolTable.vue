@@ -484,6 +484,7 @@
               {
                 onClick: () => {
                   activeClue.value = row;
+                  poolId.value = row.poolId ?? poolId.value;
                   showOverviewDrawer.value = true;
                 },
               },

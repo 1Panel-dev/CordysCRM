@@ -377,6 +377,7 @@
           {
             onClick: () => {
               activeClue.value = row;
+              poolId.value = row.poolId;
               showCluePoolOverviewDrawer.value = true;
             },
           },

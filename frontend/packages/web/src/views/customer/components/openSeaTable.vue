@@ -471,6 +471,7 @@
               {
                 onClick: () => {
                   activeCustomerId.value = row.id;
+                  openSea.value = row.poolId ?? openSea.value;
                   showOverviewDrawer.value = true;
                 },
               },
