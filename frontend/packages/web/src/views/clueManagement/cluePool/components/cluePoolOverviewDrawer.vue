@@ -65,7 +65,7 @@
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
-    detail?: CluePoolListItem;
+    detail?: Partial<CluePoolListItem>;
     poolId: string;
     hiddenColumns: string[];
   }>();

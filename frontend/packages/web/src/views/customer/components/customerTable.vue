@@ -104,6 +104,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
@@ -140,6 +141,8 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const route = useRoute();
+
   const props = defineProps<{
     formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER;
     hiddenAdvanceFilter?: boolean;
@@ -601,6 +604,11 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+    if (route.query.id) {
+      activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+      activeSourceId.value = route.query.id as string;
+      showOverviewDrawer.value = true;
+    }
   });
 </script>
 

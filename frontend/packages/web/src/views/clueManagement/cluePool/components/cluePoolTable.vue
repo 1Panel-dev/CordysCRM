@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, NSelect, NTooltip, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -144,6 +145,7 @@
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
+  const route = useRoute();
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL;
@@ -407,7 +409,7 @@
     }
   }
 
-  const activeClue = ref<CluePoolListItem>();
+  const activeClue = ref<Partial<CluePoolListItem>>();
 
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
   const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
@@ -576,6 +578,15 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+
+    if (route.query.id) {
+      activeClue.value = {
+        id: route.query.id as string,
+        name: route.query.name as string,
+      };
+      poolId.value = route.query.poolId as string;
+      showOverviewDrawer.value = true;
+    }
   });
 </script>
 

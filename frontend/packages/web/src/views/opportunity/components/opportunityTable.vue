@@ -114,6 +114,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -176,6 +177,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const route = useRoute();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
 
@@ -275,7 +277,7 @@
 
   const showOverviewDrawer = ref<boolean>(false);
   const activeSourceId = ref('');
-  const activeOpportunity = ref<OpportunityItem>();
+  const activeOpportunity = ref<Partial<OpportunityItem>>();
   const formCreateDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.BUSINESS);
   const initialSourceName = ref('');
@@ -685,6 +687,16 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+
+    if (route.query.id) {
+      activeOpportunity.value = {
+        id: route.query.id as string,
+        opportunityName: route.query.opportunityName as string,
+      };
+      activeSourceId.value = route.query.id as string;
+      realFormKey.value = FormDesignKeyEnum.BUSINESS;
+      showOverviewDrawer.value = true;
+    }
   });
 </script>
 

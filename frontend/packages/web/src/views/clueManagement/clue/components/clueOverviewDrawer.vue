@@ -114,7 +114,7 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
-    detail?: ClueListItem;
+    detail?: Partial<ClueListItem>;
   }>();
 
   const show = defineModel<boolean>('show', {

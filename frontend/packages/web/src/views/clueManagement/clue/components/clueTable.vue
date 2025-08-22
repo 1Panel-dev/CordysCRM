@@ -125,6 +125,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
@@ -178,6 +179,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const route = useRoute();
 
   const props = defineProps<{
     tableFormKey: FormDesignKeyEnum.CLUE | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE;
@@ -199,7 +201,7 @@
   const keyword = ref('');
   const activeClueId = ref('');
   const needInitDetail = ref(false);
-  const activeClue = ref<ClueListItem>();
+  const activeClue = ref<Partial<ClueListItem>>();
   const formKey = ref(FormDesignKeyEnum.CLUE);
   const isInitFormCreateDrawer = ref(false);
   const formCreateDrawerVisible = ref(false);
@@ -384,7 +386,7 @@
     id: '',
   });
 
-  function handleConvertToCustomer(row?: ClueListItem) {
+  function handleConvertToCustomer(row?: Partial<ClueListItem>) {
     isInitConvertDrawer.value = true;
     activeClueId.value = '';
     formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
@@ -655,6 +657,15 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+    if (route.query.id) {
+      activeClue.value = {
+        transitionType: route.query.transitionType as 'CUSTOMER' | 'OPPORTUNITY',
+        id: route.query.id as string,
+        name: route.query.name as string,
+      };
+      isInitOverviewDrawer.value = true;
+      showOverviewDrawer.value = true;
+    }
   });
 </script>
 

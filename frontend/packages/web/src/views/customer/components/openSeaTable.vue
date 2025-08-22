@@ -86,6 +86,7 @@
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, NSelect, NTooltip, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -143,6 +144,7 @@
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
+  const route = useRoute();
 
   const openSea = ref<string | number>('');
   const openSeaOptions = ref<CluePoolItem[]>([]);
@@ -566,6 +568,12 @@
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+
+    if (route.query.id) {
+      activeCustomerId.value = route.query.id as string;
+      openSea.value = route.query.poolId as string;
+      showOverviewDrawer.value = true;
+    }
   });
 </script>
 

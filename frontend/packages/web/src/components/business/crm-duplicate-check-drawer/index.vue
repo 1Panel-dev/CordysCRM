@@ -168,7 +168,10 @@
   } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps } from '@/config/opportunity';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
   import { lastScopedOptions } from './config';
 
@@ -195,6 +198,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { openNewPage } = useOpenNewPage();
 
   const keyword = ref('');
 
@@ -326,9 +330,11 @@
           CrmTableButton,
           {
             onClick: () => {
-              activeClue.value = row;
-              isInitOverviewDrawer.value = true;
-              showClueOverviewDrawer.value = true;
+              openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
+                id: row.id,
+                transitionType: row.transitionType,
+                name: row.name,
+              });
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -377,9 +383,11 @@
           CrmTableButton,
           {
             onClick: () => {
-              activeClue.value = row;
-              poolId.value = row.poolId;
-              showCluePoolOverviewDrawer.value = true;
+              openNewPage(ClueRouteEnum.CLUE_MANAGEMENT_POOL, {
+                id: row.id,
+                name: row.name,
+                poolId: row.poolId,
+              });
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -419,9 +427,10 @@
           CrmTableButton,
           {
             onClick: () => {
-              activeSourceId.value = row.id;
-              activeOpportunity.value = row;
-              showOptOverviewDrawer.value = true;
+              openNewPage(OpportunityRouteEnum.OPPORTUNITY, {
+                id: row.id,
+                opportunityName: row.opportunityName,
+              });
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -488,8 +497,9 @@
           CrmTableButton,
           {
             onClick: () => {
-              activeSourceId.value = row.id;
-              showCustomerOverviewDrawer.value = true;
+              openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+                id: row.id,
+              });
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -577,9 +587,10 @@
           CrmTableButton,
           {
             onClick: () => {
-              activeSourceId.value = row.id;
-              poolId.value = row.poolId;
-              showCustomerOpenseaOverviewDrawer.value = true;
+              openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
+                id: row.id,
+                poolId: row.poolId,
+              });
             },
           },
           { default: () => row.name, trigger: () => row.name }
@@ -604,6 +615,20 @@
       width: 100,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              openNewPage(CustomerRouteEnum.CUSTOMER_CONTACT, {
+                id: row.customerId,
+              });
+            },
+          },
+          { default: () => row.customerName, trigger: () => row.customerName }
+        );
       },
     },
     {

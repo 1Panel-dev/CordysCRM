@@ -101,7 +101,7 @@
   const Message = useMessage();
 
   const props = defineProps<{
-    detail?: OpportunityItem;
+    detail?: Partial<OpportunityItem>;
   }>();
 
   const emit = defineEmits<{
