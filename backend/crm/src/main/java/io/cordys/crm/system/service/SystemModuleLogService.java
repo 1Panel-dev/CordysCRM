@@ -10,77 +10,85 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class SystemModuleLogService extends BaseModuleLogService{
+public class SystemModuleLogService extends BaseModuleLogService {
 
-	@Resource
-	private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
 
-	@Override
-	public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-		differenceDTOS.forEach(differ -> {
-			if (Strings.CS.equals("linkFields", differ.getColumn())) {
-				differ.setColumnName(Translator.get("log." + differ.getColumn()));
-				handleLinkFieldsLogDetail(differ);
-			}
-			if (Strings.CS.equals("module.switch", differ.getColumn())) {
-				differ.setColumnName(Translator.get(differ.getColumn()));
-				differ.setOldValueName(differ.getOldValue());
-				differ.setNewValueName(differ.getNewValue());
-			}
-		});
-	}
+    @Override
+    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+        differenceDTOS.forEach(differ -> {
+            if (Strings.CS.equals("linkFields", differ.getColumn())) {
+                differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                handleLinkFieldsLogDetail(differ);
+            }
+            if (Strings.CS.equals("module.switch", differ.getColumn())) {
+                differ.setColumnName(Translator.get(differ.getColumn()));
+                differ.setOldValueName(differ.getOldValue());
+                differ.setNewValueName(differ.getNewValue());
+            }
+        });
+    }
 
-	private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
-		Object oldValue = differ.getOldValue();
-		Object newValue = differ.getNewValue();
-		Map<String, String> oldLinkFieldMap = new HashMap<>();
-		if (oldValue != null && oldValue instanceof List linkFields) {
-			linkFields.forEach(linkField -> {
-				Map linkMap = (Map) linkField;
-				oldLinkFieldMap.put(linkMap.get("current").toString(), linkMap.get("link").toString());
-			});
-		}
-		Map<String, String> newLinkFieldMap = new HashMap<>();
-		if (newValue != null && newValue instanceof List linkFields) {
-			linkFields.forEach(linkField -> {
-				Map linkMap = (Map) linkField;
-				newLinkFieldMap.put(linkMap.get("current").toString(), linkMap.get("link").toString());
-			});
-		}
-		List<String> fieldIds = new ArrayList<>();
-		oldLinkFieldMap.forEach((key, value) -> {
-			fieldIds.add(key);
-			fieldIds.add(value);
-		});
-		newLinkFieldMap.forEach((key, value) -> {
-			fieldIds.add(key);
-			fieldIds.add(value);
-		});
-		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.in(ModuleField::getId, fieldIds);
-		List<ModuleField> moduleFields = moduleFieldMapper.selectListByLambda(queryWrapper);
-		Map<String, String> fieldMap = moduleFields.stream().collect(Collectors.toMap(ModuleField::getId, ModuleField::getName, (v1, v2) -> v1));
-		if (!oldLinkFieldMap.isEmpty()) {
-			List<String> oldVal = new ArrayList<>();
-			oldLinkFieldMap.forEach((k, v) -> {
-				oldVal.add(fieldMap.getOrDefault(k, k) + "-" + fieldMap.getOrDefault(v, v));
-			});
-			differ.setOldValueName(oldVal);
-		}
-		if (!newLinkFieldMap.isEmpty()) {
-			List<String> newVal = new ArrayList<>();
-			newLinkFieldMap.forEach((k, v) -> {
-				newVal.add(fieldMap.getOrDefault(k, k) + "-" + fieldMap.getOrDefault(v, v));
-			});
-			differ.setNewValueName(newVal);
-		}
-	}
+    private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
+        Map<String, String> oldPairs = parseLinkFieldMap(differ.getOldValue());
+        Map<String, String> newPairs = parseLinkFieldMap(differ.getNewValue());
+
+        // 去重且保序
+        Set<String> fieldIds = new LinkedHashSet<>();
+        oldPairs.forEach((k, v) -> {
+            fieldIds.add(k);
+            fieldIds.add(v);
+        });
+        newPairs.forEach((k, v) -> {
+            fieldIds.add(k);
+            fieldIds.add(v);
+        });
+
+        Map<String, String> fieldMap = new HashMap<>();
+        if (!fieldIds.isEmpty()) {
+            LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(ModuleField::getId, new ArrayList<>(fieldIds));
+            List<ModuleField> moduleFields = moduleFieldMapper.selectListByLambda(queryWrapper);
+            fieldMap = moduleFields.stream()
+                    .collect(Collectors.toMap(ModuleField::getId, ModuleField::getName, (a, b) -> a));
+        }
+
+        if (!oldPairs.isEmpty()) {
+            differ.setOldValueName(toNamePairs(oldPairs, fieldMap));
+        }
+        if (!newPairs.isEmpty()) {
+            differ.setNewValueName(toNamePairs(newPairs, fieldMap));
+        }
+    }
+
+    private Map<String, String> parseLinkFieldMap(Object value) {
+        Map<String, String> result = new LinkedHashMap<>();
+        if (!(value instanceof List<?> list)) {
+            return result;
+        }
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> m)) {
+                continue;
+            }
+            Object current = m.get("current");
+            Object link = m.get("link");
+            if (current != null && link != null) {
+                result.put(String.valueOf(current), String.valueOf(link));
+            }
+        }
+        return result;
+    }
+
+    private List<String> toNamePairs(Map<String, String> pairs, Map<String, String> fieldMap) {
+        return pairs.entrySet().stream()
+                .map(e -> fieldMap.getOrDefault(e.getKey(), e.getKey())
+                        + "-" + fieldMap.getOrDefault(e.getValue(), e.getValue()))
+                .collect(Collectors.toList());
+    }
 }

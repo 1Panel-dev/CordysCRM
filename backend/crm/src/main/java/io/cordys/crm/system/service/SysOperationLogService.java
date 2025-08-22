@@ -125,7 +125,7 @@ public class SysOperationLogService {
                 if (moduleLogService != null) {
                     moduleLogService.handleLogField(differenceDTOS, orgId);
                 } else {
-                    differenceDTOS.forEach(differ -> BaseModuleLogService.translatorDifferInfo(differ));
+                    differenceDTOS.forEach(BaseModuleLogService::translatorDifferInfo);
                 }
 
             }
