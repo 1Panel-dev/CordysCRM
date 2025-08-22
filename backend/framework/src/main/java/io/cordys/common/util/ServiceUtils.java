@@ -5,13 +5,16 @@ import io.cordys.common.constants.QuadFunction;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ServiceUtils {
 
-    //用于排序的pos
+    // 用于排序的pos
     public static final int POS_STEP = 4096;
 
     /**
@@ -27,98 +30,113 @@ public class ServiceUtils {
         resourceName.remove();
     }
 
-    public static <T> void updatePosFieldByAsc(PosRequest request, Class<T> clazz, String userId, String resourceType,
-                                               Function<String, T> selectByPrimaryKeyFunc,
-                                               QuadFunction<String, Long, String, String, Long> getPrePosFunc,
-                                               QuadFunction<String, Long, String, String, Long> getLastPosFunc,
-                                               Consumer<T> updateByPrimaryKeySelectiveFuc) {
-        Long pos;
-        Long lastOrPrePos;
+    // 反射元数据缓存，减少重复反射开销
+    private static final Map<Class<?>, Accessors> ACCESSOR_CACHE = new ConcurrentHashMap<>();
+
+    public static <T> void updatePosFieldByAsc(
+            PosRequest request,
+            Class<T> clazz,
+            String userId,
+            String resourceType,
+            Function<String, T> selectByPrimaryKeyFunc,
+            QuadFunction<String, Long, String, String, Long> getPrePosFunc,
+            QuadFunction<String, Long, String, String, Long> getLastPosFunc,
+            Consumer<T> updateByPrimaryKeySelectiveFuc) {
+        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc, updateByPrimaryKeySelectiveFuc, true);
+    }
+
+    public static <T> void updatePosFieldByDesc(
+            PosRequest request,
+            Class<T> clazz,
+            String userId,
+            String resourceType,
+            Function<String, T> selectByPrimaryKeyFunc,
+            QuadFunction<String, Long, String, String, Long> getPrePosFunc,
+            QuadFunction<String, Long, String, String, Long> getLastPosFunc,
+            Consumer<T> updateByPrimaryKeySelectiveFuc) {
+        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc, updateByPrimaryKeySelectiveFuc, false);
+    }
+
+    private static <T> void updatePosField(
+            PosRequest request,
+            Class<T> clazz,
+            String userId,
+            String resourceType,
+            Function<String, T> selectByPrimaryKeyFunc,
+            QuadFunction<String, Long, String, String, Long> getPrePosFunc,
+            QuadFunction<String, Long, String, String, Long> getLastPosFunc,
+            Consumer<T> updateByPrimaryKeySelectiveFuc,
+            boolean asc) {
         try {
-            Method getPos = clazz.getMethod("getPos");
-            Method setId = clazz.getMethod("setId", String.class);
-            Method setPos = clazz.getMethod("setPos", Long.class);
+            Accessors acc = getAccessors(clazz);
 
             // 获取移动的参考对象
             T target = selectByPrimaryKeyFunc.apply(request.getTargetId());
-
             if (target == null) {
                 // 如果参考对象被删除，则不处理
                 return;
             }
 
-            Long targetPos = (Long) getPos.invoke(target);
+            Long targetPos = (Long) acc.getPos.invoke(target);
+            boolean moveAfter = MoveTypeEnum.AFTER.name().equals(request.getMoveMode());
 
-            if (request.getMoveMode().equals(MoveTypeEnum.AFTER.name())) {
-                // 追加到参考对象的之后
-                pos = targetPos + POS_STEP;
-                // ，因为是正序排，则查找比目标 order 大的一个order
-                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
+            Long neighborPos;
+            long pos;
+
+            if (asc) {
+                if (moveAfter) {
+                    pos = targetPos + POS_STEP;
+                    neighborPos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
+                } else {
+                    pos = targetPos - POS_STEP;
+                    neighborPos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
+                }
             } else {
-                // 追加到前面
-                pos = targetPos - POS_STEP;
-                // 因为是正序排，则查找比目标 order 更小的一个order
-                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
-            }
-            if (lastOrPrePos != null) {
-                // 如果不是第一个或最后一个则取中间值
-                pos = (targetPos + lastOrPrePos) / 2;
+                if (moveAfter) {
+                    pos = targetPos - POS_STEP;
+                    neighborPos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
+                } else {
+                    pos = targetPos + POS_STEP;
+                    neighborPos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
+                }
             }
 
-            // 更新order值
-            T updateObj = (T) clazz.getDeclaredConstructor().newInstance();
-            setId.invoke(updateObj, request.getMoveId());
-            setPos.invoke(updateObj, pos);
+            if (neighborPos != null) {
+                // 如果不是第一个或最后一个则取中间值
+                pos = (targetPos + neighborPos) / 2;
+            }
+
+            @SuppressWarnings("unchecked")
+            T updateObj = (T) acc.newInstance();
+            acc.setId.invoke(updateObj, request.getMoveId());
+            acc.setPos.invoke(updateObj, pos);
             updateByPrimaryKeySelectiveFuc.accept(updateObj);
         } catch (Exception e) {
-            throw new GenericException("更新 pos 字段失败");
+            throw new GenericException("更新 pos 字段失败: " + e.getMessage());
         }
     }
 
-    public static <T> void updatePosFieldByDesc(PosRequest request, Class<T> clazz, String userId, String resourceType,
-                                               Function<String, T> selectByPrimaryKeyFunc,
-                                               QuadFunction<String, Long, String, String, Long> getPrePosFunc,
-                                               QuadFunction<String, Long, String, String, Long> getLastPosFunc,
-                                               Consumer<T> updateByPrimaryKeySelectiveFuc) {
-        Long pos;
-        Long lastOrPrePos;
-        try {
-            Method getPos = clazz.getMethod("getPos");
-            Method setId = clazz.getMethod("setId", String.class);
-            Method setPos = clazz.getMethod("setPos", Long.class);
-
-            // 获取移动的参考对象
-            T target = selectByPrimaryKeyFunc.apply(request.getTargetId());
-
-            if (target == null) {
-                // 如果参考对象被删除，则不处理
-                return;
+    private static Accessors getAccessors(Class<?> clazz) {
+        return ACCESSOR_CACHE.computeIfAbsent(clazz, c -> {
+            try {
+                Method getPos = c.getMethod("getPos");
+                Method setId = c.getMethod("setId", String.class);
+                Method setPos = c.getMethod("setPos", Long.class);
+                Constructor<?> ctor = c.getDeclaredConstructor();
+                if (!ctor.canAccess(null)) {
+                    ctor.setAccessible(true);
+                }
+                return new Accessors(getPos, setId, setPos, ctor);
+            } catch (Exception e) {
+                throw new GenericException("初始化反射元数据失败: " + e.getMessage());
             }
-
-            Long targetPos = (Long) getPos.invoke(target);
-
-            if (request.getMoveMode().equals(MoveTypeEnum.AFTER.name())) {
-                pos = targetPos - POS_STEP;
-                // ，因为是降序排，则查找比目标 order 小的一个order
-                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
-            } else {
-                pos = targetPos + POS_STEP;
-                // 因为是降序排，则查找比目标 order 更大的一个order
-                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
-            }
-            if (lastOrPrePos != null) {
-                // 如果不是第一个或最后一个则取中间值
-                pos = (targetPos + lastOrPrePos) / 2;
-            }
-
-            // 更新order值
-            T updateObj = (T) clazz.getDeclaredConstructor().newInstance();
-            setId.invoke(updateObj, request.getMoveId());
-            setPos.invoke(updateObj, pos);
-            updateByPrimaryKeySelectiveFuc.accept(updateObj);
-        } catch (Exception e) {
-            throw new GenericException("更新 pos 字段失败");
-        }
+        });
     }
 
+    private record Accessors(Method getPos, Method setId, Method setPos, Constructor<?> ctor) {
+
+        Object newInstance() throws Exception {
+            return ctor.newInstance();
+        }
+    }
 }
