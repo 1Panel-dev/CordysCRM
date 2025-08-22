@@ -1,6 +1,7 @@
 package io.cordys.crm.search.service;
 
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Module;
@@ -17,6 +18,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     abstract public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId);
 
+    abstract public Pager<List<R>> startSearchNoOption(T request, String orgId, String userId);
 
     /**
      * 获取当前组织下所有已开启的模块key

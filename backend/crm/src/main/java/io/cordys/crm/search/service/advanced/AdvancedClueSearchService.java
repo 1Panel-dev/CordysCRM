@@ -11,6 +11,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
@@ -94,6 +95,11 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         Map<String, List<OptionDTO>> optionMap = buildClueOptionMap(orgId, list, buildList);
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    @Override
+    public Pager<List<AdvancedClueResponse>> startSearchNoOption(CluePageRequest request, String orgId, String userId) {
+        return null;
     }
 
     public Map<String, List<OptionDTO>> buildClueOptionMap(String orgId, List<ClueListResponse> list, List<AdvancedClueResponse> buildList) {

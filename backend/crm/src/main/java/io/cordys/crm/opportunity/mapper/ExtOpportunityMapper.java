@@ -38,6 +38,9 @@ public interface ExtOpportunityMapper {
 
     List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 
+    List<OptionDTO> getOpportunityOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
+
     List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 
     Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount")  boolean amount);

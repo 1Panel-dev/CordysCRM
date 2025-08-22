@@ -2,6 +2,7 @@ package io.cordys.crm.search.controller;
 
 import io.cordys.aspectj.constants.GlobalSearchModule;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.search.response.global.GlobalOpportunityResponse;
@@ -25,8 +26,8 @@ public class GlobalSearchController {
 
     @PostMapping("/opportunity")
     @Operation(summary = "全局搜索-商机")
-    public PagerWithOption<List<GlobalOpportunityResponse>> advancedSearchOpportunity(@Validated @RequestBody BasePageRequest request) {
+    public Pager<List<GlobalOpportunityResponse>> advancedSearchOpportunity(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, GlobalOpportunityResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.OPPORTUNITY);
-        return searchService.startSearch(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

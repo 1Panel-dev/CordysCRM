@@ -9,6 +9,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
@@ -91,6 +92,11 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         List<AdvancedCustomerPoolResponse> buildList = buildListData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    @Override
+    public Pager<List<AdvancedCustomerPoolResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
+        return null;
     }
 
 

@@ -630,4 +630,13 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
+    <select id="getOpportunityOptions" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from opportunity
+        where
+        organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+    </select>
 </mapper>
