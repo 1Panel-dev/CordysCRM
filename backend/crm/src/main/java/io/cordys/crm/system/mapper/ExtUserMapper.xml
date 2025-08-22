@@ -222,6 +222,12 @@
         #{id}
         </foreach>
     </select>
+    <select id="selectNameAndEmail" resultType="io.cordys.security.UserDTO">
+        SELECT su.id, su.name, su.email, sou.enable
+        FROM sys_user su
+        JOIN sys_organization_user sou ON su.id = sou.user_id
+        WHERE sou.organization_id = #{orgId} and su.id != 'admin'
+    </select>
 
     <update id="updateUser" parameterType="io.cordys.crm.system.domain.User">
         update sys_user

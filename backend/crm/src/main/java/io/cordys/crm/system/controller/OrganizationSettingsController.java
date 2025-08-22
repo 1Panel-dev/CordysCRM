@@ -6,6 +6,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import io.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import io.cordys.crm.integration.dataease.service.DataEaseService;
+import io.cordys.crm.integration.dataease.service.DataEaseSyncService;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.service.IntegrationConfigService;
 import io.cordys.crm.system.service.OrganizationConfigService;
@@ -28,6 +29,8 @@ public class OrganizationSettingsController {
 
     @Resource
     private DataEaseService dataEaseService;
+    @Resource
+    private DataEaseSyncService dataEaseSyncService;
 
     @Resource
     private OrganizationConfigService organizationConfigService;
@@ -83,15 +86,29 @@ public class OrganizationSettingsController {
         return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping(value = "/de/sync")
+    @Operation(summary = "同步DE数据")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
+    public void syncDataEase() {
+        dataEaseSyncService.syncDataEase(OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping(value = "/de/org/list")
+    @Operation(summary = "获取de组织列表")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
+    public List<OptionDTO> getDeOrgList(@RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
+        return dataEaseSyncService.getDeOrgList(thirdConfigurationDTO);
+    }
+
     @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
     public ThirdConfigurationDTO getThirdConfigByType(@PathVariable String type) {
-        return integrationConfigService.getThirdConfigByType(type);
+        return integrationConfigService.getThirdConfigByType(type, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/third-party/types")
     @Operation(summary = "获取三方应用扫码类型集合")
     public List<OptionDTO> getThirdTypeList() {
-        return integrationConfigService.getThirdTypeList();
+        return integrationConfigService.getThirdTypeList(OrganizationContext.getOrganizationId());
     }
 }

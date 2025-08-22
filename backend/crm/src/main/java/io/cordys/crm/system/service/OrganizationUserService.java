@@ -512,9 +512,9 @@ public class OrganizationUserService {
      * @param orgId
      */
     public void deleteUser(String orgId, String operatorId) {
-        List<Department> departmentList = extDepartmentMapper.selectAllDepartment(orgId);
-        if (CollectionUtils.isNotEmpty(departmentList)) {
-            extDepartmentCommanderMapper.deleteByDepartmentIds(departmentList.stream().map(Department::getId).toList());
+        List<String> departmentIds = extDepartmentMapper.selectAllDepartmentIds(orgId);
+        if (CollectionUtils.isNotEmpty(departmentIds)) {
+            extDepartmentCommanderMapper.deleteByDepartmentIds(departmentIds);
         }
         List<User> userList = extUserMapper.getAllUserIds(orgId);
         List<String> ids = userList.stream().map(User::getId).toList();

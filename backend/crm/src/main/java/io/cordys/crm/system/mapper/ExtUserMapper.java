@@ -46,6 +46,8 @@ public interface ExtUserMapper {
 
     List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId, @Param("defaultOrder") String defaultOrder);
 
+    List<UserDTO> selectNameAndEmail(@Param("orgId") String orgId);
+
     void updateUser(@Param("user") User user);
 
     List<UserDeptDTO> getUserDeptByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);

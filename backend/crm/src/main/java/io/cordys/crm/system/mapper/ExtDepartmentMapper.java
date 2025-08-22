@@ -26,7 +26,7 @@ public interface ExtDepartmentMapper {
 
     void deleteByOrgId(@Param("orgId") String orgId);
 
-    List<Department> selectAllDepartment(@Param("orgId") String orgId);
+    List<String> selectAllDepartmentIds(@Param("orgId") String orgId);
 
     BaseTreeNode selectDepartment(@Param("name") String name, @Param("orgId") String orgId);
 

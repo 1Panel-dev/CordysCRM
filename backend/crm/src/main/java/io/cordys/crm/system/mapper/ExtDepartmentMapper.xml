@@ -46,7 +46,7 @@
     </delete>
 
 
-    <select id="selectAllDepartment" resultType="io.cordys.crm.system.domain.Department">
+    <select id="selectAllDepartmentIds" resultType="java.lang.String">
         select id from sys_department where organization_id = #{orgId}
     </select>
 

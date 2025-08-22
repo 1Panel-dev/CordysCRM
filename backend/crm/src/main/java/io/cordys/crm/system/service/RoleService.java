@@ -75,6 +75,11 @@ public class RoleService {
     private PermissionCache permissionCache;
 
     public List<RoleListResponse> list(String orgId) {
+        List<RoleListResponse> roleListResponseList = getRoleListResponses(orgId);
+        return baseService.setCreateAndUpdateUserName(roleListResponseList);
+    }
+
+    public List<RoleListResponse> getRoleListResponses(String orgId) {
         Role role = new Role();
         role.setOrganizationId(orgId);
         List<Role> roles = roleMapper.select(role);
@@ -85,7 +90,7 @@ public class RoleService {
                 .forEach(this::translateInternalRole);
         // 按创建时间排序
         roleListResponseList.sort(Comparator.comparingLong(RoleListResponse::getCreateTime));
-        return baseService.setCreateAndUpdateUserName(roleListResponseList);
+        return roleListResponseList;
     }
 
     /**
@@ -144,6 +149,9 @@ public class RoleService {
     }
 
     public List<RoleScopeDept> getRoleScopeDeptByRoleIds(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
         LambdaQueryWrapper<RoleScopeDept> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(RoleScopeDept::getRoleId, roleIds);
         return roleScopeDeptMapper.selectListByLambda(wrapper);
@@ -555,5 +563,23 @@ public class RoleService {
                     role = translateInternalRole(role);
                     return BeanUtils.copyBean(new RoleDataScopeDTO(), role);
                 }).toList();
+    }
+
+    public List<UserRole> getUserRoleByRoleIds(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
+        LambdaQueryWrapper<UserRole> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(UserRole::getRoleId, roleIds);
+        return userRoleMapper.selectListByLambda(wrapper);
+    }
+
+    public List<RolePermission> getRolePermissionByRoleIds(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
+        LambdaQueryWrapper<RolePermission> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RolePermission::getRoleId, roleIds);
+        return rolePermissionMapper.selectListByLambda(wrapper);
     }
 }

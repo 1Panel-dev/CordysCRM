@@ -219,15 +219,18 @@ public class DataSourceService {
             currentUserDeptIds = dataScopeService.getDeptIdsWithChild(tree, Set.of(organizationUser.getDepartmentId()));
         }
 
-        Map<String, List<RoleScopeDept>> customDeptRoleDeptMap = Map.of();
+        Map<String, List<String>> customDeptRoleDeptMap = Map.of();
         if (CollectionUtils.isNotEmpty(customDeptRoles)) {
             // 查看指定部门及其子部门数据
             List<String> customDeptRolesIds = customDeptRoles.stream()
                     .map(RoleDataScopeDTO::getId)
                     .toList();
-            customDeptRoleDeptMap = roleService.getRoleScopeDeptByRoleIds(customDeptRolesIds)
-                    .stream()
-                    .collect(Collectors.groupingBy(RoleScopeDept::getRoleId));
+
+            List<RoleScopeDept> roleScopeDeptList = roleService.getRoleScopeDeptByRoleIds(customDeptRolesIds);
+            roleScopeDeptList.forEach(roleScopeDept -> {
+                customDeptRoleDeptMap.putIfAbsent(roleScopeDept.getRoleId(), new ArrayList<>());
+                customDeptRoleDeptMap.get(roleScopeDept.getRoleId()).add(roleScopeDept.getDepartmentId());
+            });
         }
 
         for (String dataScopePermission : SQLBotTable.getDataScopePermissions()) {
@@ -247,16 +250,13 @@ public class DataSourceService {
                 for (RolePermissionDTO customDeptRole : customDeptRoles) {
                     if (CollectionUtils.isNotEmpty(customDeptRoleDeptMap.get(customDeptRole.getId()))) {
                         // 获取指定部门角色中的部门Id
-                        List<String> deptIds = customDeptRoleDeptMap.get(customDeptRole.getId())
-                                .stream()
-                                .map(RoleScopeDept::getDepartmentId)
-                                .toList();
+                        List<String> deptIds = customDeptRoleDeptMap.get(customDeptRole.getId());
                         parentDeptIds.addAll(deptIds);
                     }
-                    // 获取部门及子部门ID
-                    List<String> deptIds = dataScopeService.getDeptIdsWithChild(tree, new HashSet<>(parentDeptIds));
-                    deptDataPermission.getDeptIds().addAll(deptIds);
                 }
+                // 获取部门及子部门ID
+                List<String> deptIds = dataScopeService.getDeptIdsWithChild(tree, new HashSet<>(parentDeptIds));
+                deptDataPermission.getDeptIds().addAll(deptIds);
             }
         }
         return deptDataPermissionMap;

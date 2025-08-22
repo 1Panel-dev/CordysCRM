@@ -64,8 +64,6 @@ public class IntegrationConfigService {
     @Resource
     private AgentService agentService;
 
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
-
     /**
      * 获取同步的组织配置
      */
@@ -736,7 +734,7 @@ public class IntegrationConfigService {
     /**
      * 根据类型获取第三方配置
      */
-    public ThirdConfigurationDTO getThirdConfigByType(String type) {
+    public ThirdConfigurationDTO getThirdConfigByType(String type, String orgId) {
         // 确定配置类型和组织ID
         String configType = Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())
                 ? OrganizationConfigConstants.ConfigType.AUTH.name()
@@ -744,7 +742,7 @@ public class IntegrationConfigService {
 
         // 获取组织配置
         OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
-                DEFAULT_ORGANIZATION_ID, configType
+                orgId, configType
         );
 
         if (config == null) {
@@ -830,10 +828,10 @@ public class IntegrationConfigService {
     /**
      * 获取第三方类型列表
      */
-    public List<OptionDTO> getThirdTypeList() {
+    public List<OptionDTO> getThirdTypeList(String orgId) {
         // 获取组织配置
         OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
-                DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.THIRD.name()
+                orgId, OrganizationConfigConstants.ConfigType.THIRD.name()
         );
 
         if (config == null) {
