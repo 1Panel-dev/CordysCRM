@@ -13,7 +13,7 @@
             class="crm-description-item-label"
             :style="{ width: props.labelWidth || '120px', textAlign: props.labelAlign }"
           >
-            <n-tooltip>
+            <n-tooltip :placement="item.tooltipPosition ?? 'top-start'">
               <template #trigger>
                 <div :class="props.oneLineLabel ? 'one-line-text' : ''">
                   {{ item.label }}

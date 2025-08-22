@@ -52,7 +52,7 @@ export default function useTableStore() {
     const selectionColumn = newArr.find((item) => item.type === SpecialColumnEnum.SELECTION);
     const orderColumn = newArr.find((item) => item.key === SpecialColumnEnum.ORDER);
     if (orderColumn && selectionColumn) {
-      // 如果有排序列和选择列，则将选择列插入到排序列之前
+      // 如果有排序列和选择列，则将选择列插入到排序列之后
       sorted.splice(1, 0, selectionColumn);
     } else if (selectionColumn) {
       // 如果只有选择列，则将其放在最前面

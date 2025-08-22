@@ -177,6 +177,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: name || form[item.businessKey],
               slotName: FieldTypeEnum.DATE_TIME,
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (
             item.type === FieldTypeEnum.DATA_SOURCE &&
@@ -189,18 +190,21 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: name || form[item.businessKey],
               slotName: FieldDataSourceTypeEnum.CUSTOMER,
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.DATE_TIME) {
             descriptions.value.push({
               label: item.name,
               value: formatTimeValue(name || form[item.businessKey], item.dateType),
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
             descriptions.value.push({
               label: item.name,
               value: formatNumberValue(name || form[item.businessKey], item),
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.TEXTAREA) {
             descriptions.value.push({
@@ -208,12 +212,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: name || form[item.businessKey],
               slotName: FieldTypeEnum.TEXTAREA,
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else {
             descriptions.value.push({
               label: item.name,
               value: name || form[item.businessKey],
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           }
           if (item.businessKey === 'name') {
@@ -229,6 +235,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: field?.fieldValue || [],
               slotName: 'divider',
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.PICTURE) {
             descriptions.value.push({
@@ -236,6 +243,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: field?.fieldValue || [],
               valueSlotName: 'image',
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.TEXTAREA) {
             descriptions.value.push({
@@ -243,6 +251,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: field?.fieldValue || '',
               slotName: FieldTypeEnum.TEXTAREA,
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else {
             let value = field?.fieldValue || '';
@@ -273,6 +282,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value,
               fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           }
         }
