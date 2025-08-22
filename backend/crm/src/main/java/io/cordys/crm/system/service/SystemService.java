@@ -66,7 +66,7 @@ public class SystemService {
 
         return VersionInfoDTO.builder()
                 .currentVersion(current)
-                .latestVersion(hasNew ? latest : currentBase)
+                .latestVersion(hasNew ? latest : "v" + currentBase)
                 .copyright(CopyrightUtils.getCopyright(year))
                 .hasNewVersion(hasNew)
                 .architecture(ArchUtils.getNormalizedArch())
