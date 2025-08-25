@@ -498,4 +498,18 @@
             <property name="sort" value="request.sort"/>
         </include>
     </select>
+    <select id="globalPoolSearchList" resultType="io.cordys.crm.search.response.global.GlobalCustomerPoolResponse">
+        select c.id, c.`name`, c.pool_id, cp.name as poolName
+        from customer c inner join customer_pool cp on c.pool_id = cp.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+        and c.in_shared_pool is true and c.pool_id != null
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+    </select>
 </mapper>

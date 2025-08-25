@@ -48,8 +48,7 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
 
     @Resource
     private ExtCustomerMapper extCustomerMapper;
-    @Resource
-    private BaseMapper<CustomerPool> poolMapper;
+
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -66,8 +65,7 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
-    @Resource
-    private UserExtendService userExtendService;
+
 
 
     @Override
@@ -188,23 +186,6 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
 
         return list;
     }
-
-    private Map<String, String> getUserPool(String orgId, String userId) {
-        Map<String, String> poolMap = new HashMap<>();
-        LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
-        poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, orgId);
-        poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
-        List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
-        pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
-                poolMap.put(pool.getId(), pool.getName());
-            }
-        });
-        return poolMap;
-    }
-
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCustomerPoolResponse> list, List<AdvancedCustomerPoolResponse> buildList) {
         // 处理自定义字段选项数据

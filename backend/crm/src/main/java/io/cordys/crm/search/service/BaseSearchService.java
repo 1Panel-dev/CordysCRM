@@ -1,15 +1,19 @@
 package io.cordys.crm.search.service;
 
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.util.JSON;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
@@ -19,6 +23,7 @@ import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -27,10 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class BaseSearchService<T extends BasePageRequest, R> {
@@ -51,6 +53,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     private ExtCustomerMapper extCustomerMapper;
 
     @Resource
+    private BaseMapper<CustomerPool> poolMapper;
+
+    @Resource
     private ExtOpportunityMapper extOpportunityMapper;
 
     @Resource
@@ -61,6 +66,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     @Resource
     private ModuleFormService moduleFormService;
+
+    @Resource
+    private UserExtendService userExtendService;
 
     public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId) {
         return new PagerWithOption<>();
@@ -128,6 +136,28 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         return customerOptions.stream()
                 .map(OptionDTO::getId)
                 .toList();
+    }
+
+    /**
+     * 获取用户有权限的公海池
+     * @param orgId 组织ID
+     * @param userId 用户ID
+     * @return 公海池ID和名称的映射关系
+     */
+    public Map<String, String> getUserPool(String orgId, String userId) {
+        Map<String, String> poolMap = new HashMap<>();
+        LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
+        poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, orgId);
+        poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
+        List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
+        pools.forEach(pool -> {
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
+            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+                poolMap.put(pool.getId(), pool.getName());
+            }
+        });
+        return poolMap;
     }
 
     /**

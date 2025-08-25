@@ -630,6 +630,7 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
+
     <select id="getOpportunityOptions" resultType="io.cordys.common.dto.OptionDTO">
         select id, name
         from opportunity

@@ -3,8 +3,8 @@ package io.cordys.crm.search.controller;
 import io.cordys.aspectj.constants.GlobalSearchModule;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
 import io.cordys.crm.search.response.global.GlobalOpportunityResponse;
 import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.search.service.global.GlobalSearchServiceFactory;
@@ -26,8 +26,15 @@ public class GlobalSearchController {
 
     @PostMapping("/opportunity")
     @Operation(summary = "全局搜索-商机")
-    public Pager<List<GlobalOpportunityResponse>> advancedSearchOpportunity(@Validated @RequestBody BasePageRequest request) {
+    public Pager<List<GlobalOpportunityResponse>> globalSearchOpportunity(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, GlobalOpportunityResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.OPPORTUNITY);
+        return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping("/customer_pool")
+    @Operation(summary = "全局搜索-公海")
+    public Pager<List<GlobalCustomerPoolResponse>> globalSearchCustomerPool(@Validated @RequestBody BasePageRequest request) {
+        BaseSearchService<BasePageRequest, GlobalCustomerPoolResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER_POOL);
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

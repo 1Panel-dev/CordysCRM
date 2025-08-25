@@ -10,13 +10,13 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse;
 import io.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
+import io.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
 import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-08 17:42:41
  */
@@ -39,6 +39,7 @@ public interface ExtCustomerMapper {
 
     /**
      * 移入公海
+     *
      * @param customer 客户
      */
     void moveToPool(@Param("customer") Customer customer);
@@ -51,15 +52,18 @@ public interface ExtCustomerMapper {
 
     /**
      * 查询负责人过滤条件下的客户数量
+     *
      * @param ownerId 负责人ID
      * @param filters 过滤条件集合
      * @return 客户数量
      */
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
-    List<CustomerListResponse> getListByIds(@Param("ids")List<String> ids);
+    List<CustomerListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
+    Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed") boolean unfollowed);
 
     List<AdvancedCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+    List<GlobalCustomerPoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 }

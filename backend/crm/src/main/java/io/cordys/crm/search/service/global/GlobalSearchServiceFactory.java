@@ -13,8 +13,8 @@ public class GlobalSearchServiceFactory {
 
     static {
         searchServiceMap.put(GlobalSearchModule.OPPORTUNITY, CommonBeanFactory.getBean(GlobalOpportunitySearchService.class));
-     /*   searchServiceMap.put(GlobalSearchModule.CUSTOMER_POOL, CommonBeanFactory.getBean(AdvancedCustomerPoolSearchService.class));
-        searchServiceMap.put(GlobalSearchModule.CUSTOMER, CommonBeanFactory.getBean(AdvancedCustomerSearchService.class));
+     searchServiceMap.put(GlobalSearchModule.CUSTOMER_POOL, CommonBeanFactory.getBean(GlobalCustomerPoolSearchService.class));
+        /*   searchServiceMap.put(GlobalSearchModule.CUSTOMER, CommonBeanFactory.getBean(AdvancedCustomerSearchService.class));
         searchServiceMap.put(GlobalSearchModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(AdvancedCustomerContactSearchService.class));
         searchServiceMap.put(GlobalSearchModule.CLUE, CommonBeanFactory.getBean(AdvancedClueSearchService.class));
         searchServiceMap.put(GlobalSearchModule.CLUE_POOL, CommonBeanFactory.getBean(AdvancedCluePoolSearchService.class));*/
