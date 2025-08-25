@@ -93,4 +93,5 @@ export default {
   'module.failReasonConfig': 'Fail reason configuration',
   'module.configReasonTooltip': 'It can be enabled after configuration',
   'module.topNavigationConfig': 'Top Navigation Settings',
+  'module.desensitizationSet': 'Desensitization set',
 };

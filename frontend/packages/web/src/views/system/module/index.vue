@@ -49,11 +49,12 @@
                     type="primary"
                     @click="handleDesensitization"
                   >
-                    脱敏设置
+                    {{ t('module.desensitizationSet') }}
                   </n-button>
                 </div>
               </VueDraggable>
             </div>
+            <desensitizationModal v-model:visible="showDesensitizationDrawer" />
           </n-scrollbar>
         </CrmCard>
       </div>
@@ -79,6 +80,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import ConfigCard from './components/configCard.vue';
+  import desensitizationModal from './components/desensitizationModal.vue';
 
   import { moduleNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
@@ -190,8 +192,10 @@
     }
   );
 
-  // TODO
-  function handleDesensitization() {}
+  const showDesensitizationDrawer = ref(false);
+  function handleDesensitization() {
+    showDesensitizationDrawer.value = true;
+  }
 </script>
 
 <style lang="less" scoped>

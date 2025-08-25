@@ -6,7 +6,7 @@
         <div>{{ t('workbench.duplicateCheck.matchFields') }}</div>
       </div>
       <n-form ref="formRef" :model="formModel.list" label-placement="left" class="flex flex-1 flex-col gap-[12px]">
-        <div v-for="element of lastScopedOptions" :key="element.value" class="flex flex-1 items-start gap-[12px]">
+        <div v-for="element of props.scopedOptions" :key="element.value" class="flex flex-1 items-start gap-[12px]">
           <div class="w-[200px]">
             <div class="advanced-label">
               {{ element.label }}
@@ -49,16 +49,18 @@
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmTreeSelect from '@/components/pure/crm-tree-select/index.vue';
 
-  import { lastScopedOptions } from '../config';
+  import { DefaultSearchSetFormModel, ScopedOptions } from '../config';
 
   const { t } = useI18n();
+
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
+    scopedOptions: ScopedOptions[];
   }>();
 
   const formRef = ref<FormInst | null>(null);
 
-  const formModel = defineModel<Record<string, any>>('formModel', {
+  const formModel = defineModel<DefaultSearchSetFormModel>('formModel', {
     required: true,
   });
 

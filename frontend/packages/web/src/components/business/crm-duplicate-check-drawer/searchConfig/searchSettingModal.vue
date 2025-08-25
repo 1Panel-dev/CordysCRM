@@ -6,7 +6,12 @@
     :negative-text="t('common.reset')"
     :width="816"
   >
-    <searchSetting ref="advancedSettingRef" v-model:form-model="formModel" :search-field-map="props.searchFieldMap" />
+    <searchSetting
+      ref="searchSettingRef"
+      v-model:form-model="formModel"
+      :scoped-options="lastScopedOptions"
+      :search-field-map="props.searchFieldMap"
+    />
     <div class="mt-[16px] text-[var(--text-n1)]">{{ t('workbench.duplicateCheck.filterResultSort') }}</div>
     <div class="mt-[8px]">
       <VueDraggable
@@ -32,7 +37,7 @@
     <template #footer>
       <div class="flex w-full items-center justify-between">
         <div class="ml-[4px] flex items-center gap-[8px]">
-          <n-switch v-model:value="formModel.enable" :rubber-band="false" />
+          <n-switch v-model:value="formModel.resultDisplay" :rubber-band="false" />
           {{ t('workbench.duplicateCheck.showHasResultTable') }}
         </div>
         <div class="flex items-center justify-end gap-[12px]">
@@ -60,8 +65,8 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import searchSetting from './searchSetting.vue';
 
-  import type { ScopedOptions } from '../config';
-  import { lastScopedOptions } from '../config';
+  import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
+  import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
 
   const { t } = useI18n();
 
@@ -75,32 +80,22 @@
     default: () => lastScopedOptions.value,
   });
 
-  const defaultFormModel: {
-    list: Record<string, any>;
-    enable: boolean;
-    configList: ScopedOptions[];
-  } = {
-    list: {}, // 字段map
-    enable: false, // 是否开启
-    configList: [], // 排序列表
-  };
-
-  const formModel = ref({
-    ...cloneDeep(defaultFormModel),
+  const formModel = ref<DefaultSearchSetFormModel>({
+    ...cloneDeep(defaultSearchSetFormModel),
   });
 
-  const advancedSettingRef = ref<InstanceType<typeof searchSetting>>();
+  const searchSettingRef = ref<InstanceType<typeof searchSetting>>();
   const loading = ref(false);
   function handleConfirm() {
-    advancedSettingRef.value?.formRef?.validate((errors) => {
+    searchSettingRef.value?.formRef?.validate((errors) => {
       if (!errors) {
         // TODO xinxinwu
       }
     });
   }
   function handleReset() {
-    advancedSettingRef.value?.formRef?.restoreValidation();
-    formModel.value.list = cloneDeep(defaultFormModel);
+    searchSettingRef.value?.formRef?.restoreValidation();
+    formModel.value.list = cloneDeep(defaultSearchSetFormModel);
   }
 </script>
 

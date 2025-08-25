@@ -15,7 +15,13 @@ export interface ScopedOptions {
   permission: string[];
 }
 
-const scopedOptions = [
+export interface DefaultSearchSetFormModel {
+  list: Record<string, any>;
+  resultDisplay: boolean;
+  sortSetting: ScopedOptions[];
+}
+
+export const scopedOptions = [
   {
     label: t('crmFormDesign.clue'),
     value: FormDesignKeyEnum.SEARCH_ADVANCED_CLUE,
@@ -61,4 +67,8 @@ export const lastScopedOptions = computed<ScopedOptions[]>(() =>
   )
 );
 
-export default {};
+export const defaultSearchSetFormModel: DefaultSearchSetFormModel = {
+  list: {}, // 字段map
+  resultDisplay: false, // 是否开启
+  sortSetting: [], // 排序列表
+};

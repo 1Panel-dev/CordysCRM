@@ -90,4 +90,5 @@ export default {
   'module.failReasonConfig': '商机失败原因设置',
   'module.configReasonTooltip': '配置后可开启',
   'module.topNavigationConfig': '顶部导航配置',
+  'module.desensitizationSet': '脱敏设置',
 };
