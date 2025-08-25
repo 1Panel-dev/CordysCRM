@@ -30,6 +30,7 @@ import {
   getOpportunityListUrl,
   GetReasonConfigUrl,
   GetReasonUrl,
+  GetSearchConfigUrl,
   moduleNavListSortUrl,
   ModuleRoleTreeUrl,
   ModuleUserDeptTreeUrl,
@@ -38,6 +39,7 @@ import {
   PreviewPictureUrl,
   QuickUpdateCluePoolUrl,
   QuickUpdateCustomerPoolUrl,
+  ResetSearchConfigUrl,
   SaveFormDesignConfigUrl,
   SearchConfigUrl,
   SortReasonUrl,
@@ -289,6 +291,14 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: SearchConfigUrl, data });
   }
 
+  function getSearchConfig() {
+    return CDR.get({ url: GetSearchConfigUrl });
+  }
+
+  function resetSearchConfig() {
+    return CDR.get({ url: ResetSearchConfigUrl });
+  }
+
   return {
     getModuleNavConfigList,
     moduleNavListSort,
@@ -336,5 +346,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateReasonEnable,
     sortReason,
     searchConfig,
+    getSearchConfig,
+    resetSearchConfig,
   };
 }

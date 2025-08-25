@@ -55,7 +55,6 @@
 
 <script setup lang="ts">
   import { NButton, NSwitch, useMessage } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -65,7 +64,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import searchSetting from './searchSetting.vue';
 
-  import { searchConfig } from '@/api/modules';
+  import { resetSearchConfig, searchConfig } from '@/api/modules';
 
   import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
@@ -75,6 +74,10 @@
 
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
   }>();
 
   const visible = defineModel<boolean>('visible', { required: true });
@@ -100,6 +103,7 @@
             sortSetting: configList.value.map((e) => e.value),
           });
           Message.success(t('common.operationSuccess'));
+          emit('refresh');
           visible.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -110,9 +114,16 @@
       }
     });
   }
-  function handleReset() {
+
+  async function handleReset() {
     searchSettingRef.value?.formRef?.restoreValidation();
-    formModel.value.searchFields = cloneDeep(defaultSearchSetFormModel);
+    try {
+      await resetSearchConfig();
+      emit('refresh');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 </script>
 

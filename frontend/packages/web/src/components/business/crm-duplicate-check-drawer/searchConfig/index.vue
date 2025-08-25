@@ -13,6 +13,7 @@
     v-model:form-model="formModel"
     v-model:visible="showAdvancedSettingModal"
     :search-field-map="searchFieldMap"
+    @refresh="handleRefresh"
   />
 </template>
 
@@ -22,6 +23,8 @@
   import { cloneDeep } from 'lodash-es';
 
   import searchSettingModal from './searchSettingModal.vue';
+
+  import { getSearchConfig } from '@/api/modules';
 
   import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
@@ -44,9 +47,30 @@
     showAdvancedSettingModal.value = true;
   }
 
+  async function initSearchDetail() {
+    try {
+      const res = await getSearchConfig();
+      const { sortSetting } = res;
+      configList.value = sortSetting.map((value: any) => {
+        const currentConfig = lastScopedOptions.value.find((scoped) => value === scoped.value);
+        return {
+          ...currentConfig,
+        };
+      });
+      formModel.value = cloneDeep(res);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleRefresh() {
+    initSearchDetail();
+  }
+
   onMounted(async () => {
     await initSearchFormConfig();
-    configList.value = lastScopedOptions.value;
+    await initSearchDetail();
     emit('init', searchFieldMap, formModel.value);
   });
 

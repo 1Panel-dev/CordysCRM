@@ -337,6 +337,8 @@ export const {
   updateReasonEnable,
   sortReason,
   searchConfig,
+  getSearchConfig,
+  resetSearchConfig,
 } = moduleApi;
 
 export const {

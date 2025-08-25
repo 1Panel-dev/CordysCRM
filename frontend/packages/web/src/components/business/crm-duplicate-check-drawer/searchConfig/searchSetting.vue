@@ -17,11 +17,11 @@
               {{ element.label }}
             </div>
           </div>
-          <div class="flex-1">
+          <div class="min-w-0 flex-1">
             <n-form-item
               :path="element.value"
               :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
-              class="block flex-initial overflow-hidden"
+              class="block flex-[1.5] overflow-hidden"
             >
               <CrmTreeSelect
                 v-model:value="formModel.searchFields[element.value]"
