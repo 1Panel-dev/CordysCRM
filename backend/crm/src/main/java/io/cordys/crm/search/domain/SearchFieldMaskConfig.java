@@ -9,8 +9,8 @@ import lombok.Data;
  * 全局脱敏搜索配置
  */
 @Data
-@Table(name = "sys_field desens config")
-public class FieldDesensConfig extends BaseModel {
+@Table(name = "sys_search_field_mask_config")
+public class SearchFieldMaskConfig extends BaseModel {
     @Schema(description = "搜索字段id")
     private String fieldId;
 

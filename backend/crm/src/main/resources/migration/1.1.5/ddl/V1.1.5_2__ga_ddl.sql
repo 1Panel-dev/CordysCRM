@@ -29,7 +29,7 @@ CREATE INDEX idx_user_id ON sys_user_search_config (user_id ASC);
 CREATE INDEX ids_module_type ON sys_user_search_config (module_type ASC);
 
 
-CREATE TABLE sys_field_desens_config
+CREATE TABLE sys_search_field_mask_config
 (
     `id`               VARCHAR(32) NOT NULL COMMENT 'id',
     `field_id`         VARCHAR(32) NOT NULL COMMENT '搜索字段id',
@@ -49,9 +49,9 @@ DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
 
-CREATE INDEX idx_module_type ON sys_field_desens_config (module_type ASC);
-CREATE INDEX idx_organization_id ON sys_field_desens_config (organization_id ASC);
-CREATE INDEX idx_field_id ON sys_field_desens_config (field_id ASC);
+CREATE INDEX idx_module_type ON sys_search_field_mask_config (module_type ASC);
+CREATE INDEX idx_organization_id ON sys_search_field_mask_config (organization_id ASC);
+CREATE INDEX idx_field_id ON sys_search_field_mask_config (field_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
