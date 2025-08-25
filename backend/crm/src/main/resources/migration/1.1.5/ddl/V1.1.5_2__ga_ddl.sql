@@ -28,5 +28,29 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_user_id ON sys_user_search_config (user_id ASC);
 CREATE INDEX ids_module_type ON sys_user_search_config (module_type ASC);
 
+
+CREATE TABLE sys_field_desens_config(
+                                               `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                                               `field_id` VARCHAR(32) NOT NULL   COMMENT '搜索字段id' ,
+                                               `type` VARCHAR(20) NOT NULL   COMMENT '类型' ,
+                                               `business_key` VARCHAR(50)    COMMENT '业务字段key' ,
+                                               `data_source_type` VARCHAR(50)    COMMENT '数据源对应类型' ,
+                                               `module_type` VARCHAR(50) NOT NULL   COMMENT '搜索模块(customer/clue/等)' ,
+                                               `organization_id` VARCHAR(32)    COMMENT '组织id' ,
+                                               `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                                               `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                                               `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+                                               `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+                                               PRIMARY KEY (id)
+)  COMMENT = '全局脱敏搜索配置'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
+CREATE INDEX idx_module_type ON sys_field_desens_config(module_type ASC);
+CREATE INDEX idx_organization_id ON sys_field_desens_config(organization_id ASC);
+CREATE INDEX idx_field_id ON sys_field_desens_config(field_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
