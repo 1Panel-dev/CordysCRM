@@ -56,6 +56,7 @@ export default function useSearchFormConfig() {
 
         const res = await getFormConfigApiMap[configKey as FormDesignKeyEnum]();
         const result = getFilterListConfig(res, true);
+        // TODO lmy 暴露出全量的
         const customFieldsFilterConfig = result.filter((e) => searchFieldConfigType.includes(e.type));
 
         configMap[configKey as FormDesignKeyEnum]?.forEach((configValue) => {

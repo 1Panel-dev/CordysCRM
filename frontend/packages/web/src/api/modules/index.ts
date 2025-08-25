@@ -87,6 +87,7 @@ export const {
   enableBusinessView,
   dragBusinessView,
   advancedSearchOptPage,
+  globalSearchOptPage,
   advancedSearchOptDetail,
 } = opportunityApi;
 

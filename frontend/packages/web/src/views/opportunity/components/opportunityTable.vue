@@ -465,6 +465,24 @@
     handleSearchData,
   });
 
+  function showCustomerDrawer(row: any) {
+    activeSourceId.value = row.customerId;
+    if (row.inCustomerPool) {
+      openSea.value = row.poolId ?? '';
+      showOpenSeaOverviewDrawer.value = true;
+    } else {
+      emit(
+        'openCustomerDrawer',
+        {
+          customerId: row.customerId,
+          inCustomerPool: row.inCustomerPool,
+          poolId: row.poolId || '',
+        },
+        false
+      );
+    }
+  }
+
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['customerId'],
@@ -532,21 +550,7 @@
               CrmTableButton,
               {
                 onClick: () => {
-                  activeSourceId.value = row.customerId;
-                  if (row.inCustomerPool) {
-                    openSea.value = row.poolId ?? '';
-                    showOpenSeaOverviewDrawer.value = true;
-                  } else {
-                    emit(
-                      'openCustomerDrawer',
-                      {
-                        customerId: row.customerId,
-                        inCustomerPool: row.inCustomerPool,
-                        poolId: row.poolId || '',
-                      },
-                      false
-                    );
-                  }
+                  showCustomerDrawer(row);
                 },
               },
               { default: () => row.customerName, trigger: () => row.customerName }
@@ -718,6 +722,12 @@
       activeSourceId.value = route.query.id as string;
       realFormKey.value = FormDesignKeyEnum.BUSINESS;
       showOverviewDrawer.value = true;
+    } else if (route.query.customerId) {
+      showCustomerDrawer({
+        customerId: route.query.customerId as string,
+        inCustomerPool: route.query.inCustomerPool === 'true',
+        poolId: route.query.poolId as string,
+      });
     }
   });
 </script>

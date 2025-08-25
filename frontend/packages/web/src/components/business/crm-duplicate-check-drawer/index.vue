@@ -8,8 +8,8 @@
     class="min-w-[1000px]"
     :title="t('common.search')"
   >
-    <n-scrollbar content-class="p-[24px]">
-      <div class="mb-[24px] flex items-center justify-between gap-[12px]">
+    <div class="p-[24px]">
+      <div class="mb-[16px] flex items-center justify-between gap-[12px]">
         <CrmSearchInput
           v-model:value="keyword"
           class="!w-full"
@@ -31,38 +31,36 @@
       </div>
       <!-- 查询结果 -->
       <template v-if="keyword.length">
-        <template v-for="table in activeTables" :key="table.key">
-          <div class="mb-[24px]">
-            <div class="flex justify-between">
-              <div class="flex items-center font-semibold">
-                {{ table.label }}
-                <div class="text-[var(--text-n4)]">
-                  ({{ table.instance.propsRes.value.crmPagination?.itemCount }})
-                </div>
-              </div>
-              <n-button
-                v-show="table.instance.propsRes.value.crmPagination?.itemCount"
-                text
-                type="primary"
-                @click="openGlobalSearch(table.value)"
+        <div class="flex gap-[8px]">
+          <CrmTag
+            v-for="(item, index) of configList"
+            :key="`${item.value}-${index}`"
+            :type="activeConfigValue === item.value ? 'primary' : 'default'"
+            theme="light"
+            class="!px-[12px]"
+            size="large"
+            @click="clickTag(item)"
+          >
+            <span>
+              {{ item.label }}
+              <span
+                :class="`${activeConfigValue === item.value ? 'text-[var(--primary-8)]' : 'text-[var(--text-n4)]'}`"
               >
-                {{ t('common.ViewMore') }}
-              </n-button>
-            </div>
-            <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-              <CrmTable
-                v-bind="table.instance.propsRes.value"
-                class="!h-[205px]"
-                @page-size-change="table.instance.propsEvent.value.pageSizeChange"
-                @sorter-change="table.instance.propsEvent.value.sorterChange"
-                @filter-change="table.instance.propsEvent.value.filterChange"
-                @page-change="table.instance.propsEvent.value.pageChange"
-              />
-            </div>
-          </div>
-        </template>
+                ({{ useTableRes.propsRes.value.crmPagination?.itemCount }})</span
+              >
+            </span>
+          </CrmTag>
+        </div>
+
+        <CrmTable
+          v-bind="useTableRes.propsRes.value"
+          @page-size-change="useTableRes.propsEvent.value.pageSizeChange"
+          @sorter-change="useTableRes.propsEvent.value.sorterChange"
+          @filter-change="useTableRes.propsEvent.value.filterChange"
+          @page-change="useTableRes.propsEvent.value.pageChange"
+        />
       </template>
-    </n-scrollbar>
+    </div>
   </CrmDrawer>
 
   <CrmDrawer v-model:show="showDetailDrawer" :width="800" :footer="false" :title="activeCustomer?.name">
@@ -85,135 +83,63 @@
     @close="handleClose"
     @show-count-detail="(row:any,type:'opportunity' | 'clue')=>showDetail(row,type)"
   />
-  <!-- 详情 -->
-  <Suspense>
-    <div>
-      <customerOverviewDrawer
-        v-model:show="showCustomerOverviewDrawer"
-        :source-id="activeSourceId"
-        :readonly="isCustomerReadonly"
-        @saved="searchData(keyword)"
-      />
-      <openSeaOverviewDrawer
-        v-model:show="showCustomerOpenseaOverviewDrawer"
-        :source-id="activeSourceId"
-        :readonly="isCustomerReadonly"
-        :pool-id="poolId"
-        :hidden-columns="hiddenColumns"
-        @change="searchData(keyword)"
-      />
-
-      <optOverviewDrawer
-        v-model:show="showOptOverviewDrawer"
-        :detail="activeOpportunity"
-        @refresh="searchData(keyword)"
-        @open-customer-drawer="handleOpenCustomerDrawer($event, true)"
-      />
-      <ClueOverviewDrawer
-        v-if="isInitOverviewDrawer"
-        v-model:show="showClueOverviewDrawer"
-        :detail="activeClue"
-        @refresh="searchData(keyword)"
-        @open-customer-drawer="handleOpenCustomerDrawer($event, true)"
-        @convert-to-customer="() => handleConvertToCustomer(activeClue)"
-      />
-      <CluePoolOverviewDrawer
-        v-model:show="showCluePoolOverviewDrawer"
-        :pool-id="poolId"
-        :detail="activeClue as CluePoolListItem"
-        :hidden-columns="cluePoolHiddenColumns"
-        @refresh="searchData(keyword)"
-      />
-      <convertToCustomerDrawer
-        v-if="isInitConvertDrawer"
-        v-model:show="showConvertToCustomerDrawer"
-        :clue-id="otherFollowRecordSaveParams.clueId"
-        @finish="searchData(keyword)"
-        @new="handleNewCustomer"
-      />
-      <CrmFormCreateDrawer
-        v-if="isInitFormCreateDrawer"
-        v-model:visible="formCreateDrawerVisible"
-        :form-key="formKey"
-        :need-init-detail="false"
-        :initial-source-name="activeRowName"
-        :other-save-params="otherFollowRecordSaveParams"
-        :link-form-info="linkFormInfo"
-        @saved="handleFormSaved"
-      />
-    </div>
-  </Suspense>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NScrollbar, useMessage } from 'naive-ui';
+  import { NButton } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ClueListItem, CluePoolListItem } from '@lib/shared/models/clue';
-  import type { OpportunityItem } from '@lib/shared/models/opportunity';
-  import { CluePoolItem } from '@lib/shared/models/system/module';
 
+  import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
-  import useTable from '@/components/pure/crm-table/useTable';
-  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import { getFormListApiMap } from '@/components/business/crm-form-create/config';
-  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
   import searchSettingButton from './searchConfig/index.vue';
 
-  import {
-    advancedSearchOptDetail,
-    getAdvancedSearchClueDetail,
-    getOpenSeaOptions,
-    getPoolOptions,
-    reTransitionCustomer,
-  } from '@/api/modules';
-  // import { clueBaseSteps } from '@/config/clue';
-  import { lastOpportunitySteps } from '@/config/opportunity';
-  import useOpenNewPage from '@/hooks/useOpenNewPage';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { advancedSearchOptDetail, getAdvancedSearchClueDetail } from '@/api/modules';
 
-  import { ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
-
-  import { DefaultSearchSetFormModel, lastScopedOptions } from './config';
-
-  const customerOverviewDrawer = defineAsyncComponent(
-    () => import('@/views/customer/components/customerOverviewDrawer.vue')
-  );
-  const openSeaOverviewDrawer = defineAsyncComponent(
-    () => import('@/views/customer/components/openSeaOverviewDrawer.vue')
-  );
-  const ClueOverviewDrawer = defineAsyncComponent(
-    () => import('@/views/clueManagement/clue/components/clueOverviewDrawer.vue')
-  );
-  const CluePoolOverviewDrawer = defineAsyncComponent(
-    () => import('@/views/clueManagement/cluePool/components/cluePoolOverviewDrawer.vue')
-  );
-  const convertToCustomerDrawer = defineAsyncComponent(
-    () => import('@/views/clueManagement/clue/components/convertToCustomerDrawer.vue')
-  );
-  const optOverviewDrawer = defineAsyncComponent(() => import('@/views/opportunity/components/optOverviewDrawer.vue'));
+  import { DefaultSearchSetFormModel, defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
+  import type { SearchTableKey } from './useSearchTable';
+  import useSearchTable from './useSearchTable';
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
   const { t } = useI18n();
-  const Message = useMessage();
-  const { openNewPage } = useOpenNewPage();
 
   const keyword = ref('');
+
+  const configList = ref<ScopedOptions[]>([]); // 横向标签列表
+  const activeConfigValue = ref<SearchTableKey>(FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER); // 当前选中的标签
+  function clickTag(config: ScopedOptions) {
+    activeConfigValue.value = config.value as SearchTableKey;
+  }
+
+  const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel)); // 设置里的值
+  const searchFieldMap = ref<Record<string, FilterFormItem[]>>({}); // 所有可匹配的字段列表
+  function initAdvanceConfig(val: Record<string, any>, form: DefaultSearchSetFormModel) {
+    searchFieldMap.value = val.value;
+    formModel.value = form;
+  }
+
+  const { useTableRes } = await useSearchTable({
+    searchTableKey: activeConfigValue.value,
+    fieldList: searchFieldMap.value[activeConfigValue.value] ?? [],
+    selectedFieldKeyList: formModel.value.searchFields[activeConfigValue.value] ?? [],
+  });
 
   const activeCustomer = ref();
   const showDetailDrawer = ref(false);
   const detailType = ref<'opportunity' | 'clue'>('clue');
 
-  const configList = ref([]);
+  // TODO lmy
+  const relatedColumns = ref([]);
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
   function showDetail(row: any, type: 'opportunity' | 'clue') {
@@ -225,533 +151,11 @@
     });
   }
 
-  // 概览
-  const showCustomerOverviewDrawer = ref(false);
-  const showCustomerOpenseaOverviewDrawer = ref(false);
-  const poolId = ref<string>('');
-  const activeSourceId = ref<string>('');
-
-  const isCustomerReadonly = ref(false);
-  function handleOpenCustomerDrawer(
-    params: { customerId: string; inCustomerPool: boolean; poolId: string },
-    readonly = false
-  ) {
-    activeSourceId.value = params.customerId;
-    if (params.inCustomerPool) {
-      if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
-        showCustomerOpenseaOverviewDrawer.value = true;
-        poolId.value = params.poolId;
-      } else {
-        Message.warning(t('opportunity.noOpenSeaPermission'));
-      }
-    } else {
-      showCustomerOverviewDrawer.value = true;
-    }
-    isCustomerReadonly.value = readonly;
-  }
-
-  const openSeaOptions = ref<CluePoolItem[]>([]);
-  async function initOpenSeaOptions() {
-    if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
-      const res = await getOpenSeaOptions();
-      openSeaOptions.value = res;
-    }
-  }
-  const hiddenColumns = computed<string[]>(() => {
-    const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
-    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
-  });
-
-  const showOptOverviewDrawer = ref<boolean>(false);
-  const activeOpportunity = ref<OpportunityItem>();
-
-  const isInitOverviewDrawer = ref(false);
-  const showClueOverviewDrawer = ref(false);
-  const showCluePoolOverviewDrawer = ref(false);
-  const activeClue = ref<ClueListItem | CluePoolListItem>();
-
-  const cluePoolOptions = ref<CluePoolItem[]>([]);
-  async function getCluePoolOptions() {
-    try {
-      cluePoolOptions.value = await getPoolOptions();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-  const cluePoolHiddenColumns = computed<string[]>(() => {
-    const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
-    return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
-  });
-
-  const isInitConvertDrawer = ref(false);
-  const showConvertToCustomerDrawer = ref(false);
-  const otherFollowRecordSaveParams = ref({
-    type: 'CLUE',
-    clueId: '',
-    id: '',
-  });
-  const formKey = ref(FormDesignKeyEnum.CLUE);
-  const activeRowName = ref('');
-  function handleConvertToCustomer(row?: ClueListItem) {
-    isInitConvertDrawer.value = true;
-    formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-    activeRowName.value = row?.name || '';
-    otherFollowRecordSaveParams.value.clueId = row?.id || '';
-    showConvertToCustomerDrawer.value = true;
-  }
-
-  const formCreateDrawerVisible = ref(false);
-  const isInitFormCreateDrawer = ref(false);
-  const linkFormInfo = ref<Record<string, any> | undefined>({});
-  function handleNewCustomer(formInfo: Record<string, any>) {
-    isInitFormCreateDrawer.value = true;
-    linkFormInfo.value = formInfo;
-    formKey.value = FormDesignKeyEnum.CUSTOMER;
-    formCreateDrawerVisible.value = true;
-  }
-
-  async function handleFormSaved(res: any) {
-    if (linkFormInfo.value) {
-      await reTransitionCustomer({
-        clueId: otherFollowRecordSaveParams.value.clueId,
-        customerId: res.id,
-      });
-    }
-  }
-
-  onBeforeMount(() => {
-    initOpenSeaOptions();
-    getCluePoolOptions();
-  });
-
-  const clueColumns: CrmDataTableColumn[] = [
-    {
-      title: t('crmFollowRecord.companyName'),
-      key: 'name',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
-                id: row.id,
-                transitionType: row.transitionType,
-                name: row.name,
-              });
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
-      },
-    },
-    {
-      title: t('common.head'),
-      key: 'ownerName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
-      title: t('opportunity.intendedProducts'),
-      key: 'productNameList',
-      width: 100,
-      isTag: true,
-      tagGroupProps: {
-        labelKey: 'name',
-      },
-    },
-  ];
-
-  const cluePoolColumns: CrmDataTableColumn[] = [
-    {
-      title: t('crmFollowRecord.companyName'),
-      key: 'name',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(ClueRouteEnum.CLUE_MANAGEMENT_POOL, {
-                id: row.id,
-                name: row.name,
-                poolId: row.poolId,
-              });
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
-      },
-    },
-    {
-      title: t('opportunity.intendedProducts'),
-      key: 'productNameList',
-      width: 100,
-      isTag: true,
-      tagGroupProps: {
-        labelKey: 'name',
-      },
-    },
-    {
-      title: t('common.creator'),
-      key: 'createUserName',
-      width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-
-  const opportunityColumns: CrmDataTableColumn[] = [
-    {
-      title: t('opportunity.name'),
-      key: 'name',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(OpportunityRouteEnum.OPPORTUNITY, {
-                id: row.id,
-                opportunityName: row.opportunityName,
-              });
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
-      },
-    },
-    {
-      title: t('opportunity.customerName'),
-      key: 'customerName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
-      title: t('opportunity.intendedProducts'),
-      key: 'productNames',
-      width: 100,
-      isTag: true,
-      tagGroupProps: {
-        labelKey: 'name',
-      },
-    },
-    {
-      title: t('opportunity.stage'),
-      width: 100,
-      key: 'stage',
-      render: (row) => {
-        const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
-        return step ? step.label : '-';
-      },
-    },
-    {
-      title: t('common.head'),
-      key: 'ownerName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-
-  // 客户相关
-  const columns: CrmDataTableColumn[] = [
-    {
-      title: t('opportunity.customerName'),
-      key: 'name',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
-                id: row.id,
-              });
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
-      },
-    },
-    {
-      title: t('common.head'),
-      key: 'ownerName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
-      title: t('workbench.duplicateCheck.relatedOpportunity'),
-      key: 'opportunityCount',
-      width: 60,
-      render: (row: any) => {
-        return !row.opportunityCount
-          ? row.opportunityCount ?? '-'
-          : h(
-              NButton,
-              {
-                text: true,
-                type: 'primary',
-                disabled: !row.opportunityModuleEnable || !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
-                onClick: () => showDetail(row, 'opportunity'),
-              },
-              { default: () => row.opportunityCount }
-            );
-      },
-    },
-    {
-      title: t('workbench.duplicateCheck.relatedClue'),
-      key: 'clueCount',
-      width: 60,
-      render: (row: any) => {
-        return !row.clueCount
-          ? row.clueCount ?? '-'
-          : h(
-              NButton,
-              {
-                text: true,
-                type: 'primary',
-                disabled:
-                  !row.clueModuleEnable || !hasAnyPermission(['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']),
-                onClick: () => showDetail(row, 'clue'),
-              },
-              { default: () => row.clueCount }
-            );
-      },
-    },
-    {
-      title: t('common.createTime'),
-      key: 'createTime',
-      width: 120,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-
-  // 公海
-  const openSeaColumns: CrmDataTableColumn[] = [
-    {
-      title: t('opportunity.customerName'),
-      key: 'name',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
-                id: row.id,
-                poolId: row.poolId,
-              });
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
-      },
-    },
-    {
-      title: t('common.creator'),
-      key: 'createUserName',
-      width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-
-  // 联系人相关
-  const contactColumn: CrmDataTableColumn[] = [
-    {
-      title: t('opportunity.customerName'),
-      key: 'customerName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        if (!row.hasPermission) return row.name;
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              openNewPage(CustomerRouteEnum.CUSTOMER_CONTACT, {
-                id: row.customerId,
-              });
-            },
-          },
-          { default: () => row.customerName, trigger: () => row.customerName }
-        );
-      },
-    },
-    {
-      title: t('workbench.duplicateCheck.contactName'),
-      key: 'name',
-      width: 70,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('common.phoneNumber'),
-      key: 'phone',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('common.head'),
-      key: 'ownerName',
-      width: 80,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('org.department'),
-      width: 120,
-      key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => row.departmentName || '-',
-    },
-    {
-      title: t('common.status'),
-      width: 50,
-      key: 'enable',
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        return row.enable ? t('common.open') : t('common.close');
-      },
-    },
-    {
-      title: t('common.createTime'),
-      key: 'createTime',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-
-  const relatedColumns = computed(() => {
-    return (detailType.value === 'opportunity' ? opportunityColumns : clueColumns).filter(
-      (i) => i.key !== 'departmentId'
-    );
-  });
-
-  const columnsMap: Partial<Record<FormDesignKeyEnum, CrmDataTableColumn[]>> = {
-    [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: columns,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: contactColumn,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: openSeaColumns,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: clueColumns,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: cluePoolColumns,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityColumns,
-  };
-
-  const activeTables = computed(() => {
-    return lastScopedOptions.value.map((config) => ({
-      ...config,
-      instance: useTable(
-        getFormListApiMap[config.value],
-        {
-          showSetting: false,
-          columns: columnsMap[config.value],
-          crmPagination: { size: 'small' },
-          hiddenTotal: true,
-          hiddenRefresh: true,
-          hiddenAllScreen: true,
-        },
-        [
-          FormDesignKeyEnum.SEARCH_ADVANCED_CLUE,
-          FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY,
-          FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
-        ].includes(config.value)
-          ? (item, originalData) => {
-              return {
-                ...item,
-                [config.value !== FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY ? 'productNameList' : 'productNames']:
-                  item.products.map((product: string) => {
-                    return originalData?.optionMap?.products.find((i) => i.id === product);
-                  }),
-              };
-            }
-          : undefined
-      ),
-    }));
-  });
-
-  const searchData = (val: string) => {
+  const searchData = async (val: string) => {
     if (!val) return;
-    activeTables.value.forEach(async (table) => {
-      // 后端上一个不一定执行完了，loading还是true的时候不执行后面接口，这里手动设置成false
-      table.instance.setLoading(false);
-      table.instance.setLoadListParams({ keyword: val });
-      await table.instance.loadList();
-      if (table.instance.propsRes.value.data) {
-        table.instance.propsRes.value.data = table.instance.propsRes.value.data.slice(0, 3);
-      }
-    });
+    const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
+    useTableRes.setLoadListParams({ keyword: searchTerm });
+    await useTableRes.loadList();
   };
 
   watch(
@@ -773,9 +177,5 @@
 
   function handleClose() {
     globalSearchFormKey.value = undefined;
-  }
-
-  function initAdvanceConfig(val: Record<string, any>, formModel: DefaultSearchSetFormModel) {
-    // console.log(val, '园园对接会用到');
   }
 </script>

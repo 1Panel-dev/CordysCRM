@@ -81,7 +81,9 @@
       </div>
     </div>
     <MessageDrawer v-model:show="showMessageDrawer" />
-    <CrmDuplicateCheckDrawer v-model:visible="showDuplicateCheckDrawer" />
+    <Suspense>
+      <CrmDuplicateCheckDrawer v-model:visible="showDuplicateCheckDrawer" />
+    </Suspense>
   </n-layout-header>
 </template>
 
