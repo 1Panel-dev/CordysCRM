@@ -69,4 +69,7 @@ public interface ExtClueMapper {
     Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
 
     List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+    List<OptionDTO> getClueOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
 }

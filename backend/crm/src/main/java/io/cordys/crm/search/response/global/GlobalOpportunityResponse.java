@@ -33,11 +33,14 @@ public class GlobalOpportunityResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
-    @Schema(description = "部门名称")
+    @Schema(description = "负责人部门名称")
     private String departmentName;
 
     @Schema(description = "是否有当前数据的权限")
     private boolean hasPermission;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;

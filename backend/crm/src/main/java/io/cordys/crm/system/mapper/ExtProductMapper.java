@@ -24,6 +24,8 @@ public interface ExtProductMapper {
 
     List<OptionDTO> getOptions(@Param("orgId") String orgId);
 
+    List<OptionDTO> getProductOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
     Long getPos(@Param("orgId") String orgId);
 
     Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);

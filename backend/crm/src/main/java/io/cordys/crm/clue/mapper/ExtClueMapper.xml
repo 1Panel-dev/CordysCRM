@@ -437,4 +437,14 @@
             <property name="sort" value="request.sort"/>
         </include>
     </select>
+
+    <select id="getClueOptions" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from clue
+        where
+        organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+    </select>
 </mapper>

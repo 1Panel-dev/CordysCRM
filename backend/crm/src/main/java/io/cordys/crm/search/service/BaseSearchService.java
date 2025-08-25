@@ -1,25 +1,70 @@
 package io.cordys.crm.search.service;
 
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.search.constants.SearchModuleEnum;
+import io.cordys.crm.search.domain.SearchFieldMaskConfig;
+import io.cordys.crm.search.domain.UserSearchConfig;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.Module;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtProductMapper;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     @Resource
     private BaseMapper<Module> moduleMapper;
 
+    @Resource
+    private BaseMapper<UserSearchConfig> userSearchConfigBaseMapper;
+
+    @Resource
+    private BaseMapper<SearchFieldMaskConfig> searchFieldMaskConfigBaseMapper;
+
+    @Resource
+    private ExtProductMapper extProductMapper;
+
+    @Resource
+    private ExtCustomerMapper extCustomerMapper;
+
+    @Resource
+    private ExtOpportunityMapper extOpportunityMapper;
+
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
+
+    @Resource
+    private ExtClueMapper extClueMapper;
+
+    @Resource
+    private ModuleFormService moduleFormService;
+
     public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId) {
         return new PagerWithOption<>();
     }
-
     public Pager<List<R>> startSearchNoOption(T request, String orgId, String userId) {
         return new Pager<>();
     }
@@ -38,4 +83,288 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 .map(Module::getModuleKey)
                 .toList();
     }
+
+    /**
+     * 获取过滤条件
+     *
+     * @param name     字段名称
+     * @param value    字段值
+     * @param operator 操作符
+     * @param type     字段类型
+     * @return FilterCondition
+     */
+    public FilterCondition getFilterCondition(String name, Object value, String operator, String type) {
+        FilterCondition nameCondition = new FilterCondition();
+        nameCondition.setName(name);
+        nameCondition.setValue(value);
+        nameCondition.setOperator(operator);
+        nameCondition.setMultipleValue(false);
+        nameCondition.setType(type);
+        return nameCondition;
+    }
+
+
+    /**
+     * 获取产品ID和名称的映射关系
+     * @param orgId 组织ID
+     * @return 产品ID和名称的映射关系
+     */
+    public Map<String, String> getProductNameMap(String orgId) {
+        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        return productOption.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    /**
+     * 通过关键字和组织ID获取客户ID列表
+     * @param keyword 关键字
+     * @param orgId 组织ID
+     * @return 客户ID列表
+     */
+    public List<String> getCustomerIds(String keyword, String orgId) {
+        List<OptionDTO> customerOptions = extCustomerMapper.getCustomerOptions(keyword, orgId);
+        if (CollectionUtils.isEmpty(customerOptions)) {
+            return new ArrayList<>();
+        }
+        return customerOptions.stream()
+                .map(OptionDTO::getId)
+                .toList();
+    }
+
+    /**
+     * 通过关键字和组织ID获取商机ID列表
+     * @param keyword 关键字
+     * @param orgId 组织ID
+     * @return 商机ID列表
+     */
+    public List<String> getOpportunityIds(String keyword, String orgId) {
+        List<OptionDTO> opportunityList = extOpportunityMapper.getOpportunityOptions(keyword, orgId);
+        if (CollectionUtils.isEmpty(opportunityList)) {
+            return new ArrayList<>();
+        }
+        return opportunityList.stream().map(OptionDTO::getId)
+                .toList();
+    }
+
+    /**
+     * 通过关键字和组织ID获取线索ID列表
+     * @param keyword 关键字
+     * @param orgId 组织ID
+     * @return 线索ID列表
+     */
+    public List<String> getClueIds(String keyword, String orgId) {
+        List<OptionDTO> clueOptions = extClueMapper.getClueOptions(keyword, orgId);
+        if (CollectionUtils.isEmpty(clueOptions)) {
+            return new ArrayList<>();
+        }
+        return clueOptions.stream()
+                .map(OptionDTO::getId)
+                .toList();
+    }
+
+    /**
+     * 通过关键字和组织ID获取客户联系人ID列表
+     * @param keyword 关键字
+     * @param orgId 组织ID
+     * @return 客户联系人ID列表
+     */
+    public List<String> getCustomerContactIds(String keyword, String orgId) {
+        List<OptionDTO> contactOptions = extCustomerContactMapper.getContactOptions(keyword, orgId);
+        if (CollectionUtils.isEmpty(contactOptions)) {
+            return new ArrayList<>();
+        }
+        return contactOptions.stream()
+                .map(OptionDTO::getId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 通过关键字和组织ID获取产品ID列表
+     * @param keyword 关键字
+     * @param orgId 组织ID
+     * @return 产品ID列表
+     */
+    public List<String> getProductIds(String keyword, String orgId) {
+        List<OptionDTO> productOptions = extProductMapper.getProductOptions(keyword, orgId);
+        if (CollectionUtils.isEmpty(productOptions)) {
+            return new ArrayList<>();
+        }
+        return productOptions.stream()
+                .map(OptionDTO::getId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 构建其他类型的过滤条件
+     * @param orgId 组织ID
+     * @param userSearchConfig 用户搜索配置
+     * @param keyword 关键字
+     * @param conditions 过滤条件列表
+     */
+    public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword, List<FilterCondition> conditions) {
+        // 如果不是数据源类型的字段，直接添加到查询条件中
+        if (StringUtils.isBlank(userSearchConfig.getDataSourceType()) && !Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
+            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            conditions.add(filterCondition);
+            return;
+        }
+        // 如果是PHONE类型的字段，使用精确查询
+        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
+            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
+            conditions.add(filterCondition);
+            return;
+        }
+        // 如果是数据源类型的字段，使用IN查询
+        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString())) {
+            List<String> ids = new ArrayList<>();
+            if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CUSTOMER")) {
+                // 客户数据源
+                List<String> list = getCustomerIds(keyword, orgId);
+                if (CollectionUtils.isEmpty(list)) {
+                    return;
+                }
+                ids.addAll(list);
+            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "OPPORTUNITY")) {
+                // 商机数据源
+                List<String> opportunityIds = getOpportunityIds(keyword, orgId);
+                if (CollectionUtils.isEmpty(opportunityIds)) {
+                    return;
+                }
+                ids.addAll(opportunityIds);
+            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CLUE")) {
+                // 线索数据源，
+                List<String> clueIds = getClueIds(keyword, orgId);
+                if (CollectionUtils.isEmpty(clueIds)) {
+                    return;
+                }
+                ids.addAll(clueIds);
+            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CONTACT")) {
+                // 客户联系人数据源
+                List<String> customerContactIds = getCustomerContactIds(keyword, orgId);
+                if (CollectionUtils.isEmpty(customerContactIds)) {
+                    return;
+                }
+                ids.addAll(customerContactIds);
+            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "PRODUCT")) {
+                List<String> productIds = getProductIds(keyword, orgId);
+                if (CollectionUtils.isEmpty(productIds)) {
+                    return;
+                }
+                ids.addAll(productIds);
+            }
+            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), ids, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            conditions.add(filterCondition);
+        }
+    }
+
+    /**
+     * 获取搜索字段脱敏配置
+     * @param orgId 组织ID
+     * @return  搜索字段脱敏配置列表
+     */
+    public List<SearchFieldMaskConfig> getSearchFieldMaskConfigs(String orgId) {
+        LambdaQueryWrapper<SearchFieldMaskConfig> sysWrapper = new LambdaQueryWrapper<>();
+        sysWrapper.eq(SearchFieldMaskConfig::getModuleType, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY).eq(SearchFieldMaskConfig::getOrganizationId, orgId);
+        return searchFieldMaskConfigBaseMapper.selectListByLambda(sysWrapper);
+    }
+
+    /**
+     * 获取用户搜索配置
+     * @param userId 用户ID
+     * @return 用户搜索配置列表
+     */
+    public List<UserSearchConfig> getUserSearchConfigs(String userId, String orgId) {
+        LambdaQueryWrapper<UserSearchConfig> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserSearchConfig::getUserId, userId)
+                .eq(UserSearchConfig::getOrganizationId, orgId);
+        return userSearchConfigBaseMapper.selectListByLambda(wrapper);
+    }
+
+    /**
+     * 获取自定义字段值
+     * @param fieldIdSet 用户配置的字段ID集合
+     * @param id 数据ID
+     * @param moduleFiledMap 数据ID和自定义字段值的映射关系
+     * @param moduleFormConfigDTO 模块表单配置
+     * @param searchFieldMaskConfigMap 脱敏配置映射关系
+     * @param hasPermission 是否有权限查看
+     * @return 自定义字段值列表
+     */
+    public List<BaseModuleFieldValue> getBaseModuleFieldValues(Set<String> fieldIdSet, String id, Map<String, List<BaseModuleFieldValue>> moduleFiledMap, ModuleFormConfigDTO moduleFormConfigDTO, Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission) {
+        List<BaseModuleFieldValue> returnBaseModuleFieldValues = new ArrayList<>();
+        //此条数据所带的自定义字段及其值
+        List<BaseModuleFieldValue> baseModuleFieldValues = moduleFiledMap.get(id);
+        Map<String, Object> fieldValueMap = baseModuleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+        //获取自定义字段选项，用于补充数据源的值
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, baseModuleFieldValues);
+        optionMap.forEach((field, optionDTOs) -> {
+            if (fieldIdSet.contains(field)) {
+                SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap.get(field);
+                BaseModuleFieldValue baseModuleFieldValue = new BaseModuleFieldValue();
+                baseModuleFieldValue.setFieldId(field);
+                Object fieldValue = fieldValueMap.get(field);
+                if (fieldValue instanceof String) {
+                    //无权限根据类型进行脱敏
+                    if (!hasPermission) {
+                        if (searchFieldMaskConfig != null) {
+                            fieldValue = setStringFieldValue(searchFieldMaskConfig, fieldValue);
+                        }
+                    }
+                    baseModuleFieldValue.setFieldValue(fieldValue);
+                } else if (fieldValue instanceof List<?>) {
+                    List<String> fieldValueList = new ArrayList<>();
+                    for (Object element : (List<?>) fieldValue) {
+                        String s = element == null ? null : element.toString();
+                        for (OptionDTO optionDTO : optionDTOs) {
+                            if (Strings.CI.equals(optionDTO.getId(), s)) {
+                                String name = optionDTO.getName();
+                                if (!hasPermission) {
+                                    getInputFieldValue(name, name.length());
+                                }
+                                fieldValueList.add(name);
+                            }
+                        }
+                    }
+                    baseModuleFieldValue.setFieldValue(fieldValueList);
+                }
+                returnBaseModuleFieldValues.add(baseModuleFieldValue);
+            }
+        });
+        return returnBaseModuleFieldValues;
+    }
+
+
+
+
+    /**
+     * 设置字符串类型字段的脱敏值
+     * @param searchFieldMaskConfig 脱敏配置
+     * @param fieldValue 字段值
+     * @return 脱敏后的字段值
+     */
+    private Object setStringFieldValue(SearchFieldMaskConfig searchFieldMaskConfig, Object fieldValue) {
+        int length = ((String) fieldValue).length();
+        if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.PHONE.toString()) || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.SERIAL_NUMBER.toString())) {
+            //fieldValue后6位以*替代
+            if (length > 6) {
+                fieldValue = ((String) fieldValue).substring(0, length - 6) + "******";
+            } else {
+                fieldValue = "******";
+            }
+        } else if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.INPUT.toString())) {
+            fieldValue = getInputFieldValue(fieldValue, length);
+        }
+        return fieldValue;
+    }
+
+    @NotNull
+    private Object getInputFieldValue(Object fieldValue, int length) {
+        //fieldValue保留第一位字符，后面全部用*代替
+        if (length > 1) {
+            fieldValue = ((String) fieldValue).charAt(0) + "*".repeat(length - 1);
+        } else {
+            fieldValue = "*";
+        }
+        return fieldValue;
+    }
+
 }
