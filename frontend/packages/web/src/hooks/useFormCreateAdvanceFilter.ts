@@ -7,7 +7,7 @@ import type { FormCreateField } from '@/components/business/crm-form-create/type
 export default function useFormCreateFilter() {
   const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
   // 获取配置属性
-  function getFilterListConfig(res: FormDesignConfigDetailParams) {
+  function getFilterListConfig(res: FormDesignConfigDetailParams, addDefaultKeyAsId = false) {
     const getConfigProps = (field: FormCreateField) => {
       if (
         [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
@@ -38,6 +38,7 @@ export default function useFormCreateFilter() {
           title: field.name,
           dataIndex: field.businessKey ?? field.id,
           type: field.type,
+          ...(addDefaultKeyAsId ? { id: field.id } : {}),
           ...getConfigProps(field),
         } as FilterFormItem);
       }

@@ -5,7 +5,12 @@
         <div class="w-[200px]">{{ t('workbench.duplicateCheck.searchModule') }}</div>
         <div>{{ t('workbench.duplicateCheck.matchFields') }}</div>
       </div>
-      <n-form ref="formRef" :model="formModel.list" label-placement="left" class="flex flex-1 flex-col gap-[12px]">
+      <n-form
+        ref="formRef"
+        :model="formModel.searchFields"
+        label-placement="left"
+        class="flex flex-1 flex-col gap-[12px]"
+      >
         <div v-for="element of props.scopedOptions" :key="element.value" class="flex flex-1 items-start gap-[12px]">
           <div class="w-[200px]">
             <div class="advanced-label">
@@ -14,17 +19,17 @@
           </div>
           <div class="flex-1">
             <n-form-item
-              :path="`formModel.list[element.value]`"
+              :path="element.value"
               :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
               class="block flex-initial overflow-hidden"
             >
               <CrmTreeSelect
-                v-model:value="formModel.list[element.value]"
+                v-model:value="formModel.searchFields[element.value]"
                 :placeholder="t('common.pleaseSelect')"
                 :limit-select-tooltip="t('workbench.duplicateCheck.maxSelectCountTooltip')"
                 :limit-select-count="5"
                 label-field="label"
-                key-field="value"
+                key-field="id"
                 v-bind="{
                   multiple: true,
                   checkable: true,
@@ -65,10 +70,10 @@
   });
 
   function getOptions(value: string) {
-    const selected = formModel.value.list[value] || [];
+    const selected = formModel.value.searchFields[value] || [];
     return props.searchFieldMap[value]?.map((e) => ({
       label: e.title,
-      value: e.dataIndex,
+      id: e?.id ?? e.dataIndex,
       disabled: selected.length >= 5 && !selected.includes(e.dataIndex),
     })) as TreeSelectOption[];
   }

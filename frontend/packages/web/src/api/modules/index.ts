@@ -13,7 +13,6 @@ import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
 import useRoleApi from '@lib/shared/api/modules/system/role';
-import { AdvancedSearchOptPageUrl } from '@lib/shared/api/requrls/opportunity';
 
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 
@@ -336,6 +335,7 @@ export const {
   getReasonConfig,
   updateReasonEnable,
   sortReason,
+  searchConfig,
 } = moduleApi;
 
 export const {

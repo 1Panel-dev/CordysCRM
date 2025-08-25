@@ -180,7 +180,7 @@
 
   import { ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
-  import { lastScopedOptions } from './config';
+  import { DefaultSearchSetFormModel, lastScopedOptions } from './config';
 
   const customerOverviewDrawer = defineAsyncComponent(
     () => import('@/views/customer/components/customerOverviewDrawer.vue')
@@ -775,7 +775,7 @@
     globalSearchFormKey.value = undefined;
   }
 
-  function initAdvanceConfig(val: Record<string, any>) {
+  function initAdvanceConfig(val: Record<string, any>, formModel: DefaultSearchSetFormModel) {
     // console.log(val, '园园对接会用到');
   }
 </script>

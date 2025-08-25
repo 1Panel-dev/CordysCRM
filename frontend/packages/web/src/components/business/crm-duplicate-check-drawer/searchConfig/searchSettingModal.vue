@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSwitch } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
@@ -65,10 +65,13 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import searchSetting from './searchSetting.vue';
 
+  import { searchConfig } from '@/api/modules';
+
   import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
@@ -80,22 +83,36 @@
     default: () => lastScopedOptions.value,
   });
 
-  const formModel = ref<DefaultSearchSetFormModel>({
-    ...cloneDeep(defaultSearchSetFormModel),
+  const formModel = defineModel<DefaultSearchSetFormModel>('formModel', {
+    required: true,
+    default: () => defaultSearchSetFormModel,
   });
 
   const searchSettingRef = ref<InstanceType<typeof searchSetting>>();
   const loading = ref(false);
   function handleConfirm() {
-    searchSettingRef.value?.formRef?.validate((errors) => {
+    searchSettingRef.value?.formRef?.validate(async (errors) => {
       if (!errors) {
-        // TODO xinxinwu
+        loading.value = true;
+        try {
+          await searchConfig({
+            ...formModel.value,
+            sortSetting: configList.value.map((e) => e.value),
+          });
+          Message.success(t('common.operationSuccess'));
+          visible.value = false;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          loading.value = false;
+        }
       }
     });
   }
   function handleReset() {
     searchSettingRef.value?.formRef?.restoreValidation();
-    formModel.value.list = cloneDeep(defaultSearchSetFormModel);
+    formModel.value.searchFields = cloneDeep(defaultSearchSetFormModel);
   }
 </script>
 

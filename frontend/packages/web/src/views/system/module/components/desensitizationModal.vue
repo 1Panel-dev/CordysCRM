@@ -64,7 +64,7 @@
 
   function handleReset() {
     searchSettingRef.value?.formRef?.restoreValidation();
-    formModel.value.list = cloneDeep(defaultSearchSetFormModel);
+    formModel.value.searchFields = cloneDeep(defaultSearchSetFormModel);
   }
 
   const { initSearchFormConfig, searchFieldMap } = useSearchFormConfig();

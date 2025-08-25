@@ -20,6 +20,7 @@ export type CrmTreeSelectProps = {
 } & TreeSelectProps;
 
 export interface FilterFormItem {
+  id?: string | null | undefined;
   dataIndex?: string | null; // 第一列下拉的value
   title?: string; // 第一列下拉显示的label
   operator?: OperatorEnum; // 第二列的值

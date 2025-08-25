@@ -55,7 +55,7 @@ export default function useSearchFormConfig() {
         if (!configKey) return;
 
         const res = await getFormConfigApiMap[configKey as FormDesignKeyEnum]();
-        const result = getFilterListConfig(res);
+        const result = getFilterListConfig(res, true);
         const customFieldsFilterConfig = result.filter((e) => searchFieldConfigType.includes(e.type));
 
         configMap[configKey as FormDesignKeyEnum]?.forEach((configValue) => {

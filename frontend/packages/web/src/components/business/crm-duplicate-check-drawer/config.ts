@@ -1,8 +1,9 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
 
-import { useAppStore } from '@/store';
+import useAppStore from '@/store/modules/app';
 import { hasAnyPermission } from '@/utils/permission';
 
 const { t } = useI18n();
@@ -16,9 +17,9 @@ export interface ScopedOptions {
 }
 
 export interface DefaultSearchSetFormModel {
-  list: Record<string, any>;
+  searchFields: Record<string, any>;
   resultDisplay: boolean;
-  sortSetting: ScopedOptions[];
+  sortSetting: string[];
 }
 
 export const scopedOptions = [
@@ -62,13 +63,15 @@ export const scopedOptions = [
 ];
 
 export const lastScopedOptions = computed<ScopedOptions[]>(() =>
-  scopedOptions.filter((e) =>
-    appStore.moduleConfigList.find((m) => m.moduleKey === e.moduleKey && m.enable && hasAnyPermission(e.permission))
+  scopedOptions.filter((e: ScopedOptions) =>
+    appStore.moduleConfigList.find(
+      (m: ModuleNavBaseInfoItem) => m.moduleKey === e.moduleKey && m.enable && hasAnyPermission(e.permission)
+    )
   )
 );
 
 export const defaultSearchSetFormModel: DefaultSearchSetFormModel = {
-  list: {}, // 字段map
+  searchFields: {}, // 字段map
   resultDisplay: false, // 是否开启
   sortSetting: [], // 排序列表
 };

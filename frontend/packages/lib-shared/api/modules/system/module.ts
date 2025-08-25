@@ -1,3 +1,4 @@
+import { DefaultSearchSetFormModel } from '@cordys/web/src/components/business/crm-duplicate-check-drawer/config';
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddClueCapacityUrl,
@@ -38,6 +39,7 @@ import {
   QuickUpdateCluePoolUrl,
   QuickUpdateCustomerPoolUrl,
   SaveFormDesignConfigUrl,
+  SearchConfigUrl,
   SortReasonUrl,
   SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
@@ -283,6 +285,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: SortReasonUrl, data });
   }
 
+  function searchConfig(data: DefaultSearchSetFormModel) {
+    return CDR.post({ url: SearchConfigUrl, data });
+  }
+
   return {
     getModuleNavConfigList,
     moduleNavListSort,
@@ -329,5 +335,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getReasonConfig,
     updateReasonEnable,
     sortReason,
+    searchConfig,
   };
 }
