@@ -121,6 +121,7 @@
           FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
           FormDesignKeyEnum.FOLLOW_RECORD_CLUE,
           FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+          FormDesignKeyEnum.BUSINESS,
         ].includes(props.formKey)
       "
       class="crm-form-design-config-item"

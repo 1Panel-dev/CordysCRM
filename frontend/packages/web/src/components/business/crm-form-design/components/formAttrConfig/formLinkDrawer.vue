@@ -151,6 +151,14 @@
         },
       ];
     }
+    if (props.formKey === FormDesignKeyEnum.BUSINESS) {
+      return [
+        {
+          label: t('crmFormDesign.customer'),
+          value: FormDesignKeyEnum.CUSTOMER,
+        },
+      ];
+    }
     return [
       {
         label: t('common.plan'),

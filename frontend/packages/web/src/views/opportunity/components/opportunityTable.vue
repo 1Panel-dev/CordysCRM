@@ -94,6 +94,7 @@
     :source-id="activeSourceId"
     :initial-source-name="initialSourceName"
     :need-init-detail="needInitDetail"
+    :link-form-info="linkFormInfo"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -146,6 +147,7 @@
   import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
@@ -286,8 +288,8 @@
   function handleCreate() {
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
     activeSourceId.value = '';
-    formCreateDrawerVisible.value = true;
     needInitDetail.value = false;
+    formCreateDrawerVisible.value = true;
   }
 
   function handleExportAllClick() {
@@ -676,11 +678,31 @@
     }
   );
 
-  onBeforeMount(() => {
+  const customerFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const linkFormInfo = ref();
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: computed(() => customerFormKey.value),
+    sourceId: computed(() => props.sourceId),
+  });
+
+  onBeforeMount(async () => {
     if (props.isCustomerTab) {
       searchData();
+      initFormConfig();
     }
   });
+
+  watch(
+    () => formCreateDrawerVisible.value,
+    async (val) => {
+      if (val && !needInitDetail.value) {
+        await initFormDetail(false, true);
+        linkFormInfo.value = linkFormFieldMap.value;
+      } else {
+        linkFormInfo.value = undefined;
+      }
+    }
+  );
 
   onMounted(() => {
     emit('init', {
