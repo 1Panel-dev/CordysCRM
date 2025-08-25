@@ -257,15 +257,22 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param conditions 过滤条件列表
      */
     public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword, List<FilterCondition> conditions) {
+        String name = "";
+        if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())) {
+            name = userSearchConfig.getBusinessKey();
+        } else {
+            name = userSearchConfig.getFieldId();
+        }
+        //如果是businessKey不为空，说明是固定列,则name 给businessKey
         // 如果不是数据源类型的字段，直接添加到查询条件中
         if (StringUtils.isBlank(userSearchConfig.getDataSourceType()) && !Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
-            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(filterCondition);
             return;
         }
         // 如果是PHONE类型的字段，使用精确查询
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
-            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
+            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
             conditions.add(filterCondition);
             return;
         }
@@ -307,7 +314,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 }
                 ids.addAll(productIds);
             }
-            FilterCondition filterCondition = getFilterCondition(userSearchConfig.getFieldId(), ids, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition filterCondition = getFilterCondition(name, ids, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(filterCondition);
         }
     }
