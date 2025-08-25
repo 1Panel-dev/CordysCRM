@@ -57,7 +57,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果有商机读取权限但商机模块未启用，抛出异常
-        if (!enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
+        if (!enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
@@ -114,7 +114,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> customerFiledMap = opportunityFieldService.getResourceFieldMap(customerIds, true);
 
-        Map<String, String> userPoolMap = getUserPool(orgId, userId);
+        Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
         Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));

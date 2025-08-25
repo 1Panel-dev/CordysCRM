@@ -9,11 +9,11 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.JSON;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
-import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
@@ -53,7 +53,10 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     private ExtCustomerMapper extCustomerMapper;
 
     @Resource
-    private BaseMapper<CustomerPool> poolMapper;
+    private BaseMapper<CustomerPool> customerPoolMapper;
+
+    @Resource
+    private BaseMapper<CluePool> cluePoolMapper;
 
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
@@ -144,12 +147,35 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param userId 用户ID
      * @return 公海池ID和名称的映射关系
      */
-    public Map<String, String> getUserPool(String orgId, String userId) {
+    public Map<String, String> getUserCustomerPool(String orgId, String userId) {
         Map<String, String> poolMap = new HashMap<>();
         LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
         poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, orgId);
         poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
-        List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
+        List<CustomerPool> pools = customerPoolMapper.selectListByLambda(poolWrapper);
+        pools.forEach(pool -> {
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
+            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+                poolMap.put(pool.getId(), pool.getName());
+            }
+        });
+        return poolMap;
+    }
+
+
+    /**
+     * 获取用户有权限的线索池
+     * @param orgId  组织ID
+     * @param userId 用户ID
+     * @return 线索池ID和名称的映射关系
+     */
+    public Map<String, String> getUserCluePool(String orgId, String userId) {
+        Map<String, String> poolMap = new HashMap<>();
+        LambdaQueryWrapper<CluePool> poolWrapper = new LambdaQueryWrapper<>();
+        poolWrapper.eq(CluePool::getEnable, true).eq(CluePool::getOrganizationId, orgId);
+        poolWrapper.orderByDesc(CluePool::getUpdateTime);
+        List<CluePool> pools = cluePoolMapper.selectListByLambda(poolWrapper);
         pools.forEach(pool -> {
             List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
@@ -395,6 +421,26 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
             fieldValue = "*";
         }
         return fieldValue;
+    }
+
+    /**
+     * 通过产品ID列表获取产品名称列表
+     * @param products 产品ID列表
+     * @param productNameMap 产品ID和名称的映射关系
+     * @return 产品名称列表
+     */
+    public List<String> getProductNames(List<String> products, Map<String, String> productNameMap) {
+        if (CollectionUtils.isEmpty(products)) {
+            return new ArrayList<>();
+        }
+        List<String> productNames = new ArrayList<>();
+        for (String product : products) {
+            String productName = productNameMap.get(product);
+            if (StringUtils.isNotBlank(productName)) {
+                productNames.add(productName);
+            }
+        }
+        return productNames;
     }
 
 }

@@ -12,7 +12,6 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
-import io.cordys.common.util.JSON;
 import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
@@ -147,7 +146,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         //获取用户线索池
-        Map<String, String> userPoolMap = getUserPool(orgId, userId);
+        Map<String, String> userPoolMap = getUserCluePool(orgId, userId);
 
         list.forEach(clueListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, clueListResponse, userPoolMap);
@@ -206,21 +205,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         return false;
     }
 
-    private Map<String, String> getUserPool(String orgId, String userId) {
-        Map<String, String> poolMap = new HashMap<>();
-        LambdaQueryWrapper<CluePool> poolWrapper = new LambdaQueryWrapper<>();
-        poolWrapper.eq(CluePool::getEnable, true).eq(CluePool::getOrganizationId, orgId);
-        poolWrapper.orderByDesc(CluePool::getUpdateTime);
-        List<CluePool> pools = poolMapper.selectListByLambda(poolWrapper);
-        pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
-                poolMap.put(pool.getId(), pool.getName());
-            }
-        });
-        return poolMap;
-    }
+
 
     @NotNull
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCluePoolResponse> list, List<AdvancedCluePoolResponse> buildList) {

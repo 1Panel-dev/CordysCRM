@@ -12,7 +12,6 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
-import io.cordys.common.util.JSON;
 import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
@@ -30,7 +29,6 @@ import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.DictService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -144,7 +142,7 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         //获取用户公海
-        Map<String, String> userPoolMap = getUserPool(orgId, userId);
+        Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
 
         list.forEach(customerListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, customerListResponse, userPoolMap);

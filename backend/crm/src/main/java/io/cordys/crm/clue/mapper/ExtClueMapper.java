@@ -10,6 +10,8 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.search.response.advanced.AdvancedCluePoolResponse;
 import io.cordys.crm.search.response.advanced.AdvancedClueResponse;
+import io.cordys.crm.search.response.global.GlobalCluePoolResponse;
+import io.cordys.crm.search.response.global.GlobalClueResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -71,5 +73,9 @@ public interface ExtClueMapper {
     List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     List<OptionDTO> getClueOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
+    List<GlobalClueResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+    List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
 }
