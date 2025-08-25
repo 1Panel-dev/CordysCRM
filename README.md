@@ -12,7 +12,7 @@
 
 > Cordys CRM 预计在2025年底正式开源并发布，现已开启公测。
 
-<img alt="Cordys CRM Overview" src="https://github.com/user-attachments/assets/f202f3ae-25c4-45de-8034-cce3225a9537" />
+<img alt="Cordys CRM Overview" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png" />
 
 Cordys CRM 的核心优势是：
 
@@ -35,7 +35,7 @@ docker run -d \
   -p 8081:8081 \
   -v ~/./cordys/logs:/opt/cordys/logs \
   -v ~/./cordys/data:/opt/cordys/data \
-  1panel/cordys-crm:v1.0.0
+  1panel/cordys-crm
 ```
 
 你也可以通过 [1Panel 应用商店](https://1panel.cn/) 快速部署 Cordys CRM。
@@ -52,7 +52,7 @@ docker run -d \
 
 在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与Cordys CRM 开源项目组进行交流和反馈。
 
-<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://github.com/user-attachments/assets/944b8331-f15e-448a-9876-a77ed45d982f" />
+<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png" />
 
 ## UI 展示
 
