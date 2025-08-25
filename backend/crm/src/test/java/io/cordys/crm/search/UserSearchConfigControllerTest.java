@@ -24,6 +24,7 @@ public class UserSearchConfigControllerTest extends BaseTest {
     private static final String BASE_PATH = "/search/config/";
     protected static final String SAVE = "save";
     protected static final String RESET = "reset";
+    protected static final String GET = "get";
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
     public static String FIELD_ID = "wx_field-test-id";
@@ -72,6 +73,12 @@ public class UserSearchConfigControllerTest extends BaseTest {
     @Test
     @Order(3)
     void testReset() throws Exception {
-        this.requestGet(SAVE);
+        this.requestGet(RESET);
+    }
+
+    @Test
+    @Order(4)
+    void testGet() throws Exception {
+        this.requestGet(GET);
     }
 }

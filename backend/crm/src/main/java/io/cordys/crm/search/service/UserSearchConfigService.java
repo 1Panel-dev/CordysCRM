@@ -8,10 +8,10 @@ import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.UserSearchConfig;
 import io.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import io.cordys.crm.search.request.UserSearchConfigAddRequest;
+import io.cordys.crm.search.response.SearchFieldResponse;
 import io.cordys.crm.system.dto.field.DatasourceField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -142,6 +144,7 @@ public class UserSearchConfigService {
 
     /**
      * 联系人默认字段
+     *
      * @param formKey
      * @param userId
      * @param orgId
@@ -162,6 +165,7 @@ public class UserSearchConfigService {
 
     /**
      * 线索/线索池默认字段
+     *
      * @param formKey
      * @param userId
      * @param orgId
@@ -181,6 +185,7 @@ public class UserSearchConfigService {
 
     /**
      * 客户/公海默认字段
+     *
      * @param formKey
      * @param userId
      * @param orgId
@@ -200,6 +205,7 @@ public class UserSearchConfigService {
 
     /**
      * 商机默认字段
+     *
      * @param formKey
      * @param userId
      * @param orgId
@@ -224,10 +230,14 @@ public class UserSearchConfigService {
         userSearchConfig.setFieldId(field.getId());
         userSearchConfig.setType(field.getType());
         userSearchConfig.setBusinessKey(field.getBusinessKey());
-        userSearchConfig.setDataSourceType(null);
+        if (field.getType().contains("DATA_SOURCE")) {
+            userSearchConfig.setDataSourceType(((DatasourceField) field).getDataSourceType());
+        } else {
+            userSearchConfig.setDataSourceType(null);
+        }
         userSearchConfig.setUserId(userId);
         userSearchConfig.setModuleType(moduleType);
-        userSearchConfig.setSortSetting(SearchModuleEnum.VALUES.toString());
+        userSearchConfig.setSortSetting(JSON.toJSONString(SearchModuleEnum.VALUES));
         userSearchConfig.setResultDisplay(false);
         userSearchConfig.setOrganizationId(orgId);
         userSearchConfig.setCreateUser(userId);
@@ -235,5 +245,57 @@ public class UserSearchConfigService {
         userSearchConfig.setCreateTime(System.currentTimeMillis());
         userSearchConfig.setUpdateTime(System.currentTimeMillis());
         defaultSearchConfigs.add(userSearchConfig);
+    }
+
+
+    /**
+     * 获取搜索字段配置
+     *
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public SearchFieldResponse get(String userId, String orgId) {
+        if (!configCount(userId, orgId)) {
+            reset(userId, orgId);
+        }
+        List<UserSearchConfig> searchConfigs = getConfigList(userId, orgId);
+
+        SearchFieldResponse response = new SearchFieldResponse();
+        Map<String, List<String>> searchFields = searchConfigs.stream()
+                .collect(Collectors.groupingBy(
+                        UserSearchConfig::getModuleType,
+                        Collectors.mapping(UserSearchConfig::getFieldId,
+                                Collectors.toList())
+                ));
+
+        response.setSearchFields(searchFields);
+        response.setResultDisplay(searchConfigs.getFirst().getResultDisplay());
+        response.setSortSetting(JSON.parseArray(searchConfigs.getFirst().getSortSetting()));
+
+        return response;
+
+    }
+
+    private boolean configCount(String userId, String orgId) {
+        UserSearchConfig example = new UserSearchConfig();
+        example.setUserId(userId);
+        example.setOrganizationId(orgId);
+        return userSearchConfigMapper.countByExample(example) > 0;
+    }
+
+
+    /**
+     * 获取用户搜索配置字段数据
+     *
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    private List<UserSearchConfig> getConfigList(String userId, String orgId) {
+        LambdaQueryWrapper<UserSearchConfig> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserSearchConfig::getUserId, userId).eq(UserSearchConfig::getOrganizationId, orgId);
+        List<UserSearchConfig> searchConfigs = userSearchConfigMapper.selectListByLambda(queryWrapper);
+        return searchConfigs;
     }
 }

@@ -3,6 +3,7 @@ package io.cordys.crm.search.controller;
 
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.search.request.UserSearchConfigAddRequest;
+import io.cordys.crm.search.response.SearchFieldResponse;
 import io.cordys.crm.search.service.UserSearchConfigService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,5 +33,13 @@ public class UserSearchConfigController {
     public void reset() {
         userSearchConfigService.reset(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/get")
+    @Operation(summary = "获取搜索字段配置")
+    public SearchFieldResponse get() {
+        return userSearchConfigService.get(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 
 }
