@@ -1,8 +1,10 @@
 package io.cordys.crm.search.service;
 
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.search.constants.DefaultSearchFieldEnum;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.UserSearchConfig;
@@ -46,8 +48,16 @@ public class UserSearchConfigService {
      * @param orgId
      */
     public void save(UserSearchConfigAddRequest request, String userId, String orgId) {
+        boolean allEmpty = request.getSearchFields().values().stream()
+                .allMatch(list -> list == null || list.isEmpty());
+        if (allEmpty) {
+            throw new GenericException(Translator.get("search.config.empty"));
+        }
         deleteUserSearchConfig(userId, orgId);
         request.getSearchFields().forEach((key, value) -> {
+            if (value.size() > 5) {
+                throw new GenericException(Translator.get("search.config.limit"));
+            }
             switch (key) {
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
                     saveSearchFields(value, userId, orgId, FormKey.CLUE.name(), key, request);
