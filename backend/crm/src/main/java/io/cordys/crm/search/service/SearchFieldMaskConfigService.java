@@ -6,6 +6,7 @@ import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
 import io.cordys.crm.search.request.FieldMaskConfigDTO;
 import io.cordys.crm.system.dto.field.DatasourceField;
+import io.cordys.crm.system.dto.field.DatasourceMultipleField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -89,8 +90,11 @@ public class SearchFieldMaskConfigService {
                 fieldMaskConfig.setFieldId(baseField.getId());
                 fieldMaskConfig.setType(baseField.getType());
                 fieldMaskConfig.setBusinessKey(baseField.getBusinessKey());
-                if (baseField.getType().contains("DATA_SOURCE")) {
+                if (baseField.getType().equals("DATA_SOURCE")) {
                     fieldMaskConfig.setDataSourceType(((DatasourceField) baseField).getDataSourceType());
+                }
+                if (baseField.getType().equals("DATA_SOURCE_MULTIPLE")) {
+                    fieldMaskConfig.setDataSourceType(((DatasourceMultipleField) baseField).getDataSourceType());
                 }
                 fieldMaskConfig.setModuleType(moduleType);
                 fieldMaskConfig.setOrganizationId(orgId);

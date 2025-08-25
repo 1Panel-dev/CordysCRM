@@ -12,6 +12,7 @@ import io.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import io.cordys.crm.search.request.UserSearchConfigAddRequest;
 import io.cordys.crm.search.response.SearchFieldResponse;
 import io.cordys.crm.system.dto.field.DatasourceField;
+import io.cordys.crm.system.dto.field.DatasourceMultipleField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -110,8 +111,11 @@ public class UserSearchConfigService {
                 userSearchConfig.setFieldId(baseField.getId());
                 userSearchConfig.setType(baseField.getType());
                 userSearchConfig.setBusinessKey(baseField.getBusinessKey());
-                if (baseField.getType().contains("DATA_SOURCE")) {
+                if (baseField.getType().equals("DATA_SOURCE")) {
                     userSearchConfig.setDataSourceType(((DatasourceField) baseField).getDataSourceType());
+                }
+                if (baseField.getType().equals("DATA_SOURCE_MULTIPLE")) {
+                    userSearchConfig.setDataSourceType(((DatasourceMultipleField) baseField).getDataSourceType());
                 }
                 userSearchConfig.setUserId(userId);
                 userSearchConfig.setModuleType(moduleType);
@@ -240,8 +244,10 @@ public class UserSearchConfigService {
         userSearchConfig.setFieldId(field.getId());
         userSearchConfig.setType(field.getType());
         userSearchConfig.setBusinessKey(field.getBusinessKey());
-        if (field.getType().contains("DATA_SOURCE")) {
+        if (field.getType().equals("DATA_SOURCE")) {
             userSearchConfig.setDataSourceType(((DatasourceField) field).getDataSourceType());
+        } else if (field.getType().equals("DATA_SOURCE_MULTIPLE")) {
+            userSearchConfig.setDataSourceType(((DatasourceMultipleField) field).getDataSourceType());
         } else {
             userSearchConfig.setDataSourceType(null);
         }
