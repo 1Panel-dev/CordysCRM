@@ -12,7 +12,7 @@ import lombok.Data;
  * 用户全局搜索范围
  */
 @Data
-@Table(name = "sys_user_global_search")
+@Table(name = "sys_user_search_config")
 public class UserSearchConfig extends BaseModel {
 
 	@Schema(description = "搜索字段id")
