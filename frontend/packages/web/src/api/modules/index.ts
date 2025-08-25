@@ -339,6 +339,8 @@ export const {
   searchConfig,
   getSearchConfig,
   resetSearchConfig,
+  moduleSearchMaskConfig,
+  getModuleSearchMaskConfig,
 } = moduleApi;
 
 export const {

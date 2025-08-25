@@ -26,11 +26,13 @@ import {
   GetFieldOpportunityListUrl,
   GetFieldProductListUrl,
   GetFormDesignConfigUrl,
+  GetModuleMaskSearchConfigUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
   GetReasonConfigUrl,
   GetReasonUrl,
   GetSearchConfigUrl,
+  ModuleMaskSearchConfigUrl,
   moduleNavListSortUrl,
   ModuleRoleTreeUrl,
   ModuleUserDeptTreeUrl,
@@ -292,11 +294,19 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getSearchConfig() {
-    return CDR.get({ url: GetSearchConfigUrl });
+    return CDR.get<DefaultSearchSetFormModel>({ url: GetSearchConfigUrl });
   }
 
   function resetSearchConfig() {
     return CDR.get({ url: ResetSearchConfigUrl });
+  }
+
+  function moduleSearchMaskConfig(data: Record<string, any>) {
+    return CDR.post({ url: ModuleMaskSearchConfigUrl, data });
+  }
+
+  function getModuleSearchMaskConfig() {
+    return CDR.get<Pick<DefaultSearchSetFormModel, 'searchFields'>>({ url: GetModuleMaskSearchConfigUrl });
   }
 
   return {
@@ -348,5 +358,7 @@ export default function useProductApi(CDR: CordysAxios) {
     searchConfig,
     getSearchConfig,
     resetSearchConfig,
+    moduleSearchMaskConfig,
+    getModuleSearchMaskConfig,
   };
 }

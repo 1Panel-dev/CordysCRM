@@ -20,7 +20,7 @@
           <div class="min-w-0 flex-1">
             <n-form-item
               :path="element.value"
-              :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
+              :rule="!props.isNotRequiredValidate ? [{ required: true, message: t('common.value.nameNotNull') }] : []"
               class="block flex-[1.5] overflow-hidden"
             >
               <CrmTreeSelect
@@ -61,6 +61,7 @@
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
     scopedOptions: ScopedOptions[];
+    isNotRequiredValidate?: boolean;
   }>();
 
   const formRef = ref<FormInst | null>(null);

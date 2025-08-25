@@ -68,3 +68,7 @@ export const SortReasonUrl = '/dict/sort'; // 原因排序
 export const SearchConfigUrl = '/search/config/save'; // 搜索设置添加配置
 export const GetSearchConfigUrl = '/search/config/get'; // 获取搜索字段配置
 export const ResetSearchConfigUrl = '/search/config/reset'; // 重置搜索字段配置
+
+// 搜索模糊设置
+export const ModuleMaskSearchConfigUrl = '/mask/config/save'; // 搜索设置脱敏设置
+export const GetModuleMaskSearchConfigUrl = '/mask/config/get'; // 获取搜索脱敏设置

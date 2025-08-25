@@ -13,6 +13,7 @@
     v-model:form-model="formModel"
     v-model:visible="showAdvancedSettingModal"
     :search-field-map="searchFieldMap"
+    :init="initSearchDetail"
     @refresh="handleRefresh"
   />
 </template>
@@ -47,17 +48,20 @@
     showAdvancedSettingModal.value = true;
   }
 
-  async function initSearchDetail() {
+  const originSearchFields = ref({});
+  async function initSearchDetail(isReset = false) {
     try {
       const res = await getSearchConfig();
+      if (isReset) {
+        originSearchFields.value = cloneDeep(res.searchFields);
+      }
       const { sortSetting } = res;
-      configList.value = sortSetting.map((value: any) => {
-        const currentConfig = lastScopedOptions.value.find((scoped) => value === scoped.value);
-        return {
-          ...currentConfig,
-        };
-      });
+
+      const optionsMap = new Map(lastScopedOptions.value.map((item) => [item.value, item]));
+      configList.value = sortSetting.map((val: any) => optionsMap.get(val)).filter(Boolean) as ScopedOptions[];
+
       formModel.value = cloneDeep(res);
+      emit('init', searchFieldMap, formModel.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -71,8 +75,18 @@
   onMounted(async () => {
     await initSearchFormConfig();
     await initSearchDetail();
-    emit('init', searchFieldMap, formModel.value);
   });
+
+  watch(
+    () => originSearchFields.value,
+    (val) => {
+      if (val) {
+        nextTick(() => {
+          formModel.value.searchFields = val;
+        });
+      }
+    }
+  );
 
   defineExpose({
     searchFieldMap,

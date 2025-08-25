@@ -74,6 +74,7 @@
 
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
+    init: (isInit?: boolean) => Promise<void>;
   }>();
 
   const emit = defineEmits<{
@@ -102,7 +103,7 @@
             ...formModel.value,
             sortSetting: configList.value.map((e) => e.value),
           });
-          Message.success(t('common.operationSuccess'));
+          Message.success(t('common.saveSuccess'));
           emit('refresh');
           visible.value = false;
         } catch (error) {
@@ -119,12 +120,21 @@
     searchSettingRef.value?.formRef?.restoreValidation();
     try {
       await resetSearchConfig();
-      emit('refresh');
+      props.init(true);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        props.init();
+      }
+    }
+  );
 </script>
 
 <style scoped></style>
