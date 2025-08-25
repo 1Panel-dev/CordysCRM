@@ -8,7 +8,7 @@
     class="min-w-[1000px]"
     :title="t('common.search')"
   >
-    <div class="p-[24px]">
+    <div class="flex h-full flex-col overflow-hidden p-[24px] pb-0">
       <div class="mb-[16px] flex items-center justify-between gap-[12px]">
         <CrmSearchInput
           v-model:value="keyword"
@@ -54,6 +54,7 @@
 
         <CrmTable
           v-bind="useTableRes.propsRes.value"
+          :columns="columns"
           @page-size-change="useTableRes.propsEvent.value.pageSizeChange"
           @sorter-change="useTableRes.propsEvent.value.sorterChange"
           @filter-change="useTableRes.propsEvent.value.filterChange"
@@ -116,22 +117,22 @@
   const keyword = ref('');
 
   const configList = ref<ScopedOptions[]>([]); // 横向标签列表
-  const activeConfigValue = ref<SearchTableKey>(FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER); // 当前选中的标签
+  const activeConfigValue = ref<SearchTableKey>(FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY); // 当前选中的标签
   function clickTag(config: ScopedOptions) {
     activeConfigValue.value = config.value as SearchTableKey;
   }
 
   const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel)); // 设置里的值
-  const searchFieldMap = ref<Record<string, FilterFormItem[]>>({}); // 所有可匹配的字段列表
+  const allFieldMap = ref<Record<string, FilterFormItem[]>>({}); // 所有可匹配的字段列表
   function initAdvanceConfig(val: Record<string, any>, form: DefaultSearchSetFormModel) {
-    searchFieldMap.value = val.value;
+    allFieldMap.value = val.value;
     formModel.value = form;
   }
 
-  const { useTableRes } = await useSearchTable({
-    searchTableKey: activeConfigValue.value,
-    fieldList: searchFieldMap.value[activeConfigValue.value] ?? [],
-    selectedFieldKeyList: formModel.value.searchFields[activeConfigValue.value] ?? [],
+  const { useTableRes, columns } = await useSearchTable({
+    searchTableKey: activeConfigValue,
+    fieldList: computed(() => allFieldMap.value[activeConfigValue.value] ?? []),
+    selectedFieldIdList: computed(() => formModel.value.searchFields[activeConfigValue.value] ?? []),
   });
 
   const activeCustomer = ref();
@@ -157,6 +158,15 @@
     useTableRes.setLoadListParams({ keyword: searchTerm });
     await useTableRes.loadList();
   };
+
+  watch(
+    () => activeConfigValue.value,
+    () => {
+      nextTick(() => {
+        searchData(keyword.value);
+      });
+    }
+  );
 
   watch(
     () => visible.value,

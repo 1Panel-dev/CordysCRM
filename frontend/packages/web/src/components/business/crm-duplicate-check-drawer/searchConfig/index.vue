@@ -41,7 +41,7 @@
 
   const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel));
 
-  const { initSearchFormConfig, searchFieldMap } = useSearchFormConfig();
+  const { initSearchFormConfig, searchFieldMap, allFieldMap } = useSearchFormConfig();
 
   const showAdvancedSettingModal = ref(false);
   function handleAdvancedConfig() {
@@ -61,7 +61,7 @@
       configList.value = sortSetting.map((val: any) => optionsMap.get(val)).filter(Boolean) as ScopedOptions[];
 
       formModel.value = cloneDeep(res);
-      emit('init', searchFieldMap, formModel.value);
+      emit('init', allFieldMap, formModel.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

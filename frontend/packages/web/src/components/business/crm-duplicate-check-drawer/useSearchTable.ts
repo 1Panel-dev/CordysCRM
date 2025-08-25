@@ -1,6 +1,7 @@
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CommonList } from '@lib/shared/models/common';
+import type { ModuleField } from '@lib/shared/models/customer';
 
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -22,9 +23,9 @@ export type SearchTableKey =
   | FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY;
 
 export interface SearchTableProps {
-  searchTableKey: SearchTableKey;
-  fieldList: FilterFormItem[];
-  selectedFieldKeyList: string[]; // 匹配字段
+  searchTableKey: Ref<SearchTableKey>;
+  fieldList: Ref<FilterFormItem[]>;
+  selectedFieldIdList: Ref<string[]>;
 }
 
 export const getSearchListApiMap: Record<SearchTableKey, (data: any) => Promise<CommonList<any>>> = {
@@ -36,47 +37,19 @@ export const getSearchListApiMap: Record<SearchTableKey, (data: any) => Promise<
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: globalSearchOptPage,
 };
 
-// 固定展示字段 TODO lmy 对照一下字段
+// 固定展示字段
 export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['name', 'ownerName', 'departmentId', 'productNameList'], // 公司名称 、负责人、部门、意向产品
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['name', 'ownerName', 'departmentId'], // 客户名称、负责人、部门
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['customerName', 'name', 'phone', 'ownerName', 'departmentId'], // 客户名称、姓名、手机号、负责人、部门
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['name', 'owner', 'departmentId', 'products'], // 公司名称 、负责人、部门、意向产品
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: ['name', 'products', 'xxx'], // 公司名称 、意向产品、线索池名称
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['name', 'owner', 'departmentId'], // 客户名称、负责人、部门
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['customerId', 'name', 'phone', 'owner', 'departmentId'], // 客户名称、姓名、手机号、负责人、部门
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: ['name', 'xxx'], // 客户名称、公海名称
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: ['name', 'productNameList', 'xxx'], // 公司名称 、意向产品、线索池名称
-  [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: [
-    'name',
-    'customerName',
-    'ownerName',
-    'departmentId',
-    'productNames',
-    'stage',
-  ], // 商机名称、客户名称、负责人、部门、意向产品、商机阶段
+  [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: ['name', 'customerId', 'owner', 'departmentId', 'products', 'stage'], // 商机名称、客户名称、负责人、部门、意向产品、商机阶段
 };
 
 export default async function useSearchTable(props: SearchTableProps) {
   const { openNewPage } = useOpenNewPage();
   const { t } = useI18n();
-
-  const loading = ref(false);
-
-  const displayedColumnList = computed(() => {
-    // TODO lmy props.selectedFieldKeyList里是id，fixedFieldKeyListMap[props.searchTableKey]里是businessKey 需要转换成同属性的
-    const displayedColumnKeyList = [
-      ...new Set([...fixedFieldKeyListMap[props.searchTableKey], ...props.selectedFieldKeyList]),
-    ];
-    return props.fieldList.filter((item) => displayedColumnKeyList.includes(item.dataIndex as string));
-  });
-
-  const createTimeColumn = {
-    title: t('common.createTime'),
-    key: 'createTime',
-    width: 120,
-    ellipsis: {
-      tooltip: true,
-    },
-  };
-
-  let columns: CrmDataTableColumn[] = [];
 
   function openNewPageClue(row: any) {
     openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
@@ -134,124 +107,177 @@ export default async function useSearchTable(props: SearchTableProps) {
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: openNewPageOpportunity,
   };
 
-  async function getColumns() {
-    try {
-      loading.value = true;
+  // TODO lmy 公海名称；线索池名称
+  const systemFieldList = [
+    { dataIndex: 'departmentId', title: t('org.department'), type: FieldTypeEnum.INPUT },
+    { dataIndex: 'stage', title: t('opportunity.stage'), type: FieldTypeEnum.INPUT },
+    { dataIndex: 'xxx', title: t('module.customer.openSeaName'), type: FieldTypeEnum.INPUT },
+    { dataIndex: 'xxx', title: t('module.clue.name'), type: FieldTypeEnum.INPUT },
+  ];
 
-      // TODO lmy 处理column
-      columns = displayedColumnList.value.map((field) => {
-        // 名称
-        if (field.dataIndex === 'name' && props.searchTableKey !== FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
-          return {
-            title: field.title,
-            width: 200,
-            key: field.dataIndex,
-            render: (row: any) => {
-              if (!row.hasPermission) return row.name;
-              return h(
-                CrmTableButton,
-                {
-                  onClick: () => {
-                    getNewPageMap[props.searchTableKey](row);
-                  },
+  const displayedColumnList = computed<FilterFormItem[]>(() => {
+    // 转换成同属性后查重
+    const selectedFieldKeyList = props.selectedFieldIdList.value.map(
+      (item) => props.fieldList.value.find((i) => i.id === item)?.dataIndex
+    );
+    const displayedColumnKeyList = [
+      ...new Set([...fixedFieldKeyListMap[props.searchTableKey.value], ...selectedFieldKeyList]),
+    ];
+    return displayedColumnKeyList
+      .map((item) => [...props.fieldList.value, ...systemFieldList].find((i) => i.dataIndex === item))
+      .filter(Boolean) as FilterFormItem[];
+  });
+
+  const createTimeColumn = {
+    title: t('common.createTime'),
+    key: 'createTime',
+    width: 120,
+    ellipsis: {
+      tooltip: true,
+    },
+  };
+
+  const columns = computed<CrmDataTableColumn[]>(() => {
+    const resultColumns: CrmDataTableColumn[] = displayedColumnList.value.map((field) => {
+      // 名称
+      if (field.dataIndex === 'name' && props.searchTableKey.value !== FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
+        return {
+          title: field.title,
+          width: 200,
+          key: field.dataIndex,
+          render: (row: any) => {
+            if (!row.hasPermission) return row.name;
+            return h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  getNewPageMap[props.searchTableKey.value](row);
                 },
-                { default: () => row.name, trigger: () => row.name }
-              );
-            },
-          } as CrmDataTableColumn;
-        }
+              },
+              { default: () => row.name, trigger: () => row.name }
+            );
+          },
+        };
+      }
 
-        if (field.dataIndex === 'customerName') {
-          return {
-            title: field.title,
-            width: 200,
-            key: field.dataIndex,
-            render: (row: any) => {
-              if (!row.hasPermission) return row.customerName;
-              return h(
-                CrmTableButton,
-                {
-                  onClick: () => {
-                    if (props.searchTableKey === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
-                      getNewPageMap[props.searchTableKey](row);
-                    } else if (props.searchTableKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY) {
-                      getNewPageMap[props.searchTableKey](row, true);
-                    }
-                  },
+      if (field.dataIndex === 'customerId') {
+        return {
+          title: field.title,
+          width: 200,
+          key: field.dataIndex,
+          render: (row: any) => {
+            if (!row.hasPermission) return row.customerName;
+            return h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  if (props.searchTableKey.value === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
+                    getNewPageMap[props.searchTableKey.value](row);
+                  } else if (props.searchTableKey.value === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY) {
+                    getNewPageMap[props.searchTableKey.value](row, true);
+                  }
                 },
-                { default: () => row.customerName, trigger: () => row.customerName }
-              );
-            },
-          } as CrmDataTableColumn;
-        }
+              },
+              { default: () => row.customerName, trigger: () => row.customerName }
+            );
+          },
+        };
+      }
 
-        if (field.dataIndex === 'departmentId') {
-          return {
-            title: field.title,
-            width: 200,
-            key: field.dataIndex,
-            render: (row: any) => row.departmentName || '-',
-          } as CrmDataTableColumn;
-        }
+      // 部门
+      if (field.dataIndex === 'departmentId') {
+        return {
+          title: field.title,
+          width: 130,
+          key: 'departmentName',
+          ellipsis: {
+            tooltip: true,
+          },
+        };
+      }
 
-        if (field.dataIndex === 'stage') {
-          return {
-            title: field.title,
-            width: 200,
-            key: field.dataIndex,
-            render: (row) => {
-              const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
-              return step ? step.label : '-';
-            },
-          } as CrmDataTableColumn;
-        }
+      // 负责人
+      if (field.dataIndex === 'owner') {
+        return {
+          title: field.title,
+          width: 150,
+          key: 'ownerName',
+          ellipsis: {
+            tooltip: true,
+          },
+        };
+      }
 
-        if (field.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
-          return {
-            title: field.title,
-            width: 150,
-            key: field.dataIndex,
-            isTag: true,
-          } as CrmDataTableColumn;
-        }
+      if (field.dataIndex === 'stage') {
+        return {
+          title: field.title,
+          width: 100,
+          key: field.dataIndex,
+          render: (row) => {
+            const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
+            return step ? step.label : '-';
+          },
+        };
+      }
 
+      if (field.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
         return {
           title: field.title,
           width: 150,
           key: field.dataIndex,
-          ellipsis: {
-            tooltip: true,
-          },
+          isTag: true,
         } as CrmDataTableColumn;
-      });
-      // 除了线索池和公海，其他的有创建时间
-      if (
-        ![FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC].includes(
-          props.searchTableKey
-        )
-      ) {
-        columns = [...columns, createTimeColumn];
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
-  }
-  await getColumns();
 
-  const useTableRes = useTable(getSearchListApiMap[props.searchTableKey], {
-    showPagination: true,
-    columns,
-    showSetting: false,
-    hiddenTotal: true,
-    hiddenRefresh: true,
-    hiddenAllScreen: true,
+      return {
+        title: field.title,
+        width: 150,
+        key: field.dataIndex,
+        ellipsis: {
+          tooltip: true,
+        },
+        isTag: field.dataIndex === 'products',
+      } as CrmDataTableColumn;
+    });
+
+    // 除了线索池和公海，其他的有创建时间
+    if (
+      ![FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC].includes(
+        props.searchTableKey.value
+      )
+    ) {
+      return [...resultColumns, createTimeColumn];
+    }
+    return resultColumns;
   });
 
+  const useTableRes = useTable(
+    getSearchListApiMap[props.searchTableKey.value],
+    {
+      showPagination: true,
+      columns: columns.value,
+      showSetting: false,
+      hiddenRefresh: true,
+      hiddenAllScreen: true,
+    },
+    (item) => {
+      const fieldMap = new Map(item.moduleFields.map((field: ModuleField) => [field.fieldId, field.fieldValue]));
+
+      const fieldAttr: Record<string, any> = Object.fromEntries(
+        displayedColumnList.value
+          .filter((i: FilterFormItem) => i.id && fieldMap.has(i.id))
+          .map((i: FilterFormItem) => [i.id, fieldMap.get(i.id)!])
+      );
+
+      return {
+        ...item,
+        ...fieldAttr,
+      };
+    }
+  );
+
   return {
-    loading,
     useTableRes,
+    columns,
   };
 }
