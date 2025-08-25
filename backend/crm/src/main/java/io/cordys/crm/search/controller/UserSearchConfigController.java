@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -24,11 +21,16 @@ public class UserSearchConfigController {
     private UserSearchConfigService userSearchConfigService;
 
 
-    @PostMapping("/add")
-    @Operation(summary = "添加配置")
-    public void add(@Validated @RequestBody UserSearchConfigAddRequest request) {
-        userSearchConfigService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    @PostMapping("/save")
+    @Operation(summary = "保存配置")
+    public void save(@Validated @RequestBody UserSearchConfigAddRequest request) {
+        userSearchConfigService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping("/reset")
+    @Operation(summary = "重置")
+    public void reset() {
+        userSearchConfigService.reset(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
 }

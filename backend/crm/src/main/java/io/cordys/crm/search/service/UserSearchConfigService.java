@@ -3,6 +3,7 @@ package io.cordys.crm.search.service;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
+import io.cordys.crm.search.constants.DefaultSearchFieldEnum;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.UserSearchConfig;
 import io.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
@@ -10,8 +11,10 @@ import io.cordys.crm.search.request.UserSearchConfigAddRequest;
 import io.cordys.crm.system.dto.field.DatasourceField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
@@ -33,8 +36,15 @@ public class UserSearchConfigService {
     private ExtUserSearchConfigMapper extUserSearchConfigMapper;
 
 
-    public void add(UserSearchConfigAddRequest request, String userId, String orgId) {
-
+    /**
+     * 保存配置
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public void save(UserSearchConfigAddRequest request, String userId, String orgId) {
+        deleteUserSearchConfig(userId, orgId);
         request.getSearchFields().forEach((key, value) -> {
             switch (key) {
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
@@ -59,6 +69,19 @@ public class UserSearchConfigService {
                     break;
             }
         });
+    }
+
+
+    /**
+     * 清空用户配置
+     *
+     * @param userId
+     * @param orgId
+     */
+    private void deleteUserSearchConfig(String userId, String orgId) {
+        LambdaQueryWrapper<UserSearchConfig> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserSearchConfig::getUserId, userId).eq(UserSearchConfig::getOrganizationId, orgId);
+        userSearchConfigMapper.deleteByLambda(queryWrapper);
     }
 
 
@@ -92,5 +115,125 @@ public class UserSearchConfigService {
 
             userSearchConfigMapper.batchInsert(searchConfigs);
         }
+    }
+
+
+    /**
+     * 重置配置
+     *
+     * @param userId
+     * @param orgId
+     */
+    public void reset(String userId, String orgId) {
+        deleteUserSearchConfig(userId, orgId);
+        List<UserSearchConfig> defaultSearchConfigs = new ArrayList<>();
+        //客户&公海
+        buildCustomerFields(FormKey.CUSTOMER.name(), userId, orgId, defaultSearchConfigs);
+        //线索&线索池
+        buildClueFields(FormKey.CLUE.name(), userId, orgId, defaultSearchConfigs);
+        //商机
+        buildOpportunityFields(FormKey.OPPORTUNITY.name(), userId, orgId, defaultSearchConfigs);
+        //联系人
+        buildContactFields(FormKey.CONTACT.name(), userId, orgId, defaultSearchConfigs);
+
+        userSearchConfigMapper.batchInsert(defaultSearchConfigs);
+
+    }
+
+    /**
+     * 联系人默认字段
+     * @param formKey
+     * @param userId
+     * @param orgId
+     * @param defaultSearchConfigs
+     */
+    private void buildContactFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
+        businessFormConfig.getFields().stream().forEach(field -> {
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CONTACT_CUSTOMER)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CONTACT, defaultSearchConfigs);
+            }
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CONTACT_PHONE)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CONTACT, defaultSearchConfigs);
+            }
+        });
+    }
+
+
+    /**
+     * 线索/线索池默认字段
+     * @param formKey
+     * @param userId
+     * @param orgId
+     * @param defaultSearchConfigs
+     */
+    private void buildClueFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
+        businessFormConfig.getFields().stream().forEach(field -> {
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CLUE_NAME)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE, defaultSearchConfigs);
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, defaultSearchConfigs);
+
+            }
+        });
+    }
+
+
+    /**
+     * 客户/公海默认字段
+     * @param formKey
+     * @param userId
+     * @param orgId
+     * @param defaultSearchConfigs
+     */
+    private void buildCustomerFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
+        businessFormConfig.getFields().stream().forEach(field -> {
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CUSTOMER_NAME)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, defaultSearchConfigs);
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, defaultSearchConfigs);
+
+            }
+        });
+    }
+
+
+    /**
+     * 商机默认字段
+     * @param formKey
+     * @param userId
+     * @param orgId
+     * @param defaultSearchConfigs
+     */
+    private void buildOpportunityFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
+        businessFormConfig.getFields().stream().forEach(field -> {
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.OPPORTUNITY_NAME)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, defaultSearchConfigs);
+            }
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.OPPORTUNITY_CUSTOMER)) {
+                buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, defaultSearchConfigs);
+            }
+        });
+    }
+
+
+    private void buildDto(BaseField field, String userId, String orgId, String moduleType, List<UserSearchConfig> defaultSearchConfigs) {
+        UserSearchConfig userSearchConfig = new UserSearchConfig();
+        userSearchConfig.setId(IDGenerator.nextStr());
+        userSearchConfig.setFieldId(field.getId());
+        userSearchConfig.setType(field.getType());
+        userSearchConfig.setBusinessKey(field.getBusinessKey());
+        userSearchConfig.setDataSourceType(null);
+        userSearchConfig.setUserId(userId);
+        userSearchConfig.setModuleType(moduleType);
+        userSearchConfig.setSortSetting(SearchModuleEnum.VALUES.toString());
+        userSearchConfig.setResultDisplay(false);
+        userSearchConfig.setOrganizationId(orgId);
+        userSearchConfig.setCreateUser(userId);
+        userSearchConfig.setUpdateUser(userId);
+        userSearchConfig.setCreateTime(System.currentTimeMillis());
+        userSearchConfig.setUpdateTime(System.currentTimeMillis());
+        defaultSearchConfigs.add(userSearchConfig);
     }
 }

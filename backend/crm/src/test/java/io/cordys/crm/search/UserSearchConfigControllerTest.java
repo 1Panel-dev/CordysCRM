@@ -22,6 +22,8 @@ import java.util.Map;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserSearchConfigControllerTest extends BaseTest {
     private static final String BASE_PATH = "/search/config/";
+    protected static final String SAVE = "save";
+    protected static final String RESET = "reset";
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
     public static String FIELD_ID = "wx_field-test-id";
@@ -58,12 +60,18 @@ public class UserSearchConfigControllerTest extends BaseTest {
         request.setSortSetting(List.of("SEARCH_ADVANCED_CLUE", "SEARCH_ADVANCED_CUSTOMER", "SEARCH_ADVANCED_CONTACT", "SEARCH_ADVANCED_PUBLIC", "SEARCH_ADVANCED_CLUE_POOL", "SEARCH_ADVANCED_OPPORTUNITY"));
         request.setSearchFields(fieldMap());
 
-        this.requestPost(DEFAULT_ADD, request);
+        this.requestPost(SAVE, request);
     }
 
     private Map<String, List<String>> fieldMap() {
         Map<String, List<String>> map = new HashMap<>();
         map.put("SEARCH_ADVANCED_CLUE", List.of(FIELD_ID));
         return map;
+    }
+
+    @Test
+    @Order(3)
+    void testReset() throws Exception {
+        this.requestGet(SAVE);
     }
 }

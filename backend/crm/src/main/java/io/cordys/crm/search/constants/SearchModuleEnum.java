@@ -1,5 +1,7 @@
 package io.cordys.crm.search.constants;
 
+import java.util.List;
+
 public class SearchModuleEnum {
 
     public static final String SEARCH_ADVANCED_CLUE = "SEARCH_ADVANCED_CLUE"; // 线索
@@ -9,4 +11,13 @@ public class SearchModuleEnum {
     public static final String SEARCH_ADVANCED_CLUE_POOL = "SEARCH_ADVANCED_CLUE_POOL"; // 线索池
     public static final String SEARCH_ADVANCED_OPPORTUNITY = "SEARCH_ADVANCED_OPPORTUNITY"; // 商机
 
+
+    public static final List<String> VALUES = List.of(
+            SEARCH_ADVANCED_CLUE,
+            SEARCH_ADVANCED_CUSTOMER,
+            SEARCH_ADVANCED_CONTACT,
+            SEARCH_ADVANCED_PUBLIC,
+            SEARCH_ADVANCED_CLUE_POOL,
+            SEARCH_ADVANCED_OPPORTUNITY
+    );
 }
