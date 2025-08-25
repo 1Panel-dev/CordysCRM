@@ -15,7 +15,6 @@ import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.CommonBeanFactory;
@@ -80,12 +79,6 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         clueService = CommonBeanFactory.getBean(ClueService.class);
         contactService = CommonBeanFactory.getBean(CustomerContactService.class);
         productService = CommonBeanFactory.getBean(ProductService.class);
-    }
-
-    @Override
-    public PagerWithOption<List<GlobalOpportunityResponse>> startSearch(BasePageRequest basePageRequest, String orgId, String userId) {
-        return null;
-
     }
 
     @Override

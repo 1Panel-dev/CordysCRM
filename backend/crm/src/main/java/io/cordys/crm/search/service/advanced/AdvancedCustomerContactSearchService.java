@@ -11,7 +11,6 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
-import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
@@ -71,11 +70,6 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
         Map<String, List<OptionDTO>> optionMap = buildCustomerContactOptionMap(orgId, buildListData);
         // 查询重复联系人列表
         return PageUtils.setPageInfoWithOption(page, buildListData, optionMap);
-    }
-
-    @Override
-    public Pager<List<AdvancedCustomerContactResponse>> startSearchNoOption(CustomerContactPageRequest request, String orgId, String userId) {
-        return null;
     }
 
 

@@ -16,9 +16,13 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     @Resource
     private BaseMapper<Module> moduleMapper;
 
-    abstract public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId);
+    public PagerWithOption<List<R>> startSearch(T request, String orgId, String userId) {
+        return new PagerWithOption<>();
+    }
 
-    abstract public Pager<List<R>> startSearchNoOption(T request, String orgId, String userId);
+    public Pager<List<R>> startSearchNoOption(T request, String orgId, String userId) {
+        return new Pager<>();
+    }
 
     /**
      * 获取当前组织下所有已开启的模块key
