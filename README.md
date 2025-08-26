@@ -56,9 +56,16 @@ docker run -d \
 
 ## UI 展示
 
-<tr>
-  <img alt="Cordys CRM UI" src="https://github.com/user-attachments/assets/fb7ef62f-2d65-48da-bf38-2538a664edbb"   />
-</tr>
+<table style="border-collapse: collapse; border: 1px solid black;">
+  <tr>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/settings.png" alt="Cordys CRM" /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/bot.png" alt="Cordys CRM" /></td>
+  </tr>
+  <tr>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/workspace.png" alt="Cordys CRM" /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" alt="Cordys CRM" /></td>
+  </tr>
+</table>
 
 ## Roadmap
 
