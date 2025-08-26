@@ -266,17 +266,12 @@ public class DataEaseSyncService {
             }
             List<String> crmDeptIds = Optional.ofNullable(userVariableTempDTO.getUserDeptIdMap().get(value.name()))
                     .orElse(List.of());
-            if (!deDeptIds.equals(crmDeptIds) || (CollectionUtils.isEmpty(deDeptIds) && CollectionUtils.isNotEmpty(crmDeptIds))) {
-                // 如果DE和CRM的数据权限不一致，则更新
+            if (!crmDeptIds.equals(deDeptIds)) {
                 needUpdate = true;
             }
             if (CollectionUtils.isNotEmpty(crmDeptIds)) {
                 // 记录待更新的用户变量
                 UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap, crmDeptIds);
-                variables.add(variable);
-            } else if (CollectionUtils.isNotEmpty(deDeptIds)) {
-                // 设置为DE原值
-                UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap, deDeptIds);
                 variables.add(variable);
             }
         }
@@ -655,7 +650,7 @@ public class DataEaseSyncService {
 
                 // 取 valueMap.key() 和 deptIds 的差集
                 List<String> deleteValueIds = valueMap.keySet().stream()
-                        .filter(deptIdSet::contains)
+                        .filter(deDeptId -> !deptIdSet.contains(deDeptId))
                         .map(key -> valueMap.get(key).getId())
                         .collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(deleteValueIds)) {
