@@ -7,10 +7,6 @@ import lombok.Data;
  * @CreateTime: 2025-08-15  15:48
  */
 @Data
-public class DataEaseResponse<T> {
-    private int code;
-
-    private String msg;
-
+public class DataEaseResponse<T> extends DataEaseBaseResponse {
     private T data;
 }

@@ -13,6 +13,7 @@ import io.cordys.crm.system.domain.OrganizationConfigDetail;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,7 +29,7 @@ public class DataEaseService {
     /**
      * 获取嵌入式DE-Token
      */
-    public DeAuthDTO getEmbeddedDeToken(String organizationId) {
+    public DeAuthDTO getEmbeddedDeToken(String organizationId, String userId, boolean isModule) {
         // 获取组织配置
         OrganizationConfig config =
                 extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
@@ -45,11 +46,16 @@ public class DataEaseService {
                 new String(configDetail.getContent()), ThirdConfigurationDTO.class
         );
 
+        String account = thirdConfig.getDeAccount();
+        if (BooleanUtils.isTrue(isModule)) {
+            account = userId;
+        }
+
         // 生成token
         String token = generateJwtToken(
                 thirdConfig.getAgentId(),
                 thirdConfig.getAppSecret(),
-                thirdConfig.getDeAccount()
+                account
         );
 
         return DeAuthDTO.builder()

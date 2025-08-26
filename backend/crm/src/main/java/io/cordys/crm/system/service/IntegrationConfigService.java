@@ -818,6 +818,10 @@ public class IntegrationConfigService {
             if (configDTO.getSqlBotChatEnable() == null || !configDTO.getSqlBotChatEnable()) {
                 throw new GenericException(Translator.get("third.config.un.enable"));
             }
+        } else if (Strings.CI.equals(type, ThirdConstants.ThirdDetailType.DE_BOARD.name())) {
+            if (configDTO.getRedirectUrl() == null) {
+                throw new GenericException(Translator.get("third.config.un.enable"));
+            }
         } else if (!configDTO.getQrcodeEnable()) {
             throw new GenericException(Translator.get("third.config.un.enable"));
         }

@@ -223,7 +223,7 @@
         </foreach>
     </select>
     <select id="selectNameAndEmail" resultType="io.cordys.security.UserDTO">
-        SELECT su.id, su.name, su.email, sou.enable
+        SELECT su.id, su.name, su.email, sou.enable, sou.department_id
         FROM sys_user su
         JOIN sys_organization_user sou ON su.id = sou.user_id
         WHERE sou.organization_id = #{orgId} and su.id != 'admin'

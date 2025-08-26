@@ -5,22 +5,20 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import io.cordys.crm.integration.dataease.dto.*;
 import io.cordys.crm.integration.dataease.dto.request.*;
 import io.cordys.crm.integration.dataease.dto.response.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -48,10 +46,8 @@ public class DataEaseClient {
     }
 
     public boolean validate() {
-        String url = getUrl("user/personInfo");
         try {
-            restTemplate.exchange(url,
-                    HttpMethod.GET, getHttpEntity(Map.of()), String.class);
+            get("user/personInfo");
         } catch (Exception e) {
             return false;
         }
@@ -59,112 +55,108 @@ public class DataEaseClient {
     }
 
     public List<SysVariableDTO> listSysVariable() {
-        String url = getUrl("sysVariable/query");
-        ResponseEntity<SysVariableListResponse> response = restTemplate.exchange(url,
-                HttpMethod.POST, getHttpEntity(Map.of()), SysVariableListResponse.class);
-        return response.getBody().getData();
+        return post("sysVariable/query", SysVariableListResponse.class).getData();
     }
 
     public List<SysVariableValueDTO> listSysVariableValue(String sysVariableId) {
-        String url = getUrl("sysVariable/value/selected/1/10000");
-        ResponseEntity<SysVariableValueListResponse> response = restTemplate.exchange(url,
-                HttpMethod.POST, getHttpEntity(Map.of("sysVariableId", sysVariableId)), SysVariableValueListResponse.class);
-        return response.getBody().getData();
+         return post("sysVariable/value/selected/1/10000", Map.of("sysVariableId", sysVariableId), SysVariableValueListResponse.class).getData()
+                 .getRecords();
     }
 
     public SysVariableDTO editSysVariable(SysVariableUpdateRequest request) {
-        String url = getUrl("sysVariable/edit");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), SysVariableCreateResponse.class).getBody().getData();
+        return post("sysVariable/edit", request, SysVariableCreateResponse.class).getData();
     }
 
     public void deleteSysVariable(String id) {
-        String url = getUrl("sysVariable/delete/{id}");
-        restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), String.class, id);
+        get("sysVariable/delete/{id}", id);
     }
 
     public SysVariableDTO createSysVariable(SysVariableCreateRequest request) {
-        String url = getUrl("sysVariable/create");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), SysVariableCreateResponse.class).getBody().getData();
+        return post("sysVariable/create", request, SysVariableCreateResponse.class).getData();
     }
 
     public Long createRole(RoleCreateRequest request) {
-        String url = getUrl("role/create");
-        return (Long) restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), DataEaseResponse.class).getBody().getData();
-    }
-
-    public Long createOrg(OrgCreateRequest request) {
-        String url = getUrl("org/page/create");
-        return (Long) restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), DataEaseResponse.class).getBody().getData();
+        return (Long) post("role/create", request, DataEaseResponse.class).getData();
     }
 
     public void switchOrg(String orgId) {
-        String url = getUrl("user/switch/{orgId}");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(), String.class, orgId);
+        post("user/switch/{orgId}", orgId);
     }
 
     public void roleMountUser(RoleMountUserRequest request) {
-        String url = getUrl("role/mountUser");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), String.class);
+        post("role/mountUser", request);
     }
 
     public List<RoleDTO> listRole() {
-        String url = getUrl("role/query");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(Map.of()), RoleListResponse.class).getBody().getData();
+        return post("role/query", RoleListResponse.class).getData();
     }
 
     public void editRole(RoleUpdateRequest request) {
-        String url = getUrl("role/edit");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), String.class);
+        post("role/edit", request);
     }
 
     public void deleteRole(String id) {
-        String url = getUrl("role/delete/{id}");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(), String.class, id);
+        post("role/delete/{id}", Map.of(), DataEaseResponse.class, id);
     }
 
     public SysVariableValueDTO createSysVariableValue(SysVariableValueCreateRequest request) {
-        String url = getUrl("sysVariable/value/create");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), SysVariableValueCreateResponse.class).getBody().getData();
+        return post("sysVariable/value/create", request, SysVariableValueCreateResponse.class).getData();
     }
 
     public void batchDelSysVariableValue(List<String> valueIds) {
-        String url = getUrl("sysVariable/value/batchDel");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(valueIds), String.class);
+        post("sysVariable/value/batchDel", valueIds);
     }
 
-    public PageDTO<UserPageDTO> listUserPage(int pageNum, int pageSize) {
-        String url = getUrl("user/pager/{pageNum}/{pageSize}");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(Map.of()), UserListResponse.class, pageNum, pageSize)
-                .getBody()
-                .getData();
+    public PageDTO<UserPageDTO> listUserPage(Integer pageNum, Integer pageSize) {
+        return post("user/pager/{pageNum}/{pageSize}", UserListResponse.class, pageNum.toString(), pageSize.toString()).getData();
     }
 
     public void createUser(UserCreateRequest request) {
-        String url = getUrl("user/create");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), String.class);
+        post("user/create", request, DataEaseBaseResponse.class);
     }
 
-    public void batchImportUser(File file) {
-        String url = getUrl("user/batchImport");
+    public DataEaseBaseResponse post(String path, Object body, String... uriVariables) {
+        return post(path, body, DataEaseBaseResponse.class, uriVariables);
+    }
 
-        FileSystemResource fileResource = new FileSystemResource(file);
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", fileResource);
+    public DataEaseBaseResponse post(String path, String... uriVariables) {
+        return post(path, Map.of(), DataEaseBaseResponse.class, uriVariables);
+    }
 
-        HttpEntity<Object> httpEntity = getHttpEntity(body);
-        httpEntity.getHeaders().setContentType(MediaType.MULTIPART_FORM_DATA);
+    public <V extends DataEaseBaseResponse> V post(String path, Class<V> responseClass, String... uriVariables) {
+        return post(path, Map.of(), responseClass, uriVariables);
+    }
 
-        restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
+    public <V extends DataEaseBaseResponse> V post(String path, Object body, Class<V> responseClass, String... uriVariables) {
+        String url = getUrl(path);
+        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, uriVariables)
+                .getBody();
+        if (dataEaseResponse.getCode() != 0) {
+            throw new GenericException(dataEaseResponse.getMsg());
+        }
+        return dataEaseResponse;
+    }
+
+    public DataEaseBaseResponse get(String path, Object... uriVariables) {
+        return get(path, DataEaseBaseResponse.class, uriVariables);
+    }
+
+    public <V extends DataEaseBaseResponse> V get(String path, Class<V> responseClass, Object... uriVariables) {
+        String url = getUrl(path);
+        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(), responseClass, uriVariables)
+                .getBody();
+        if (dataEaseResponse.getCode() != 0) {
+            throw new GenericException(dataEaseResponse.getMsg());
+        }
+        return dataEaseResponse;
     }
 
     public void editUser(UserUpdateRequest request) {
-        String url = getUrl("user/edit");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(request), String.class);
+        post("user/edit", request);
     }
 
     public void deleteUser(String id) {
-        String url = getUrl("user/delete/{id}");
-        restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(), String.class, id);
+        post("user/delete/{id}", id);
     }
 
     private String getUrl(String path) {
@@ -225,10 +217,7 @@ public class DataEaseClient {
     }
 
     public List<OptionDTO> listOrg() {
-        String url = getUrl("org/page/lazyTree");
-        return restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(Map.of()), OrgListResponse.class)
-                .getBody()
-                .getData()
+        return post("org/page/lazyTree", OrgListResponse.class).getData()
                 .getNodes();
     }
 }

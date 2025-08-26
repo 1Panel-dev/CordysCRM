@@ -8,5 +8,5 @@ import lombok.Data;
  * @CreateTime: 2025-08-15  15:54
  */
 @Data
-public class SysVariableValueListResponse extends DataEaseListResponse<SysVariableValueDTO> {
+public class SysVariableValueListResponse extends DataEasePageResponse<SysVariableValueDTO> {
 }

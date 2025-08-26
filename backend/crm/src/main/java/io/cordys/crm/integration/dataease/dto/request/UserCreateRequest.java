@@ -11,7 +11,6 @@ import java.util.List;
  */
 @Data
 public class UserCreateRequest {
-    private String id;
 
     private String account;
 

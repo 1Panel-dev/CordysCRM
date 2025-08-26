@@ -82,8 +82,8 @@ public class OrganizationSettingsController {
     @GetMapping(value = "/de-token")
     @Operation(summary = "生成DE-Token")
     @RequiresPermissions(PermissionConstants.DASHBOARD_READ)
-    public DeAuthDTO generateToken() {
-        return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId());
+    public DeAuthDTO generateToken(@RequestParam(required = false) boolean isModule) {
+        return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), isModule);
     }
 
     @GetMapping(value = "/de/sync")
