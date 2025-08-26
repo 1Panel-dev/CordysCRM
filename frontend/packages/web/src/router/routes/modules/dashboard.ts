@@ -25,6 +25,44 @@ const dashboard: AppRouteRecordRaw = {
         permissions: ['DASHBOARD:READ'],
       },
     },
+    {
+      path: 'link',
+      name: DashboardRouteEnum.DASHBOARD_LINK,
+      component: () => import('@/views/dashboard/link.vue'),
+      meta: {
+        permissions: ['DASHBOARD:READ'],
+        hideInMenu: true,
+        breadcrumbs: [
+          {
+            name: DashboardRouteEnum.DASHBOARD,
+            locale: 'menu.dashboard',
+          },
+          {
+            name: DashboardRouteEnum.DASHBOARD_LINK,
+            locale: 'system.business.DE.link',
+          },
+        ],
+      },
+    },
+    {
+      path: 'module',
+      name: DashboardRouteEnum.DASHBOARD_MODULE,
+      component: () => import('@/views/dashboard/module.vue'),
+      meta: {
+        permissions: ['DASHBOARD:READ'],
+        hideInMenu: true,
+        breadcrumbs: [
+          {
+            name: DashboardRouteEnum.DASHBOARD,
+            locale: 'menu.dashboard',
+          },
+          {
+            name: DashboardRouteEnum.DASHBOARD_MODULE,
+            locale: 'system.business.DE.embedModule',
+          },
+        ],
+      },
+    },
   ],
 };
 

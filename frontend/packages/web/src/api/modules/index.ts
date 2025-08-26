@@ -270,6 +270,8 @@ export const {
   cancelCenterExport,
   getRepeatContactList,
   getDEToken,
+  syncDE,
+  getDEOrgList,
 } = businessApi;
 
 export const {

@@ -1,135 +1,113 @@
 <template>
-  <CrmCard hide-footer no-content-padding>
-    <CrmSplitPanel :default-size="0.3" :min="0.2" :max="0.5">
-      <template #1>
-        <tree
-          ref="folderTreeRef"
-          v-model:value="selectedKeys"
-          @init="handleFolderTreeInit"
-          @add-dashboard="handleAddDashboard"
-          @select-node="handleNodeSelect"
-          @edit-dashboard="handleEditDashboard"
-          @collect="refreshTable"
-          @delete="refreshTable"
-          @move="refreshTable"
-        />
-      </template>
-      <template #2>
-        <dashboardTable
-          v-if="activeNode?.type !== 'DASHBOARD'"
-          ref="dashboardTableRef"
-          :active-folder-id="selectedKeys[0]"
-          :is-favorite="activeNode?.id === 'favorite'"
-          :offspring-ids="offspringIds"
-          @create="handleAddDashboard"
-          @edit="handleEditDashboard"
-          @collect="handleCollectDashboard"
-        />
-        <dashboard
-          v-else-if="activeNode"
-          :title="activeNode.name"
-          :dashboard-id="activeNode.resourceId"
-          :is-favorite="!!activeNode.myCollect"
-          @toggle-favorite="favoriteToggle(activeNode)"
-        />
-      </template>
-    </CrmSplitPanel>
+  <CrmCard hide-footer>
+    <div class="grid grid-cols-3 gap-[16px]">
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <div class="flex items-center gap-[8px]">
+            <div class="bg-[var(--text-n9)] p-[8px]"><CrmSvgIcon name="dataease" width="24px" height="24px" /></div>
+            <div class="flex flex-col gap-[4px]">
+              <div class="text-[var(--text-n1)]">DataEase</div>
+              <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.business.DE.description') }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-card-bottom">
+          <n-popover trigger="hover" placement="bottom" :disabled="DEConfig?.deLinkIntegration">
+            <template #trigger>
+              <n-button type="primary" text size="small" :disabled="!DEConfig?.deLinkIntegration" @click="jump('link')">
+                {{ t('system.business.DE.link') }}
+              </n-button>
+            </template>
+            <div class="flex items-center gap-[12px]">
+              <div class="text-[12px]">{{ t('dashboard.unConfig') }}</div>
+              <n-button type="primary" size="small" text @click="goConfig">{{ t('dashboard.goConfig') }}</n-button>
+            </div>
+          </n-popover>
+          <n-popover trigger="hover" placement="bottom" :disabled="DEConfig?.deModuleEmbedding">
+            <template #trigger>
+              <n-button
+                type="primary"
+                text
+                size="small"
+                :disabled="!DEConfig?.deModuleEmbedding"
+                @click="jump('embedModule')"
+              >
+                {{ t('system.business.DE.embedModule') }}
+              </n-button>
+            </template>
+            <div class="flex items-center gap-[12px]">
+              <div class="text-[12px]">{{ t('dashboard.unConfig') }}</div>
+              <n-button type="primary" size="small" text @click="goConfig">{{ t('dashboard.goConfig') }}</n-button>
+            </div>
+          </n-popover>
+        </div>
+      </div>
+    </div>
   </CrmCard>
-  <addDashboardModal
-    v-model:show="show"
-    :folder-tree="folderTree"
-    :dashboard-id="activeDashboardId"
-    @finish="handleFinish"
-  />
 </template>
 
 <script setup lang="ts">
-  import { TreeSelectOption, useMessage } from 'naive-ui';
+  import { useRouter } from 'vue-router';
+  import { NButton, NPopover } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { mapTree } from '@lib/shared/method';
+  import { ConfigSynchronization } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
-  import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
-  import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-  import addDashboardModal from './components/addDashboardModal.vue';
-  import dashboard from './components/dashboard.vue';
-  import dashboardTable from './components/table.vue';
-  import tree from './components/tree.vue';
+  import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
 
-  import { dashboardCollect, dashboardUnCollect } from '@/api/modules';
+  import { getConfigSynchronization } from '@/api/modules';
+
+  import { AppRouteEnum, DashboardRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
-  const Message = useMessage();
+  const router = useRouter();
 
-  const show = ref(false);
-  const folderTree = ref<TreeSelectOption[]>([]);
-  const folderTreeRef = ref<InstanceType<typeof tree>>();
-  const selectedKeys = ref<Array<string>>([]);
-  const activeNode = ref<CrmTreeNodeData>();
-  const offspringIds = ref<Array<string>>([]);
-  const activeDashboardId = ref<string | undefined>('');
-
-  function handleNodeSelect(
-    node: CrmTreeNodeData,
-    _selectedKeys: Array<string | number>,
-    _offspringIds: Array<string | number>
-  ) {
-    activeNode.value = node;
-    offspringIds.value = _offspringIds as Array<string>;
+  function jump(action: 'link' | 'embedModule') {
+    if (action === 'link') {
+      router.push({ name: DashboardRouteEnum.DASHBOARD_LINK });
+    } else if (action === 'embedModule') {
+      router.push({ name: DashboardRouteEnum.DASHBOARD_MODULE });
+    }
   }
 
-  function handleFolderTreeInit(_tree: CrmTreeNodeData[]) {
-    folderTree.value = mapTree(_tree, (item) => {
-      if (item.type === 'MODULE') {
-        if (item.children?.length === 0) {
-          item.children = undefined;
-        }
-        return item;
-      }
-      return null;
-    });
-  }
+  const configList = ref<ConfigSynchronization[]>([]);
+  const DEConfig = computed(() => configList.value.find((item) => item.type === CompanyTypeEnum.DATA_EASE));
 
-  function handleAddDashboard() {
-    activeDashboardId.value = '';
-    show.value = true;
-  }
-
-  function handleEditDashboard(id: string) {
-    show.value = true;
-    activeDashboardId.value = id;
-  }
-
-  async function favoriteToggle(option: CrmTreeNodeData) {
+  async function init() {
     try {
-      if (option.myCollect) {
-        await dashboardUnCollect(option.id);
-      } else {
-        await dashboardCollect(option.id);
-      }
-      option.myCollect = !option.myCollect;
-      folderTreeRef.value?.toggleDashboardCollect(option.id, option.myCollect);
-      Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
+      configList.value = await getConfigSynchronization();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
 
-  function handleCollectDashboard(id: string, collect: boolean) {
-    folderTreeRef.value?.toggleDashboardCollect(id, collect);
+  function goConfig() {
+    router.push({ name: AppRouteEnum.SYSTEM_BUSINESS });
   }
 
-  const dashboardTableRef = ref<InstanceType<typeof dashboardTable>>();
-  function refreshTable() {
-    dashboardTableRef.value?.loadList();
-  }
-
-  function handleFinish() {
-    folderTreeRef.value?.initTree();
-    refreshTable();
-  }
+  onBeforeMount(() => {
+    init();
+  });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .dashboard-card {
+    padding: 24px;
+    border: 1px solid var(--text-n8);
+    border-radius: 6px;
+    .dashboard-card-header {
+      @apply flex items-start justify-between;
+
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+    }
+    .dashboard-card-bottom {
+      @apply flex items-center;
+
+      gap: 12px;
+    }
+  }
+</style>

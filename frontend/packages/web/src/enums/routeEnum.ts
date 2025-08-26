@@ -47,6 +47,8 @@ export enum WorkbenchRouteEnum {
 export enum DashboardRouteEnum {
   DASHBOARD = 'dashboard',
   DASHBOARD_INDEX = 'dashboardIndex',
+  DASHBOARD_LINK = 'dashboardLink',
+  DASHBOARD_MODULE = 'dashboardModule',
 }
 
 export enum FullPageEnum {

@@ -8,6 +8,7 @@ import {
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  GetDEOrgListUrl,
   GetDETokenUrl,
   GetExportCenterListUrl,
   GetPersonalFollowUrl,
@@ -20,6 +21,7 @@ import {
   GetThirdConfigByTypeUrl,
   GetThirdTypeListUrl,
   SendEmailCodeUrl,
+  SyncDEUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
   UpdateAuthNameUrl,
@@ -40,6 +42,7 @@ import type {
   AuthUpdateParams,
   ConfigEmailParams,
   ConfigSynchronization,
+  DEOrgItem,
   RepeatClueItem,
   RepeatClueParams,
   RepeatContactItem,
@@ -140,6 +143,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<DEToken>({ url: GetDETokenUrl });
   }
 
+  // 同步 DE
+  function syncDE() {
+    return CDR.get({ url: SyncDEUrl });
+  }
+
+  // 获取 DE 组织列表
+  function getDEOrgList(data: ConfigSynchronization) {
+    return CDR.post<DEOrgItem[]>({ url: GetDEOrgListUrl, data });
+  }
+
   // 获取个人信息
   function getPersonalInfo() {
     return CDR.get<OrgUserInfo>({ url: GetPersonalUrl });
@@ -238,5 +251,7 @@ export default function useProductApi(CDR: CordysAxios) {
     cancelCenterExport,
     getRepeatContactList,
     getDEToken,
+    syncDE,
+    getDEOrgList,
   };
 }

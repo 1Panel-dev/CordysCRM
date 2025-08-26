@@ -29,6 +29,29 @@ export interface ConfigSynchronization {
   deAccount?: string; // DE 账号
   weComEnable?: boolean; // 开启企业微信通知
   deBoardEnable?: boolean; // DE看板是否开启
+  deModuleEmbedding?: boolean; // DE模块嵌入
+  deLinkIntegration?: boolean; // DE链接集成
+  deAutoSync?: boolean; // DE自动同步
+  deAccessKey?: string; // DE访问密钥
+  deSecretKey?: string; // DE密钥
+  deOrgID?: string; // DE组织ID
+  // 前端渲染参数
+  deEmbedType?: string[]; // DE嵌入方式
+}
+
+// 同步组织和扫码登录数据类型
+export interface SyncAndScanItem {
+  type: string; // 类型
+  title: string;
+  description: string;
+  logo: string;
+  hasConfig: boolean;
+  response: ConfigSynchronization;
+}
+
+export interface DEOrgItem {
+  id: string;
+  name: string;
 }
 
 // 同步组织和扫码卡片数据类型

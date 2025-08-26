@@ -8,6 +8,8 @@ export const TestConfigSynchronizationUrl = '/organization/settings/third-party/
 export const GetThirdConfigByTypeUrl = '/organization/settings/third-party/get'; // 根据类型获取开启的三方扫码设置
 export const GetThirdTypeListUrl = '/organization/settings/third-party/types'; // 获取三方应用扫码类型集合
 export const GetDETokenUrl = '/organization/settings/de-token'; // 获取DEToken
+export const SyncDEUrl = '/organization/settings/de/sync'; // 同步 DE 配置
+export const GetDEOrgListUrl = '/organization/settings/de/org/list'; // 获取 DE 组织列表
 
 export const GetAuthsUrl = '/system/auth-sources/list'; //  认证设置-列表查询
 export const GetAuthDetailUrl = '/system/auth-sources/get'; // 认证设置-详情

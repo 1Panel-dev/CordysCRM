@@ -15,4 +15,6 @@ export default {
   'dashboard.favoriteSuccess': 'Favorite Success',
   'dashboard.unFavoriteSuccess': 'Unfavorite Success',
   'dashboard.loadFailed': 'Load Failed',
+  'dashboard.unConfig': 'Not Configured Third-Party Information',
+  'dashboard.goConfig': 'Go to Configuration',
 };

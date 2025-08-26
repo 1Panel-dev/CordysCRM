@@ -14,4 +14,6 @@ export default {
   'dashboard.favoriteSuccess': '收藏成功',
   'dashboard.unFavoriteSuccess': '取消收藏成功',
   'dashboard.loadFailed': '加载失败',
+  'dashboard.unConfig': '未配置三方信息',
+  'dashboard.goConfig': '去配置',
 };

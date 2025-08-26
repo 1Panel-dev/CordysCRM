@@ -21,7 +21,7 @@
             <div class="flex justify-between">
               <div>
                 <span class="mr-[8px] font-medium">{{ item.title }}</span>
-                <CrmTag v-if="!item.hasConfig" theme="light" size="small">
+                <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
                   {{ t('system.business.notConfigured') }}
                 </CrmTag>
                 <CrmTag
@@ -29,6 +29,7 @@
                   theme="light"
                   type="error"
                   size="small"
+                  custom-class="px-[4px]"
                 >
                   {{ t('common.fail') }}
                 </CrmTag>
@@ -37,20 +38,31 @@
                   theme="light"
                   type="warning"
                   size="small"
+                  custom-class="px-[4px]"
                 >
                   {{ t('common.unVerify') }}
                 </CrmTag>
-                <CrmTag v-else theme="light" type="success" size="small">
+                <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
                   {{ t('common.success') }}
                 </CrmTag>
               </div>
 
               <div>
                 <n-button
+                  v-if="item.type === CompanyTypeEnum.DATA_EASE && item.response.deModuleEmbedding"
                   v-permission="['SYSTEM_SETTING:UPDATE']"
                   size="small"
                   type="default"
-                  class="outline--secondary mr-[8px]"
+                  class="outline--secondary mr-[8px] px-[8px]"
+                  @click="handleSyncDE()"
+                >
+                  {{ t('common.sync') }}
+                </n-button>
+                <n-button
+                  v-permission="['SYSTEM_SETTING:UPDATE']"
+                  size="small"
+                  type="default"
+                  class="outline--secondary mr-[8px] px-[8px]"
                   @click="handleEdit(item)"
                 >
                   {{ t('common.config') }}
@@ -59,7 +71,7 @@
                   :disabled="!item.hasConfig"
                   size="small"
                   type="default"
-                  class="outline--secondary"
+                  class="outline--secondary px-[8px]"
                   @click="testLink(item)"
                 >
                   {{ t('system.business.mailSettings.testLink') }}
@@ -184,7 +196,12 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
 
-  import { getConfigSynchronization, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
+  import {
+    getConfigSynchronization,
+    syncDE,
+    testConfigSynchronization,
+    updateConfigSynchronization,
+  } from '@/api/modules';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -276,6 +293,20 @@
     currentTitle.value = item.title;
     currentIntegration.value = { ...item.response };
     showEditIntegrationModal.value = true;
+  }
+
+  async function handleSyncDE() {
+    try {
+      loading.value = true;
+      await syncDE();
+      Message.success(t('org.syncSuccess'));
+      await initSyncList();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
   }
 
   async function handleChangeEnable(
