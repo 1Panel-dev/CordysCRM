@@ -285,7 +285,7 @@ public class DataSourceService {
     private final String url;
     private final String username;
     private final String password;
-
+    private final String configuredUrl;
     @Resource
     private ExtDataSourceMapper extDataSourceMapper;
 
@@ -294,11 +294,13 @@ public class DataSourceService {
      */
     public DataSourceService(
             @Value("${spring.datasource.url}") String url,
+            @Value("${sql.bot.db.url:1panel-network}") String configuredUrl,
             @Value("${sql.bot.db.username:${spring.datasource.username}}") String username,
             @Value("${sql.bot.db.password:${spring.datasource.password}}") String password) {
         this.url = url;
         this.username = username;
         this.password = password;
+        this.configuredUrl = configuredUrl;
     }
 
     /**
@@ -334,7 +336,7 @@ public class DataSourceService {
                     ? matcher.group(4)
                     : "";
 
-            dataSourceDTO.setHost(host);
+            dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? configuredUrl : host);
             dataSourceDTO.setPort(port);
             dataSourceDTO.setUser(username);
             dataSourceDTO.setPassword(password);
@@ -365,7 +367,7 @@ public class DataSourceService {
                 ? parsePortSafely(hostPort[1])
                 : MYSQL_CONFIG.defaultPort();
 
-        dataSourceDTO.setHost(host);
+        dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? configuredUrl : host);
         dataSourceDTO.setPort(port);
         dataSourceDTO.setUser(username);
         dataSourceDTO.setPassword(password);
