@@ -1,7 +1,13 @@
 package io.cordys.crm.search.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
 import io.cordys.crm.search.request.FieldMaskConfigDTO;
@@ -39,6 +45,7 @@ public class SearchFieldMaskConfigService {
      * @param userId
      * @param orgId
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void save(FieldMaskConfigDTO request, String userId, String orgId) {
         deleteFieldMaskConfig(orgId);
         request.getSearchFields().forEach((key, value) -> {
@@ -65,6 +72,14 @@ public class SearchFieldMaskConfigService {
                     break;
             }
         });
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(orgId)
+                        .resourceName(Translator.get("module.desensitization_set"))
+                        .originalValue(null)
+                        .modifiedValue(null)
+                        .build()
+        );
     }
 
 
