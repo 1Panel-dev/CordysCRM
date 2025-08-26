@@ -162,8 +162,8 @@
                     </if>
                 </if>
                 <if test="condition.name == 'departmentId'">
-                    left join sys_organization_user souc
-                    on souc.user_id = c.owner
+                    left join sys_organization_user ${tablePrefix}_${i}
+                    on ${tablePrefix}_${i}.user_id = c.owner
                 </if>
             </foreach>
         </if>
@@ -204,6 +204,7 @@
                         <include refid="condition">
                             <property name="condition" value="condition"/>
                             <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
                         </include>
                         <include refid="io.cordys.common.mapper.CommonMapper.searchMode">
                             <property name="searchMode" value="${combineSearch}.searchMode"/>
@@ -285,7 +286,7 @@
             <when test="condition.name == 'departmentId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="souc.department_id"/>
+                    <property name="column" value="${table}.department_id"/>
                 </include>
             </when>
             <when test="condition.name == 'reasonId'">
