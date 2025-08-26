@@ -42,7 +42,7 @@
     try {
       loading.value = true;
       isError.value = false;
-      const res = await getDEToken();
+      const res = await getDEToken(true);
       params.embeddedToken = res.token;
       iframeSrc.value = `${res.url}/#/chart-view`;
     } catch (error) {

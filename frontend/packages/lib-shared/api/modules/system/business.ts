@@ -139,8 +139,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取DEToken
-  function getDEToken() {
-    return CDR.get<DEToken>({ url: GetDETokenUrl });
+  function getDEToken(isModule = false) {
+    return CDR.get<DEToken>({ url: GetDETokenUrl, params: { isModule } });
   }
 
   // 同步 DE

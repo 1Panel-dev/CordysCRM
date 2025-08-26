@@ -140,6 +140,7 @@
                   value-field="id"
                   :disabled="!form.deAccessKey || !form.deSecretKey"
                   :loading="orgListLoading"
+                  filterable
                 />
               </template>
               {{ t('system.business.DE.orgTip') }}
