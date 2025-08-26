@@ -12,6 +12,20 @@
         "weComEnable":false
       },
       {
+        "event": "CUSTOMER_CONCAT_ADD",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false,
+        "weComEnable":false
+      },
+      {
+        "event": "CUSTOMER_COLLABORATION_ADD",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false,
+        "weComEnable":false
+      },
+      {
         "event": "CUSTOMER_TRANSFERRED_CUSTOMER",
         "eventName": "",
         "emailEnable":false,

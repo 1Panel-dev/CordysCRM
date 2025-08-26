@@ -37,6 +37,10 @@ public class NotificationConstants {
         //新建客户
         @Schema(description = "message.customer_add")
         String  CUSTOMER_ADD="CUSTOMER_ADD";
+        @Schema(description = "message.customer_concat_add")
+        String  CUSTOMER_CONCAT_ADD="CUSTOMER_CONCAT_ADD";
+        @Schema(description = "message.customer_collaboration_add")
+        String  CUSTOMER_COLLABORATION_ADD="CUSTOMER_COLLABORATION_ADD";
        //被转移客户
        @Schema(description = "message.customer_transferred_customer")
         String  CUSTOMER_TRANSFERRED_CUSTOMER="CUSTOMER_TRANSFERRED_CUSTOMER";
@@ -108,6 +112,12 @@ public class NotificationConstants {
         //请注意！${OPERATOR}新建${customerName}客户给您，请知悉！
         @Schema(description = "message.customer_add_text")
         String CUSTOMER_ADD_TEXT = "CUSTOMER_ADD_TEXT";
+
+        @Schema(description = "message.customer_concat_add_text")
+        String CUSTOMER_CONCAT_ADD_TEXT = "CUSTOMER_CONCAT_ADD_TEXT";
+
+        @Schema(description = "message.customer_collaboration_add_text")
+        String CUSTOMER_COLLABORATION_ADD_TEXT = "CUSTOMER_COLLABORATION_ADD_TEXT";
 
        // 请注意！${OPERATOR}将${customerName}客户转移给您,请知悉！
         @Schema(description = "message.customer_transferred_customer_text")
