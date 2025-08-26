@@ -260,6 +260,9 @@
       form.value.deEmbedType = [val?.deModuleEmbedding ? 'module' : '', val?.deLinkIntegration ? 'link' : ''].filter(
         Boolean
       );
+      if (showModal.value && props.integration?.type === CompanyTypeEnum.DATA_EASE) {
+        fetchDEOrgList();
+      }
     },
     { deep: true }
   );
@@ -354,15 +357,6 @@
       }
     });
   }
-
-  watch(
-    () => showModal.value,
-    (val) => {
-      if (val && props.integration?.type === CompanyTypeEnum.DATA_EASE) {
-        fetchDEOrgList();
-      }
-    }
-  );
 </script>
 
 <style lang="less">
