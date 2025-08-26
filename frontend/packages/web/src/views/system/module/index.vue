@@ -34,7 +34,6 @@
                 ghost-class="ghost"
                 handle=".nav-item"
                 :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
-                @end="onDragEnd"
               >
                 <div v-for="item in appStore.navTopConfigList" :key="item.key" class="nav-item justify-between">
                   <div class="flex items-center gap-[8px]">

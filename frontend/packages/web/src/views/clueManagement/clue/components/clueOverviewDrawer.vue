@@ -68,12 +68,6 @@
       />
     </template>
   </CrmOverviewDrawer>
-  <convertToCustomerDrawer
-    v-model:show="showConvertToCustomerDrawer"
-    :clue-id="otherFollowRecordSaveParams.clueId"
-    @new="handleNew"
-    @finish="closeAndRefresh"
-  />
   <CrmMoveModal
     v-model:show="showMoveModal"
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
@@ -81,6 +75,7 @@
     :name="sourceName"
     @refresh="() => closeAndRefresh()"
   />
+  <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="() => closeAndRefresh()" />
 </template>
 
 <script setup lang="ts">
@@ -104,7 +99,7 @@
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
-  import convertToCustomerDrawer from './convertToCustomerDrawer.vue';
+  import convertClueModal from './convertClueModal.vue';
 
   // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
@@ -123,7 +118,6 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
-    (e: 'convertToCustomer'): void;
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
@@ -196,8 +190,13 @@
     showMoveModal.value = true;
   }
 
+  // 转换
+  const showConvertClueModal = ref(false);
+  function handleConvert() {
+    showConvertClueModal.value = true;
+  }
+
   const formDrawerVisible = ref(false);
-  const showConvertToCustomerDrawer = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
   const otherFollowRecordSaveParams = computed(() => ({ clueId: sourceId.value }));
   function handleSelect(key: string) {
@@ -208,9 +207,8 @@
       case 'delete':
         handleDelete();
         break;
-      case 'convertToCustomer':
-        realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-        emit('convertToCustomer');
+      case 'convert':
+        handleConvert();
         break;
       case 'moveIntoCluePool':
         handleMoveToLeadPool();
@@ -220,9 +218,6 @@
     }
   }
 
-  function handleNew() {
-    formDrawerVisible.value = true;
-  }
   // const currentStatus = ref<string>(ClueStatusEnum.NEW);
   // const lastStage = ref<string>(ClueStatusEnum.NEW);
   const showAction = computed(() =>
@@ -278,12 +273,12 @@
         permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
-        label: t('clue.convertToCustomer'),
-        key: 'convertToCustomer',
+        label: t('clue.convert'),
+        key: 'convert',
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
-        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
         label: t('clue.moveIntoCluePool'),

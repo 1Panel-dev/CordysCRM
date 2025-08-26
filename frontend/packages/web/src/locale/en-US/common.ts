@@ -317,4 +317,5 @@ export default {
   'common.convertPlanToRecord': 'Plan transfer record',
   'common.hasConvertToRecord': 'Have record',
   'common.notAllowForwardSlash': 'Not allowed to enter /',
+  'common.conversionSuccessful': 'Conversion successful',
 };

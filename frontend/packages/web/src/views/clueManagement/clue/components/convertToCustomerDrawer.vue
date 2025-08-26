@@ -4,7 +4,7 @@
     width="100%"
     :ok-text="t('clue.relationCustomer')"
     :ok-disabled="checkedRowKeys.length === 0"
-    :title="t('clue.convertToCustomer')"
+    :title="t('clue.linkAccount')"
     no-padding
     @cancel="handleCancel"
     @confirm="handleConfirm"
@@ -23,10 +23,7 @@
         @refresh="searchData"
       >
         <template #tableTop>
-          <div class="flex items-center justify-between gap-[12px]">
-            <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" type="primary" @click="handleNew">
-              {{ t('customer.new') }}
-            </n-button>
+          <div class="flex items-center justify-end gap-[12px]">
             <div class="flex gap-[12px]">
               <CrmAdvanceFilter
                 ref="tableAdvanceFilterRef"
@@ -46,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -60,11 +57,10 @@
 
   import { reTransitionCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
 
   const props = defineProps<{
-    clueId: string;
+    clueIds: (string | number)[];
   }>();
   const emit = defineEmits<{
     (e: 'new', linkForm: Record<string, any>): void;
@@ -84,12 +80,6 @@
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
   const keyword = ref('');
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
-
-  const formKey = ref(FormDesignKeyEnum.CLUE);
-  const { linkFormFieldMap, initFormConfig, initFormDetail } = useFormCreateApi({
-    formKey,
-    sourceId: computed(() => props.clueId),
-  });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER,
     containerClass: '.crm-clue-convert-table',
@@ -152,7 +142,7 @@
   async function handleConfirm() {
     try {
       await reTransitionCustomer({
-        clueId: props.clueId,
+        clueIds: props.clueIds,
         customerId: checkedRowKeys.value[0] as string,
       });
       Message.success(t('clue.convertToCustomerSuccess'));
@@ -171,19 +161,11 @@
     propsRes.value.data = []; // 手动重置数据，避免下次进入后导致表格虚拟滚动定位问题
   }
 
-  function handleNew() {
-    show.value = false;
-    handleCancel();
-    emit('new', linkFormFieldMap.value);
-  }
-
   watch(
     () => show.value,
-    async (newVal) => {
+    (newVal) => {
       if (newVal) {
         searchData();
-        await initFormConfig();
-        initFormDetail(false, true);
       }
     },
     { immediate: true }

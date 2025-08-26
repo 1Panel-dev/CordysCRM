@@ -54,6 +54,7 @@ import {
   PickClueUrl,
   PreCheckImportUrl,
   ReTransitionCustomerUrl,
+  TransformClueUrl,
   UpdateClueFollowPlanStatusUrl,
   UpdateClueFollowPlanUrl,
   UpdateClueFollowRecordUrl,
@@ -70,6 +71,7 @@ import type {
   CluePoolListItem,
   CluePoolTableParams,
   ClueTransitionCustomerParams,
+  ConvertClueParams,
   PickClueParams,
   SaveClueParams,
   UpdateClueParams,
@@ -132,7 +134,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 线索合并客户
-  function reTransitionCustomer(data: { clueId: string; customerId: string }) {
+  function reTransitionCustomer(data: { clueIds: (string | number)[]; customerId: string }) {
     return CDR.post({ url: ReTransitionCustomerUrl, data });
   }
 
@@ -311,6 +313,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportClueSelectedUrl, data });
   }
 
+  // 转换线索
+  function transformClue(data: ConvertClueParams) {
+    return CDR.post({ url: TransformClueUrl, data });
+  }
+
   // 视图
   function addClueView(data: ViewParams) {
     return CDR.post({ url: AddClueViewUrl, data });
@@ -444,5 +451,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getGlobalSearchClueList,
     exportCluePoolAll,
     exportCluePoolSelected,
+    transformClue,
   };
 }

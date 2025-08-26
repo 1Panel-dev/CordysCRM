@@ -150,6 +150,7 @@ export const {
   exportCluePoolSelected,
   getGlobalCluePoolList,
   getGlobalSearchClueList,
+  transformClue,
 } = clueApi;
 
 export const {

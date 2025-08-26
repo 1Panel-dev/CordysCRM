@@ -79,7 +79,6 @@
     v-model:show="showOverviewDrawer"
     :detail="activeClue"
     @refresh="handleRefresh"
-    @convert-to-customer="() => handleConvertToCustomer(activeClue)"
     @open-customer-drawer="handleOpenCustomerDetail"
   />
   <CrmFormCreateDrawer
@@ -91,7 +90,7 @@
     :initial-source-name="activeRowName"
     :other-save-params="otherFollowRecordSaveParams"
     :link-form-info="linkFormInfo"
-    @saved="handleFormSaved"
+    @saved="() => loadList()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -104,8 +103,7 @@
   <convertToCustomerDrawer
     v-if="isInitConvertDrawer"
     v-model:show="showConvertToCustomerDrawer"
-    :clue-id="otherFollowRecordSaveParams.clueId"
-    @new="handleNewCustomer"
+    :clue-ids="checkedRowKeys"
     @finish="handleRefresh"
   />
   <CrmMoveModal
@@ -121,6 +119,7 @@
     :source-id="customerId"
     readonly
   />
+  <convertClueModal v-model:show="showConvertClueModal" :clue-id="activeClueId" @success="() => loadList()" />
 </template>
 
 <script setup lang="ts">
@@ -153,6 +152,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import convertClueModal from './convertClueModal.vue';
 
   import {
     batchDeleteClue,
@@ -161,7 +161,6 @@
     downloadLeadTemplate,
     importLead,
     preCheckImportLead,
-    reTransitionCustomer,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -227,6 +226,11 @@
                 permission: ['CLUE_MANAGEMENT:RECYCLE'],
               },
               {
+                label: t('clue.linkAccount'),
+                key: 'linkAccount',
+                permission: ['CLUE_MANAGEMENT:UPDATE'],
+              },
+              {
                 label: t('common.batchDelete'),
                 key: 'batchDelete',
                 permission: ['CLUE_MANAGEMENT:DELETE'],
@@ -275,6 +279,21 @@
       },
     });
   }
+  const isInitConvertDrawer = ref(false);
+  const showConvertToCustomerDrawer = ref(false);
+
+  const otherFollowRecordSaveParams = ref({
+    type: 'CLUE',
+    clueId: '',
+    id: '',
+  });
+
+  // 关联客户
+  function handleLinkAccount() {
+    isInitConvertDrawer.value = true;
+    needInitDetail.value = false;
+    showConvertToCustomerDrawer.value = true;
+  }
 
   // 批量转移
   const showTransferModal = ref<boolean>(false);
@@ -287,6 +306,9 @@
         break;
       case 'moveIntoCluePool':
         handleMoveToLeadPool();
+        break;
+      case 'linkAccount':
+        handleLinkAccount();
         break;
       case 'batchDelete':
         handleBatchDelete();
@@ -337,7 +359,7 @@
     ...defaultTransferForm,
   });
 
-  function handleTransfer(row: ClueListItem) {
+  function handleTransfer(row: ClueListItem, done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
@@ -346,6 +368,7 @@
             ...transferForm.value,
             ids: [row.id],
           });
+          done?.();
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
           tableRefreshId.value += 1;
@@ -369,34 +392,13 @@
     formCreateDrawerVisible.value = true;
   }
 
-  function handleNewCustomer(formInfo: Record<string, any>) {
-    isInitFormCreateDrawer.value = true;
-    linkFormInfo.value = formInfo;
-    formKey.value = FormDesignKeyEnum.CUSTOMER;
-    activeClueId.value = '';
-    formCreateDrawerVisible.value = true;
+  // 转换
+  const showConvertClueModal = ref(false);
+  function handleConvert() {
+    showConvertClueModal.value = true;
   }
 
-  const isInitConvertDrawer = ref(false);
-  const showConvertToCustomerDrawer = ref(false);
-
-  const otherFollowRecordSaveParams = ref({
-    type: 'CLUE',
-    clueId: '',
-    id: '',
-  });
-
-  function handleConvertToCustomer(row?: Partial<ClueListItem>) {
-    isInitConvertDrawer.value = true;
-    activeClueId.value = '';
-    formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-    activeRowName.value = row?.name || '';
-    otherFollowRecordSaveParams.value.clueId = row?.id || '';
-    needInitDetail.value = false;
-    showConvertToCustomerDrawer.value = true;
-  }
-
-  function handleActionSelect(row: ClueListItem, actionKey: string) {
+  function handleActionSelect(row: ClueListItem, actionKey: string, done?: () => void) {
     activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
@@ -417,11 +419,10 @@
         formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':
-        handleTransfer(row);
+        handleTransfer(row, done);
         break;
-      case 'convertToCustomer':
-        activeClueId.value = '';
-        handleConvertToCustomer(row);
+      case 'convert':
+        handleConvert();
         break;
       case 'moveIntoCluePool':
         handleMoveToLeadPool(row);
@@ -472,16 +473,9 @@
                         permission: ['CLUE_MANAGEMENT:UPDATE'],
                       },
                       {
-                        label: t('common.transfer'),
-                        key: 'transfer',
-                        permission: ['CLUE_MANAGEMENT:UPDATE'],
-                        popConfirmProps: {
-                          loading: transferLoading.value,
-                          title: t('common.transfer'),
-                          positiveText: t('common.confirm'),
-                          iconType: 'primary',
-                        },
-                        popSlotContent: 'transferPopContent',
+                        label: t('clue.convert'),
+                        key: 'convert',
+                        permission: ['CLUE_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
                       },
                       {
                         label: 'more',
@@ -496,10 +490,16 @@
                         permission: ['CLUE_MANAGEMENT:RECYCLE'],
                       },
                       {
-                        label: t('clue.convertToCustomer'),
-                        key: 'convertToCustomer',
-                        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-                        allPermission: true,
+                        label: t('common.transfer'),
+                        key: 'transfer',
+                        permission: ['CLUE_MANAGEMENT:UPDATE'],
+                        popConfirmProps: {
+                          loading: transferLoading.value,
+                          title: t('common.transfer'),
+                          positiveText: t('common.confirm'),
+                          iconType: 'primary',
+                        },
+                        popSlotContent: 'transferPopContent',
                       },
                       {
                         label: t('common.delete'),
@@ -508,7 +508,7 @@
                         permission: ['CLUE_MANAGEMENT:DELETE'],
                       },
                     ],
-                    onSelect: (key: string) => handleActionSelect(row, key),
+                    onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                     onCancel: () => {
                       transferForm.value = { ...defaultTransferForm };
                     },
@@ -553,16 +553,6 @@
       ids: checkedRowKeys.value,
     };
   });
-
-  async function handleFormSaved(res: any) {
-    if (linkFormInfo.value) {
-      await reTransitionCustomer({
-        clueId: otherFollowRecordSaveParams.value.clueId,
-        customerId: res.id,
-      });
-    }
-    loadList();
-  }
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {

@@ -9,6 +9,7 @@
     <searchSetting
       ref="searchSettingRef"
       v-model:form-model="formModel"
+      is-not-required-validate
       :scoped-options="lastScopedOptions"
       :search-field-map="props.searchFieldMap"
     />
@@ -44,7 +45,16 @@
           <n-button :disabled="loading" secondary @click="handleReset">
             {{ t('common.reset') }}
           </n-button>
-          <n-button :loading="loading" type="primary" @click="handleConfirm">
+          <n-button
+            :loading="loading"
+            type="primary"
+            :disabled="
+              !Object.values(formModel.searchFields).some(
+                (e) => e !== null && e !== undefined && Array.isArray(e) && e.length >= 1
+              )
+            "
+            @click="handleConfirm"
+          >
             {{ t('common.save') }}
           </n-button>
         </div>

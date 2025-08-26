@@ -3,11 +3,20 @@
   <CrmButtonGroup :list="buttonGroupList" @select="handleSelect" @cancel="emit('cancel')">
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
-      <CrmMoreAction :options="props.moreList" placement="bottom" @select="handleMoreSelect">
+      <CrmMoreAction
+        :options="props.moreList"
+        placement="bottom"
+        @pop-cancel="emit('cancel')"
+        @pop-select="handleSelect"
+        @select="handleMoreSelect"
+      >
         <template #default>
           <n-button text type="primary">
             {{ t('common.more') }}
           </n-button>
+        </template>
+        <template v-for="group in hasMorePopContentSlot" :key="group.key" #[group.popSlotContent]="{ key }">
+          <slot :key="key" :name="group.popSlotContent"></slot>
         </template>
       </CrmMoreAction>
     </template>
@@ -51,6 +60,10 @@
 
   const hasPopContentSlot = computed(() => {
     return props.groupList.filter((e) => e.popSlotContent) as ActionsItem & { popSlotContent: string; key: string }[];
+  });
+
+  const hasMorePopContentSlot = computed(() => {
+    return props.moreList?.filter((e) => e.popSlotContent) as ActionsItem & { popSlotContent: string; key: string }[];
   });
 
   const hasPermissionMore = computed(

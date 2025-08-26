@@ -239,7 +239,7 @@
       width: 150,
       render: (row) => {
         const step = logTypeOption.find((e) => e.value === row.type);
-        return step ? step.label : '-';
+        return step ? t(step.label) : '-';
       },
     },
     {

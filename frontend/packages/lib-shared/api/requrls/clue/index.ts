@@ -14,6 +14,7 @@ export const ExportClueAllUrl = '/clue/export'; // 导出全部线索
 export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线索
 export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并线索转为客户
 export const MoveToPoolLeadUrl = '/clue/to-pool'; // 移入线索池
+export const TransformClueUrl = '/clue/transform'; // 转换线索
 export const GetAdvancedSearchClueListUrl = '/advanced/search/clue'; // 全局搜索线索分页查询线索
 export const GetAdvancedSearchClueDetailUrl = '/advanced/search/clue/detail'; // 全局搜索线索详情
 export const GetGlobalSearchClueListUrl = '/global/search/clue';

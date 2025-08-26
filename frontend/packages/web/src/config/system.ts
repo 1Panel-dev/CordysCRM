@@ -8,51 +8,51 @@ const { t } = useI18n();
 export const logTypeOption = [
   {
     value: OperationTypeEnum.ADD,
-    label: t('common.new'),
+    label: 'common.new',
   },
   {
     value: OperationTypeEnum.UPDATE,
-    label: t('common.modify'),
+    label: 'common.modify',
   },
   {
     value: OperationTypeEnum.DELETE,
-    label: t('common.delete'),
+    label: 'common.delete',
   },
   {
     value: OperationTypeEnum.IMPORT,
-    label: t('common.import'),
+    label: 'common.import',
   },
   {
     value: OperationTypeEnum.EXPORT,
-    label: t('common.export'),
+    label: 'common.export',
   },
   {
     value: OperationTypeEnum.SYNC,
-    label: t('common.sync'),
+    label: 'common.sync',
   },
   {
     value: OperationTypeEnum.MOVE_TO_CUSTOMER_POOL,
-    label: t('customer.moveToSeaOrPool'),
+    label: 'customer.moveToSeaOrPool',
   },
   {
     value: OperationTypeEnum.PICK,
-    label: t('common.claim'),
+    label: 'common.claim',
   },
   {
     value: OperationTypeEnum.ASSIGN,
-    label: t('common.distribute'),
+    label: 'common.distribute',
   },
   {
     value: OperationTypeEnum.CANCEL,
-    label: t('common.cancel'),
+    label: 'common.cancel',
   },
   {
     value: OperationTypeEnum.ADD_USER,
-    label: t('common.addUser'),
+    label: 'common.addUser',
   },
   {
     value: OperationTypeEnum.REMOVE_USER,
-    label: t('common.removeUser'),
+    label: 'common.removeUser',
   },
 ];
 

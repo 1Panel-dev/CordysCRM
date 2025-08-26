@@ -32,4 +32,20 @@ export default {
   'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
   'clue.moveIntoCluePoolTitle': 'Confirm move-in {name} to lead pool?',
   'clue.belongingCluePool': 'Belonging lead Pool',
+  'clue.convert': 'Convert',
+  'clue.convertClueToOther': 'Convert the clue to',
+  'clue.convertClueToOtherTitle': 'Convert into',
+  'clue.remarks': 'Remarks',
+  'clue.sameNameConvertTip':
+    '1.When there is a customer with the same name, the clue will be associated with the customer of the same name, and the person in charge of the clue will be added as a collaborator of the customer with the same name',
+  'clue.notSameNameConvertTip':
+    '2.If there is no customer with the same name, the system will automatically create a customer and contact',
+  'clue.linkFormConfigTip':
+    '3.The field mapping between clues and customers is configured in the "Clue Form Settings" to configure form linkage',
+  'clue.linkFormConfig': 'Form linkage',
+  'clue.convertOpportunityNoPermission': 'No permission',
+  'clue.linkAccount': 'Link account',
+  'clue.backClueList': 'Return to clue pool list',
+  'clue.afterConvertGoDetailText': '{name} details',
+  'clue.countDownTip': 'Return to clue pool list in {count} seconds, or manually return to clue pool list',
 };

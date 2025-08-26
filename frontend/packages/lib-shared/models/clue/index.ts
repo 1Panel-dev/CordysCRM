@@ -81,3 +81,9 @@ export interface BatchAssignClueParams {
   batchIds: (string | number)[];
   assignUserId: string;
 }
+
+export interface ConvertClueParams {
+  clueId: string;
+  oppCreated: boolean;
+  oppName: string;
+}

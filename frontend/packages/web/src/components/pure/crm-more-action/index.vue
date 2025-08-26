@@ -41,12 +41,14 @@
   } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmPopConfirm, { CrmPopConfirmProps } from '@/components/pure/crm-pop-confirm/index.vue';
 
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import type { ActionsItem } from './type';
   import { Size } from 'naive-ui/es/button/src/interface';
 
+  const slots = useSlots();
   const props = withDefaults(
     defineProps<{
       options: ActionsItem[];
@@ -79,6 +81,8 @@
     (e: 'click', event: MouseEvent): void;
     (e: 'updateShow', show: boolean): void;
     (e: 'close'): void;
+    (e: 'popSelect', key: string, done?: () => void): void;
+    (e: 'popCancel'): void;
   }>();
 
   function handleSelect(key: string | number) {
@@ -90,6 +94,14 @@
 
   function handleUpdateShow(show: boolean) {
     emit('updateShow', show);
+  }
+  const popShow = ref<Record<string, boolean>>({});
+
+  function cancel() {
+    // 关闭所有弹出框
+    Object.keys(popShow.value).forEach((key) => {
+      popShow.value[key] = false;
+    });
   }
 
   function renderLabel(option: DropdownOption) {
@@ -105,7 +117,6 @@
         default: () => {
           const content = [];
           if (option.render) {
-            // 选项里边自带render 可自定义从外边渲染
             content.push(option.render);
           } else {
             if (icon) {
@@ -113,9 +124,45 @@
                 h(CrmIcon, {
                   size: 16,
                   type: icon,
-                  class: `mr-[4px] ${option.danger ? 'text-[var(--error-red)]' : undefined}`,
+                  class: `mr-[4px] ${option.danger ? 'text-[var(--error-red)]' : ''}`,
                 })
               );
+            }
+
+            // 处理带有popConfirm的情况
+            let labelContent;
+            if (option?.popConfirmProps) {
+              labelContent = h(
+                CrmPopConfirm,
+                {
+                  'show': popShow.value[option.key as string],
+                  ...((option?.popConfirmProps as CrmPopConfirmProps) || {}),
+                  'placement': 'bottom-end',
+                  'onConfirm': () => emit('popSelect', `pop-${option.key}`, cancel),
+                  'onCancel': () => emit('popCancel'),
+                  'onUpdate:show': (val: boolean) => {
+                    popShow.value[option.key as string] = val;
+                  },
+                },
+                {
+                  default: () =>
+                    h(
+                      'div',
+                      {
+                        class: 'flex-1',
+                        onClick: (e: Event) => e.stopPropagation(),
+                      },
+                      option.label as string
+                    ),
+                  content: () => {
+                    const slotName = option.popSlotContent as string;
+                    const slotFn = (slots as any)[slotName];
+                    return slotName && slotFn ? slotFn({ key: option.key }) : null;
+                  },
+                }
+              );
+            } else {
+              labelContent = h('div', { class: 'flex-1' }, option.label as string);
             }
             content.push(
               h(
@@ -127,15 +174,12 @@
                   to: 'body',
                 },
                 {
-                  trigger: () => {
-                    return h('div', { class: 'flex-1' }, option.label as string);
-                  },
+                  trigger: () => h('div', { class: 'flex-1' }, labelContent),
                   default: () => option.tooltipContent,
                 }
               )
             );
           }
-
           return content;
         },
       }
@@ -191,6 +235,19 @@
   function clickOutSide() {
     emit('close');
   }
+
+  // 初始化
+  watch(
+    () => props.options,
+    (newList) => {
+      newList.forEach((item) => {
+        if (item.popConfirmProps) {
+          popShow.value[item.key as string] = false;
+        }
+      });
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less">
