@@ -16,7 +16,7 @@
           auto-search
           :debounce-time="500"
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
-          @search="(val) => searchData(val)"
+          @search="(val) => refresh(val)"
         />
         <searchSettingButton
           v-model:config-list="configList"
@@ -37,7 +37,7 @@
       <template v-if="keyword.length">
         <div class="flex gap-[8px]">
           <CrmTag
-            v-for="(item, index) of configList"
+            v-for="(item, index) of displayConfigList"
             :key="`${item.value}-${index}`"
             :type="activeConfigValue === item.value ? 'primary' : 'default'"
             theme="light"
@@ -50,13 +50,14 @@
               <span
                 :class="`${activeConfigValue === item.value ? 'text-[var(--primary-8)]' : 'text-[var(--text-n4)]'}`"
               >
-                ({{ useTableRes.propsRes.value.crmPagination?.itemCount }})</span
-              >
+                ({{ moduleCount?.[item.value] }})
+              </span>
             </span>
           </CrmTag>
         </div>
 
         <CrmTable
+          v-if="displayConfigList.length"
           v-bind="useTableRes.propsRes.value"
           :columns="columns"
           @page-size-change="useTableRes.propsEvent.value.pageSizeChange"
@@ -108,7 +109,7 @@
   import RelatedTable from './components/relatedTable.vue';
   import searchSettingButton from './searchConfig/index.vue';
 
-  import { advancedSearchOptDetail, getAdvancedSearchClueDetail } from '@/api/modules';
+  import { advancedSearchOptDetail, getAdvancedSearchClueDetail, getGlobalModuleCount } from '@/api/modules';
   import { lastOpportunitySteps } from '@/config/opportunity';
 
   import { DefaultSearchSetFormModel, defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
@@ -123,13 +124,20 @@
 
   const keyword = ref('');
 
-  const configList = ref<ScopedOptions[]>([]); // 横向标签列表
-  const activeConfigValue = ref<SearchTableKey>(lastScopedOptions.value[0].value as SearchTableKey); // 当前选中的标签
-  function initConfigList() {
-    activeConfigValue.value = configList.value[0].value as SearchTableKey;
-  }
-  function clickTag(config: ScopedOptions) {
-    activeConfigValue.value = config.value as SearchTableKey;
+  const moduleCount = ref<Record<string, number>>();
+  async function getCountList(val: string) {
+    if (!val) return;
+    try {
+      const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
+      const res = await getGlobalModuleCount(searchTerm);
+      moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
+        acc[item.key] = item.count;
+        return acc;
+      }, {});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   const tableRefreshId = ref(0);
@@ -140,6 +148,22 @@
     allFieldMap.value = val.value;
     formModel.value = form;
     tableRefreshId.value += 1;
+  }
+
+  const configList = ref<ScopedOptions[]>([]); // 横向标签列表
+  const displayConfigList = computed(() => {
+    if (!formModel.value.resultDisplay) {
+      return configList.value;
+    }
+    return configList.value.filter((item) => moduleCount.value?.[item.value]);
+  });
+  const activeConfigValue = ref<SearchTableKey>(lastScopedOptions.value[0].value as SearchTableKey); // 当前选中的标签
+
+  function initConfigList() {
+    activeConfigValue.value = displayConfigList.value[0]?.value as SearchTableKey;
+  }
+  function clickTag(config: ScopedOptions) {
+    activeConfigValue.value = config.value as SearchTableKey;
   }
 
   const { useTableRes, columns, openNewPageOpportunity, openNewPageClue } = await useSearchTable({
@@ -288,11 +312,29 @@
     await useTableRes.loadList();
   };
 
-  watch([() => activeConfigValue.value, () => tableRefreshId.value], () => {
-    nextTick(() => {
-      searchData(keyword.value);
-    });
-  });
+  async function refresh(val: string) {
+    await getCountList(val);
+    if (!displayConfigList.value.some((item) => item.value === activeConfigValue.value)) {
+      initConfigList();
+    }
+    searchData(val);
+  }
+
+  watch(
+    () => tableRefreshId.value,
+    async () => {
+      await refresh(keyword.value);
+    }
+  );
+
+  watch(
+    () => activeConfigValue.value,
+    () => {
+      nextTick(() => {
+        searchData(keyword.value);
+      });
+    }
+  );
 
   watch(
     () => visible.value,

@@ -240,6 +240,7 @@ export const {
   getGlobalCustomerList,
   getGlobalOpenSeaCustomerList,
   getGlobalCustomerContactList,
+  getGlobalModuleCount,
   exportCustomerOpenSeaAll,
   exportCustomerOpenSeaSelected,
   exportContactAll,

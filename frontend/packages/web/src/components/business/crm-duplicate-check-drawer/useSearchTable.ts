@@ -128,6 +128,7 @@ export default async function useSearchTable(props: SearchTableProps) {
   ]);
 
   const displayedColumnList = computed<FilterFormItem[]>(() => {
+    if (!props.searchTableKey.value) return [];
     // 转换成同属性后查重
     const selectedFieldKeyList = props.selectedFieldIdList.value.map(
       (item) => props.fieldList.value.find((i) => i.id === item)?.dataIndex

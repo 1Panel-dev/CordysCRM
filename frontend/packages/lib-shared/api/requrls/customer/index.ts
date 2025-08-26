@@ -74,6 +74,7 @@ export const GetAdvancedCustomerContactListUrl = '/advanced/search/contact'; // 
 export const GetGlobalCustomerListUrl = '/global/search/customer';
 export const GetGlobalOpenSeaCustomerListUrl = '/global/search/customer_pool';
 export const GetGlobalCustomerContactListUrl = '/global/search/contact';
+export const GetGlobalModuleCountUrl = '/global/search/module/count'; // 数量统计
 
 export const ExportContactAllUrl = '/customer/contact/export-all'; // 导出所有联系人
 export const ExportContactSelectedUrl = '/customer/contact/export-select'; // 导出选中联系人

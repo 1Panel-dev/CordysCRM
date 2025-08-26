@@ -74,6 +74,7 @@ import {
   GetCustomerViewListUrl,
   GetGlobalCustomerContactListUrl,
   GetGlobalCustomerListUrl,
+  GetGlobalModuleCountUrl,
   GetGlobalOpenSeaCustomerListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
@@ -607,6 +608,13 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  function getGlobalModuleCount(keyword: string) {
+    return CDR.post<{ key: string; count: number }[]>(
+      { url: `${GetGlobalModuleCountUrl}?keyword=${keyword}` },
+      { ignoreCancelToken: true }
+    );
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -618,6 +626,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getGlobalCustomerList,
     getGlobalOpenSeaCustomerList,
     getGlobalCustomerContactList,
+    getGlobalModuleCount,
     batchDeleteCustomer,
     batchTransferCustomer,
     batchMoveCustomer,
