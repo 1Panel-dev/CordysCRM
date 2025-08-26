@@ -109,7 +109,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         nameCondition.setName(name);
         nameCondition.setValue(value);
         nameCondition.setOperator(operator);
-        nameCondition.setMultipleValue(false);
+        nameCondition.setMultipleValue(Strings.CI.equals(type, FieldType.DATA_SOURCE_MULTIPLE.toString()));
         nameCondition.setType(type);
         return nameCondition;
     }
@@ -277,7 +277,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
             return;
         }
         // 如果是数据源类型的字段，使用IN查询
-        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString())) {
+        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString()) || Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE_MULTIPLE.toString())) {
             List<String> ids = new ArrayList<>();
             if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CUSTOMER")) {
                 // 客户数据源
