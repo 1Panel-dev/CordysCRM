@@ -356,6 +356,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         List<BaseModuleFieldValue> returnBaseModuleFieldValues = new ArrayList<>();
         //此条数据所带的自定义字段及其值
         List<BaseModuleFieldValue> baseModuleFieldValues = moduleFiledMap.get(id);
+        if (CollectionUtils.isEmpty(baseModuleFieldValues)) {
+            return new ArrayList<>();
+        }
         Map<String, Object> fieldValueMap = baseModuleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
         //获取自定义字段选项，用于补充数据源的值
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, baseModuleFieldValues);
