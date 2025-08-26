@@ -99,17 +99,13 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             FilterCondition phoneCondition = getFilterCondition("phone", keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
             conditions.add(phoneCondition);
             if (CollectionUtils.isNotEmpty(list)) {
-                FilterCondition customerCondition = getFilterCondition("customerId", keyword, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+                FilterCondition customerCondition = getFilterCondition("customerId", list, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
         }
 
         //构造查询参数
-        CombineSearch combineSearch = new CombineSearch();
-        combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
-        combineSearch.setConditions(conditions);
-        request.setCombineSearch(combineSearch);
-        request.setKeyword(null);
+        buildCombineSearch(conditions, request);
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerContactResponse> globalContactResponses = extCustomerContactMapper.globalSearchList(request, orgId);

@@ -4,6 +4,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
@@ -353,6 +354,19 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
             }
         }
         return productNames;
+    }
+
+    /**
+     * 构建组合查询条件
+     * @param conditions 过滤条件列表
+     * @param request 分页请求
+     */
+    public void buildCombineSearch(List<FilterCondition> conditions, BasePageRequest request) {
+        CombineSearch combineSearch = new CombineSearch();
+        combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
+        combineSearch.setConditions(conditions);
+        request.setCombineSearch(combineSearch);
+        request.setKeyword(null);
     }
 
 }

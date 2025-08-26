@@ -96,11 +96,7 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
         }
 
         //构造查询参数
-        CombineSearch combineSearch = new CombineSearch();
-        combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
-        combineSearch.setConditions(conditions);
-        request.setCombineSearch(combineSearch);
-        request.setKeyword(null);
+        buildCombineSearch(conditions, request);
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerResponse> globalCustomerResponses = extCustomerMapper.globalSearchList(request, orgId);

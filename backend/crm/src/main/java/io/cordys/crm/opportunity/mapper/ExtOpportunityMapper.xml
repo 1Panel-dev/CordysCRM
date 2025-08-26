@@ -641,4 +641,19 @@
             and name like concat('%', #{keyword},'%')
         </if>
     </select>
+    <select id="globalSearchListCount" resultType="java.lang.Long">
+        SELECT
+        count(1)
+        FROM
+        opportunity o
+        INNER JOIN customer c ON o.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where o.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
 </mapper>

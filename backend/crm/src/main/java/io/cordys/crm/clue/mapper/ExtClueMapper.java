@@ -76,6 +76,10 @@ public interface ExtClueMapper {
 
     List<GlobalClueResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+
     List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
 }

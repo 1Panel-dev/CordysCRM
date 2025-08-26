@@ -91,11 +91,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         }
 
         //构造查询参数
-        CombineSearch combineSearch = new CombineSearch();
-        combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
-        combineSearch.setConditions(conditions);
-        request.setCombineSearch(combineSearch);
-        request.setKeyword(null);
+        buildCombineSearch(conditions, request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerPoolResponse> customerPoolResponses = extCustomerMapper.globalPoolSearchList(request, orgId);

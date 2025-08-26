@@ -68,5 +68,11 @@ public interface ExtCustomerMapper {
 
     List<GlobalCustomerPoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+
     List<GlobalCustomerResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+    long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
 }

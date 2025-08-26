@@ -80,7 +80,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-                return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, null);
             }
             for (UserSearchConfig userSearchConfig : opportunitySearchConfigs) {
                 //如果和固定展示列名重复不加入fieldIdSet
@@ -107,11 +107,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         }
 
         //构造查询参数
-        CombineSearch combineSearch = new CombineSearch();
-        combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
-        combineSearch.setConditions(conditions);
-        request.setCombineSearch(combineSearch);
-        request.setKeyword(null);
+        buildCombineSearch(conditions, request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalOpportunityResponse> globalOpportunityResponses = extOpportunityMapper.globalSearchList(request, orgId);

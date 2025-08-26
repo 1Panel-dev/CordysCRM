@@ -463,6 +463,20 @@
         </include>
     </select>
 
+    <select id="globalSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from `clue` c
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+          and c.transition_id is null and c.pool_id is null and c.in_shared_pool is false
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+
     <select id="globalPoolSearchList" resultType="io.cordys.crm.search.response.global.GlobalCluePoolResponse">
         select c.id, c.`name`, c.products, c.pool_id, cp.name as poolName
         from `clue` c inner join clue_pool cp on c.pool_id = cp.id
@@ -471,9 +485,23 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.transition_id is null and c.in_shared_pool is true and c.pool_id != null
+        and c.transition_id is null and c.in_shared_pool is true and c.pool_id is not null
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
+    <select id="globalPoolSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from `clue` c inner join clue_pool cp on c.pool_id = cp.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+        and c.transition_id is null and c.in_shared_pool is true and c.pool_id is not null
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+
 </mapper>

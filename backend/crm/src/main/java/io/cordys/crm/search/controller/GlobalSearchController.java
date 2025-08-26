@@ -2,19 +2,20 @@ package io.cordys.crm.search.controller;
 
 import io.cordys.aspectj.constants.GlobalSearchModule;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.OptionCountDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.search.response.global.*;
 import io.cordys.crm.search.service.BaseSearchService;
+import io.cordys.crm.search.service.global.GlobalSearchCountService;
 import io.cordys.crm.search.service.global.GlobalSearchServiceFactory;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +23,9 @@ import java.util.List;
 @RequestMapping("/global/search")
 @Tag(name = "全局搜索")
 public class GlobalSearchController {
+
+    @Resource
+    private GlobalSearchCountService globalSearchCountService;
 
     @PostMapping("/opportunity")
     @Operation(summary = "全局搜索-商机")
@@ -63,5 +67,11 @@ public class GlobalSearchController {
     public Pager<List<GlobalCustomerContactResponse>> globalSearchContact(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, GlobalCustomerContactResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER_CONTACT);
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping("/module/count")
+    @Operation(summary = "全局搜索-模块数量统计")
+    public List<OptionCountDTO> globalSearchCount(@Validated @RequestParam String keyword) {
+        return globalSearchCountService.startSearchModuleCount(keyword, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

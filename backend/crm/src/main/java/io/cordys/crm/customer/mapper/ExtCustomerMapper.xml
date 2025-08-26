@@ -507,13 +507,26 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.in_shared_pool is true and c.pool_id != null
+        and c.in_shared_pool is true and c.pool_id is not null
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
 
     </select>
 
+    <select id="globalPoolSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from customer c inner join customer_pool cp on c.pool_id = cp.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+        and c.in_shared_pool is true and c.pool_id is not null
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
 
     <select id="globalSearchList" resultType="io.cordys.crm.search.response.global.GlobalCustomerResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time
@@ -528,4 +541,18 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
+    <select id="globalSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from customer c
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+        and c.in_shared_pool is false and c.pool_id is null
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+
 </mapper>

@@ -49,4 +49,7 @@ public interface ExtOpportunityMapper {
 
     List<GlobalOpportunityResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+
 }

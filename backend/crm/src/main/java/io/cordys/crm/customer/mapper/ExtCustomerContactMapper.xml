@@ -359,7 +359,19 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
-        where c.organization_id = #{orgId}
+        where cc.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+    <select id="globalSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from customer_contact cc
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where cc.organization_id = #{orgId}
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
