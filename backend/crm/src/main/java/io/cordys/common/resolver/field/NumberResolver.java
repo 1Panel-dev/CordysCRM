@@ -1,6 +1,7 @@
 package io.cordys.common.resolver.field;
 
 import io.cordys.crm.system.dto.field.InputNumberField;
+import io.cordys.crm.system.dto.field.SelectField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.formula.FormulaParseException;
@@ -26,6 +27,11 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
 
     @Override
     public Object parse2Value(InputNumberField numberField, String value) {
+        return value == null ? null : new BigDecimal(value);
+    }
+
+    @Override
+    public Object trans2Value(InputNumberField numberField, String value) {
         return value == null ? null : new BigDecimal(value);
     }
 
