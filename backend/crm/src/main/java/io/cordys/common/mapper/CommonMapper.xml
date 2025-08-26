@@ -182,7 +182,14 @@
                     ${column} is not null and ${column} != ''
                 </when>
                 <when test="${condition}.operator == 'EQUALS'">
-                    ${column} = #{condition.value}
+                    <choose>
+                        <when test="${condition}.type != null and ${condition}.type == 'PHONE'">
+                            REGEXP_REPLACE(${column}, '\\([^)]*\\)', '') = #{condition.value}
+                        </when>
+                        <otherwise>
+                            ${column} = #{condition.value}
+                        </otherwise>
+                    </choose>
                 </when>
                 <when test="${condition}.operator == 'NOT_EQUALS'">
                     ${column} != #{condition.value}
