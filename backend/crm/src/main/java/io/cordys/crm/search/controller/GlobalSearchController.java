@@ -4,10 +4,7 @@ import io.cordys.aspectj.constants.GlobalSearchModule;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.search.response.global.GlobalCluePoolResponse;
-import io.cordys.crm.search.response.global.GlobalClueResponse;
-import io.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
-import io.cordys.crm.search.response.global.GlobalOpportunityResponse;
+import io.cordys.crm.search.response.global.*;
 import io.cordys.crm.search.service.BaseSearchService;
 import io.cordys.crm.search.service.global.GlobalSearchServiceFactory;
 import io.cordys.security.SessionUtils;
@@ -56,8 +53,15 @@ public class GlobalSearchController {
 
     @PostMapping("/customer")
     @Operation(summary = "全局搜索-客户")
-    public Pager<List<GlobalOpportunityResponse>> advancedSearchCustomer(@Validated @RequestBody BasePageRequest request) {
-        BaseSearchService<BasePageRequest, GlobalOpportunityResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER);
+    public Pager<List<GlobalCustomerResponse>> globalSearchCustomer(@Validated @RequestBody BasePageRequest request) {
+        BaseSearchService<BasePageRequest, GlobalCustomerResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER);
+        return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping("/contact")
+    @Operation(summary = "全局搜索-联系人")
+    public Pager<List<GlobalCustomerContactResponse>> globalSearchContact(@Validated @RequestBody BasePageRequest request) {
+        BaseSearchService<BasePageRequest, GlobalCustomerContactResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER_CONTACT);
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

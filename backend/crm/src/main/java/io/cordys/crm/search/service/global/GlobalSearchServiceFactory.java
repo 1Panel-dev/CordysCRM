@@ -17,8 +17,7 @@ public class GlobalSearchServiceFactory {
         searchServiceMap.put(GlobalSearchModule.CLUE, CommonBeanFactory.getBean(GlobalClueSearchService.class));
         searchServiceMap.put(GlobalSearchModule.CLUE_POOL, CommonBeanFactory.getBean(GlobalCluePoolSearchService.class));
         searchServiceMap.put(GlobalSearchModule.CUSTOMER, CommonBeanFactory.getBean(GlobalCustomerSearchService.class));
-        /*   searchServiceMap.put(GlobalSearchModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(AdvancedCustomerContactSearchService.class));
-       */
+        searchServiceMap.put(GlobalSearchModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(GlobalCustomerContactSearchService.class));
     }
 
     @SuppressWarnings("unchecked")

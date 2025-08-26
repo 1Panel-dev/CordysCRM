@@ -350,4 +350,17 @@
         </if>
 
     </select>
+
+    <select id="globalSearchList" resultType="io.cordys.crm.search.response.global.GlobalCustomerContactResponse">
+    select cc.id, cc.customer_id, cc.name, cc.create_time, cc.owner, cc.phone
+    from customer_contact cc
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where c.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
 </mapper>
