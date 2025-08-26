@@ -71,6 +71,10 @@ export const ExportCustomerSelectedUrl = '/customer/export-select'; // 导出选
 export const GetAdvancedCustomerListUrl = '/advanced/search/customer'; // 全局搜索分页查询客户
 export const GetAdvancedOpenSeaCustomerListUrl = '/advanced/search/customer-pool'; // 全局搜索公海客户列表
 export const GetAdvancedCustomerContactListUrl = '/advanced/search/contact'; // 全局搜索获取客户联系人列表
+export const GetGlobalCustomerListUrl = '/global/search/customer';
+export const GetGlobalOpenSeaCustomerListUrl = '/global/search/customer_pool';
+export const GetGlobalCustomerContactListUrl = '/global/search/contact';
+
 export const ExportContactAllUrl = '/customer/contact/export-all'; // 导出所有联系人
 export const ExportContactSelectedUrl = '/customer/contact/export-select'; // 导出选中联系人
 

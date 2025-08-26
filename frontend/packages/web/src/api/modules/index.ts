@@ -148,6 +148,8 @@ export const {
   getAdvancedCluePoolList,
   exportCluePoolAll,
   exportCluePoolSelected,
+  getGlobalCluePoolList,
+  getGlobalSearchClueList,
 } = clueApi;
 
 export const {
@@ -234,6 +236,9 @@ export const {
   geAdvancedCustomerList,
   getAdvancedCustomerContactList,
   getAdvancedOpenSeaCustomerList,
+  getGlobalCustomerList,
+  getGlobalOpenSeaCustomerList,
+  getGlobalCustomerContactList,
   exportCustomerOpenSeaAll,
   exportCustomerOpenSeaSelected,
   exportContactAll,

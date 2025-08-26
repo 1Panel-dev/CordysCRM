@@ -18,7 +18,11 @@
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
           @search="(val) => searchData(val)"
         />
-        <searchSettingButton v-model:config-list="configList" @init="initAdvanceConfig" />
+        <searchSettingButton
+          v-model:config-list="configList"
+          @init="initAdvanceConfig"
+          @init-config-list="initConfigList"
+        />
         <n-button
           v-if="lastScopedOptions.length > 0"
           class="n-btn-outline-primary"
@@ -97,12 +101,15 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import GlobalSearchDrawer from './components/globalSearchDrawer.vue';
   import RelatedTable from './components/relatedTable.vue';
   import searchSettingButton from './searchConfig/index.vue';
 
   import { advancedSearchOptDetail, getAdvancedSearchClueDetail } from '@/api/modules';
+  import { lastOpportunitySteps } from '@/config/opportunity';
 
   import { DefaultSearchSetFormModel, defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
   import type { SearchTableKey } from './useSearchTable';
@@ -117,19 +124,25 @@
   const keyword = ref('');
 
   const configList = ref<ScopedOptions[]>([]); // 横向标签列表
-  const activeConfigValue = ref<SearchTableKey>(FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY); // 当前选中的标签
+  const activeConfigValue = ref<SearchTableKey>(lastScopedOptions.value[0].value as SearchTableKey); // 当前选中的标签
+  function initConfigList() {
+    activeConfigValue.value = configList.value[0].value as SearchTableKey;
+  }
   function clickTag(config: ScopedOptions) {
     activeConfigValue.value = config.value as SearchTableKey;
   }
+
+  const tableRefreshId = ref(0);
 
   const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel)); // 设置里的值
   const allFieldMap = ref<Record<string, FilterFormItem[]>>({}); // 所有可匹配的字段列表
   function initAdvanceConfig(val: Record<string, any>, form: DefaultSearchSetFormModel) {
     allFieldMap.value = val.value;
     formModel.value = form;
+    tableRefreshId.value += 1;
   }
 
-  const { useTableRes, columns } = await useSearchTable({
+  const { useTableRes, columns, openNewPageOpportunity, openNewPageClue } = await useSearchTable({
     searchTableKey: activeConfigValue,
     fieldList: computed(() => allFieldMap.value[activeConfigValue.value] ?? []),
     selectedFieldIdList: computed(() => formModel.value.searchFields[activeConfigValue.value] ?? []),
@@ -139,8 +152,124 @@
   const showDetailDrawer = ref(false);
   const detailType = ref<'opportunity' | 'clue'>('clue');
 
-  // TODO lmy
-  const relatedColumns = ref([]);
+  const opportunityColumns: CrmDataTableColumn[] = [
+    {
+      title: t('opportunity.name'),
+      key: 'name',
+      width: 100,
+      fieldId: 'name',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              openNewPageOpportunity(row);
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+    },
+    {
+      title: t('opportunity.customerName'),
+      key: 'customerName',
+      fieldId: 'customerId',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('opportunity.intendedProducts'),
+      key: 'productNames',
+      fieldId: 'products',
+      width: 100,
+      isTag: true,
+    },
+    {
+      title: t('opportunity.stage'),
+      width: 100,
+      key: 'stage',
+      render: (row) => {
+        const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
+        return step ? step.label : '-';
+      },
+    },
+    {
+      title: t('common.head'),
+      key: 'ownerName',
+      fieldId: 'owner',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+  ];
+
+  const clueColumns: CrmDataTableColumn[] = [
+    {
+      title: t('crmFollowRecord.companyName'),
+      key: 'name',
+      fieldId: 'name',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => {
+        if (!row.hasPermission) return row.name;
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              openNewPageClue(row);
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+    },
+    {
+      title: t('common.head'),
+      key: 'ownerName',
+      fieldId: 'owner',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('opportunity.intendedProducts'),
+      key: 'productNameList',
+      fieldId: 'products',
+      width: 100,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
+    },
+  ];
+  const relatedColumns = computed(() => {
+    const fieldList =
+      allFieldMap.value[
+        detailType.value === 'clue'
+          ? FormDesignKeyEnum.SEARCH_ADVANCED_CLUE
+          : FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY
+      ];
+
+    // title替换
+    const resultColumns = (detailType.value === 'clue' ? clueColumns : opportunityColumns).map((item) => {
+      const title = fieldList.find((i) => i.dataIndex === item.fieldId)?.title;
+      return {
+        ...item,
+        title: title ?? item.title,
+      };
+    });
+    return resultColumns;
+  });
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
   function showDetail(row: any, type: 'opportunity' | 'clue') {
@@ -159,14 +288,11 @@
     await useTableRes.loadList();
   };
 
-  watch(
-    () => activeConfigValue.value,
-    () => {
-      nextTick(() => {
-        searchData(keyword.value);
-      });
-    }
-  );
+  watch([() => activeConfigValue.value, () => tableRefreshId.value], () => {
+    nextTick(() => {
+      searchData(keyword.value);
+    });
+  });
 
   watch(
     () => visible.value,

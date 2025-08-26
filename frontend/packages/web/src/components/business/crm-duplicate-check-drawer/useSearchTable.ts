@@ -8,7 +8,14 @@ import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
 
-import { globalSearchOptPage } from '@/api/modules';
+import {
+  getGlobalCluePoolList,
+  getGlobalCustomerContactList,
+  getGlobalCustomerList,
+  getGlobalOpenSeaCustomerList,
+  getGlobalSearchClueList,
+  globalSearchOptPage,
+} from '@/api/modules';
 import { lastOpportunitySteps } from '@/config/opportunity';
 import useOpenNewPage from '@/hooks/useOpenNewPage';
 
@@ -29,21 +36,21 @@ export interface SearchTableProps {
 }
 
 export const getSearchListApiMap: Record<SearchTableKey, (data: any) => Promise<CommonList<any>>> = {
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: globalSearchOptPage,
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: globalSearchOptPage,
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: globalSearchOptPage,
-  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: globalSearchOptPage,
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: globalSearchOptPage,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: getGlobalSearchClueList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: getGlobalCustomerList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: getGlobalCustomerContactList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: getGlobalOpenSeaCustomerList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getGlobalCluePoolList,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: globalSearchOptPage,
 };
 
 // 固定展示字段
 export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['name', 'owner', 'departmentId', 'products'], // 公司名称 、负责人、部门、意向产品
-  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: ['name', 'products', 'xxx'], // 公司名称 、意向产品、线索池名称
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: ['name', 'products', 'poolName'], // 公司名称 、意向产品、线索池名称
   [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['name', 'owner', 'departmentId'], // 客户名称、负责人、部门
   [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['customerId', 'name', 'phone', 'owner', 'departmentId'], // 客户名称、姓名、手机号、负责人、部门
-  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: ['name', 'xxx'], // 客户名称、公海名称
+  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: ['name', 'poolName'], // 客户名称、公海名称
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: ['name', 'customerId', 'owner', 'departmentId', 'products', 'stage'], // 商机名称、客户名称、负责人、部门、意向产品、商机阶段
 };
 
@@ -107,13 +114,18 @@ export default async function useSearchTable(props: SearchTableProps) {
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: openNewPageOpportunity,
   };
 
-  // TODO lmy 公海名称；线索池名称
-  const systemFieldList = [
+  const systemFieldList = computed(() => [
     { dataIndex: 'departmentId', title: t('org.department'), type: FieldTypeEnum.INPUT },
     { dataIndex: 'stage', title: t('opportunity.stage'), type: FieldTypeEnum.INPUT },
-    { dataIndex: 'xxx', title: t('module.customer.openSeaName'), type: FieldTypeEnum.INPUT },
-    { dataIndex: 'xxx', title: t('module.clue.name'), type: FieldTypeEnum.INPUT },
-  ];
+    {
+      dataIndex: 'poolName',
+      title:
+        props.searchTableKey.value === FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC
+          ? t('module.customer.openSeaName')
+          : t('module.clue.name'),
+      type: FieldTypeEnum.INPUT,
+    },
+  ]);
 
   const displayedColumnList = computed<FilterFormItem[]>(() => {
     // 转换成同属性后查重
@@ -124,14 +136,14 @@ export default async function useSearchTable(props: SearchTableProps) {
       ...new Set([...fixedFieldKeyListMap[props.searchTableKey.value], ...selectedFieldKeyList]),
     ];
     return displayedColumnKeyList
-      .map((item) => [...props.fieldList.value, ...systemFieldList].find((i) => i.dataIndex === item))
+      .map((item) => [...props.fieldList.value, ...systemFieldList.value].find((i) => i.dataIndex === item))
       .filter(Boolean) as FilterFormItem[];
   });
 
   const createTimeColumn = {
     title: t('common.createTime'),
     key: 'createTime',
-    width: 120,
+    width: 180,
     ellipsis: {
       tooltip: true,
     },
@@ -251,8 +263,9 @@ export default async function useSearchTable(props: SearchTableProps) {
     return resultColumns;
   });
 
+  const api = computed(() => getSearchListApiMap[props.searchTableKey.value]);
   const useTableRes = useTable(
-    getSearchListApiMap[props.searchTableKey.value],
+    (params) => api.value(params),
     {
       showPagination: true,
       columns: columns.value,
@@ -261,7 +274,7 @@ export default async function useSearchTable(props: SearchTableProps) {
       hiddenAllScreen: true,
     },
     (item) => {
-      const fieldMap = new Map(item.moduleFields.map((field: ModuleField) => [field.fieldId, field.fieldValue]));
+      const fieldMap = new Map(item.moduleFields?.map((field: ModuleField) => [field.fieldId, field.fieldValue]));
 
       const fieldAttr: Record<string, any> = Object.fromEntries(
         displayedColumnList.value
@@ -279,5 +292,7 @@ export default async function useSearchTable(props: SearchTableProps) {
   return {
     useTableRes,
     columns,
+    openNewPageOpportunity,
+    openNewPageClue,
   };
 }

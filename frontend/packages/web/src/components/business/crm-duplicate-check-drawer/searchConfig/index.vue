@@ -33,6 +33,7 @@
 
   const emit = defineEmits<{
     (e: 'init', val: Record<string, any>, formModel: DefaultSearchSetFormModel): void;
+    (e: 'initConfigList'): void;
   }>();
 
   const configList = defineModel<ScopedOptions[]>('configList', {
@@ -61,7 +62,7 @@
       configList.value = sortSetting.map((val: any) => optionsMap.get(val)).filter(Boolean) as ScopedOptions[];
 
       formModel.value = cloneDeep(res);
-      emit('init', allFieldMap, formModel.value);
+      emit('init', allFieldMap, cloneDeep(res));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -75,6 +76,7 @@
   onMounted(async () => {
     await initSearchFormConfig();
     await initSearchDetail();
+    emit('initConfigList');
   });
 
   watch(

@@ -16,6 +16,8 @@ export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并
 export const MoveToPoolLeadUrl = '/clue/to-pool'; // 移入线索池
 export const GetAdvancedSearchClueListUrl = '/advanced/search/clue'; // 全局搜索线索分页查询线索
 export const GetAdvancedSearchClueDetailUrl = '/advanced/search/clue/detail'; // 全局搜索线索详情
+export const GetGlobalSearchClueListUrl = '/global/search/clue';
+export const GetGlobalCluePoolListUrl = '/global/search/clue_pool';
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录

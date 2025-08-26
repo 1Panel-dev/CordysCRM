@@ -72,6 +72,9 @@ import {
   GetCustomerUrl,
   GetCustomerViewDetailUrl,
   GetCustomerViewListUrl,
+  GetGlobalCustomerContactListUrl,
+  GetGlobalCustomerListUrl,
+  GetGlobalOpenSeaCustomerListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
@@ -586,6 +589,24 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  function getGlobalCustomerList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data }, { ignoreCancelToken: true });
+  }
+
+  function getGlobalOpenSeaCustomerList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>(
+      { url: GetGlobalOpenSeaCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getGlobalCustomerContactList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerContractListItem>>(
+      { url: GetGlobalCustomerContactListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -594,6 +615,9 @@ export default function useProductApi(CDR: CordysAxios) {
     getCustomerFormConfig,
     getCustomer,
     deleteCustomer,
+    getGlobalCustomerList,
+    getGlobalOpenSeaCustomerList,
+    getGlobalCustomerContactList,
     batchDeleteCustomer,
     batchTransferCustomer,
     batchMoveCustomer,

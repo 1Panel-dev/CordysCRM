@@ -45,6 +45,8 @@ import {
   GetClueUrl,
   GetClueViewDetailUrl,
   GetClueViewListUrl,
+  GetGlobalCluePoolListUrl,
+  GetGlobalSearchClueListUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   ImportLeadUrl,
@@ -375,6 +377,14 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  function getGlobalSearchClueList(data: CustomerTableParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetGlobalSearchClueListUrl, data }, { ignoreCancelToken: true });
+  }
+
+  function getGlobalCluePoolList(data: CluePoolTableParams) {
+    return CDR.post<CommonList<CluePoolListItem>>({ url: GetGlobalCluePoolListUrl, data }, { ignoreCancelToken: true });
+  }
+
   return {
     addClue,
     updateClue,
@@ -430,6 +440,8 @@ export default function useProductApi(CDR: CordysAxios) {
     getAdvancedSearchClueList,
     getAdvancedCluePoolList,
     getAdvancedSearchClueDetail,
+    getGlobalCluePoolList,
+    getGlobalSearchClueList,
     exportCluePoolAll,
     exportCluePoolSelected,
   };
