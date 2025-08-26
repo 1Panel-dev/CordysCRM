@@ -96,10 +96,10 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         } else {
             //设置默认查询属性
             List<String> list = getCustomerIds(keyword, orgId);
-            FilterCondition phoneCondition = getFilterCondition("phone", keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.INPUT.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
             conditions.add(phoneCondition);
             if (CollectionUtils.isNotEmpty(list)) {
-                FilterCondition customerCondition = getFilterCondition("customerId", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+                FilterCondition customerCondition = getFilterCondition("customerId", keyword, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
         }
