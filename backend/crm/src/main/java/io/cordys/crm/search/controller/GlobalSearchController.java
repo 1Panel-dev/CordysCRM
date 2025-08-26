@@ -53,4 +53,11 @@ public class GlobalSearchController {
         BaseSearchService<BasePageRequest, GlobalCluePoolResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CLUE_POOL);
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
+
+    @PostMapping("/customer")
+    @Operation(summary = "全局搜索-客户")
+    public Pager<List<GlobalOpportunityResponse>> advancedSearchCustomer(@Validated @RequestBody BasePageRequest request) {
+        BaseSearchService<BasePageRequest, GlobalOpportunityResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER);
+        return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
 }

@@ -11,6 +11,7 @@ import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse;
 import io.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
 import io.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
+import io.cordys.crm.search.response.global.GlobalCustomerResponse;
 import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -66,4 +67,6 @@ public interface ExtCustomerMapper {
     List<AdvancedCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     List<GlobalCustomerPoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+    List<GlobalCustomerResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 }
