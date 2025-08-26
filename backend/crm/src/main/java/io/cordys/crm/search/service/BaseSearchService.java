@@ -10,17 +10,15 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.JSON;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
-import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.search.constants.SearchModuleEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
 import io.cordys.crm.search.domain.UserSearchConfig;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.crm.system.service.UserExtendService;
@@ -59,13 +57,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     private BaseMapper<CluePool> cluePoolMapper;
 
     @Resource
-    private ExtOpportunityMapper extOpportunityMapper;
-
-    @Resource
-    private ExtCustomerContactMapper extCustomerContactMapper;
-
-    @Resource
-    private ExtClueMapper extClueMapper;
+    private ExtModuleFieldMapper extModuleFieldMapper;
 
     @Resource
     private ModuleFormService moduleFormService;
@@ -187,69 +179,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     }
 
     /**
-     * 通过关键字和组织ID获取商机ID列表
-     * @param keyword 关键字
-     * @param orgId 组织ID
-     * @return 商机ID列表
-     */
-    public List<String> getOpportunityIds(String keyword, String orgId) {
-        List<OptionDTO> opportunityList = extOpportunityMapper.getOpportunityOptions(keyword, orgId);
-        if (CollectionUtils.isEmpty(opportunityList)) {
-            return new ArrayList<>();
-        }
-        return opportunityList.stream().map(OptionDTO::getId)
-                .toList();
-    }
-
-    /**
-     * 通过关键字和组织ID获取线索ID列表
-     * @param keyword 关键字
-     * @param orgId 组织ID
-     * @return 线索ID列表
-     */
-    public List<String> getClueIds(String keyword, String orgId) {
-        List<OptionDTO> clueOptions = extClueMapper.getClueOptions(keyword, orgId);
-        if (CollectionUtils.isEmpty(clueOptions)) {
-            return new ArrayList<>();
-        }
-        return clueOptions.stream()
-                .map(OptionDTO::getId)
-                .toList();
-    }
-
-    /**
-     * 通过关键字和组织ID获取客户联系人ID列表
-     * @param keyword 关键字
-     * @param orgId 组织ID
-     * @return 客户联系人ID列表
-     */
-    public List<String> getCustomerContactIds(String keyword, String orgId) {
-        List<OptionDTO> contactOptions = extCustomerContactMapper.getContactOptions(keyword, orgId);
-        if (CollectionUtils.isEmpty(contactOptions)) {
-            return new ArrayList<>();
-        }
-        return contactOptions.stream()
-                .map(OptionDTO::getId)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 通过关键字和组织ID获取产品ID列表
-     * @param keyword 关键字
-     * @param orgId 组织ID
-     * @return 产品ID列表
-     */
-    public List<String> getProductIds(String keyword, String orgId) {
-        List<OptionDTO> productOptions = extProductMapper.getProductOptions(keyword, orgId);
-        if (CollectionUtils.isEmpty(productOptions)) {
-            return new ArrayList<>();
-        }
-        return productOptions.stream()
-                .map(OptionDTO::getId)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * 构建其他类型的过滤条件
      * @param orgId 组织ID
      * @param userSearchConfig 用户搜索配置
@@ -279,40 +208,15 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         // 如果是数据源类型的字段，使用IN查询
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString()) || Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE_MULTIPLE.toString())) {
             List<String> ids = new ArrayList<>();
-            if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CUSTOMER")) {
-                // 客户数据源
-                List<String> list = getCustomerIds(keyword, orgId);
-                if (CollectionUtils.isEmpty(list)) {
-                    return;
-                }
-                ids.addAll(list);
-            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "OPPORTUNITY")) {
-                // 商机数据源
-                List<String> opportunityIds = getOpportunityIds(keyword, orgId);
-                if (CollectionUtils.isEmpty(opportunityIds)) {
-                    return;
-                }
-                ids.addAll(opportunityIds);
-            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CLUE")) {
-                // 线索数据源，
-                List<String> clueIds = getClueIds(keyword, orgId);
-                if (CollectionUtils.isEmpty(clueIds)) {
-                    return;
-                }
-                ids.addAll(clueIds);
-            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "CONTACT")) {
-                // 客户联系人数据源
-                List<String> customerContactIds = getCustomerContactIds(keyword, orgId);
-                if (CollectionUtils.isEmpty(customerContactIds)) {
-                    return;
-                }
-                ids.addAll(customerContactIds);
-            } else if (Strings.CI.equals(userSearchConfig.getDataSourceType(), "PRODUCT")) {
-                List<String> productIds = getProductIds(keyword, orgId);
-                if (CollectionUtils.isEmpty(productIds)) {
-                    return;
-                }
-                ids.addAll(productIds);
+
+            Map<String, String> sourceMap = moduleFormService.initTypeSourceMap();
+            String tableName = sourceMap.get(userSearchConfig.getDataSourceType());
+            if (StringUtils.isBlank(tableName)) {
+                return; // 如果数据源类型不在已知范围内，直接返回
+            }
+            extModuleFieldMapper.getSourceOptionsByName(tableName, keyword, orgId).forEach(option -> ids.add(option.getId()));
+            if (CollectionUtils.isEmpty(ids)) {
+                return; // 如果没有匹配的数据，直接返回
             }
             FilterCondition filterCondition = getFilterCondition(name, ids, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(filterCondition);
@@ -397,9 +301,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         });
         return returnBaseModuleFieldValues;
     }
-
-
-
 
     /**
      * 设置字符串类型字段的脱敏值

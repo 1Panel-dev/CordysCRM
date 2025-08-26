@@ -431,7 +431,7 @@ public class ModuleFormService {
 	 * 初始化数据类型-数据源映射
 	 * @return 集合
 	 */
-	private Map<String, String> initTypeSourceMap() {
+	public Map<String, String> initTypeSourceMap() {
 		Map<String, String> typeSourceMap = new HashMap<>(8);
 		typeSourceMap.put(FieldType.MEMBER.name(), "sys_user");
 		typeSourceMap.put(FieldType.DEPARTMENT.name(), "sys_department");
