@@ -644,10 +644,7 @@ public class ClueService {
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
 
-        /*
-         * 1. 如果添加了协作人，则同时通知线索负责人和客户负责人
-         * 2. 如果没有添加协作人，则只通知线索负责人
-         */
+        // 只通知线索负责人
         Map<String, Object> paramMap = new HashMap<>(8);
         paramMap.put("useTemplate", "true");
         paramMap.put("template", Translator.get("message.clue_relate_customer"));
@@ -664,6 +661,7 @@ public class ClueService {
      * @param orgId 组织ID
      */
     public String transform(ClueTransformRequest request, String currentUser, String orgId) {
+        checkTransformPermission(request.getOppCreated());
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
         if (clue == null) {
             throw new GenericException(Translator.get("clue_not_exist"));
@@ -673,7 +671,6 @@ public class ClueService {
             throw new GenericException(Translator.get("clue_owner_not_exist"));
         }
 
-        // TODO: 检查权限
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Customer::getName, clue.getName());
         List<Customer> customers = customerMapper.selectListByLambda(wrapper);
@@ -709,6 +706,19 @@ public class ClueService {
             return transformOpportunity.getId();
         } else {
             return transformCustomer.getId();
+        }
+    }
+
+    /**
+     * 检查转换权限
+     * @param checkOpportunityPermission 是否检查商机权限
+     */
+    public void checkTransformPermission(boolean checkOpportunityPermission) {
+        if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)) {
+            throw new GenericException(Translator.get("transform.miss.customer.permission"));
+        }
+        if (checkOpportunityPermission && !PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)) {
+            throw new GenericException(Translator.get("transform.miss.opportunity.permission"));
         }
     }
 
@@ -784,14 +794,13 @@ public class ClueService {
      * @param orgId 组织ID
      */
     public void transformCsAssociate(Clue clue, Customer transformCs, String currentUser, String orgId) {
-        // TODO: 消息通知 {联系人, 协作人}
         // 如果当前线索负责人不是关联客户的负责人，且不是客户协作人, 则添加协作关系
         if (!Strings.CS.equals(transformCs.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), transformCs.getId())) {
             CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
             collaborationAddRequest.setCustomerId(transformCs.getId());
             collaborationAddRequest.setCollaborationType("COLLABORATION");
             collaborationAddRequest.setUserId(clue.getOwner());
-            customerCollaborationService.add(collaborationAddRequest, currentUser);
+            customerCollaborationService.add(collaborationAddRequest, currentUser, orgId);
         }
         // 线索联系人 => 客户联系人
         if (StringUtils.isNotEmpty(clue.getContact())) {

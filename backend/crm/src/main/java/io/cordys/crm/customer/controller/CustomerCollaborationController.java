@@ -39,7 +39,7 @@ public class CustomerCollaborationController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户协作人")
     public CustomerCollaboration add(@Validated @RequestBody CustomerCollaborationAddRequest request) {
-        return customerCollaborationService.add(request, SessionUtils.getUserId());
+        return customerCollaborationService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")

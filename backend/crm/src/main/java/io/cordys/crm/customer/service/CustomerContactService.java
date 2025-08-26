@@ -18,6 +18,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerCollaborationType;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
@@ -29,11 +30,13 @@ import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
@@ -45,10 +48,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +86,8 @@ public class CustomerContactService {
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -218,6 +220,17 @@ public class CustomerContactService {
         customerContactMapper.insert(customerContact);
 
         baseService.handleAddLog(customerContact, request.getModuleFields());
+
+        // 添加联系人通知
+        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
+        Map<String, Object> paramMap = new HashMap<>(4);
+        paramMap.put("useTemplate", "true");
+        paramMap.put("template", Translator.get("message.customer.contact.add.text"));
+        paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
+        paramMap.put("cName", customerContact.getName());
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
+                paramMap, userId, orgId, List.of(customer.getOwner()), true);
         return customerContact;
     }
 

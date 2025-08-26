@@ -4,10 +4,14 @@ import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerCollaborationUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerCollaborationListResponse;
+import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -28,6 +32,10 @@ public class CustomerCollaborationService {
     private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
 
     public List<CustomerCollaborationListResponse> list(String customerId, String orgId) {
         CustomerCollaboration example = new CustomerCollaboration();
@@ -84,7 +92,7 @@ public class CustomerCollaborationService {
                 }).toList();
     }
 
-    public CustomerCollaboration add(CustomerCollaborationAddRequest request, String userId) {
+    public CustomerCollaboration add(CustomerCollaborationAddRequest request, String userId, String orgId) {
         CustomerCollaboration customerCollaboration = BeanUtils.copyBean(new CustomerCollaboration(), request);
         customerCollaboration.setCreateTime(System.currentTimeMillis());
         customerCollaboration.setUpdateTime(System.currentTimeMillis());
@@ -92,6 +100,18 @@ public class CustomerCollaborationService {
         customerCollaboration.setCreateUser(userId);
         customerCollaboration.setId(IDGenerator.nextStr());
         customerCollaborationMapper.insert(customerCollaboration);
+
+        // 添加协作人通知
+        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
+        Map<String, Object> paramMap = new HashMap<>(4);
+        paramMap.put("useTemplate", "true");
+        paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
+        paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
+        paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
+        paramMap.put("cName", customer.getName());
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
+                paramMap, userId, orgId, List.of(customer.getOwner()), true);
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
     }
 
