@@ -16,8 +16,9 @@ import io.cordys.crm.clue.dto.response.ClueImportResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueExportService;
 import io.cordys.crm.clue.service.ClueService;
+import io.cordys.crm.customer.dto.request.BatchReTransitionCustomerRequest;
+import io.cordys.crm.customer.dto.request.ClueTransformRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
@@ -177,9 +178,16 @@ public class ClueController {
 
     @PostMapping("/re-transition/customer")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
-    @Operation(summary = "合并已有客户")
-    public void reTransitionOldCustomer(@Validated @RequestBody ReTransitionCustomerRequest request) {
-        clueService.transitionOldCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    @Operation(summary = "批量关联已有客户")
+    public void batchTransition(@Validated @RequestBody BatchReTransitionCustomerRequest request) {
+        clueService.batchTransition(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/transform")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @Operation(summary = "转换")
+    public String transform(@Validated @RequestBody ClueTransformRequest request) {
+        return clueService.transform(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/template/download")

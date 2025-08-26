@@ -552,4 +552,19 @@ public class ModuleFormService {
 				.values().stream()
 				.anyMatch(count -> count > 1);
 	}
+
+	/**
+	 * 判断内置字段是否包含唯一性校验
+	 * @param formKey 表单Key
+	 * @param orgId 组织ID
+	 * @return 是否唯一
+	 */
+	public boolean hasFieldUniqueCheck(String formKey, String orgId, String internalKey) {
+		List<BaseField> allFields = getAllFields(formKey, orgId);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return false;
+		}
+		Optional<BaseField> internalField = allFields.stream().filter(field -> Strings.CS.equals(field.getInternalKey(), internalKey)).findFirst();
+		return internalField.isPresent() && internalField.get().needRepeatCheck();
+	}
 }

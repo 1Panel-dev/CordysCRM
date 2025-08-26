@@ -53,5 +53,7 @@ CREATE INDEX idx_module_type ON sys_search_field_mask_config (module_type ASC);
 CREATE INDEX idx_organization_id ON sys_search_field_mask_config (organization_id ASC);
 CREATE INDEX idx_field_id ON sys_search_field_mask_config (field_id ASC);
 
+ALTER TABLE opportunity MODIFY contact_id VARCHAR(32) COMMENT '联系人ID';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

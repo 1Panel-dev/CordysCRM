@@ -36,14 +36,13 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerContact;
-import io.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
-import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
-import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
+import io.cordys.crm.opportunity.constants.StageType;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Dict;
@@ -92,6 +91,8 @@ public class ClueService {
     private BaseMapper<Clue> clueMapper;
     @Resource
     private BaseMapper<Customer> customerMapper;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
@@ -603,62 +604,206 @@ public class ClueService {
     }
 
     /**
-     * 旧客户关联已有线索
-     * @param request 请求参数
+     * 批量关联线索和客户
+     * @param request 关联参数
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     */
+    public void batchTransition(BatchReTransitionCustomerRequest request, String currentUser, String orgId) {
+        if (CollectionUtils.isEmpty(request.getClueIds())) {
+            throw new GenericException(Translator.get("clue_ids_not_empty"));
+        }
+        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        // 操作人尝试领取公海客户, 领取失败则不继续
+        if (customer.getInSharedPool()) {
+            PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
+            pickRequest.setCustomerId(customer.getId());
+            pickRequest.setPoolId(customer.getPoolId());
+            poolCustomerService.pick(pickRequest, currentUser, orgId);
+        }
+        request.getClueIds().forEach(clueId -> transitionCs(clueId, customer, currentUser, orgId));
+    }
+
+    /**
+     * 线索关联已有客户
+     * @param clueId 线索ID
      * @param currentUser 当前用户ID
      * @param orgId 组织ID
      */
-    public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
-        boolean notice = false;
+    public void transitionCs(String clueId, Customer transitionCs, String currentUser, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(clueId);
+        // 负责人不存在, 跳过关联
+        List<String> owners = extUserMapper.selectUserNameByIds(List.of(clue.getOwner()));
+        if (CollectionUtils.isEmpty(owners)) {
+            return;
+        }
+
+        // 关联
+        transformCsAssociate(clue, transitionCs, currentUser, orgId);
+        clue.setTransitionId(transitionCs.getId());
+        clue.setTransitionType("CUSTOMER");
+        clueMapper.update(clue);
+
+        /*
+         * 1. 如果添加了协作人，则同时通知线索负责人和客户负责人
+         * 2. 如果没有添加协作人，则只通知线索负责人
+         */
+        Map<String, Object> paramMap = new HashMap<>(8);
+        paramMap.put("useTemplate", "true");
+        paramMap.put("template", Translator.get("message.clue_relate_customer"));
+        paramMap.put("customerName", transitionCs.getName());
+        paramMap.put("name", clue.getName());
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
+                paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+    }
+
+    /**
+     * 线索转换
+     * @param request 请求参数
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     */
+    public String transform(ClueTransformRequest request, String currentUser, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        if (clue == null) {
+            throw new GenericException(Translator.get("clue_not_exist"));
+        }
         List<String> owners = extUserMapper.selectUserNameByIds(List.of(clue.getOwner()));
         if (CollectionUtils.isEmpty(owners)) {
             throw new GenericException(Translator.get("clue_owner_not_exist"));
         }
-        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
-        if (customer.getInSharedPool()) {
-            // 如果客户已经在公海中，则领取改客户
-            PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
-            pickRequest.setCustomerId(request.getCustomerId());
-            pickRequest.setPoolId(customer.getPoolId());
-            poolCustomerService.pick(pickRequest, clue.getOwner(), orgId);
+
+        // TODO: 检查权限
+        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Customer::getName, clue.getName());
+        List<Customer> customers = customerMapper.selectListByLambda(wrapper);
+        boolean uniqueCheck = moduleFormService.hasFieldUniqueCheck(FormKey.CUSTOMER.getKey(), orgId, BusinessModuleField.CUSTOMER_NAME.getKey());
+        Customer transformCustomer;
+        if (uniqueCheck && CollectionUtils.isNotEmpty(customers)) {
+            // 表单存在唯一性校验, 且同名客户存在, 根据规则选取
+            transformCustomer = selectorCs(customers, clue.getOwner());
         } else {
-            if (!Strings.CS.equals(customer.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), request.getCustomerId())) {
-                // 如果非客户负责人，且非客户协作人, 则添加协作关系
-                CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
-                collaborationAddRequest.setCustomerId(request.getCustomerId());
-                collaborationAddRequest.setCollaborationType("COLLABORATION");
-                collaborationAddRequest.setUserId(clue.getOwner());
-                customerCollaborationService.add(collaborationAddRequest, currentUser);
-                notice = true;
-            }
+            // 根据表单联动来创建客户
+            transformCustomer = createCusByLinkForm(clue, currentUser, orgId);
         }
-        clue.setTransitionId(request.getCustomerId());
+        transformCsAssociate(clue, transformCustomer, currentUser, orgId);
+        clue.setTransitionId(transformCustomer.getId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
-        // 线索联系人=>客户联系人
+
+        // 客户转换通知
+        Map<String, Object> paramMap = new HashMap<>(4);
+        paramMap.put("useTemplate", "true");
+        paramMap.put("template", Translator.get("message.clue_convert_customer_text"));
+        paramMap.put("name", clue.getName());
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
+                paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+
+        // 是否转换商机
+        if (request.getOppCreated()) {
+            Opportunity transformOpportunity = createOppByLinkForm(transformCustomer, request.getOppName(), clue.getOwner(), currentUser, orgId);
+            paramMap.put("template", Translator.get("message.clue_convert_business_text"));
+            paramMap.put("name", clue.getName());
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
+                    paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+            return transformOpportunity.getId();
+        } else {
+            return transformCustomer.getId();
+        }
+    }
+
+    /**
+     * 同名客户选择器
+     * @param customers 客户列表
+     * @return 客户
+     */
+    public Customer selectorCs(List<Customer> customers, String clueOwner) {
+        if (customers.size() == 1) {
+            return customers.getFirst();
+        }
+        // 优先选择不在公海的且负责人一致的客户
+        Optional<Customer> find = customers.stream().filter(customer -> !customer.getInSharedPool() && Strings.CS.equals(customer.getOwner(), clueOwner))
+                .findFirst();
+        return find.orElseGet(customers::getFirst);
+    }
+
+    /**
+     * 通过表单联动来创建客户
+     * @param clue 线索
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     * @return 客户
+     */
+    public Customer createCusByLinkForm(Clue clue, String currentUser, String orgId) {
+        // TODO: 通过表单联动来创建新客户, 通知
+        Customer customer = new Customer();
+        customer.setId(IDGenerator.nextStr());
+        customer.setName(clue.getName());
+        customer.setOwner(clue.getOwner());
+        customer.setCollectionTime(System.currentTimeMillis());
+        customer.setCreateTime(System.currentTimeMillis());
+        customer.setCreateUser(currentUser);
+        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateUser(currentUser);
+        customer.setInSharedPool(false);
+        customer.setOrganizationId(orgId);
+        customerMapper.insert(customer);
+        return customer;
+    }
+
+    /**
+     * 通过表单联动来创建商机
+     * @param customer 客户
+     * @param orgId 组织ID
+     * @param oppName 商机名称
+     * @return 商机
+     */
+    public Opportunity createOppByLinkForm(Customer customer, String oppName, String clueOwner,
+                                    String currentUser, String orgId) {
+        // TODO: 通过表单联动来创建新商机, 通知
+        Opportunity opportunity = new Opportunity();
+        opportunity.setId(IDGenerator.nextStr());
+        opportunity.setName(oppName);
+        opportunity.setCustomerId(customer.getId());
+        opportunity.setOrganizationId(orgId);
+        opportunity.setOwner(clueOwner);
+        opportunity.setCreateTime(System.currentTimeMillis());
+        opportunity.setCreateUser(currentUser);
+        opportunity.setUpdateTime(System.currentTimeMillis());
+        opportunity.setUpdateUser(currentUser);
+        opportunity.setStage(StageType.CREATE.name());
+        opportunityMapper.insert(opportunity);
+        return opportunity;
+    }
+
+    /**
+     * 转换客户处理
+     * @param clue 线索
+     * @param transformCs 转换客户
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     */
+    public void transformCsAssociate(Clue clue, Customer transformCs, String currentUser, String orgId) {
+        // TODO: 消息通知 {联系人, 协作人}
+        // 如果当前线索负责人不是关联客户的负责人，且不是客户协作人, 则添加协作关系
+        if (!Strings.CS.equals(transformCs.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), transformCs.getId())) {
+            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
+            collaborationAddRequest.setCustomerId(transformCs.getId());
+            collaborationAddRequest.setCollaborationType("COLLABORATION");
+            collaborationAddRequest.setUserId(clue.getOwner());
+            customerCollaborationService.add(collaborationAddRequest, currentUser);
+        }
+        // 线索联系人 => 客户联系人
         if (StringUtils.isNotEmpty(clue.getContact())) {
-            boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), request.getCustomerId(), orgId);
+            boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), transformCs.getId(), orgId);
             if (unique) {
                 CustomerContactAddRequest contactAddRequest = new CustomerContactAddRequest();
-                contactAddRequest.setCustomerId(request.getCustomerId());
+                contactAddRequest.setCustomerId(transformCs.getId());
                 contactAddRequest.setName(clue.getContact());
                 contactAddRequest.setPhone(clue.getPhone());
                 contactAddRequest.setOwner(clue.getOwner());
                 customerContactService.add(contactAddRequest, currentUser, orgId);
             }
-        }
-
-        if (notice) {
-            String ownerName = owners.getFirst();
-            Map<String, Object> paramMap = new HashMap<>(8);
-            paramMap.put("useTemplate", "true");
-            paramMap.put("template", Translator.get("message.clue_convert_exist_customer_text"));
-            paramMap.put("ownerName", ownerName);
-            paramMap.put("customerName", customer.getName());
-            paramMap.put("name", clue.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
-                    paramMap, currentUser, orgId, List.of(customer.getOwner()), true);
         }
     }
 
