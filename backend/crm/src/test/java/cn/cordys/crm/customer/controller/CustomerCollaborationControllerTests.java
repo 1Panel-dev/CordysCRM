@@ -6,9 +6,11 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.customer.dto.request.CustomerAddRequest;
 import cn.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
 import cn.cordys.crm.customer.dto.request.CustomerCollaborationUpdateRequest;
 import cn.cordys.crm.customer.dto.response.CustomerCollaborationListResponse;
+import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -27,9 +30,12 @@ class CustomerCollaborationControllerTests extends BaseTest {
     private static final String LIST = "/list/{0}";
 
     private static CustomerCollaboration addCustomerCollaboration;
+    private static String customerId;
 
     @Resource
     private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
+    @Resource
+    private CustomerService customerService;
 
     @Override
     protected String getBasePath() {
@@ -39,12 +45,21 @@ class CustomerCollaborationControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testListEmpty() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "customerId");
+        addCustomer();
+
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customerId);
         List<CustomerCollaborationListResponse> customerCollaborations = getResultDataArray(mvcResult, CustomerCollaborationListResponse.class);
         Assertions.assertTrue(CollectionUtils.isEmpty(customerCollaborations));
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
+    }
+
+    private void addCustomer() {
+        CustomerAddRequest request = new CustomerAddRequest();
+        request.setName(UUID.randomUUID().toString());
+        request.setOwner(InternalUser.ADMIN.getValue());
+        customerId = customerService.add(request, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID).getId();
     }
 
     @Test
@@ -53,7 +68,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         // 请求成功
         CustomerCollaborationAddRequest request = new CustomerCollaborationAddRequest();
         request.setCollaborationType(CustomerCollaborationType.COLLABORATION.name());
-        request.setCustomerId("customerId");
+        request.setCustomerId(customerId);
         request.setUserId(InternalUser.ADMIN.getValue());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomerCollaboration resultData = getResultData(mvcResult, CustomerCollaboration.class);
@@ -61,7 +76,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
 
         // 校验请求成功数据
         addCustomerCollaboration = customerCollaboration;
-        Assertions.assertEquals(request.getCustomerId(), "customerId");
+        Assertions.assertEquals(request.getCustomerId(), customerId);
         Assertions.assertEquals(request.getCollaborationType(), customerCollaboration.getCollaborationType());
         Assertions.assertEquals(request.getUserId(), customerCollaboration.getUserId());
         
@@ -81,7 +96,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         // 校验请求成功数据
         CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(request.getId());
         Assertions.assertEquals(request.getCollaborationType(), customerCollaboration.getCollaborationType());
-        Assertions.assertEquals(addCustomerCollaboration.getCustomerId(), "customerId");
+        Assertions.assertEquals(addCustomerCollaboration.getCustomerId(), customerId);
         Assertions.assertEquals(addCustomerCollaboration.getUserId(), customerCollaboration.getUserId());
 
         // 校验权限
@@ -91,7 +106,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testList() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "customerId");
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customerId);
         List<CustomerCollaborationListResponse> list = getResultDataArray(mvcResult, CustomerCollaborationListResponse.class);
         list.forEach(customerCollaborationListResponse -> {
             CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(customerCollaborationListResponse.getId());
@@ -101,7 +116,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         });
         
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
     }
 
     @Test

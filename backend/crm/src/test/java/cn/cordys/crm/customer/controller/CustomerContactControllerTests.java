@@ -7,13 +7,11 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.CustomerContact;
-import cn.cordys.crm.customer.dto.request.CustomerContactAddRequest;
-import cn.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
-import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
-import cn.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
+import cn.cordys.crm.customer.dto.request.*;
 import cn.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
+import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
@@ -22,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -36,9 +35,12 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String TAB = "tab";
 
     private static CustomerContact addCustomerContact;
+    private static String customerId;
 
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
+    @Resource
+    private CustomerService customerService;
 
     @Override
     protected String getBasePath() {
@@ -48,6 +50,8 @@ class CustomerContactControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testModuleField() throws Exception {
+        addCustomer();
+
         this.requestGetWithOkAndReturn(MODULE_FORM);
 
         // 校验权限
@@ -67,13 +71,20 @@ class CustomerContactControllerTests extends BaseTest {
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_PAGE, request);
     }
 
+    private void addCustomer() {
+        CustomerAddRequest request = new CustomerAddRequest();
+        request.setName(UUID.randomUUID().toString());
+        request.setOwner(InternalUser.ADMIN.getValue());
+        customerId = customerService.add(request, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID).getId();
+    }
+
     @Test
     @Order(1)
     void testAdd() throws Exception {
         // 请求成功
         CustomerContactAddRequest request = new CustomerContactAddRequest();
         request.setName("test");
-        request.setCustomerId("customerId");
+        request.setCustomerId(customerId);
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setPhone("15451644454");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -164,7 +175,7 @@ class CustomerContactControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testList() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "customerId");
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customerId);
         CustomerContactListAllResponse listAllResponse = getResultData(mvcResult, CustomerContactListAllResponse.class);
         listAllResponse.getList().forEach(customerContactListResponse -> {
             CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(customerContactListResponse.getId());
@@ -180,7 +191,7 @@ class CustomerContactControllerTests extends BaseTest {
         });
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
     }
 
     @Test
