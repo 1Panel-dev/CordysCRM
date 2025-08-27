@@ -56,21 +56,29 @@ docker run -d \
 
 ## UI 展示
 
-<table style="border-collapse: collapse; border: 0;">
+<table style="border-collapse: collapse; border: 0; table-layout: fixed; width: 100%;">
   <tr>
-    <td style="padding: 5px; background-color:#fff;">
-      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/rbac.png" alt="RBAC" style="width:100%; height:auto;"/>
+    <td style="padding: 5px; background-color:#fff; text-align: center;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/rbac.png" 
+           alt="RBAC" 
+           style="max-width:100%; height:200px; object-fit:contain;"/>
     </td>
-    <td style="padding: 5px; background-color:#fff;">
-      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/settings.png" alt="Settings" style="width:100%; height:auto;"/>
+    <td style="padding: 5px; background-color:#fff; text-align: center;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/settings.png" 
+           alt="Settings" 
+           style="max-width:100%; height:200px; object-fit:contain;"/>
     </td>
   </tr>
   <tr>
-    <td style="padding: 5px; background-color:#fff;">
-      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" alt="Opportunity List" style="width:100%; height:auto;"/>
+    <td style="padding: 5px; background-color:#fff; text-align: center;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" 
+           alt="Opportunity List" 
+           style="max-width:100%; height:200px; object-fit:contain;"/>
     </td>
-    <td style="padding: 5px; background-color:#fff;">
-      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity-detail.png" alt="Opportunity Detail" style="width:100%; height:auto;"/>
+    <td style="padding: 5px; background-color:#fff; text-align: center;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity-detail.png" 
+           alt="Opportunity Detail" 
+           style="max-width:100%; height:200px; object-fit:contain;"/>
     </td>
   </tr>
 </table>
