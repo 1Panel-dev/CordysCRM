@@ -14,6 +14,7 @@ import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.search.constants.SearchModuleEnum;
+import io.cordys.crm.search.constants.SearchPhoneEnum;
 import io.cordys.crm.search.domain.SearchFieldMaskConfig;
 import io.cordys.crm.search.domain.UserSearchConfig;
 import io.cordys.crm.system.constants.FieldType;
@@ -203,7 +204,11 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         // 如果是PHONE类型的字段，使用精确查询
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
             StringUtils.deleteWhitespace(keyword);
-            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
+            List<String>phoneList = new ArrayList<>();
+            for (String value : SearchPhoneEnum.VALUES) {
+                phoneList.add(value + keyword);
+            }
+            FilterCondition filterCondition = getFilterCondition(name, phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(filterCondition);
             return;
         }

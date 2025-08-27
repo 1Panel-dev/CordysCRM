@@ -364,6 +364,7 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
+
     <select id="globalSearchListCount" resultType="java.lang.Long">
         select count(1)
         from customer_contact cc

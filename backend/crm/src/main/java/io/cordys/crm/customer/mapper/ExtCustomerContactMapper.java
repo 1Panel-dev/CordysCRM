@@ -53,6 +53,7 @@ public interface ExtCustomerContactMapper {
     List<OptionDTO> getContactOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
     List<GlobalCustomerContactResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
 }

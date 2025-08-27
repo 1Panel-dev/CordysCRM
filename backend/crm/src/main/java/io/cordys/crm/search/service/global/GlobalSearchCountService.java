@@ -56,38 +56,44 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
-        List<FilterCondition> conditions = new ArrayList<>();
+        List<FilterCondition> conditions;
         if (enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
             if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
               //查客户
+                conditions = new ArrayList<>();
                 long customerCount = getCustomerCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, (int)customerCount));
             }
             if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
                 //查客户联系人
+                conditions = new ArrayList<>();
                 long contactCount = getContactCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, (int)contactCount));
             }
             if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
                 //查公海
+                conditions = new ArrayList<>();
                 long publicCount = getPublicCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, (int)publicCount));
             }
         }
         if (enabledModules.contains(ModuleKey.CLUE.getKey())) {
             if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+                conditions = new ArrayList<>();
                 long clueCount = getClueCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int)clueCount));
 
             }
-            if (!(permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+                conditions = new ArrayList<>();
                 long cluePoolCount = getCluePoolCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, (int)cluePoolCount));
             }
         }
 
-        if (!enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
-            if (!(permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+        if (enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
+            if ((permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+                conditions = new ArrayList<>();
                 long opportunityCount = getOpportunityCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, (int)opportunityCount));
             }
