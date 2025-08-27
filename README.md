@@ -56,14 +56,22 @@ docker run -d \
 
 ## UI 展示
 
-<table style="border-collapse: collapse; border: 1px solid black;">
+<table style="border-collapse: collapse; border: 0;">
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/rbac.png" alt="RBAC" /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/settings.png" alt="Settings" /></td>
+    <td style="padding: 5px; background-color:#fff;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/rbac.png" alt="RBAC" style="width:100%; height:auto;"/>
+    </td>
+    <td style="padding: 5px; background-color:#fff;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/settings.png" alt="Settings" style="width:100%; height:auto;"/>
+    </td>
   </tr>
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" alt="Opportunity List" /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity-detail.png" alt="Opportunity Detail" /></td>
+    <td style="padding: 5px; background-color:#fff;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" alt="Opportunity List" style="width:100%; height:auto;"/>
+    </td>
+    <td style="padding: 5px; background-color:#fff;">
+      <img src="https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity-detail.png" alt="Opportunity Detail" style="width:100%; height:auto;"/>
+    </td>
   </tr>
 </table>
 
