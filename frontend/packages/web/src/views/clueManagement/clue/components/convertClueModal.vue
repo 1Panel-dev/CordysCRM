@@ -42,7 +42,7 @@
         <div>{{ t('clue.notSameNameConvertTip') }}</div>
         <div>{{ t('clue.linkFormConfigTip') }}</div>
         <n-button v-permission="['MODULE_SETTING:UPDATE']" text type="primary" @click="handleOpenFormDesignDrawer">
-          {{ t('clue.linkFormConfig') }}
+          {{ t('module.customerFormSetting') }}
         </n-button>
       </div>
     </n-form>

@@ -37,7 +37,6 @@ export default {
   'clue.sameNameConvertTip': '1.存在同名客户时，线索将与同名客户关联，线索负责人添加为同名客户的协作人',
   'clue.notSameNameConvertTip': '2.如未存在同名客户，系统将会自动创建客户和联系人',
   'clue.linkFormConfigTip': '3.线索与客户的字段映射在“线索表单设置”配置表单联动',
-  'clue.linkFormConfig': '表单联动',
   'clue.convertOpportunityNoPermission': '暂无权限',
   'clue.linkAccount': '关联客户',
   'clue.backClueList': '返回线索列表',
