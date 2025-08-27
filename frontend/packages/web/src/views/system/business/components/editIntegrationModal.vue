@@ -297,7 +297,7 @@
     deEmbedType: [{ required: true, message: t('system.business.DE.embedTypeTip'), type: 'array' }],
     deAccessKey: [{ required: true, message: t('common.notNull', { value: 'deAccessKey' }) }],
     deSecretKey: [{ required: true, message: t('common.notNull', { value: 'deSecretKey' }) }],
-    deOrgID: [{ required: true, message: t('common.notNull', { value: 'system.business.DE.org' }) }],
+    deOrgID: [{ required: true, message: t('common.notNull', { value: t('system.business.DE.org') }) }],
   }));
 
   const formRef = ref<FormInst | null>(null);
