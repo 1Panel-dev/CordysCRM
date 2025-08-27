@@ -35,31 +35,36 @@ start_redis() {
     fi
 }
 
+get_property() {
+    local key=$1
+    grep "^${key}=" /opt/cordys/conf/cordys-crm.properties | cut -d'=' -f2 | tr -d '[:space:]'
+}
+
 # 主函数
 main() {
-    log_info "开始启动CORDYS CRM环境..."
+    log_info "开始启动 Cordys CRM 环境..."
     chmod -R 777 /opt/cordys
 
     # 检查MySQL配置并启动
-    mysqlEmbeddedEnabled=$(grep 'mysql.embedded.enabled' /opt/cordys/conf/cordys-crm.properties)
+    mysqlEmbeddedEnabled=$(get_property "mysql.embedded.enabled")
     if [[ "${mysqlEmbeddedEnabled}" == "true" ]]; then
-        log_info "检测到本地MySQL配置"
+        log_info "启动内置 MySQL ... "
         start_mysql
     else
-        log_info "使用外部MySQL服务"
+        log_info "使用外部 MySQL 服务"
     fi
 
     # 检查Redis配置并启动
-    redisEmbeddedEnabled=$(grep 'redis.embedded.enabled' /opt/cordys/conf/cordys-crm.properties)
+    redisEmbeddedEnabled=$(get_property "redis.embedded.enabled")
     if [[ "${redisEmbeddedEnabled}" == "true" ]]; then
-        log_info "检测到本地 Redis 配置"
+        log_info "启动内置 Redis ... "
         start_redis
     else
         log_info "使用外部 Redis 服务"
     fi
 
-    # 启动CORDYS应用
-    log_info "启动 CORDYS 应用..."
+    # 启动 Cordys CRM 应用
+    log_info "启动 Crodys CRM 应用 ..."
     sh /shells/start-cordys.sh
 }
 
