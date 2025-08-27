@@ -854,7 +854,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               name = [options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist')];
             } else {
               // 多选
-              name = options?.filter((e) => item[fieldId].includes(e.id)).map((e) => e.name) || [
+              name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
                 t('common.optionNotExist'),
               ];
             }
