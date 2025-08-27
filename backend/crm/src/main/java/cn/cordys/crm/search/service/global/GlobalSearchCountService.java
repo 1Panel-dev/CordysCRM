@@ -58,19 +58,19 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
         List<FilterCondition> conditions;
         if (enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
-            if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
               //查客户
                 conditions = new ArrayList<>();
                 long customerCount = getCustomerCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, (int)customerCount));
             }
-            if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查客户联系人
                 conditions = new ArrayList<>();
                 long contactCount = getContactCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, (int)contactCount));
             }
-            if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查公海
                 conditions = new ArrayList<>();
                 long publicCount = getPublicCount(keyword, orgId, userSearchConfigs, list, conditions, request);
@@ -78,13 +78,13 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         }
         if (enabledModules.contains(ModuleKey.CLUE.getKey())) {
-            if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long clueCount = getClueCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int)clueCount));
 
             }
-            if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long cluePoolCount = getCluePoolCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, (int)cluePoolCount));
@@ -92,7 +92,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
 
         if (enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
-            if ((permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || Strings.CI.equals(userId, InternalUser.ADMIN.getValue()))) {
+            if (permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long opportunityCount = getOpportunityCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, (int)opportunityCount));
