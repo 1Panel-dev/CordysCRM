@@ -335,11 +335,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         int length = ((String) fieldValue).length();
         if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.PHONE.toString()) || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.SERIAL_NUMBER.toString())) {
             //fieldValue后6位以*替代
-            if (length > 6) {
-                fieldValue = ((String) fieldValue).substring(0, length - 6) + "******";
-            } else {
-                fieldValue = "******";
-            }
+            fieldValue = getPhoneFieldValue(fieldValue, length);
         } else if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.INPUT.toString())) {
             fieldValue = getInputFieldValue(fieldValue, length);
         }
@@ -347,7 +343,17 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     }
 
     @NotNull
-    private Object getInputFieldValue(Object fieldValue, int length) {
+    public Object getPhoneFieldValue(Object fieldValue, int length) {
+        if (length > 6) {
+            fieldValue = ((String) fieldValue).substring(0, length - 6) + "******";
+        } else {
+            fieldValue = "******";
+        }
+        return fieldValue;
+    }
+
+    @NotNull
+    public Object getInputFieldValue(Object fieldValue, int length) {
         //fieldValue保留第一位字符，后面全部用*代替
         if (length > 1) {
             fieldValue = ((String) fieldValue).charAt(0) + "*".repeat(length - 1);

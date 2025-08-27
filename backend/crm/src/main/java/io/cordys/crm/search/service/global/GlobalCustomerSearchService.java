@@ -135,11 +135,18 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
 
                 customerResponse.setModuleFields(returnCustomerFields);
             }
-
             customerResponse.setOwnerName(userNameMap.get(customerResponse.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(customerResponse.getOwner());
             if (userDeptDTO != null) {
                 customerResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+            //固定展示列脱敏设置
+            if (!hasPermission) {
+                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
+                        customerResponse.setName((String) getInputFieldValue(customerResponse.getName(), customerResponse.getName().length()));
+                    }
+                });
             }
             customerResponse.setHasPermission(hasPermission);
         });

@@ -155,8 +155,24 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             if (userDeptDTO != null) {
                 opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
+            //固定展示列脱敏设置
             List<String> productNames = getProductNames(opportunityListResponse.getProducts(), productNameMap);
-            opportunityListResponse.setProducts(productNames);
+            if (!hasPermission) {
+                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
+                        opportunityListResponse.setName((String) getInputFieldValue(opportunityListResponse.getName(), opportunityListResponse.getName().length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId")) {
+                        opportunityListResponse.setCustomerName((String) getInputFieldValue(opportunityListResponse.getCustomerName(), opportunityListResponse.getCustomerName().length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products")) {
+                        List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
+                        opportunityListResponse.setProducts(maskProductNames);
+                    }
+                });
+            } else {
+                opportunityListResponse.setProducts(productNames);
+            }
             opportunityListResponse.setHasPermission(hasPermission);
         });
         return list;

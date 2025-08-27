@@ -147,8 +147,21 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             if (userDeptDTO != null) {
                 globalClueResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
+            //固定展示列脱敏设置
             List<String> productNames = getProductNames(globalClueResponse.getProducts(), productNameMap);
-            globalClueResponse.setProducts(productNames);
+            if (!hasPermission) {
+                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
+                        globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(), globalClueResponse.getName().length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products")) {
+                        List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
+                        globalClueResponse.setProducts(maskProductNames);
+                    }
+                });
+            } else {
+                globalClueResponse.setProducts(productNames);
+            }
             globalClueResponse.setHasPermission(hasPermission);
         });
         return list;

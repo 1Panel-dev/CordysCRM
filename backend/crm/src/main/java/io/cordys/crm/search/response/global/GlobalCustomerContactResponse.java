@@ -12,7 +12,7 @@ public class GlobalCustomerContactResponse {
     @Schema(description = "ID")
     private String id;
 
-    @Schema(description = "客户名称")
+    @Schema(description = "联系人名称")
     private String name;
 
     @Schema(description = "客户id")

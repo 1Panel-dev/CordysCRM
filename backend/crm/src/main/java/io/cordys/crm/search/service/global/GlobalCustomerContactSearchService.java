@@ -151,11 +151,27 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
 
                 customerContactResponse.setModuleFields(returnCustomerFields);
             }
-            customerContactResponse.setCustomerName(customNameMap.get(customerContactResponse.getCustomerId()));
             customerContactResponse.setOwnerName(userNameMap.get(customerContactResponse.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(customerContactResponse.getOwner());
             if (userDeptDTO != null) {
                 customerContactResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+            String customerName = customNameMap.get(customerContactResponse.getCustomerId());
+            //固定展示列脱敏设置
+            if (!hasPermission) {
+                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId")) {
+                        customerContactResponse.setCustomerName((String) getInputFieldValue(customerName, customerName.length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
+                        customerContactResponse.setName((String) getInputFieldValue(customerContactResponse.getName(), customerContactResponse.getName().length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone")) {
+                        customerContactResponse.setPhone((String) getPhoneFieldValue(customerContactResponse.getPhone(), customerContactResponse.getPhone().length()));
+                    }
+                });
+            } else {
+                customerContactResponse.setCustomerName(customerName);
             }
             customerContactResponse.setHasPermission(hasPermission);
         });

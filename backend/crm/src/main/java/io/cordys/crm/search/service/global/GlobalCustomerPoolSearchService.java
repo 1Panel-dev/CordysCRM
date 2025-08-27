@@ -123,6 +123,14 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
 
                 customerPoolResponse.setModuleFields(returnCustomerFields);
             }
+            //固定展示列脱敏设置
+            if (!hasPermission) {
+                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
+                        customerPoolResponse.setName((String) getInputFieldValue(customerPoolResponse.getName(), customerPoolResponse.getName().length()));
+                    }
+                });
+            }
 
             customerPoolResponse.setHasPermission(hasPermission);
         });
