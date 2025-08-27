@@ -116,7 +116,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, 0));
+                return 0L;
             } else {
                 for (UserSearchConfig userSearchConfig : opportunitySearchConfigs) {
                     //如果和固定展示列名重复不加入fieldIdSet
@@ -153,7 +153,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL)).toList();
             if (CollectionUtils.isEmpty(cluePoolSearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, 0));
+                return 0L;
             } else {
                 for (UserSearchConfig userSearchConfig : cluePoolSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -185,7 +185,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
             if (CollectionUtils.isEmpty(clueSearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, 0));
+                return 0L;
             } else {
                 for (UserSearchConfig userSearchConfig : clueSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -215,7 +215,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> customerPoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC)).toList();
             if (CollectionUtils.isEmpty(customerPoolSearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, 0));
+                return 0L;
             } else {
                 for (UserSearchConfig userSearchConfig : customerPoolSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -246,8 +246,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, 0));
-
+                return 0L;
             }else {
                 for (UserSearchConfig userSearchConfig : contactSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -281,7 +280,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER)).toList();
             if (CollectionUtils.isEmpty(customerSearchConfigs)) {
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, 0));
+                return 0L;
             } else {
                 for (UserSearchConfig userSearchConfig : customerSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
