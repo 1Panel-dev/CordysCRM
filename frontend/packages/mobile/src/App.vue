@@ -21,7 +21,8 @@
 
   onBeforeMount(async () => {
     const loginStatus = await userStore.isLogin();
-    if (!loginStatus) {
+    const isWXWork = navigator.userAgent.includes('wxwork');
+    if (!loginStatus && isWXWork) {
       await oAuthLogin();
       router.replace({
         name: AppRouteEnum.WORKBENCH,
