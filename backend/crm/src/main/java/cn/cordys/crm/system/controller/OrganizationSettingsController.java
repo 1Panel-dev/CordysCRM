@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Tag(name = "企业设置")
 @RestController
@@ -34,6 +35,9 @@ public class OrganizationSettingsController {
 
     @Resource
     private OrganizationConfigService organizationConfigService;
+
+    private static final String DEFAULT_ORGANIZATION_ID = "100001";
+
 
     //获取邮件设置
     @GetMapping("/email")
@@ -103,12 +107,14 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
     public ThirdConfigurationDTO getThirdConfigByType(@PathVariable String type) {
-        return integrationConfigService.getThirdConfigByType(type, OrganizationContext.getOrganizationId());
+        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
+        return integrationConfigService.getThirdConfigByType(type, organizationId);
     }
 
     @GetMapping("/third-party/types")
     @Operation(summary = "获取三方应用扫码类型集合")
     public List<OptionDTO> getThirdTypeList() {
-        return integrationConfigService.getThirdTypeList(OrganizationContext.getOrganizationId());
+        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
+        return integrationConfigService.getThirdTypeList(organizationId);
     }
 }
