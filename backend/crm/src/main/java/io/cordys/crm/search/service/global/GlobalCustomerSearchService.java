@@ -104,7 +104,7 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
             return PageUtils.setPageInfo(page, null);
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER);
         List<GlobalCustomerResponse> buildList = buildListData(globalCustomerResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
         return PageUtils.setPageInfo(page, buildList);
     }

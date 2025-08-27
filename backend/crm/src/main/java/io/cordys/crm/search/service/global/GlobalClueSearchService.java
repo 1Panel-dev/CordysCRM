@@ -107,7 +107,7 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             return PageUtils.setPageInfo(page, null);
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE);
         List<GlobalClueResponse> buildList = buildListData(globalClueResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
         return PageUtils.setPageInfo(page, buildList);
     }

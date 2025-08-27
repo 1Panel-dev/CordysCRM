@@ -237,9 +237,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param orgId 组织ID
      * @return  搜索字段脱敏配置列表
      */
-    public List<SearchFieldMaskConfig> getSearchFieldMaskConfigs(String orgId) {
+    public List<SearchFieldMaskConfig> getSearchFieldMaskConfigs(String orgId, String moduleType) {
         LambdaQueryWrapper<SearchFieldMaskConfig> sysWrapper = new LambdaQueryWrapper<>();
-        sysWrapper.eq(SearchFieldMaskConfig::getModuleType, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY).eq(SearchFieldMaskConfig::getOrganizationId, orgId);
+        sysWrapper.eq(SearchFieldMaskConfig::getModuleType, moduleType).eq(SearchFieldMaskConfig::getOrganizationId, orgId);
         return searchFieldMaskConfigBaseMapper.selectListByLambda(sysWrapper);
     }
 
@@ -277,15 +277,17 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, baseModuleFieldValues);
         List<BaseField> fields = moduleFormConfigDTO.getFields();
         Map<String, String> fieldTypeMap = fields.stream().collect(Collectors.toMap(BaseField::getId, BaseField::getType));
-        optionMap.forEach((field, optionDTOs) -> {
-            if (fieldIdSet.contains(field)) {
-                SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap.get(field);
-                BaseModuleFieldValue baseModuleFieldValue = new BaseModuleFieldValue();
-                baseModuleFieldValue.setFieldId(field);
-                Object fieldValue = fieldValueMap.get(field);
+        for (BaseModuleFieldValue baseModuleFieldValue : baseModuleFieldValues) {
+            String fieldId = baseModuleFieldValue.getFieldId();
+            if (fieldIdSet.contains(fieldId)) {
+                SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap.get(fieldId);
+                BaseModuleFieldValue returnBaseModuleFieldValue = new BaseModuleFieldValue();
+                returnBaseModuleFieldValue.setFieldId(fieldId);
+                Object fieldValue = fieldValueMap.get(fieldId);
                 if (fieldValue instanceof String) {
                     //数据源类型的字段，进行值的转换
-                    if (Strings.CI.equals(fieldTypeMap.get(field), FieldType.DATA_SOURCE.toString())) {
+                    if (Strings.CI.equals(fieldTypeMap.get(fieldId), FieldType.DATA_SOURCE.toString())) {
+                        List<OptionDTO> optionDTOs = optionMap.get(fieldId);
                         for (OptionDTO optionDTO : optionDTOs) {
                             if (Strings.CI.equals(optionDTO.getId(), (String) fieldValue)) {
                                 fieldValue = optionDTO.getName();
@@ -299,11 +301,12 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                             fieldValue = setStringFieldValue(searchFieldMaskConfig, fieldValue);
                         }
                     }
-                    baseModuleFieldValue.setFieldValue(fieldValue);
+                    returnBaseModuleFieldValue.setFieldValue(fieldValue);
                 } else if (fieldValue instanceof List<?>) {
                     List<String> fieldValueList = new ArrayList<>();
                     for (Object element : (List<?>) fieldValue) {
                         String s = element == null ? null : element.toString();
+                        List<OptionDTO> optionDTOs = optionMap.get(fieldId);
                         for (OptionDTO optionDTO : optionDTOs) {
                             if (Strings.CI.equals(optionDTO.getId(), s)) {
                                 String name = optionDTO.getName();
@@ -314,11 +317,11 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                             }
                         }
                     }
-                    baseModuleFieldValue.setFieldValue(fieldValueList);
+                    returnBaseModuleFieldValue.setFieldValue(fieldValueList);
                 }
-                returnBaseModuleFieldValues.add(baseModuleFieldValue);
+                returnBaseModuleFieldValues.add(returnBaseModuleFieldValue);
             }
-        });
+        }
         return returnBaseModuleFieldValues;
     }
 
