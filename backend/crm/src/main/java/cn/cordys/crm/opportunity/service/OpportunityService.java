@@ -414,7 +414,7 @@ public class OpportunityService {
                 .distinct()
                 .toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
-        Map<String, String> contactMap = baseService.getContactMap(List.of(response.getContactId()));
+        Map<String, String> contactMap = baseService.getContactMap(StringUtils.isEmpty(response.getContactId()) ? null : List.of(response.getContactId()));
 
         response.setCreateUserName(userNameMap.get(response.getCreateUser()));
         response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));

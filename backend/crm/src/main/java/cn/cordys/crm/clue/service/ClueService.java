@@ -760,7 +760,7 @@ public class ClueService {
         } catch (Exception e) {
             LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
         }
-        // 部分内置字段未配置联动, 取线索值即可'
+        // 部分内置字段未配置联动, 取线索值即可
         addRequest.setName(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getName()) ?
                 clue.getName() : customerLinkFillDTO.getEntity().getName());
         addRequest.setOwner(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getOwner()) ?
@@ -772,6 +772,9 @@ public class ClueService {
     /**
      * 通过表单联动来创建商机
      * @param customer 客户
+     * @param clueOwner 线索负责人
+     * @param contactId 联系人ID
+     * @param currentUser 当前用户
      * @param orgId 组织ID
      * @return 商机
      */
