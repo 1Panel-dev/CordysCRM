@@ -173,8 +173,8 @@
     {
       value: FormDesignKeyEnum.BUSINESS,
       label: t('module.businessManagement'),
-      disabled: !hasAllPermission(['OPPORTUNITY_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD']),
-      disabledToolTip: !hasAllPermission(['OPPORTUNITY_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'])
+      disabled: !hasAllPermission(['OPPORTUNITY_MANAGEMENT:ADD', 'CUSTOMER_MANAGEMENT:ADD']),
+      disabledToolTip: !hasAllPermission(['OPPORTUNITY_MANAGEMENT:ADD', 'CUSTOMER_MANAGEMENT:ADD'])
         ? t('clue.convertOpportunityNoPermission')
         : '',
     },

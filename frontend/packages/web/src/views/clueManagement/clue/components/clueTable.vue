@@ -475,7 +475,7 @@
                       {
                         label: t('clue.convert'),
                         key: 'convert',
-                        permission: ['CLUE_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+                        permission: ['CLUE_MANAGEMENT:UPDATE'],
                       },
                       {
                         label: 'more',
