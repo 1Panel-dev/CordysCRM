@@ -20,7 +20,7 @@ public class LinkProp implements Serializable {
 	private List<LinkField> linkFields;
 
 	@Data
-	static class LinkField {
+	public static class LinkField {
 
 		@NotEmpty
 		@Schema(description = "当前字段ID", requiredMode = Schema.RequiredMode.REQUIRED)

@@ -109,7 +109,7 @@ public class CustomerCollaborationService {
         paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
         paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
         paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
-        paramMap.put("cName", customer.getName());
+        paramMap.put("name", customer.getName());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
                 paramMap, userId, orgId, List.of(customer.getOwner()), true);
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());

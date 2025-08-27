@@ -20,12 +20,14 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
+import cn.cordys.crm.system.dto.FormLinkFillDTO;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.form.FormProp;
+import cn.cordys.crm.system.dto.form.base.LinkProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -566,5 +569,161 @@ public class ModuleFormService {
 		}
 		Optional<BaseField> internalField = allFields.stream().filter(field -> Strings.CS.equals(field.getInternalKey(), internalKey)).findFirst();
 		return internalField.isPresent() && internalField.get().needRepeatCheck();
+	}
+
+	/**
+	 * 填充表单联动值
+	 * @param target 目标对象
+	 * @param source 源对象
+	 * @param targetFormConfig 目标表单配置
+	 * @param orgId 组织ID
+	 * @return 填充结果
+	 * @param <T> 实体类型
+	 * @param <S> 数据来源类型
+	 */
+	public <T, S> FormLinkFillDTO<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId) throws Exception {
+		FormLinkFillDTO.FormLinkFillDTOBuilder<T> fillDTOBuilder = FormLinkFillDTO.builder();
+		LinkProp linkProp = targetFormConfig.getFormProp().getLinkProp();
+		if (linkProp == null) {
+			return fillDTOBuilder.entity(target).build();
+		}
+
+		ModuleFormConfigDTO sourceFormConfig = getBusinessFormConfig(linkProp.getFormKey(), orgId);
+		List<BaseField> sourceFields = sourceFormConfig.getFields();
+		List<BaseField> targetFields = targetFormConfig.getFields();
+		if (CollectionUtils.isEmpty(sourceFields) || CollectionUtils.isEmpty(targetFields)) {
+			return fillDTOBuilder.entity(target).build();
+		}
+		// 目标表单字段
+		Map<String, BaseField> targetFieldMap = targetFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+		// 来源表单字段
+		Map<String, BaseField> sourceFieldMap = sourceFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+		// 填充数据
+		Class<?> targerClass = target.getClass();
+		Class<?> sourceClass = source.getClass();
+		List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
+		List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
+		for (LinkProp.LinkField linkField : linkProp.getLinkFields()) {
+			BaseField targetField = targetFieldMap.get(linkField.getCurrent());
+			BaseField sourceField = sourceFieldMap.get(linkField.getLink());
+			if (targetField == null || sourceField == null) {
+				continue;
+			}
+			// 从源对象字段取值
+			Object sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
+			// 源对象中该字段无值, 跳过
+			if (sourceValue == null) {
+				continue;
+			}
+			// 放入目标对象字段
+			putTargetFieldVal(targetField, sourceValue, targerClass, target, targetFieldVals);
+
+		}
+		return fillDTOBuilder.entity(target).fields(targetFieldVals).build();
+	}
+
+	/**
+	 * 属性转方法 (name -> setName)
+	 * @param param 属性名
+	 * @return 方法名
+	 */
+	private String capitalizeSetParam(String param) {
+		return "set" + param.substring(0, 1).toUpperCase() + param.substring(1);
+	}
+
+	/**
+	 * 属性转方法 (name -> setName)
+	 * @param param 属性名
+	 * @return 方法名
+	 */
+	private String capitalizeGetParam(String param) {
+		return "get" + param.substring(0, 1).toUpperCase() + param.substring(1);
+	}
+
+	/**
+	 * 选项值转文本
+	 * @param options 选项集合
+	 * @param value 值
+	 * @return 文本
+	 */
+	private Object val2Text(List<OptionProp> options, Object value) {
+		if (value == null) {
+			return null;
+		}
+		Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
+		if (value instanceof List) {
+			return ((List<?>) value).stream().map(v -> optionMap.getOrDefault(v, v.toString())).toList();
+		} else {
+			return optionMap.getOrDefault(value, value.toString());
+		}
+	}
+
+	/**
+	 * 选项文本转值
+	 * @param options 选项集合
+	 * @param text 文本
+	 * @return 值
+	 */
+	private Object text2Val(List<OptionProp> options, Object text) {
+		if (text == null) {
+			return null;
+		}
+		Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
+		if (text instanceof List) {
+			return ((List<?>) text).stream().map(v -> optionMap.getOrDefault(v, v.toString())).toList();
+		} else {
+			return optionMap.getOrDefault(text, text.toString());
+		}
+	}
+
+	/**
+	 * 从源对象取值
+	 * @param sourceField 来源字段
+	 * @param sourceClass 类对象
+	 * @param source 数据来源
+	 * @param sourceFieldVals 自定义数据来源
+	 * @return 值
+	 * @throws Exception 取值异常
+	 */
+	private Object applySourceValue(BaseField sourceField, Class<?> sourceClass, Object source, List<BaseModuleFieldValue> sourceFieldVals) throws Exception {
+		// 来源字段取值
+		Object tmpVal;
+		if (StringUtils.isNotEmpty(sourceField.getBusinessKey())) {
+			// 业务字段取值
+			tmpVal = sourceClass.getMethod(capitalizeGetParam(sourceField.getBusinessKey())).invoke(source);
+		} else {
+			// 自定义字段取值
+			Optional<BaseModuleFieldValue> find = sourceFieldVals.stream().filter(fieldVal -> Strings.CS.equals(sourceField.getId(), fieldVal.getFieldId())).findFirst();
+			tmpVal = find.map(BaseModuleFieldValue::getFieldValue).orElse(null);
+		}
+		// 来源字段有选项映射
+		return sourceField instanceof HasOption sourceFieldWithOption ? val2Text(sourceFieldWithOption.getOptions(), tmpVal) : tmpVal;
+	}
+
+	/**
+	 * 放入目标对象字段值
+	 * @param targetField 字段
+	 * @param putVal 放入值
+	 * @param targetClass 目标类
+	 * @param target 目标实例
+	 * @param targetFieldVals 目标自定义字段值集合
+	 * @throws Exception 入值异常
+	 */
+	private void putTargetFieldVal(BaseField targetField, Object putVal, Class<?> targetClass, Object target, List<BaseModuleFieldValue> targetFieldVals) throws Exception {
+		Object val = putVal;
+		if (targetField instanceof HasOption targetFieldWithOption) {
+			val = text2Val(targetFieldWithOption.getOptions(), putVal);
+		}
+		if (StringUtils.isNotEmpty(targetField.getBusinessKey())) {
+			// 目标字段是业务字段
+			Method method = targetClass.getMethod(capitalizeSetParam(targetField.getBusinessKey()), targetClass.getDeclaredField(targetField.getBusinessKey()).getType());
+			method.invoke(target, val);
+		} else {
+			// 目标字段是自定义字段
+			BaseModuleFieldValue targetFieldVal = new BaseModuleFieldValue();
+			targetFieldVal.setFieldId(targetField.getId());
+			targetFieldVal.setFieldValue(val);
+			targetFieldVals.add(targetFieldVal);
+		}
 	}
 }

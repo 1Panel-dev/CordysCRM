@@ -26,6 +26,7 @@ import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.*;
+import cn.cordys.crm.clue.dto.TransformCsAssociateDTO;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.dto.response.ClueImportResponse;
@@ -38,12 +39,14 @@ import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
-import cn.cordys.crm.opportunity.constants.StageType;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
+import cn.cordys.crm.system.dto.FormLinkFillDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
@@ -101,6 +104,8 @@ public class ClueService {
     private DictService dictService;
     @Resource
     private CustomerService customerService;
+    @Resource
+    private OpportunityService opportunityService;
     @Resource
     private ClueFieldService clueFieldService;
     @Resource
@@ -681,9 +686,9 @@ public class ClueService {
             transformCustomer = selectorCs(customers, clue.getOwner());
         } else {
             // 根据表单联动来创建客户
-            transformCustomer = createCusByLinkForm(clue, currentUser, orgId);
+            transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
         }
-        transformCsAssociate(clue, transformCustomer, currentUser, orgId);
+        TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
         clue.setTransitionId(transformCustomer.getId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
@@ -698,7 +703,8 @@ public class ClueService {
 
         // 是否转换商机
         if (request.getOppCreated()) {
-            Opportunity transformOpportunity = createOppByLinkForm(transformCustomer, request.getOppName(), clue.getOwner(), currentUser, orgId);
+            transformCustomer.setName(request.getOppName());
+            Opportunity transformOpportunity = generateOpportunityByLinkForm(transformCustomer, clue.getOwner(), transformCsAssociateDTO.getContactId(), currentUser, orgId);
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
@@ -744,46 +750,58 @@ public class ClueService {
      * @param orgId 组织ID
      * @return 客户
      */
-    public Customer createCusByLinkForm(Clue clue, String currentUser, String orgId) {
-        // TODO: 通过表单联动来创建新客户, 通知
-        Customer customer = new Customer();
-        customer.setId(IDGenerator.nextStr());
-        customer.setName(clue.getName());
-        customer.setOwner(clue.getOwner());
-        customer.setCollectionTime(System.currentTimeMillis());
-        customer.setCreateTime(System.currentTimeMillis());
-        customer.setCreateUser(currentUser);
-        customer.setUpdateTime(System.currentTimeMillis());
-        customer.setUpdateUser(currentUser);
-        customer.setInSharedPool(false);
-        customer.setOrganizationId(orgId);
-        customerMapper.insert(customer);
-        return customer;
+    public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
+        CustomerAddRequest addRequest = new CustomerAddRequest();
+        ModuleFormConfigDTO customerFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        FormLinkFillDTO<Customer> customerLinkFillDTO = new FormLinkFillDTO<>();
+        try {
+            customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
+                    customerFormConfig, orgId);
+        } catch (Exception e) {
+            LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
+        }
+        // 部分内置字段未配置联动, 取线索值即可'
+        addRequest.setName(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getName()) ?
+                clue.getName() : customerLinkFillDTO.getEntity().getName());
+        addRequest.setOwner(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getOwner()) ?
+                clue.getOwner() : customerLinkFillDTO.getEntity().getOwner());
+        addRequest.setModuleFields(customerLinkFillDTO.getFields());
+        return customerService.add(addRequest, currentUser, orgId);
     }
 
     /**
      * 通过表单联动来创建商机
      * @param customer 客户
      * @param orgId 组织ID
-     * @param oppName 商机名称
      * @return 商机
      */
-    public Opportunity createOppByLinkForm(Customer customer, String oppName, String clueOwner,
-                                    String currentUser, String orgId) {
-        // TODO: 通过表单联动来创建新商机, 通知
-        Opportunity opportunity = new Opportunity();
-        opportunity.setId(IDGenerator.nextStr());
-        opportunity.setName(oppName);
-        opportunity.setCustomerId(customer.getId());
-        opportunity.setOrganizationId(orgId);
-        opportunity.setOwner(clueOwner);
-        opportunity.setCreateTime(System.currentTimeMillis());
-        opportunity.setCreateUser(currentUser);
-        opportunity.setUpdateTime(System.currentTimeMillis());
-        opportunity.setUpdateUser(currentUser);
-        opportunity.setStage(StageType.CREATE.name());
-        opportunityMapper.insert(opportunity);
-        return opportunity;
+    public Opportunity generateOpportunityByLinkForm(Customer customer, String clueOwner, String contactId, String currentUser, String orgId) {
+        ModuleFormConfigDTO opportunityFormConfig = moduleFormService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        FormLinkFillDTO<Opportunity> opportunityLinkFillDTO = new FormLinkFillDTO<>();
+        try {
+            opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), customerService.get(customer.getId(), orgId),
+                    opportunityFormConfig, orgId);
+        } catch (Exception e) {
+            LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
+        }
+        OpportunityAddRequest addRequest = new OpportunityAddRequest();
+        if (opportunityLinkFillDTO.getEntity() != null) {
+            BeanUtils.copyBean(addRequest, opportunityLinkFillDTO.getEntity());
+        }
+        // 部分内置字段需手动设置值
+        addRequest.setName(customer.getName());
+        addRequest.setCustomerId(customer.getId());
+        if (CollectionUtils.isEmpty(addRequest.getProducts())) {
+            addRequest.setProducts(new ArrayList<>());
+        }
+        if (StringUtils.isEmpty(addRequest.getOwner())) {
+            addRequest.setOwner(clueOwner);
+        }
+        if (StringUtils.isEmpty(addRequest.getContactId())) {
+            addRequest.setContactId(contactId);
+        }
+        addRequest.setModuleFields(opportunityLinkFillDTO.getFields());
+        return opportunityService.add(addRequest, currentUser, orgId);
     }
 
     /**
@@ -793,7 +811,8 @@ public class ClueService {
      * @param currentUser 当前用户
      * @param orgId 组织ID
      */
-    public void transformCsAssociate(Clue clue, Customer transformCs, String currentUser, String orgId) {
+    public TransformCsAssociateDTO transformCsAssociate(Clue clue, Customer transformCs, String currentUser, String orgId) {
+        TransformCsAssociateDTO transformDTO = new TransformCsAssociateDTO();
         // 如果当前线索负责人不是关联客户的负责人，且不是客户协作人, 则添加协作关系
         if (!Strings.CS.equals(transformCs.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), transformCs.getId())) {
             CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
@@ -811,9 +830,12 @@ public class ClueService {
                 contactAddRequest.setName(clue.getContact());
                 contactAddRequest.setPhone(clue.getPhone());
                 contactAddRequest.setOwner(clue.getOwner());
-                customerContactService.add(contactAddRequest, currentUser, orgId);
+                CustomerContact contact = customerContactService.add(contactAddRequest, currentUser, orgId);
+                transformDTO.setContactId(contact.getId());
             }
         }
+
+        return transformDTO;
     }
 
     /**

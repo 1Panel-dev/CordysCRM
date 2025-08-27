@@ -229,6 +229,7 @@ public class CustomerContactService {
         paramMap.put("template", Translator.get("message.customer.contact.add.text"));
         paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
         paramMap.put("cName", customerContact.getName());
+        paramMap.put("name", customer.getName());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
                 paramMap, userId, orgId, List.of(customer.getOwner()), true);
         return customerContact;
