@@ -18,12 +18,7 @@
         <n-button :disabled="loading" secondary @click="handleReset">
           {{ t('common.reset') }}
         </n-button>
-        <n-button
-          :loading="loading"
-          :disabled="Object.values(formModel.searchFields).every((e) => e.length === 0)"
-          type="primary"
-          @click="handleConfirm"
-        >
+        <n-button :loading="loading" type="primary" @click="handleConfirm">
           {{ t('common.save') }}
         </n-button>
       </div>
@@ -105,8 +100,8 @@
     () => visible.value,
     async (val) => {
       if (val) {
-        await initSearchFormConfig();
-        initModuleSearchMaskConfig();
+        await initModuleSearchMaskConfig();
+        initSearchFormConfig();
       }
     }
   );
