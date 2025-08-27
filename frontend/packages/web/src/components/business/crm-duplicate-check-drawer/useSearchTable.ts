@@ -226,7 +226,7 @@ export default async function useSearchTable(props: SearchTableProps) {
           title: field.title,
           width: 100,
           key: field.dataIndex,
-          render: (row) => {
+          render: (row: any) => {
             const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
             return step ? step.label : '-';
           },
@@ -264,7 +264,9 @@ export default async function useSearchTable(props: SearchTableProps) {
     return resultColumns;
   });
 
-  const api = computed(() => getSearchListApiMap[props.searchTableKey.value]);
+  const api = computed(() => {
+    return getSearchListApiMap[props.searchTableKey.value] ?? (() => Promise.resolve([]));
+  });
   const useTableRes = useTable(
     (params) => api.value(params),
     {
