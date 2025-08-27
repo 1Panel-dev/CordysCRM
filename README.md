@@ -93,3 +93,10 @@ docker run -d \
 ## License
 
 本仓库遵循 [FIT2CLOUD Open Source License](LICENSE) 开源协议，该许可证本质上是 GPLv3，但有一些额外的限制。
+
+你可以基于 Cordys CRM 的源代码进行二次开发，但是需要遵守以下规定：
+
+- 不能替换和修改 Cordys CRM 的 Logo 和版权信息；
+- 二次开发后的衍生作品后必须必须遵守 GPL V3 的开源义务。
+
+如需商业授权，请联系 support@fit2cloud.com 。
