@@ -86,15 +86,28 @@
 
   const { initSearchFormConfig, searchFieldMap } = useSearchFormConfig();
 
+  const originMaskSearchFields = ref({});
   async function initModuleSearchMaskConfig() {
     try {
       const res = await getModuleSearchMaskConfig();
-      formModel.value.searchFields = res.searchFields;
+      originMaskSearchFields.value = cloneDeep(res.searchFields);
+      formModel.value.searchFields = cloneDeep(res.searchFields);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
+
+  watch(
+    () => originMaskSearchFields.value,
+    (val) => {
+      if (val) {
+        nextTick(() => {
+          formModel.value.searchFields = val;
+        });
+      }
+    }
+  );
 
   watch(
     () => visible.value,
