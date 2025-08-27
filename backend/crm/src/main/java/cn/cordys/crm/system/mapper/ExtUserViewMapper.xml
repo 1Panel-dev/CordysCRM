@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtUserViewMapper">
+
+    <select id="getNextPos" resultType="java.lang.Long">
+        SELECT max(pos)
+        FROM sys_user_view
+        where organization_id = #{orgId}
+        and user_id = #{userId}
+        and resource_type = #{resourceType}
+    </select>
+
+
+    <select id="countUserView" resultType="java.lang.Integer">
+        select count(id) from sys_user_view
+        where organization_id = #{orgId}
+        and user_id = #{userId}
+        and id = #{id}
+    </select>
+
+
+    <select id="selectViewList" resultType="cn.cordys.crm.system.dto.response.UserViewListResponse">
+        select id, name, fixed, enable from sys_user_view
+        where organization_id = #{orgId}
+        and user_id = #{userId}
+        and resource_type = #{resourceType}
+        order by pos desc
+    </select>
+
+
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from sys_user_view where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from sys_user_view where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        order by `pos` asc limit 1;
+    </select>
+</mapper>

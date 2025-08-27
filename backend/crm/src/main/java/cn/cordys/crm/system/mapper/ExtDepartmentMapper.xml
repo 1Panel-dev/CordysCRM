@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtDepartmentMapper">
+
+    <select id="selectTreeNode" resultType="cn.cordys.common.dto.BaseTreeNode">
+        SELECT id, name, parent_id, organization_id
+        FROM sys_department
+        where organization_id = #{orgId}
+        ORDER BY pos
+    </select>
+
+    <select id="selectDeptUserTreeNode" resultType="cn.cordys.common.dto.DeptUserTreeNode">
+        SELECT id, name, parent_id, 'ORG' as nodeType
+        FROM sys_department
+        where organization_id = #{orgId}
+        ORDER BY pos
+    </select>
+
+    <select id="getNextPosByOrgId" resultType="java.lang.Long">
+        SELECT max(pos)
+        FROM sys_department
+        where organization_id = #{orgId}
+    </select>
+
+    <select id="getUserIdsByDeptIds" resultType="java.lang.String">
+        select user_id
+        from sys_organization_user
+        where department_id in
+        <foreach collection="deptIds" item="deptId" open="(" close=")" separator=",">
+            #{deptId}
+        </foreach>
+    </select>
+
+    <select id="getIdNameByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name
+        from sys_department
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteByOrgId">
+        DELETE FROM sys_department WHERE organization_id  = #{orgId} and parent_id != 'NONE'
+    </delete>
+
+
+    <select id="selectAllDepartmentIds" resultType="java.lang.String">
+        select id from sys_department where organization_id = #{orgId}
+    </select>
+
+
+    <select id="selectDepartment" resultType="cn.cordys.common.dto.BaseTreeNode">
+        select id, name, parent_id, organization_id from sys_department where name = #{name} and organization_id = #{orgId}
+    </select>
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id) from sys_department where name = #{name} and organization_id = #{orgId} and parent_id = #{parentId}
+    </select>
+
+
+    <select id="selectBaseTreeById" resultType="cn.cordys.common.dto.BaseTree">
+        SELECT id, name, pos, organization_id, parent_id
+        FROM sys_department
+        WHERE id = #{dragNodeId}
+    </select>
+
+    <select id="selectTreeByParentIdAndPosOperator"
+            parameterType="cn.cordys.common.dto.NodeSortQueryParam"
+            resultType="cn.cordys.common.dto.BaseTree">
+        SELECT id, name, pos, organization_id, parent_id
+        FROM sys_department
+        WHERE parent_id = #{nodeSortQueryParam.parentId}
+        <if test="nodeSortQueryParam.operator == 'moreThan'">
+            AND pos &gt; #{nodeSortQueryParam.pos}
+        </if>
+        <if test="nodeSortQueryParam.operator == 'lessThan'">
+            AND pos &lt; #{nodeSortQueryParam.pos}
+        </if>
+        ORDER BY pos
+        <if test="nodeSortQueryParam.operator == 'lessThan' or nodeSortQueryParam.operator == 'latest'">
+            DESC
+        </if>
+        LIMIT 1
+    </select>
+
+
+    <select id="selectChildrenIds" resultType="java.lang.String">
+        SELECT id FROM sys_department WHERE parent_id  = #{parentId}
+        ORDER BY pos ASC
+    </select>
+
+    <update id="batchUpdate">
+        UPDATE sys_department
+        SET pos = CASE
+        <foreach collection="departmentList" item="department" separator=" ">
+            WHEN id = #{department.id} THEN #{department.pos}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="departmentList" item="department" open="(" close=")" separator=",">
+            #{department.id}
+        </foreach>
+    </update>
+
+
+    <select id="getInternalDepartment" resultType="cn.cordys.crm.system.domain.Department">
+        SELECT * FROM sys_department WHERE organization_id = #{orgId} AND resource = #{resource} AND parent_id = 'NONE'
+    </select>
+
+
+    <update id="updateDepartment" parameterType="cn.cordys.crm.system.domain.Department">
+        update sys_department
+        <set>
+            <if test="department.name != null">
+                `name` = #{department.name},
+            </if>
+            <if test="department.organizationId != null">
+                organization_id = #{department.organizationId},
+            </if>
+            <if test="department.parentId != null">
+                parent_id = #{department.parentId},
+            </if>
+            <if test="department.pos != null">
+                pos = #{department.pos},
+            </if>
+            <if test="department.createTime != null">
+                create_time = #{department.createTime},
+            </if>
+            <if test="department.updateTime != null">
+                update_time = #{department.updateTime},
+            </if>
+            <if test="department.createUser != null">
+                create_user = #{department.createUser},
+            </if>
+            <if test="department.updateUser != null">
+                update_user = #{department.updateUser},
+            </if>
+            <if test="department.resource != null">
+                `resource` = #{department.resource},
+            </if>
+            <if test="department.resourceId != null">
+                resource_id = #{department.resourceId},
+            </if>
+        </set>
+        where id = #{department.id}
+    </update>
+
+
+    <select id="getDepartmentByOrgId" resultType="cn.cordys.crm.system.domain.Department">
+        SELECT * FROM sys_department WHERE organization_id = #{orgId}
+    </select>
+
+
+    <select id="getDepartmentCommander" resultType="cn.cordys.crm.system.domain.DepartmentCommander">
+        select id, user_id, department_id from sys_department_commander
+        where user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+    <select id="selectChildrenByIds" resultType="java.lang.String">
+        WITH RECURSIVE dept_tree AS (
+        SELECT id, parent_id
+        FROM sys_department
+        WHERE id IN
+        <foreach collection="deptIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+        UNION ALL
+
+        SELECT d.id, d.parent_id
+        FROM sys_department d
+        INNER JOIN dept_tree dt ON d.parent_id = dt.id
+        )
+        SELECT id FROM dept_tree
+    </select>
+
+    <select id="getNameByIds" resultType="java.lang.String">
+        select name
+        from sys_department
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getIdsByNames" resultType="java.lang.String">
+        select id
+        from sys_department
+        where name in
+        <foreach collection="names" item="name" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
+    <select id="selectByOrgId" resultType="cn.cordys.crm.system.domain.DepartmentCommander">
+        select user_id, department_id
+        from sys_department_commander sdc
+        join sys_department sd on sdc.department_id = sd.id
+        where sd.organization_id = #{orgId}
+    </select>
+
+    <delete id="deleteDepartmentByIds">
+        DELETE FROM sys_department WHERE id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

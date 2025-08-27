@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtProductMapper">
+    <update id="updateProduct">
+        UPDATE product
+        <set>
+            <if test="product.price != null">
+                price = #{product.price},
+            </if>
+            <if test="product.status != null">
+                status = #{product.status},
+            </if>
+            <if test="product.updateTime != null">
+                update_time = #{product.updateTime},
+            </if>
+            <if test="product.updateUser != null">
+                update_user = #{product.updateUser},
+            </if>
+            <if test="product.pos != null">
+                pos = #{product.pos},
+            </if>
+        </set>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+    </update>
+
+    <select id="list" resultType="cn.cordys.crm.system.dto.response.product.ProductListResponse">
+        select p.id, p.name, p.price, p.status, p.pos, p.organization_id, p.create_time, p.update_time, p.create_user, p.update_user
+        from product p
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where p.organization_id = #{orgId}
+        <if test="request.status != null and request.status != ''">
+            and p.status = #{request.status}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            and p.name like concat('%', #{request.keyword},'%')
+        </if>
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'name'
+                and condition.name != 'status'
+                and condition.name != 'price'
+                and condition.name != 'updateUser'
+                and condition.name != 'createTime'
+                and condition.name != 'updateTime'
+                and condition.name != 'createUser'
+                and condition.name != 'update_user'
+                and condition.name != 'create_time'
+                and condition.name != 'update_time'
+                and condition.name != 'create_user'
+                ">
+                    <if test="condition.multipleValue">
+                        inner join product_field_blob ${tablePrefix}_${i}
+                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.multipleValue">
+                        inner join product_field ${tablePrefix}_${i}
+                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name'
+                and ${sort}.name != 'status'
+                and ${sort}.name != 'price'
+                and ${sort}.name != 'create_user'
+                and ${sort}.name != 'create_time'
+                and ${sort}.name != 'update_time'
+                and ${sort}.name != 'update_user'
+               ">
+            <bind name="sortName" value="${sort}.name"/>
+            left join product_field sort_table
+            on p.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        p.`name` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'price'">
+                        p.`price` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'status'">
+                        p.`status` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        p.`create_time` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        p.`update_time` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        p.`create_user` ${sortType},  p.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        p.`update_user` ${sortType},  p.id ASC
+                    </when>
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        p.id ASC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by p.pos
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="p.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'status'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="p.status"/>
+                </include>
+            </when>
+            <when test="condition.name == 'price'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="p.price"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="p.create_user"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="listIdNameByIds" resultType="cn.cordys.crm.system.domain.Product">
+        select id, name from product
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by pos
+    </select>
+
+
+    <select id="getOptions" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name
+        from product
+        where organization_id = #{orgId} order by pos
+    </select>
+
+    <select id="listByIds" resultType="cn.cordys.crm.system.domain.Product">
+        select * from product
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by pos
+    </select>
+    <select id="getPos" resultType="java.lang.Long">
+        SELECT
+            pos
+        FROM
+            product
+        WHERE
+            organization_id = #{orgId}
+        ORDER BY
+            pos DESC
+            LIMIT 1;
+    </select>
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from product where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from product where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getProductOptions" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name
+        from product
+        where
+        organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+    </select>
+</mapper>

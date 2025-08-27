@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtExportTaskMapper">
+    <update id="updateExportTaskStatus">
+        update export_task
+        set status = #{newStatus}
+        where status = #{oldStatus}
+    </update>
+
+    <select id="getExportTaskCount" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            export_task
+        WHERE
+            create_user = #{userId}
+          AND `status` = #{status}
+    </select>
+
+
+    <select id="selectExportTaskList" resultType="cn.cordys.crm.system.domain.ExportTask">
+        SELECT
+            *
+        FROM
+            export_task
+        WHERE
+            create_user = #{userId}
+          and create_time <![CDATA[>]]> #{oneDayBefore}
+        <if test="request.keyword != null and request.keyword != ''">
+            and file_name like concat('%', #{request.keyword},'%')
+        </if>
+        <if test="request.exportType != null and request.exportType != ''">
+            and resource_type like concat(#{request.exportType},'%')
+        </if>
+        <if test="request.exportStatus != null and request.exportStatus != ''">
+            and status = #{request.exportStatus}
+        </if>
+        ORDER BY
+            create_time DESC
+    </select>
+</mapper>

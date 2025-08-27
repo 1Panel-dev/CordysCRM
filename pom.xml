@@ -11,7 +11,7 @@
     </parent>
 
     <packaging>pom</packaging>
-    <groupId>io.cordys</groupId>
+    <groupId>cn.cordys</groupId>
     <artifactId>cordys-crm</artifactId>
     <version>${revision}</version>
     <name>cordys-crm</name>

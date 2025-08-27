@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtOperationLogMapper">
+
+    <select id="list" parameterType="cn.cordys.crm.system.dto.request.OperationLogRequest" resultType="cn.cordys.crm.system.dto.response.OperationLogResponse">
+        SELECT
+            t.id,
+            t.organization_id,
+            t.type,
+            t.module,
+            t.create_time,
+            t.create_user as operator,
+            t.resource_name,
+            t.detail
+        FROM
+        sys_operation_log t
+        INNER JOIN sys_user on sys_user.id = t.create_user
+        where t.organization_id = #{orgId}
+            <if test="request.operator != null and request.operator != ''">
+                AND t.create_user = #{request.operator, jdbcType=VARCHAR}
+            </if>
+            <if test="request.startTime != null and request.endTime != null">
+                AND t.create_time BETWEEN #{request.startTime} AND #{request.endTime}
+            </if>
+            <if test="request.type != null and request.type != ''">
+                AND t.type = #{request.type}
+            </if>
+            <if test="request.module != null and request.module != ''">
+                <bind name="module" value="request.module+'%'"/>
+                AND t.module like #{module}
+            </if>
+            <if test='request.keyword != null and request.keyword != ""'>
+                AND t.resource_name LIKE CONCAT('%', #{request.keyword},'%')
+            </if>
+            <include refid="cn.cordys.common.mapper.CommonMapper.sort">
+                <property name="sort" value="request.sort"/>
+                <property name="prefix" value="t"/>
+                <property name="defaultSort" value="create_time desc"/>
+            </include>
+    </select>
+
+</mapper>

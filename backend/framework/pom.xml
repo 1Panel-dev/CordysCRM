@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.cordys</groupId>
+        <groupId>cn.cordys</groupId>
         <artifactId>backend</artifactId>
         <version>${revision}</version>
     </parent>

@@ -33,7 +33,7 @@ COPY installer/conf /opt/cordys/conf
 COPY installer/shells /shells
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
-ENV JAVA_MAIN_CLASS=io.cordys.Application
+ENV JAVA_MAIN_CLASS=cn.cordys.Application
 ENV AB_OFF=true
 ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 

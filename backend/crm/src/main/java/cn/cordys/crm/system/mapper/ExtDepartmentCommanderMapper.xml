@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtDepartmentCommanderMapper">
+
+
+    <delete id="deleteByDepartmentIds">
+        DELETE FROM sys_department_commander WHERE department_id  in
+        <foreach collection="departmentIds" item="departmentId" open="(" close=")" separator=",">
+            #{departmentId}
+        </foreach>
+    </delete>
+
+
+    <select id="selectCommander" resultType="java.lang.String">
+        SELECT
+            sdc.user_id
+        FROM
+            sys_department_commander sdc
+                INNER JOIN sys_department sd ON sdc.department_id = sd.id
+        WHERE
+           sdc.department_id = #{departmentId}
+          AND sd.organization_id = #{orgId}
+    </select>
+
+
+    <select id="selectCommanderByUsers" resultType="cn.cordys.crm.system.domain.DepartmentCommander">
+        select id, user_id, department_id
+        from sys_department_commander
+        where department_id = #{departmentId}
+        and user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+</mapper>

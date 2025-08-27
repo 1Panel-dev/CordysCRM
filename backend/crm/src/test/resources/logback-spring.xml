@@ -158,14 +158,14 @@
         <appender-ref ref="console"/>
     </root>
 
-    <logger name="io.cordys" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="traceAsyncAppender"/>
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
     </logger>
 
-    <logger name="io.cordys.crm.TestApplication" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys.crm.TestApplication" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 

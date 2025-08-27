@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtUserMapper">
+
+    <select id="selectByPhoneOrEmail" resultType="cn.cordys.security.UserDTO">
+        SELECT
+            sys_user.*,
+            sys_user_extend.avatar,
+            sys_user_extend.platform_info
+        FROM
+            sys_user
+        LEFT JOIN sys_user_extend
+            ON sys_user.id = sys_user_extend.id
+        WHERE
+            sys_user.id = #{id} OR sys_user.phone = #{id} OR sys_user.email = #{id}
+    </select>
+
+    <select id="selectUserOptionByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        SELECT id, name
+        FROM sys_user
+        WHERE id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getUserRole" resultType="cn.cordys.crm.system.dto.convert.UserRoleConvert">
+        SELECT sr.id, sr.name, sur.user_id
+        FROM sys_role sr
+        inner join sys_user_role sur on sr.id = sur.role_id
+        WHERE sur.user_id IN
+        <foreach collection="userIds" item="userId" index="index"
+                 open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+        and sr.organization_id = #{orgId}
+    </select>
+
+    <select id="getUserDetail" resultType="cn.cordys.crm.system.dto.response.UserResponse">
+        SELECT
+            sou.id,
+            sou.user_id,
+            sou.organization_id,
+            sou.department_id,
+            su.NAME userName,
+            sou.`enable`,
+            su.gender,
+            su.phone,
+            su.email,
+            sou.supervisor_id,
+            sou.employee_id,
+            sou.position,
+            sou.employee_type,
+            sou.work_city,
+            sd.`name` departmentName
+        FROM
+            sys_user su
+                INNER JOIN sys_organization_user sou ON su.id = sou.user_id
+                INNER JOIN sys_department sd on sd.id = sou.department_id
+        WHERE
+            sou.id = #{id}
+    </select>
+
+    <select id="getUserDetailList" resultType="cn.cordys.crm.system.dto.response.UserResponse">
+        SELECT
+        sou.id,
+        sou.user_id,
+        sou.organization_id,
+        sou.department_id,
+        su.NAME userName,
+        sou.`enable`,
+        su.gender,
+        su.phone,
+        su.email,
+        sou.supervisor_id,
+        sou.employee_id,
+        sou.position,
+        sou.employee_type,
+        sou.work_city,
+        sd.`name` departmentName
+        FROM
+        sys_user su
+        INNER JOIN sys_organization_user sou ON su.id = sou.user_id
+        INNER JOIN sys_department sd on sd.id = sou.department_id
+        WHERE sou.id IN
+        <foreach collection="userIds" item="userId" index="index"
+                 open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+    
+    <select id="getOrgUserByUserIds" resultType="cn.cordys.crm.system.domain.User">
+        SELECT sys_user.id, sys_user.name, sys_user.email, sys_user.phone
+        FROM sys_user LEFT JOIN sys_organization_user on sys_organization_user.user_id = sys_user.id
+        WHERE  sys_organization_user.organization_id = #{organizationId}
+        AND sys_user.id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectUserOption" resultType="cn.cordys.common.dto.OptionDTO">
+        SELECT id, name
+        FROM sys_user
+        WHERE organization_id = #{orgId}
+    </select>
+
+    <update id="batchUpdatePassword">
+        UPDATE sys_user
+        SET password = CASE
+        <foreach collection="userList" item="user" separator=" ">
+            WHEN id = #{user.id} THEN #{user.password}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="userList" item="user" open="(" close=")" separator=",">
+            #{user.id}
+        </foreach>
+    </update>
+
+    <update id="updateUserPassword">
+        UPDATE sys_user
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getAllUserIds" resultType="cn.cordys.crm.system.domain.User">
+        select sys_user.id from sys_user
+        LEFT JOIN sys_organization_user ON sys_user.id = sys_organization_user.user_id
+        WHERE sys_organization_user.organization_id = #{orgId} and sys_user.id != 'admin'
+    </select>
+
+
+    <delete id="deleteByIds">
+        DELETE FROM sys_user WHERE id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="countByEmail" resultType="java.lang.Integer">
+        select count(id) from sys_user
+        <where>
+            <if test="email != null and email != ''">
+                and email = #{email}
+            </if>
+            <if test="id != null and id != ''">
+                and id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="countByPhone" resultType="java.lang.Integer">
+        select count(id) from sys_user
+        <where>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="id != null and id != ''">
+                and id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectUserOptionByOrgId" resultType="cn.cordys.common.dto.OptionDTO">
+        SELECT su.id, su.name
+        FROM sys_user su
+        INNER JOIN sys_organization_user sou on su.id = sou.user_id
+        LEFT JOIN
+            ( SELECT user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
+        WHERE sou.organization_id = #{orgId}
+        ORDER BY sou.enable DESC,
+            <if test="defaultOrder != null and defaultOrder != ''">
+                ${defaultOrder},
+            </if>
+            is_commander DESC, sou.create_time DESC, su.name DESC
+    </select>
+
+    <select id="getUserDeptByUserIds" resultType="cn.cordys.common.dto.UserDeptDTO">
+        select sou.user_id, sd.id as deptId, sd.`name` as deptName
+        from sys_organization_user sou
+        join sys_department sd
+            on sou.department_id = sd.id
+            and sou.organization_id = #{orgId}
+            and sou.user_id in
+            <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                #{userId}
+            </foreach>
+    </select>
+    <select id="selectUserNameByIds" resultType="java.lang.String">
+        SELECT name
+        FROM sys_user
+        WHERE id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectUserIdsByNames" resultType="java.lang.String">
+        SELECT id
+        FROM sys_user
+        WHERE name IN
+        <foreach collection="names" item="name" index="index"
+                 open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
+    <select id="getOrgUserResourceIds" resultType="java.lang.String">
+        SELECT distinct sou.resource_user_id
+        FROM sys_organization_user sou
+        WHERE  sou.organization_id = #{orgId}
+        AND sou.user_id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+        #{id}
+        </foreach>
+    </select>
+    <select id="selectNameAndEmail" resultType="cn.cordys.security.UserDTO">
+        SELECT su.id, su.name, su.email, sou.enable, sou.department_id
+        FROM sys_user su
+        JOIN sys_organization_user sou ON su.id = sou.user_id
+        WHERE sou.organization_id = #{orgId} and su.id != 'admin'
+    </select>
+
+    <update id="updateUser" parameterType="cn.cordys.crm.system.domain.User">
+        update sys_user
+        <set>
+            <if test="user.name != null">
+                `name` = #{user.name},
+            </if>
+            <if test="user.phone != null">
+                phone = #{user.phone},
+            </if>
+            <if test="user.email != null">
+                email = #{user.email},
+            </if>
+            <if test="user.password != null">
+                `password` = #{user.password},
+            </if>
+            <if test="user.language != null">
+                `language` = #{user.language},
+            </if>
+            <if test="user.lastOrganizationId != null">
+                last_organization_id = #{user.lastOrganizationId},
+            </if>
+            <if test="user.gender != null">
+                gender = #{user.gender},
+            </if>
+            <if test="user.createTime != null">
+                create_time = #{user.createTime},
+            </if>
+            <if test="user.updateTime != null">
+                update_time = #{user.updateTime},
+            </if>
+            <if test="user.createUser != null">
+                create_user = #{user.createUser},
+            </if>
+            <if test="user.updateUser != null">
+                update_user = #{user.updateTime},
+            </if>
+        </set>
+        where id = #{user.id}
+    </update>
+
+
+    <update id="updateUserInfo" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
+        update sys_user set email = #{user.id} where id = #{user.userId}
+    </update>
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtRoleMapper">
+
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM sys_role
+        WHERE name = #{role.name} and organization_id = #{role.organizationId} limit 1
+    </select>
+
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM sys_role
+        WHERE name = #{role.name}
+            and organization_id = (
+                select organization_id from sys_role where id = #{role.id}
+            )
+            and id != #{role.id} limit 1
+    </select>
+
+    <select id="getIdNameByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name
+        from sys_role
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

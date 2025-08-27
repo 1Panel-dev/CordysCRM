@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtAnnouncementMapper">
+
+
+    <update id="updateNotice">
+        UPDATE sys_announcement SET notice = #{notice} WHERE organization_id = #{organizationId}
+        <if test="ids != null and ids.size() > 0">
+            and id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </update>
+
+    <select id="selectByBaseRequest" parameterType="cn.cordys.crm.system.dto.request.AnnouncementPageRequest"
+            resultType="cn.cordys.crm.system.dto.response.AnnouncementDTO">
+        SELECT sys_announcement.*, sys_user.name as createUserName, su.name as updateUserName
+        FROM sys_announcement
+        LEFT JOIN sys_user ON sys_announcement.create_user = sys_user.id
+        LEFT JOIN sys_user su ON sys_announcement.update_user = su.id   
+        WHERE
+        sys_announcement.organization_id = #{organizationId}
+        <if test="keyword != null">
+            and
+            sys_announcement.subject like concat('%', #{keyword},'%')
+        </if>
+        <include refid="cn.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="sort"/>
+            <property name="prefix" value="sys_announcement"/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
+    </select>
+
+    <select id="selectById" resultType="cn.cordys.crm.system.dto.response.AnnouncementDTO">
+        SELECT *
+        FROM sys_announcement
+        WHERE id = #{id} limit 1
+    </select>
+
+    <select id="selectInEffectUnConvertData" parameterType="java.lang.Long"
+            resultType="cn.cordys.crm.system.dto.response.AnnouncementDTO">
+        SELECT *
+        FROM sys_announcement
+        WHERE end_time <![CDATA[ >= ]]> #{timestamp}
+          and start_time <![CDATA[ < ]]> #{timestamp}
+          and notice = false
+    </select>
+
+    <select id="selectFixTimeExpiredIds" resultType="java.lang.String">
+        SELECT id
+        FROM sys_announcement
+        WHERE end_time <![CDATA[ < ]]> #{endTime}
+        and end_time <![CDATA[ > ]]> #{startTime}
+    </select>
+
+
+</mapper> 

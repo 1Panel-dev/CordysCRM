@@ -5,7 +5,7 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>io.cordys</groupId>
+        <groupId>cn.cordys</groupId>
         <artifactId>cordys-crm</artifactId>
         <version>${revision}</version>
     </parent>

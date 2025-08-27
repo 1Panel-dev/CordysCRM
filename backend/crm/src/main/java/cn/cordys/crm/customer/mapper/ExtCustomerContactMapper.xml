@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.customer.mapper.ExtCustomerContactMapper">
+
+    <select id="list" resultType="cn.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+               cc.enable, cc.owner, cc.disable_reason, cc.phone
+
+        from customer_contact cc
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cc.owner = sou.user_id
+            and (
+                sou.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                or sou.user_id = #{userId}
+            )
+        </if>
+
+        where cc.organization_id = #{orgId}
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (cc.name like concat('%', #{request.keyword},'%') or cc.phone like concat('%', #{request.keyword},'%'))
+        </if>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cc.owner = #{userId}
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                <bind name="sortName" value="${sort}.name" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'department_id'">
+                        sort_table.department_id ${sortType},  cc.id ASC
+                    </when>
+                    <when test="${sort}.name == 'customer_id'">
+                        sort_table.name ${sortType},  cc.id ASC
+                    </when>
+                    <when test="${sort}.name in
+                        {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'enable'}">
+                        cc.${sortName} ${sortType},  cc.id ASC
+                    </when>
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        cc.id ASC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by cc.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name not in
+                {'name', 'owner', 'createTime', 'updateTime', 'enable', 'customerId', 'createUser', 'updateUser', 'departmentId', 'phone'}">
+                    <if test="condition.multipleValue">
+                        left join customer_contact_field_blob ${tablePrefix}_${i}
+                        on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.multipleValue">
+                        left join customer_contact_field ${tablePrefix}_${i}
+                        on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user ${tablePrefix}_${i}
+                    on ${tablePrefix}_${i}.user_id = cc.owner
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name not in
+             {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'department_id', 'enable', 'customer_id'}">
+            <bind name="sortName" value="${sort}.name"/>
+            left join customer_contact_field sort_table
+            on cc.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+        <if test="${sort}.name == 'department_id'">
+            left join sys_organization_user sort_table
+            on sort_table.user_id = cc.owner
+        </if>
+        <if test="${sort}.name == 'customer_id'">
+            left join customer sort_table
+            on sort_table.id = cc.customer_id
+        </if>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'customerId'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.customer_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'owner'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.owner"/>
+                </include>
+            </when>
+            <when test="condition.name == 'enable'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.enable"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.update_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'departmentId'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${table}.department_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'phone'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.phone"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectContactOptionByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        SELECT id, name
+        FROM customer_contact
+        WHERE id IN
+        <foreach collection="contactIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="listByCustomerId" resultType="cn.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+        cc.enable, cc.owner, cc.disable_reason, cc.phone
+        from customer_contact cc
+        where cc.customer_id = #{customerId}
+    </select>
+
+    <select id="getById" resultType="cn.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+               cc.enable, cc.owner, cc.disable_reason, cc.phone
+        from customer_contact cc
+        where cc.id = #{id}
+    </select>
+
+
+    <select id="selectContactPhoneOptionByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        SELECT id, ifnull(phone, '') as name
+        FROM customer_contact
+        WHERE id IN
+        <foreach collection="contactIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="getSimilarContactList"
+            resultType="cn.cordys.crm.search.response.advanced.AdvancedCustomerContactResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time,
+               cc.enable, cc.owner, cc.phone, su.name as ownerName, c.name as customerName
+        from customer_contact cc
+                 left join sys_user su on cc.owner = su.id
+                 left join customer c on cc.customer_id = c.id
+        where cc.organization_id = #{orgId} and cc.phone = #{name}
+    </select>
+
+    <select id="getUniqueContactCount" resultType="java.lang.Long">
+        select count(*) from customer_contact cc
+        where cc.organization_id = #{orgId}
+        <trim prefix="and (" suffix=")" prefixOverrides="or">
+            <if test="request.nameUnique != null and request.nameUnique">
+                or (cc.name = #{request.name} and cc.name != '')
+            </if>
+            <if test="request.phoneUnique != null and request.phoneUnique">
+                or (cc.phone = #{request.phone} and cc.phone is not null and cc.phone != '')
+            </if>
+        </trim>
+    </select>
+    <select id="getNewContactCount" resultType="java.lang.Long">
+        select count(*) from customer_contact c
+
+        <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and (
+                sou.department_id in
+                <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                <if test="request.dataPermission.viewId == 'ALL'">
+                    or sou.user_id = #{request.userId}
+                </if>
+            )
+        </if>
+
+        where c.organization_id = #{request.orgId}
+        <if test="request.startTime != null and request.endTime != null">
+            and c.create_time &gt;= #{request.startTime} and c.create_time &lt;= #{request.endTime}
+        </if>
+
+        <if test="request.dataPermission != null and request.dataPermission.self">
+            and c.owner = #{request.userId}
+        </if>
+    </select>
+
+    <update id="updateContactOwner">
+        update customer_contact
+        set owner = #{newOwner}
+        where owner = #{oldOwner}
+        and customer_id = #{customerId}
+        and organization_id = #{orgId}
+    </update>
+
+    <update id="updateContactById">
+        update customer_contact
+        set owner = #{owner}
+        where id = #{id}
+    </update>
+
+
+    <select id="getListByIds" resultType="cn.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+        cc.enable, cc.owner, cc.disable_reason, cc.phone
+
+        from customer_contact cc
+        where cc.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by cc.create_time desc
+
+    </select>
+
+    <select id="getContactOptions" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name
+        from customer_contact
+        where
+        organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+
+    </select>
+
+    <select id="globalSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCustomerContactResponse">
+    select cc.id, cc.customer_id, cc.name, cc.create_time, cc.owner, cc.phone
+    from customer_contact cc
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where cc.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+
+    <select id="globalSearchListCount" resultType="java.lang.Long">
+        select count(1)
+        from customer_contact cc
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where cc.organization_id = #{orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+</mapper>

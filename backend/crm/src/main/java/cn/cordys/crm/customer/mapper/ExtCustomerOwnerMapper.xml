@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.customer.mapper.ExtCustomerOwnerMapper">
+
+    <insert id="batchAdd">
+        insert into customer_owner (id, owner, customer_id, operator, collection_time, end_time)
+        select UUID_SHORT() as id, customer.owner, customer.id as customer_id, '${userId}' as operator, customer.collection_time, UNIX_TIMESTAMP() * 1000 as end_time
+        from customer
+        where customer.owner != #{request.owner} and id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </insert>
+</mapper>

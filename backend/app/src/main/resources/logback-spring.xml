@@ -158,18 +158,18 @@
         <appender-ref ref="console"/>
     </root>
 
-    <logger name="io.cordys" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="traceAsyncAppender"/>
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
     </logger>
 
-    <logger name="io.cordys.Application" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys.Application" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 
-    <logger name="io.cordys" level="${logger.sql.level:INFO}">
+    <logger name="cn.cordys" level="${logger.sql.level:INFO}">
         <appender-ref ref="console"/>
     </logger>
 
