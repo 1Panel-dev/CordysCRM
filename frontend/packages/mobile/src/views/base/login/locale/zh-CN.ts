@@ -1,5 +1,5 @@
 export default {
-  'login.form.title': '欢迎登录 CORDYS',
+  'login.form.title': '欢迎登录 Cordys CRM',
   'login.form.userName.errMsg': '用户名不能为空',
   'login.form.password.errMsg': '密码不能为空',
   'login.form.account': '账号',

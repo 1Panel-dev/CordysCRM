@@ -1,5 +1,5 @@
 export default {
-  'login.form.title': 'Welcome to CORDYS',
+  'login.form.title': 'Welcome to Cordys CRM',
   'login.form.userName.errMsg': 'Username cannot be empty',
   'login.form.password.errMsg': 'Password cannot be empty',
   'login.form.login.errMsg': 'Login error, refresh and try again',

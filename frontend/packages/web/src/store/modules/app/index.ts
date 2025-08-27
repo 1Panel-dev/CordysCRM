@@ -32,7 +32,7 @@ const defaultThemeConfig = {
   customTheme: '#008d91',
 };
 const defaultLoginConfig = {
-  title: 'CORDYS',
+  title: 'Cordys CRM',
   icon: [],
   loginLogo: [],
   loginImage: [],
@@ -40,7 +40,7 @@ const defaultLoginConfig = {
 };
 const defaultPlatformConfig = {
   logoPlatform: [],
-  platformName: 'CORDYS',
+  platformName: 'Cordys CRM',
   helpDoc: 'https://metersphere.io/docs/v3.x/',
 };
 
