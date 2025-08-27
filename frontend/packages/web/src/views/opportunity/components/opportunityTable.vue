@@ -27,6 +27,7 @@
             activeTab !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS &&
             !props.readonly
           "
+          :loading="createLoading"
           type="primary"
           @click="handleCreate"
         >
@@ -285,13 +286,6 @@
   const initialSourceName = ref('');
   const needInitDetail = ref(false);
 
-  function handleCreate() {
-    realFormKey.value = FormDesignKeyEnum.BUSINESS;
-    activeSourceId.value = '';
-    needInitDetail.value = false;
-    formCreateDrawerVisible.value = true;
-  }
-
   function handleExportAllClick() {
     showExportModal.value = true;
     isExportAll.value = true;
@@ -307,11 +301,20 @@
     opportunityId: '',
   });
 
+  const createLoading = ref(false);
+  const customerFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const linkFormInfo = ref();
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: computed(() => customerFormKey.value),
+    sourceId: computed(() => props.sourceId),
+  });
+
   // 编辑
   function handleEdit(id: string) {
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
     otherFollowRecordSaveParams.value.id = id;
     needInitDetail.value = true;
+    linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
 
@@ -327,6 +330,7 @@
       customerId,
     });
     needInitDetail.value = false;
+    linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
 
@@ -682,12 +686,22 @@
     }
   );
 
-  const customerFormKey = ref(FormDesignKeyEnum.CUSTOMER);
-  const linkFormInfo = ref();
-  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
-    formKey: computed(() => customerFormKey.value),
-    sourceId: computed(() => props.sourceId),
-  });
+  async function handleCreate() {
+    try {
+      createLoading.value = true;
+      realFormKey.value = FormDesignKeyEnum.BUSINESS;
+      activeSourceId.value = '';
+      needInitDetail.value = false;
+      await initFormDetail(false, true);
+      linkFormInfo.value = linkFormFieldMap.value;
+      formCreateDrawerVisible.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      createLoading.value = false;
+    }
+  }
 
   onBeforeMount(async () => {
     if (props.isCustomerTab) {
@@ -695,18 +709,6 @@
       initFormConfig();
     }
   });
-
-  watch(
-    () => formCreateDrawerVisible.value,
-    async (val) => {
-      if (val && !needInitDetail.value) {
-        await initFormDetail(false, true);
-        linkFormInfo.value = linkFormFieldMap.value;
-      } else {
-        linkFormInfo.value = undefined;
-      }
-    }
-  );
 
   onMounted(() => {
     emit('init', {
