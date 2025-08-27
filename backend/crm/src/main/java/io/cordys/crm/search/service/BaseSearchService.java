@@ -19,6 +19,7 @@ import io.cordys.crm.search.domain.SearchFieldMaskConfig;
 import io.cordys.crm.search.domain.UserSearchConfig;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.Module;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
@@ -205,6 +206,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
             StringUtils.deleteWhitespace(keyword);
             List<String>phoneList = new ArrayList<>();
+            phoneList.add(keyword);
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
@@ -273,6 +275,8 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         Map<String, Object> fieldValueMap = baseModuleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
         //获取自定义字段选项，用于补充数据源的值
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, baseModuleFieldValues);
+        List<BaseField> fields = moduleFormConfigDTO.getFields();
+        Map<String, String> fieldTypeMap = fields.stream().collect(Collectors.toMap(BaseField::getId, BaseField::getType));
         optionMap.forEach((field, optionDTOs) -> {
             if (fieldIdSet.contains(field)) {
                 SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap.get(field);
@@ -280,6 +284,15 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 baseModuleFieldValue.setFieldId(field);
                 Object fieldValue = fieldValueMap.get(field);
                 if (fieldValue instanceof String) {
+                    //数据源类型的字段，进行值的转换
+                    if (Strings.CI.equals(fieldTypeMap.get(field), FieldType.DATA_SOURCE.toString())) {
+                        for (OptionDTO optionDTO : optionDTOs) {
+                            if (Strings.CI.equals(optionDTO.getId(), (String) fieldValue)) {
+                                fieldValue = optionDTO.getName();
+                                break;
+                            }
+                        }
+                    }
                     //无权限根据类型进行脱敏
                     if (!hasPermission) {
                         if (searchFieldMaskConfig != null) {
