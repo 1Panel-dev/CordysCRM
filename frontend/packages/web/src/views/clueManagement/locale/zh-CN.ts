@@ -40,7 +40,7 @@ export default {
   'clue.linkFormConfig': '表单联动',
   'clue.convertOpportunityNoPermission': '暂无权限',
   'clue.linkAccount': '关联客户',
-  'clue.backClueList': '返回线索池列表',
+  'clue.backClueList': '返回线索列表',
   'clue.afterConvertGoDetailText': '{name}详情',
   'clue.countDownTip': '{count} 秒后回到线索池列表，也可手动回到线索池列表',
 };

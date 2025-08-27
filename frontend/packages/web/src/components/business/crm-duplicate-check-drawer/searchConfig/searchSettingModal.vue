@@ -77,14 +77,14 @@
   import { resetSearchConfig, searchConfig } from '@/api/modules';
 
   import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
-  import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
+  import { defaultSearchSetFormModel, lastScopedOptions, scopedOptions } from '../config';
 
   const { t } = useI18n();
   const Message = useMessage();
 
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
-    init: (isInit?: boolean) => Promise<void>;
+    init: (isInit?: boolean, isReset?: boolean) => Promise<void>;
   }>();
 
   const emit = defineEmits<{
@@ -94,7 +94,7 @@
   const visible = defineModel<boolean>('visible', { required: true });
 
   const configList = defineModel<ScopedOptions[]>('configList', {
-    default: () => lastScopedOptions.value,
+    default: () => scopedOptions,
   });
 
   const formModel = defineModel<DefaultSearchSetFormModel>('formModel', {
@@ -130,7 +130,7 @@
     searchSettingRef.value?.formRef?.restoreValidation();
     try {
       await resetSearchConfig();
-      props.init(true);
+      props.init(true, true);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -141,7 +141,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        props.init();
+        props.init(false);
       }
     }
   );

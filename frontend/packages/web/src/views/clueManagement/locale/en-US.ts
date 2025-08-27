@@ -45,7 +45,7 @@ export default {
   'clue.linkFormConfig': 'Form linkage',
   'clue.convertOpportunityNoPermission': 'No permission',
   'clue.linkAccount': 'Link account',
-  'clue.backClueList': 'Return to clue pool list',
+  'clue.backClueList': 'Return to lead list',
   'clue.afterConvertGoDetailText': '{name} details',
   'clue.countDownTip': 'Return to clue pool list in {count} seconds, or manually return to clue pool list',
 };

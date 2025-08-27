@@ -18,7 +18,7 @@ import {
   getThirdConfigByType,
   getUnReadAnnouncement,
 } from '@/api/modules';
-import { defaultNavList } from '@/config/system';
+import { getDefaultNavList } from '@/config/system';
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
@@ -111,7 +111,7 @@ const useAppStore = defineStore('app', {
       copyright: '',
       hasNewVersion: false,
     },
-    navTopConfigList: defaultNavList,
+    navTopConfigList: getDefaultNavList(),
   }),
   getters: {
     getMenuCollapsed(state: AppState) {

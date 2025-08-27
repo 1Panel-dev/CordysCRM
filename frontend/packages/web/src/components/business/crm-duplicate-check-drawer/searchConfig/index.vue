@@ -28,7 +28,7 @@
   import { getSearchConfig } from '@/api/modules';
 
   import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
-  import { defaultSearchSetFormModel, lastScopedOptions } from '../config';
+  import { defaultSearchSetFormModel, lastScopedOptions, scopedOptions } from '../config';
   import useSearchFormConfig from '../useSearchFormConfig';
 
   const emit = defineEmits<{
@@ -37,7 +37,7 @@
   }>();
 
   const configList = defineModel<ScopedOptions[]>('configList', {
-    default: () => lastScopedOptions.value,
+    default: () => scopedOptions,
   });
 
   const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel));
@@ -50,7 +50,7 @@
   }
 
   const originSearchFields = ref({});
-  async function initSearchDetail(isReset = false) {
+  async function initSearchDetail(isInit = false, isReset = false) {
     try {
       const res = await getSearchConfig();
       if (isReset) {
@@ -58,11 +58,13 @@
       }
       const { sortSetting } = res;
 
-      const optionsMap = new Map(lastScopedOptions.value.map((item) => [item.value, item]));
+      const optionsMap = new Map(scopedOptions.map((item) => [item.value, item]));
       configList.value = sortSetting.map((val: any) => optionsMap.get(val)).filter(Boolean) as ScopedOptions[];
 
       formModel.value = cloneDeep(res);
-      emit('init', allFieldMap, cloneDeep(res));
+      if (isInit) {
+        emit('init', allFieldMap, cloneDeep(res));
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -70,12 +72,12 @@
   }
 
   async function handleRefresh() {
-    initSearchDetail();
+    initSearchDetail(true);
   }
 
   onMounted(async () => {
     await initSearchFormConfig();
-    await initSearchDetail();
+    await initSearchDetail(true);
     emit('initConfigList');
   });
 

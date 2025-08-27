@@ -56,7 +56,7 @@ export const logTypeOption = [
   },
 ];
 
-export const defaultNavList: NavTopConfigItem[] = [
+export const getDefaultNavList = () => [
   {
     label: t('settings.search'),
     key: 'search',
