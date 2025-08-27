@@ -8,7 +8,7 @@
     class="min-w-[1000px]"
     :title="t('common.search')"
   >
-    <div class="flex h-full flex-col overflow-hidden p-[24px] pb-0">
+    <div class="flex h-full flex-col overflow-hidden px-[24px] pt-[24px]">
       <div class="mb-[16px] flex items-center justify-between gap-[12px]">
         <CrmSearchInput
           v-model:value="keyword"
@@ -41,8 +41,9 @@
             :key="`${item.value}-${index}`"
             :type="activeConfigValue === item.value ? 'primary' : 'default'"
             theme="light"
-            class="!px-[12px]"
+            class="cursor-pointer !px-[12px]"
             size="large"
+            tooltip-disabled
             @click="clickTag(item)"
           >
             <span>
@@ -97,6 +98,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -111,6 +113,8 @@
 
   import { advancedSearchOptDetail, getAdvancedSearchClueDetail, getGlobalModuleCount } from '@/api/modules';
   import { lastOpportunitySteps } from '@/config/opportunity';
+  import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { DefaultSearchSetFormModel, defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
   import type { SearchTableKey } from './useSearchTable';
@@ -121,6 +125,7 @@
   });
 
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   const keyword = ref('');
 
@@ -152,10 +157,15 @@
 
   const configList = ref<ScopedOptions[]>([]); // 横向标签列表
   const displayConfigList = computed(() => {
+    const enableList = configList.value.filter((e: ScopedOptions) =>
+      appStore.moduleConfigList.find(
+        (m: ModuleNavBaseInfoItem) => m.moduleKey === e.moduleKey && m.enable && hasAnyPermission(e.permission)
+      )
+    );
     if (!formModel.value.resultDisplay) {
-      return configList.value;
+      return enableList;
     }
-    return configList.value.filter((item) => moduleCount.value?.[item.value]);
+    return enableList.filter((item) => moduleCount.value?.[item.value]);
   });
   const activeConfigValue = ref<SearchTableKey>(lastScopedOptions.value[0].value as SearchTableKey); // 当前选中的标签
 

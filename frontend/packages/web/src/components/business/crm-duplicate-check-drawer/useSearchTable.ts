@@ -81,7 +81,7 @@ export default async function useSearchTable(props: SearchTableProps) {
     };
     const opportunityParams = {
       id: row.id,
-      opportunityName: row.opportunityName,
+      opportunityName: row.name,
     };
     openNewPage(OpportunityRouteEnum.OPPORTUNITY, !isCustomer ? opportunityParams : customerParams);
   }
@@ -158,6 +158,9 @@ export default async function useSearchTable(props: SearchTableProps) {
           title: field.title,
           width: 200,
           key: field.dataIndex,
+          ellipsis: {
+            tooltip: true,
+          },
           render: (row: any) => {
             if (!row.hasPermission) return row.name;
             return h(
@@ -178,6 +181,9 @@ export default async function useSearchTable(props: SearchTableProps) {
           title: field.title,
           width: 200,
           key: field.dataIndex,
+          ellipsis: {
+            tooltip: true,
+          },
           render: (row: any) => {
             if (!row.hasPermission) return row.customerName;
             return h(
