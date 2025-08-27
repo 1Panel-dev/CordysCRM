@@ -129,7 +129,7 @@ public class DataEaseSyncService {
 
         // 角色名称集合
         Set<String> roleNameSet = crmRoles.stream()
-                .map(RoleListResponse::getId)
+                .map(RoleListResponse::getName)
                 .collect(Collectors.toSet());
 
         setSyncUserTempParam(deTempResourceDTO, roleIds);
@@ -225,7 +225,12 @@ public class DataEaseSyncService {
         Set<String> deRoleNames = roleItems.stream()
                 .map(OptionDTO::getName)
                 .collect(Collectors.toSet());
-        if (!deRoleNames.containsAll(crmRoleNames)) {
+
+        // 获取DE中存在的CRM角色
+        Set<String> linkDeRoleNames = deRoleNames.stream()
+                .filter(deRoleName -> roleNameSet.contains(deRoleName))
+                .collect(Collectors.toSet());
+        if (!linkDeRoleNames.equals(crmRoleNames)) {
             // 如果DE中的角色不包含CRM中的角色，则需要更新
             needUpdate = true;
             List<String> updateRoleIds = crmRoleNames.stream()
@@ -290,7 +295,12 @@ public class DataEaseSyncService {
         if (needUpdate) {
             userUpdateRequest.setVariables(variables);
             try {
-                dataEaseClient.editUser(userUpdateRequest);
+                if (CollectionUtils.isEmpty(userUpdateRequest.getRoleIds())) {
+                    // 没有角色则删除
+                    dataEaseClient.deleteUser(userUpdateRequest.getId());
+                } else {
+                    dataEaseClient.editUser(userUpdateRequest);
+                }
             } catch (Exception e) {
                 LogUtils.error(e);
             }
@@ -327,7 +337,9 @@ public class DataEaseSyncService {
                     userCreateRequest.setRoleIds(createRoleIds);
                     userCreateRequest.setVariables(getCreateVariables(deTempResourceDTO, userVariableTempDTO));
                     try {
-                        dataEaseClient.createUser(userCreateRequest);
+                        if (CollectionUtils.isNotEmpty(createRoleIds)) {
+                            dataEaseClient.createUser(userCreateRequest);
+                        }
                     } catch (Exception e) {
                         LogUtils.error(e);
                     }
