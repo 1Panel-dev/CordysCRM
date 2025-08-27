@@ -16,7 +16,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
-import cn.cordys.crm.opportunity.service.OpportunityFieldService;
+import cn.cordys.crm.customer.service.CustomerContactFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
@@ -43,7 +43,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
-    private OpportunityFieldService opportunityFieldService;
+    private CustomerContactFieldService customerContactFieldService;
     @Resource
     private BaseService baseService;
     @Resource
@@ -120,7 +120,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
     private List<GlobalCustomerContactResponse> buildListData(List<GlobalCustomerContactResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> customerContactIds = list.stream().map(GlobalCustomerContactResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> customerFiledMap = opportunityFieldService.getResourceFieldMap(customerContactIds, true);
+        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(GlobalCustomerContactResponse::getOwner)
@@ -139,7 +139,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
         Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
         list.forEach(customerContactResponse -> {
             // 判断该数据是否有权限

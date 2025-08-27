@@ -14,6 +14,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
+import cn.cordys.crm.clue.service.ClueFieldService;
 import cn.cordys.crm.opportunity.service.OpportunityFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
@@ -43,7 +44,7 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
     @Resource
     private BaseService baseService;
     @Resource
-    private OpportunityFieldService opportunityFieldService;
+    private ClueFieldService clueFieldService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -115,7 +116,7 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
     public List<GlobalClueResponse> buildListData(List<GlobalClueResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> clueIds = list.stream().map(GlobalClueResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(clueIds, true);
+        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(GlobalClueResponse::getOwner)

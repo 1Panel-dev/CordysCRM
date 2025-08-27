@@ -9,7 +9,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
-import cn.cordys.crm.opportunity.service.OpportunityFieldService;
+import cn.cordys.crm.customer.service.CustomerFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
@@ -37,7 +37,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
     @Resource
     private ExtCustomerMapper extCustomerMapper;
     @Resource
-    private OpportunityFieldService opportunityFieldService;
+    private CustomerFieldService customerFieldService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -107,7 +107,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
     public List<GlobalCustomerPoolResponse> buildListData(List<GlobalCustomerPoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> customerIds = list.stream().map(GlobalCustomerPoolResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> customerFiledMap = opportunityFieldService.getResourceFieldMap(customerIds, true);
+        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
 
         Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
         // 处理自定义字段选项数据

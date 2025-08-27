@@ -9,7 +9,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
-import cn.cordys.crm.opportunity.service.OpportunityFieldService;
+import cn.cordys.crm.clue.service.ClueFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
@@ -37,7 +37,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
-    private OpportunityFieldService opportunityFieldService;
+    private ClueFieldService clueFieldService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -107,7 +107,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
     public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> clueIds = list.stream().map(GlobalCluePoolResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(clueIds, true);
+        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
 
         Map<String, String> productNameMap = getProductNameMap(orgId);
 
