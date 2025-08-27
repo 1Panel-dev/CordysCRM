@@ -291,8 +291,8 @@ public class DataSourceService {
      */
     public DataSourceService(
             @Value("${spring.datasource.url}") String url,
-            @Value("${sql-bot.datasource.username:${spring.datasource.username}}") String username,
-            @Value("${sql-bot.datasource.password:${spring.datasource.password}}") String password) {
+            @Value("${sqlbot.datasource.username:${spring.datasource.username}}") String username,
+            @Value("${sqlbot.datasource.password:${spring.datasource.password}}") String password) {
         this.url = url;
         this.username = username;
         this.password = password;
