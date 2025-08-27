@@ -8,7 +8,7 @@
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
-    <n-form ref="formRef" :model="form" require-mark-placement="left" :label-width="90" label-placement="left">
+    <n-form ref="formRef" :model="form" require-mark-placement="left" :label-width="120" label-placement="left">
       <n-form-item path="name" :label="t('clue.convertClueToOther')">
         <n-checkbox-group v-model:value="selectedType">
           <n-space item-style="display: flex;" align="center">
@@ -31,8 +31,8 @@
       <n-form-item
         v-if="selectedType.includes(FormDesignKeyEnum.BUSINESS)"
         path="oppName"
-        :label="t('opportunity.name')"
-        :rule="[{ required: true, message: t('common.notNull', { value: t('opportunity.name') }), trigger: ['input'] }]"
+        :label="oppLabel"
+        :rule="[{ required: true, message: t('common.notNull', { value: oppLabel }), trigger: ['input'] }]"
       >
         <n-input v-model:value="form.oppName" allow-clear :maxlength="255" :placeholder="t('common.pleaseInput')" />
       </n-form-item>
@@ -128,7 +128,7 @@
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import customManagementFormDrawer from '@/views/system/module/components/customManagement/formDrawer.vue';
 
-  import { transformClue } from '@/api/modules';
+  import { getOptFormConfig, transformClue } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAllPermission } from '@/utils/permission';
 
@@ -268,6 +268,26 @@
       });
     }
   }
+
+  const oppLabel = ref('');
+  async function initOppName() {
+    try {
+      const result = await getOptFormConfig();
+      oppLabel.value = result.fields.find((e) => e.businessKey === 'name')?.name ?? t('opportunity.name');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initOppName();
+      }
+    }
+  );
 </script>
 
 <style scoped></style>

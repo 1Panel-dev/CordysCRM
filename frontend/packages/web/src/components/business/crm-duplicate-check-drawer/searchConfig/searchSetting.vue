@@ -75,7 +75,7 @@
     return props.searchFieldMap[value]?.map((e) => ({
       label: e.title,
       id: e?.id ?? e.dataIndex,
-      disabled: selected.length >= 5 && !selected.includes(e.dataIndex),
+      disabled: selected.length >= 5 && !selected.includes(e?.id),
     })) as TreeSelectOption[];
   }
 
