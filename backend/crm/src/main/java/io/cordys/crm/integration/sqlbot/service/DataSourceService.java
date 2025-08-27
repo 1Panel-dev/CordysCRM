@@ -174,19 +174,17 @@ public class DataSourceService {
     private void appendVirtualTable(List<TableDTO> filteredTables, Collection<SQLBotTable> sqlBotTables) {
         Set<String> tableNames = filteredTables.stream().map(TableDTO::getName)
                 .collect(Collectors.toSet());
-        sqlBotTables
-                .stream()
-                .forEach(
-                        sqlBotTable -> {
-                            // 如果表不存在，则将虚拟表添加到结果集中
-                            if (!tableNames.contains(sqlBotTable.getTableName())) {
-                                TableDTO addTable = new TableDTO();
-                                addTable.setName(sqlBotTable.getTableName());
-                                addTable.setComment(sqlBotTable.getDescription());
-                                filteredTables.add(addTable);
-                            }
-                        }
-                );
+        sqlBotTables.forEach(
+                sqlBotTable -> {
+                    // 如果表不存在，则将虚拟表添加到结果集中
+                    if (!tableNames.contains(sqlBotTable.getTableName())) {
+                        TableDTO addTable = new TableDTO();
+                        addTable.setName(sqlBotTable.getTableName());
+                        addTable.setComment(sqlBotTable.getDescription());
+                        filteredTables.add(addTable);
+                    }
+                }
+        );
     }
 
     private Map<String, DeptDataPermissionDTO> getDeptDataPermissionMap(String userId, String orgId, List<RolePermissionDTO> rolePermissions) {
@@ -285,7 +283,6 @@ public class DataSourceService {
     private final String url;
     private final String username;
     private final String password;
-    private final String configuredHost;
     @Resource
     private ExtDataSourceMapper extDataSourceMapper;
 
@@ -294,13 +291,11 @@ public class DataSourceService {
      */
     public DataSourceService(
             @Value("${spring.datasource.url}") String url,
-            @Value("${sql.bot.db.host:1panel-network}") String configuredHost,
-            @Value("${sql.bot.db.username:${spring.datasource.username}}") String username,
-            @Value("${sql.bot.db.password:${spring.datasource.password}}") String password) {
+            @Value("${sql-bot.datasource.username:${spring.datasource.username}}") String username,
+            @Value("${sql-bot.datasource.password:${spring.datasource.password}}") String password) {
         this.url = url;
         this.username = username;
         this.password = password;
-        this.configuredHost = configuredHost;
     }
 
     /**
@@ -335,8 +330,8 @@ public class DataSourceService {
             var params = matcher.groupCount() >= 4 && matcher.group(4) != null
                     ? matcher.group(4)
                     : "";
-
-            dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? configuredHost : host);
+            // 兼容 1panel 应用商店部署情况
+            dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? "1panel-network" : host);
             dataSourceDTO.setPort(port);
             dataSourceDTO.setUser(username);
             dataSourceDTO.setPassword(password);
@@ -366,8 +361,8 @@ public class DataSourceService {
         var port = hostPort.length > 1
                 ? parsePortSafely(hostPort[1])
                 : MYSQL_CONFIG.defaultPort();
-
-        dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? configuredHost : host);
+        // 兼容 1panel 应用商店部署情况
+        dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? "1panel-network" : host);
         dataSourceDTO.setPort(port);
         dataSourceDTO.setUser(username);
         dataSourceDTO.setPassword(password);

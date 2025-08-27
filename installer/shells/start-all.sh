@@ -41,8 +41,8 @@ main() {
     chmod -R 777 /opt/cordys
 
     # 检查MySQL配置并启动
-    dbUrl=$(grep 'spring.datasource.url' /opt/cordys/conf/cordys-crm.properties)
-    if [[ "${dbUrl}" == *"127.0.0.1"* ]]; then
+    mysqlEmbeddedEnabled=$(grep 'mysql.embedded.enabled' /opt/cordys/conf/cordys-crm.properties)
+    if [[ "${mysqlEmbeddedEnabled}" == "true" ]]; then
         log_info "检测到本地MySQL配置"
         start_mysql
     else
@@ -50,8 +50,8 @@ main() {
     fi
 
     # 检查Redis配置并启动
-    redisHost=$(grep 'spring.data.redis.host' /opt/cordys/conf/cordys-crm.properties)
-    if [[ "${redisHost}" == *"127.0.0.1"* ]]; then
+    redisEmbeddedEnabled=$(grep 'redis.embedded.enabled' /opt/cordys/conf/cordys-crm.properties)
+    if [[ "${redisEmbeddedEnabled}" == "true" ]]; then
         log_info "检测到本地 Redis 配置"
         start_redis
     else
