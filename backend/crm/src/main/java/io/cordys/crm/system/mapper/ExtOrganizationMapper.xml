@@ -4,7 +4,4 @@
     <select id="selectAllOrganizationIds" resultType="java.lang.String">
         select id from sys_organization
     </select>
-    <select id="selectOrgOption" resultType="io.cordys.common.dto.OptionDTO">
-        select id,name from sys_organization
-    </select>
 </mapper>

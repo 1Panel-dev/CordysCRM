@@ -1,5 +1,6 @@
 package io.cordys.crm.integration.dataease.service;
 
+import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.constants.ThirdConstants;
 import io.cordys.common.dto.BaseTreeNode;
@@ -58,11 +59,13 @@ public class DataEaseSyncService {
     public static final String NONE_DATA_SCOPE = "NONE";
 
 
+    @QuartzScheduled(cron = "0 0 0 * * ?")
     public void syncDataEase() {
-        List<OptionDTO> options = extOrganizationMapper.selectOrgOption();
+        Set<String> orgIds = extOrganizationMapper.selectAllOrganizationIds();
         // 同步角色
-        for (OptionDTO option : options) {
-            syncDataEase(option.getId());
+        for (String orgId : orgIds) {
+            LogUtils.info("定时同步DataEase数据，组织ID: " + orgId);
+            syncDataEase(orgId);
         }
     }
 
