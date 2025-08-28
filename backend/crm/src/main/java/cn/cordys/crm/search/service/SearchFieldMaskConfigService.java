@@ -97,9 +97,12 @@ public class SearchFieldMaskConfigService {
             ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
             List<BaseField> fields = businessFormConfig.getFields();
             List<SearchFieldMaskConfig> searchConfigs = new ArrayList<>();
-            fieldIds.forEach(fieldId -> {
-                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().get();
 
+            for (String fieldId : fieldIds) {
+                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().get();
+                if (baseField == null) {
+                    continue;
+                }
                 SearchFieldMaskConfig fieldMaskConfig = new SearchFieldMaskConfig();
                 fieldMaskConfig.setId(IDGenerator.nextStr());
                 fieldMaskConfig.setFieldId(baseField.getId());
@@ -118,7 +121,7 @@ public class SearchFieldMaskConfigService {
                 fieldMaskConfig.setCreateTime(System.currentTimeMillis());
                 fieldMaskConfig.setUpdateTime(System.currentTimeMillis());
                 searchConfigs.add(fieldMaskConfig);
-            });
+            }
 
             searchFieldMaskConfigMapper.batchInsert(searchConfigs);
         }
