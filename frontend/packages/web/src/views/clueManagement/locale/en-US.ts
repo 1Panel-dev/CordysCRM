@@ -41,7 +41,7 @@ export default {
   'clue.notSameNameConvertTip':
     '2.If there is no customer with the same name, the system will automatically create a customer and contact',
   'clue.linkFormConfigTip':
-    '3.The field mapping between clues and customers is configured in the "Clue Form Settings" to configure form linkage',
+    '3.The field mapping between clues and customers is configured in the "Account Form Settings" to configure form linkage',
   'clue.convertOpportunityNoPermission': 'No permission',
   'clue.linkAccount': 'Link account',
   'clue.backClueList': 'Return to lead list',
