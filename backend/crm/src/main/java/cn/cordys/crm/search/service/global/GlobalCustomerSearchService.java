@@ -93,7 +93,10 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
             FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
         }
-
+        if (CollectionUtils.isEmpty(conditions)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfo(page, null);
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         //搜索客户

@@ -106,7 +106,10 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
-
+        if (CollectionUtils.isEmpty(conditions)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfo(page, null);
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         // 查询重复商机列表

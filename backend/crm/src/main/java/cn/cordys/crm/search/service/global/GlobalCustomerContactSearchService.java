@@ -110,6 +110,10 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             conditions.add(phoneCondition);
         }
 
+        if (CollectionUtils.isEmpty(conditions)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfo(page, null);
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         //搜索客户

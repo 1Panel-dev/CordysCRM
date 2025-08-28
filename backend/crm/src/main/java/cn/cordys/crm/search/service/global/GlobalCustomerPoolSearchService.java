@@ -88,7 +88,10 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
             FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
         }
-
+        if (CollectionUtils.isEmpty(conditions)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfo(page, null);
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         // 查询重复商机列表

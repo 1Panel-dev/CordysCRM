@@ -6,6 +6,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionCountDTO;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.pager.PageUtils;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -17,6 +18,8 @@ import cn.cordys.crm.search.service.BaseSearchService;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.security.SessionUtils;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -134,7 +137,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
                 conditions.add(customerCondition);
             }
         }
-
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         return extOpportunityMapper.globalSearchListCount(request, orgId);
@@ -173,7 +178,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
-
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
 
@@ -213,6 +220,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         return extClueMapper.globalSearchListCount(request, orgId);
@@ -242,6 +252,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             //设置默认查询属性
             FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
+        }
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
@@ -284,6 +297,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
+        }
         //构造查询参数
         buildCombineSearch(conditions, request);
         return extCustomerContactMapper.globalSearchListCount(request, orgId);
@@ -313,6 +329,9 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             //设置默认查询属性
             FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
+        }
+        if (CollectionUtils.isEmpty(conditions)) {
+            return 0L;
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
