@@ -93,7 +93,6 @@
   import { useClipboard } from '@vueuse/core';
   import { NBadge, NButton, NLayoutHeader, NPopover, useMessage } from 'naive-ui';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
@@ -102,6 +101,7 @@
   // import { LocaleType } from '@lib/shared/types/global';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
+  import { lastScopedOptions } from '@/components/business/crm-duplicate-check-drawer/config';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
@@ -133,16 +133,7 @@
     showMessageDrawer.value = true;
   }
 
-  const showSearch = computed(() =>
-    appStore.moduleConfigList.some(
-      (i) =>
-        [
-          ModuleConfigEnum.BUSINESS_MANAGEMENT,
-          ModuleConfigEnum.CLUE_MANAGEMENT,
-          ModuleConfigEnum.CUSTOMER_MANAGEMENT,
-        ].includes(i.moduleKey as ModuleConfigEnum) && i.enable
-    )
-  );
+  const showSearch = computed(() => lastScopedOptions.value.length);
   const showDuplicateCheckDrawer = ref(false);
 
   const { copy, isSupported } = useClipboard({ legacy: true });
