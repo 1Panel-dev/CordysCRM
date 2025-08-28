@@ -29,6 +29,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -70,6 +71,7 @@ public class DataEaseSyncService {
     }
 
     public void syncDataEase(String orgId) {
+        LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
         ThirdConfigurationDTO thirdConfig;
         try {
             thirdConfig = integrationConfigService.getThirdConfigByType(ThirdConstants.ThirdDetailType.DE_BOARD.name(), orgId);
