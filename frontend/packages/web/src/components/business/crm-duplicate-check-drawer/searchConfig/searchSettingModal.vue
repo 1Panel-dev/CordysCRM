@@ -84,7 +84,7 @@
 
   const props = defineProps<{
     searchFieldMap: Record<string, FilterFormItem[]>;
-    init: (isInit?: boolean, isReset?: boolean) => Promise<void>;
+    init: (isInit?: boolean) => Promise<void>;
   }>();
 
   const emit = defineEmits<{
@@ -130,7 +130,7 @@
     searchSettingRef.value?.formRef?.restoreValidation();
     try {
       await resetSearchConfig();
-      props.init(true, true);
+      props.init(true);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

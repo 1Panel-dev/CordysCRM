@@ -50,12 +50,9 @@
   }
 
   const originSearchFields = ref({});
-  async function initSearchDetail(isInit = false, isReset = false) {
+  async function initSearchDetail(isInit = false) {
     try {
       const res = await getSearchConfig();
-      if (isReset) {
-        originSearchFields.value = cloneDeep(res.searchFields);
-      }
       const { sortSetting } = res;
 
       const optionsMap = new Map(scopedOptions.map((item) => [item.value, item]));
@@ -63,6 +60,7 @@
 
       formModel.value = cloneDeep(res);
       if (isInit) {
+        originSearchFields.value = cloneDeep(res.searchFields);
         emit('init', allFieldMap, cloneDeep(res));
       }
     } catch (error) {
