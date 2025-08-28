@@ -170,7 +170,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                 opportunityListResponse.setModuleFields(returnOpportunityFields);
             }
             Opportunity opportunity = internalKeyValueMap.get(opportunityListResponse.getId());
-            if (StringUtils.isNotBlank(opportunity.getContactId())) {
+            if (opportunity !=null && StringUtils.isNotBlank(opportunity.getContactId())) {
                 opportunity.setContactId(opportunityListResponse.getContactName());
             }
             List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, opportunity, Opportunity.class);
