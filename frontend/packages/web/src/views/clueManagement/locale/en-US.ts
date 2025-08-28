@@ -42,6 +42,12 @@ export default {
     '2.If there is no customer with the same name, the system will automatically create a customer and contact',
   'clue.linkFormConfigTip':
     '3.The field mapping between clues and customers is configured in the "Account Form Settings" to configure form linkage',
+  'clue.sameNameOppConvertTip':
+    '1. When a customer with the same name exists, the opportunity will be associated with the customer of the same name, and the lead owner will be added as a collaborator of the customer of the same name',
+  'clue.notSameNameOppConvertTip':
+    '2. If no customer with the same name exists, the system will automatically create a customer and contact, and associate them with the opportunity',
+  'clue.linkFormConfigOppTip':
+    "3. The field mapping between customers and opportunities is configured in the 'opportunity form settings' to enable form linkage",
   'clue.convertOpportunityNoPermission': 'No permission',
   'clue.linkAccount': 'Link account',
   'clue.backClueList': 'Return to lead list',

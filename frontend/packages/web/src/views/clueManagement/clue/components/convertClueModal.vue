@@ -38,11 +38,13 @@
       </n-form-item>
       <div class="rounded-md bg-[var(--primary-7)] px-[24px] py-[16px]">
         <div class="mb-[8px] font-medium text-[var(--text-n1)]">{{ t('clue.remarks') }}</div>
-        <div>{{ t('clue.sameNameConvertTip') }}</div>
-        <div>{{ t('clue.notSameNameConvertTip') }}</div>
-        <div>{{ t('clue.linkFormConfigTip') }}</div>
+        <div>
+          {{ isSelectOpportunity ? t('clue.sameNameOppConvertTip') : t('clue.sameNameConvertTip') }}
+        </div>
+        <div>{{ isSelectOpportunity ? t('clue.notSameNameOppConvertTip') : t('clue.notSameNameConvertTip') }}</div>
+        <div>{{ isSelectOpportunity ? t('clue.linkFormConfigOppTip') : t('clue.linkFormConfigTip') }}</div>
         <n-button v-permission="['MODULE_SETTING:UPDATE']" text type="primary" @click="handleOpenFormDesignDrawer">
-          {{ t('module.customerFormSetting') }}
+          {{ isSelectOpportunity ? t('module.opportunityFormSetting') : t('module.customerFormSetting') }}
         </n-button>
       </div>
     </n-form>
@@ -102,6 +104,7 @@
     </div>
   </CrmModal>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
+  <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -127,6 +130,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import customManagementFormDrawer from '@/views/system/module/components/customManagement/formDrawer.vue';
+  import OpportunityFormDrawer from '@/views/system/module/components/opportunity/formDrawer.vue';
 
   import { getOptFormConfig, transformClue } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -155,6 +159,8 @@
   const initSelectedType = [FormDesignKeyEnum.CONTACT, FormDesignKeyEnum.CUSTOMER];
   const selectedType = ref(cloneDeep(initSelectedType));
 
+  const isSelectOpportunity = computed(() => selectedType.value.includes(FormDesignKeyEnum.BUSINESS));
+
   const form = ref<ConvertClueParams>({
     ...initForm,
   });
@@ -181,8 +187,13 @@
   ]);
 
   const customerManagementFormVisible = ref(false);
+  const businessManagementFormVisible = ref(false);
   function handleOpenFormDesignDrawer() {
-    customerManagementFormVisible.value = true;
+    if (isSelectOpportunity.value) {
+      businessManagementFormVisible.value = true;
+    } else {
+      customerManagementFormVisible.value = true;
+    }
   }
 
   function handleCancel() {
