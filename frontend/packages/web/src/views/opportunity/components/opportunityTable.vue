@@ -716,7 +716,7 @@
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
 
-    if (route.query.id) {
+    if (route.query.id && !props.isCustomerTab) {
       activeOpportunity.value = {
         id: route.query.id as string,
         opportunityName: route.query.opportunityName as string,
