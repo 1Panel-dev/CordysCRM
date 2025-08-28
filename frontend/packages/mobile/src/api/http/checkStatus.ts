@@ -2,7 +2,7 @@ import { showFailToast } from 'vant';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import useLogin from '@/hooks/useLogin';
+import useUser from '@/hooks/useUser';
 
 export default function checkStatus(
   status: number,
@@ -12,6 +12,8 @@ export default function checkStatus(
   noErrorTip?: boolean
 ): void {
   const { t } = useI18n();
+  const { logout, isLoginPage, isWhiteListPage } = useUser();
+
   let errMessage = '';
   switch (status) {
     case 400:
@@ -19,9 +21,8 @@ export default function checkStatus(
       break;
     case 401: {
       errMessage = msg || t('api.errMsg401');
-      if (!import.meta.env.DEV) {
-        const { oAuthLogin } = useLogin();
-        oAuthLogin();
+      if (!isLoginPage() && !isWhiteListPage()) {
+        logout();
       }
       break;
     }
