@@ -8,7 +8,7 @@ import { allMenuRouteMap, featureRouteMap } from '@/router/constants';
 import useAppStore from '@/store/modules/app';
 import useLicenseStore from '@/store/modules/setting/license';
 
-import { DashboardRouteEnum, SystemRouteEnum } from '@/enums/routeEnum';
+import { SystemRouteEnum } from '@/enums/routeEnum';
 
 /**
  * 获取菜单树
@@ -22,7 +22,9 @@ export default function useMenuTree() {
   const menuTree = computed(() => {
     const copyRouter = cloneDeep(appClientMenus) as RouteRecordNormalized[];
 
-    const currentMenuConfig: string[] = appStore.moduleConfigList.filter((e) => e.enable).map((e) => e.moduleKey);
+    const currentMenuConfig: string[] = appStore.moduleConfigList
+      .filter((e) => e.enable && !e.disabled)
+      .map((e) => e.moduleKey);
 
     copyRouter.sort((a: RouteRecordNormalized, b: RouteRecordNormalized) => {
       const getModuleOrder = (route: RouteRecordNormalized) => {
