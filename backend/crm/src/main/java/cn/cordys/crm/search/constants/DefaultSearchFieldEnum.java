@@ -4,7 +4,7 @@ public class DefaultSearchFieldEnum {
 
     // 线索&线索池
     public static final String CLUE_NAME = "clueName";
-    public static final String CLUE_CONTACT_NAME = "clueContactPhone";
+    public static final String CLUE_CONTACT_PHONE = "clueContactPhone";
 
     // 客户&公海
     public static final String CUSTOMER_NAME = "customerName";

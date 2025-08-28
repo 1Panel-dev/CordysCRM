@@ -194,7 +194,7 @@ public class UserSearchConfigService {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE, defaultSearchConfigs);
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, defaultSearchConfigs);
             }
-            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CLUE_CONTACT_NAME)) {
+            if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CLUE_CONTACT_PHONE)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE, defaultSearchConfigs);
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, defaultSearchConfigs);
             }

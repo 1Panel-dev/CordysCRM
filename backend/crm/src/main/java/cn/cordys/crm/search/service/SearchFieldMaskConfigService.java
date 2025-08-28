@@ -51,22 +51,22 @@ public class SearchFieldMaskConfigService {
         request.getSearchFields().forEach((key, value) -> {
             switch (key) {
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
-                    saveMaskFields(value, userId, orgId, FormKey.CLUE.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
-                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
-                    saveMaskFields(value, userId, orgId, FormKey.CONTACT.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.CONTACT.getKey(), key);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                    saveMaskFields(value, userId, orgId, FormKey.CLUE.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
-                    saveMaskFields(value, userId, orgId, FormKey.OPPORTUNITY.name(), key);
+                    saveMaskFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key);
                     break;
                 default:
                     break;
