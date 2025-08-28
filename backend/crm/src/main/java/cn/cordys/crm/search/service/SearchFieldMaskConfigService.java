@@ -99,7 +99,7 @@ public class SearchFieldMaskConfigService {
             List<SearchFieldMaskConfig> searchConfigs = new ArrayList<>();
 
             for (String fieldId : fieldIds) {
-                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().get();
+                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().orElse(null);
                 if (baseField == null) {
                     continue;
                 }
