@@ -130,7 +130,7 @@
 
   import { getOptFormConfig, transformClue } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
-  import { hasAllPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -269,8 +269,9 @@
     }
   }
 
-  const oppLabel = ref('');
+  const oppLabel = ref(t('opportunity.name'));
   async function initOppName() {
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
     try {
       const result = await getOptFormConfig();
       oppLabel.value = result.fields.find((e) => e.businessKey === 'name')?.name ?? t('opportunity.name');
