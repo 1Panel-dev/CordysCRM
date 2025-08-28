@@ -61,22 +61,22 @@ public class UserSearchConfigService {
             }
             switch (key) {
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
-                    saveSearchFields(value, userId, orgId, FormKey.CLUE.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
-                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
-                    saveSearchFields(value, userId, orgId, FormKey.CONTACT.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.CONTACT.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                    saveSearchFields(value, userId, orgId, FormKey.CLUE.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
-                    saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.name(), key, request);
+                    saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key, request);
                     break;
                 default:
                     break;
