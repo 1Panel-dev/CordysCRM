@@ -730,8 +730,8 @@ public class DataEaseSyncService {
     }
 
     public List<OptionDTO> getDeOrgList(ThirdConfigurationDTO thirdConfigurationDTO) {
-        DataEaseClient dataEaseClient = new DataEaseClient(thirdConfigurationDTO);
         try {
+            DataEaseClient dataEaseClient = new DataEaseClient(thirdConfigurationDTO);
             return dataEaseClient.listOrg();
         } catch (Exception e) {
             LogUtils.error(e);

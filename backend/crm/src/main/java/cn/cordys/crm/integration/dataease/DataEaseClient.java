@@ -43,7 +43,7 @@ public class DataEaseClient {
         this.accessKey = thirdConfiguration.getDeAccessKey();
         this.secretKey = thirdConfiguration.getDeSecretKey();
         this.endpoint = thirdConfiguration.getRedirectUrl();
-        if (this.endpoint.endsWith("/")) {
+        if (this.endpoint != null && this.endpoint.endsWith("/")) {
             this.endpoint = this.endpoint.substring(0, this.endpoint.length() - 1);
         }
     }
