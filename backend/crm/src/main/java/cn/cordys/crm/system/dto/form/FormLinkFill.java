@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.dto;
+package cn.cordys.crm.system.dto.form;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FormLinkFillDTO<T> {
+public class FormLinkFill<T> {
 
 	/**
 	 * 主表实体

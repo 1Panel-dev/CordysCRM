@@ -3,7 +3,6 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.PagerWithOption;
-import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
@@ -39,8 +38,6 @@ public class PoolCustomerController {
 	private PoolCustomerService poolCustomerService;
 	@Resource
 	private CustomerService customerService;
-	@Resource
-	private DataScopeService dataScopeService;
 	@Resource
 	private CustomerPoolExportService customerPoolExportService;
 

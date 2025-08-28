@@ -46,8 +46,8 @@ import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
-import cn.cordys.crm.system.dto.FormLinkFillDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
@@ -73,7 +73,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,8 +93,6 @@ public class ClueService {
     private BaseMapper<Clue> clueMapper;
     @Resource
     private BaseMapper<Customer> customerMapper;
-    @Resource
-    private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
@@ -140,7 +137,7 @@ public class ClueService {
     private CustomerCollaborationService customerCollaborationService;
     @Resource
     private CustomerContactService customerContactService;
-	@Autowired
+	@Resource
 	private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<ClueField> clueFieldMapper;
@@ -365,14 +362,6 @@ public class ClueService {
         originClues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
 				NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
 				orgId, List.of(toUser), true));
-    }
-
-    private String getClueNames(List<Clue> clues) {
-        return String.join(";",
-                clues.stream()
-                        .map(Clue::getName)
-                        .toList()
-        );
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -601,11 +590,12 @@ public class ClueService {
         return clueMapper.selectListByLambda(lambdaQueryWrapper);
     }
 
+    @SuppressWarnings("unchecked")
     public String getClueNameByIds(List<String> ids) {
         List<Clue> clueList = clueMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(clueList)) {
             List<String> names = clueList.stream().map(Clue::getName).toList();
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+			return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
         }
         return StringUtils.EMPTY;
     }
@@ -755,7 +745,7 @@ public class ClueService {
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
         CustomerAddRequest addRequest = new CustomerAddRequest();
         ModuleFormConfigDTO customerFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        FormLinkFillDTO<Customer> customerLinkFillDTO = new FormLinkFillDTO<>();
+        FormLinkFill<Customer> customerLinkFillDTO = new FormLinkFill<>();
         try {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
                     customerFormConfig, orgId);
@@ -782,7 +772,7 @@ public class ClueService {
      */
     public Opportunity generateOpportunityByLinkForm(Customer customer, String clueOwner, String contactId, String currentUser, String orgId) {
         ModuleFormConfigDTO opportunityFormConfig = moduleFormService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
-        FormLinkFillDTO<Opportunity> opportunityLinkFillDTO = new FormLinkFillDTO<>();
+        FormLinkFill<Opportunity> opportunityLinkFillDTO = new FormLinkFill<>();
         try {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), customerService.get(customer.getId(), orgId),
                     opportunityFormConfig, orgId);

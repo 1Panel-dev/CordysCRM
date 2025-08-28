@@ -20,12 +20,12 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
-import cn.cordys.crm.system.dto.FormLinkFillDTO;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
@@ -470,7 +470,7 @@ public class ModuleFormService {
 	 * @param list 列表数据
 	 * @param getOptionIdFunc 获取选项ID函数
 	 * @param getOptionNameFunc 获取选项名称函数
-	 * @param <T>
+	 * @param <T> 实体
 	 */
 	public <T> List<OptionDTO> getBusinessFieldOption(List<T> list,
 										   Function<T, String> getOptionIdFunc,
@@ -495,7 +495,7 @@ public class ModuleFormService {
 	public <T> List<BaseModuleFieldValue> getBaseModuleFieldValues(List<T> list, Function<T, List<BaseModuleFieldValue>> getModuleFieldFunc) {
 		// 处理自定义字段选项数据
 		return list.stream()
-				.map(getModuleFieldFunc::apply)
+				.map(getModuleFieldFunc)
 				.filter(org.apache.commons.collections.CollectionUtils::isNotEmpty)
 				.flatMap(List::stream)
 				.collect(Collectors.toList());
@@ -581,18 +581,18 @@ public class ModuleFormService {
 	 * @param <T> 实体类型
 	 * @param <S> 数据来源类型
 	 */
-	public <T, S> FormLinkFillDTO<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId) throws Exception {
-		FormLinkFillDTO.FormLinkFillDTOBuilder<T> fillDTOBuilder = FormLinkFillDTO.builder();
+	public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId) throws Exception {
+		FormLinkFill.FormLinkFillBuilder<T> fillBuilder = FormLinkFill.builder();
 		LinkProp linkProp = targetFormConfig.getFormProp().getLinkProp();
 		if (linkProp == null) {
-			return fillDTOBuilder.entity(target).build();
+			return fillBuilder.entity(target).build();
 		}
 
 		ModuleFormConfigDTO sourceFormConfig = getBusinessFormConfig(linkProp.getFormKey(), orgId);
 		List<BaseField> sourceFields = sourceFormConfig.getFields();
 		List<BaseField> targetFields = targetFormConfig.getFields();
 		if (CollectionUtils.isEmpty(sourceFields) || CollectionUtils.isEmpty(targetFields)) {
-			return fillDTOBuilder.entity(target).build();
+			return fillBuilder.entity(target).build();
 		}
 		// 目标表单字段
 		Map<String, BaseField> targetFieldMap = targetFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
@@ -602,6 +602,7 @@ public class ModuleFormService {
 		Class<?> targerClass = target.getClass();
 		Class<?> sourceClass = source.getClass();
 		List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
+		@SuppressWarnings("unchecked")
 		List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
 		for (LinkProp.LinkField linkField : linkProp.getLinkFields()) {
 			BaseField targetField = targetFieldMap.get(linkField.getCurrent());
@@ -619,7 +620,7 @@ public class ModuleFormService {
 			putTargetFieldVal(targetField, sourceValue, targerClass, target, targetFieldVals);
 
 		}
-		return fillDTOBuilder.entity(target).fields(targetFieldVals).build();
+		return fillBuilder.entity(target).fields(targetFieldVals).build();
 	}
 
 	/**
@@ -632,7 +633,7 @@ public class ModuleFormService {
 	}
 
 	/**
-	 * 属性转方法 (name -> setName)
+	 * 属性转方法 (name -> getName)
 	 * @param param 属性名
 	 * @return 方法名
 	 */
@@ -647,14 +648,14 @@ public class ModuleFormService {
 	 * @return 文本
 	 */
 	private Object val2Text(List<OptionProp> options, Object value) {
-		if (value == null) {
+		if (CollectionUtils.isEmpty(options) || value == null) {
 			return null;
 		}
 		Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
 		if (value instanceof List) {
-			return ((List<?>) value).stream().map(v -> optionMap.getOrDefault(v, v.toString())).toList();
+			return ((List<?>) value).stream().map(v -> optionMap.get(v.toString())).toList();
 		} else {
-			return optionMap.getOrDefault(value, value.toString());
+			return optionMap.get(value.toString());
 		}
 	}
 
@@ -665,14 +666,14 @@ public class ModuleFormService {
 	 * @return 值
 	 */
 	private Object text2Val(List<OptionProp> options, Object text) {
-		if (text == null) {
+		if (CollectionUtils.isEmpty(options) || text == null) {
 			return null;
 		}
 		Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
 		if (text instanceof List) {
-			return ((List<?>) text).stream().map(v -> optionMap.getOrDefault(v, null)).filter(Objects::nonNull).toList();
+			return ((List<?>) text).stream().map(v -> optionMap.get(v.toString())).filter(Objects::nonNull).toList();
 		} else {
-			return optionMap.getOrDefault(text, null);
+			return optionMap.get(text.toString());
 		}
 	}
 
