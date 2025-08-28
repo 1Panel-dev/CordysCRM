@@ -1,9 +1,9 @@
 <h1 align="center">Cordys CRM</h1>
 <h3 align="center">集信息化、数字化、智能化于一体的开源 CRM 系统</h3>
 <p align="center">
-  <a href="https://github.com/1Panel-dev/CordysCRM/releases/latest"><img src="https://img.shields.io/github/v/release/1Panel/CordysCRM" alt="Latest release"></a>
+  <a href="https://github.com/1Panel-dev/CordysCRM/releases"><img src="https://img.shields.io/github/v/release/1Panel/CordysCRM" alt="Latest release"></a>
   <a href="https://github.com/1Panel-dev/CordysCRM"><img src="https://img.shields.io/github/stars/1Panel-dev/CordysCRM?color=%231890FF&style=flat-square" alt="Stars"></a>    
-  <a href="https://hub.docker.com/r/1panel/cordys"><img src="https://img.shields.io/docker/pulls/1panel/cordys-crm?label=downloads" alt="Download"></a><br/>
+  <a href="https://hub.docker.com/r/1panel/cordys-crm"><img src="https://img.shields.io/docker/pulls/1panel/cordys-crm?label=downloads" alt="Download"></a><br/>
 </p>
 
 <hr/>
