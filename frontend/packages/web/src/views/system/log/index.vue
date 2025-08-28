@@ -35,7 +35,7 @@
           <n-form-item :label="t('log.operationType')" path="type">
             <n-select
               v-model:value="form.type"
-              :options="logTypeOption"
+              :options="logTypeOptions"
               :placeholder="t('common.pleaseSelect')"
               clearable
             />
@@ -141,6 +141,8 @@
       tab: t('log.loginLog'),
     },
   ];
+
+  const logTypeOptions = computed(() => logTypeOption.map((e) => ({ ...e, label: t(e.label) })));
 
   // 查询条件
   function dataDisabled(ts: number) {
