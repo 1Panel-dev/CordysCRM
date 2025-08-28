@@ -12,7 +12,7 @@ INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, or
 
 SET @clue_convert_businessID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
-    VALUE (@clue_convert_businessID, 'CUSTOMER_COLLABORATION_ADD', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
+    VALUE (@clue_convert_businessID, 'CLUE_CONVERT_CUSTOMER', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
 
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
