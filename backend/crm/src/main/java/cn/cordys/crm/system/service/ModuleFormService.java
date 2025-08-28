@@ -670,9 +670,9 @@ public class ModuleFormService {
 		}
 		Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
 		if (text instanceof List) {
-			return ((List<?>) text).stream().map(v -> optionMap.getOrDefault(v, v.toString())).toList();
+			return ((List<?>) text).stream().map(v -> optionMap.getOrDefault(v, null)).filter(Objects::nonNull).toList();
 		} else {
-			return optionMap.getOrDefault(text, text.toString());
+			return optionMap.getOrDefault(text, null);
 		}
 	}
 
@@ -713,6 +713,9 @@ public class ModuleFormService {
 		Object val = putVal;
 		if (targetField instanceof HasOption targetFieldWithOption) {
 			val = text2Val(targetFieldWithOption.getOptions(), putVal);
+		}
+		if (val == null) {
+			return;
 		}
 		if (StringUtils.isNotEmpty(targetField.getBusinessKey())) {
 			// 目标字段是业务字段
