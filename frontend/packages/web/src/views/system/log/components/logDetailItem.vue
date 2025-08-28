@@ -49,17 +49,20 @@
   import dayjs from 'dayjs';
 
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { OperationLogDetail } from '@lib/shared/models/system/log';
 
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { logTypeOption } from '@/config/system';
 
+  const { t } = useI18n();
+
   const props = defineProps<{
     detail?: OperationLogDetail;
   }>();
 
-  const typeLabel = computed(() => logTypeOption.find((e) => e.value === props.detail?.type)?.label);
+  const typeLabel = computed(() => t(logTypeOption.find((e) => e.value === props.detail?.type)?.label ?? ''));
 </script>
 
 <style scoped lang="less">
