@@ -103,9 +103,11 @@ public class UserSearchConfigService {
             ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
             List<BaseField> fields = businessFormConfig.getFields();
             List<UserSearchConfig> searchConfigs = new ArrayList<>();
-            fieldIds.forEach(fieldId -> {
-                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().get();
-
+            for (String fieldId : fieldIds) {
+                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().orElse(null);
+                if (baseField == null) {
+                    continue;
+                }
                 UserSearchConfig userSearchConfig = new UserSearchConfig();
                 userSearchConfig.setId(IDGenerator.nextStr());
                 userSearchConfig.setFieldId(baseField.getId());
@@ -127,7 +129,7 @@ public class UserSearchConfigService {
                 userSearchConfig.setCreateTime(System.currentTimeMillis());
                 userSearchConfig.setUpdateTime(System.currentTimeMillis());
                 searchConfigs.add(userSearchConfig);
-            });
+            }
 
             userSearchConfigMapper.batchInsert(searchConfigs);
         }
