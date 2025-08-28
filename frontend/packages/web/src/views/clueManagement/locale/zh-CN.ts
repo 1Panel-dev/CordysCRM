@@ -44,5 +44,5 @@ export default {
   'clue.linkAccount': '关联客户',
   'clue.backClueList': '返回线索列表',
   'clue.afterConvertGoDetailText': '{name}详情',
-  'clue.countDownTip': '{count} 秒后回到线索池列表，也可手动回到线索池列表',
+  'clue.countDownTip': '{count} 秒后回到线索列表，也可手动回到线索列表',
 };
