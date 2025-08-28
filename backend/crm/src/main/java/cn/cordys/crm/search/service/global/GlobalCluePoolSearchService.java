@@ -12,6 +12,7 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
+import cn.cordys.crm.search.constants.SearchPhoneEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
 import cn.cordys.crm.search.response.global.GlobalCluePoolResponse;
@@ -81,11 +82,13 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                 if (StringUtils.isBlank(userSearchConfig.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
                 if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey()) && !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())&&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     internalKeyMap.put(userSearchConfig.getFieldId(), userSearchConfig.getBusinessKey());
                 }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -94,6 +97,14 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             //设置默认查询属性
             FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
+            StringUtils.deleteWhitespace(keyword);
+            List<String> phoneList = new ArrayList<>();
+            phoneList.add(keyword);
+            for (String value : SearchPhoneEnum.VALUES) {
+                phoneList.add(value + keyword);
+            }
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            conditions.add(phoneCondition);
         }
 
         //构造查询参数
