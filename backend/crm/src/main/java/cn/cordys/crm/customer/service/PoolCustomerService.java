@@ -385,7 +385,7 @@ public class PoolCustomerService {
 		customer.setOwner(ownerId);
 		customer.setCollectionTime(System.currentTimeMillis());
 		customer.setUpdateTime(System.currentTimeMillis());
-		customerMapper.updateById(customer);
+		extCustomerMapper.updateIncludeNullById(customer);
 
 		//更新联系人
 		customerContactService.updateContactOwner(customerId, ownerId, "-", currentOrgId);

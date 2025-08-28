@@ -252,7 +252,9 @@ public class ClueService {
             clueListResponse.setCreateUserName(userNameMap.get(clueListResponse.getCreateUser()));
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
-            clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
+            if (StringUtils.isNotBlank(clueListResponse.getReasonId())) {
+                clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
+            }
         });
 
         return list;

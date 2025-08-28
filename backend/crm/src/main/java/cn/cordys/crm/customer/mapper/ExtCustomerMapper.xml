@@ -555,4 +555,9 @@
         </include>
     </select>
 
+    <update id="updateIncludeNullById" parameterType="cn.cordys.crm.customer.domain.Customer">
+        update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},
+                collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}
+        where id = #{customer.id}
+    </update>
 </mapper>

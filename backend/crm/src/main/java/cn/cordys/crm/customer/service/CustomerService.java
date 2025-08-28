@@ -229,8 +229,10 @@ public class CustomerService {
             String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
             customerListResponse.setUpdateUserName(updateUserName);
             customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
-            String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
-            customerListResponse.setReasonName(reasonName);
+            if (StringUtils.isNotBlank(customerListResponse.getReasonId())) {
+                String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
+                customerListResponse.setReasonName(reasonName);
+            }
         });
 
         return list;

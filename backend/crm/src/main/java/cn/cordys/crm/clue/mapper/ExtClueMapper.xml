@@ -504,4 +504,9 @@
         </include>
     </select>
 
+    <update id="updateIncludeNullById" parameterType="cn.cordys.crm.clue.domain.Clue">
+        update clue set pool_id = #{clue.poolId}, in_shared_pool = #{clue.inSharedPool}, owner = #{clue.owner},
+            collection_time = #{clue.collectionTime}, update_time = #{clue.updateTime}, stage = #{clue.stage}
+        where id = #{clue.id}
+    </update>
 </mapper>

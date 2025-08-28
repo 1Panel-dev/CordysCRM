@@ -75,4 +75,10 @@ public interface ExtCustomerMapper {
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    /**
+     * 根据ID全量更新客户信息
+     * @param customer 客户
+     */
+    void updateIncludeNullById(@Param("customer") Customer customer);
+
 }

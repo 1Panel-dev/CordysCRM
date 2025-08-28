@@ -358,7 +358,7 @@ public class PoolClueService {
 		clue.setCollectionTime(System.currentTimeMillis());
 		clue.setStage(ClueStatus.FOLLOWING.name());
 		clue.setUpdateTime(System.currentTimeMillis());
-		clueMapper.updateById(clue);
+		extClueMapper.updateIncludeNullById(clue);
 
 		// 日志
 		LogDTO logDTO = new LogDTO(currentOrgId, clue.getId(), operateUserId, logType, LogModule.CLUE_POOL_INDEX, clue.getName());
