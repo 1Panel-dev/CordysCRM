@@ -16,7 +16,7 @@ Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系�
 
 <img alt="Cordys CRM Overview" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png" />
 
-Cordys CRM 的核心优势是： 
+**Cordys CRM** 的核心优势是： 
 
 - **灵活易用**：现代化的使用体验，灵活可配置的表单、流程和权限，轻松助力企业实现销售自动化；
 - **安全可控**：私有化部署，确保所有客户数据和业务信息都存储在企业自己的服务器上，企业对数据拥有完全的控制权；
@@ -53,7 +53,7 @@ docker run -d \
 
 安装完成后，可以参考此 [快速入门指南](https://jlx18gc3up.feishu.cn/docx/VMJzdCipnoj5fYxcbakcWQSAnCh)。
 
-在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与Cordys CRM 开源项目组进行交流和反馈。
+在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
 <image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png" />
 
@@ -76,7 +76,7 @@ docker run -d \
 - [x] 2025.06：v1.0 开发完成
 - [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
 - [x] 2025.08：完成和 SQLBot 和 DataEase 的对接
-- [x] 2025.09：v1.5 发布，开始公测
+- [x] 2025.09：v1.1.5 发布，开始公测
 - [ ] 2025.10：完成和 MaxKB 的对接
 - [ ] 2025.11：代码开源、正式发布
 
@@ -99,4 +99,4 @@ docker run -d \
 - 不能替换和修改 Cordys CRM 的 Logo 和版权信息；
 - 二次开发后的衍生作品必须遵守 GPL V3 的开源义务。
 
-如需商业授权，请联系 support@fit2cloud.com 。
+如需商业授权，请联系：`support@fit2cloud.com`。
