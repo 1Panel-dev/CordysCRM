@@ -174,7 +174,13 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                 opportunity.setContactId(opportunityListResponse.getContactName());
             }
             List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, opportunity, Opportunity.class);
-            opportunityListResponse.getModuleFields().addAll(baseModuleFieldValues);
+            List<BaseModuleFieldValue> moduleFields = opportunityListResponse.getModuleFields();
+            if (CollectionUtils.isEmpty(moduleFields)) {
+                opportunityListResponse.setModuleFields(baseModuleFieldValues);
+            } else {
+                moduleFields.addAll(baseModuleFieldValues);
+                opportunityListResponse.setModuleFields(moduleFields);
+            }
             opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());

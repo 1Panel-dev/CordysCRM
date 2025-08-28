@@ -18,6 +18,7 @@ import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.service.CustomerContactFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
+import cn.cordys.crm.search.constants.SearchPhoneEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
 import cn.cordys.crm.search.response.global.GlobalCustomerContactResponse;
@@ -95,12 +96,18 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         } else {
             //设置默认查询属性
             List<String> list = getCustomerIds(keyword, orgId);
-            FilterCondition phoneCondition = getFilterCondition("phone", keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
-            conditions.add(phoneCondition);
             if (CollectionUtils.isNotEmpty(list)) {
                 FilterCondition customerCondition = getFilterCondition("customerId", list, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
+            StringUtils.deleteWhitespace(keyword);
+            List<String> phoneList = new ArrayList<>();
+            phoneList.add(keyword);
+            for (String value : SearchPhoneEnum.VALUES) {
+                phoneList.add(value + keyword);
+            }
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            conditions.add(phoneCondition);
         }
 
         //构造查询参数

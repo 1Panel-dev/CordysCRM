@@ -163,7 +163,13 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             //处理内置字段
             Clue clue = internalKeyValueMap.get(globalClueResponse.getId());
             List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
-            globalClueResponse.getModuleFields().addAll(baseModuleFieldValues);
+            List<BaseModuleFieldValue> moduleFields = globalClueResponse.getModuleFields();
+            if (CollectionUtils.isEmpty(moduleFields)) {
+                globalClueResponse.setModuleFields(baseModuleFieldValues);
+            } else {
+                moduleFields.addAll(baseModuleFieldValues);
+                globalClueResponse.setModuleFields(moduleFields);
+            }
             globalClueResponse.setOwnerName(userNameMap.get(globalClueResponse.getOwner()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(globalClueResponse.getOwner());
@@ -188,6 +194,5 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
         });
         return list;
     }
-
 
 }

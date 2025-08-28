@@ -146,7 +146,13 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             //处理内置字段
             Clue clue = internalKeyValueMap.get(globalClueResponse.getId());
             List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
-            globalClueResponse.getModuleFields().addAll(baseModuleFieldValues);
+            List<BaseModuleFieldValue> moduleFields = globalClueResponse.getModuleFields();
+            if (CollectionUtils.isEmpty(moduleFields)) {
+                globalClueResponse.setModuleFields(baseModuleFieldValues);
+            } else {
+                moduleFields.addAll(baseModuleFieldValues);
+                globalClueResponse.setModuleFields(moduleFields);
+            }
             //固定展示列脱敏设置
             List<String> productNames = getProductNames(globalClueResponse.getProducts(), productNameMap);
             globalClueResponse.setProducts(productNames);
