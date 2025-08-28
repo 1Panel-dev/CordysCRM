@@ -4,6 +4,7 @@ import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
 
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+import { hasAnyPermission } from '@/utils/permission';
 
 export default function useSearchFormConfig() {
   // 客户公海共用表单
@@ -38,6 +39,13 @@ export default function useSearchFormConfig() {
     [FormDesignKeyEnum.BUSINESS]: opportunityConfig,
   };
 
+  const configPermissionMap: Partial<Record<FormDesignKeyEnum, string[]>> = {
+    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: ['OPPORTUNITY_MANAGEMENT:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
+  };
+
   const { getFilterListConfig } = useFormCreateAdvanceFilter();
 
   // 最终自定义字段对应的类型Map
@@ -54,6 +62,7 @@ export default function useSearchFormConfig() {
         );
 
         if (!configKey) return;
+        if (!hasAnyPermission(configPermissionMap[value as FormDesignKeyEnum])) return;
 
         const res = await getFormConfigApiMap[configKey as FormDesignKeyEnum]();
         const result = getFilterListConfig(res, true);
