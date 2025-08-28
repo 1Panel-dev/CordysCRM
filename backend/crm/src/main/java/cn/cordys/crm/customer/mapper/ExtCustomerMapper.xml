@@ -536,7 +536,7 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.in_shared_pool is false and c.pool_id is null
+        and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -549,7 +549,7 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.in_shared_pool is false and c.pool_id is null
+        and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>

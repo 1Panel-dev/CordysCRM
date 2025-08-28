@@ -284,11 +284,10 @@ export default async function useSearchTable(props: SearchTableProps) {
     },
     (item) => {
       const fieldMap = new Map(item.moduleFields?.map((field: ModuleField) => [field.fieldId, field.fieldValue]));
-
       const fieldAttr: Record<string, any> = Object.fromEntries(
         displayedColumnList.value
           .filter((i: FilterFormItem) => i.id && fieldMap.has(i.id))
-          .map((i: FilterFormItem) => [i.id, fieldMap.get(i.id)!])
+          .map((i: FilterFormItem) => [i.dataIndex, fieldMap.get(i.id)!])
       );
 
       return {

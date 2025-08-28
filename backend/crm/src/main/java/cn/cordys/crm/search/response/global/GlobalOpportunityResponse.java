@@ -21,6 +21,18 @@ public class GlobalOpportunityResponse {
     @Schema(description = "客户名称")
     private String customerName;
 
+    @Schema(description = "关联的客户是否在公海")
+    private Boolean inCustomerPool;
+
+    @Schema(description = "客户公海id")
+    private String poolId;
+
+    @Schema(description = "联系人Id")
+    private String contactId;
+
+    @Schema(description = "联系人名称")
+    private String contactName;
+
     @Schema(description = "负责人")
     private String owner;
 

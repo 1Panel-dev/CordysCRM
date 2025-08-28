@@ -156,6 +156,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                 customerContactResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
             String customerName = customNameMap.get(customerContactResponse.getCustomerId());
+            customerContactResponse.setCustomerName(customerName);
             //固定展示列脱敏设置
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
@@ -169,8 +170,6 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                         customerContactResponse.setPhone((String) getPhoneFieldValue(customerContactResponse.getPhone(), customerContactResponse.getPhone().length()));
                     }
                 });
-            } else {
-                customerContactResponse.setCustomerName(customerName);
             }
             customerContactResponse.setHasPermission(hasPermission);
         });

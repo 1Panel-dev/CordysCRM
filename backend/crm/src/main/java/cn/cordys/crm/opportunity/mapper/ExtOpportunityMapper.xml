@@ -615,13 +615,18 @@
         o.NAME,
         c.id AS customerId,
         c.NAME AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id AS poolId,
+        o.contact_id,
+        ct.NAME AS contactName,
         o.create_time,
         o.owner,
         o.products,
         o.stage
         FROM
         opportunity o
-        INNER JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer_contact ct ON o.contact_id = ct.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
@@ -655,5 +660,16 @@
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
+    </select>
+    <select id="searchColumnsByIds" resultType="cn.cordys.crm.opportunity.domain.Opportunity">
+        select
+        <foreach collection="columns" item="col" separator=",">
+            ${col}
+        </foreach>
+        from opportunity
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 </mapper>

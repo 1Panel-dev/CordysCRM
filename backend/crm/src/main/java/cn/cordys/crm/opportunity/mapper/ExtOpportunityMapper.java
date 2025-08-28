@@ -5,6 +5,7 @@ import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
@@ -51,5 +52,5 @@ public interface ExtOpportunityMapper {
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-
+    List<Opportunity> searchColumnsByIds(@Param("columns") List<String> columns, @Param("ids") List<String> opportunityIds);
 }

@@ -13,6 +13,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.crm.clue.domain.Clue;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.service.OpportunityFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
@@ -28,6 +30,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -67,6 +70,8 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         }
         //查询当前用户搜索配置
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
+        //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
+        Map<String, String> internalKeyMap = new HashMap<>();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
         List<FilterCondition> conditions = new ArrayList<>();
@@ -89,6 +94,12 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                         !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey()) &&
                         !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_NAME.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
+                }
+                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey()) && !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.OPPORTUNITY_NAME.getBusinessKey())) {
+                    internalKeyMap.put(userSearchConfig.getFieldId(), userSearchConfig.getBusinessKey());
                 }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
             }
@@ -114,12 +125,12 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         }
         //获取系统设置的脱敏字段
         List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);
-        List<GlobalOpportunityResponse> buildList = buildListData(globalOpportunityResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
+        List<GlobalOpportunityResponse> buildList = buildListData(globalOpportunityResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap);
         return PageUtils.setPageInfo(page, buildList);
     }
 
 
-    public List<GlobalOpportunityResponse> buildListData(List<GlobalOpportunityResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
+    public List<GlobalOpportunityResponse> buildListData(List<GlobalOpportunityResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap) {
         List<String> opportunityIds = list.stream().map(GlobalOpportunityResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
@@ -134,6 +145,18 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         Map<String, String> productNameMap = getProductNameMap(orgId);
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+        //处理内置字段的选项
+        List<Opportunity> opportunities = new ArrayList<>();
+        if (MapUtils.isNotEmpty(internalKeyMap)) {
+            List<String> columns = new ArrayList<>();
+            for (String value : internalKeyMap.values()) {
+                String result = value.replaceAll("([A-Z])", "_$1").toLowerCase();
+                columns.add(result);
+            }
+            columns.add("id");
+            opportunities = extOpportunityMapper.searchColumnsByIds(columns, opportunityIds);
+        }
+        Map<String, Opportunity> internalKeyValueMap = opportunities.stream().collect(Collectors.toMap(Opportunity::getId, t -> t));
         // 处理自定义字段选项数据
         ModuleFormConfigDTO opportunityFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
@@ -146,7 +169,12 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
 
                 opportunityListResponse.setModuleFields(returnOpportunityFields);
             }
-
+            Opportunity opportunity = internalKeyValueMap.get(opportunityListResponse.getId());
+            if (StringUtils.isNotBlank(opportunity.getContactId())) {
+                opportunity.setContactId(opportunityListResponse.getContactName());
+            }
+            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, opportunity, Opportunity.class);
+            opportunityListResponse.getModuleFields().addAll(baseModuleFieldValues);
             opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
@@ -155,10 +183,14 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             }
             //固定展示列脱敏设置
             List<String> productNames = getProductNames(opportunityListResponse.getProducts(), productNameMap);
+            opportunityListResponse.setProducts(productNames);
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
                         opportunityListResponse.setName((String) getInputFieldValue(opportunityListResponse.getName(), opportunityListResponse.getName().length()));
+                    }
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "contactId")) {
+                        opportunityListResponse.setContactName((String) getInputFieldValue(opportunityListResponse.getContactName(), opportunityListResponse.getContactName().length()));
                     }
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId")) {
                         opportunityListResponse.setCustomerName((String) getInputFieldValue(opportunityListResponse.getCustomerName(), opportunityListResponse.getCustomerName().length()));
@@ -168,8 +200,6 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                         opportunityListResponse.setProducts(maskProductNames);
                     }
                 });
-            } else {
-                opportunityListResponse.setProducts(productNames);
             }
             opportunityListResponse.setHasPermission(hasPermission);
         });

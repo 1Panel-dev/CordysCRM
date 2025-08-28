@@ -353,8 +353,8 @@
     </select>
 
     <select id="globalSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCustomerContactResponse">
-    select cc.id, cc.customer_id, cc.name, cc.create_time, cc.owner, cc.phone
-    from customer_contact cc
+    select cc.id, cc.customer_id, cc.name, cc.create_time, cc.owner, cc.phone,  c.NAME AS customerName,
+    from customer_contact cc  LEFT JOIN customer c ON cc.customer_id = c.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>

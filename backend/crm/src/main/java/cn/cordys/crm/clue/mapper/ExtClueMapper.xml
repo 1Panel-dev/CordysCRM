@@ -457,7 +457,7 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-          and c.transition_id is null and c.pool_id is null and c.in_shared_pool is false
+          and c.transition_id is null and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -471,7 +471,7 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-          and c.transition_id is null and c.pool_id is null and c.in_shared_pool is false
+          and c.transition_id is null and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -502,6 +502,17 @@
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
+    </select>
+    <select id="searchColumnsByIds" resultType="cn.cordys.crm.clue.domain.Clue">
+        select
+        <foreach collection="columns" item="col" separator=",">
+            ${col}
+        </foreach>
+        from clue
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
     <update id="updateIncludeNullById" parameterType="cn.cordys.crm.clue.domain.Clue">

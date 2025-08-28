@@ -8,6 +8,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
@@ -62,6 +63,8 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
+        //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
+        Map<String, String> internalKeyMap = new HashMap<>();
         List<FilterCondition> conditions = new ArrayList<>();
         //用户配置设置:
         // 1.用户没配置过，设置默认查询条件;
@@ -81,6 +84,10 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                         !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
+                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey()) && !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
+                    internalKeyMap.put(userSearchConfig.getFieldId(), userSearchConfig.getBusinessKey());
+                }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
             }
         } else {
@@ -98,21 +105,32 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             return PageUtils.setPageInfo(page, null);
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
-        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
+        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap);
         return PageUtils.setPageInfo(page, buildList);
     }
 
 
-    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
+    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap) {
         List<String> clueIds = list.stream().map(GlobalCluePoolResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
+        Map<String, List<BaseModuleFieldValue>> clueFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
 
         Map<String, String> productNameMap = getProductNameMap(orgId);
 
         Map<String, String> userPoolMap = getUserCluePool(orgId, userId);
-
+        //处理内置字段的选项
+        List<Clue> clues = new ArrayList<>();
+        if (MapUtils.isNotEmpty(internalKeyMap)) {
+            List<String> columns = new ArrayList<>();
+            for (String value : internalKeyMap.values()) {
+                String result = value.replaceAll("([A-Z])", "_$1").toLowerCase();
+                columns.add(result);
+            }
+            columns.add("id");
+            clues = extClueMapper.searchColumnsByIds(columns, clueIds);
+        }
+        Map<String, Clue> internalKeyValueMap = clues.stream().collect(Collectors.toMap(Clue::getId, t -> t));
         // 处理自定义字段选项数据
         ModuleFormConfigDTO clueFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
         Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
@@ -121,12 +139,17 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             boolean hasPermission = getHasPermission(userId, orgId, globalClueResponse, userPoolMap);
             // 处理自定义字段数据
             if (CollectionUtils.isNotEmpty(fieldIdSet)) {
-                List<BaseModuleFieldValue> returnCluePoolFields = getBaseModuleFieldValues(fieldIdSet, globalClueResponse.getId(), opportunityFiledMap, clueFormConfig, searchFieldMaskConfigMap, hasPermission);
+                List<BaseModuleFieldValue> returnCluePoolFields = getBaseModuleFieldValues(fieldIdSet, globalClueResponse.getId(), clueFiledMap, clueFormConfig, searchFieldMaskConfigMap, hasPermission);
 
                 globalClueResponse.setModuleFields(returnCluePoolFields);
             }
+            //处理内置字段
+            Clue clue = internalKeyValueMap.get(globalClueResponse.getId());
+            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
+            globalClueResponse.getModuleFields().addAll(baseModuleFieldValues);
             //固定展示列脱敏设置
             List<String> productNames = getProductNames(globalClueResponse.getProducts(), productNameMap);
+            globalClueResponse.setProducts(productNames);
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
@@ -137,8 +160,6 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                         globalClueResponse.setProducts(maskProductNames);
                     }
                 });
-            } else {
-                globalClueResponse.setProducts(productNames);
             }
             globalClueResponse.setHasPermission(hasPermission);
         });

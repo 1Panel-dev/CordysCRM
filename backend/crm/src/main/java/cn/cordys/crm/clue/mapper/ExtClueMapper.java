@@ -82,6 +82,9 @@ public interface ExtClueMapper {
     List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
     long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    List<Clue> searchColumnsByIds(@Param("columns") List<String> columns, @Param("ids") List<String> ids);
+
+
     /**
      * 根据ID全量更新线索
      * @param clue 线索
