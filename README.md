@@ -39,9 +39,9 @@ docker run -d \
   1panel/cordys-crm
 ```
 
-你也可以通过 [1Panel 应用商店](https://1panel.cn/) 快速部署 Cordys CRM。
+除了命令行方式，你也可以通过 [1Panel 应用商店](https://1panel.cn/) 快速安装部署 Cordys CRM。
 
-如果是内网环境，你也可以通过 [离线安装包](https://community.fit2cloud.com/#/products/cordys-crm/information) 部署 Cordys CRM。
+在无法联网的环境中，还可以下载 [离线安装包](https://community.fit2cloud.com/#/products/cordys-crm/information) 进行部署。
 
 ### 访问方式
 

@@ -330,8 +330,7 @@ public class DataSourceService {
             var params = matcher.groupCount() >= 4 && matcher.group(4) != null
                     ? matcher.group(4)
                     : "";
-            // 兼容 1panel 应用商店部署情况
-            dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? "1panel-network" : host);
+            dataSourceDTO.setHost(host);
             dataSourceDTO.setPort(port);
             dataSourceDTO.setUser(username);
             dataSourceDTO.setPassword(password);
@@ -361,8 +360,7 @@ public class DataSourceService {
         var port = hostPort.length > 1
                 ? parsePortSafely(hostPort[1])
                 : MYSQL_CONFIG.defaultPort();
-        // 兼容 1panel 应用商店部署情况
-        dataSourceDTO.setHost(Strings.CS.equals("127.0.0.1", host) ? "1panel-network" : host);
+        dataSourceDTO.setHost(host);
         dataSourceDTO.setPort(port);
         dataSourceDTO.setUser(username);
         dataSourceDTO.setPassword(password);
