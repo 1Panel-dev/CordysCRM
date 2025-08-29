@@ -34,7 +34,7 @@
         </n-button>
       </div>
       <!-- 查询结果 -->
-      <template v-if="keyword.length">
+      <n-spin v-if="keyword.length" :show="loading" class="flex-1 overflow-hidden" content-class="flex flex-col">
         <div class="flex gap-[8px]">
           <CrmTag
             v-for="(item, index) of displayConfigList"
@@ -59,6 +59,8 @@
 
         <CrmTable
           v-if="displayConfigList.length"
+          ref="crmTableRef"
+          class="crm-search-table"
           v-bind="useTableRes.propsRes.value"
           :columns="columns"
           @page-size-change="useTableRes.propsEvent.value.pageSizeChange"
@@ -66,7 +68,7 @@
           @filter-change="useTableRes.propsEvent.value.filterChange"
           @page-change="useTableRes.propsEvent.value.pageChange"
         />
-      </template>
+      </n-spin>
     </div>
   </CrmDrawer>
 
@@ -93,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton } from 'naive-ui';
+  import { NButton, NSpin } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -129,10 +131,12 @@
 
   const keyword = ref('');
 
+  const loading = ref(false);
   const moduleCount = ref<Record<string, number>>();
   async function getCountList(val: string) {
     if (!val) return;
     try {
+      loading.value = true;
       const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
       const res = await getGlobalModuleCount(searchTerm);
       moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
@@ -142,6 +146,8 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -337,11 +343,13 @@
     }
   );
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   watch(
     () => activeConfigValue.value,
     () => {
       nextTick(() => {
         searchData(keyword.value);
+        crmTableRef.value?.scrollTo({ top: 0 });
       });
     }
   );

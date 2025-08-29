@@ -4,7 +4,7 @@ export default {
   'mine.verificationCode': '验证码',
   'mine.changePassword': '修改密码',
   'mine.currentPassword': '当前密码',
-  'mine.changePasswordTip': '检测到您当前正在使用默认初始密码，为了您的账户安全，建议立即修改密码',
+  'mine.changePasswordTip': '检测到您当前正在使用默认初始密码，为了您的账户安全，建议立即',
   'mine.getCode': '获取验证码',
   'mine.pleaseInputVerificationCode': '请输入验证码',
   'mine.pleaseInputPassWord': '请输入密码',

@@ -140,7 +140,7 @@
       h(CrmIcon, {
         size: 18,
         type,
-        class: 'text-[var(--text-n2)]',
+        class: 'text-[var(--text-n1)]',
       });
   }
 

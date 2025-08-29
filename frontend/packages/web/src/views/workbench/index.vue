@@ -183,4 +183,7 @@
     @apply w-full overflow-auto;
     .crm-scroll-bar();
   }
+  :deep(.n-alert__icon) {
+    margin-top: 16px;
+  }
 </style>

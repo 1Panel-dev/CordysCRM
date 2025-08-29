@@ -281,6 +281,7 @@ export default async function useSearchTable(props: SearchTableProps) {
       showSetting: false,
       hiddenRefresh: true,
       hiddenAllScreen: true,
+      containerClass: '.crm-search-table',
     },
     (item) => {
       const fieldMap = new Map(item.moduleFields?.map((field: ModuleField) => [field.fieldId, field.fieldValue]));
