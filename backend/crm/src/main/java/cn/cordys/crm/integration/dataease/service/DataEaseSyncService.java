@@ -1,7 +1,6 @@
 package cn.cordys.crm.integration.dataease.service;
 
 import cn.cordys.common.constants.RoleDataScope;
-import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.DataScopeService;
@@ -20,7 +19,6 @@ import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.DepartmentService;
-import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.security.UserDTO;
 import com.fit2cloud.quartz.anno.QuartzScheduled;
@@ -55,7 +53,7 @@ public class DataEaseSyncService {
     @Resource
     private DataScopeService dataScopeService;
     @Resource
-    private IntegrationConfigService integrationConfigService;
+    private DataEaseService dataEaseService;
 
     public static final String NONE_DATA_SCOPE = "NONE";
 
@@ -74,7 +72,7 @@ public class DataEaseSyncService {
         LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
         ThirdConfigurationDTO thirdConfig;
         try {
-            thirdConfig = integrationConfigService.getThirdConfigByType(ThirdConstants.ThirdDetailType.DE_BOARD.name(), orgId);
+            thirdConfig = dataEaseService.getDeConfig(orgId);
         } catch (Exception e) {
             LogUtils.error("获取DataEase配置失败，组织ID: " + orgId, e);
             return;

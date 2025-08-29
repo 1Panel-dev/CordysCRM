@@ -734,7 +734,7 @@ public class IntegrationConfigService {
     /**
      * 根据类型获取第三方配置
      */
-    public ThirdConfigurationDTO getThirdConfigByType(String type, String orgId) {
+    public ThirdConfigurationDTO getThirdConfigForPublic(String type, String orgId) {
         // 确定配置类型和组织ID
         String configType = Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())
                 ? OrganizationConfigConstants.ConfigType.AUTH.name()
@@ -763,6 +763,8 @@ public class IntegrationConfigService {
         // 隐藏敏感信息
         if (!Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             configDTO.setAppSecret(null);
+            configDTO.setDeSecretKey(null);
+            configDTO.setDeAccessKey(null);
         }
 
         return configDTO;

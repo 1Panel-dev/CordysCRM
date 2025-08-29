@@ -31,20 +31,7 @@ public class DataEaseService {
      */
     public DeAuthDTO getEmbeddedDeToken(String organizationId, String userId, boolean isModule) {
         // 获取组织配置
-        OrganizationConfig config =
-                extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
-
-        // 获取DE配置详情
-        List<OrganizationConfigDetail> configDetails =
-                extOrganizationConfigDetailMapper.getOrgConfigDetailByType(config.getId(), null,
-                        List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString()));
-
-        OrganizationConfigDetail configDetail = configDetails.getFirst();
-
-        // 解析配置
-        ThirdConfigurationDTO thirdConfig = JSON.parseObject(
-                new String(configDetail.getContent()), ThirdConfigurationDTO.class
-        );
+        ThirdConfigurationDTO thirdConfig = getDeConfig(organizationId);
 
         String account = thirdConfig.getDeAccount();
         if (BooleanUtils.isTrue(isModule)) {
@@ -62,6 +49,24 @@ public class DataEaseService {
                 .token(token)
                 .url(thirdConfig.getRedirectUrl())
                 .build();
+    }
+
+    public ThirdConfigurationDTO getDeConfig(String organizationId) {
+        OrganizationConfig config =
+                extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
+
+        // 获取DE配置详情
+        List<OrganizationConfigDetail> configDetails =
+                extOrganizationConfigDetailMapper.getOrgConfigDetailByType(config.getId(), null,
+                        List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString()));
+
+        OrganizationConfigDetail configDetail = configDetails.getFirst();
+
+        // 解析配置
+        ThirdConfigurationDTO thirdConfig = JSON.parseObject(
+                new String(configDetail.getContent()), ThirdConfigurationDTO.class
+        );
+        return thirdConfig;
     }
 
     /**
