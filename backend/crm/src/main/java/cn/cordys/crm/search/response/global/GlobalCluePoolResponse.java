@@ -21,6 +21,9 @@ public class GlobalCluePoolResponse {
     @Schema(description = "线索池名称")
     private String poolName;
 
+    @Schema(description = "电话")
+    private String phone;
+
     @Schema(description = "意向产品")
     private List<String> products;
 

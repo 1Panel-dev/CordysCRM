@@ -24,6 +24,9 @@ public class GlobalClueResponse {
     @Schema(description = "意向产品")
     private List<String> products;
 
+    @Schema(description = "电话")
+    private String phone;
+
     @Schema(description = "负责人部门名称")
     private String departmentName;
 

@@ -123,7 +123,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             return PageUtils.setPageInfo(page, null);
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
         List<GlobalCustomerContactResponse> buildList = buildListData(globalContactResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
         return PageUtils.setPageInfo(page, buildList);
     }
@@ -177,7 +177,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
                         customerContactResponse.setName((String) getInputFieldValue(customerContactResponse.getName(), customerContactResponse.getName().length()));
                     }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone")) {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(customerContactResponse.getPhone())) {
                         customerContactResponse.setPhone((String) getPhoneFieldValue(customerContactResponse.getPhone(), customerContactResponse.getPhone().length()));
                     }
                 });
