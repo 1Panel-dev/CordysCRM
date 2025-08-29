@@ -457,7 +457,8 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-          and c.transition_id is null and c.in_shared_pool is false
+          and (c.transition_id IS NULL OR  c.transition_id = '')
+          and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -471,7 +472,8 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-          and c.transition_id is null and c.in_shared_pool is false
+          and (c.transition_id IS NULL OR  c.transition_id = '')
+          and c.in_shared_pool is false
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -485,7 +487,8 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.transition_id is null and c.in_shared_pool is true and c.pool_id is not null
+        and (c.transition_id IS NULL OR  c.transition_id = '')
+          and c.in_shared_pool is true and c.pool_id is not null
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
@@ -498,7 +501,8 @@
             <property name="tablePrefix" value="combine"/>
         </include>
         where c.organization_id = #{orgId}
-        and c.transition_id is null and c.in_shared_pool is true and c.pool_id is not null
+        and (c.transition_id IS NULL OR  c.transition_id = '')
+          and c.in_shared_pool is true and c.pool_id is not null
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
