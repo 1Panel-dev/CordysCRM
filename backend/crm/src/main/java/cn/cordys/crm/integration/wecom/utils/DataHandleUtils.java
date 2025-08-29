@@ -479,12 +479,21 @@ public class DataHandleUtils {
                 .findFirst()
                 .orElse(null);
 
+        Department crmParentDep = currentDepartmentList.stream()
+                .filter(dept -> Strings.CI.equalsAny(dept.getId(), weComDepartment.getCrmParentId()))
+                .findFirst()
+                .orElse(null);
+
         Department updateDept = new Department();
         updateDept.setId(existingDept.getId());
         updateDept.setName(weComDepartment.getName());
         updateDept.setUpdateTime(timestamp);
         updateDept.setUpdateUser(operatorId);
-        updateDept.setParentId(parentDep == null ? weComDepartment.getCrmParentId() : parentDep.getId());
+        if (crmParentDep != null) {
+            updateDept.setParentId(crmParentDep.getId());
+        } else {
+            updateDept.setParentId(parentDep == null ? weComDepartment.getCrmParentId() : parentDep.getId());
+        }
         updateDepartments.add(updateDept);
     }
 
