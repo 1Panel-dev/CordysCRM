@@ -7,6 +7,7 @@ import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.sso.service.TokenService;
@@ -258,7 +259,8 @@ public class WeComDepartmentService {
             String responseStr = HttpRequestUtil.sendGetRequest(url, null);
             return JSON.parseObject(responseStr, DepartmentListResponse.class);
         } catch (Exception e) {
-            throw new GenericException("调用接口获取部门列表失败", e);
+            LogUtils.error(e);
+            throw new GenericException("调用接口获取部门列表失败：" + e.getMessage());
         }
     }
 }
