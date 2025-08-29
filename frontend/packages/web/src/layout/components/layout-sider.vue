@@ -9,6 +9,10 @@
     @update-collapsed="appStore.setMenuCollapsed"
   >
     <div class="flex h-full flex-col justify-between">
+      <div v-if="route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)" class="flex px-[8px] py-[14px]">
+        <CrmSvg v-if="appStore.menuCollapsed" name="CORDYS" height="40px" width="40px" />
+        <CrmSvg v-else name="logo_CORDYS" height="28px" width="130px" />
+      </div>
       <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
         <n-menu
           v-model:value="menuValue"
@@ -76,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-  import { RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
+  import { RouteLocationNormalizedGeneric, useRoute, useRouter } from 'vue-router';
   import { NDivider, NDropdown, NLayoutSider, NMenu, NScrollbar, NTooltip } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
@@ -86,6 +90,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
+  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import personalExportDrawer from '@/views/system/business/components/personalExportDrawer.vue';
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
@@ -98,7 +103,13 @@
   import useUserStore from '@/store/modules/user';
   import { getFirstRouterNameByCurrentRoute, hasAnyPermission } from '@/utils/permission';
 
-  import { AppRouteEnum, ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
+  import {
+    AppRouteEnum,
+    ClueRouteEnum,
+    CustomerRouteEnum,
+    DashboardRouteEnum,
+    OpportunityRouteEnum,
+  } from '@/enums/routeEnum';
 
   import { MenuOption } from 'naive-ui/es/menu/src/interface';
 
@@ -108,6 +119,7 @@
   const appStore = useAppStore();
   const userStore = useUserStore();
   const router = useRouter();
+  const route = useRoute();
   const collapsed = ref(appStore.getMenuCollapsed);
   const menuValue = ref<string>(AppRouteEnum.SYSTEM_ORG);
   const personalMenuValue = ref<string>('');
@@ -274,11 +286,11 @@
     }) as unknown as MenuOption[];
   });
 
-  function setMenuValue(route: RouteLocationNormalizedGeneric) {
-    if (route.meta.isTopMenu || route.meta.hideChildrenInMenu) {
-      menuValue.value = route.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+  function setMenuValue(_route: RouteLocationNormalizedGeneric) {
+    if (_route.meta.isTopMenu || _route.meta.hideChildrenInMenu) {
+      menuValue.value = _route.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {
-      menuValue.value = route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+      menuValue.value = _route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     }
   }
 

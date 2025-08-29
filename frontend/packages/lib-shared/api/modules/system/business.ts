@@ -19,6 +19,7 @@ import {
   GetRepeatCustomerUrl,
   GetRepeatOpportunityDetailUrl,
   GetThirdConfigByTypeUrl,
+  GetThirdPartyConfigUrl,
   GetThirdTypeListUrl,
   SendEmailCodeUrl,
   SyncDEUrl,
@@ -148,6 +149,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: SyncDEUrl });
   }
 
+  // 获取第三方配置
+  function getThirdPartyConfig(type: string) {
+    return CDR.get<ConfigSynchronization>({ url: `${GetThirdPartyConfigUrl}/${type}` });
+  }
+
   // 获取 DE 组织列表
   function getDEOrgList(data: ConfigSynchronization) {
     return CDR.post<DEOrgItem[]>({ url: GetDEOrgListUrl, data });
@@ -253,5 +259,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getDEToken,
     syncDE,
     getDEOrgList,
+    getThirdPartyConfig,
   };
 }

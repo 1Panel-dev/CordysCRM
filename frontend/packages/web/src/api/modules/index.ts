@@ -279,6 +279,7 @@ export const {
   getDEToken,
   syncDE,
   getDEOrgList,
+  getThirdPartyConfig,
 } = businessApi;
 
 export const {

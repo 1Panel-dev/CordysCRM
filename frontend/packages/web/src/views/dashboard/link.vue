@@ -1,5 +1,5 @@
 <template>
-  <CrmCard :special-height="26" hide-footer no-content-padding>
+  <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel :default-size="0.3" :min="0.2" :max="0.5">
       <template #1>
         <tree

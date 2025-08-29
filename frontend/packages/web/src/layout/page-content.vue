@@ -4,7 +4,10 @@
       <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
       <div class="h-full w-full overflow-hidden">
         <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
-          <div class="page-content">
+          <div
+            class="page-content"
+            :class="route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) ? '!pt-0' : ''"
+          >
             <CrmExpireAlert v-if="route.path.includes(SystemRouteEnum.SYSTEM)" />
             <n-breadcrumb v-if="route.meta?.breadcrumbs" class="mb-[8px]">
               <n-breadcrumb-item
@@ -28,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { RouteRecordNameGeneric } from 'vue-router';
+  import { RouteRecordNameGeneric, useRoute } from 'vue-router';
   import { NBreadcrumb, NBreadcrumbItem, NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -38,8 +41,9 @@
   import router from '@/router';
   import { BreadcrumbItem } from '@/router/routes/types';
 
-  import { SystemRouteEnum } from '@/enums/routeEnum';
+  import { DashboardRouteEnum, SystemRouteEnum } from '@/enums/routeEnum';
 
+  const route = useRoute();
   const { t } = useI18n();
 
   function jumpTo(name: RouteRecordNameGeneric) {
