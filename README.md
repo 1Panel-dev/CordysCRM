@@ -14,7 +14,7 @@ Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系�
 
 > 注：Cordys CRM 预计在2025年底正式开源并发布，现已开启公测。
 
-<img alt="Cordys CRM Overview" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png" />
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-video.png)](https://www.bilibili.com/video/BV1VxhXzNEhz/)
 
 **Cordys CRM** 的核心优势是： 
 
