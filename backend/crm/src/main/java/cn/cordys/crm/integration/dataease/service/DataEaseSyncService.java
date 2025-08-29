@@ -150,6 +150,7 @@ public class DataEaseSyncService {
             if (userPage.getRecords().size() < pageSize) {
                 break;
             }
+            pageNum++;
         } while (true);
 
         addUsers(deTempResourceDTO);
