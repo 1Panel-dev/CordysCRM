@@ -1,6 +1,7 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComAgentDetail;
 import cn.cordys.crm.integration.wecom.utils.HttpRequestUtil;
@@ -24,8 +25,9 @@ public class AgentService {
         try {
             String response = HttpRequestUtil.sendGetRequest(url, null);
             weComAgentDetail = JSON.parseObject(response, WeComAgentDetail.class);
-
+            LogUtils.info("企业微信测试连接结果：{} - {}", weComAgentDetail.getErrMsg(), weComAgentDetail.getErrCode());
         } catch (Exception e) {
+            LogUtils.error("企业微信测试连接异常：", e);
             return false;
         }
         if (weComAgentDetail.getErrCode() == null) {
