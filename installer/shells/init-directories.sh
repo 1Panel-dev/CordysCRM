@@ -41,9 +41,9 @@ copy_conf() {
 }
 
 # 应用配置文件
-copy_conf "../conf/cordys-crm.properties" "/opt/cordys/conf/cordys-crm.properties" "Cordys CRM"
-copy_conf "../conf/mysql/my.cnf"           "/opt/cordys/conf/mysql/my.cnf"        "MySQL"
-copy_conf "../conf/redis/redis.conf"       "/opt/cordys/conf/redis/redis.conf"    "Redis"
+copy_conf "/opt/cordys/conf/cordys-crm.properties" "/opt/cordys/conf/cordys-crm.properties" "Cordys CRM"
+copy_conf "/opt/cordys/conf/mysql/my.cnf"           "/opt/cordys/conf/mysql/my.cnf"        "MySQL"
+copy_conf "/opt/cordys/conf/redis/redis.conf"       "/opt/cordys/conf/redis/redis.conf"    "Redis"
 
 # 仅在目录存在时再设置权限
 if [ -d "/opt/cordys" ]; then
