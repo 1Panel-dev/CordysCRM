@@ -141,7 +141,7 @@ export default async function useSearchTable(props: SearchTableProps) {
       .filter(Boolean) as FilterFormItem[];
   });
 
-  const createTimeColumn = {
+  const createTimeColumn: CrmDataTableColumn = {
     title: t('common.createTime'),
     key: 'createTime',
     width: 180,

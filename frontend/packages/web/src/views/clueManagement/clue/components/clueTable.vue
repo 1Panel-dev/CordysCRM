@@ -90,7 +90,7 @@
     :initial-source-name="activeRowName"
     :other-save-params="otherFollowRecordSaveParams"
     :link-form-info="linkFormInfo"
-    @saved="() => loadList()"
+    @saved="() => searchData()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -119,7 +119,7 @@
     :source-id="customerId"
     readonly
   />
-  <convertClueModal v-model:show="showConvertClueModal" :clue-id="activeClueId" @success="() => loadList()" />
+  <convertClueModal v-model:show="showConvertClueModal" :clue-id="activeClueId" @success="() => searchData()" />
 </template>
 
 <script setup lang="ts">

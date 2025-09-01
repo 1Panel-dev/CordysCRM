@@ -69,6 +69,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'hiddenRefresh'?: boolean;
   'hiddenAllScreen'?: boolean;
   'containerClass': string; // 容器类名
+  'notVirtualScroll'?: boolean;
 };
 
 // 表格存储
