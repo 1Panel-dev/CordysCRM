@@ -1,8 +1,8 @@
 name: BUG 提交
 description: 提交产品缺陷帮助我们更好的改进
 title: "[BUG] "
-labels: "类型: 缺陷"
-assignees: "youliyuan-fit2cloud"
+labels: "bug"
+assignees: "zrfit"
 body:
   - type: markdown
     id: contacts_title

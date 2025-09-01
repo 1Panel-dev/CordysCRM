@@ -1,8 +1,8 @@
 name: 需求建议
 description: 提出针对本项目的想法和建议
 title: "[FEATURE] "
-labels: enhancement
-assignees: 'luty2018'
+labels: "需求"
+assignees: "luty2018"
 body:
   - type: markdown
     id: environment
