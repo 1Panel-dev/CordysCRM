@@ -17,6 +17,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -35,6 +36,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -378,7 +380,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         if (followUpRecord == null) {
             throw new GenericException("record_not_found");
         }
-        followUpRecordMapper.deleteByPrimaryKey(id);
+        deleteByIds(List.of(id));
 
         getFollowTimeAndFollower(followUpRecord);
 
@@ -451,5 +453,49 @@ public class FollowUpRecordService extends BaseFollowUpService {
         }
 
 
+    }
+
+    public void deleteByCustomerIds(List<String> customerIds) {
+        if (CollectionUtils.isEmpty(customerIds)) {
+            return;
+        }
+        List<String> ids = getByCustomerIds(customerIds)
+                .stream()
+                .map(FollowUpRecord::getId)
+                .toList();
+        deleteByIds(ids);
+    }
+
+    private void deleteByIds(List<String> ids) {
+        if (ids.isEmpty()) {
+            return;
+        }
+        followUpRecordFieldService.deleteByResourceIds(ids);
+        followUpRecordMapper.deleteByIds(ids);
+    }
+
+    private List<FollowUpRecord> getByCustomerIds(List<String> customerIds) {
+        LambdaQueryWrapper<FollowUpRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(FollowUpRecord::getCustomerId, customerIds);
+        queryWrapper.eq(FollowUpRecord::getType, FollowUpPlanType.CUSTOMER.name());
+        return followUpRecordMapper.selectListByLambda(queryWrapper);
+    }
+
+    private List<FollowUpRecord> getByClueIds(List<String> clueIds) {
+        LambdaQueryWrapper<FollowUpRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(FollowUpRecord::getClueId, clueIds);
+        queryWrapper.eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
+        return followUpRecordMapper.selectListByLambda(queryWrapper);
+    }
+
+    public void deleteByClueIds(List<String> clueIds) {
+        if (CollectionUtils.isEmpty(clueIds)) {
+            return;
+        }
+        List<String> ids = getByClueIds(clueIds)
+                .stream()
+                .map(FollowUpRecord::getId)
+                .toList();
+        deleteByIds(ids);
     }
 }

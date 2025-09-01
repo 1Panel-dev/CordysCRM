@@ -39,6 +39,8 @@ import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
+import cn.cordys.crm.follow.service.FollowUpPlanService;
+import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import cn.cordys.crm.opportunity.service.OpportunityService;
@@ -111,6 +113,10 @@ public class ClueService {
     private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
     @Resource
     private ClueOwnerHistoryService clueOwnerHistoryService;
+    @Resource
+    private FollowUpRecordService followUpRecordService;
+    @Resource
+    private FollowUpPlanService followUpPlanService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -448,6 +454,10 @@ public class ClueService {
         clueFieldService.deleteByResourceId(id);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(List.of(id));
+        // 删除跟进记录
+        followUpRecordService.deleteByClueIds(List.of(id));
+        // 删除跟进计划
+        followUpPlanService.deleteByClueIds(List.of(id));
 
         // 设置操作对象
         OperationLogContext.setResourceName(clue.getName());
@@ -499,6 +509,10 @@ public class ClueService {
         clueFieldService.deleteByResourceIds(ids);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(ids);
+        // 删除跟进记录
+        followUpRecordService.deleteByClueIds(ids);
+        // 删除跟进计划
+        followUpPlanService.deleteByClueIds(ids);
 
         // 消息通知
         clues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,

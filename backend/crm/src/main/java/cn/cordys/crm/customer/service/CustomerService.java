@@ -35,6 +35,8 @@ import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import cn.cordys.crm.follow.service.FollowUpPlanService;
+import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Dict;
@@ -90,6 +92,10 @@ public class CustomerService {
     private ModuleFormService moduleFormService;
     @Resource
     private CustomerRelationService customerRelationService;
+    @Resource
+    private FollowUpRecordService followUpRecordService;
+    @Resource
+    private FollowUpPlanService followUpPlanService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -377,6 +383,11 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(List.of(id));
         // 删除客户关系
         customerRelationService.deleteByCustomerId(id);
+        // 删除跟进记录
+        followUpRecordService.deleteByCustomerIds(List.of(id));
+        // 删除跟进计划
+        followUpPlanService.deleteByCustomerIds(List.of(id));
+
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomer.getName());
@@ -444,6 +455,10 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(ids);
         // 删除客户关系
         customerRelationService.deleteByCustomerIds(ids);
+        // 删除跟进记录
+        followUpRecordService.deleteByCustomerIds(ids);
+        // 删除跟进计划
+        followUpPlanService.deleteByCustomerIds(ids);
 
         List<LogDTO> logs = customers.stream()
                 .map(customer ->
