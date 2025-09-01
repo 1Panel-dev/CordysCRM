@@ -31,7 +31,7 @@ public class WeComUser {
     /**
      * 部门内的排序值，默认为0。数量必须和department一致，数值越大排序越前面。值范围是[0, 2^32)。成员授权模式下不返回该字段
      */
-    private List<Integer> order;
+    private List<Long> order;
 
     /**
      * 职务信息；代开发自建应用需要管理员授权才返回；第三方仅通讯录应用可获取；对于非第三方创建的成员，第三方通讯录应用也不可获取；上游企业不可获取下游企业成员该字段

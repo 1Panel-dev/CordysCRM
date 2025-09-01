@@ -69,9 +69,11 @@ public class DataHandleUtils {
         buildData(weComDepartment, operatorId);
 
         if (CollectionUtils.isNotEmpty(weComDepartment.getChildren())) {
-            weComDepartment.getChildren().forEach(department ->
-                    handleTreeAddData(department, operatorId)
-            );
+            weComDepartment.getChildren().stream()
+                    .sorted(Comparator.comparing(WeComDepartment::getOrder).reversed())
+                    .forEach(department ->
+                            handleTreeAddData(department, operatorId)
+                    );
         }
     }
 
@@ -138,6 +140,14 @@ public class DataHandleUtils {
 
         weComUsers.forEach(weComUser -> {
             String id = IDGenerator.nextStr();
+
+            if (CollectionUtils.isNotEmpty(organizationUsers)) {
+                OrganizationUser organizationUser = organizationUsers.stream().filter(user -> Strings.CI.equals(user.getResourceUserId(), weComUser.getUserId()))
+                        .findFirst().orElse(null);
+                if (organizationUser != null) {
+                    return;
+                }
+            }
 
             // 基本信息
             User user = createUser(id, weComUser, operatorId, currentTime);
@@ -206,9 +216,11 @@ public class DataHandleUtils {
         buildUpdateData(weComDepartment, operatorId, currentDepartmentList, currentUserList, currentCommander);
 
         if (CollectionUtils.isNotEmpty(weComDepartment.getChildren())) {
-            weComDepartment.getChildren().forEach(department ->
-                    handleTreeUpdateData(department, operatorId, currentDepartmentList, currentUserList, currentCommander)
-            );
+            weComDepartment.getChildren().stream()
+                    .sorted(Comparator.comparing(WeComDepartment::getOrder).reversed())
+                    .forEach(department ->
+                            handleTreeUpdateData(department, operatorId, currentDepartmentList, currentUserList, currentCommander)
+                    );
         }
     }
 
@@ -444,6 +456,14 @@ public class DataHandleUtils {
     private void addNewUser(WeComUser weComUser, WeComDepartment weComDepartment,
                             String departmentId, String operatorId, long timestamp) {
         String id = IDGenerator.nextStr();
+
+        if (CollectionUtils.isNotEmpty(organizationUsers)) {
+            OrganizationUser organizationUser = organizationUsers.stream().filter(user -> Strings.CI.equals(user.getResourceUserId(), weComUser.getUserId()))
+                    .findFirst().orElse(null);
+            if (organizationUser != null) {
+                return;
+            }
+        }
 
         // 创建用户基本信息
         User user = createUser(id, weComUser, operatorId, timestamp);

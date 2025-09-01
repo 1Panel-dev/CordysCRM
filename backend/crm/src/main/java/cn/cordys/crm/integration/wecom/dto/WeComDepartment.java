@@ -44,7 +44,7 @@ public class WeComDepartment {
     /**
      * 在父部门中的次序值。order值大的排序靠前。值范围是[0, 2^32)
      */
-    private Integer order;
+    private Long order;
 
 
     /**
