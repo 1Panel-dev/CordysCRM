@@ -28,6 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +49,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     protected abstract BaseMapper<T> getResourceFieldMapper();
 
     protected abstract BaseMapper<V> getResourceFieldBlobMapper();
+
+    protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
+        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
+        wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
+        if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
+            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+        }
+    }
 
     private Class<T> getResourceFieldClass() {
         return (Class<T>) getGenericType(0);
@@ -137,12 +147,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
 
                     if (field.needRepeatCheck()) {
-                        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-                        wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
-                        wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
-                        if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
-                            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-                        }
+                        checkUnique(fieldValue, field);
                     }
 
                     // 获取字段解析器

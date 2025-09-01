@@ -1,13 +1,20 @@
 package cn.cordys.crm.clue.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseResourceFieldService;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.ClueField;
 import cn.cordys.crm.clue.domain.ClueFieldBlob;
+import cn.cordys.crm.clue.mapper.ExtClueMapper;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.function.Function;
 
 /**
  * @author jianxing
@@ -20,6 +27,8 @@ public class ClueFieldService extends BaseResourceFieldService<ClueField, ClueFi
     private BaseMapper<ClueField> clueFieldMapper;
     @Resource
     private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
+    @Resource
+    private ExtClueMapper extClueMapper;
 
     @Override
     protected String getFormKey() {
@@ -34,5 +43,12 @@ public class ClueFieldService extends BaseResourceFieldService<ClueField, ClueFi
     @Override
     protected BaseMapper<ClueFieldBlob> getResourceFieldBlobMapper() {
         return clueFieldBlobMapper;
+    }
+
+    @Override
+    protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
+        if (extClueMapper.checkFieldValueRepeat(fieldValue)) {
+            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+        }
     }
 }

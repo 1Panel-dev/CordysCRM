@@ -289,14 +289,20 @@
     <select id="checkAddExist" resultType="java.lang.Boolean">
         select count(1)
         from `${tableName}`
-        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId} limit 1
+        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId}
+        <if test="tableName == 'clue'">
+            and (transition_type != 'CUSTOMER' or transition_type is null)
+        </if>
+        limit 1
     </select>
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
         select count(1)
         from `${tableName}`
-        where `${fieldName}` = #{fieldValue}
-        and organization_id = #{orgId}
-        and id != #{resource.id} limit 1
+        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId} and id != #{resource.id}
+        <if test="tableName == 'clue'">
+            and (transition_type != 'CUSTOMER' or transition_type is null)
+        </if>
+        limit 1
     </select>
 
     <select id="getCheckValList" resultType="java.lang.String">

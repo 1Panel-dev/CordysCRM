@@ -524,4 +524,9 @@
             collection_time = #{clue.collectionTime}, update_time = #{clue.updateTime}, stage = #{clue.stage}
         where id = #{clue.id}
     </update>
+
+    <select id="checkFieldValueRepeat" resultType="java.lang.Boolean">
+        select count(1) > 0 from clue_field cf join clue c on cf.resource_id = c.id
+        where cf.field_id = #{field.fieldId} and cf.field_value = #{field.fieldValue} and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
+    </select>
 </mapper>

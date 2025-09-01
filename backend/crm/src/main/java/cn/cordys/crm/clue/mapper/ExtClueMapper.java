@@ -1,5 +1,6 @@
 package cn.cordys.crm.clue.mapper;
 
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
@@ -90,4 +91,11 @@ public interface ExtClueMapper {
      * @param clue 线索
      */
     void updateIncludeNullById(@Param("clue") Clue clue);
+
+    /**
+     * 检查字段值是否唯一
+     * @param field 字段值
+     * @return bool
+     */
+    boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);
 }
