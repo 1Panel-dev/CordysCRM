@@ -43,7 +43,7 @@ get_property() {
 # 主函数
 main() {
     log_info "开始启动 Cordys CRM 环境..."
-    sh /shells/init-directories.sh
+    bash /shells/init-directories.sh
 
     # 检查MySQL配置并启动
     mysqlEmbeddedEnabled=$(get_property "mysql.embedded.enabled")

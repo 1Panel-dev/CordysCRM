@@ -1,5 +1,5 @@
 #!/bin/sh
-sh /shells/init-directories.sh
+bash /shells/init-directories.sh
 
 cp -rf /opt/cordys/conf/mysql/my.cnf /etc/my.cnf.d/mariadb-server.cnf
 

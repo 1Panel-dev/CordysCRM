@@ -6,7 +6,7 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
 }
 
-sh /shells/init-directories.sh
+bash /shells/init-directories.sh
 
 # 检查 Redis 密码
 if [ -z "${REDIS_PASSWORD}" ]; then
