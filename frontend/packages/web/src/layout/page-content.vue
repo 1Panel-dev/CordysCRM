@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { RouteRecordNameGeneric, useRoute } from 'vue-router';
+  import { RouteRecordNameGeneric } from 'vue-router';
   import { NBreadcrumb, NBreadcrumbItem, NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -43,7 +43,6 @@
 
   import { DashboardRouteEnum, SystemRouteEnum } from '@/enums/routeEnum';
 
-  const route = useRoute();
   const { t } = useI18n();
 
   function jumpTo(name: RouteRecordNameGeneric) {

@@ -161,5 +161,11 @@
     .v-vl {
       max-height: calc(60vh - 126px); // 126px是顶部搜索、表头、底部页码高度总和
     }
+    .n-checkbox--disabled {
+      .check-icon {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+      }
+    }
   }
 </style>
