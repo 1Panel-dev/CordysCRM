@@ -6,11 +6,7 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
 }
 
-# 创建必要目录
-log "创建 Redis 数据目录..."
-mkdir -p /opt/cordys/data/redis
-mkdir -p /opt/cordys/conf/redis
-chmod -R 777 /opt/cordys
+sh /shells/init-directories.sh
 
 # 检查 Redis 密码
 if [ -z "${REDIS_PASSWORD}" ]; then

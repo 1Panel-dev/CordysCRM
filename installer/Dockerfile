@@ -43,7 +43,7 @@ ENV CRM_VERSION=${CRM_VERSION}
 RUN echo "CRM_VERSION value during build: ${CRM_VERSION}"
 RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
-VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
+VOLUME [ "/opt/cordys" ]
 
 RUN chmod 777  /shells/*.sh
 RUN chmod -R 777 /opt/cordys
