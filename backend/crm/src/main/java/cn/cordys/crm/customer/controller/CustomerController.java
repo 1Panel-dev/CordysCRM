@@ -28,6 +28,7 @@ import com.github.pagehelper.PageHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -174,4 +175,10 @@ public class CustomerController {
         return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        customerService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
 }

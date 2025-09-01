@@ -124,7 +124,7 @@ public abstract class BaseField {
 	@JsonIgnore
 	public boolean canImport() {
 		return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name())
-				&& !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name());
+				&& !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
 	}
 
 	@JsonIgnore
