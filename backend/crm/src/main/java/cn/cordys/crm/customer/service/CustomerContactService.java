@@ -223,15 +223,17 @@ public class CustomerContactService {
 
         // 添加联系人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
-        Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
-        Map<String, Object> paramMap = new HashMap<>(4);
-        paramMap.put("useTemplate", "true");
-        paramMap.put("template", Translator.get("message.customer.contact.add.text"));
-        paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
-        paramMap.put("cName", customerContact.getName());
-        paramMap.put("name", customer.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
-                paramMap, userId, orgId, List.of(customer.getOwner()), true);
+        if (customer != null) {
+            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
+            Map<String, Object> paramMap = new HashMap<>(4);
+            paramMap.put("useTemplate", "true");
+            paramMap.put("template", Translator.get("message.customer.contact.add.text"));
+            paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
+            paramMap.put("cName", customerContact.getName());
+            paramMap.put("name", customer.getName());
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
+                    paramMap, userId, orgId, List.of(customer.getOwner()), true);
+        }
         return customerContact;
     }
 
