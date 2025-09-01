@@ -31,6 +31,8 @@ COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
 COPY installer/conf /opt/cordys/conf
 COPY installer/shells /shells
+COPY installer/conf /installer/conf
+
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=cn.cordys.Application
