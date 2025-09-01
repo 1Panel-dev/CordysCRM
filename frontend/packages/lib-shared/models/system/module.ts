@@ -229,3 +229,9 @@ export interface SortReasonParams {
   start: number; // 排序前
   end: number; // 排序后
 }
+
+export interface DefaultSearchSetFormModel {
+  searchFields: Record<string, any>;
+  resultDisplay: boolean;
+  sortSetting: string[];
+}

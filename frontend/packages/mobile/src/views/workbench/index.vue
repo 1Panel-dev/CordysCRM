@@ -3,22 +3,14 @@
     <div>
       <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
         <CrmAvatar :is-word="false" @click="goMine" />
-        <!-- TODO 下个版本重构先不开放入口 -->
-        <!-- <van-search
-        v-if="
-          hasAnyPermission([
-            'CUSTOMER_MANAGEMENT:READ',
-            'CUSTOMER_MANAGEMENT_POOL:READ',
-            'CLUE_MANAGEMENT:READ',
-            'CLUE_MANAGEMENT_POOL:READ',
-          ])
-        "
-        v-model="keyword"
-        shape="round"
-        :placeholder="t('workbench.searchPlaceholder')"
-        class="flex-1 !p-0"
-        @click="goDuplicateCheck"
-      /> -->
+        <van-search
+          v-if="lastScopedOptions?.length"
+          v-model="keyword"
+          shape="round"
+          :placeholder="t('workbench.searchPlaceholder')"
+          class="flex-1 !p-0"
+          @click="goDuplicateCheck"
+        />
         <van-badge :dot="showBadge">
           <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
         </van-badge>
@@ -88,9 +80,10 @@
 
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
+
+  import { lastScopedOptions } from './duplicateCheck/config';
 
   const appStore = useAppStore();
 

@@ -32,13 +32,10 @@
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { DefaultSearchSetFormModel } from '@lib/shared/models/system/module';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import {
-    DefaultSearchSetFormModel,
-    defaultSearchSetFormModel,
-    scopedOptions,
-  } from '@/components/business/crm-duplicate-check-drawer/config';
+  import { defaultSearchSetFormModel, scopedOptions } from '@/components/business/crm-duplicate-check-drawer/config';
   import searchSetting from '@/components/business/crm-duplicate-check-drawer/searchConfig/searchSetting.vue';
   import useSearchFormConfig from '@/components/business/crm-duplicate-check-drawer/useSearchFormConfig';
 

@@ -50,11 +50,12 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
+  import { DefaultSearchSetFormModel } from '@lib/shared/models/system/module';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmTreeSelect from '@/components/pure/crm-tree-select/index.vue';
 
-  import { DefaultSearchSetFormModel, ScopedOptions } from '../config';
+  import { ScopedOptions } from '../config';
 
   const { t } = useI18n();
 

@@ -100,7 +100,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
+  import type { DefaultSearchSetFormModel, ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -118,7 +118,7 @@
   import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { DefaultSearchSetFormModel, defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
+  import { defaultSearchSetFormModel, lastScopedOptions, ScopedOptions } from './config';
   import type { SearchTableKey } from './useSearchTable';
   import useSearchTable from './useSearchTable';
 

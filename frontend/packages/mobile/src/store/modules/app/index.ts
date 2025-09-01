@@ -10,6 +10,7 @@ import {
   closeMessageSubscribe,
   getHomeMessageList,
   getKey,
+  getModuleNavConfigList,
   getThirdConfigByType,
   getUnReadAnnouncement,
 } from '@/api/modules';
@@ -61,14 +62,14 @@ const useAppStore = defineStore('app', {
     /**
      * 初始化模块配置
      */
-    // async initModuleConfig() {
-    //   try {
-    //     this.moduleConfigList = await getModuleNavConfigList({ organizationId: this.orgId });
-    //   } catch (error) {
-    //     // eslint-disable-next-line no-console
-    //     console.log(error);
-    //   }
-    // },
+    async initModuleConfig() {
+      try {
+        this.moduleConfigList = await getModuleNavConfigList({ organizationId: this.orgId });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    },
 
     /**
      * 连接SSE消息订阅流

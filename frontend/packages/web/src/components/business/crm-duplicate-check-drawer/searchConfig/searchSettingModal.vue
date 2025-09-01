@@ -68,6 +68,7 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { DefaultSearchSetFormModel } from '@lib/shared/models/system/module';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -76,7 +77,7 @@
 
   import { resetSearchConfig, searchConfig } from '@/api/modules';
 
-  import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
+  import type { ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions, scopedOptions } from '../config';
 
   const { t } = useI18n();

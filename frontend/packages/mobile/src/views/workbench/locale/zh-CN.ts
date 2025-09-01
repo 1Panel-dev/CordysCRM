@@ -19,4 +19,5 @@ export default {
   'workbench.duplicateCheck.customerName': '客户名称',
   'workbench.duplicateCheck.contactName': '姓名',
   'workbench.duplicateCheck.contactStatus': '状态',
+  'workbench.duplicateCheck.searchTypeTitle': '`{title}相关`',
 };

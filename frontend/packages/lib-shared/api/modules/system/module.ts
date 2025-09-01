@@ -1,4 +1,3 @@
-import { DefaultSearchSetFormModel } from '@cordys/web/src/components/business/crm-duplicate-check-drawer/config';
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddClueCapacityUrl,
@@ -68,6 +67,7 @@ import type {
   CapacityParams,
   CluePoolItem,
   CluePoolParams,
+  DefaultSearchSetFormModel,
   FormDesignConfigDetailParams,
   FormDesignDataSourceTableQueryParams,
   ModuleNavBaseInfoItem,

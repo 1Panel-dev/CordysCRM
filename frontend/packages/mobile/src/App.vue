@@ -13,9 +13,11 @@
   import { AppRouteEnum } from '@/enums/routeEnum';
 
   import useLogin from './hooks/useLogin';
+  import useAppStore from './store/modules/app';
 
   const router = useRouter();
   const userStore = useUserStore();
+  const appStore = useAppStore();
   const { oAuthLogin } = useLogin();
   const licenseStore = useLicenseStore();
 
@@ -31,6 +33,7 @@
     }
     router.replace({ name: AppRouteEnum.WORKBENCH });
     licenseStore.getValidateLicense();
+    appStore.initModuleConfig();
   });
 </script>
 

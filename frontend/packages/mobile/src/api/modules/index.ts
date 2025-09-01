@@ -222,6 +222,7 @@ export const {
   previewPicture,
   downloadPicture,
   getReasonConfig,
+  getSearchConfig,
 } = moduleApi;
 
 export const {

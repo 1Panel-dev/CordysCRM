@@ -81,6 +81,10 @@
 
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
+  import useSearchFormConfig from './useSearchFormConfig';
+  // TODO
+  const { initSearchFormConfig, allFieldMap, searchFieldMap, initSearchDetail, formModel } = useSearchFormConfig();
+
   defineOptions({
     name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK,
   });
@@ -127,6 +131,11 @@
       searchData();
     }
   );
+
+  onBeforeMount(async () => {
+    await initSearchFormConfig();
+    initSearchDetail();
+  });
 </script>
 
 <style lang="less" scoped>

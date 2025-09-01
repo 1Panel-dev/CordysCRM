@@ -23,11 +23,13 @@
   import { NButton } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { DefaultSearchSetFormModel } from '@lib/shared/models/system/module';
+
   import searchSettingModal from './searchSettingModal.vue';
 
   import { getSearchConfig } from '@/api/modules';
 
-  import type { DefaultSearchSetFormModel, ScopedOptions } from '../config';
+  import type { ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions, scopedOptions } from '../config';
   import useSearchFormConfig from '../useSearchFormConfig';
 

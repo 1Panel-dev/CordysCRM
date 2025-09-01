@@ -19,4 +19,5 @@ export default {
   'workbench.duplicateCheck.accountName': 'Account name',
   'workbench.duplicateCheck.contactName': 'name',
   'workbench.duplicateCheck.contactStatus': 'status',
+  'workbench.duplicateCheck.searchTypeTitle': '`{title} related`',
 };
