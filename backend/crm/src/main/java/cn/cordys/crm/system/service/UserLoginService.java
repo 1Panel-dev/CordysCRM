@@ -109,17 +109,17 @@ public class UserLoginService {
 
             return sessionUser;
         } catch (ExcessiveAttemptsException e) {
-            throw new ExcessiveAttemptsException(Translator.get("excessive_attempts"));
+            throw new ExcessiveAttemptsException(Translator.get("password_is_incorrect"));
         } catch (LockedAccountException e) {
-            throw new LockedAccountException(Translator.get("user_locked"));
+            throw new LockedAccountException(Translator.get("password_is_incorrect"));
         } catch (DisabledAccountException e) {
-            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
+            throw new DisabledAccountException(Translator.get("password_is_incorrect"));
         } catch (ExpiredCredentialsException e) {
-            throw new ExpiredCredentialsException(Translator.get("user_expires"));
+            throw new ExpiredCredentialsException(Translator.get("password_is_incorrect"));
         } catch (AuthenticationException e) {
             throw new AuthenticationException(e.getMessage());
         } catch (UnauthorizedException e) {
-            throw new UnauthorizedException(Translator.get("not_authorized") + e.getMessage());
+            throw new UnauthorizedException(Translator.get("password_is_incorrect") + e.getMessage());
         }
     }
 
@@ -133,7 +133,7 @@ public class UserLoginService {
     public UserDTO authenticateUser(String userKey) {
         // 获取用户信息
         UserDTO userDTO = Optional.ofNullable(extUserMapper.selectByPhoneOrEmail(userKey))
-                .orElseThrow(() -> new AuthenticationException(Translator.get("user_not_exist")));
+                .orElseThrow(() -> new AuthenticationException(Translator.get("password_is_incorrect")));
 
         // 非管理员用户需要检查是否被禁用
         if (!isAdminUser(userDTO.getId())) {
@@ -240,7 +240,7 @@ public class UserLoginService {
 
         List<OrganizationUser> orgUsers = organizationUserMapper.selectListByLambda(queryWrapper);
         if (CollectionUtils.isEmpty(orgUsers)) {
-            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
+            throw new DisabledAccountException(Translator.get("password_is_incorrect"));
         }
 
         // 设置用户部门信息

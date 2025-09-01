@@ -10,6 +10,7 @@ log() {
 log "创建 Redis 数据目录..."
 mkdir -p /opt/cordys/data/redis
 mkdir -p /opt/cordys/conf/redis
+chmod -R 777 /opt/cordys
 
 # 检查 Redis 密码
 if [ -z "${REDIS_PASSWORD}" ]; then
