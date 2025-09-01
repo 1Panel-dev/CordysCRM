@@ -190,6 +190,7 @@ public class CustomerPoolService {
 		pool.setOrganizationId(organizationId);
 		pool.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
 		pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		pool.setEnable(true);
 		pool.setCreateTime(System.currentTimeMillis());
 		pool.setCreateUser(currentUserId);
 		pool.setUpdateTime(System.currentTimeMillis());
