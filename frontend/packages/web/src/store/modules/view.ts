@@ -3,7 +3,7 @@ import { TabPaneProps } from 'naive-ui';
 
 import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-import type { TableDraggedParams } from '@lib/shared/models/common';
+import type { SortParams, TableDraggedParams } from '@lib/shared/models/common';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
@@ -43,6 +43,17 @@ const useViewStore = defineStore('view', {
     async setInternalViews(key: string, data: ViewItem[]) {
       const { setItem } = useLocalForage();
       await setItem(key, data);
+    },
+
+    async getViewSort(tableKey: string, viewId: string) {
+      const { getItem } = useLocalForage();
+      const data = await getItem<SortParams>(`view-sort-${tableKey}-${viewId}`);
+      return data;
+    },
+
+    async setViewSort(tableKey: string, viewId: string, data: SortParams) {
+      const { setItem } = useLocalForage();
+      await setItem(`view-sort-${tableKey}-${viewId}`, data);
     },
 
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {

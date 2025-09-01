@@ -539,7 +539,8 @@
     () => activeTab.value,
     (val) => {
       if (val) {
-        searchData();
+        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        crmTableRef.value?.setColumnSort(val);
       }
     },
     { immediate: true }

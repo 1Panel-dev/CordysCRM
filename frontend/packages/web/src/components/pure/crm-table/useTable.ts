@@ -8,12 +8,14 @@ import { FilterResult } from '@/components/pure/crm-advance-filter/type';
 
 import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
+import useViewStore from '@/store/modules/view';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
 import type { PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();
 const appStore = useAppStore();
+const viewStore = useViewStore();
 
 export default function useTable<T>(
   loadListFunc?: (v?: TableQueryParams | any) => Promise<CommonList<CrmTableDataItem<T>> | CrmTableDataItem<T>>,
@@ -235,7 +237,11 @@ export default function useTable<T>(
       loadList();
     },
     // 排序触发
-    sorterChange: (sortObj: SortParams) => {
+    sorterChange: async (sortObj: SortParams) => {
+      // 如果有视图，就存储表头排序
+      if (propsRes.value.tableKey && loadListParams.value.viewId) {
+        await viewStore.setViewSort(propsRes.value.tableKey, loadListParams.value.viewId, sortObj);
+      }
       sortItem.value = sortObj;
       setPagination(1);
       loadList();

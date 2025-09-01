@@ -148,6 +148,7 @@
   import useLocalForage from '@/hooks/useLocalForage';
   import useTableStore from '@/hooks/useTableStore';
   import { useAppStore } from '@/store';
+  import useViewStore from '@/store/modules/view';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { BatchActionConfig } from './type';
@@ -162,6 +163,7 @@
   import Sortable from 'sortablejs';
 
   const appStore = useAppStore();
+  const viewStore = useViewStore();
 
   const props = defineProps<{
     columns: CrmDataTableColumn[];
@@ -559,7 +561,7 @@
     }
   );
 
-  function handleSorterChange(sorter: DataTableSortState) {
+  function handleSorterChange(sorter?: DataTableSortState) {
     currentColumns.value.forEach((column) => {
       if (column.sortOrder === undefined) return;
       if (!sorter) {
@@ -573,16 +575,29 @@
       }
     });
     let sortOrder = '';
-    if (sorter.order === 'ascend') {
+    if (sorter?.order === 'ascend') {
       sortOrder = 'asc';
-    } else if (sorter.order === 'descend') {
+    } else if (sorter?.order === 'descend') {
       sortOrder = 'desc';
     }
     if (!attrs.showPagination) return;
     scrollTo({
       top: 0,
     });
-    emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
+    emit('sorterChange', !sorter?.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
+  }
+
+  async function setColumnSort(viewId: string) {
+    const sortObj = await viewStore.getViewSort(attrs.tableKey as TableKeyEnum, viewId);
+    if (sortObj && Object.keys(sortObj).length) {
+      handleSorterChange({
+        columnKey: sortObj.name as string,
+        order: sortObj?.type === 'desc' ? 'descend' : 'ascend',
+        sorter: true,
+      });
+    } else {
+      handleSorterChange();
+    }
   }
 
   function handleClear() {
@@ -725,6 +740,7 @@
 
   defineExpose({
     scrollTo,
+    setColumnSort,
     clearCheckedRowKeys: handleClear,
   });
 </script>

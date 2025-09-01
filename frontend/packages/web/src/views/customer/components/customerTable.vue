@@ -586,7 +586,8 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        searchData();
+        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        crmTableRef.value?.setColumnSort(val);
       }
     }
   );
