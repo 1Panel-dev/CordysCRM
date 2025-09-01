@@ -150,7 +150,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       formDescriptionShowControlRulesSet(form);
 
       fieldList.value.forEach((item) => {
-        if (item.show === false) return;
+        if (item.show === false || !item.readable) return;
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name

@@ -572,7 +572,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             !(
               e.businessKey === 'owner' &&
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
-            )
+            ) &&
+            e.readable
         )
         .map((field) => {
           const noSorterType = [
