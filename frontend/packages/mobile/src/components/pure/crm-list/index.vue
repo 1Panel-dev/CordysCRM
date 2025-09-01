@@ -84,7 +84,7 @@
         code.value = res.data.code;
       }
       const data = props?.isReturnNativeResponse ? res.data.data : res;
-      const resList = props.noPageNation && !data.list ? data : data.list;
+      const resList = props.noPageNation && !data.list ? data : data.list || [];
       const dataList = props.transform
         ? resList.map((e: Record<string, any>) => props.transform!(e, data.optionMap))
         : resList;

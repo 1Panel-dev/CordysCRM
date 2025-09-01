@@ -19,5 +19,9 @@ export default {
   'workbench.duplicateCheck.customerName': '客户名称',
   'workbench.duplicateCheck.contactName': '姓名',
   'workbench.duplicateCheck.contactStatus': '状态',
-  'workbench.duplicateCheck.searchTypeTitle': '`{title}相关`',
+  'workbench.duplicateCheck.searchTypeTitle': '{title}相关',
+  'workbench.duplicateCheck.department': '部门',
+  'workbench.duplicateCheck.opportunityStage': '商机阶段',
+  'workbench.duplicateCheck.openSeaName': '公海名称',
+  'workbench.duplicateCheck.leadPoolName': '线索池名称',
 };

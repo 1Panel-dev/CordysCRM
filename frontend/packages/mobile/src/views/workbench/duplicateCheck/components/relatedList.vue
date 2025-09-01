@@ -2,9 +2,8 @@
   <CrmList
     ref="crmListRef"
     v-model="list"
-    :is-return-native-response="props.isReturnNativeResponse"
     :list-params="{
-      name: props.keyword,
+      keyword: props.keyword,
       ...(props.id ? { id: props.id } : {}),
     }"
     :error-text="t('workbench.duplicateCheck.moduleNotEnabled')"
@@ -13,7 +12,7 @@
   >
     <template #item="{ item: listItem }">
       <div class="rounded-[var(--border-radius-small)] !bg-[var(--text-n9)] p-[16px]">
-        <div class="mb-[4px] font-semibold">{{ listItem[props.nameKey ?? 'name'] }}</div>
+        <div class="mb-[4px] font-semibold text-[var(--text-n1)]">{{ listItem[props.nameKey ?? 'name'] }}</div>
         <CrmDescription :description="getDescriptions(listItem)" class="!m-0 !bg-[var(--text-n9)] !p-0">
           <template #count="{ item }">
             <CrmTextButton
@@ -32,10 +31,9 @@
             {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
           </template>
           <template #render="{ item }">
-            {{ item.render(listItem) }}
-          </template>
-          <template #enable="{ item }">
-            {{ item.render(listItem) }}
+            <div v-if="typeof item.render === 'function'">
+              {{ item.render(listItem) }}
+            </div>
           </template>
         </CrmDescription>
       </div>
@@ -63,7 +61,6 @@
     id?: string;
     descriptionList?: CrmDescriptionItem[];
     api: (data: any) => Promise<CommonList<any>>;
-    isReturnNativeResponse?: boolean;
     nameKey?: string; // 取数据里的nameKey字段显示在标题上
   }>();
 

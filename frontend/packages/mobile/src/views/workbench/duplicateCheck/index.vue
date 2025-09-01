@@ -11,54 +11,32 @@
       {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
     </div>
 
-    <van-collapse v-model="activeNames" :border="false">
-      <van-collapse-item v-show="showResult" name="customer" :border="false">
+    <van-collapse v-if="keyword.length" v-model="activeNames" :border="false">
+      <van-collapse-item v-for="item of configList" :key="item.value" :name="item.value" :border="false">
+        <template #icon>
+          <CrmIcon
+            :name="activeNames.includes(item.value) ? 'iconicon_chevron_up' : 'iconicon_chevron_right'"
+            width="24px"
+            height="24px"
+          />
+        </template>
         <template #title>
-          <div class="text-[18px] font-semibold">
+          <div class="ml-[4px] text-[18px] font-semibold">
             {{
-              validatePhone(keywordVal)
-                ? t('workbench.duplicateCheck.contactResult')
-                : t('workbench.duplicateCheck.result')
+              t('workbench.duplicateCheck.searchTypeTitle', {
+                title: item.label,
+              })
             }}
           </div>
         </template>
-        <template #right-icon>
-          <CrmIcon
-            :name="activeNames.includes('customer') ? 'iconicon_chevron_up' : 'iconicon_chevron_right'"
-            width="24px"
-            height="24px"
-          />
-        </template>
+        <template #right-icon> </template>
         <div style="overflow: hidden; height: calc(100vh - 224px)">
           <RelatedList
-            ref="customerRelatedListRef"
-            v-model="customerList"
-            :keyword="keywordVal"
-            :description-list="validatePhone(keywordVal) ? contactDescriptionList : customerDescriptionList"
-            :api="validatePhone(keywordVal) ? getRepeatContactList : GetRepeatCustomerList"
-            is-return-native-response
-          />
-        </div>
-      </van-collapse-item>
-      <van-collapse-item v-show="showClue" name="clue" :border="false">
-        <template #title>
-          <div class="text-[18px] font-semibold">{{ t('workbench.duplicateCheck.relatedClues') }}</div>
-        </template>
-        <template #right-icon>
-          <CrmIcon
-            :name="activeNames.includes('clue') ? 'iconicon_chevron_up' : 'iconicon_chevron_right'"
-            width="24px"
-            height="24px"
-          />
-        </template>
-        <div style="overflow: hidden; height: calc(100vh - 224px)">
-          <RelatedList
-            ref="clueRelatedListRef"
-            v-model="clueList"
-            :keyword="keywordVal"
-            :description-list="clueDescriptionList"
-            :api="GetRepeatClueList"
-            is-return-native-response
+            :ref="(el) => setRef(el, item.value)"
+            v-model="searchResultMap[item.value].list"
+            :keyword="keyword"
+            :description-list="searchResultMap[item.value as SearchTableKey]?.describe??[]"
+            :api="getSearchListApiMap[item.value as SearchTableKey]"
           />
         </div>
       </van-collapse-item>
@@ -69,21 +47,26 @@
 <script setup lang="ts">
   import { debounce } from 'lodash-es';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { validatePhone } from '@lib/shared/method/validate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import RelatedList from './components/relatedList.vue';
 
-  import { GetRepeatClueList, getRepeatContactList, GetRepeatCustomerList } from '@/api/modules';
-  import { clueDescriptionList, contactDescriptionList, customerDescriptionList } from '@/config/workbench';
-
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
+  import { SearchTableKey } from './config';
   import useSearchFormConfig from './useSearchFormConfig';
-  // TODO
-  const { initSearchFormConfig, allFieldMap, searchFieldMap, initSearchDetail, formModel } = useSearchFormConfig();
+
+  const {
+    initSearchFormConfig,
+    searchResultMap,
+    getSearchListApiMap,
+    configList,
+    initSearchDetail,
+    initSearchListConfig,
+  } = useSearchFormConfig();
 
   defineOptions({
     name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK,
@@ -92,14 +75,11 @@
   const { t } = useI18n();
 
   const keyword = ref('');
-  const activeNames = ref(['customer', 'clue']);
+  const activeNames = ref<FormDesignKeyEnum[]>([]);
 
   const noDuplicateCustomers = ref(false);
   const showResult = ref(false);
   const showClue = ref(false);
-
-  const customerList = ref([]);
-  const clueList = ref([]);
 
   onBeforeMount(() => {
     keyword.value = '';
@@ -108,19 +88,19 @@
     noDuplicateCustomers.value = false;
   });
 
-  const customerRelatedListRef = ref<InstanceType<typeof RelatedList>>();
-  const clueRelatedListRef = ref<InstanceType<typeof RelatedList>>();
-  const keywordVal = computed(() => keyword.value.replace(/[\s\uFEFF\xA0]+/g, ''));
+  const relatedListRefs = ref<Record<string, any>>({});
+  function setRef(el: any, key: string) {
+    if (el) {
+      relatedListRefs.value[key] = el;
+    } else {
+      delete relatedListRefs.value[key]; // 组件销毁时清除
+    }
+  }
 
   const searchData = debounce(() => {
     nextTick(() => {
-      customerRelatedListRef.value?.loadList().finally(() => {
-        showResult.value = !!customerList.value.length || customerRelatedListRef.value?.code === 101003;
-        noDuplicateCustomers.value = !showResult.value && !showClue.value;
-      });
-      clueRelatedListRef.value?.loadList().finally(() => {
-        showClue.value = !!clueList.value.length || clueRelatedListRef.value?.code === 101003;
-        noDuplicateCustomers.value = !showResult.value && !showClue.value;
+      Object.values(relatedListRefs).forEach((comp) => {
+        comp?.loadList?.();
       });
     });
   }, 300);
@@ -132,9 +112,10 @@
     }
   );
 
-  onBeforeMount(async () => {
+  onMounted(async () => {
     await initSearchFormConfig();
-    initSearchDetail();
+    await initSearchDetail();
+    initSearchListConfig();
   });
 </script>
 

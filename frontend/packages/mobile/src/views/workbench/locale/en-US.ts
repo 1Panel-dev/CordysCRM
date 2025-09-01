@@ -19,5 +19,9 @@ export default {
   'workbench.duplicateCheck.accountName': 'Account name',
   'workbench.duplicateCheck.contactName': 'name',
   'workbench.duplicateCheck.contactStatus': 'status',
-  'workbench.duplicateCheck.searchTypeTitle': '`{title} related`',
+  'workbench.duplicateCheck.searchTypeTitle': '{title} related',
+  'workbench.duplicateCheck.department': 'Department name',
+  'workbench.duplicateCheck.opportunityStage': 'Opportunity stage',
+  'workbench.duplicateCheck.openSeaName': 'OpenSea name',
+  'workbench.duplicateCheck.leadPoolName': 'Lead pool name',
 };

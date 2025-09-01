@@ -67,6 +67,7 @@ export const {
   getOpportunityContactList,
   updateOptFollowPlanStatus,
   advancedSearchOptPage,
+  globalSearchOptPage,
 } = opportunityApi;
 
 export const {
@@ -108,6 +109,8 @@ export const {
   updateClueFollowPlanStatus,
   getAdvancedCluePoolList,
   getAdvancedSearchClueList,
+  getGlobalSearchClueList,
+  getGlobalCluePoolList,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;
@@ -180,6 +183,9 @@ export const {
   geAdvancedCustomerList,
   getAdvancedCustomerContactList,
   getAdvancedOpenSeaCustomerList,
+  getGlobalCustomerContactList,
+  getGlobalCustomerList,
+  getGlobalOpenSeaCustomerList,
 } = customerApi;
 
 export const {
