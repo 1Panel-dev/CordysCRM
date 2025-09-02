@@ -26,6 +26,7 @@ import {
   singleTypes,
 } from '@/components/business/crm-form-design/linkFormConfig';
 
+import { lastOpportunitySteps } from '@/config/opportunity';
 import useUserStore from '@/store/modules/user';
 
 export interface FormCreateApiProps {
@@ -74,6 +75,170 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   // 详情
   const detail = ref<Record<string, any>>({});
   const linkFormFieldMap = ref<Record<string, any>>({}); // 关联表单字段信息映射
+  const opportunityInternalFields = [
+    {
+      title: t('org.department'),
+      key: 'departmentName',
+    },
+    {
+      title: t('opportunity.stage'),
+      key: 'stage',
+    },
+    {
+      title: t('customer.lastFollowUps'),
+      key: 'followerName',
+    },
+    {
+      title: t('customer.lastFollowUpDate'),
+      key: 'followTime',
+    },
+    {
+      title: t('customer.remainingVesting'),
+      key: 'reservedDays',
+    },
+    {
+      title: t('opportunity.actualEndTime'),
+      key: 'actualEndTime',
+    },
+    {
+      title: t('opportunity.failureReason'),
+      key: 'failureReason',
+    },
+  ];
+  const customerInternalFields = [
+    {
+      title: t('org.department'),
+      key: 'departmentName',
+    },
+    {
+      title: t('customer.collectionTime'),
+      key: 'collectionTime',
+    },
+    {
+      title: t('customer.recycleOpenSea'),
+      key: 'recyclePoolName',
+    },
+    {
+      title: t('customer.remainingVesting'),
+      key: 'reservedDays',
+    },
+    {
+      title: t('customer.lastFollowUps'),
+      key: 'followerName',
+    },
+    {
+      title: t('customer.lastFollowUpDate'),
+      key: 'followTime',
+    },
+  ];
+
+  const contactInternalFields = [
+    {
+      title: t('common.status'),
+      key: 'enable',
+    },
+    {
+      title: t('customer.disableReason'),
+      key: 'disableReason',
+    },
+    {
+      title: t('org.department'),
+      key: 'departmentName',
+    },
+  ];
+
+  const internalFieldMap: Partial<Record<FormDesignKeyEnum, any[]>> = {
+    [FormDesignKeyEnum.CUSTOMER]: customerInternalFields,
+    [FormDesignKeyEnum.CONTACT]: contactInternalFields,
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: [
+      {
+        title: t('common.status'),
+        key: 'enable',
+      },
+      {
+        title: t('customer.disableReason'),
+        key: 'disableReason',
+      },
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+    ],
+    [FormDesignKeyEnum.BUSINESS_CONTACT]: [
+      {
+        title: t('common.status'),
+        key: 'enable',
+      },
+      {
+        title: t('customer.disableReason'),
+        key: 'disableReason',
+      },
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+    ],
+    [FormDesignKeyEnum.BUSINESS]: opportunityInternalFields,
+    [FormDesignKeyEnum.CLUE]: [
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+      {
+        title: t('customer.collectionTime'),
+        key: 'collectionTime',
+      },
+      {
+        title: t('clue.recyclePool'),
+        key: 'recyclePoolName',
+      },
+      {
+        title: t('customer.remainingVesting'),
+        key: 'reservedDays',
+      },
+      {
+        title: t('customer.lastFollowUps'),
+        key: 'follower',
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        key: 'followTime',
+      },
+    ],
+    [FormDesignKeyEnum.PRODUCT]: [],
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [
+      {
+        title: t('customer.recycleReason'),
+        key: 'reasonId',
+      },
+    ],
+    [FormDesignKeyEnum.CLUE_POOL]: [
+      {
+        title: t('customer.recycleReason'),
+        key: 'reasonId',
+      },
+    ],
+    [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalFields,
+    [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalFields,
+  };
+  const staticFields = [
+    {
+      title: t('common.creator'),
+      key: 'createUserName',
+    },
+    {
+      title: t('common.createTime'),
+      key: 'createTime',
+    },
+    {
+      title: t('common.updateUserName'),
+      key: 'updateUserName',
+    },
+    {
+      title: t('common.updateTime'),
+      key: 'updateTime',
+    },
+  ];
 
   function initFormShowControl() {
     // 读取整个显隐控制映射
@@ -134,6 +299,20 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
       }
     });
+  }
+
+  function formatInternalFieldValue(key: string, value: any) {
+    if (key.includes('Time')) {
+      return value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '-';
+    }
+    if (key === 'enable') {
+      return value ? t('common.open') : t('common.close');
+    }
+    if (key === 'stage') {
+      const step = lastOpportunitySteps.find((e: any) => e.value === value);
+      return step ? step.label : '-';
+    }
+    return value || '-';
   }
 
   async function initFormDescription(formData?: FormDetail) {
@@ -286,6 +465,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             });
           }
         }
+      });
+      [...(internalFieldMap[props.formKey.value] || []), ...staticFields].forEach((field) => {
+        descriptions.value.push({
+          label: field.title,
+          value: formatInternalFieldValue(field.key, form[field.key]),
+          fieldInfo: {
+            name: field.title,
+            type: FieldTypeEnum.INPUT,
+          },
+          tooltipPosition: 'top-end',
+        });
       });
     } catch (error) {
       // eslint-disable-next-line no-console

@@ -21,7 +21,7 @@ import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
 
-type FormKey =
+export type FormKey =
   | FormDesignKeyEnum.CUSTOMER
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.BUSINESS
