@@ -205,7 +205,7 @@ public class OpportunityService {
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
             // 计算保留天数(成功失败阶段不计算)
             opportunityListResponse.setReservedDays(Strings.CS.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
-                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
             opportunityListResponse.setModuleFields(opportunityFields);
 
             opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
@@ -348,7 +348,6 @@ public class OpportunityService {
 
     /**
      * 商机转移
-     *
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
         LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
@@ -373,7 +372,7 @@ public class OpportunityService {
             logDTO.setModifiedValue(modifieCustomer);
             logs.add(logDTO);
 
-            extCustomerContactMapper.updateContactById(opportunity.getContactId(),request.getOwner());
+            extCustomerContactMapper.updateContactById(opportunity.getContactId(), request.getOwner());
         });
 
         logService.batchAdd(logs);
@@ -433,17 +432,28 @@ public class OpportunityService {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
-        List<String> userIds = Stream.of(List.of(response.getCreateUser(), response.getUpdateUser(), response.getOwner()))
+        List<String> userIds = Stream.of(Arrays.asList(response.getCreateUser(), response.getUpdateUser(), response.getOwner(), response.getFollower()))
                 .flatMap(Collection::stream)
                 .distinct()
                 .toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
         Map<String, String> contactMap = baseService.getContactMap(StringUtils.isEmpty(response.getContactId()) ? null : List.of(response.getContactId()));
+        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(List.of(response.getOwner()), orgId);
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(response.getOwner()), orgId);
 
         response.setCreateUserName(userNameMap.get(response.getCreateUser()));
         response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
         response.setOwnerName(userNameMap.get(response.getOwner()));
         response.setContactName(contactMap.get(response.getContactId()));
+        response.setFollowerName(userNameMap.get(response.getFollower()));
+        // 计算保留天数(成功失败阶段不计算)
+        response.setReservedDays(Strings.CS.equalsAny(response.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+                null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(response.getOwner()), response.getCreateTime()));
+        UserDeptDTO userDeptDTO = userDeptMap.get(response.getOwner());
+        if (userDeptDTO != null) {
+            response.setDepartmentId(userDeptDTO.getDeptId());
+            response.setDepartmentName(userDeptDTO.getDeptName());
+        }
 
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);

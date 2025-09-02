@@ -172,7 +172,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
             // 计算剩余归属天数
             clueListResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                    clueListResponse));
+                    clueListResponse.getCollectionTime(), clueListResponse.getCreateTime()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(clueListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -207,7 +207,6 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         }
         return false;
     }
-
 
 
     @NotNull

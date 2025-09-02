@@ -428,6 +428,8 @@
             o.last_stage,
             o.stage,
             o.owner,
+            o.follower,
+            o.follow_time,
             o.create_time,
             o.update_time,
             o.create_user,

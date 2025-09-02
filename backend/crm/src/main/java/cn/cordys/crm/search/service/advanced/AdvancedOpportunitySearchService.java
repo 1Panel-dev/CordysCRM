@@ -149,7 +149,7 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
             opportunityListResponse.setReservedDays(Strings.CS.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
-                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
             if (!hasPermission) {
                 opportunityListResponse.setModuleFields(new ArrayList<>());
                 opportunityListResponse.setFailureReason(dictMap.get(null));

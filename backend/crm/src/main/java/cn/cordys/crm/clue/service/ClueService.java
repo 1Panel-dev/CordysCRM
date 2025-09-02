@@ -144,8 +144,8 @@ public class ClueService {
     private CustomerCollaborationService customerCollaborationService;
     @Resource
     private CustomerContactService customerContactService;
-	@Resource
-	private ExtUserMapper extUserMapper;
+    @Resource
+    private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<ClueField> clueFieldMapper;
     @Resource
@@ -183,7 +183,7 @@ public class ClueService {
     }
 
     public List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> clueIds = list.stream().map(ClueListResponse::getId)
@@ -245,7 +245,7 @@ public class ClueService {
             // 计算剩余归属天数
             clueListResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                    clueListResponse));
+                    clueListResponse.getCollectionTime(), clueListResponse.getCreateTime()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(clueListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -295,12 +295,47 @@ public class ClueService {
         clueGetResponse.setOptionMap(optionMap);
         clueGetResponse.setModuleFields(clueFields);
 
+
+        // 线索池原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CLUE_POOL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+
         if (clueGetResponse.getOwner() != null) {
+            // 获取负责人线索池信息
+            Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(List.of(clueGetResponse.getOwner()), orgId);
+            List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CluePool::getId).distinct().toList();
+            Map<String, CluePoolRecycleRule> recycleRuleMap;
+            if (CollectionUtils.isEmpty(poolIds)) {
+                recycleRuleMap = Map.of();
+            } else {
+                LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+                recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, poolIds);
+                List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+                recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
+            }
+            // 设置回收公海
+            CluePool reservePool = ownersDefaultPoolMap.get(clueGetResponse.getOwner());
+            clueGetResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+            // 计算剩余归属天数
+            clueGetResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
+                    reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
+                    clueGetResponse.getCollectionTime(), clueGetResponse.getCreateTime()));
+
             UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), orgId);
             if (userDeptDTO != null) {
                 clueGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 clueGetResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
+        }
+
+        if (clueGetResponse.getFollower() != null) {
+            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(clueGetResponse.getFollower()));
+            clueGetResponse.setFollowerName(userNameMap.get(clueGetResponse.getFollower()));
+        }
+
+        if (StringUtils.isNotBlank(clueGetResponse.getReasonId())) {
+            clueGetResponse.setReasonName(dictMap.get(clueGetResponse.getReasonId()));
         }
 
         return clueGetResponse;
@@ -367,8 +402,8 @@ public class ClueService {
 
     private void sendTransferNotice(List<Clue> originClues, String toUser, String userId, String orgId) {
         originClues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-				NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
-				orgId, List.of(toUser), true));
+                NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
+                orgId, List.of(toUser), true));
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -404,9 +439,10 @@ public class ClueService {
 
     /**
      * 转移客户
+     *
      * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
+     * @param userId  用户ID
+     * @param orgId   组织ID
      */
     public void transitionCustomer(ClueTransitionCustomerRequest request, String userId, String orgId) {
         Customer customer = customerService.add(request, userId, orgId);
@@ -442,7 +478,6 @@ public class ClueService {
                 NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, clue.getName(), userId,
                 orgId, List.of(clue.getOwner()), true);
     }
-
 
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
@@ -517,8 +552,8 @@ public class ClueService {
 
         // 消息通知
         clues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-				NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-				orgId, List.of(clue.getOwner()), true));
+                NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
+                orgId, List.of(clue.getOwner()), true));
     }
 
     private List<String> getOwners(List<Clue> clues) {
@@ -530,8 +565,9 @@ public class ClueService {
 
     /**
      * 批量移入线索池
-     * @param request 请求参数
-     * @param orgId 组织ID
+     *
+     * @param request     请求参数
+     * @param orgId       组织ID
      * @param currentUser 当前用户
      */
     public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
@@ -577,9 +613,10 @@ public class ClueService {
 
     /**
      * 移入公海
-     * @param request 请求参数
+     *
+     * @param request     请求参数
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public BatchAffectResponse toPool(PoolReasonRequest request, String currentUser, String orgId) {
         BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
@@ -610,16 +647,17 @@ public class ClueService {
         List<Clue> clueList = clueMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(clueList)) {
             List<String> names = clueList.stream().map(Clue::getName).toList();
-			return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
         }
         return StringUtils.EMPTY;
     }
 
     /**
      * 批量关联线索和客户
-     * @param request 关联参数
+     *
+     * @param request     关联参数
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public void batchTransition(BatchReTransitionCustomerRequest request, String currentUser, String orgId) {
         if (CollectionUtils.isEmpty(request.getClueIds())) {
@@ -638,9 +676,10 @@ public class ClueService {
 
     /**
      * 线索关联已有客户
-     * @param clueId 线索ID
+     *
+     * @param clueId      线索ID
      * @param currentUser 当前用户ID
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public void transitionCs(String clueId, Customer transitionCs, String currentUser, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(clueId);
@@ -668,9 +707,10 @@ public class ClueService {
 
     /**
      * 线索转换
-     * @param request 请求参数
+     *
+     * @param request     请求参数
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public String transform(ClueTransformRequest request, String currentUser, String orgId) {
         checkTransformPermission(request.getOppCreated());
@@ -724,6 +764,7 @@ public class ClueService {
 
     /**
      * 检查转换权限
+     *
      * @param checkOpportunityPermission 是否检查商机权限
      */
     public void checkTransformPermission(boolean checkOpportunityPermission) {
@@ -737,6 +778,7 @@ public class ClueService {
 
     /**
      * 同名客户选择器
+     *
      * @param customers 客户列表
      * @return 客户
      */
@@ -752,9 +794,10 @@ public class ClueService {
 
     /**
      * 通过表单联动来创建客户
-     * @param clue 线索
+     *
+     * @param clue        线索
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      * @return 客户
      */
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
@@ -778,11 +821,12 @@ public class ClueService {
 
     /**
      * 通过表单联动来创建商机
-     * @param customer 客户
-     * @param clueOwner 线索负责人
-     * @param contactId 联系人ID
+     *
+     * @param customer    客户
+     * @param clueOwner   线索负责人
+     * @param contactId   联系人ID
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      * @return 商机
      */
     public Opportunity generateOpportunityByLinkForm(Customer customer, String clueOwner, String contactId, String currentUser, String orgId) {
@@ -816,10 +860,11 @@ public class ClueService {
 
     /**
      * 转换客户处理
-     * @param clue 线索
+     *
+     * @param clue        线索
      * @param transformCs 转换客户
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public TransformCsAssociateDTO transformCsAssociate(Clue clue, Customer transformCs, String currentUser, String orgId) {
         TransformCsAssociateDTO transformDTO = new TransformCsAssociateDTO();
@@ -850,6 +895,7 @@ public class ClueService {
 
     /**
      * 下载导入的模板
+     *
      * @param response 响应
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
@@ -863,7 +909,8 @@ public class ClueService {
 
     /**
      * 导入检查
-     * @param file 导入文件
+     *
+     * @param file       导入文件
      * @param currentOrg 当前组织
      * @return 导入检查信息
      */
@@ -876,8 +923,9 @@ public class ClueService {
 
     /**
      * 线索导入
-     * @param file 导入文件
-     * @param currentOrg 当前组织
+     *
+     * @param file        导入文件
+     * @param currentOrg  当前组织
      * @param currentUser 当前用户
      * @return 导入返回信息
      */
@@ -911,7 +959,8 @@ public class ClueService {
 
     /**
      * 检查导入的文件
-     * @param file 文件
+     *
+     * @param file       文件
      * @param currentOrg 当前组织
      * @return 检查信息
      */

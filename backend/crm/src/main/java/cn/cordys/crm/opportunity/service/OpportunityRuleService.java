@@ -236,17 +236,17 @@ public class OpportunityRuleService {
 	 * 计算剩余归属天数
 	 *
 	 * @param rule 商机规则
-	 * @param opportunity 商机
+	 * @param createTime 商机创建时间
 	 * @return 剩余归属天数
 	 */
-	public Integer calcReservedDay(OpportunityRule rule, OpportunityListResponse opportunity) {
+	public Integer calcReservedDay(OpportunityRule rule, Long createTime) {
 		if (rule == null || !rule.getAuto()) {
 			return null;
 		}
 
 		// 判断商机是否存在创建时间
 		List<RuleConditionDTO> conditions = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
-		return RecycleConditionUtils.calcRecycleDays(conditions, opportunity.getCreateTime());
+		return RecycleConditionUtils.calcRecycleDays(conditions, createTime);
 	}
 
 	/**

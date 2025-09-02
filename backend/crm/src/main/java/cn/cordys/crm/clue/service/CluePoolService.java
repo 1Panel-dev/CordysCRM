@@ -419,17 +419,18 @@ public class CluePoolService {
      * 计算剩余归属天数
      *
      * @param pool 线索池
-     * @param clue 线索
+     * @param collectionTime 领取时间
+     * @param createTime 创建时间
      * @return 剩余归属天数
      */
-    public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, ClueListResponse clue) {
+    public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, Long collectionTime, Long createTime) {
         if (pool == null || !pool.getAuto() || recycleRule == null) {
             return null;
         }
 
         // 判断线索池是否存在入库条件
         List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-        return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(clue.getCollectionTime(), clue.getCreateTime()));
+        return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(collectionTime, createTime));
     }
 
     /**

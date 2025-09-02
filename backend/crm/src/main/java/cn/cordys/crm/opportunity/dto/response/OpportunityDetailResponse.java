@@ -45,9 +45,6 @@ public class OpportunityDetailResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
-    @Schema(description = "商机状态")
-    private String status;
-
     @Schema(description = "负责人")
     private String owner;
 
@@ -86,6 +83,24 @@ public class OpportunityDetailResponse {
 
     @Schema(description = "客户公海id")
     private String poolId;
+
+    @Schema(description = "剩余归属天数")
+    private Integer reservedDays;
+
+    @Schema(description = "最新跟进人")
+    private String follower;
+
+    @Schema(description = "最新跟进人名称")
+    private String followerName;
+
+    @Schema(description = "最新跟进日期")
+    private Long followTime;
+
+    @Schema(description = "部门id")
+    private String departmentId;
+
+    @Schema(description = "部门名称")
+    private String departmentName;
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;

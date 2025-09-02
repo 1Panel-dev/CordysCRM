@@ -68,7 +68,6 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
     private ModuleFormService moduleFormService;
 
 
-
     @Override
     public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
 
@@ -158,7 +157,7 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
             // 计算剩余归属天数
             customerListResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                    customerListResponse));
+                    customerListResponse.getCollectionTime(), customerListResponse.getCreateTime()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
             if (userDeptDTO != null) {

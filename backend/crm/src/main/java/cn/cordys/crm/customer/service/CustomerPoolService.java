@@ -412,17 +412,18 @@ public class CustomerPoolService {
 	 * 计算剩余归属天数
 	 *
 	 * @param pool 公海池
-	 * @param customer 客户
+	 * @param collectionTime 领取时间
+	 * @param createTime 创建时间
 	 * @return 剩余归属天数
 	 */
-	public Integer calcReservedDay(CustomerPool pool, CustomerPoolRecycleRule recycleRule, CustomerListResponse customer) {
+	public Integer calcReservedDay(CustomerPool pool, CustomerPoolRecycleRule recycleRule, Long collectionTime, Long createTime) {
 		if (pool == null || !pool.getAuto() || recycleRule == null) {
 			return null;
 		}
 
 		// 判断公海是否存在入库条件
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-		return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(customer.getCollectionTime(), customer.getCreateTime()));
+		return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(collectionTime, createTime));
 	}
 
 	/**

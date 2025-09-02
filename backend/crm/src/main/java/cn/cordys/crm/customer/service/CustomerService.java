@@ -235,7 +235,7 @@ public class CustomerService {
             // 计算剩余归属天数
             customerListResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                    customerListResponse));
+                    customerListResponse.getCollectionTime(), customerListResponse.getCreateTime()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -293,12 +293,50 @@ public class CustomerService {
         customerGetResponse.setOptionMap(optionMap);
         customerGetResponse.setModuleFields(customerFields);
 
+        // 公海原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+
         if (customerGetResponse.getOwner() != null) {
+            // 获取负责人默认公海信息
+            Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(List.of(customerGetResponse.getOwner()), orgId);
+            List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
+            Map<String, CustomerPoolRecycleRule> recycleRuleMap;
+            if (CollectionUtils.isEmpty(poolIds)) {
+                recycleRuleMap = Map.of();
+            } else {
+                LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+                recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
+                List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+                recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+            }
+
+            // 设置回收公海
+            CustomerPool reservePool = ownersDefaultPoolMap.get(customerGetResponse.getOwner());
+            customerGetResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+            // 计算剩余归属天数
+            customerGetResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
+                    reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
+                    customerGetResponse.getCollectionTime(), customerGetResponse.getCreateTime()));
+
+
             UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);
             if (userDeptDTO != null) {
                 customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
+        }
+
+        if (customerGetResponse.getFollower() != null) {
+            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(customerGetResponse.getFollower()));
+            String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerGetResponse.getFollower()));
+            customerGetResponse.setFollowerName(followerName);
+        }
+
+        if (StringUtils.isNotBlank(customerGetResponse.getReasonId())) {
+            String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerGetResponse.getReasonId()));
+            customerGetResponse.setReasonName(reasonName);
         }
 
         return customerGetResponse;
@@ -526,7 +564,7 @@ public class CustomerService {
                 continue;
             }
             //更新责任人
-            customerContactService.updateContactOwner(customer.getId(),"-",customer.getOwner(),orgId);
+            customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(), orgId);
 
 
             // 日志

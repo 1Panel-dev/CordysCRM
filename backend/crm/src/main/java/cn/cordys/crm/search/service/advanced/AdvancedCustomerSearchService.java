@@ -178,7 +178,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
                         customer.setModuleFields(new ArrayList<>());
                         customer.setRecyclePoolName(null);
                         customer.setReasonName(null);
-                    }else {
+                    } else {
                         customer.setOpportunityCount(parseCount(opportunityCounts.get(customer.getId())));
                         customer.setClueCount(parseCount(clueCounts.get(customer.getName())));
                         // 获取自定义字段
@@ -190,7 +190,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
                     // 计算剩余归属天数
                     customer.setReservedDays(customerPoolService.calcReservedDay(reservePool,
                             reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                            customer));
+                            customer.getCollectionTime(), customer.getCreateTime()));
                     // 设置模块启用状态
                     customer.setOpportunityModuleEnable(isOpportunityModuleEnabled);
                     customer.setClueModuleEnable(isClueModuleEnabled);
