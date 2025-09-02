@@ -169,7 +169,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 		} else {
 			sb.append(Translator.get("format.preview")).append(": 999, ");
 		}
-		if (numberField.getDecimalPlaces()) {
+		if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
 			sb.append(Translator.getWithArgs("keep.decimal.places", numberField.getPrecision()));
 		}
 		return sb.toString();

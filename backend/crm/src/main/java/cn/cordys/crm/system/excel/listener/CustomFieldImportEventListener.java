@@ -280,7 +280,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 			dataList.add(entity);
 		} catch (Exception e) {
-			LogUtils.error("clue import error: {}" + e.getMessage());
+			LogUtils.error("import error: {}", e.getMessage());
 			throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
 		}
 	}

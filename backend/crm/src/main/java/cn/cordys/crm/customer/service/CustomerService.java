@@ -650,7 +650,7 @@ public class CustomerService {
 
         new EasyExcelExporter(Objects.class)
                 .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
-                        Translator.get("customer.import_tpl.name"), SheetKey.DATA, SheetKey.COMMENT, new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+                        Translator.get("customer.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
     }
 
     /**

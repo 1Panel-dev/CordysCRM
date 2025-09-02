@@ -37,13 +37,12 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     @Override
     public Object text2Value(InputNumberField field, String text) {
         if (Strings.CS.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
-            return text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
+            text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
         }
         try {
-            new BigDecimal(text);
+            return new BigDecimal(text);
         } catch (NumberFormatException e) {
             throw new FormulaParseException("无法解析数值类型: " + text);
         }
-        return text;
     }
 }
