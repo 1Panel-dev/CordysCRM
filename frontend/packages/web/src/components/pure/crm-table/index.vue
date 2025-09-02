@@ -642,10 +642,6 @@
     }
   }
 
-  onMounted(() => {
-    checkedRowKeys.value = [];
-  });
-
   const sortable = ref();
   function initSortable(el: HTMLElement) {
     sortable.value = Sortable.create(el, {

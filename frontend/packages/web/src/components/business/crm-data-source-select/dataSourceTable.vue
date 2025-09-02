@@ -167,5 +167,11 @@
         transform: scale(1) !important;
       }
     }
+    .n-radio--disabled {
+      .n-radio__dot::before {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+      }
+    }
   }
 </style>

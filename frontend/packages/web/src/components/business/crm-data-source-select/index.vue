@@ -89,13 +89,7 @@
   const dataSourcesModalVisible = ref(false);
 
   function handleDataSourceConfirm() {
-    let newRows = [];
-    if (props.multiple) {
-      newRows = rows.value.concat(selectedRows.value);
-    } else {
-      newRows = selectedRows.value;
-    }
-
+    const newRows = selectedRows.value;
     rows.value = newRows;
     value.value = newRows.map((e) => e.id) as RowKey[];
     dataSourcesModalVisible.value = false;
@@ -139,7 +133,7 @@
     if (props.disabledSelection) {
       return props.disabledSelection(row);
     }
-    return value.value.includes(row.id);
+    return false;
   }
 </script>
 
