@@ -455,6 +455,12 @@ public class OpportunityService {
             response.setDepartmentName(userDeptDTO.getDeptName());
         }
 
+        // 失败原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+        response.setFailureReason(dictMap.get(response.getFailureReason()));
+
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
