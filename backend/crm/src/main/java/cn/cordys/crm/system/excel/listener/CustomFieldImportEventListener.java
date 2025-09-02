@@ -382,7 +382,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	private void setInternal(T instance, String rowKey) throws Exception {
 		setterCache.get("id").invoke(instance, rowKey);
 		setterCache.get("createUser").invoke(instance, operator);
+		setterCache.get("createTime").invoke(instance, System.currentTimeMillis());
 		setterCache.get("updateUser").invoke(instance, operator);
+		setterCache.get("updateTime").invoke(instance, System.currentTimeMillis());
 		setterCache.get("organizationId").invoke(instance, currentOrg);
 	}
 

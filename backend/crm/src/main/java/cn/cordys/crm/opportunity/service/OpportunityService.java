@@ -10,6 +10,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -20,12 +21,19 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerContact;
+import cn.cordys.crm.customer.domain.CustomerContactField;
+import cn.cordys.crm.customer.domain.CustomerContactFieldBlob;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.constants.StageType;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.domain.OpportunityField;
+import cn.cordys.crm.opportunity.domain.OpportunityFieldBlob;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
 import cn.cordys.crm.opportunity.dto.request.*;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
@@ -33,23 +41,35 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.mapper.ExtProductMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -91,6 +111,10 @@ public class OpportunityService {
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
     private DictService dictService;
+    @Resource
+    private BaseMapper<OpportunityField> opportunityFieldMapper;
+    @Resource
+    private BaseMapper<OpportunityFieldBlob> opportunityFieldBlobMapper;
 
     public static final String SUCCESS = "SUCCESS";
 
@@ -517,5 +541,83 @@ public class OpportunityService {
             return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
         }
         return StringUtils.EMPTY;
+    }
+
+    /**
+     * 下载导入的模板
+     * @param response 响应
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        // 客户表单字段
+        List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.OPPORTUNITY.getKey(), currentOrg);
+
+        new EasyExcelExporter(Objects.class)
+                .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
+                        Translator.get("opportunity.import_tpl.name"), SheetKey.DATA, SheetKey.COMMENT, new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+    }
+
+    /**
+     * 导入检查
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, currentOrg);
+    }
+
+    /**
+     * 商机导入
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @param currentUser 当前用户
+     * @return 导入返回信息
+     */
+    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            CustomImportAfterDoConsumer<Opportunity, BaseResourceField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
+                List<LogDTO> logs = new ArrayList<>();
+                opportunities.forEach(opportunity -> {
+                    opportunity.setStage(StageType.CREATE.name());
+                    logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY, opportunity.getName()));
+                });
+                opportunityMapper.batchInsert(opportunities);
+                opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
+                opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
+                // record logs
+                logService.batchAdd(logs);
+            };
+            CustomFieldImportEventListener<Opportunity, OpportunityField> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
+                    opportunityFieldMapper, afterDo, 2000);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("opportunity import error: ", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    /**
+     * 检查导入的文件
+     * @param file 文件
+     * @param currentOrg 当前组织
+     * @return 检查信息
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            CustomFieldCheckEventListener<OpportunityField> eventListener = new CustomFieldCheckEventListener<>(fields, "opportunity", currentOrg, opportunityFieldMapper);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("opportunity import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
     }
 }

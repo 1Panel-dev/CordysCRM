@@ -887,8 +887,6 @@ public class ClueService {
             CustomImportAfterDoConsumer<Clue, BaseResourceField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 clues.forEach(clue -> {
-                    clue.setCreateTime(System.currentTimeMillis());
-                    clue.setUpdateTime(System.currentTimeMillis());
                     clue.setCollectionTime(clue.getCreateTime());
                     clue.setStage(ClueStatus.NEW.name());
                     clue.setInSharedPool(false);

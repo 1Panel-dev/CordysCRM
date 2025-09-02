@@ -16,17 +16,20 @@ import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.customer.service.CustomerContactExportService;
 import cn.cordys.crm.customer.service.CustomerContactService;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -155,6 +158,27 @@ public class CustomerContactController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT)
     public String customerContactExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return customerContactExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    }
+
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        customerContactService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 }

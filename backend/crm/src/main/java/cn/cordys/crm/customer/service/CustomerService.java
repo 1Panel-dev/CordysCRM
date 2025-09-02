@@ -629,7 +629,7 @@ public class CustomerService {
     }
 
     /**
-     * 线索导入
+     * 客户导入
      * @param file 导入文件
      * @param currentOrg 当前组织
      * @param currentUser 当前用户
@@ -641,8 +641,6 @@ public class CustomerService {
             CustomImportAfterDoConsumer<Customer, BaseResourceField> afterDo = (customers, customerFields, customerFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 customers.forEach(customer -> {
-                    customer.setCreateTime(System.currentTimeMillis());
-                    customer.setUpdateTime(System.currentTimeMillis());
                     customer.setCollectionTime(customer.getCreateTime());
                     customer.setInSharedPool(false);
                     logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_INDEX, customer.getName()));
@@ -659,7 +657,7 @@ public class CustomerService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("clue import error: ", e.getMessage());
+            LogUtils.error("customer import error: ", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

@@ -157,6 +157,9 @@
             "id": "CUSTOMER_MANAGEMENT:DELETE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT:IMPORT"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT:EXPORT"
           }
         ]
@@ -201,6 +204,9 @@
             "id": "CUSTOMER_MANAGEMENT_CONTACT:DELETE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:IMPORT"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT_CONTACT:EXPORT"
           }
         ]
@@ -232,10 +238,10 @@
             "id": "CLUE_MANAGEMENT:DELETE"
           },
           {
-            "id": "CLUE_MANAGEMENT:EXPORT"
+            "id": "CLUE_MANAGEMENT:IMPORT"
           },
           {
-            "id": "CLUE_MANAGEMENT:IMPORT"
+            "id": "CLUE_MANAGEMENT:EXPORT"
           }
         ]
       },
@@ -283,6 +289,9 @@
           },
           {
             "id": "OPPORTUNITY_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:IMPORT"
           },
           {
             "id": "OPPORTUNITY_MANAGEMENT:EXPORT"
