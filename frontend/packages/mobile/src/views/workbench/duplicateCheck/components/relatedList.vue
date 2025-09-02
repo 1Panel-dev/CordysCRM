@@ -8,6 +8,7 @@
     }"
     :error-text="t('workbench.duplicateCheck.moduleNotEnabled')"
     :load-list-api="api"
+    :transform="props.transformData"
     :item-gap="16"
   >
     <template #item="{ item: listItem }">
@@ -54,6 +55,7 @@
     descriptionList?: CrmDescriptionItem[];
     api: (data: any) => Promise<CommonList<any>>;
     nameKey?: string; // 取数据里的nameKey字段显示在标题上
+    transformData?: (i: any) => Record<string, any>;
   }>();
 
   const { t } = useI18n();

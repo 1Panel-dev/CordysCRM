@@ -234,6 +234,20 @@ export default function useSearchFormConfig() {
     };
   });
 
+  function transformData(item: any, searchTableKey: SearchTableKey) {
+    const fieldMap = new Map(item.moduleFields?.map((field: any) => [field.fieldId, field.fieldValue]));
+    const fieldAttr: Record<string, any> = Object.fromEntries(
+      displayedDescList
+        .value(searchTableKey)
+        ?.filter((i: any) => i.id && fieldMap.has(i.id))
+        .map((i: any) => [i.key, fieldMap.get(i.id)!])
+    );
+    return {
+      ...item,
+      ...fieldAttr,
+    };
+  }
+
   const createTimeDesc = {
     label: t('common.createTime'),
     key: 'createTime',
@@ -327,6 +341,7 @@ export default function useSearchFormConfig() {
     formModel,
     searchResultMap,
     getSearchListApiMap,
+    transformData,
     initSearchListConfig,
   };
 }

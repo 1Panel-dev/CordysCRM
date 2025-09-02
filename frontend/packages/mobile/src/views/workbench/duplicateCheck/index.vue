@@ -35,6 +35,7 @@
             :keyword="keyword"
             :description-list="searchResultMap[item.value as SearchTableKey]?.describe??[]"
             :api="getSearchListApiMap[item.value as SearchTableKey]"
+            :transform-data="(i) => transformData(i, item.value)"
           />
         </div>
       </van-collapse-item>
@@ -66,6 +67,7 @@
     formModel,
     moduleCount,
     getCountList,
+    transformData,
     initSearchDetail,
     initSearchListConfig,
   } = useSearchFormConfig();
