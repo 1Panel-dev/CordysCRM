@@ -3,12 +3,8 @@ package cn.cordys.excel.domain;
 import lombok.Data;
 
 @Data
-public class ExcelErrData<T> {
-
-
-
+public class ExcelErrData {
     private Integer rowNum;
-
     private String errMsg;
 
     public ExcelErrData() {

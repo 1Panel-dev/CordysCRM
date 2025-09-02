@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.dto.response;
 
-import cn.cordys.crm.system.excel.domain.UserExcelData;
 import cn.cordys.excel.domain.ExcelErrData;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -23,6 +22,6 @@ public class UserImportResponse implements Serializable {
     @Schema(description = "失败数量")
     private int failCount;
     @Schema(description = "报错信息")
-    private List<ExcelErrData<UserExcelData>> errorMessages;
+    private List<ExcelErrData> errorMessages;
 
 }

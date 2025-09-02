@@ -29,7 +29,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	@Getter
 	protected Integer success = 0;
 	@Getter
-	protected List<ExcelErrData<?>> errList = new ArrayList<>();
+	protected List<ExcelErrData> errList = new ArrayList<>();
 	private Map<Integer, String> headMap;
 	private final Map<String, BaseField> fieldMap;
 	/**
@@ -165,7 +165,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			}
 		});
 		if (StringUtils.isNotEmpty(errText)) {
-			ExcelErrData<?> excelErrData = new ExcelErrData<>(rowIndex,
+			ExcelErrData excelErrData = new ExcelErrData(rowIndex,
 					Translator.getWithArgs("row.error.tip", rowIndex + 1).concat(" " + errText));
 			//错误信息
 			errList.add(excelErrData);

@@ -9,6 +9,7 @@ import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.customer.domain.CustomerPool;
@@ -16,7 +17,6 @@ import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.search.constants.SearchPhoneEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
-import cn.cordys.crm.search.response.global.GlobalClueResponse;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.Module;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -450,7 +450,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 }
                 returnOpportunityFields.add(baseModuleFieldValue);
             } catch (Exception e) {
-                e.printStackTrace();
+                LogUtils.error(e);
             }
         }
         return returnOpportunityFields;

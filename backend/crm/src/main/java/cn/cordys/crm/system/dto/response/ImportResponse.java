@@ -21,5 +21,5 @@ public class ImportResponse implements Serializable {
 	@Schema(description = "失败数量")
 	private int failCount;
 	@Schema(description = "报错信息")
-	private List<ExcelErrData<?>> errorMessages;
+	private List<ExcelErrData> errorMessages;
 }

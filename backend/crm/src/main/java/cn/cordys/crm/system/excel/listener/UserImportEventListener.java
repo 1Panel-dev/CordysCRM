@@ -5,7 +5,6 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.system.excel.annotation.NotRequired;
 import cn.cordys.crm.system.excel.domain.UserExcelData;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.service.DepartmentService;
@@ -22,38 +21,62 @@ import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UserImportEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
-    private final Class excelDataClass;
+    private final Class<?> excelDataClass;
     private Map<Integer, String> headMap;
     private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
+
     @Getter
     protected List<UserExcelData> list = new ArrayList<>();
     @Getter
-    protected List<ExcelErrData<UserExcelData>> errList = new ArrayList<>();
+    protected List<ExcelErrData> errList = new ArrayList<>();
+
     private static final String ERROR_MSG_SEPARATOR = ";";
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
+
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final String PHONE_REGEX = "^1[0-9]\\d{9}$";
-    private final DepartmentService departmentService;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
+    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+
     private final String operatorId;
     private final String orgId;
+
     @Getter
     private int successCount = 0;
+
     protected static final int BATCH_COUNT = 1000;
+
     private final OrganizationUserService organizationUserService;
     private final List<BaseTreeNode> departmentTree;
     private final Map<String, String> departmentMap = new HashMap<>();
 
-    public UserImportEventListener(Class clazz, String operatorId, String orgId) {
-        excelDataClass = clazz;
-        departmentService = CommonBeanFactory.getBean(DepartmentService.class);
-        organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
-        departmentTree = departmentService.getTree(orgId);
+    // 字段赋值映射，简化 parseDataToModel
+    private static final Map<String, BiConsumer<UserExcelData, String>> FIELD_SETTERS = new HashMap<>();
+
+    static {
+        FIELD_SETTERS.put("employeeId", UserExcelData::setEmployeeId);
+        FIELD_SETTERS.put("name", UserExcelData::setName);
+        FIELD_SETTERS.put("gender", UserExcelData::setGender);
+        FIELD_SETTERS.put("department", UserExcelData::setDepartment);
+        FIELD_SETTERS.put("position", UserExcelData::setPosition);
+        FIELD_SETTERS.put("phone", UserExcelData::setPhone);
+        FIELD_SETTERS.put("email", UserExcelData::setEmail);
+        FIELD_SETTERS.put("supervisor", UserExcelData::setSupervisor);
+        FIELD_SETTERS.put("workCity", UserExcelData::setWorkCity);
+        FIELD_SETTERS.put("employeeType", UserExcelData::setEmployeeType);
+    }
+
+    public UserImportEventListener(Class<?> clazz, String operatorId, String orgId) {
+        this.excelDataClass = clazz;
+        this.organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
+        this.departmentTree = Objects.requireNonNull(CommonBeanFactory.getBean(DepartmentService.class)).getTree(orgId);
         this.operatorId = operatorId;
         this.orgId = orgId;
     }
@@ -70,7 +93,6 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         super.invokeHeadMap(headMap, context);
     }
 
-
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
         if (headMap == null) {
@@ -79,7 +101,6 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
         if (rowIndex >= 3) {
             UserExcelData userExcelData = parseDataToModel(data);
-            //校验数据
             buildUpdateOrErrorList(rowIndex, userExcelData);
             if (list.size() > BATCH_COUNT) {
                 saveData();
@@ -88,7 +109,6 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             }
         }
     }
-
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
@@ -103,21 +123,12 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-
-    /**
-     * 构建数据
-     *
-     * @param rowIndex
-     * @param userExcelData
-     */
     private void buildUpdateOrErrorList(Integer rowIndex, UserExcelData userExcelData) {
         StringBuilder errMsg;
         try {
-            //根据excel数据实体中的javax.validation + 正则表达式来校验excel数据
-            errMsg = new StringBuilder(ExcelValidateHelper.validateEntity(userExcelData));
-            //自定义校验规则
+            String baseErr = ExcelValidateHelper.validateEntity(userExcelData);
+            errMsg = new StringBuilder(baseErr);
             if (StringUtils.isEmpty(errMsg)) {
-                //开始校验
                 validate(userExcelData, errMsg);
             }
         } catch (NoSuchFieldException e) {
@@ -134,38 +145,22 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
                             .concat(Translator.get("error"))
                             .concat("：")
                             .concat(errMsg.toString()));
-            //错误信息
             errList.add(excelErrData);
         } else {
-            //通过数量
             list.add(userExcelData);
         }
     }
 
-
     public void validate(UserExcelData data, StringBuilder errMsg) {
-        //校验姓名
         validateName(data, errMsg);
-        //校验手机
         validatePhone(data, errMsg);
-        //校验邮件
         validateEmail(data, errMsg);
-        //校验顶级部门
         validateDepartment(data, errMsg);
-        //校验字段长度
         validateLength(data, errMsg);
-        //处理性别
         handleGender(data);
-        //处理员工类型
         handleEmployeeType(data);
-
     }
 
-    /**
-     * 处理员工类型
-     *
-     * @param data
-     */
     private void handleEmployeeType(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getEmployeeType())) {
             if (Strings.CI.equals(data.getEmployeeType(), Translator.get("formal"))) {
@@ -180,12 +175,6 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-
-    /**
-     * 处理性别
-     *
-     * @param data
-     */
     private void handleGender(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getGender())) {
             if (data.getGender().equals(Translator.get("man"))) {
@@ -196,75 +185,51 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
                 data.setGender(null);
             }
         }
-
     }
 
-
-    /**
-     * 校验字段长度
-     *
-     * @param data
-     * @param errMsg
-     */
     private void validateLength(UserExcelData data, StringBuilder errMsg) {
         String employeeId = data.getEmployeeId();
-        if (StringUtils.isNotBlank(employeeId)) {
-            if (employeeId.length() > 255) {
-                errMsg.append(Translator.get("employee_length"))
-                        .append(ERROR_MSG_SEPARATOR);
-            }
+        if (StringUtils.isNotBlank(employeeId) && employeeId.length() > NAME_LENGTH) {
+            errMsg.append(Translator.get("employee_length")).append(ERROR_MSG_SEPARATOR);
         }
 
         String position = data.getPosition();
-        if (StringUtils.isNotBlank(position)) {
-            if (position.length() > 255) {
-                errMsg.append(Translator.get("position_length"))
-                        .append(ERROR_MSG_SEPARATOR);
-            }
+        if (StringUtils.isNotBlank(position) && position.length() > NAME_LENGTH) {
+            errMsg.append(Translator.get("position_length")).append(ERROR_MSG_SEPARATOR);
         }
     }
 
-    /**
-     * 校验顶级部门
-     *
-     * @param data
-     * @param errMsg
-     */
     private void validateDepartment(UserExcelData data, StringBuilder errMsg) {
         String departments = data.getDepartment();
         if (StringUtils.isNotEmpty(departments)) {
             String topDepartment = departments.split("/")[0];
             if (!Strings.CI.equals(departmentTree.getFirst().getName(), topDepartment)) {
-                errMsg.append(Translator.get("top_department_not_exist"))
-                        .append(ERROR_MSG_SEPARATOR);
+                errMsg.append(Translator.get("top_department_not_exist")).append(ERROR_MSG_SEPARATOR);
             }
         } else {
             data.setDepartment(departmentTree.getFirst().getName());
         }
     }
 
-    /**
-     * 校验邮件
-     *
-     * @param data
-     * @param errMsg
-     */
     private void validateEmail(UserExcelData data, StringBuilder errMsg) {
-        Pattern pattern = Pattern.compile(EMAIL_REGEX);
-        Matcher matcher = pattern.matcher(data.getEmail());
+        String email = data.getEmail();
+        if (StringUtils.isBlank(email)) {
+            return; // 交给 Bean 校验，不在此重复报错
+        }
+
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
         if (!matcher.matches()) {
-            errMsg.append(Translator.get("email_format_error"))
-                    .append(ERROR_MSG_SEPARATOR);
+            errMsg.append(Translator.get("email_format_error")).append(ERROR_MSG_SEPARATOR);
         }
-        if (organizationUserService.checkEmail(data.getEmail())) {
-            errMsg.append(Translator.get("email.exist"))
-                    .append(ERROR_MSG_SEPARATOR);
+        if (organizationUserService.checkEmail(email)) {
+            errMsg.append(Translator.get("email.exist")).append(ERROR_MSG_SEPARATOR);
         }
 
         if (CollectionUtils.isNotEmpty(list)) {
             for (UserExcelData userExcelData : list) {
-                if (Strings.CI.equals(userExcelData.getEmail(), data.getEmail())) {
-                    errMsg.append(Translator.get("email.repeat") + data.getEmail())
+                if (Strings.CI.equals(userExcelData.getEmail(), email)) {
+                    errMsg.append(Translator.get("email.repeat"))
+                            .append(email)
                             .append(ERROR_MSG_SEPARATOR);
                     break;
                 }
@@ -272,31 +237,28 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-    /**
-     * 校验手机
-     *
-     * @param data
-     * @param errMsg
-     */
     private void validatePhone(UserExcelData data, StringBuilder errMsg) {
-        if (data.getPhone().length() > PHONE_LENGTH) {
-            errMsg.append(Translator.get("phone_length"))
-                    .append(ERROR_MSG_SEPARATOR);
-        }
-        if (organizationUserService.checkPhone(data.getPhone())) {
-            errMsg.append(Translator.get("phone.exist"))
-                    .append(ERROR_MSG_SEPARATOR);
+        String phone = data.getPhone();
+        if (StringUtils.isBlank(phone)) {
+            return; // 交给 Bean 校验，不在此重复报错
         }
 
-        if (!data.getPhone().matches(PHONE_REGEX)) {
-            errMsg.append(Translator.get("import_phone_validate"))
-                    .append(ERROR_MSG_SEPARATOR);
+        if (phone.length() > PHONE_LENGTH) {
+            errMsg.append(Translator.get("phone_length")).append(ERROR_MSG_SEPARATOR);
+        }
+        if (organizationUserService.checkPhone(phone)) {
+            errMsg.append(Translator.get("phone.exist")).append(ERROR_MSG_SEPARATOR);
+        }
+
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            errMsg.append(Translator.get("import_phone_validate")).append(ERROR_MSG_SEPARATOR);
         }
 
         if (CollectionUtils.isNotEmpty(list)) {
             for (UserExcelData userExcelData : list) {
-                if (Strings.CI.equals(userExcelData.getPhone(), data.getPhone())) {
-                    errMsg.append(Translator.get("phone.repeat") + data.getPhone())
+                if (Strings.CI.equals(userExcelData.getPhone(), phone)) {
+                    errMsg.append(Translator.get("phone.repeat"))
+                            .append(phone)
                             .append(ERROR_MSG_SEPARATOR);
                     break;
                 }
@@ -304,26 +266,13 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-    /**
-     * 校验姓名
-     *
-     * @param data
-     * @param errMsg
-     */
     private void validateName(UserExcelData data, StringBuilder errMsg) {
-        if (data.getName().length() > NAME_LENGTH) {
-            errMsg.append(Translator.get("name_length"))
-                    .append(ERROR_MSG_SEPARATOR);
+        String name = data.getName();
+        if (StringUtils.isNotEmpty(name) && name.length() > NAME_LENGTH) {
+            errMsg.append(Translator.get("name_length")).append(ERROR_MSG_SEPARATOR);
         }
     }
 
-
-    /**
-     * 数据转换
-     *
-     * @param row
-     * @return
-     */
     private UserExcelData parseDataToModel(Map<Integer, String> row) {
         UserExcelData data = new UserExcelDataFactory().getUserExcelDataLocal();
         for (Map.Entry<Integer, String> headEntry : headMap.entrySet()) {
@@ -332,71 +281,38 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             if (StringUtils.isBlank(field)) {
                 continue;
             }
-            String value = StringUtils.isEmpty(row.get(index)) ? StringUtils.EMPTY : row.get(index);
+            String value = StringUtils.defaultString(row.get(index));
+            String mappedField = excelHeadToFieldNameDic.getOrDefault(field, field);
 
-            if (excelHeadToFieldNameDic.containsKey(field)) {
-                field = excelHeadToFieldNameDic.get(field);
-            }
-
-            if (Strings.CS.equals(field, "employeeId")) {
-                data.setEmployeeId(value);
-            } else if (Strings.CS.equals(field, "name")) {
-                data.setName(value);
-            } else if (Strings.CS.equals(field, "gender")) {
-                data.setGender(value);
-            } else if (Strings.CS.equals(field, "department")) {
-                data.setDepartment(value);
-            } else if (Strings.CS.equals(field, "position")) {
-                data.setPosition(value);
-            } else if (Strings.CS.equals(field, "phone")) {
-                data.setPhone(value);
-            } else if (Strings.CS.equals(field, "email")) {
-                data.setEmail(value);
-            } else if (Strings.CS.equals(field, "supervisor")) {
-                data.setSupervisor(value);
-            } else if (Strings.CS.equals(field, "workCity")) {
-                data.setWorkCity(value);
-            } else if (Strings.CS.equals(field, "employeeType")) {
-                data.setEmployeeType(value);
+            BiConsumer<UserExcelData, String> setter = FIELD_SETTERS.get(mappedField);
+            if (setter != null) {
+                setter.accept(data, value);
             }
         }
         return data;
     }
 
-    /**
-     * @description: 获取注解里ExcelProperty的value
-     */
-    public Set<String> genExcelHeadToFieldNameDicAndGetNotRequiredFields() throws NoSuchFieldException {
-
-        Set<String> result = new HashSet<>();
-        Field field;
+    // 获取注解里 ExcelProperty 的值映射
+    public void genExcelHeadToFieldNameDicAndGetNotRequiredFields() throws NoSuchFieldException {
         Field[] fields = excelDataClass.getDeclaredFields();
         for (Field item : fields) {
-            field = excelDataClass.getDeclaredField(item.getName());
+            Field field = excelDataClass.getDeclaredField(item.getName());
             field.setAccessible(true);
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
-                StringBuilder value = new StringBuilder();
-                for (String v : excelProperty.value()) {
-                    value.append(v);
-                }
-                excelHeadToFieldNameDic.put(value.toString(), field.getName());
-                // 检查是否必有的头部信息
-                if (field.getAnnotation(NotRequired.class) != null) {
-                    result.add(value.toString());
-                }
+                String value = String.join("", excelProperty.value());
+                excelHeadToFieldNameDic.put(value, field.getName());
             }
         }
-        return result;
     }
 
     private void formatHeadMap() {
-        for (Integer key : headMap.keySet()) {
-            String name = headMap.get(key);
-            if (excelHeadToFieldNameDic.containsKey(name)) {
-                headMap.put(key, excelHeadToFieldNameDic.get(name));
+        for (Map.Entry<Integer, String> entry : headMap.entrySet()) {
+            String name = entry.getValue();
+            String mapped = excelHeadToFieldNameDic.get(name);
+            if (mapped != null) {
+                entry.setValue(mapped);
             }
         }
     }
-
 }

@@ -95,7 +95,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 校验错误信息
 	 */
 	@Getter
-	protected List<ExcelErrData<?>> errList = new ArrayList<>();
+	protected List<ExcelErrData> errList = new ArrayList<>();
 	/**
 	 * 后置处理函数
 	 */
@@ -331,7 +331,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 		});
 		if (StringUtils.isNotEmpty(errText)) {
-			ExcelErrData<?> excelErrData = new ExcelErrData<>(rowIndex,
+			ExcelErrData excelErrData = new ExcelErrData(rowIndex,
 					Translator.getWithArgs("row.error.tip", rowIndex + 1).concat(" " + errText));
 			//错误信息
 			errList.add(excelErrData);
