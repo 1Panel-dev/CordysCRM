@@ -38,20 +38,6 @@ const workbench: AppRouteRecordRaw = {
         isCache: true,
       },
     },
-    {
-      path: 'duplicateCheckDetail',
-      name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK_DETAIL,
-      component: () => import('@/views/workbench/duplicateCheck/relatedClue.vue'),
-      meta: {
-        permissions: [
-          'CUSTOMER_MANAGEMENT:READ',
-          'CUSTOMER_MANAGEMENT_POOL:READ',
-          'CLUE_MANAGEMENT:READ',
-          'CLUE_MANAGEMENT_POOL:READ',
-        ],
-        depth: 3,
-      },
-    },
   ],
 };
 
