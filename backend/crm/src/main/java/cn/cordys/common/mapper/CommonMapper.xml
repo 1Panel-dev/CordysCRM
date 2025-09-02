@@ -175,6 +175,12 @@
                 <when test="${condition}.operator == 'LT'">
                     ${column} is not null and ${column} != '' and ${column} &lt; #{condition.value}
                 </when>
+                <when test="${condition}.operator == 'GE'">
+                    ${column} is not null and ${column} != '' and ${column} &gt;= #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'LE'">
+                    ${column} is not null and ${column} != '' and ${column} &lt;= #{condition.value}
+                </when>
                 <when test="${condition}.operator == 'EMPTY'">
                     ${column} is null or ${column} = ''
                 </when>

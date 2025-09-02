@@ -36,7 +36,7 @@ public class FilterCondition {
     private Boolean multipleValue = false;
 
     @Schema(description = "操作符",
-            allowableValues = {"IN", "NOT_IN", "BETWEEN", "GT", "LT", "COUNT_GT", "COUNT_LT", "EQUALS", "NOT_EQUALS", "CONTAINS", "NOT_CONTAINS", "EMPTY", "NOT_EMPTY"})
+            allowableValues = {"IN", "NOT_IN", "BETWEEN", "GT", "LT", "GE", "LE", "COUNT_GT", "COUNT_LT", "EQUALS", "NOT_EQUALS", "CONTAINS", "NOT_CONTAINS", "EMPTY", "NOT_EMPTY"})
     @EnumValue(enumClass = CombineConditionOperator.class)
     private String operator;
 
@@ -290,6 +290,16 @@ public class FilterCondition {
          * 小于
          */
         LT,
+
+        /**
+         * 大于等于
+         */
+        GE,
+
+        /**
+         * 小于等于
+         */
+        LE,
 
         /**
          * 数量大于
