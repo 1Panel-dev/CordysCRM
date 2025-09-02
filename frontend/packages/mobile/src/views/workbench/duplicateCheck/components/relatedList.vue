@@ -14,19 +14,6 @@
       <div class="rounded-[var(--border-radius-small)] !bg-[var(--text-n9)] p-[16px]">
         <div class="mb-[4px] font-semibold text-[var(--text-n1)]">{{ listItem[props.nameKey ?? 'name'] }}</div>
         <CrmDescription :description="getDescriptions(listItem)" class="!m-0 !bg-[var(--text-n9)] !p-0">
-          <template #count="{ item }">
-            <CrmTextButton
-              :color="
-                !item.value ||
-                !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable'] ||
-                !hasPermission(listItem, item)
-                  ? 'var(--text-n1)'
-                  : 'var(--primary-8)'
-              "
-              :text="String(item.value || 0)"
-              @click="toDetail(listItem, item)"
-            />
-          </template>
           <template #createTime="{ item }">
             {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
           </template>
@@ -34,6 +21,13 @@
             <div v-if="typeof item.render === 'function'">
               {{ item.render(listItem) }}
             </div>
+          </template>
+          <template #customerName="{ item }">
+            <CrmTextButton
+              :color="listItem.hasPermission ? 'var(--primary-8)' : 'var(--text-n1)'"
+              :text="listItem.customerName"
+              @click="goDetail(listItem, item)"
+            />
           </template>
         </CrmDescription>
       </div>
@@ -53,8 +47,6 @@
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
   import { hasAnyPermission } from '@/utils/permission';
-
-  import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
     keyword: string;
@@ -84,30 +76,8 @@
     })) as CrmDescriptionItem[];
   }
 
-  function hasPermission(listItem: Record<string, any>, item: Record<string, any>) {
-    const permission = item.key.includes('clue')
-      ? ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']
-      : ['OPPORTUNITY_MANAGEMENT:READ'];
-    return hasAnyPermission(permission);
-  }
-
-  function toDetail(listItem: Record<string, any>, item: Record<string, any>) {
-    if (
-      !item.value ||
-      !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable'] ||
-      !hasPermission(listItem, item)
-    )
-      return;
-    router.push({
-      name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK_DETAIL,
-      query: {
-        keyword: listItem.name,
-        id: listItem.id,
-        detailType: item.key.includes('clue') ? 'clue' : 'opportunity',
-        customerName: listItem.name,
-      },
-    });
-  }
+  // TODO 跳转
+  function goDetail(listItem: Record<string, any>, item: Record<string, any>) {}
 
   defineExpose({
     loadList,

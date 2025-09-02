@@ -90,21 +90,27 @@ export default function useSearchFormConfig() {
   const searchResultMap = ref<Record<SearchTableKey, Record<string, any>>>({
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: {
       describe: [],
+      list: [],
     },
     [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: {
       describe: [],
+      list: [],
     },
     [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: {
       describe: [],
+      list: [],
     },
     [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: {
       describe: [],
+      list: [],
     },
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: {
       describe: [],
+      list: [],
     },
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: {
       describe: [],
+      list: [],
     },
   });
 
@@ -225,6 +231,14 @@ export default function useSearchFormConfig() {
           };
         }
 
+        if (field.key === 'customerId') {
+          return {
+            label: field.label,
+            key: field.key,
+            valueSlotName: 'customerName',
+          };
+        }
+
         // 部门
         if (field.key === 'departmentId') {
           return {
@@ -259,7 +273,6 @@ export default function useSearchFormConfig() {
             key: field.key,
             valueSlotName: 'render',
             render: (row: any) => {
-              // TODO 多选数据源返回来的数据不确定
               return row[field.key]?.join('；') ?? '-';
             },
           };
@@ -268,10 +281,6 @@ export default function useSearchFormConfig() {
         return {
           label: field.label,
           key: field.key,
-          valueSlotName: 'render',
-          render: (row: any) => {
-            return field.key === 'products' ? row.products.join('；') : row[field.id];
-          },
         };
       });
       if (![FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC].includes(e.value)) {
