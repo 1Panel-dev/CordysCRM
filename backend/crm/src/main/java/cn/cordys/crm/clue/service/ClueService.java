@@ -29,7 +29,6 @@ import cn.cordys.crm.clue.domain.*;
 import cn.cordys.crm.clue.dto.TransformCsAssociateDTO;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
-import cn.cordys.crm.clue.dto.response.ClueImportResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.domain.Customer;
@@ -46,6 +45,7 @@ import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -53,6 +53,7 @@ import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
@@ -857,7 +858,7 @@ public class ClueService {
 
         new EasyExcelExporter(Objects.class)
                 .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
-                        Translator.get("clue.import_tpl.name"), Translator.get("sheet.data"), Translator.get("sheet.comment"), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+                        Translator.get("clue.import_tpl.name"), SheetKey.DATA, SheetKey.COMMENT, new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -866,7 +867,7 @@ public class ClueService {
      * @param currentOrg 当前组织
      * @return 导入检查信息
      */
-    public ClueImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
@@ -880,7 +881,7 @@ public class ClueService {
      * @param currentUser 当前用户
      * @return 导入返回信息
      */
-    public ClueImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Clue, BaseResourceField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
@@ -902,7 +903,7 @@ public class ClueService {
             CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
                     clueFieldMapper, afterDo, 2000);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
-            return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             LogUtils.error("clue import error: ", e.getMessage());
@@ -916,12 +917,12 @@ public class ClueService {
      * @param currentOrg 当前组织
      * @return 检查信息
      */
-    private ClueImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CLUE.getKey(), currentOrg);
             CustomFieldCheckEventListener<ClueField> eventListener = new CustomFieldCheckEventListener<>(fields, "clue", currentOrg, clueFieldMapper);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
-            return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             LogUtils.error("clue import pre-check error: {}", e.getMessage());

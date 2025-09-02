@@ -12,7 +12,6 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
-import cn.cordys.crm.clue.dto.response.ClueImportResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.ClueExportService;
 import cn.cordys.crm.clue.service.ClueService;
@@ -24,6 +23,7 @@ import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -200,14 +200,14 @@ public class ClueController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ClueImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
         return clueService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ClueImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return clueService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

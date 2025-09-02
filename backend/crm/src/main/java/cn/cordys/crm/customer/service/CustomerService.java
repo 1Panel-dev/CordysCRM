@@ -9,6 +9,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -21,12 +22,10 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
-import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.customer.domain.CustomerCollaboration;
-import cn.cordys.crm.customer.domain.CustomerPool;
-import cn.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.CustomerAddRequest;
 import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -39,20 +38,26 @@ import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -62,6 +67,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,6 +125,10 @@ public class CustomerService {
     private CustomerContactService customerContactService;
     @Resource
     private DictService dictService;
+    @Resource
+    private BaseMapper<CustomerField> customerFieldMapper;
+    @Resource
+    private BaseMapper<CustomerFieldBlob> customerFieldBlobMapper;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -129,7 +139,7 @@ public class CustomerService {
     }
 
     public PagerWithOption<List<CustomerListResponse>> transitionList(CustomerPageRequest request, String userId, String orgId) {
-        /**
+        /*
          * 数据范围: 当前用户所在公海&所有私海客户
          */
         List<String> scopeIds = userExtendService.getUserScopeIds(userId, orgId);
@@ -602,6 +612,74 @@ public class CustomerService {
 
         new EasyExcelExporter(Objects.class)
                 .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
-                        Translator.get("customer.import_tpl.name"), Translator.get("sheet.data"), Translator.get("sheet.comment"), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+                        Translator.get("customer.import_tpl.name"), SheetKey.DATA, SheetKey.COMMENT, new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+    }
+
+    /**
+     * 导入检查
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, currentOrg);
+    }
+
+    /**
+     * 线索导入
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @param currentUser 当前用户
+     * @return 导入返回信息
+     */
+    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.CUSTOMER.getKey(), currentOrg);
+            CustomImportAfterDoConsumer<Customer, BaseResourceField> afterDo = (customers, customerFields, customerFieldBlobs) -> {
+                List<LogDTO> logs = new ArrayList<>();
+                customers.forEach(customer -> {
+                    customer.setCreateTime(System.currentTimeMillis());
+                    customer.setUpdateTime(System.currentTimeMillis());
+                    customer.setCollectionTime(customer.getCreateTime());
+                    customer.setInSharedPool(false);
+                    logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_INDEX, customer.getName()));
+                });
+                customerMapper.batchInsert(customers);
+                customerFieldMapper.batchInsert(customerFields.stream().map(field -> BeanUtils.copyBean(new CustomerField(), field)).toList());
+                customerFieldBlobMapper.batchInsert(customerFieldBlobs.stream().map(field -> BeanUtils.copyBean(new CustomerFieldBlob(), field)).toList());
+                // record logs
+                logService.batchAdd(logs);
+            };
+            CustomFieldImportEventListener<Customer, CustomerField> eventListener = new CustomFieldImportEventListener<>(fields, Customer.class, currentOrg, currentUser,
+                    customerFieldMapper, afterDo, 2000);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("clue import error: ", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    /**
+     * 检查导入的文件
+     * @param file 文件
+     * @param currentOrg 当前组织
+     * @return 检查信息
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CUSTOMER.getKey(), currentOrg);
+            CustomFieldCheckEventListener<CustomerField> eventListener = new CustomFieldCheckEventListener<>(fields, "customer", currentOrg, customerFieldMapper);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("customer import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
     }
 }

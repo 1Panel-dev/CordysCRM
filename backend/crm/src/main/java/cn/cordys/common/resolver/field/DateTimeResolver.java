@@ -15,6 +15,10 @@ import java.time.temporal.TemporalAccessor;
  */
 public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField> {
 
+    public static final String DATE = "date";
+    public static final String DATETIME = "datetime";
+    public static final String MONTH = "month";
+
     @Override
     public void validate(DateTimeField dateTimeField, Object value) {
         validateRequired(dateTimeField, value);
@@ -35,13 +39,13 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
 
     @Override
     public Object trans2Value(DateTimeField dateTimeField, String value) {
-        if (Strings.CI.equals(dateTimeField.getDateType(), "date")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), DATE)) {
             return TimeUtils.getDataStr(Long.valueOf(value));
         }
-        if (Strings.CI.equals(dateTimeField.getDateType(), "datetime")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), DATETIME)) {
             return TimeUtils.getDataTimeStr(Long.valueOf(value));
         }
-        if (Strings.CI.equals(dateTimeField.getDateType(), "month")) {
+        if (Strings.CI.equals(dateTimeField.getDateType(), MONTH)) {
             return TimeUtils.getMonthStr(Long.valueOf(value));
         }
         return value;
@@ -63,17 +67,13 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
                 LocalDate::from,
                 YearMonth::from);
 
-        Instant instant;
-        if (parsed instanceof LocalDateTime) {
-            instant = ((LocalDateTime) parsed).atZone(ZoneId.systemDefault()).toInstant();
-        } else if (parsed instanceof LocalDate) {
-            instant = ((LocalDate) parsed).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        } else if (parsed instanceof YearMonth) {
-            instant = ((YearMonth) parsed).atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        } else {
-            throw new DateTimeParseException("无法解析日期时间: " + text, text, 0);
-        }
+        Instant instant = switch (parsed) {
+			case LocalDateTime localDateTime -> localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+			case LocalDate localDate -> localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+			case YearMonth yearMonth -> yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+			default -> throw new DateTimeParseException("无法解析日期时间: " + text, text, 0);
+		};
 
-        return instant.toEpochMilli();
+		return instant.toEpochMilli();
     }
 }

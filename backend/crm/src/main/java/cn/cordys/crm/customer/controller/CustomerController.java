@@ -20,6 +20,7 @@ import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -35,6 +36,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -180,5 +182,19 @@ public class CustomerController {
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         customerService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
+        return customerService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+        return customerService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

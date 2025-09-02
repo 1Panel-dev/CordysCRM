@@ -1,4 +1,4 @@
-package cn.cordys.crm.clue.dto.response;
+package cn.cordys.crm.system.dto.response;
 
 import cn.cordys.excel.domain.ExcelErrData;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ClueImportResponse implements Serializable {
+public class ImportResponse implements Serializable {
 
 	@Serial
 	private static final long serialVersionUID = 1L;

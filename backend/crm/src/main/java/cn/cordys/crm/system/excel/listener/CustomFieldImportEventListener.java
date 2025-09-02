@@ -291,6 +291,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * @param field 字段
 	 * @return 值
 	 */
+	@SuppressWarnings("unchecked")
 	private Object convertValue(String text, BaseField field) {
 		if (StringUtils.isEmpty(text)) {
 			return text;

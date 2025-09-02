@@ -1,6 +1,10 @@
 package cn.cordys.crm.system.excel.handler;
 
+import cn.cordys.common.resolver.field.DateTimeResolver;
+import cn.cordys.common.resolver.field.LocationResolver;
+import cn.cordys.common.resolver.field.NumberResolver;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
 import cn.cordys.crm.system.dto.field.LocationField;
@@ -8,7 +12,6 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.idev.excel.metadata.Head;
-import cn.idev.excel.metadata.data.DataFormatData;
 import cn.idev.excel.metadata.data.WriteCellData;
 import cn.idev.excel.util.BooleanUtils;
 import cn.idev.excel.write.handler.CellWriteHandler;
@@ -24,6 +27,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
@@ -43,7 +47,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private final List<String> requires = new ArrayList<>();
 	private final List<String> uniques = new ArrayList<>();
 	private final List<String> multiples = new ArrayList<>();
-	private final List<String> dateHeads = new ArrayList<>();
+	private final Map<Integer, List<String>> validationOptionMap = new HashMap<>();
 	private final int totalColumns;
 
 	public CustomTemplateWriteHandler(List<BaseField> fields) {
@@ -59,6 +63,10 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			if (field.multiple()) {
 				multiples.add(field.getName());
 			}
+			if (field instanceof HasOption optionField && CollectionUtils.isNotEmpty(optionField.getOptions())) {
+				// set options for data validation
+				validationOptionMap.put(index, optionField.getOptions().stream().map(OptionProp::getLabel).toList());
+			}
 		}
 		totalColumns = index;
 	}
@@ -66,7 +74,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	@Override
 	public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
 		Sheet sheet = writeSheetHolder.getSheet();
-		if (Strings.CS.equals(sheet.getSheetName(), Translator.get("sheet.comment"))) {
+		if (Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.COMMENT))) {
 			Row row1 = sheet.createRow(0);
 			row1.setHeightInPoints(80);
 			Cell cell1 = row1.createCell(0);
@@ -84,12 +92,21 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			style.setFont(font);
 			cell1.setCellStyle(style);
 		}
+		if (Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
+			// set data validation
+			DataValidationHelper dataValidationHelper = sheet.getDataValidationHelper();
+			validationOptionMap.forEach((k, v) -> {
+				DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(v.toArray(String[]::new));
+				DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k - 1, k - 1));
+				sheet.addValidationData(dataValidation);
+			});
+		}
 	}
 
 	@Override
 	public void afterRowDispose(RowWriteHandlerContext context) {
 		Sheet sheet = context.getWriteSheetHolder().getSheet();
-		if (BooleanUtils.isTrue(context.getHead()) && Strings.CS.equals(sheet.getSheetName(), Translator.get("sheet.data"))) {
+		if (BooleanUtils.isTrue(context.getHead()) && Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
 			mainSheet = sheet;
 			drawingPatriarch = sheet.createDrawingPatriarch();
 			fieldIndexMap.forEach((k, v) -> {
@@ -115,12 +132,6 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			}
 			if (multiples.contains(cell.getStringCellValue())) {
 				font.setUnderline(Font.U_SINGLE);
-			}
-		} else {
-			if (cell.getColumnIndex() == 15) {
-				DataFormatData format = new DataFormatData();
-				format.setIndex((short) 49);
-				headStyle.setDataFormatData(format);
 			}
 		}
 		font.setFontHeightInPoints((short) 12);
@@ -153,7 +164,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getNumberComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		InputNumberField numberField = (InputNumberField) field;
-		if (Strings.CS.equals(numberField.getNumberFormat(), "percent")) {
+		if (Strings.CS.equals(numberField.getNumberFormat(), NumberResolver.PERCENT_FORMAT)) {
 			sb.append(Translator.get("format.preview")).append(": 99%, ");
 		} else {
 			sb.append(Translator.get("format.preview")).append(": 999, ");
@@ -167,9 +178,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getDateTimeComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		DateTimeField dateTimeField = (DateTimeField) field;
-		if (Strings.CS.equals(dateTimeField.getDateType(), "datetime")) {
+		if (Strings.CS.equals(dateTimeField.getDateType(), DateTimeResolver.DATETIME)) {
 			sb.append(Translator.get("format.preview")).append(": 2025/8/6 20:23:59");
-		} else if (Strings.CS.equals(dateTimeField.getDateType(), "date")) {
+		} else if (Strings.CS.equals(dateTimeField.getDateType(), DateTimeResolver.DATE)) {
 			sb.append(Translator.get("format.preview")).append(": 2025/8/6");
 		} else {
 			sb.append(Translator.get("format.preview")).append(": 2025/8");
@@ -180,9 +191,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private String getLocationComment(BaseField field) {
 		StringBuilder sb = new StringBuilder();
 		LocationField locationField = (LocationField) field;
-		if (Strings.CS.equals(locationField.getLocationType(), "PC")) {
+		if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PC)) {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pc"));
-		} else if (Strings.CS.equals(locationField.getLocationType(), "PCD")) {
+		} else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD)) {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd"));
 		} else {
 			sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd.detail"));
