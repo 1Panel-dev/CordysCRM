@@ -132,18 +132,13 @@
   import { NButton, NPopover, NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { ValidateInfo } from '@lib/shared/models/system/org';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   const { t } = useI18n();
-
-  export interface ValidateInfo {
-    failCount: number;
-    successCount: number;
-    errorMessages: { rowNum: number; errMsg: string }[];
-  }
 
   const props = defineProps<{
     validateInfo: ValidateInfo;

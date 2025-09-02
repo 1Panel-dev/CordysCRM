@@ -31,6 +31,8 @@ import {
   DeleteCustomerViewUrl,
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
+  DownloadAccountTemplateUrl,
+  DownloadContactTemplateUrl,
   DragContactViewUrl,
   DragCustomerViewUrl,
   EnableContactViewUrl,
@@ -79,9 +81,13 @@ import {
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
+  ImportAccountUrl,
+  ImportContactUrl,
   IsCustomerOpenSeaNoPickUrl,
   MoveToCustomerUrl,
   PickOpenSeaCustomerUrl,
+  PreCheckAccountImportUrl,
+  PreCheckContactImportUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
   UpdateContactViewUrl,
@@ -146,6 +152,7 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -615,6 +622,44 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  // 客户导入
+  function preCheckImportAccount(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckAccountImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadAccountTemplate() {
+    return CDR.get(
+      {
+        url: DownloadAccountTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importAccount(file: File) {
+    return CDR.uploadFile({ url: ImportAccountUrl }, { fileList: [file] }, 'file');
+  }
+
+  // 联系人导入
+  function preCheckImportContact(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContactImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadContactTemplate() {
+    return CDR.get(
+      {
+        url: DownloadContactTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContact(file: File) {
+    return CDR.uploadFile({ url: ImportContactUrl }, { fileList: [file] }, 'file');
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -710,5 +755,11 @@ export default function useProductApi(CDR: CordysAxios) {
     getAdvancedCustomerContactList,
     exportCustomerOpenSeaAll,
     exportCustomerOpenSeaSelected,
+    preCheckImportAccount,
+    downloadAccountTemplate,
+    importAccount,
+    preCheckImportContact,
+    downloadContactTemplate,
+    importContact,
   };
 }

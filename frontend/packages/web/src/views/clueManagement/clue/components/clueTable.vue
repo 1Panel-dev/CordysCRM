@@ -24,9 +24,7 @@
         </n-button>
         <CrmImportButton
           v-if="hasAnyPermission(['CLUE_MANAGEMENT:IMPORT'])"
-          :validate-api="preCheckImportLead"
-          :import-save-api="importLead"
-          :download-template-api="downloadLeadTemplate"
+          :api-type="FormDesignKeyEnum.CLUE"
           :title="t('module.clueManagement')"
           @import-success="() => searchData()"
         />
@@ -154,14 +152,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import convertClueModal from './convertClueModal.vue';
 
-  import {
-    batchDeleteClue,
-    batchTransferClue,
-    deleteClue,
-    downloadLeadTemplate,
-    importLead,
-    preCheckImportLead,
-  } from '@/api/modules';
+  import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';

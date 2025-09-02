@@ -1,5 +1,3 @@
-import { ValidateInfo } from '@cordys/web/src/components/business/crm-import-button/components/validateResult.vue';
-
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddClueFollowPlanUrl,
@@ -100,6 +98,7 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { CluePoolItem, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {

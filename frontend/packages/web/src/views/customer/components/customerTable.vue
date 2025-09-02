@@ -30,6 +30,12 @@
         >
           {{ t('customer.new') }}
         </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:IMPORT'])"
+          :api-type="FormDesignKeyEnum.CUSTOMER"
+          :title="t('module.customerManagement')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-if="
             hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) &&
@@ -123,6 +129,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';

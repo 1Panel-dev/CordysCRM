@@ -89,6 +89,9 @@ export const {
   advancedSearchOptPage,
   globalSearchOptPage,
   advancedSearchOptDetail,
+  preCheckImportOpt,
+  downloadOptTemplate,
+  importOpportunity,
 } = opportunityApi;
 
 export const {
@@ -245,6 +248,12 @@ export const {
   exportCustomerOpenSeaSelected,
   exportContactAll,
   exportContactSelected,
+  preCheckImportAccount,
+  downloadAccountTemplate,
+  importAccount,
+  preCheckImportContact,
+  downloadContactTemplate,
+  importContact,
 } = customerApi;
 
 export const {

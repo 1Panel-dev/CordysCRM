@@ -29,6 +29,12 @@
           <n-button v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
             {{ t('overviewDrawer.addContract') }}
           </n-button>
+          <CrmImportButton
+            v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:IMPORT']) && !props.sourceId"
+            :api-type="FormDesignKeyEnum.CONTACT"
+            :title="t('customer.contact')"
+            @import-success="() => searchData()"
+          />
           <n-button
             v-if="!props.sourceId"
             v-permission="['CUSTOMER_MANAGEMENT_CONTACT:EXPORT']"
@@ -161,6 +167,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';

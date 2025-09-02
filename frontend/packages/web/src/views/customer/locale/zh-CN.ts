@@ -43,4 +43,5 @@ export default {
   'customer.contacts.department': '部门联系人',
   'customer.recycleReason': '回收原因',
   'customer.recycleOpenSeaName': '归属公海',
+  'customer.contact': '联系人',
 };

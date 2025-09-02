@@ -33,6 +33,12 @@
         >
           {{ t('opportunity.createOpportunity') }}
         </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT'])"
+          :api-type="FormDesignKeyEnum.BUSINESS"
+          :title="t('module.businessManagement')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) && !props.readonly"
           type="primary"
@@ -43,13 +49,6 @@
         >
           {{ t('common.exportAll') }}
         </n-button>
-        <!-- TODO 不上 -->
-        <!-- <CrmImportButton
-            :validate-api="importUserPreCheck"
-            :import-save-api="importUsers"
-            :title="t('module.businessManagement')"
-            @import-success="() => searchData()"
-          /> -->
       </div>
     </template>
     <template #actionRight>
@@ -135,8 +134,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  // TODO 不上
-  // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';

@@ -97,3 +97,13 @@ export const DeleteContactViewUrl = '/customer/contact/view/delete';
 export const FixedContactViewUrl = '/customer/contact/view/fixed';
 export const EnableContactViewUrl = '/customer/contact/view/enable';
 export const DragContactViewUrl = '/customer/contact/view/edit/pos';
+
+// 客户导入
+export const PreCheckAccountImportUrl = '/customer/import/pre-check';
+export const DownloadAccountTemplateUrl = '/customer/template/download';
+export const ImportAccountUrl = '/customer/import';
+
+// 联系人导入
+export const PreCheckContactImportUrl = '/customer/contact/import/pre-check';
+export const DownloadContactTemplateUrl = '/customer/contact/template/download';
+export const ImportContactUrl = '/customer/contact/import';

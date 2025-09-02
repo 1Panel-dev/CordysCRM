@@ -8,7 +8,7 @@
     :title="props.title"
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
-    :download-template-api="props.downloadTemplateApi"
+    :download-template-api="importApiMap[props.apiType]?.download"
     @validate="validateTemplate"
   />
 
@@ -43,17 +43,17 @@
 
   import useProgressBar from '@/hooks/useProgressBar';
 
+  import { importApiMap, ImportApiType } from './utils';
+
   const { t } = useI18n();
   const { progress, start, finish } = useProgressBar();
   const Message = useMessage();
 
   const props = defineProps<{
+    apiType: ImportApiType;
     title?: string;
     buttonText?: string;
     descriptionTip?: string; // 描述提示
-    validateApi: (file: File) => Promise<{ data: ValidateInfo }>; // 导入校验Api
-    importSaveApi: (file: File) => Promise<any>; // 导入保存Api
-    downloadTemplateApi?: () => Promise<any>; // 下载模板Api
   }>();
 
   const emit = defineEmits<{
@@ -98,7 +98,7 @@
   async function importHandler() {
     try {
       importLoading.value = true;
-      await props.importSaveApi(fileList.value[0].file as File);
+      await importApiMap[props.apiType].save(fileList.value[0].file as File);
       Message.success(t('common.importSuccess'));
 
       emit('importSuccess');
@@ -123,7 +123,7 @@
       validateModal.value = true;
       start();
 
-      const result = await props.validateApi(fileList.value[0].file as File);
+      const result = await importApiMap[props.apiType].preCheck(fileList.value[0].file as File);
       validateInfo.value = result.data;
       finish();
     } catch (error) {

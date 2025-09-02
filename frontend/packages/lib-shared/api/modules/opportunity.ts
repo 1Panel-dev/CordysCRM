@@ -9,6 +9,7 @@ import {
   DeleteBusinessViewUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
+  DownloadOptTemplateUrl,
   DragBusinessViewUrl,
   EnableBusinessViewUrl,
   ExportOpportunityAllUrl,
@@ -23,6 +24,7 @@ import {
   GetOptFormConfigUrl,
   GetOptTabUrl,
   GlobalSearchOptPageUrl,
+  ImportOpportunityUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
   OptBatchTransferUrl,
@@ -32,6 +34,7 @@ import {
   OptPageUrl,
   OptUpdateStageUrl,
   OptUpdateUrl,
+  PreCheckOptImportUrl,
   UpdateBusinessViewUrl,
   UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
@@ -64,6 +67,7 @@ import type {
   UpdateOpportunityParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -237,6 +241,24 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<OpportunityItem>>({ url: AdvancedSearchOptDetailUrl, data });
   }
 
+  function preCheckImportOpt(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckOptImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadOptTemplate() {
+    return CDR.get(
+      {
+        url: DownloadOptTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importOpportunity(file: File) {
+    return CDR.uploadFile({ url: ImportOpportunityUrl }, { fileList: [file] }, 'file');
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -274,5 +296,8 @@ export default function useProductApi(CDR: CordysAxios) {
     advancedSearchOptPage,
     globalSearchOptPage,
     advancedSearchOptDetail,
+    preCheckImportOpt,
+    downloadOptTemplate,
+    importOpportunity,
   };
 }

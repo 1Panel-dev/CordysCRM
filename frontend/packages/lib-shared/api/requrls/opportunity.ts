@@ -36,3 +36,8 @@ export const DeleteBusinessViewUrl = '/opportunity/view/delete';
 export const FixedBusinessViewUrl = '/opportunity/view/fixed';
 export const EnableBusinessViewUrl = '/opportunity/view/enable';
 export const DragBusinessViewUrl = '/opportunity/view/edit/pos';
+
+// 导入
+export const PreCheckOptImportUrl = '/opportunity/import/pre-check';
+export const DownloadOptTemplateUrl = '/opportunity/template/download';
+export const ImportOpportunityUrl = '/opportunity/import';
