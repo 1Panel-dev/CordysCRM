@@ -32,7 +32,6 @@ public class OpportunityAddRequest {
     private BigDecimal possible;
 
     @Size(max = 32)
-    @NotBlank
     @Schema(description = "联系人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String contactId;
 
