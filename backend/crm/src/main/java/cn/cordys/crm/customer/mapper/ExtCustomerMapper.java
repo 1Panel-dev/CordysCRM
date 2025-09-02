@@ -51,6 +51,8 @@ public interface ExtCustomerMapper {
 
     boolean hasRefOpportunity(@Param("ids") List<String> ids);
 
+    boolean hasRefContact(@Param("ids") List<String> ids);
+
     /**
      * 查询负责人过滤条件下的客户数量
      *

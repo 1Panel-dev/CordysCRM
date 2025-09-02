@@ -377,7 +377,7 @@ public class CustomerService {
     public void delete(String id, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
-        checkOpportunityRef(List.of(id));
+        checkResourceRef(List.of(id));
         // 删除客户
         customerMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
@@ -448,7 +448,7 @@ public class CustomerService {
         List<String> owners = getOwners(customers);
         dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
 
-        checkOpportunityRef(ids);
+        checkResourceRef(ids);
 
         // 删除客户
         customerMapper.deleteByIds(ids);
@@ -480,9 +480,9 @@ public class CustomerService {
         );
     }
 
-    private void checkOpportunityRef(List<String> ids) {
-        if (extCustomerMapper.hasRefOpportunity(ids)) {
-            throw new GenericException(CustomerResultCode.CUSTOMER_OPPORTUNITY_REF);
+    private void checkResourceRef(List<String> ids) {
+        if (extCustomerMapper.hasRefOpportunity(ids) || extCustomerMapper.hasRefContact(ids)) {
+            throw new GenericException(CustomerResultCode.CUSTOMER_RESOURCE_REF);
         }
     }
 
