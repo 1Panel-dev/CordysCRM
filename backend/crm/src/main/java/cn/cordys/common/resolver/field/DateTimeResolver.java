@@ -56,6 +56,8 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d H:m:s"))
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d H:m:s"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d H:m"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d H:m"))
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d"))
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d"))
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy-M"))

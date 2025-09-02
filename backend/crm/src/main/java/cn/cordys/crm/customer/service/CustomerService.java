@@ -243,8 +243,10 @@ public class CustomerService {
                 customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
-            String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
-            customerListResponse.setFollowerName(followerName);
+            if (StringUtils.isNotEmpty(customerListResponse.getFollower())) {
+                String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
+                customerListResponse.setFollowerName(followerName);
+            }
             String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
             customerListResponse.setCreateUserName(createUserName);
             String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
