@@ -29,7 +29,6 @@ COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
-COPY installer/conf /opt/cordys/conf
 COPY installer/shells /shells
 COPY installer/conf /installer/conf
 
@@ -48,6 +47,4 @@ RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 VOLUME [ "/opt/cordys" ]
 
 RUN chmod 777  /shells/*.sh
-RUN chmod -R 777 /opt/cordys
-
 ENTRYPOINT ["sh", "/shells/start-all.sh"]
