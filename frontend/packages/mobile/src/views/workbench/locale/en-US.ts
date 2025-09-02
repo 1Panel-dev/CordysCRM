@@ -9,7 +9,7 @@ export default {
   'workbench.duplicateCheck.relatedClue': 'Related clue',
   'workbench.duplicateCheck.relatedClues': 'Clue relations',
   'workbench.duplicateCheck.clueStage': 'Clue stage',
-  'workbench.duplicateCheck.noDuplicateCustomers': 'No duplicate customers',
+  'workbench.duplicateCheck.noSearchData': 'No search results found',
   'workbench.duplicateCheck.moduleNotEnabled': 'Module not enabled',
   'workbench.duplicateCheck.duplicate': 'Duplicate',
   'workbench.duplicateCheck.similar': 'Similar',

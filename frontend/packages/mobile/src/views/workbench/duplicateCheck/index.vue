@@ -1,18 +1,15 @@
 <template>
   <CrmPageWrapper :title="t('workbench.duplicateCheck')">
-    <van-search
-      v-model="keyword"
-      shape="round"
-      :placeholder="t('workbench.searchPlaceholder')"
-      @clear="searchData"
-      @search="searchData"
-    />
-    <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
-      {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
+    <van-search v-model="keyword" shape="round" :placeholder="t('workbench.searchPlaceholder')" @search="refresh" />
+    <div
+      v-show="keyword.length && !loading && !displayConfigList.length"
+      class="mt-[80px] text-center text-[var(--text-n4)]"
+    >
+      {{ t('workbench.duplicateCheck.noSearchData') }}
     </div>
 
     <van-collapse v-if="keyword.length" v-model="activeNames" :border="false">
-      <van-collapse-item v-for="item of configList" :key="item.value" :name="item.value" :border="false">
+      <van-collapse-item v-for="item of displayConfigList" :key="item.value" :name="item.value" :border="false">
         <template #icon>
           <CrmIcon
             :name="activeNames.includes(item.value) ? 'iconicon_chevron_up' : 'iconicon_chevron_right'"
@@ -27,6 +24,7 @@
                 title: item.label,
               })
             }}
+            <span class="text-[var(--text-n4)]"> ({{ moduleCount?.[item.value] }}) </span>
           </div>
         </template>
         <template #right-icon> </template>
@@ -64,6 +62,10 @@
     searchResultMap,
     getSearchListApiMap,
     configList,
+    loading,
+    formModel,
+    moduleCount,
+    getCountList,
     initSearchDetail,
     initSearchListConfig,
   } = useSearchFormConfig();
@@ -77,15 +79,11 @@
   const keyword = ref('');
   const activeNames = ref<FormDesignKeyEnum[]>([]);
 
-  const noDuplicateCustomers = ref(false);
-  const showResult = ref(false);
-  const showClue = ref(false);
-
-  onBeforeMount(() => {
-    keyword.value = '';
-    showResult.value = false;
-    showClue.value = false;
-    noDuplicateCustomers.value = false;
+  const displayConfigList = computed(() => {
+    if (!formModel.value.resultDisplay) {
+      return configList.value;
+    }
+    return configList.value.filter((item) => moduleCount.value?.[item.value]);
   });
 
   const relatedListRefs = ref<Record<string, any>>({});
@@ -99,16 +97,23 @@
 
   const searchData = debounce(() => {
     nextTick(() => {
-      Object.values(relatedListRefs).forEach((comp) => {
+      Object.values(relatedListRefs.value).forEach((comp) => {
         comp?.loadList?.();
       });
     });
   }, 300);
 
+  async function refresh(val: string) {
+    await getCountList(val);
+    searchData();
+  }
+
   watch(
     () => keyword.value,
-    () => {
-      searchData();
+    (val: string) => {
+      if (val) {
+        refresh(val);
+      }
     }
   );
 

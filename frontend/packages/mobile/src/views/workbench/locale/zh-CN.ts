@@ -9,7 +9,7 @@ export default {
   'workbench.duplicateCheck.relatedClue': '对应线索',
   'workbench.duplicateCheck.relatedClues': '线索相关',
   'workbench.duplicateCheck.clueStage': '线索阶段',
-  'workbench.duplicateCheck.noDuplicateCustomers': '无重复客户',
+  'workbench.duplicateCheck.noSearchData': '无搜索结果',
   'workbench.duplicateCheck.moduleNotEnabled': '模块未开启',
   'workbench.duplicateCheck.duplicate': '重复',
   'workbench.duplicateCheck.similar': '相似',

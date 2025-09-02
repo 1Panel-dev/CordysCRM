@@ -1,3 +1,4 @@
+import { closeToast, showLoadingToast } from 'vant';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
@@ -10,6 +11,7 @@ import {
   getGlobalCluePoolList,
   getGlobalCustomerContactList,
   getGlobalCustomerList,
+  getGlobalModuleCount,
   getGlobalOpenSeaCustomerList,
   getGlobalSearchClueList,
   getSearchConfig,
@@ -145,6 +147,28 @@ export default function useSearchFormConfig() {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  const loading = ref(false);
+  const moduleCount = ref<Record<string, number>>();
+  async function getCountList(val: string) {
+    if (!val) return;
+    try {
+      showLoadingToast(t('common.loading'));
+      loading.value = true;
+      const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
+      const res = await getGlobalModuleCount(searchTerm);
+      moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
+        acc[item.key] = item.count;
+        return acc;
+      }, {});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+      closeToast();
     }
   }
 
@@ -293,7 +317,10 @@ export default function useSearchFormConfig() {
 
   return {
     initSearchFormConfig,
+    getCountList,
     initSearchDetail,
+    moduleCount,
+    loading,
     searchFieldMap,
     allFieldMap,
     configList,

@@ -13,11 +13,6 @@ import {
   GetExportCenterListUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
-  GetRepeatClueDetailUrl,
-  GetRepeatClueUrl,
-  GetRepeatContactUrl,
-  GetRepeatCustomerUrl,
-  GetRepeatOpportunityDetailUrl,
   GetThirdConfigByTypeUrl,
   GetThirdPartyConfigUrl,
   GetThirdTypeListUrl,
@@ -44,11 +39,6 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
   DEOrgItem,
-  RepeatClueItem,
-  RepeatClueParams,
-  RepeatContactItem,
-  RepeatCustomerItem,
-  RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
 import {
   ExportCenterItem,
@@ -181,34 +171,6 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<FollowDetailItem>>({ url: GetPersonalFollowUrl, data });
   }
 
-  // 查重客户相关
-  function GetRepeatCustomerList(data: RepeatClueParams) {
-    return CDR.post<CommonList<RepeatCustomerItem>>(
-      { url: GetRepeatCustomerUrl, data },
-      { isReturnNativeResponse: true }
-    );
-  }
-
-  // 查重联系人相关
-  function getRepeatContactList(data: RepeatClueParams) {
-    return CDR.post<CommonList<RepeatContactItem>>(
-      { url: GetRepeatContactUrl, data },
-      { isReturnNativeResponse: true }
-    );
-  }
-
-  function GetRepeatClueList(data: RepeatClueParams) {
-    return CDR.post<CommonList<RepeatCustomerItem>>({ url: GetRepeatClueUrl, data }, { isReturnNativeResponse: true });
-  }
-
-  function GetRepeatClueDetailList(data: RepeatClueParams) {
-    return CDR.post<CommonList<RepeatClueItem>>({ url: GetRepeatClueDetailUrl, data });
-  }
-
-  function GetRepeatOpportunityDetailList(data: RepeatClueParams) {
-    return CDR.post<CommonList<RepeatOpportunityItem>>({ url: GetRepeatOpportunityDetailUrl, data });
-  }
-
   //  个人中心导出列表
   function getExportCenterList(data: ExportCenterListParams) {
     return CDR.post<ExportCenterItem[]>({ url: GetExportCenterListUrl, data });
@@ -248,14 +210,9 @@ export default function useProductApi(CDR: CordysAxios) {
     sendEmailCode,
     updateUserPassword,
     getPersonalFollow,
-    GetRepeatCustomerList,
-    GetRepeatClueList,
-    GetRepeatClueDetailList,
-    GetRepeatOpportunityDetailList,
     getExportCenterList,
     exportCenterDownload,
     cancelCenterExport,
-    getRepeatContactList,
     getDEToken,
     syncDE,
     getDEOrgList,

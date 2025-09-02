@@ -186,6 +186,7 @@ export const {
   getGlobalCustomerContactList,
   getGlobalCustomerList,
   getGlobalOpenSeaCustomerList,
+  getGlobalModuleCount,
 } = customerApi;
 
 export const {
@@ -236,15 +237,10 @@ export const {
   getPersonalInfo,
   sendEmailCode,
   updateUserPassword,
-  GetRepeatClueDetailList,
-  GetRepeatClueList,
-  GetRepeatCustomerList,
-  GetRepeatOpportunityDetailList,
   getThirdConfigByType,
   exportCenterDownload,
   getExportCenterList,
   cancelCenterExport,
-  getRepeatContactList,
   getConfigSynchronization,
 } = businessApi;
 
