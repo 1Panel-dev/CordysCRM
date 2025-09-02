@@ -160,10 +160,13 @@
 
 <style scoped lang="less">
   .crm-overflow-tag-list {
+    // BFC 后使用overflow-hidden防止子元素crm-measure-tag-item宽度溢出导致外层容器出现的宽度抖动
+    position: relative;
     display: flex;
+    align-items: center;
+    overflow: hidden;
     flex-wrap: nowrap;
     gap: 4px;
-    align-items: center;
   }
   .crm-measure-tag-item {
     position: absolute;
