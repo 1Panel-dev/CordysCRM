@@ -8,6 +8,7 @@ import type {
   DialogOptions,
   LoadingBarApi,
   MessageApi,
+  MessageProviderProps,
   NotificationApi,
   NotificationOptions,
 } from 'naive-ui';
@@ -110,16 +111,15 @@ function createNotification(
 /**
  * @description: 该函数用于创建和管理不同的 API（如消息、通知、对话框等）消息n-XXX-provider容器，并返回相应的实例
  */
-export default function useDiscreteApi(props?: ConfigProviderProps) {
+export default function useDiscreteApi(props?: {
+  configProviderProps?: ConfigProviderProps;
+  messageProviderProps?: MessageProviderProps;
+}) {
   if (!isInitialization) {
     // 使用 createDiscreteApi 获取 Naive UI 提供的四个 API 实例
     const { message, notification, dialog, loadingBar } = createDiscreteApi(
       ['message', 'dialog', 'notification', 'loadingBar'],
       props
-        ? {
-            configProviderProps: props, // 将传入的配置传递给 Naive UI 配置
-          }
-        : undefined
     );
 
     // 使用 i18n 钩子获取国际化文本
@@ -149,6 +149,7 @@ export default function useDiscreteApi(props?: ConfigProviderProps) {
       isInitialization = true;
     } catch (error) {
       // 捕获并输出初始化错误
+      // eslint-disable-next-line no-console
       console.warn(`useDiscreteApi init failed: ${error}`);
     }
   }

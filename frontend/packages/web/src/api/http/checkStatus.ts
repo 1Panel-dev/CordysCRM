@@ -12,7 +12,11 @@ export default function checkStatus(
   code?: number,
   noErrorTip?: boolean
 ): void {
-  const { message } = useDiscreteApi();
+  const { message } = useDiscreteApi({
+    messageProviderProps: {
+      max: 1, // 最大显示一条消息
+    },
+  });
   const { t } = useI18n();
   const { logout, isLoginPage, isWhiteListPage } = useUser();
   let errMessage = '';
@@ -77,8 +81,10 @@ export default function checkStatus(
     } else {
       errMessage = msgDetail;
     }
+    message.destroyAll();
     message.error(errMessage);
   } else if (errMessage && !noErrorTip) {
+    message.destroyAll();
     message.error(errMessage);
   }
 }
