@@ -291,7 +291,7 @@
     name: '',
     adminIds: [],
     userIds: [],
-    enable: false,
+    enable: true,
     auto: false,
     pickRule: {
       limitOnNumber: false,
