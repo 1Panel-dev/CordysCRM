@@ -13,6 +13,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
@@ -611,7 +612,14 @@ public class ModuleFormService {
 				continue;
 			}
 			// 从源对象字段取值
-			Object sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
+			Object sourceValue;
+			try {
+				sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
+			} catch (Exception e) {
+				sourceValue = null;
+				LogUtils.error("apply source value error: {}", e.getMessage());
+			}
+
 			// 源对象中该字段无值, 跳过
 			if (sourceValue == null) {
 				continue;
