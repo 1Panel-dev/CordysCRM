@@ -105,7 +105,10 @@
   function goOptOrAccountDetail(item: Record<string, any>, isAccount = false) {
     if (isAccount) {
       router.push({
-        name: CustomerRouteEnum.CUSTOMER_DETAIL,
+        name:
+          item.inSharedPool || item.inCustomerPool
+            ? CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL
+            : CustomerRouteEnum.CUSTOMER_DETAIL,
         query: {
           id: item.customerId,
           name: item.customerName,

@@ -1,6 +1,11 @@
 <template>
   <CrmPageWrapper :title="t('workbench.duplicateCheck')">
-    <van-search v-model="keyword" shape="round" :placeholder="t('workbench.searchPlaceholder')" @search="refresh" />
+    <van-search
+      v-model="keyword"
+      shape="round"
+      :placeholder="t('workbench.searchPlaceholder')"
+      @update:model-value="refresh"
+    />
     <div
       v-show="keyword.length && !loading && !displayConfigList.length"
       class="mt-[80px] text-center text-[var(--text-n4)]"
@@ -98,27 +103,19 @@
     }
   }
 
-  const searchData = debounce(() => {
+  const searchData = debounce(async (val) => {
+    await getCountList(val);
     nextTick(() => {
       Object.values(relatedListRefs.value).forEach((comp) => {
         comp?.loadList?.();
       });
     });
-  }, 300);
+  }, 500);
 
   async function refresh(val: string) {
-    await getCountList(val);
-    searchData();
+    if (!val) return;
+    searchData(val);
   }
-
-  watch(
-    () => keyword.value,
-    (val: string) => {
-      if (val) {
-        refresh(val);
-      }
-    }
-  );
 
   onMounted(async () => {
     await initSearchFormConfig();
