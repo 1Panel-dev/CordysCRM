@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.dto.OptionDTO;
@@ -16,8 +17,11 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.auth.dto.ThirdEnableDTO;
+import cn.cordys.crm.integration.dataease.DataEaseClient;
+import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
+import cn.cordys.crm.integration.dataease.service.DataEaseService;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
@@ -60,6 +64,8 @@ public class IntegrationConfigService {
 
     @Resource
     private TokenService tokenService;
+    @Resource
+    private DataEaseService dataEaseService;
 
     @Resource
     private AgentService agentService;
@@ -562,12 +568,31 @@ public class IntegrationConfigService {
         } else if (DepartmentConstants.LARK.name().equals(type)) {
             return tokenService.getLarkToken(configDTO.getAgentId(), configDTO.getAppSecret());
         } else if (DepartmentConstants.DE.name().equals(type)) {
-            return tokenService.pingDeUrl(configDTO.getRedirectUrl()) ? "true" : null;
+            boolean verify = validDeConfig(configDTO);
+            return verify ? "true" : null;
         } else if (DepartmentConstants.SQLBOT.name().equals(type)) {
             return tokenService.getSqlBotSrc(configDTO.getAppSecret()) ? "true" : null;
         }
 
         return null;
+    }
+
+    private boolean validDeConfig(ThirdConfigurationDTO configDTO) {
+        // 校验url
+        boolean verify = tokenService.pingDeUrl(configDTO.getRedirectUrl());
+        DataEaseClient dataEaseClient = new DataEaseClient(configDTO);
+        if (BooleanUtils.isTrue(configDTO.getDeModuleEmbedding())
+                && StringUtils.isNotBlank(configDTO.getDeAccessKey())
+                && StringUtils.isNotBlank(configDTO.getDeSecretKey())
+                && StringUtils.isNotBlank(configDTO.getRedirectUrl())) {
+            // 校验 ak，sk
+            verify = verify && dataEaseClient.validate();
+        }
+        String account = StringUtils.isBlank(configDTO.getDeAccount()) ? InternalUser.ADMIN.name() : configDTO.getDeAccount();
+        DeAuthDTO embeddedDeToken = dataEaseService.getEmbeddedDeToken(account, configDTO);
+        // 校验嵌入式token
+        verify = verify && dataEaseClient.validateEmbeddedToken(embeddedDeToken.getToken());
+        return verify;
     }
 
     /**

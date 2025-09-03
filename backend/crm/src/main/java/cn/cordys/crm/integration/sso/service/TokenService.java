@@ -219,6 +219,7 @@ public class TokenService {
             int responseCode = connection.getResponseCode();
             return responseCode == HttpURLConnection.HTTP_OK;
         } catch (Exception e) {
+            LogUtils.error(e);
             return false;
         }
 

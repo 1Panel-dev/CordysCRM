@@ -3,6 +3,7 @@ package cn.cordys.crm.integration.dataease;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.dto.*;
 import cn.cordys.crm.integration.dataease.dto.request.*;
@@ -52,6 +53,7 @@ public class DataEaseClient {
         try {
             get("user/personInfo");
         } catch (Exception e) {
+            LogUtils.error(e);
             return false;
         }
         return true;
@@ -59,6 +61,20 @@ public class DataEaseClient {
 
     public List<SysVariableDTO> listSysVariable() {
         return post("sysVariable/query", SysVariableListResponse.class).getData();
+    }
+
+    public boolean validateEmbeddedToken(String token) {
+        try {
+            String url = getUrl("sysParameter/shareBase");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("x-embedded-token", token);
+            HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+            new RestTemplate().exchange(url, HttpMethod.GET, httpEntity, String.class);
+        } catch (Exception e) {
+            LogUtils.error(e);
+            return false;
+        }
+        return true;
     }
 
     public List<SysVariableValueDTO> listSysVariableValue(String sysVariableId) {
@@ -146,7 +162,7 @@ public class DataEaseClient {
 
     public <V extends DataEaseBaseResponse> V get(String path, Class<V> responseClass, Object... uriVariables) {
         String url = getUrl(path);
-        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(), responseClass, uriVariables)
+        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), responseClass, uriVariables)
                 .getBody();
         if (dataEaseResponse.getCode() != 0) {
             throw new GenericException(dataEaseResponse.getMsg());
