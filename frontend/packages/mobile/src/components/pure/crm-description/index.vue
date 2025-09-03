@@ -1,6 +1,6 @@
 <template>
   <van-cell-group inset class="h-full">
-    <div class="flex h-full flex-col gap-[8px] overflow-auto px-[20px] py-[16px]">
+    <div class="crm-description flex h-full flex-col gap-[8px] overflow-auto px-[20px] py-[16px]">
       <div v-for="item of props.description" :key="item.label" class="crm-description-item">
         <slot :name="item.slotName" :item="item">
           <div v-if="item.isTitle" class="crm-description-title">{{ item.label }}</div>

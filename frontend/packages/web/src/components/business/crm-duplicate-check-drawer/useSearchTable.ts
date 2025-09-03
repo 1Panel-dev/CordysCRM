@@ -102,6 +102,8 @@ export default async function useSearchTable(props: SearchTableProps) {
   function openNewPageCustomerContact(row: any) {
     openNewPage(CustomerRouteEnum.CUSTOMER_CONTACT, {
       id: row.customerId,
+      inSharedPool: row.inSharedPool,
+      poolId: row.poolId,
     });
   }
 

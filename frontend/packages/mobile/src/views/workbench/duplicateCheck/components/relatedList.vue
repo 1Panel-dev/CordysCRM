@@ -179,6 +179,10 @@
 </script>
 
 <style lang="less" scoped>
+  :deep(.crm-description) {
+    padding: 0;
+    gap: 4px;
+  }
   :deep(.crm-description-item) {
     .crm-description-label {
       font-size: 12px;
