@@ -340,7 +340,11 @@
       if (!error) {
         try {
           linkLoading.value = true;
-          const result = await testConfigSynchronization(form.value);
+          const result = await testConfigSynchronization({
+            ...form.value,
+            deModuleEmbedding: form.value.deEmbedType?.includes('module'),
+            deLinkIntegration: form.value.deEmbedType?.includes('link'),
+          });
           const isSuccess = result.data.data;
           form.value.verify = result.data.data;
           if (isSuccess) {
