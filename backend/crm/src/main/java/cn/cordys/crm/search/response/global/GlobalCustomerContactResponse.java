@@ -21,6 +21,12 @@ public class GlobalCustomerContactResponse {
     @Schema(description = "客户名称")
     private String customerName;
 
+    @Schema(description = "公海ID")
+    private String poolId;
+
+    @Schema(description = "是否在公海池")
+    private Boolean inSharedPool;
+
     @Schema(description = "负责人")
     private String owner;
 
