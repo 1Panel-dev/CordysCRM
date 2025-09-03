@@ -428,21 +428,7 @@ public class CustomerService {
         Customer originCustomer = customerMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
         checkResourceRef(List.of(id));
-        // 删除客户
-        customerMapper.deleteByPrimaryKey(id);
-        // 删除客户模块字段
-        customerFieldService.deleteByResourceId(id);
-        // 删除客户协作人
-        customerCollaborationService.deleteByCustomerId(id);
-        // 删除责任人历史
-        customerOwnerHistoryService.deleteByCustomerIds(List.of(id));
-        // 删除客户关系
-        customerRelationService.deleteByCustomerId(id);
-        // 删除跟进记录
-        followUpRecordService.deleteByCustomerIds(List.of(id));
-        // 删除跟进计划
-        followUpPlanService.deleteByCustomerIds(List.of(id));
-
+        deleteCustomerResource(List.of(id));
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomer.getName());
@@ -500,20 +486,7 @@ public class CustomerService {
 
         checkResourceRef(ids);
 
-        // 删除客户
-        customerMapper.deleteByIds(ids);
-        // 删除客户模块字段
-        customerFieldService.deleteByResourceIds(ids);
-        // 删除客户协作人
-        customerCollaborationService.deleteByCustomerIds(ids);
-        // 删除责任人历史
-        customerOwnerHistoryService.deleteByCustomerIds(ids);
-        // 删除客户关系
-        customerRelationService.deleteByCustomerIds(ids);
-        // 删除跟进记录
-        followUpRecordService.deleteByCustomerIds(ids);
-        // 删除跟进计划
-        followUpPlanService.deleteByCustomerIds(ids);
+        deleteCustomerResource(ids);
 
         List<LogDTO> logs = customers.stream()
                 .map(customer ->
@@ -530,7 +503,24 @@ public class CustomerService {
         );
     }
 
-    private void checkResourceRef(List<String> ids) {
+    public void deleteCustomerResource(List<String> ids) {
+        // 删除客户
+        customerMapper.deleteByIds(ids);
+        // 删除客户模块字段
+        customerFieldService.deleteByResourceIds(ids);
+        // 删除客户协作人
+        customerCollaborationService.deleteByCustomerIds(ids);
+        // 删除责任人历史
+        customerOwnerHistoryService.deleteByCustomerIds(ids);
+        // 删除客户关系
+        customerRelationService.deleteByCustomerIds(ids);
+        // 删除跟进记录
+        followUpRecordService.deleteByCustomerIds(ids);
+        // 删除跟进计划
+        followUpPlanService.deleteByCustomerIds(ids);
+    }
+
+    public void checkResourceRef(List<String> ids) {
         if (extCustomerMapper.hasRefOpportunity(ids) || extCustomerMapper.hasRefContact(ids)) {
             throw new GenericException(CustomerResultCode.CUSTOMER_RESOURCE_REF);
         }

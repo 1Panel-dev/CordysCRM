@@ -8,10 +8,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.TimeUtils;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
@@ -202,9 +199,9 @@ public class PoolCustomerService {
 	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
 		Customer customer = customerMapper.selectByPrimaryKey(id);
-		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
-		customerWrapper.eq(Customer::getId, id);
-		customerMapper.deleteByLambda(customerWrapper);
+		CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
+		customerService.checkResourceRef(List.of(id));
+		customerService.deleteCustomerResource(List.of(id));
 
 		// 设置操作对象
 		OperationLogContext.setResourceName(customer.getName());
@@ -247,9 +244,9 @@ public class PoolCustomerService {
 	 */
 	public void batchDelete(List<String> ids, String userId, String orgId) {
 		List<Customer> customers = customerMapper.selectByIds(ids);
-		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
-		customerWrapper.in(Customer::getId, ids);
-		customerMapper.deleteByLambda(customerWrapper);
+		CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
+		customerService.checkResourceRef(ids);
+		customerService.deleteCustomerResource(ids);
 
 		List<LogDTO> logs = customers.stream()
 				.map(customer ->
