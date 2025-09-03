@@ -34,7 +34,7 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT'])"
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT']) && !props.isCustomerTab && !props.readonly"
           :api-type="FormDesignKeyEnum.BUSINESS"
           :title="t('module.businessManagement')"
           @import-success="() => searchData()"
