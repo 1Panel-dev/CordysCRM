@@ -1,7 +1,7 @@
 export default {
-  'workbench.searchPlaceholder': '请输入要查重的客户名称或手机号',
+  'workbench.searchPlaceholder': '请输入客户名或手机号',
   'workbench.quickEntry': '快速入口',
-  'workbench.duplicateCheck': '查重',
+  'workbench.duplicateCheck': '搜索',
   'workbench.duplicateCheck.result': '客户相关',
   'workbench.duplicateCheck.contactResult': '联系人相关',
   'workbench.duplicateCheck.status': '重复状态',

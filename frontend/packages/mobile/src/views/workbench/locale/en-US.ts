@@ -1,7 +1,7 @@
 export default {
-  'workbench.searchPlaceholder': 'Account name or phone duplication check',
+  'workbench.searchPlaceholder': 'Please input the account name or phone number',
   'workbench.quickEntry': 'Quick Entry',
-  'workbench.duplicateCheck': 'Duplicate Check',
+  'workbench.duplicateCheck': 'Search',
   'workbench.duplicateCheck.result': 'Customer related',
   'workbench.duplicateCheck.contactResult': 'Contact result',
   'workbench.duplicateCheck.status': 'Duplicate status',
