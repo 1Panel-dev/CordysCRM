@@ -439,7 +439,7 @@
             o.failure_reason
         FROM
             opportunity o
-                INNER JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer c ON o.customer_id = c.id
         where o.id = #{id}
     </select>
     <select id="getRepeatList" resultType="cn.cordys.crm.search.response.advanced.OpportunityRepeatResponse">
