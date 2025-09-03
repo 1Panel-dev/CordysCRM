@@ -260,12 +260,11 @@ export default function useSearchFormConfig() {
   function initSearchListConfig() {
     configList.value.forEach((e) => {
       const resultDesc = displayedDescList.value(e.value as SearchTableKey).map((field) => {
-        // TODO  不知道是否展示 这个位置和上边的大标题重复
         if (field.key === 'name' && e.value !== FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
           return {
             label: field.label,
             key: field.key,
-            valueSlotName: 'render',
+            valueSlotName: 'name',
           };
         }
 

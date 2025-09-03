@@ -34,6 +34,7 @@
             v-model="searchResultMap[item.value].list"
             :keyword="keyword"
             :description-list="searchResultMap[item.value as SearchTableKey]?.describe??[]"
+            :search-table-key="item.value"
             :api="getSearchListApiMap[item.value as SearchTableKey]"
             :transform-data="(i) => transformData(i, item.value)"
           />

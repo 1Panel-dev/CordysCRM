@@ -34,7 +34,7 @@ const workbench: AppRouteRecordRaw = {
           'CLUE_MANAGEMENT:READ',
           'CLUE_MANAGEMENT_POOL:READ',
         ],
-        depth: 2,
+        depth: 1,
         isCache: true,
       },
     },
