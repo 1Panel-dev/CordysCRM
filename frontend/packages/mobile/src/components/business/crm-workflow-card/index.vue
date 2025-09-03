@@ -25,7 +25,9 @@
       <div
         v-for="(item, index) of workflowList"
         :key="item.value"
-        :class="`crm-workflow-item ${index === workflowList.length - 1 ? '' : 'flex-1'}`"
+        :class="`crm-workflow-item ${index === workflowList.length - 1 ? '' : 'flex-1'} ${
+          workflowList.length === 1 ? 'pl-[16px]' : ''
+        }`"
       >
         <div class="relative -left-[16px] flex flex-nowrap items-center justify-center">
           <div
@@ -66,7 +68,7 @@
         <div class="crm-workflow-item-name one-line-text relative -left-[16px]" :class="statusClass(index, item)">
           {{
             item.value === StageResultEnum.FAIL && props.failureReason
-              ? `${item.label}（${lastFailureReason}）`
+              ? `${item.label}（${props.failureReason}）`
               : item.label
           }}
         </div>
@@ -77,16 +79,15 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { closeToast, PickerOption, showLoadingToast, showSuccessToast } from 'vant';
+  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
+  import { updateClueStatus, updateOptStage } from '@/api/modules';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
@@ -126,9 +127,6 @@
     [FormDesignKeyEnum.BUSINESS]: updateOptStage,
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
-  const reasonList = ref<PickerOption[]>([]);
-
-  const lastFailureReason = computed(() => reasonList.value.find((e) => e.value === props.failureReason)?.text);
 
   const endStage = computed<Options[]>(() => {
     if (currentStage.value === StageResultEnum.SUCCESS) {
@@ -248,20 +246,6 @@
     }
     await handleSave(stage);
   }
-
-  async function initReason() {
-    try {
-      const { dictList } = await getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS);
-      reasonList.value = dictList.map((e) => ({ text: e.name, value: e.id }));
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(e);
-    }
-  }
-
-  onBeforeMount(() => {
-    initReason();
-  });
 </script>
 
 <style scoped lang="less">

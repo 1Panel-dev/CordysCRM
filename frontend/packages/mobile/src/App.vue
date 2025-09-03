@@ -33,7 +33,6 @@
     }
     router.replace({ name: AppRouteEnum.WORKBENCH });
     licenseStore.getValidateLicense();
-    appStore.initModuleConfig();
   });
 </script>
 

@@ -18,9 +18,8 @@
       class="page-bottom-tabbar !py-[8px]"
       @change="handleTabbarChange"
     >
-      <template v-for="menu of menuList" :key="menu.name">
+      <template v-for="menu of displayMenu" :key="menu.name">
         <van-tabbar-item
-          v-permission="menu.permission"
           :name="menu.name"
           class="rounded-full"
           :class="active === menu.name ? '!bg-[var(--primary-7)]' : ''"
@@ -43,12 +42,14 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -94,24 +95,28 @@
       icon: 'iconicon_home',
       text: t('menu.workbench'),
       permission: [],
+      moduleKey: ModuleConfigEnum.HOME,
     },
     {
       name: AppRouteEnum.CUSTOMER,
       icon: 'iconicon_customer',
       text: t('menu.customer'),
       permission: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
+      moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
     },
     {
       name: AppRouteEnum.CLUE,
       icon: 'iconicon_clue',
       text: t('menu.clue'),
       permission: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
+      moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
     },
     {
       name: AppRouteEnum.OPPORTUNITY,
       icon: 'iconicon_business_opportunity',
       text: t('menu.opportunity'),
       permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+      moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
     },
     {
       name: AppRouteEnum.MINE,
@@ -119,6 +124,14 @@
       text: t('menu.mine'),
     },
   ];
+
+  const displayMenu = computed(() =>
+    menuList.filter(({ moduleKey, permission }) => {
+      if (!moduleKey) return hasAnyPermission(permission ?? []);
+      const moduleItem = appStore.moduleConfigList.find((m) => m.moduleKey === moduleKey);
+      return !!moduleItem?.enable && hasAnyPermission(permission ?? []);
+    })
+  );
 
   function handleTabbarChange(name: string) {
     router.replace({ name });
@@ -141,6 +154,18 @@
   onBeforeMount(() => {
     appStore.showSQLBot();
   });
+
+  watch(
+    () => appStore.orgId,
+    (val) => {
+      if (val) {
+        appStore.initModuleConfig();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less">

@@ -29,7 +29,7 @@
                   />
                 </template>
                 <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
-                <div v-else>{{ item.value || '-' }}</div>
+                <div v-else>{{ getDisplayValue(item.value) }}</div>
               </slot>
             </div>
           </template>
@@ -60,6 +60,12 @@
   const props = defineProps<{
     description: CrmDescriptionItem[];
   }>();
+
+  const getDisplayValue = (val?: string | number | (string | number)[]) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string' || Array.isArray(val)) return val.length > 0 ? val : '-';
+    return '-';
+  };
 </script>
 
 <style lang="less" scoped>
