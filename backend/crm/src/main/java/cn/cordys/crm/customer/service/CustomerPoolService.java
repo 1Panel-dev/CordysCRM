@@ -22,7 +22,6 @@ import cn.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import cn.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
-import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import cn.cordys.crm.system.constants.RecycleConditionColumnKey;
 import cn.cordys.crm.system.constants.RecycleConditionOperator;
@@ -160,7 +159,7 @@ public class CustomerPoolService {
 
 
 	public List<CustomerPoolFieldConfigDTO> getFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
-		List<CustomerPoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
+		return fields.stream().map(field -> {
 			CustomerPoolFieldConfigDTO hiddenFieldDTO = new CustomerPoolFieldConfigDTO();
 			hiddenFieldDTO.setFieldId(field.getId());
 			hiddenFieldDTO.setFieldName(field.getName());
@@ -168,7 +167,6 @@ public class CustomerPoolService {
 			hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
 			return hiddenFieldDTO;
 		}).toList();
-		return hiddenFields;
 	}
 
 	public List<CustomerPoolHiddenField> getCustomerPoolHiddenFieldByPoolIds(List<String> poolIds) {
@@ -190,7 +188,6 @@ public class CustomerPoolService {
 		pool.setOrganizationId(organizationId);
 		pool.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
 		pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
-		pool.setEnable(true);
 		pool.setCreateTime(System.currentTimeMillis());
 		pool.setCreateUser(currentUserId);
 		pool.setUpdateTime(System.currentTimeMillis());

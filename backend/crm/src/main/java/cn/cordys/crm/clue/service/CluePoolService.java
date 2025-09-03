@@ -7,7 +7,6 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.exception.GenericException;
@@ -23,7 +22,6 @@ import cn.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import cn.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import cn.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import cn.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
-import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.mapper.ExtCluePoolMapper;
 import cn.cordys.crm.system.constants.RecycleConditionColumnKey;
 import cn.cordys.crm.system.constants.RecycleConditionOperator;
@@ -162,15 +160,14 @@ public class CluePoolService {
     }
 
     public List<CluePoolFieldConfigDTO> getCluePoolFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
-        List<CluePoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
-            CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
-            hiddenFieldDTO.setFieldId(field.getId());
-            hiddenFieldDTO.setFieldName(field.getName());
-            hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-            hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
-            return hiddenFieldDTO;
-        }).toList();
-        return hiddenFields;
+		return fields.stream().map(field -> {
+			CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
+			hiddenFieldDTO.setFieldId(field.getId());
+			hiddenFieldDTO.setFieldName(field.getName());
+			hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+			hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
+			return hiddenFieldDTO;
+		}).toList();
     }
 
     public List<CluePoolHiddenField> getCluePoolHiddenFieldsByPoolIds(List<String> poolIds) {
@@ -192,7 +189,6 @@ public class CluePoolService {
         pool.setOrganizationId(currentOrgId);
         pool.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
         pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
-        pool.setEnable(true);
         pool.setCreateTime(System.currentTimeMillis());
         pool.setCreateUser(currentUserId);
         pool.setUpdateTime(System.currentTimeMillis());
@@ -445,24 +441,6 @@ public class CluePoolService {
             throw new GenericException(Translator.get("clue_pool_not_exist"));
         }
         return pool;
-    }
-
-    /**
-     * 校验是否线索池的管理员
-     *
-     * @param pool         线索池
-     * @param accessUserId 访问用户ID
-     */
-    private void checkPoolOwner(CluePool pool, String accessUserId) {
-        if (Strings.CS.equals(accessUserId, InternalUser.ADMIN.getValue())) {
-            return;
-        }
-        List<String> ownerIds = JSON.parseArray(pool.getOwnerId(), String.class);
-        List<String> ownerUserIds = userExtendService.getScopeOwnerIds(ownerIds, pool.getOrganizationId());
-
-        if (!ownerUserIds.contains(accessUserId)) {
-            throw new GenericException(Translator.get("clue_pool_access_fail"));
-        }
     }
 
     /**
