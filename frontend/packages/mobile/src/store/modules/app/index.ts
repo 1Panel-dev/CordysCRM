@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
+import { cloneDeep } from 'lodash-es';
 
 import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 import { loadScript } from '@lib/shared/method/scriptLoader';
@@ -18,6 +20,33 @@ import useUserStore from '@/store/modules/user';
 
 import type { AppState } from './types';
 
+const defaultModuleConfig = [
+  {
+    moduleKey: ModuleConfigEnum.DASHBOARD,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.HOME,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.PRODUCT_MANAGEMENT,
+    enable: true,
+  },
+];
+
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     // 分页
@@ -25,7 +54,7 @@ const useAppStore = defineStore('app', {
     showSizePicker: true,
     showQuickJumper: true,
     orgId: '',
-    moduleConfigList: [],
+    moduleConfigList: cloneDeep(defaultModuleConfig),
     messageInfo: {
       read: true,
       notificationDTOList: [],
@@ -154,7 +183,7 @@ const useAppStore = defineStore('app', {
     },
   },
   persist: {
-    paths: [''],
+    paths: ['moduleConfigList'],
   },
 });
 

@@ -85,7 +85,7 @@
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
     @refresh="handleRefresh"
-    @open-customer-drawer="emit('openCustomerDrawer', $event, true)"
+    @open-customer-drawer="handleOpenCustomerDrawer"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
@@ -731,6 +731,14 @@
       });
     }
   });
+
+  function handleOpenCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    if (props.isCustomerTab) {
+      showOverviewDrawer.value = false;
+    } else {
+      emit('openCustomerDrawer', params, true);
+    }
+  }
 </script>
 
 <style lang="less" scoped></style>
