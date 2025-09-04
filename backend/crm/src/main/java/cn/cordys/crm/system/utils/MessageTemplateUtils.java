@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.utils;
 
-
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -8,6 +7,7 @@ import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.security.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -88,7 +88,7 @@ public class MessageTemplateUtils {
 
     public static void handleTime(Map<String, Object> context) {
         context.forEach((k, v) -> {
-            if (StringUtils.endsWithIgnoreCase(k, "Time")) {
+            if (Strings.CI.endsWith(k, "Time")) {
                 try {
                     String value = v.toString();
                     long time = Long.parseLong(value);
@@ -99,10 +99,11 @@ public class MessageTemplateUtils {
             }
         });
     }
+
     public static void handleUser(Map<String, Object> context) {
         ExtUserMapper userMapper = CommonBeanFactory.getBean(ExtUserMapper.class);
         context.forEach((k, v) -> {
-            if (StringUtils.endsWithIgnoreCase(k, "User")) {
+            if (Strings.CI.endsWith(k, "User")) {
                 try {
                     String value = v.toString();
                     assert userMapper != null;

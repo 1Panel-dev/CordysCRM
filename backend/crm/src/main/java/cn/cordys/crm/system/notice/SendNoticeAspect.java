@@ -121,7 +121,7 @@ public class SendNoticeAspect {
             String v = source.get();
             if (StringUtils.isNotBlank(v)) {
                 // array
-                if (StringUtils.startsWith(v, "[")) {
+                if (Strings.CS.startsWith(v, "[")) {
                     resources.addAll(JSON.parseArray(v, Map.class));
                 }
                 // map
