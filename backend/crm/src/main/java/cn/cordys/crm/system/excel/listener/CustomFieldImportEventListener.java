@@ -294,7 +294,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	@SuppressWarnings("unchecked")
 	private Object convertValue(String text, BaseField field) {
 		if (StringUtils.isEmpty(text)) {
-			return text;
+			return null;
 		}
 		try {
 			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());

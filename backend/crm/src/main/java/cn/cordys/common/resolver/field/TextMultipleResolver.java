@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMultipleField> {
 
+    public static final String ARR_SQUARE = "[]";
+
     @Override
     public void validate(InputMultipleField inputMultipleField, Object value) {
         validateRequired(inputMultipleField, value);
@@ -41,12 +43,12 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
 
     @Override
     public Object text2Value(InputMultipleField field, String text) {
-        if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
-            return StringUtils.EMPTY;
+        if (StringUtils.isBlank(text) || Strings.CS.equals(text, ARR_SQUARE)) {
+            return null;
         }
         List<String> textList = parseFakeJsonArray(text);
         Set<String> correctTags = getCorrectFormatInput(textList);
-        return CollectionUtils.isEmpty(correctTags) ? StringUtils.EMPTY : new ArrayList<>(correctTags);
+        return CollectionUtils.isEmpty(correctTags) ? null : new ArrayList<>(correctTags);
     }
 
     /**
