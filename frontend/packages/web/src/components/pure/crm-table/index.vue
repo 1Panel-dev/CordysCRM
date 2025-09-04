@@ -588,16 +588,19 @@
   }
 
   async function setColumnSort(viewId: string) {
-    const sortObj = await viewStore.getViewSort(attrs.tableKey as TableKeyEnum, viewId);
-    if (sortObj && Object.keys(sortObj).length) {
-      handleSorterChange({
-        columnKey: sortObj.name as string,
-        order: sortObj?.type === 'desc' ? 'descend' : 'ascend',
-        sorter: true,
-      });
-    } else {
-      handleSorterChange();
-    }
+    // 切换视图column有变化（如切到协作视图）的时候，会执行initColumn，initColumn后再设置排序
+    setTimeout(async () => {
+      const sortObj = await viewStore.getViewSort(attrs.tableKey as TableKeyEnum, viewId);
+      if (sortObj && Object.keys(sortObj).length) {
+        handleSorterChange({
+          columnKey: sortObj.name as string,
+          order: sortObj?.type === 'desc' ? 'descend' : 'ascend',
+          sorter: true,
+        });
+      } else {
+        handleSorterChange();
+      }
+    }, 300);
   }
 
   function handleClear() {
