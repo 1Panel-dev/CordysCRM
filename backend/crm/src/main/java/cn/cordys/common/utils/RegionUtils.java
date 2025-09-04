@@ -18,8 +18,12 @@ public class RegionUtils {
     private static final String SPILT_STR = "-";
     private static SoftReference<List<RegionCode>> regionCodeRef;
 
+    /**
+     * get all regions
+     * @return regions
+     */
     public static List<RegionCode> getRegionCodes() {
-        List<RegionCode> regions = null;
+        List<RegionCode> regions;
 
         if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
             synchronized (LocationResolver.class) {
@@ -32,16 +36,25 @@ public class RegionUtils {
         return regions;
     }
 
+    /**
+     * load region
+     * @return region list
+     */
     private static List<RegionCode> loadRegionData() {
         try (InputStream is = LocationResolver.class.getClassLoader()
                 .getResourceAsStream("region/region.json")) {
-            return JSON.parseObject(is, new TypeReference<List<RegionCode>>() {
-            });
+            return JSON.parseObject(is, new TypeReference<>() {
+			});
         } catch (Exception e) {
             throw new RuntimeException("加载行政区划数据失败", e);
         }
     }
 
+    /**
+     * address => code
+     * @param name address
+     * @return code
+     */
     public static String nameToCode(String name) {
         if (StringUtils.isBlank(name)) {
             return StringUtils.EMPTY;
@@ -51,7 +64,7 @@ public class RegionUtils {
             return StringUtils.EMPTY;
         }
 
-        String code = StringUtils.EMPTY;
+        StringBuilder code = new StringBuilder(StringUtils.EMPTY);
         Queue<String> queue = new LinkedList<>();
         CollectionUtils.addAll(queue, name.split(SPILT_STR));
         List<RegionCode> regionCode = getRegionCodes();
@@ -61,28 +74,26 @@ public class RegionUtils {
                 break;
             }
             if (country.getName().equals(queue.peek())) {
-                code = country.getCode();
+                code = new StringBuilder(country.getCode());
                 queue.poll();
                 if (country.getChildren() != null) {
                     for (RegionCode province : country.getChildren()) {
                         if (province.getName().equals(queue.peek())) {
-                            if (province.getName().equals(queue.peek())) {
-                                code = province.getCode();
-                                queue.poll();
-                            }
+                            code = new StringBuilder(province.getCode());
+                            queue.poll();
                         }
 
                         if (province.getChildren() != null) {
                             for (RegionCode city : province.getChildren()) {
                                 if (city.getName().equals(queue.peek())) {
-                                    code = city.getCode();
+                                    code = new StringBuilder(city.getCode());
                                     queue.poll();
                                 }
 
                                 if (city.getChildren() != null) {
                                     for (RegionCode area : city.getChildren()) {
                                         if (area.getName().equals(queue.peek())) {
-                                            code = area.getCode();
+                                            code = new StringBuilder(area.getCode());
                                             queue.poll();
                                         }
                                     }
@@ -95,12 +106,15 @@ public class RegionUtils {
             }
         }
 
+        // Keep spilt for parse
+        code.append(SPILT_STR);
+        // Append detailed address
         if (!queue.isEmpty()) {
             for (String s : queue) {
-                code += SPILT_STR + s;
+                code.append(s);
             }
         }
 
-        return code;
+        return code.toString();
     }
 }
