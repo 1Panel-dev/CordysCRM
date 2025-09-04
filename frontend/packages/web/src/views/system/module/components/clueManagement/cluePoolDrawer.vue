@@ -10,13 +10,14 @@
     <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
       <div class="h-full bg-[var(--text-n10)] p-[16px] pb-0">
         <CrmTable
+          ref="crmTableRef"
           v-bind="propsRes"
           class="crm-clue-pool-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
-          @refresh="loadList"
+          @refresh="refreshTable"
         >
           <template #tableTop>
             <n-button class="mb-[16px]" type="primary" @click="handleAdd">
@@ -29,7 +30,7 @@
         v-model:visible="showAddOrEditDrawer"
         :row="currentRow"
         :type="ModuleConfigEnum.CLUE_MANAGEMENT"
-        @refresh="loadList"
+        @refresh="refreshTable"
       />
     </div>
   </CrmDrawer>
@@ -319,11 +320,17 @@
     containerClass: '.crm-clue-pool-table',
   });
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  function refreshTable() {
+    setLoadListParams({});
+    loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
   watch(
     () => tableRefreshId.value,
     () => {
-      setLoadListParams({});
-      loadList();
+      refreshTable();
     }
   );
 
@@ -331,8 +338,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        setLoadListParams({});
-        loadList();
+        refreshTable();
       }
     }
   );
