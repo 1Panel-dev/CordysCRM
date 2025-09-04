@@ -48,6 +48,13 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (StringUtils.isBlank(keyword)) {
             return new ArrayList<>();
         }
+        //处理参数中（+区号）这种会被spring RequestParam参数处理为空格的情况
+        if (keyword.contains("(") && keyword.contains(")")) {
+            // 去掉首尾空格
+            keyword = keyword.trim();
+            // 匹配形如 ( 86) 或 (86) 这样的区号
+            keyword = keyword.replaceAll("\\(\\s*(\\d+)\\)", "(+$1)");
+        }
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(SessionUtils.getUserId());
         BasePageRequest request = new BasePageRequest();
         request.setCurrent(1);
