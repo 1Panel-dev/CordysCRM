@@ -79,6 +79,13 @@ docker run -d \
 - [ ] 2025.10：完成和 MaxKB 的对接
 - [ ] 2025.11：代码开源、正式发布
 
+## 技术栈
+
+-  后端: [Spring Boot](https://spring.io/projects/spring-boot)
+-  前端: [Vue.js](https://vuejs.org/) , [Naive-UI](https://www.naiveui.com/) , [Vant-UI](https://vant-ui.github.io/)
+-  中间件: [MySQL](https://www.mysql.com/) , [Redis](https://redis.com/)
+-  基础设施: [Docker](https://www.docker.com/)
+
 ## 飞致云旗下的其他明星项目
 
 - [1Panel](https://github.com/1panel-dev/1panel/) - 现代化、开源的 Linux 服务器运维管理面板
