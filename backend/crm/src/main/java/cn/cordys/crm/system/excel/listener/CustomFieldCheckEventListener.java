@@ -63,6 +63,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	private final Map<String, Pattern> regexMap = new HashMap<>();
 	public static final String PHONE_REGEX = "^[(（]\\+(86)[)）]\\s?1[3-9]\\d{9}$|^[(（]\\+(852|853)[)）]\\s?\\d{8}$|^[(（]\\+(886)[)）]\\s?\\d{9,10}$";
 	private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+	private boolean atLeaseOne = false;
 
 	public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {
 		fields.forEach(field -> {
@@ -108,6 +109,10 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 
 	@Override
 	public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
+		if (data == null) {
+			return;
+		}
+		atLeaseOne = true;
 		Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
 		// validate row data
 		validateRowData(rowIndex, data);
@@ -115,7 +120,9 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 
 	@Override
 	public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-
+		if (!atLeaseOne) {
+			throw new GenericException(Translator.get("import.data.cannot_be_null"));
+		}
 	}
 
 	/**
