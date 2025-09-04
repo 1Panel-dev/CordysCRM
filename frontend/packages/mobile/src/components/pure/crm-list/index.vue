@@ -38,6 +38,7 @@
     loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
     closeInitLoad?: boolean; // 关闭首次加载
+    notShowLoadingToast?: boolean;
   }>();
 
   const { t } = useI18n();
@@ -71,7 +72,7 @@
       } else {
         currentPage.value += 1;
       }
-      if (currentPage.value === 1 && !refreshing.value) {
+      if (currentPage.value === 1 && !refreshing.value && !props.notShowLoadingToast) {
         showLoadingToast(t('common.loading'));
       }
       const res = await props.loadListApi({

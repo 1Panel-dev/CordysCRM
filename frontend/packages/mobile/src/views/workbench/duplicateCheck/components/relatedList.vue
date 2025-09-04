@@ -2,11 +2,11 @@
   <CrmList
     ref="crmListRef"
     v-model="list"
+    not-show-loading-toast
     :list-params="{
       keyword: props.keyword,
       ...(props.id ? { id: props.id } : {}),
     }"
-    :error-text="t('workbench.duplicateCheck.moduleNotEnabled')"
     :load-list-api="api"
     :transform="props.transformData"
     :item-gap="16"

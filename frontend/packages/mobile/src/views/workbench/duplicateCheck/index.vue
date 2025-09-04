@@ -104,6 +104,7 @@
   }
 
   const searchData = debounce(async (val) => {
+    await initSearchDetail();
     await getCountList(val);
     nextTick(() => {
       Object.values(relatedListRefs.value).forEach((comp) => {
