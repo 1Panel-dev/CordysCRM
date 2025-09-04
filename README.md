@@ -54,7 +54,7 @@ docker run -d \
 
 在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
-<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png" />
+<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
 
 ## UI 展示
 
@@ -75,9 +75,9 @@ docker run -d \
 - [x] 2025.06：v1.0 开发完成
 - [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
 - [x] 2025.08：完成和 SQLBot 和 DataEase 的对接
-- [x] 2025.08.27：v1.1.5 发布，开始公测
-- [x] 2025.08.27：v1.1.6 发布，修复bug
-- [x] 2025.09.01：v1.1.7 发布，修复bug
+- [x] 2025.08.27：[v1.1.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.5) 发布，开始公测
+- [x] 2025.08.27：[v1.1.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.6) 发布，修复 Bug
+- [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布，修复 Bug
 - [ ] 2025.10：完成和 MaxKB 的对接
 - [ ] 2025.11：代码开源、正式发布
 
