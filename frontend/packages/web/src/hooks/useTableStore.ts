@@ -46,13 +46,21 @@ export default function useTableStore() {
     const sorted = oldArr
       .map((item) => mapNew.get(item.key))
       .filter(
-        (e) => e && e.key !== 'operation' && e.type !== 'selection' && newArr.some((n) => n.key === e.key)
+        (e) =>
+          e &&
+          e.key !== SpecialColumnEnum.OPERATION &&
+          e.key !== SpecialColumnEnum.DRAG &&
+          e.type !== SpecialColumnEnum.SELECTION &&
+          newArr.some((n) => n.key === e.key)
       ) as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
-    const extra = newArr.filter((item) => !oldArr.some((o) => o.key === item.key) && item.type !== 'selection');
+    const extra = newArr.filter(
+      (item) => !oldArr.some((o) => o.key === item.key) && item.type !== SpecialColumnEnum.SELECTION
+    );
     const operationColumn = oldArr.find((item) => item.key === SpecialColumnEnum.OPERATION);
     const selectionColumn = newArr.find((item) => item.type === SpecialColumnEnum.SELECTION);
     const orderColumn = newArr.find((item) => item.key === SpecialColumnEnum.ORDER);
+    const dragColumn = newArr.find((item) => item.key === SpecialColumnEnum.DRAG);
     if (orderColumn && selectionColumn) {
       // 如果有排序列和选择列，则将选择列插入到排序列之后
       sorted.splice(1, 0, selectionColumn);
@@ -60,7 +68,7 @@ export default function useTableStore() {
       // 如果只有选择列，则将其放在最前面
       sorted.unshift(selectionColumn);
     }
-    return [...sorted, ...extra, operationColumn].filter(Boolean) as CrmDataTableColumn[];
+    return [dragColumn, ...sorted, ...extra, operationColumn].filter(Boolean) as CrmDataTableColumn[];
   }
 
   async function initColumn(tableKey: TableKeyEnum, column: CrmDataTableColumn[]) {
