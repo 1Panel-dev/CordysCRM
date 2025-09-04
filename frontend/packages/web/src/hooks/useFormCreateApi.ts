@@ -602,6 +602,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               formDetail.value[field.id] = linkField.value;
             }
             break;
+          case [...memberTypes, ...departmentTypes].includes(field.type):
+            formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
+            field.initialOptions = linkField.initialOptions || [];
+            break;
           default:
             formDetail.value[field.id] = linkField.value;
             field.initialOptions = linkField.initialOptions || [];
