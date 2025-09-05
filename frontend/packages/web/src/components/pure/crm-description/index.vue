@@ -130,8 +130,9 @@
       word-wrap: break-word;
     }
     .crm-description-item-value {
-      @apply relative flex-1 overflow-hidden break-all align-top;
+      @apply relative flex-1 overflow-hidden align-top;
 
+      text-align: justify;
       text-overflow: ellipsis;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;

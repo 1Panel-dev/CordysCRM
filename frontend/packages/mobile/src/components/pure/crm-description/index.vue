@@ -87,9 +87,10 @@
       color: var(--text-n2);
     }
     .crm-description-value {
-      @apply flex-1 break-words break-all;
+      @apply flex-1;
 
       font-size: 14px;
+      text-align: justify;
       color: var(--text-n1);
     }
   }
