@@ -23,7 +23,7 @@
           />
         </template>
         <template #title>
-          <div class="ml-[4px] text-[18px] font-semibold">
+          <div class="ml-[4px] text-[16px] font-semibold">
             {{
               t('workbench.duplicateCheck.searchTypeTitle', {
                 title: item.label,
@@ -33,17 +33,15 @@
           </div>
         </template>
         <template #right-icon> </template>
-        <div style="overflow: hidden; height: calc(100vh - 224px)">
-          <RelatedList
-            :ref="(el) => setRef(el, item.value)"
-            v-model="searchResultMap[item.value].list"
-            :keyword="keyword"
-            :description-list="searchResultMap[item.value as SearchTableKey]?.describe??[]"
-            :search-table-key="item.value"
-            :api="getSearchListApiMap[item.value as SearchTableKey]"
-            :transform-data="(i) => transformData(i, item.value)"
-          />
-        </div>
+        <RelatedList
+          :ref="(el) => setRef(el, item.value)"
+          v-model="searchResultMap[item.value].list"
+          :keyword="keyword"
+          :description-list="searchResultMap[item.value as SearchTableKey]?.describe??[]"
+          :search-table-key="item.value"
+          :api="getSearchListApiMap[item.value as SearchTableKey]"
+          :transform-data="(i) => transformData(i, item.value)"
+        />
       </van-collapse-item>
     </van-collapse>
   </CrmPageWrapper>

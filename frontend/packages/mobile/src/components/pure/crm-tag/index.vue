@@ -1,14 +1,16 @@
 <template>
   <template v-if="Array.isArray(props.tag)">
-    <van-tag
-      v-for="item of props.tag"
-      :key="item"
-      :color="props.bgColor"
-      :text-color="props.textColor"
-      class="!p-[2px_6px]"
-    >
-      {{ item }}
-    </van-tag>
+    <div class="flex flex-wrap gap-[4px]">
+      <van-tag
+        v-for="item of props.tag"
+        :key="item"
+        :color="props.bgColor"
+        :text-color="props.textColor"
+        class="!p-[2px_6px]"
+      >
+        {{ item }}
+      </van-tag>
+    </div>
   </template>
   <van-tag
     v-else

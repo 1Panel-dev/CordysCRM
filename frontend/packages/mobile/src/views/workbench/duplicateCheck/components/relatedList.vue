@@ -3,6 +3,7 @@
     ref="crmListRef"
     v-model="list"
     not-show-loading-toast
+    class="max-h-[calc(100vh-224px)]"
     :list-params="{
       keyword: props.keyword,
       ...(props.id ? { id: props.id } : {}),
