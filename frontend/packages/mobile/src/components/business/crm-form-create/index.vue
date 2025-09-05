@@ -92,8 +92,17 @@
     if (type === FieldTypeEnum.TEXTAREA) {
       return CrmFormCreateComponents.basicComponents.textarea;
     }
+    if (type === FieldTypeEnum.INPUT_NUMBER) {
+      return CrmFormCreateComponents.basicComponents.inputNumber;
+    }
     if (type === FieldTypeEnum.DATE_TIME) {
       return CrmFormCreateComponents.basicComponents.datePicker;
+    }
+    if (type === FieldTypeEnum.RADIO) {
+      return CrmFormCreateComponents.basicComponents.radio;
+    }
+    if (type === FieldTypeEnum.CHECKBOX) {
+      return CrmFormCreateComponents.basicComponents.checkbox;
     }
     if (type === FieldTypeEnum.SELECT) {
       return CrmFormCreateComponents.basicComponents.pick;
@@ -101,11 +110,21 @@
     if (type === FieldTypeEnum.SELECT_MULTIPLE) {
       return CrmFormCreateComponents.basicComponents.multiplePick;
     }
+    if (type === FieldTypeEnum.DIVIDER) {
+      return CrmFormCreateComponents.basicComponents.divider;
+    }
+    // TODO lmy
+    // if (type === FieldTypeEnum.LOCATION) {
+    //   return CrmFormCreateComponents.advancedComponents.location;
+    // }
     if (type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
+    }
+    if (type === FieldTypeEnum.SERIAL_NUMBER) {
+      return CrmFormCreateComponents.advancedComponents.serialNumber;
     }
   }
 
