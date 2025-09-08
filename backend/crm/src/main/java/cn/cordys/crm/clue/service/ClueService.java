@@ -750,8 +750,7 @@ public class ClueService {
 
         // 是否转换商机
         if (request.getOppCreated()) {
-            transformCustomer.setName(request.getOppName());
-            Opportunity transformOpportunity = generateOpportunityByLinkForm(transformCustomer, clue.getOwner(), transformCsAssociateDTO.getContactId(), currentUser, orgId);
+            Opportunity transformOpportunity = generateOpportunityByLinkForm(clue, transformCsAssociateDTO.getContactId(), transformCustomer, currentUser, orgId);
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
@@ -806,7 +805,7 @@ public class ClueService {
         FormLinkFill<Customer> customerLinkFillDTO = new FormLinkFill<>();
         try {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
-                    customerFormConfig, orgId);
+                    customerFormConfig, orgId, FormKey.CLUE.getKey());
         } catch (Exception e) {
             LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
         }
@@ -822,19 +821,18 @@ public class ClueService {
     /**
      * 通过表单联动来创建商机
      *
-     * @param customer    客户
-     * @param clueOwner   线索负责人
+     * @param clue        线索
      * @param contactId   联系人ID
      * @param currentUser 当前用户
      * @param orgId       组织ID
      * @return 商机
      */
-    public Opportunity generateOpportunityByLinkForm(Customer customer, String clueOwner, String contactId, String currentUser, String orgId) {
+    public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
         ModuleFormConfigDTO opportunityFormConfig = moduleFormService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         FormLinkFill<Opportunity> opportunityLinkFillDTO = new FormLinkFill<>();
         try {
-            opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), customerService.get(customer.getId(), orgId),
-                    opportunityFormConfig, orgId);
+            opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
+                    opportunityFormConfig, orgId, FormKey.CLUE.getKey());
         } catch (Exception e) {
             LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
         }
@@ -843,13 +841,13 @@ public class ClueService {
             BeanUtils.copyBean(addRequest, opportunityLinkFillDTO.getEntity());
         }
         // 部分内置字段需手动设置值
-        addRequest.setName(customer.getName());
-        addRequest.setCustomerId(customer.getId());
+        addRequest.setName(transformCustomer.getName());
+        addRequest.setCustomerId(transformCustomer.getId());
         if (CollectionUtils.isEmpty(addRequest.getProducts())) {
             addRequest.setProducts(new ArrayList<>());
         }
         if (StringUtils.isEmpty(addRequest.getOwner())) {
-            addRequest.setOwner(clueOwner);
+            addRequest.setOwner(clue.getOwner());
         }
         if (StringUtils.isEmpty(addRequest.getContactId())) {
             addRequest.setContactId(contactId);

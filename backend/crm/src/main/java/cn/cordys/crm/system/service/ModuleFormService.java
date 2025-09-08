@@ -22,13 +22,10 @@ import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.field.*;
-import cn.cordys.crm.system.dto.field.base.BaseField;
-import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
-import cn.cordys.crm.system.dto.field.base.HasOption;
-import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.field.base.*;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
-import cn.cordys.crm.system.dto.form.base.LinkProp;
+import cn.cordys.crm.system.dto.form.base.LinkField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -582,14 +579,14 @@ public class ModuleFormService {
 	 * @param <T> 实体类型
 	 * @param <S> 数据来源类型
 	 */
-	public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId) throws Exception {
+	public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId, String sourceFormKey) throws Exception {
 		FormLinkFill.FormLinkFillBuilder<T> fillBuilder = FormLinkFill.builder();
-		LinkProp linkProp = targetFormConfig.getFormProp().getLinkProp();
+		Map<String, List<LinkField>> linkProp = targetFormConfig.getFormProp().getLinkProp();
 		if (linkProp == null) {
 			return fillBuilder.entity(target).build();
 		}
 
-		ModuleFormConfigDTO sourceFormConfig = getBusinessFormConfig(linkProp.getFormKey(), orgId);
+		ModuleFormConfigDTO sourceFormConfig = getBusinessFormConfig(sourceFormKey, orgId);
 		List<BaseField> sourceFields = sourceFormConfig.getFields();
 		List<BaseField> targetFields = targetFormConfig.getFields();
 		if (CollectionUtils.isEmpty(sourceFields) || CollectionUtils.isEmpty(targetFields)) {
@@ -605,7 +602,7 @@ public class ModuleFormService {
 		List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
 		@SuppressWarnings("unchecked")
 		List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
-		for (LinkProp.LinkField linkField : linkProp.getLinkFields()) {
+		for (LinkField linkField : linkProp.get(sourceFormKey)) {
 			BaseField targetField = targetFieldMap.get(linkField.getCurrent());
 			BaseField sourceField = sourceFieldMap.get(linkField.getLink());
 			if (targetField == null || sourceField == null) {
