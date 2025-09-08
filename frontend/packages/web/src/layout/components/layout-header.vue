@@ -108,6 +108,7 @@
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
+  import { changeLocaleBackEnd } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
 
@@ -124,6 +125,7 @@
   const userStore = useUserStore();
 
   function changeLanguage(locale: LocaleType) {
+    changeLocaleBackEnd(locale);
     changeLocale(locale);
   }
 

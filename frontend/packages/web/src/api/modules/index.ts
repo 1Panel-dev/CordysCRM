@@ -404,7 +404,7 @@ export const {
 
 export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthCallback } = loginApi;
 
-export const { getSystemVersion } = sysApi;
+export const { getSystemVersion, changeLocaleBackEnd } = sysApi;
 
 export const { getLicense, addLicense } = licenseApi;
 
