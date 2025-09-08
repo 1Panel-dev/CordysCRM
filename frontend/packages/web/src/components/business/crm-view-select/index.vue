@@ -25,6 +25,9 @@
         >
           {{ tag.name }}
         </CrmTag>
+        <CrmTag tooltip-disabled theme="outline" class="cursor-pointer" @click="handleAdd">
+          ＋ {{ t('crmViewSelect.newView') }}
+        </CrmTag>
       </div>
 
       <n-button
