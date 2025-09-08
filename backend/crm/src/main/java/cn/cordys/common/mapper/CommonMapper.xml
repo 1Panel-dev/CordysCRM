@@ -327,4 +327,20 @@
             and (t.transition_type != 'CUSTOMER' or t.transition_type is null) and t.in_shared_pool = false
         </if>
     </select>
+
+    <select id="checkFieldRepeatName" resultType="java.lang.String">
+        select d.name from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
+        where f.field_id = #{fieldId} and f.field_value = #{fieldValue} and d.organization_id = #{orgId}
+        <if test="dataTable == 'clue'">
+            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
+        </if>
+    </select>
+
+    <select id="checkInternalRepeatName" resultType="java.lang.String">
+        select d.name from `${dataTable}` d
+        where d.`${businessName}` = #{value} and d.organization_id = #{orgId}
+        <if test="dataTable == 'clue'">
+            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
+        </if>
+    </select>
 </mapper>

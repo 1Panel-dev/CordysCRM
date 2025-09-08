@@ -19,7 +19,9 @@ import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
 import cn.cordys.crm.system.dto.response.product.ProductListResponse;
 import cn.cordys.crm.system.service.ModuleFieldService;
 import cn.cordys.crm.system.service.ModuleService;
@@ -113,5 +115,11 @@ public class ModuleFieldController {
 		// 数据源接口只展示上架数据
 		request.setStatus("1");
 		return productService.list(request, OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/check/repeat")
+	@Operation(summary = "校验重复")
+	public FieldRepeatCheckResponse checkRepeat(@Valid @RequestBody FieldRepeatCheckRequest checkRequest) {
+		return moduleFieldService.checkRepeat(checkRequest, OrganizationContext.getOrganizationId());
 	}
 }

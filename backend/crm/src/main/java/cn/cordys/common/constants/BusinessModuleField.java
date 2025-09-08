@@ -3,11 +3,10 @@ package cn.cordys.common.constants;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -214,8 +213,16 @@ public enum BusinessModuleField {
      */
     private final String formKey;
 
-    BusinessModuleField(String key, String businessKey, String formKey) {
-        this(key, businessKey, Set.of(), formKey);
+    /**
+     * 业务字段缓存
+     */
+    private static final Map<String, BusinessModuleField> INTERNAL_CACHE = new HashMap<>();
+
+    static {
+        for (BusinessModuleField field : values()) {
+            // 防止ofKey方法频繁调用
+            INTERNAL_CACHE.put(field.key, field);
+        }
     }
 
     BusinessModuleField(String key, String businessKey, Set<String> disabledProps, String formKey) {
@@ -251,5 +258,14 @@ public enum BusinessModuleField {
                 .collect(Collectors.groupingBy(BaseField::getName, Collectors.counting()))
                 .values().stream()
                 .anyMatch(count -> count > 1);
+    }
+
+    /**
+     * 通过Key查询业务字段
+     * @param internalKey 业务key
+     * @return 业务字段
+     */
+    public static BusinessModuleField ofKey(String internalKey) {
+        return INTERNAL_CACHE.get(internalKey);
     }
 }
