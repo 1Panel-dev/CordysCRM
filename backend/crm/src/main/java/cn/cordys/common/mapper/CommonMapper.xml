@@ -78,6 +78,14 @@
                     (${column} IS NOT NULL AND ${column} != '[]')
                 </when>
 
+                <when test="${condition}.operator == 'EQUALS'">
+                    ${column} = #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'NOT_EQUALS'">
+                    ${column} != #{condition.value}
+                    or ${column} is null
+                </when>
+
             </choose>
         </trim>
     </sql>

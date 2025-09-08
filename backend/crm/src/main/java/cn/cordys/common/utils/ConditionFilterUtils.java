@@ -7,6 +7,7 @@ import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.UserViewService;
@@ -73,6 +74,13 @@ public class ConditionFilterUtils {
                     FilterCondition.CombineConditionOperator.NOT_CONTAINS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(BaseCondition.transferKeyword(strValue));
+            }
+
+            if (item.getValue() != null && Strings.CS.contains(item.getType(),"MULTIPLE" )
+                    && Strings.CS.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.EQUALS.name(),
+                    FilterCondition.CombineConditionOperator.NOT_EQUALS.name())) {
+                // 转义 mysql 的特殊字符
+                item.setValue(JSON.toJSONString(item.getCombineValue()));
             }
         });
         replaceCurrentUser(validConditions);
