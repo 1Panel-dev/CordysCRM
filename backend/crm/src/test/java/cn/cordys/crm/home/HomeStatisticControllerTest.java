@@ -3,8 +3,7 @@ package cn.cordys.crm.home;
 import cn.cordys.common.constants.BusinessSearchType;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.crm.base.BaseTest;
-import cn.cordys.crm.home.constants.HomeStatisticPeriod;
-import cn.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
+import cn.cordys.crm.home.dto.request.HomeStatisticBaseSearchRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -36,9 +35,8 @@ public class HomeStatisticControllerTest extends BaseTest {
     @Test
     @Order(0)
     void testGetOpportunityStatistic() throws Exception {
-        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        HomeStatisticBaseSearchRequest request = new HomeStatisticBaseSearchRequest();
         request.setSearchType(BusinessSearchType.ALL.name());
-        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
 
         this.requestPostWithOkAndReturn(OPPORTUNITY, request);
 
@@ -49,9 +47,8 @@ public class HomeStatisticControllerTest extends BaseTest {
     @Test
     @Order(0)
     void testGetOpportunitySuccessStatistic() throws Exception {
-        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        HomeStatisticBaseSearchRequest request = new HomeStatisticBaseSearchRequest();
         request.setSearchType(BusinessSearchType.ALL.name());
-        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
 
         this.requestPostWithOkAndReturn(OPPORTUNITY_SUCCESS, request);
 
@@ -62,9 +59,8 @@ public class HomeStatisticControllerTest extends BaseTest {
     @Test
     @Order(0)
     void testGetClueStatistic() throws Exception {
-        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        HomeStatisticBaseSearchRequest request = new HomeStatisticBaseSearchRequest();
         request.setSearchType(BusinessSearchType.ALL.name());
-        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
 
         this.requestPostWithOkAndReturn(CLUE, request);
 

@@ -11,9 +11,21 @@ import lombok.Data;
  */
 @Data
 public class HomeSuccessOpportunityStatistic {
-    @Schema(description = "赢单商机总数")
-    private HomeStatisticSearchResponse successOpportunity;
+    @Schema(description = "本年度赢单商机")
+    private HomeStatisticSearchResponse thisYearOpportunity;
+    @Schema(description = "本月赢单商机")
+    private HomeStatisticSearchResponse thisMonthOpportunity;
+    @Schema(description = "本周赢单商机")
+    private HomeStatisticSearchResponse thisWeekOpportunity;
+    @Schema(description = "本日赢单商机")
+    private HomeStatisticSearchResponse todayOpportunity;
 
-    @Schema(description = "赢单商机总额")
-    private HomeStatisticSearchResponse successOpportunityAmount;
+    @Schema(description = "本年度赢单商机总额")
+    private HomeStatisticSearchResponse thisYearOpportunityAmount;
+    @Schema(description = "本月赢单商机总额")
+    private HomeStatisticSearchResponse thisMonthOpportunityAmount;
+    @Schema(description = "本周赢单商机总额")
+    private HomeStatisticSearchResponse thisWeekOpportunityAmount;
+    @Schema(description = "本日赢单商机总额")
+    private HomeStatisticSearchResponse todayOpportunityAmount;
 }

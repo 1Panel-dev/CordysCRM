@@ -4,8 +4,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
-import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
+import cn.cordys.crm.home.dto.request.HomeStatisticBaseSearchRequest;
 import cn.cordys.crm.home.dto.response.HomeClueStatistic;
 import cn.cordys.crm.home.dto.response.HomeOpportunityStatistic;
 import cn.cordys.crm.home.dto.response.HomeSuccessOpportunityStatistic;
@@ -35,31 +34,28 @@ public class HomeStatisticController {
     @PostMapping("/clue")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索统计")
-    public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+    public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticBaseSearchRequest request) {
         DeptDataPermissionDTO deptDataPermission = homeStatisticService.getDeptDataPermissionDTO(request, PermissionConstants.CLUE_MANAGEMENT_READ);
-        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
-                new HomeClueStatistic() : homeStatisticService.getClueStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(request.getSearchType(), deptDataPermission) ?
+                new HomeClueStatistic() : homeStatisticService.getClueStatistic(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/opportunity")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "跟进商机统计")
-    public HomeOpportunityStatistic getOpportunityStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+    public HomeOpportunityStatistic getOpportunityStatistic(@RequestBody @Validated HomeStatisticBaseSearchRequest request) {
         DeptDataPermissionDTO deptDataPermission = homeStatisticService.getDeptDataPermissionDTO(request, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
-                new HomeOpportunityStatistic() : homeStatisticService.getOpportunityStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(request.getSearchType(), deptDataPermission) ?
+                new HomeOpportunityStatistic() : homeStatisticService.getOpportunityStatistic(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/opportunity/success")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "赢单统计")
-    public HomeSuccessOpportunityStatistic getSuccessOpportunityStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+    public HomeSuccessOpportunityStatistic getSuccessOpportunityStatistic(@RequestBody @Validated HomeStatisticBaseSearchRequest request) {
         DeptDataPermissionDTO deptDataPermission = homeStatisticService.getDeptDataPermissionDTO(request, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
-                new HomeSuccessOpportunityStatistic() : homeStatisticService.getSuccessOpportunityStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(request.getSearchType(), deptDataPermission) ?
+                new HomeSuccessOpportunityStatistic() : homeStatisticService.getSuccessOpportunityStatistic(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("/department/tree")
