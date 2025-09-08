@@ -81,7 +81,7 @@ public enum BusinessModuleField {
     /**
      * 客户名称
      */
-    OPPORTUNITY_CUSTOMER_NAME("opportunityCustomer", "customerId", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_CUSTOMER_NAME("opportunityCustomer", "customerId", Set.of(), FormKey.OPPORTUNITY.getKey()),
     /**
      * 商机金额
      */

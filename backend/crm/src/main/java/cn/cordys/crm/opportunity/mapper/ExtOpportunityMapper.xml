@@ -681,4 +681,11 @@
             #{id}
         </foreach>
     </select>
+
+    <update id="updateIncludeNullById" parameterType="cn.cordys.crm.opportunity.domain.Opportunity">
+        update opportunity set customer_id = #{opportunity.customerId}, name = #{opportunity.name}, amount = #{opportunity.amount},
+               possible = #{opportunity.possible}, products = #{opportunity.products,typeHandler=cn.cordys.common.handler.ListTypeHandler}, contact_id = #{opportunity.contactId},
+               owner = #{opportunity.owner}, expected_end_time = #{opportunity.expectedEndTime}, failure_reason = #{opportunity.failureReason}
+        where id = #{opportunity.id}
+    </update>
 </mapper>

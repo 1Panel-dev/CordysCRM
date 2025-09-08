@@ -17,9 +17,8 @@ public class OpportunityAddRequest {
     @Schema(description = "商机名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @NotBlank
     @Size(max = 32)
-    @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "客户id")
     private String customerId;
 
     @Schema(description = "金额")
