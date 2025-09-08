@@ -7,5 +7,6 @@ package cn.cordys.crm.home.constants;
 public enum HomeStatisticPeriod {
     TODAY,
     THIS_WEEK,
-    THIS_MONTH;
+    THIS_MONTH,
+    THIS_YEAR;
 }

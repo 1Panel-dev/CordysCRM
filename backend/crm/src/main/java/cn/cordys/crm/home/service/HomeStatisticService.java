@@ -2,7 +2,6 @@ package cn.cordys.crm.home.service;
 
 import cn.cordys.common.constants.BusinessSearchType;
 import cn.cordys.common.constants.InternalUser;
-import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -14,15 +13,12 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
-import cn.cordys.crm.clue.service.PoolClueService;
-import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
-import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
-import cn.cordys.crm.customer.service.PoolCustomerService;
-import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
-import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
-import cn.cordys.crm.home.dto.response.*;
+import cn.cordys.crm.home.dto.response.HomeClueStatistic;
+import cn.cordys.crm.home.dto.response.HomeOpportunityStatistic;
+import cn.cordys.crm.home.dto.response.HomeStatisticSearchResponse;
+import cn.cordys.crm.home.dto.response.HomeSuccessOpportunityStatistic;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.service.DepartmentService;
@@ -46,17 +42,9 @@ import java.util.stream.Collectors;
 public class HomeStatisticService {
 
 	@Resource
-	private ExtCustomerMapper extCustomerMapper;
-	@Resource
 	private ExtClueMapper extClueMapper;
 	@Resource
 	private ExtOpportunityMapper extOpportunityMapper;
-	@Resource
-	private ExtCustomerContactMapper extCustomerContactMapper;
-	@Resource
-	private ExtFollowUpRecordMapper extFollowUpRecordMapper;
-	@Resource
-	private ExtFollowUpPlanMapper extFollowUpPlanMapper;
 	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
@@ -65,39 +53,8 @@ public class HomeStatisticService {
 	private DepartmentService departmentService;
 	@Resource
 	private RoleService roleService;
-	@Resource
-	private PoolCustomerService poolCustomerService;
-	@Resource
-	private PoolClueService poolClueService;
 
 	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-
-
-	public HomeCustomerStatistic getCustomerStatistic(HomeStatisticSearchWrapperRequest request) {
-		HomeCustomerStatistic customerStatistic = new HomeCustomerStatistic();
-		try {
-			// 多线程执行
-			Future<HomeStatisticSearchResponse> getNewCustomerStatistic = executor.submit(() ->
-					getStatisticSearchResponse(request, this::getNewCustomerCount));
-			Future<HomeStatisticSearchResponse> getUnfollowedCustomerStatistic = executor.submit(() ->
-					getStatisticSearchResponse(request, this::getUnfollowedCustomerCount));
-			Future<Long> getTotalCustomerCount = executor.submit(() -> getTotalCustomerCount(request));
-			Future<Long> getCustomerCapacityCount = executor.submit(() -> getTotalCustomerCapacityCount(request));
-
-			customerStatistic.setNewCustomer(getNewCustomerStatistic.get());
-			customerStatistic.setUnfollowedCustomer(getUnfollowedCustomerStatistic.get());
-			customerStatistic.setTotal(getTotalCustomerCount.get());
-
-			Long cap = getCustomerCapacityCount.get();
-			customerStatistic.setUnConfigured(cap == null);
-			if (!customerStatistic.getUnConfigured()) {
-				customerStatistic.setRemainingCapacity(cap);
-			}
-		} catch (Exception e) {
-			LogUtils.error(e);
-		}
-		return customerStatistic;
-	}
 
 	public HomeClueStatistic getClueStatistic(HomeStatisticSearchWrapperRequest request) {
 		HomeClueStatistic clueStatistic = new HomeClueStatistic();
@@ -105,20 +62,7 @@ public class HomeStatisticService {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewClueStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getNewClueCount));
-			Future<HomeStatisticSearchResponse> getUnfollowedClueStatistic = executor.submit(() ->
-					getStatisticSearchResponse(request, this::getUnfollowedClueCount));
-			Future<Long> getTotalClueCount = executor.submit(() -> getTotalClueCount(request));
-			Future<Long> getClueCapacityCount = executor.submit(() -> getTotalClueCapacityCount(request));
-
 			clueStatistic.setNewClue(getNewClueStatistic.get());
-			clueStatistic.setUnfollowedClue(getUnfollowedClueStatistic.get());
-			clueStatistic.setTotal(getTotalClueCount.get());
-			Long cap = getClueCapacityCount.get();
-			clueStatistic.setUnConfigured(cap == null);
-			if (!clueStatistic.getUnConfigured()) {
-				clueStatistic.setRemainingCapacity(cap);
-			}
-			clueStatistic.setRemainingCapacity(getClueCapacityCount.get());
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}
@@ -132,105 +76,32 @@ public class HomeStatisticService {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getNewOpportunityCount));
-			Future<Long> getOpportunityTotalAmount = executor.submit(() -> getOpportunityTotalAmount(request));
-			Future<Long> getTotalOpportunityCount = executor.submit(() -> getTotalOpportunityCount(request));
+			Future<HomeStatisticSearchResponse> getNewOpportunityTotalAmount = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getNewOpportunityCount));
 
 			opportunityStatistic.setNewOpportunity(getNewOpportunityStatistic.get());
-			opportunityStatistic.setTotalAmount(getOpportunityTotalAmount.get());
-			opportunityStatistic.setTotal(getTotalOpportunityCount.get());
+			opportunityStatistic.setNewOpportunityAmount(getNewOpportunityTotalAmount.get());
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}
 		return opportunityStatistic;
 	}
 
-	public HomeContactStatistic getContactStatistic(HomeStatisticSearchWrapperRequest request) {
-		HomeContactStatistic contactStatistic = new HomeContactStatistic();
-		HomeStatisticSearchResponse statisticSearchResponse =
-				getStatisticSearchResponse(request, extCustomerContactMapper::getNewContactCount);
-		contactStatistic.setNewContact(statisticSearchResponse);
-		return contactStatistic;
-	}
+	public HomeSuccessOpportunityStatistic getSuccessOpportunityStatistic(HomeStatisticSearchWrapperRequest request) {
+		HomeSuccessOpportunityStatistic opportunityStatistic = new HomeSuccessOpportunityStatistic();
+		try {
+			// 多线程执行
+			Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getSuccessOpportunityCount));
+			Future<HomeStatisticSearchResponse> getSuccessOpportunityStatistic = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getSuccessOpportunityAmount));
 
-	public HomeFollowUpRecordStatistic getFollowUpRecordStatistic(HomeStatisticSearchWrapperRequest request) {
-		HomeFollowUpRecordStatistic followUpRecordStatistic = new HomeFollowUpRecordStatistic();
-		HomeStatisticSearchResponse statisticSearchResponse =
-				getStatisticSearchResponse(request, extFollowUpRecordMapper::getNewContactCount);
-		followUpRecordStatistic.setNewFollowUpRecord(statisticSearchResponse);
-		return followUpRecordStatistic;
-	}
-
-	public HomeFollowUpPlanStatistic getFollowUpPlanStatistic(HomeStatisticSearchWrapperRequest request) {
-		HomeFollowUpPlanStatistic followUpPlanStatistic = new HomeFollowUpPlanStatistic();
-		HomeStatisticSearchResponse statisticSearchResponse =
-				getStatisticSearchResponse(request, extFollowUpPlanMapper::getNewFollowUpPlan);
-		followUpPlanStatistic.setNewFollowUpPlan(statisticSearchResponse);
-		return followUpPlanStatistic;
-	}
-
-	/**
-	 * 获取客户总数
-	 * @param request
-	 * @return
-	 */
-	public Long getTotalCustomerCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.clearStartTimeAndEndTie();
-		return extCustomerMapper.selectCustomerCount(totalRequest, false);
-	}
-
-	/**
-	 * 获取客户剩余库容
-	 * @param request 请求参数
-	 * @return 剩余库容数量
-	 */
-	public Long getTotalCustomerCapacityCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		if (request.getStaticRequest() != null && Strings.CS.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
-			return poolCustomerService.getRemainCapacity(request.getUserId(), request.getOrgId());
+			opportunityStatistic.setSuccessOpportunity(getNewOpportunityStatistic.get());
+			opportunityStatistic.setSuccessOpportunityAmount(getSuccessOpportunityStatistic.get());
+		} catch (Exception e) {
+			LogUtils.error(e);
 		}
-		return null;
-	}
-
-	/**
-	 * 获取新增客户统计
-	 * @param request
-	 * @return
-	 */
-	public Long getNewCustomerCount(HomeStatisticSearchWrapperRequest request) {
-		return extCustomerMapper.selectCustomerCount(request, false);
-	}
-
-	/**
-	 * 获取未跟进客户统计
-	 * @param request
-	 * @return
-	 */
-	public Long getUnfollowedCustomerCount(HomeStatisticSearchWrapperRequest request) {
-		return extCustomerMapper.selectCustomerCount(request, true);
-	}
-
-	/**
-	 * 获取线索总数
-	 * @param request
-	 * @return
-	 */
-	public Long getTotalClueCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.clearStartTimeAndEndTie();
-		return extClueMapper.selectClueCount(totalRequest, false);
-	}
-
-	/**
-	 * 获取剩余库容总数
-	 * @param request 请求参数
-	 * @return 剩余库容数量
-	 */
-	public Long getTotalClueCapacityCount(HomeStatisticSearchWrapperRequest request) {
-		if (request.getStaticRequest() != null && Strings.CS.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
-			return poolClueService.getRemainCapacity(request.getUserId(), request.getOrgId());
-		}
-		return null;
+		return opportunityStatistic;
 	}
 
 	/**
@@ -242,27 +113,6 @@ public class HomeStatisticService {
 		return extClueMapper.selectClueCount(request, false);
 	}
 
-	/**
-	 * 获取未跟进线索统计
-	 * @param request
-	 * @return
-	 */
-	public Long getUnfollowedClueCount(HomeStatisticSearchWrapperRequest request) {
-		return extClueMapper.selectClueCount(request, true);
-	}
-
-
-	/**
-	 * 获取客户总数
-	 * @param request
-	 * @return
-	 */
-	public Long getTotalOpportunityCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.clearStartTimeAndEndTie();
-		return extOpportunityMapper.selectOpportunityCount(totalRequest, false);
-	}
-
 	private HomeStatisticSearchWrapperRequest copyHomeStatisticSearchWrapperRequest(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(BeanUtils.copyBean(new HomeStatisticSearchRequest(), request.getStaticRequest()),
 				request.getDataPermission(), request.getOrgId(), request.getUserId());
@@ -270,23 +120,39 @@ public class HomeStatisticService {
 	}
 
 	/**
-	 * 获取新增客户统计
+	 * 获取新增商机数量
 	 * @param request
 	 * @return
 	 */
 	public Long getNewOpportunityCount(HomeStatisticSearchWrapperRequest request) {
-		return extOpportunityMapper.selectOpportunityCount(request, false);
+		return extOpportunityMapper.selectOpportunityCount(request, false, false);
 	}
 
 	/**
-	 * 获取未跟进客户统计
+	 * 获取新增商机总额数量
 	 * @param request
 	 * @return
 	 */
-	public Long getOpportunityTotalAmount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.clearStartTimeAndEndTie();
-		return extOpportunityMapper.selectOpportunityCount(totalRequest, true);
+	public Long getNewOpportunityAmount(HomeStatisticSearchWrapperRequest request) {
+		return extOpportunityMapper.selectOpportunityCount(request, true, false);
+	}
+
+	/**
+	 * 获取赢单数量
+	 * @param request
+	 * @return
+	 */
+	public Long getSuccessOpportunityCount(HomeStatisticSearchWrapperRequest request) {
+		return extOpportunityMapper.selectOpportunityCount(request, false, true);
+	}
+
+	/**
+	 * 获取赢单总额
+	 * @param request
+	 * @return
+	 */
+	public Long getSuccessOpportunityAmount(HomeStatisticSearchWrapperRequest request) {
+		return extOpportunityMapper.selectOpportunityCount(request, true, true);
 	}
 
 	/**
@@ -430,12 +296,6 @@ public class HomeStatisticService {
 		}
 		tree.addAll(addNodes);
 		return tree;
-	}
-
-	public HomeStatisticSearchWrapperRequest getHomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest request) {
-		DeptDataPermissionDTO deptDataPermission = getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-		HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-		return wrapperRequest;
 	}
 
 	public boolean isEmptyDeptData(HomeStatisticSearchWrapperRequest wrapperRequest) {

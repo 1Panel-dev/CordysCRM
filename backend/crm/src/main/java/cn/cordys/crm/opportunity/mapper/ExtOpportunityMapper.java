@@ -44,7 +44,7 @@ public interface ExtOpportunityMapper {
 
     List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount")  boolean amount);
+    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount") boolean amount, @Param("success") boolean success);
 
     List<AdvancedOpportunityResponse> advancedSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
 

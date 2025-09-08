@@ -12,13 +12,10 @@ import lombok.Data;
 @Data
 public class HomeOpportunityStatistic {
 
-    @Schema(description = "跟进商机总数")
-    private Long total;
-
     @Schema(description = "新增跟进商机")
     private HomeStatisticSearchResponse newOpportunity;
 
-    @Schema(description = "跟进商机总额")
-    private Long totalAmount;
+    @Schema(description = "新增跟进商机总额")
+    private HomeStatisticSearchResponse newOpportunityAmount;
 
 }

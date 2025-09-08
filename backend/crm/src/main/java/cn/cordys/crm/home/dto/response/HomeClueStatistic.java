@@ -11,19 +11,6 @@ import lombok.Data;
  */
 @Data
 public class HomeClueStatistic {
-
-    @Schema(description = "线索总数")
-    private Long total;
-
     @Schema(description = "新增线索")
     private HomeStatisticSearchResponse newClue;
-
-    @Schema(description = "未跟进线索")
-    private HomeStatisticSearchResponse unfollowedClue;
-
-    @Schema(description = "剩余库容")
-    private Long remainingCapacity;
-
-    @Schema(description = "库容未配置")
-    private Boolean unConfigured;
 }

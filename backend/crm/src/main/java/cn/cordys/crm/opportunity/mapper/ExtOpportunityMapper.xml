@@ -538,7 +538,14 @@
             )
         </if>
 
-        where c.organization_id = #{request.orgId} and c.stage != 'SUCCESS' and c.stage != 'FAIL'
+        where c.organization_id = #{request.orgId} and
+        <if test="success">
+            c.stage = 'SUCCESS'
+        </if>
+        <if test="!success">
+            c.stage != 'SUCCESS' and c.stage != 'FAIL'
+        </if>
+
         <if test="request.startTime != null and request.endTime != null">
             and c.create_time &gt;= #{request.startTime} and c.create_time &lt;= #{request.endTime}
         </if>

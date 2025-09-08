@@ -25,7 +25,7 @@ public class HomeStatisticSearchRequest {
     private Set<String> deptIds;
 
     @EnumValue(enumClass = HomeStatisticPeriod.class)
-    @Schema(description = "时间段(TODAY/THIS_WEEK/THIS_MONTH)")
+    @Schema(description = "时间段(TODAY/THIS_WEEK/THIS_MONTH/THIS_YEAR)")
     private String period;
 
     @Schema(description = "开始时间")

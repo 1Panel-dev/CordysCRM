@@ -12,7 +12,6 @@ import java.time.ZoneId;
 
 
 /**
- *
  * @author jianxing
  * @date 2025-02-08 16:24:22
  */
@@ -72,6 +71,10 @@ public class HomeStatisticSearchWrapperRequest {
                     startTime = now.withDayOfMonth(1)
                             .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
                     break;
+                case THIS_YEAR:
+                    startTime = now.withDayOfYear(1)
+                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    break;
             }
         }
         return startTime;
@@ -83,19 +86,16 @@ public class HomeStatisticSearchWrapperRequest {
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
-            switch (statisticPeriod) {
-                case TODAY:
-                    startTime = now.minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_WEEK:
-                    startTime = now.minusWeeks(1).with(DayOfWeek.MONDAY)
-                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_MONTH:
-                    startTime = now.minusMonths(1).withDayOfMonth(1)
-                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-            }
+            startTime = switch (statisticPeriod) {
+                case TODAY -> now.minusDays(1)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_WEEK -> now.minusWeeks(1)
+                        .with(DayOfWeek.MONDAY).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_MONTH -> now.minusMonths(1).withDayOfMonth(1)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_YEAR -> now.minusYears(1).withDayOfYear(1)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            };
         }
         return startTime;
     }
@@ -106,27 +106,29 @@ public class HomeStatisticSearchWrapperRequest {
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
-            switch (statisticPeriod) {
-                case TODAY:
-                    endTime = now.minusDays(1).atTime(23, 59, 59)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_WEEK:
-                    endTime = now.minusWeeks(1).with(DayOfWeek.SUNDAY)
-                            .atTime(23, 59, 59)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_MONTH:
+            endTime = switch (statisticPeriod) {
+                case TODAY -> now.minusDays(1).atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_WEEK -> now.minusWeeks(1).with(DayOfWeek.SUNDAY)
+                        .atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_MONTH -> {
                     LocalDate startOfMonth = now.minusMonths(1).withDayOfMonth(1);
-                    endTime = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
+                    yield startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
                             .plusDays(1)
                             .minusDays(1)
                             .atTime(23, 59, 59)
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                             .toEpochMilli();
-                    break;
-            }
+                }
+                case THIS_YEAR -> now.minusYears(1).withDayOfYear(1)
+                        .withDayOfYear(now.minusYears(1).lengthOfYear())
+                        .atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli();
+            };
         }
         return endTime;
     }
@@ -140,27 +142,29 @@ public class HomeStatisticSearchWrapperRequest {
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
-            switch (statisticPeriod) {
-                case TODAY:
-                    endTime = now.atTime(23, 59, 59)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_WEEK:
-                    endTime = now.with(DayOfWeek.SUNDAY)
-                            .atTime(23, 59, 59)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_MONTH:
+            endTime = switch (statisticPeriod) {
+                case TODAY -> now.atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_WEEK -> now.with(DayOfWeek.SUNDAY)
+                        .atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_MONTH -> {
                     LocalDate startOfMonth = now.withDayOfMonth(1);
-                    endTime = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
+                    yield startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
                             .plusDays(1)
                             .minusDays(1)
                             .atTime(23, 59, 59)
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                             .toEpochMilli();
-                    break;
-            }
+                }
+                case THIS_YEAR -> now.withDayOfYear(1)
+                        .withDayOfYear(now.lengthOfYear())
+                        .atTime(23, 59, 59)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli();
+            };
         }
         return endTime;
     }
