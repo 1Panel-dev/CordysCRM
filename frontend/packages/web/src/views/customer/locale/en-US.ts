@@ -48,4 +48,5 @@ export default {
   'customer.recycleReason': 'Reason for recycling',
   'customer.recycleOpenSeaName': 'Belonging public pool',
   'customer.contacts': 'Contact',
+  'customer.contact': 'Contact',
 };

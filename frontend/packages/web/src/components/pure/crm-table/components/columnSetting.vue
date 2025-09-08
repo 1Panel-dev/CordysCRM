@@ -26,8 +26,8 @@
     </div>
     <n-scrollbar class="my-[4px] max-h-[416px] px-[4px]">
       <div v-if="layoutType === 'columnHeaderSet'">
-        <div class="mb-[4px] flex h-[24px] w-[175px] items-center justify-between text-[12px]">
-          <div class="font-medium text-[var(--text-n1)]">
+        <div class="mb-[4px] flex h-[24px] items-center justify-between text-[12px]">
+          <div class="one-line-text font-medium text-[var(--text-n1)]">
             {{ t('crmTable.columnSetting.tableHeaderDisplaySettings') }}
           </div>
           <n-button text type="primary" size="tiny" :disabled="!hasChange" @click="handleReset">
@@ -240,7 +240,6 @@
     padding: 0 !important;
     .crm-table-column-setting-item {
       padding: 5px 8px;
-      width: 183px;
       border-radius: @border-radius-small;
       @apply flex items-center justify-between;
       &:hover {

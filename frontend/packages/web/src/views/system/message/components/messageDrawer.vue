@@ -9,14 +9,16 @@
     <div class="message-wrapper">
       <div class="message-count">
         <div class="p-[24px]">
-          <CrmTab
-            v-model:active-tab="activeTab"
-            class="mb-[16px]"
-            type="segment"
-            no-content
-            :tab-list="tabList"
-            @change="handleChangeType"
-          />
+          <div class="overflow-hidden">
+            <CrmTab
+              v-model:active-tab="activeTab"
+              class="mb-[16px]"
+              type="segment"
+              no-content
+              :tab-list="tabList"
+              @change="handleChangeType"
+            />
+          </div>
           <div
             v-for="item of messageTypeList"
             :key="item.value"
@@ -43,7 +45,7 @@
             <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
             <n-select
               v-model:value="timeDays"
-              class="w-[100px]"
+              class="w-[180px]"
               :options="selectTimeOptions"
               @update:value="changeHandler"
             />

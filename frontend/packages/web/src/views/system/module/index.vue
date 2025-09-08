@@ -36,10 +36,13 @@
                 :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
               >
                 <div v-for="item in appStore.navTopConfigList" :key="item.key" class="nav-item justify-between">
-                  <div class="flex items-center gap-[8px]">
+                  <div class="flex w-full items-center gap-[8px] overflow-hidden">
                     <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
-                    <CrmIcon :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
-                    {{ t(item.label) }}
+                    <div v-if="item.key === 'language'" class="h-[16px] w-[16px]">
+                      <LanguageOutline />
+                    </div>
+                    <CrmIcon v-else :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
+                    <div class="one-line-text">{{ t(item.label) }}</div>
                   </div>
                   <n-button
                     v-if="item.key === 'search'"
@@ -48,7 +51,7 @@
                     type="primary"
                     @click="handleDesensitization"
                   >
-                    {{ t('module.desensitizationSet') }}
+                    <div class="one-line-text">{{ t('module.desensitizationSet') }}</div>
                   </n-button>
                 </div>
               </VueDraggable>
@@ -70,6 +73,7 @@
 
 <script setup lang="ts">
   import { NButton, NDivider, NScrollbar, NSwitch, useMessage } from 'naive-ui';
+  import { LanguageOutline } from '@vicons/ionicons5';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';

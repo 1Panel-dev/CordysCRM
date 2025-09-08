@@ -1,11 +1,11 @@
 <template>
   <!-- special-height 64是tab的高度和margin -->
   <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 64" :loading="loading">
-    <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
+    <div v-if="integrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
       <div
         v-for="item of integrationList"
         :key="item.type"
-        class="flex h-[140px] w-[380px] flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
+        class="flex h-[140px] flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
       >
         <div class="flex">
           <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
@@ -18,7 +18,7 @@
             <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
           </div>
           <div class="flex-1">
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-[8px]">
               <div>
                 <span class="mr-[8px] font-medium">{{ item.title }}</span>
                 <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
@@ -96,7 +96,7 @@
           </n-tooltip>
           <div class="text-[12px]">{{ t('common.dashboard') }}</div>
         </div>
-        <div v-else-if="item.type === CompanyTypeEnum.SQLBot" class="flex justify-between">
+        <div v-else-if="item.type === CompanyTypeEnum.SQLBot" class="flex justify-between gap-[8px]">
           <!--          <div class="flex items-center gap-[8px]">
             <n-tooltip :disabled="item.response.verify">
               <template #trigger>
@@ -128,7 +128,7 @@
             <div class="text-[12px]">{{ t('system.business.SQLBot.switch') }}</div>
           </div>
         </div>
-        <div v-else class="flex justify-between">
+        <div v-else class="flex justify-between gap-[8px]">
           <div class="flex items-center gap-[8px]">
             <n-tooltip :disabled="item.response.verify">
               <template #trigger>

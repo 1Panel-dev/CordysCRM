@@ -91,7 +91,7 @@ export default function createAxios(opt: Partial<CreateAxiosOptions>) {
      */
     requestInterceptors: (config) => {
       // 请求之前处理config
-      const currentLocale = localStorage.getItem('CordysLocale') || 'zh-CN';
+      const currentLocale = localStorage.getItem('CRM-locale') || 'zh-CN';
       const app = getLocalStorage<Record<string, any>>('app', true);
 
       const token = getToken();

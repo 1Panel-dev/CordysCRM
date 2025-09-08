@@ -15,19 +15,20 @@
             </n-button>
             <span v-else></span>
           </template>
-
-          <!-- <n-popselect
-          v-model:value="currentLocale"
-          :options="LOCALE_OPTIONS"
-          trigger="hover"
-          @update-value="changeLanguage"
-        >
-          <n-button class="p-[8px]" quaternary>
-            <template #icon>
-              <LanguageOutline />
-            </template>
-          </n-button>
-        </n-popselect> -->
+          <template #languageSlot>
+            <n-popselect
+              v-model:value="currentLocale"
+              :options="LOCALE_OPTIONS"
+              trigger="hover"
+              @update-value="changeLanguage"
+            >
+              <n-button class="p-[8px]" quaternary>
+                <template #icon>
+                  <LanguageOutline />
+                </template>
+              </n-button>
+            </n-popselect>
+          </template>
           <template #alertsSlot>
             <n-button class="p-[8px]" quaternary @click="showMessage">
               <n-badge value="1" dot :show="showBadge">
@@ -91,14 +92,15 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
-  import { NBadge, NButton, NLayoutHeader, NPopover, useMessage } from 'naive-ui';
+  import { NBadge, NButton, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
+  import { LanguageOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { LOCALE_OPTIONS } from '@lib/shared/locale';
+  import useLocale from '@lib/shared/locale/useLocale';
+  import { LocaleType } from '@lib/shared/types/global';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
-  // import { LOCALE_OPTIONS } from '@lib/shared/locale';
-  // import useLocale from '@lib/shared/locale/useLocale';
-  // import { LocaleType } from '@lib/shared/types/global';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import { lastScopedOptions } from '@/components/business/crm-duplicate-check-drawer/config';
@@ -113,16 +115,17 @@
 
   const route = useRoute();
 
-  const { success, warning } = useMessage();
+  const { success, warning, loading } = useMessage();
   const { t } = useI18n();
-  // const { changeLocale, currentLocale } = useLocale(loading);
+
+  const { changeLocale, currentLocale } = useLocale(loading);
 
   const appStore = useAppStore();
   const userStore = useUserStore();
 
-  // function changeLanguage(locale: LocaleType) {
-  //   changeLocale(locale);
-  // }
+  function changeLanguage(locale: LocaleType) {
+    changeLocale(locale);
+  }
 
   const showBadge = computed(() => {
     return !appStore.messageInfo.read;

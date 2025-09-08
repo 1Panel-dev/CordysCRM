@@ -138,7 +138,7 @@
     .n-card__content {
       @apply h-full;
 
-      padding: 0 24px 16px;
+      padding: 24px !important;
     }
   }
   .n-card--no-padding {

@@ -189,6 +189,8 @@ export default {
   'common.unsaved': 'Unsaved',
   'common.unsavedLeave':
     'The content of some tabs has not been saved. The unsaved content will be lost after leaving. Are you sure you want to leave?',
+  'common.editUnsavedLeave':
+    'The content of the current tab has not been saved. The unsaved content will be lost after leaving. Are you sure you want to leave?',
   'common.image': 'Image',
   'common.text': 'Text',
   'common.resourceDeleted': 'Resource has been deleted',

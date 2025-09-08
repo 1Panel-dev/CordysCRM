@@ -14,7 +14,7 @@
       :search-field-map="props.searchFieldMap"
     />
     <div class="mt-[16px] text-[var(--text-n1)]">{{ t('workbench.duplicateCheck.filterResultSort') }}</div>
-    <div class="mt-[8px]">
+    <n-scrollbar class="mt-[8px]" x-scrollable>
       <VueDraggable
         v-model="configList"
         :animation="150"
@@ -34,7 +34,7 @@
           {{ item.label }}
         </CrmTag>
       </VueDraggable>
-    </div>
+    </n-scrollbar>
     <template #footer>
       <div class="flex w-full items-center justify-between">
         <div class="ml-[4px] flex items-center gap-[8px]">
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
