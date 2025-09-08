@@ -157,6 +157,10 @@
           label: t('crmFormDesign.customer'),
           value: FormDesignKeyEnum.CUSTOMER,
         },
+        {
+          label: t('crmFormDesign.clue'),
+          value: FormDesignKeyEnum.CLUE,
+        },
       ];
     }
     return [
