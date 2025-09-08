@@ -3,6 +3,7 @@ package cn.cordys.crm.system.domain;
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @Data
+@Table(name = "user_key")
 public class UserKey implements Serializable {
     @Schema(description = "user_key ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{user_key.id.not_blank}", groups = {Updated.class})

@@ -12,8 +12,10 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.UserKey;
+import cn.cordys.crm.system.dto.request.UserKeyUpdateRequest;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -170,5 +172,22 @@ public class UserKeyService {
                         .build()
         );
         logService.add(logDTO);
+    }
+
+
+    public void updateUserKey(UserKeyUpdateRequest request) {
+        UserKey userKey = validateAndGetUserKey(request.getId());
+        userKey.setId(request.getId());
+        userKey.setForever(request.getForever());
+        if (BooleanUtils.isFalse(request.getForever())) {
+            if (request.getExpireTime() == null) {
+                throw new GenericException(Translator.get("expire_time_not_null"));
+            }
+            userKey.setExpireTime(request.getExpireTime());
+        } else {
+            userKey.setExpireTime(null);
+        }
+        userKey.setDescription(request.getDescription());
+        userKeyMapper.updateById(userKey);
     }
 }

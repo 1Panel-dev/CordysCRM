@@ -356,5 +356,34 @@
         ]
       }
     ]
+  },
+  {
+    "id": "PERSONAL_INFO",
+    "name": "permission.personal_info.name",
+    "license": false,
+    "children": [
+      {
+        "id": "API_KEY",
+        "name": "permission.api_key.name",
+        "permissions": [
+          {
+            "id": "PERSONAL_API_KEY:READ",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:ADD",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:UPDATE",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:DELETE",
+            "license": false
+          }
+        ]
+      }
+    ]
   }
 ]
