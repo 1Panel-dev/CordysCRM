@@ -427,12 +427,4 @@ export const {
   dashboardDrag,
 } = dashboardApi;
 
-export const {
-  getHomeAccountStatistic,
-  getHomeContactStatistic,
-  getHomeFollowOpportunity,
-  getHomeLeadStatistic,
-  getHomeDepartmentTree,
-  getHomeFollowStatistic,
-  getHomeFollowPlanStatistic,
-} = homeApi;
+export const { getHomeDepartmentTree } = homeApi;

@@ -3,15 +3,6 @@
     <div class="analytics-title">
       <div class="analytics-name flex items-center">
         {{ t('workbench.dataOverView') }}
-        <n-tooltip trigger="hover" placement="right">
-          <template #trigger>
-            <CrmIcon
-              type="iconicon_help_circle"
-              class="ml-[8px] cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-            />
-          </template>
-          {{ t('workbench.dataOverviewPlaceholderTip') }}
-        </n-tooltip>
       </div>
       <div class="flex items-center gap-[12px]">
         <n-tree-select
@@ -25,70 +16,30 @@
           children-field="children"
           @update:value="changeHandler"
         />
-        <CrmTab
-          v-model:active-tab="activePeriod"
-          no-content
-          :tab-list="tabList"
-          type="segment"
-          class="w-fit"
-          @change="handleChangeTab"
-        />
-        <n-date-picker
-          v-if="activePeriod === 'CUSTOM'"
-          v-model:value="range"
-          class="w-[240px]"
-          type="datetimerange"
-          :default-time="[undefined, '23:59:59']"
-          @confirm="confirmTimePicker"
-        >
-          <template #date-icon>
-            <CrmIcon class="text-[var(--text-n4)]" type="iconicon_time" :size="16" />
-          </template>
-          <template #separator>
-            <div class="text-[var(--text-n4)]">{{ t('common.to') }}</div>
-          </template>
-        </n-date-picker>
+        <n-button type="default" class="outline--secondary px-[8px]" @click="refresh">
+          <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
+        </n-button>
       </div>
     </div>
-    <div class="flex flex-col gap-[16px]">
-      <analyticsDetail ref="analyticsDetailRef" :search-type="params.searchType" />
-      <analyticsMiniCard ref="analyticsMiniCardRef" />
-      <div
-        v-if="
-          !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']) ||
-          !hasAnyModuleEnable
-        "
-        class="flex items-center justify-center p-[16px] text-[var(--text-n4)]"
-      >
-        {{
-          !hasAnyModuleEnable &&
-          hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])
-            ? t('workbench.duplicateCheck.moduleNotEnabled')
-            : t('common.noPermission')
-        }}
-      </div>
-    </div>
+    <overview />
   </CrmCard>
 </template>
 
 <script setup lang="ts">
-  import { NDatePicker, NTooltip, NTreeSelect, TreeOption } from 'naive-ui';
+  // TODO 联调 xinxinwu
+  import { NButton, NTreeSelect, TreeOption } from 'naive-ui';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
   import { GetHomeStatisticParams } from '@lib/shared/models/home';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-  import analyticsDetail from './analyticsDetail.vue';
-  import analyticsMiniCard from './analyticsMiniCard.vue';
+  import overview from './overview.vue';
 
   import { getHomeDepartmentTree } from '@/api/modules';
   import { useAppStore, useUserStore } from '@/store';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const appStore = useAppStore();
@@ -106,31 +57,9 @@
 
   const useStore = useUserStore();
 
-  const tabList = [
-    {
-      name: 'TODAY',
-      tab: t('workbench.today'),
-    },
-    {
-      name: 'THIS_WEEK',
-      tab: t('workbench.thisWeek'),
-    },
-    {
-      name: 'THIS_MONTH',
-      tab: t('workbench.thisMonth'),
-    },
-    {
-      name: 'CUSTOM',
-      tab: t('common.custom'),
-    },
-  ];
-  const range = ref();
-
   const originDepartmentOptions = ref<CrmTreeNodeData[]>([]);
   const departmentOptions = ref<CrmTreeNodeData[]>([]);
 
-  const analyticsDetailRef = ref<InstanceType<typeof analyticsDetail>>();
-  const analyticsMiniCardRef = ref<InstanceType<typeof analyticsMiniCard>>();
   function getSpringIds(children: CrmTreeNodeData[] | undefined): string[] {
     const offspringIds: string[] = [];
     mapTree(children || [], (e) => {
@@ -171,17 +100,6 @@
     });
   }
 
-  const hasAnyModuleEnable = computed(() =>
-    appStore.moduleConfigList.some(
-      (e) =>
-        [
-          ModuleConfigEnum.CUSTOMER_MANAGEMENT,
-          ModuleConfigEnum.BUSINESS_MANAGEMENT,
-          ModuleConfigEnum.CLUE_MANAGEMENT,
-        ].includes(e.moduleKey as ModuleConfigEnum) && e.enable
-    )
-  );
-
   async function initDepartList() {
     try {
       const result = await getHomeDepartmentTree();
@@ -206,12 +124,7 @@
     }
   }
 
-  function refresh() {
-    nextTick(() => {
-      analyticsDetailRef.value?.initHomeStatistic(params.value);
-      analyticsMiniCardRef.value?.initStatisticDetail(params.value);
-    });
-  }
+  function refresh() {}
 
   async function changeHandler(
     value: string | number | Array<string | number> | null,
@@ -225,26 +138,6 @@
       params.value.deptIds = [];
     }
     setSearchType(false, value as string);
-    refresh();
-  }
-
-  function handleChangeTab(value: string | number) {
-    if (value === 'CUSTOM') {
-      params.value.period = undefined;
-    } else {
-      params.value.period = value as string;
-      params.value.startTime = undefined;
-      params.value.endTime = undefined;
-      range.value = undefined;
-      refresh();
-    }
-  }
-
-  function confirmTimePicker(value: number | [number, number] | null, _: string | [string, string] | null) {
-    range.value = value;
-    const [startTime, endTime] = range.value || [0, 0];
-    params.value.startTime = startTime;
-    params.value.endTime = endTime;
     refresh();
   }
 
@@ -271,28 +164,4 @@
   }
 </style>
 
-<style lang="less">
-  .analytics-icon {
-    @apply flex items-center justify-center;
-
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-  }
-  .analytics-count {
-    font-size: 18px;
-    line-height: 26px;
-    @apply font-semibold;
-  }
-  .analytics-last-time {
-    @apply flex flex-nowrap items-center justify-between;
-
-    font-size: 12px;
-    .last-time-rate-up {
-      color: var(--error-red);
-    }
-    .last-time-rate-down {
-      color: var(--success-green);
-    }
-  }
-</style>
+<style lang="less"></style>

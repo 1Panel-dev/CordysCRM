@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "45453687",
+      "name": "icon_365",
+      "font_class": "icon_365",
+      "unicode": "e7db",
+      "unicode_decimal": 59355
+    },
+    {
+      "icon_id": "45453688",
+      "name": "icon_facial_clue",
+      "font_class": "icon_facial_clue",
+      "unicode": "e7dc",
+      "unicode_decimal": 59356
+    },
+    {
+      "icon_id": "45453683",
+      "name": "icon_jin",
+      "font_class": "icon_jin",
+      "unicode": "e7dd",
+      "unicode_decimal": 59357
+    },
+    {
+      "icon_id": "45453686",
+      "name": "icon_facial_deal_win",
+      "font_class": "icon_facial_deal_win",
+      "unicode": "e7de",
+      "unicode_decimal": 59358
+    },
+    {
+      "icon_id": "45453685",
+      "name": "icon_facial_business",
+      "font_class": "icon_facial_business",
+      "unicode": "e7df",
+      "unicode_decimal": 59359
+    },
+    {
+      "icon_id": "45453684",
+      "name": "icon_30",
+      "font_class": "icon_30",
+      "unicode": "e7e0",
+      "unicode_decimal": 59360
+    },
+    {
+      "icon_id": "45453682",
+      "name": "icon_7",
+      "font_class": "icon_7",
+      "unicode": "e7e1",
+      "unicode_decimal": 59361
+    },
+    {
       "icon_id": "44783033",
       "name": "icon_data_person",
       "font_class": "icon_data_person",

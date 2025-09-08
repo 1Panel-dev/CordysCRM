@@ -21,7 +21,7 @@
     </n-alert>
     <n-scrollbar x-scrollable content-style="min-width: 1000px;height: 100%;width: 100%">
       <div class="workbench-card" :style="{ height: `calc(100vh - ${!showAlert ? 88 : 154}px)` }">
-        <dataOverview />
+        <dataOverviewIndex />
         <div class="flex h-full w-full">
           <div class="h-full flex-1">
             <QuickAccess @refresh="refresh" />
@@ -84,7 +84,7 @@
   // import CrmTab from '@/components/pure/crm-tab/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmMessageList from '@/components/business/crm-message-list/index.vue';
-  import dataOverview from './components/dataOverview.vue';
+  import dataOverviewIndex from './components/dataOverviewIndex.vue';
   import QuickAccess from './components/quickAccess.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';

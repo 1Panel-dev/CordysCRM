@@ -590,3 +590,24 @@ export function isWeComBrowser() {
   const ua = window.navigator.userAgent.toLowerCase();
   return ua.includes('wxwork'); // 企业微信 UA 一定包含 wxwork
 }
+
+/**
+ * 国际单位数字缩写
+ * @param number 目标值
+ * return: 数字+单位
+ */
+export function abbreviateNumber(num: number) {
+  if (num >= 100000000) {
+    return `${(num / 100000000).toFixed(1).replace(/\.0$/, '')}B`;
+  }
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+  }
+  if (num >= 10000) {
+    return `${(num / 10000).toFixed(1).replace(/\.0$/, '')}W`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  }
+  return num.toString();
+}

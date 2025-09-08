@@ -42,9 +42,7 @@
             class="outline--secondary px-[8px]"
             @click="emit('refresh')"
           >
-            <CrmSvg class="text-[var(--text-n1)]" width="16px" height="16px" name="icon_reset_outlined" />
-            <!-- iconfont 有了后再替换 -->
-            <!-- <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" /> -->
+            <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
           </n-button>
         </div>
       </template>
@@ -71,9 +69,7 @@
         />
       </n-button>
       <n-button v-if="!attrs.hiddenRefresh" type="default" class="outline--secondary px-[8px]" @click="emit('refresh')">
-        <CrmSvg class="text-[var(--text-n1)]" width="16px" height="16px" name="icon_reset_outlined" />
-        <!-- iconfont 有了后再替换 -->
-        <!-- <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" /> -->
+        <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
       </n-button>
     </div>
     <slot name="view"></slot>
