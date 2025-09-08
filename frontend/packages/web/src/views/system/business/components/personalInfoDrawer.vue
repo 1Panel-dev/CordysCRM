@@ -87,6 +87,7 @@
         :any-permission="['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']"
       />
     </CrmCard>
+    <apiKey v-else />
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
   <EditPasswordModal v-model:show="showEditPasswordModal" @init-sync="searchData()" />
@@ -107,6 +108,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import apiKey from './apiKey.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
@@ -148,6 +150,10 @@
       {
         name: PersonalEnum.MY_PLAN,
         tab: t('system.personal.plan'),
+      },
+      {
+        name: PersonalEnum.API_KEY,
+        tab: t('system.personal.apiKey'),
       },
     ];
   });

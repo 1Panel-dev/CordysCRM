@@ -8,6 +8,7 @@ export enum DeptNodeTypeEnum {
 export enum PersonalEnum {
   INFO = 'INFO',
   MY_PLAN = 'MY_PLAN',
+  API_KEY = 'API_KEY',
 }
 
 export enum SystemMessageTypeEnum {

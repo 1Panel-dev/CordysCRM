@@ -188,3 +188,27 @@ export interface ExportCenterItem {
   status: PersonalExportStatusEnum;
   organizationId: string;
 }
+
+export interface ApiKey {
+  id: string;
+  createUser: string;
+  accessKey: string;
+  secretKey: string;
+  createTime: number;
+  enable: boolean;
+  forever: boolean;
+  expireTime: number;
+  description: string;
+}
+
+export interface ApiKeyItem extends ApiKey {
+  isExpire: boolean;
+  desensitization: boolean;
+  showDescInput: boolean;
+}
+
+export interface DefaultTimeForm {
+  activeTimeType: string;
+  time?: number;
+  desc: string;
+}
