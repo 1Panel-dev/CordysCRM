@@ -98,6 +98,7 @@ const useUserStore = defineStore('user', {
       removeRouteListener();
       removeScript(CompanyTypeEnum.SQLBot);
       appStore.hideLoading();
+      router.push({ name: 'login' });
     },
     // 登出
     async logout(silence = false) {
