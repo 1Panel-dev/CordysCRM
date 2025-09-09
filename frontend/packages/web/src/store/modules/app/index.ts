@@ -309,7 +309,7 @@ const useAppStore = defineStore('app', {
     },
   },
   persist: {
-    paths: ['menuIconStatus', 'moduleConfigList', 'navTopConfigList'],
+    paths: ['menuIconStatus', 'moduleConfigList'],
   },
 });
 
