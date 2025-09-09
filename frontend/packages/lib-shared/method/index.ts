@@ -597,17 +597,25 @@ export function isWeComBrowser() {
  * return: 数字+单位
  */
 export function abbreviateNumber(num: number) {
+  const format = (value: number, unit: string) => ({
+    value: `${Math.floor(value * 1000) / 1000}`,
+    unit,
+  });
+
   if (num >= 100000000) {
-    return `${(num / 100000000).toFixed(1).replace(/\.0$/, '')}B`;
+    return format(num / 100000000, 'B');
   }
   if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    return format(num / 1000000, 'M');
   }
   if (num >= 10000) {
-    return `${(num / 10000).toFixed(1).replace(/\.0$/, '')}W`;
+    return format(num / 10000, 'W');
   }
   if (num >= 1000) {
-    return `${(num / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+    return format(num / 1000, 'K');
   }
-  return num.toString();
+  return {
+    value: num.toString(),
+    unit: '',
+  };
 }

@@ -91,9 +91,15 @@
     handleFilter({ searchMode: 'AND', conditions: [] });
   }
 
+  function setAdvancedFilter(filter: FilterResult, isAdvancedMode: boolean) {
+    filterModalRef.value?.setFormModal(filter);
+    isAdvancedSearchMode.value = isAdvancedMode;
+  }
+
   defineExpose({
     clearFilter,
     isAdvancedSearchMode,
+    setAdvancedFilter,
   });
 </script>
 

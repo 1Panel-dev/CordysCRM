@@ -153,7 +153,7 @@
   import convertClueModal from './convertClueModal.vue';
 
   import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -612,12 +612,21 @@
     showCustomerDrawer.value = true;
   }
 
+  function setHomePageParams() {
+    if (route.query.dim) {
+      const conditionParams = getLeadHomeConditions(route.query.dim as string);
+      setAdvanceFilter(conditionParams);
+      tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
+    }
+  }
+
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
         setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
       }
     }

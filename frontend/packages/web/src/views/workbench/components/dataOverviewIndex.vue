@@ -21,12 +21,11 @@
         </n-button>
       </div>
     </div>
-    <overview />
+    <overview ref="overviewRef" />
   </CrmCard>
 </template>
 
 <script setup lang="ts">
-  // TODO 联调 xinxinwu
   import { NButton, NTreeSelect, TreeOption } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -39,18 +38,13 @@
   import overview from './overview.vue';
 
   import { getHomeDepartmentTree } from '@/api/modules';
-  import { useAppStore, useUserStore } from '@/store';
+  import { useUserStore } from '@/store';
 
   const { t } = useI18n();
-  const appStore = useAppStore();
 
-  const activePeriod = ref('TODAY');
   const params = ref<GetHomeStatisticParams>({
     deptIds: [],
     searchType: '', // ALL/SELF/DEPARTMENT
-    period: activePeriod.value,
-    startTime: undefined,
-    endTime: undefined,
   });
 
   const activeDeptId = ref('');
@@ -123,8 +117,13 @@
       console.log(error);
     }
   }
+  const overviewRef = ref<InstanceType<typeof overview>>();
 
-  function refresh() {}
+  function refresh() {
+    nextTick(() => {
+      overviewRef.value?.initHomeStatistic(params.value);
+    });
+  }
 
   async function changeHandler(
     value: string | number | Array<string | number> | null,

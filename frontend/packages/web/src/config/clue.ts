@@ -1,8 +1,11 @@
+import dayjs from 'dayjs';
+
 import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
 
 const { t } = useI18n();
 
@@ -43,3 +46,25 @@ export const clueBaseSteps = [
     label: t('clue.interested'),
   },
 ];
+
+export const getLeadHomeConditions = (dim: string): FilterResult => {
+  let start;
+  let end;
+  if (dim === 'YEAR') {
+    start = dayjs().startOf('year').valueOf();
+    end = dayjs().endOf('year').valueOf();
+  }
+
+  return {
+    searchMode: 'AND',
+    conditions: [
+      {
+        value: dim !== 'YEAR' ? dim : [start, end],
+        operator: dim !== 'YEAR' ? OperatorEnum.DYNAMICS : OperatorEnum.BETWEEN,
+        name: 'createTime',
+        multipleValue: false,
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
+    ],
+  };
+};

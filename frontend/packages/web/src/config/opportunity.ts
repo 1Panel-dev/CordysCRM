@@ -1,6 +1,12 @@
+import dayjs from 'dayjs';
+
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { FailureReasonTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { TransferParams } from '@lib/shared/models/customer/index';
+
+import { FilterResult } from '@/components/pure/crm-advance-filter/type';
 
 const { t } = useI18n();
 
@@ -52,3 +58,41 @@ export const failureReasonOptions = [
 ];
 
 export const lastOpportunitySteps = [...opportunityBaseSteps, ...opportunityResultSteps];
+
+export const getOptHomeConditions = (dim: string, status: string): FilterResult => {
+  let start;
+  let end;
+  if (dim === 'YEAR') {
+    start = dayjs().startOf('year').valueOf();
+    end = dayjs().endOf('year').valueOf();
+  }
+
+  return {
+    searchMode: 'AND',
+    conditions: [
+      {
+        value: dim !== 'YEAR' ? dim : [start, end],
+        operator: dim !== 'YEAR' ? OperatorEnum.DYNAMICS : OperatorEnum.BETWEEN,
+        name: status === 'SUCCESS' ? 'expectedEndTime' : 'createTime',
+        multipleValue: false,
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
+      {
+        value:
+          status === 'SUCCESS'
+            ? [StageResultEnum.SUCCESS]
+            : [
+                OpportunityStatusEnum.CREATE,
+                OpportunityStatusEnum.CLEAR_REQUIREMENTS,
+                OpportunityStatusEnum.SCHEME_VALIDATION,
+                OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT,
+                OpportunityStatusEnum.BUSINESS_PROCUREMENT,
+              ],
+        operator: OperatorEnum.IN,
+        name: 'stage',
+        multipleValue: true,
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+      },
+    ],
+  };
+};

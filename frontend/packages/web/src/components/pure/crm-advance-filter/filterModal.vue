@@ -90,7 +90,22 @@
     });
   }
 
+  function setFormModal(filter: FilterResult) {
+    formModel.value = {
+      list: filter.conditions?.map((item) => {
+        return {
+          value: item.value,
+          operator: item.operator,
+          dataIndex: item.name,
+          type: item.type,
+        };
+      }),
+      searchMode: filter.searchMode,
+    } as FilterForm;
+  }
+
   defineExpose({
     handleReset,
+    setFormModal,
   });
 </script>

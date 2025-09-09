@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -38,10 +39,12 @@
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { getOpenSeaOptions } from '@/api/modules';
+  import { getOptHomeConditions } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const route = useRoute();
   const opportunityCardRef = ref<HTMLElement | null>(null);
 
   const showCustomerOverviewDrawer = ref(false);

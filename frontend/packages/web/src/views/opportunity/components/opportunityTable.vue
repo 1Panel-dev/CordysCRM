@@ -147,7 +147,7 @@
 
   import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
+  import { defaultTransferForm, getOptHomeConditions, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -668,12 +668,21 @@
     });
   }
 
+  function setHomePageParams() {
+    if (route.query.dim && route.query.status) {
+      const conditionParams = getOptHomeConditions(route.query.dim as string, route.query.status as string);
+      setAdvanceFilter(conditionParams);
+      tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
+    }
+  }
+
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
         setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, customerId: props.sourceId });
+        setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
       }
     },

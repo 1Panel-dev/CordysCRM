@@ -1,88 +1,124 @@
 <template>
-  <div class="overview overflow-hidden">
-    <div class="header header-category font-semibold text-[var(--text-n1)]">
-      {{ t('workbench.dataOverview.category') }}
-    </div>
-    <div class="category-time w-full">
-      <div v-for="(item, index) of headerList" :key="`${item.icon}-${index}`" class="header">
-        <div class="header-time flex items-center justify-center gap-[8px]">
-          <CrmIcon :type="item.icon" :size="24" class="text-[var(--info-blue)]" />
-          <div class="font-semibold text-[var(--text-n1)]">{{ item.title }}</div>
+  <n-spin :show="loading" class="w-full">
+    <div class="overview overflow-hidden">
+      <div class="header header-category font-semibold text-[var(--text-n1)]">
+        {{ t('workbench.dataOverview.category') }}
+      </div>
+      <div class="category-time w-full">
+        <div v-for="(item, index) of headerList" :key="`${item.icon}-${index}`" class="header">
+          <div class="header-time flex items-center justify-center gap-[8px]">
+            <CrmIcon :type="item.icon" :size="24" class="text-[var(--info-blue)]" />
+            <div class="font-semibold text-[var(--text-n1)]">{{ item.title }}</div>
+          </div>
         </div>
       </div>
-    </div>
-    <!-- 概览线索 -->
-    <categoryCard
-      :title="t('workbench.dataOverview.lead')"
-      width="159px"
-      icon="iconicon_facial_clue"
-      bg-color="var(--info-2)"
-    />
-    <div class="right-cell">
-      <div v-for="(dim, i) of dateKey" :key="`iconicon_facial_clue-${i}`" class="cell">
-        <div class="cell-label">{{ t('workbench.dataOverview.newCreateTitle') }}</div>
-        <div class="cell-value count" @click="goDetail(dim, defaultLeadData[dim])">
-          {{ abbreviateNumber(defaultLeadData[dim].value) }}
+      <!-- 概览线索 -->
+      <categoryCard
+        :title="t('workbench.dataOverview.lead')"
+        width="159px"
+        icon="iconicon_facial_clue"
+        bg-color="var(--info-2)"
+      />
+      <div class="right-cell">
+        <div v-for="(dim, i) of dateKey" :key="`iconicon_facial_clue-${i}`" class="cell">
+          <div class="cell-label">{{ t('workbench.dataOverview.newCreateTitle') }}</div>
+          <div
+            :class="`cell-value count ${
+              hasLeadPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+            }`"
+            @click="goDetail(dim, defaultLeadData[dim])"
+          >
+            {{ abbreviateNumber(defaultLeadData[dim].value).value }}
+            <span class="unit">
+              {{ abbreviateNumber(defaultLeadData[dim].value).unit }}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-    <categoryCard
-      :title="t('workbench.dataOverview.opportunity')"
-      width="138px"
-      icon="iconicon_facial_business"
-      bg-color="var(--info-1)"
-    />
-    <div class="right-cell">
-      <div v-for="(dim, i) of dateKey" :key="`iconicon_facial_business-${i}`" class="cell">
-        <div v-for="item in defaultOpportunityData[dim]" :key="`iconicon_facial_business-${item.title}`" class="flex-1">
-          <div class="cell-label">{{ item.title }}</div>
-          <div class="count" @click="goDetail(dim, item)">{{ abbreviateNumber(item.value) }}</div>
+      <categoryCard
+        :title="t('workbench.dataOverview.opportunity')"
+        width="138px"
+        icon="iconicon_facial_business"
+        bg-color="var(--info-1)"
+      />
+      <div class="right-cell">
+        <div v-for="(dim, i) of dateKey" :key="`iconicon_facial_business-${i}`" class="cell">
+          <div
+            v-for="item in defaultOpportunityData[dim]"
+            :key="`iconicon_facial_business-${item.title}`"
+            class="flex-1"
+          >
+            <div class="cell-label">{{ item.title }}</div>
+            <div
+              :class="`count ${hasOptPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'}`"
+              @click="goDetail(dim, item)"
+            >
+              {{ abbreviateNumber(item.value).value }}
+              <span class="unit">{{ abbreviateNumber(item.value).unit }}</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <categoryCard
-      :title="t('workbench.dataOverview.winOrder')"
-      width="116px"
-      icon="iconicon_facial_deal_win"
-      bg-color="var(--info-blue)"
-    />
-    <div class="right-cell">
-      <div v-for="(dim, index) of dateKey" :key="`iconicon_facial_deal_win-${index}`" class="cell">
-        <div v-for="item in defaultWinOrderData[dim]" :key="`iconicon_facial_deal_win-${item.title}`" class="flex-1">
-          <div class="cell-label">{{ item?.title }}</div>
-          <div class="count" @click="goDetail(dim, item)">{{ abbreviateNumber(item.value) }}</div>
-          <div class="analytics-last-time">
-            <div class="text-[var(--text-n2)]">{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
-            <CrmIcon
-              v-if="
-                item.priorPeriodCompareRate &&
-                typeof item.priorPeriodCompareRate === 'number' &&
-                item.priorPeriodCompareRate !== 0
-              "
-              :type="item.priorPeriodCompareRate > 0 ? 'iconicon_caret_up_small' : 'iconicon_caret_down_small'"
-              :class="getPriorPeriodClass(item.priorPeriodCompareRate)"
-            />
-            <div :class="getPriorPeriodClass(item.priorPeriodCompareRate)">
-              {{ periodCompareRateAbs(item.priorPeriodCompareRate) }}
-              <span v-if="typeof item.priorPeriodCompareRate === 'number'"> % </span>
+      <categoryCard
+        :title="t('workbench.dataOverview.winOrder')"
+        width="116px"
+        icon="iconicon_facial_deal_win"
+        bg-color="var(--info-blue)"
+      />
+      <div class="right-cell">
+        <div v-for="(dim, index) of dateKey" :key="`iconicon_facial_deal_win-${index}`" class="cell">
+          <div v-for="item in defaultWinOrderData[dim]" :key="`iconicon_facial_deal_win-${item.title}`" class="flex-1">
+            <div class="cell-label">{{ item?.title }}</div>
+            <div
+              :class="`count ${
+                hasOptPermission ? ' cursor-pointer  text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+              }`"
+              @click="goDetail(dim, item)"
+            >
+              {{ abbreviateNumber(item.value).value }}
+              <span class="unit">{{ abbreviateNumber(item.value).unit }}</span>
+            </div>
+            <div class="analytics-last-time">
+              <div class="text-[var(--text-n2)]">{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
+              <CrmIcon
+                v-if="
+                  item.priorPeriodCompareRate &&
+                  typeof item.priorPeriodCompareRate === 'number' &&
+                  item.priorPeriodCompareRate !== 0
+                "
+                :type="item.priorPeriodCompareRate > 0 ? 'iconicon_caret_up_small' : 'iconicon_caret_down_small'"
+                :class="getPriorPeriodClass(item.priorPeriodCompareRate)"
+              />
+              <div :class="getPriorPeriodClass(item.priorPeriodCompareRate)">
+                {{ periodCompareRateAbs(item.priorPeriodCompareRate) }}
+                <span v-if="typeof item.priorPeriodCompareRate === 'number'">％</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </n-spin>
 </template>
 
 <script setup lang="ts">
-  // TODO 联调 xinxinwu
   import { ref } from 'vue';
+  import { NSpin } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { abbreviateNumber } from '@lib/shared/method';
+  import {
+    FollowOptStatisticDetail,
+    GetHomeStatisticParams,
+    HomeLeadStatisticDetail,
+    HomeWinOrderDetail,
+  } from '@lib/shared/models/home';
 
   import categoryCard from './categoryCard.vue';
 
+  import { getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -115,44 +151,35 @@
 
   const dateKey = computed<string[]>(() => headerList.map((e) => e.key));
 
-  const defaultLeadData = ref<Record<string, any>>({
-    today: {
-      value: 0,
-      priorPeriodCompareRate: 0,
-      routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-    },
-    week: {
-      value: 0,
-      priorPeriodCompareRate: 0,
-      routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-    },
-    month: {
-      value: 0,
-      priorPeriodCompareRate: 0,
-      routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-    },
-    year: {
-      value: 0,
-      priorPeriodCompareRate: 0,
-      routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-    },
+  const hasLeadPermission = computed(() => hasAnyPermission(['CLUE_MANAGEMENT:READ']));
+  const hasOptPermission = computed(() => hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']));
+
+  const defaultLeadData = ref<Record<string, any>>({});
+
+  const createLeadBlock = () => ({
+    value: hasLeadPermission.value ? 0 : '-',
+    priorPeriodCompareRate: hasLeadPermission.value ? 0 : '-',
+    routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
+    hasPermission: hasLeadPermission.value,
   });
 
   const defaultOpportunityData = ref<Record<string, Record<string, any>>>({});
   const createOpportunityBlock = () => ({
     newOpportunity: {
       title: t('workbench.dataOverview.followingOrder'),
-      value: 0,
-      priorPeriodCompareRate: 0,
+      value: hasOptPermission.value ? 0 : '-',
+      priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'FOLLOWING',
+      hasPermission: hasOptPermission.value,
     },
     newOpportunityAmount: {
       title: t('workbench.dataOverview.amount'),
-      value: 0,
-      priorPeriodCompareRate: 0,
+      value: hasOptPermission.value ? 0 : '-',
+      priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'FOLLOWING',
+      hasPermission: hasOptPermission.value,
     },
   });
 
@@ -160,17 +187,19 @@
   const createWinOrderBlock = () => ({
     successOpportunity: {
       title: t('workbench.dataOverview.winOrderUnit'),
-      value: 0,
-      priorPeriodCompareRate: 0,
+      value: hasOptPermission.value ? 0 : '-',
+      priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'SUCCESS',
+      hasPermission: hasOptPermission.value,
     },
     successOpportunityAmount: {
       title: t('workbench.dataOverview.amount'),
-      value: 0,
-      priorPeriodCompareRate: 0,
+      value: hasOptPermission.value ? 0 : '-',
+      priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'SUCCESS',
+      hasPermission: hasOptPermission.value,
     },
   });
 
@@ -188,8 +217,8 @@
     return Math.abs(Number(priorPeriodCompareRate.toFixed(2)));
   };
 
-  // TODO 参数没有查询
   function goDetail(dim: string, item: Record<string, any>) {
+    if (!item.hasPermission) return;
     openNewPage(item.routeName, {
       dim: dim.toLocaleUpperCase(),
       ...(item.status
@@ -210,10 +239,108 @@
       acc[key] = createOpportunityBlock();
       return acc;
     }, {} as Record<string, any>);
+
+    defaultLeadData.value = dateKey.value.reduce((acc, key) => {
+      acc[key] = createLeadBlock();
+      return acc;
+    }, {} as Record<string, any>);
+  }
+
+  async function initLeadDetail(params: GetHomeStatisticParams) {
+    if (!hasAnyPermission(['CLUE_MANAGEMENT:READ'])) return;
+    try {
+      const result = await getHomeLeadStatistic(params);
+      Object.keys(defaultLeadData.value).forEach((k) => {
+        const resultArr: string[] = Object.keys(result);
+        const leadKey: string | undefined = resultArr.find((e) =>
+          e.toLocaleUpperCase().includes(k.toLocaleUpperCase())
+        );
+        if (leadKey) {
+          defaultLeadData.value[k] = {
+            ...defaultLeadData.value[k],
+            ...result[leadKey as keyof HomeLeadStatisticDetail],
+          };
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initOptDetail(params: GetHomeStatisticParams) {
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
+    try {
+      const result = await getHomeFollowOpportunity(params);
+      Object.keys(defaultOpportunityData.value).forEach((k) => {
+        const resultArr: string[] = Object.keys(result);
+        const optKeys: string[] = resultArr.filter((e) => e.toLocaleUpperCase().includes(k.toLocaleUpperCase()));
+        if (optKeys?.length) {
+          const [newKey, amountKey] = optKeys;
+          defaultOpportunityData.value[k] = {
+            newOpportunity: {
+              ...defaultOpportunityData.value[k].newOpportunity,
+              ...result[newKey as keyof FollowOptStatisticDetail],
+            },
+            newOpportunityAmount: {
+              ...defaultOpportunityData.value[k].newOpportunityAmount,
+              ...result[amountKey as keyof FollowOptStatisticDetail],
+            },
+          };
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initSuccessOptDetail(params: GetHomeStatisticParams) {
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
+    try {
+      const result = await getHomeSuccessOptStatistic(params);
+      Object.keys(defaultWinOrderData.value).forEach((k) => {
+        const resultArr: string[] = Object.keys(result);
+        const optKeys: string[] = resultArr.filter((e) => e.toLocaleUpperCase().includes(k.toLocaleUpperCase()));
+        if (optKeys?.length) {
+          const [newKey, amountKey] = optKeys;
+          defaultWinOrderData.value[k] = {
+            successOpportunity: {
+              ...defaultWinOrderData.value[k].successOpportunity,
+              ...result[newKey as keyof HomeWinOrderDetail],
+            },
+            successOpportunityAmount: {
+              ...defaultWinOrderData.value[k].successOpportunityAmount,
+              ...result[amountKey as keyof HomeWinOrderDetail],
+            },
+          };
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  const loading = ref(false);
+  async function initHomeStatistic(params: GetHomeStatisticParams) {
+    initDefaultData();
+    try {
+      loading.value = true;
+      await Promise.all([initLeadDetail(params), initOptDetail(params), initSuccessOptDetail(params)]);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
   }
 
   onBeforeMount(() => {
     initDefaultData();
+  });
+
+  defineExpose({
+    initHomeStatistic,
   });
 </script>
 
@@ -279,19 +406,23 @@
       }
       .count {
         font-size: 18px;
-        color: var(--primary-8);
-        @apply cursor-pointer font-semibold;
+        @apply flex items-baseline font-semibold;
+        .unit {
+          font-size: 14px;
+        }
       }
       .analytics-last-time {
-        gap: 8px;
+        gap: 2px;
         @apply flex flex-nowrap items-center justify-start;
 
         font-size: 12px;
         .last-time-rate-up {
           color: var(--error-red);
+          @apply inline-flex items-center;
         }
         .last-time-rate-down {
           color: var(--success-green);
+          @apply inline-flex items-center;
         }
       }
     }
