@@ -21,6 +21,7 @@
               v-model:value="formDetail[item.id]"
               :field-config="item"
               :form-detail="formDetail"
+              :origin-form-detail="originFormDetail"
               :path="item.id"
               :need-init-detail="needInitDetail"
               @change="($event: any) => handleFieldChange($event, item)"
@@ -93,6 +94,7 @@
     fieldList,
     formConfig,
     formDetail,
+    originFormDetail,
     unsaved,
     loading,
     formCreateTitle,

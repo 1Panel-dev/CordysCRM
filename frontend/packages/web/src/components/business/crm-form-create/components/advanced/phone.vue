@@ -17,7 +17,7 @@
         :options="areaCodeOptions"
         class="w-[180px]"
         filterable
-        @update-value="(val) => updateValue(val, phoneNumber)"
+        @update:value="onAreaCodeChange"
       />
       <n-input
         v-model:value="phoneNumber"
@@ -26,7 +26,7 @@
         :disabled="props.fieldConfig.editable === false"
         :allow-input="onlyAllowNumber"
         clearable
-        @update-value="(val) => updateValue(areaCode, val)"
+        @update:value="updateValue"
       >
         <template #prefix>
           <CrmIcon type="iconicon_phone" />
@@ -41,6 +41,7 @@
   import { NFormItem, NInput, NInputGroup, NSelect } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getPatternByAreaCode } from '@lib/shared/method/validate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -49,6 +50,8 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+    id: string;
+    originFormDetail?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
@@ -60,49 +63,73 @@
 
   const { t } = useI18n();
 
-  function onlyAllowNumber(val: string) {
-    return !val || /^\d+$/.test(val);
-  }
-
   // 区号选项
   const areaCodeOptions = [
     { label: `${t('crmFormDesign.phone.area.china')} +86`, value: '+86', length: 11 },
     { label: `${t('crmFormDesign.phone.area.hongKong')} +852`, value: '+852', length: 8 },
     { label: `${t('crmFormDesign.phone.area.macau')} +853`, value: '+853', length: 8 },
     { label: `${t('crmFormDesign.phone.area.taiwan')} +886`, value: '+886', length: 10 },
+    { label: t('crmFormDesign.phone.area.other'), value: '', length: undefined },
   ];
 
   const areaCode = ref('+86');
   const phoneNumber = ref('');
 
+  function onlyAllowNumber(val: string) {
+    if (!val) return true;
+    // 如果没选区号
+    if (!areaCode.value?.length) {
+      return /^[0-9+\- ()（）]*$/.test(val);
+    }
+    // 有区号，只允许数字
+    return /^\d+$/.test(val);
+  }
+
   const maxLength = computed(() => {
-    return areaCodeOptions.find((item) => item.value === areaCode.value)?.length || 11;
+    return areaCodeOptions.find((item) => item.value === areaCode.value)?.length || undefined;
   });
   const required = computed(() => props.fieldConfig.rules.some((rule) => rule.key === 'required'));
 
   const mergedRules = computed(() => {
     const rawRules = props.fieldConfig.rules || [];
-    const lengthRule = {
+    const formatRule = {
       key: 'phone-length-validator',
       trigger: ['input', 'blur'],
       validator: (_rule: any, val: string) => {
-        if ((!required.value && !phoneNumber.value) || !val) return Promise.resolve();
-        return phoneNumber.value.length === maxLength.value
-          ? Promise.resolve()
-          : Promise.reject(new Error(t('crmFormDesign.phone.lengthValidator', { count: maxLength.value })));
+        if ((!required.value && !phoneNumber.value) || !val || !areaCode.value.length) return Promise.resolve();
+        const message = [];
+        if (phoneNumber.value.length !== maxLength.value) {
+          message.push(t('crmFormDesign.phone.lengthValidator', { count: maxLength.value }));
+        }
+        const pattern = getPatternByAreaCode(areaCode.value);
+        if (!pattern?.test(phoneNumber.value)) {
+          message.push(t('crmFormDesign.phone.formatValidator'));
+        }
+
+        return !message.length ? Promise.resolve() : Promise.reject(new Error(message.join('；')));
       },
     };
-    return [...rawRules, lengthRule];
+    return [...rawRules, formatRule];
   });
 
-  function updateValue(area: string, phone: string) {
-    const fullNumber = `(${area})${phone}`;
+  function updateValue() {
+    const fullNumber = !areaCode.value.length ? phoneNumber.value : `(${areaCode.value})${phoneNumber.value}`;
     emit('change', fullNumber);
     value.value = fullNumber;
   }
 
+  // 区号变化处理
+  function onAreaCodeChange(newCode: string) {
+    areaCode.value = newCode;
+    // 清洗数字
+    if (newCode) {
+      phoneNumber.value = phoneNumber.value.replace(/\D+/g, '');
+    }
+    updateValue();
+  }
+
   watch(
-    () => value.value,
+    () => props.originFormDetail?.[props.id],
     (val) => {
       if (!val) {
         phoneNumber.value = '';
@@ -119,11 +146,15 @@
           phoneNumber.value = number || '';
         }
       }
-      // 处理纯数字格式 (默认为中国+86)
+      // 处理纯数字格式 符合中国的就回显中国，否则回显其他
       else {
         phoneNumber.value = val;
-        areaCode.value = '+86';
-        updateValue(areaCode.value, phoneNumber.value);
+        if (getPatternByAreaCode('+86')?.test(val)) {
+          areaCode.value = '+86';
+        } else {
+          areaCode.value = '';
+        }
+        updateValue();
       }
     },
     { immediate: true }
