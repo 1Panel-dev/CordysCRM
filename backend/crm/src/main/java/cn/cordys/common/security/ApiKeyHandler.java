@@ -16,8 +16,8 @@ import java.util.Objects;
  */
 public class ApiKeyHandler {
 
-    public static final String API_ACCESS_KEY = "accessKey"; // API 密钥字段
-    public static final String API_SIGNATURE = "signature";  // API 签名字段
+    public static final String API_ACCESS_KEY = "X-Access-Key"; // API 密钥字段
+    public static final String API_SIGNATURE = "Signature";  // API 签名字段
 
     /**
      * 根据请求中的 API 密钥和签名获取用户 ID。
