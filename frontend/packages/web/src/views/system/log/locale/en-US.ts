@@ -1,5 +1,5 @@
 export default {
-  'log.duplicateCheck': 'Operation log',
+  'log.operationLog': 'Operation log',
   'log.loginLog': 'Login log',
   'log.operationTime': 'Operation time',
   'log.operationType': 'Operation type',
