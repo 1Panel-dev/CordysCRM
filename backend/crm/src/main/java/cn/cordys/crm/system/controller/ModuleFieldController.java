@@ -118,7 +118,7 @@ public class ModuleFieldController {
 	}
 
 	@PostMapping("/check/repeat")
-	@Operation(summary = "校验重复")
+	@Operation(summary = "校验重复值")
 	public FieldRepeatCheckResponse checkRepeat(@Valid @RequestBody FieldRepeatCheckRequest checkRequest) {
 		return moduleFieldService.checkRepeat(checkRequest, OrganizationContext.getOrganizationId());
 	}

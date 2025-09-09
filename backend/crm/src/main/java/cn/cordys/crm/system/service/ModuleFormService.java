@@ -735,4 +735,31 @@ public class ModuleFormService {
 			targetFieldVals.add(targetFieldVal);
 		}
 	}
+
+	/**
+	 * 表单联动处理(旧数据)
+	 */
+	@SuppressWarnings("unchecked")
+	public void modifyFormLinkProp() {
+		List<ModuleForm> moduleForms = moduleFormMapper.selectAll(null);
+		List<String> formIds = moduleForms.stream().map(ModuleForm::getId).toList();
+		List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formIds);
+		for (ModuleFormBlob formBlob : moduleFormBlobs) {
+			Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+			Object linkProp = propMap.get("linkProp");
+			if (linkProp == null) {
+				continue;
+			}
+			Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
+			if (linkPropMap.containsKey("formKey") && linkPropMap.containsKey("linkFields")) {
+				Map<String, List<LinkField>> dataMap = new HashMap<>(2);
+				String formKey = linkPropMap.get("formKey").toString();
+				List<LinkField> linkFields = (List<LinkField>) linkPropMap.get("linkFields");
+				dataMap.put(formKey, linkFields);
+				propMap.put("linkProp", dataMap);
+				formBlob.setProp(JSON.toJSONString(propMap));
+				moduleFormBlobMapper.updateById(formBlob);
+			}
+		}
+	}
 }
