@@ -95,6 +95,7 @@
     :initial-source-name="initialSourceName"
     :need-init-detail="needInitDetail"
     :link-form-info="linkFormInfo"
+    :link-form-key="FormDesignKeyEnum.CUSTOMER"
     @saved="() => searchData()"
   />
   <CrmTableExportModal

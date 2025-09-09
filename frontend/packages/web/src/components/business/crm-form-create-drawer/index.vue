@@ -29,6 +29,7 @@
       :other-save-params="props.otherSaveParams"
       :is-edit="needInitDetail"
       :link-form-info="props.linkFormInfo"
+      :link-form-key="props.linkFormKey"
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
@@ -57,6 +58,7 @@
     initialSourceName?: string; // 初始化详情时的名称
     otherSaveParams?: Record<string, any>;
     linkFormInfo?: Record<string, any>; // 关联表单信息
+    linkFormKey?: FormDesignKeyEnum;
   }>();
   const emit = defineEmits<{
     (e: 'saved', res: any): void;

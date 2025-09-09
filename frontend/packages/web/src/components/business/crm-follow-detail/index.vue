@@ -90,6 +90,7 @@
       :initial-source-name="props.initialSourceName"
       :need-init-detail="needInitDetail"
       :link-form-info="linkFormInfo"
+      :link-form-key="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
       :other-save-params="props.activeType === 'followPlan' ? otherFollowRecordSaveParams : undefined"
       @saved="handleAfterSave"
     />

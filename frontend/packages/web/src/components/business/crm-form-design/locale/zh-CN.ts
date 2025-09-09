@@ -119,7 +119,7 @@ export default {
   'crmFormDesign.custom': '自定义',
   'crmFormDesign.currentTime': '填写当时',
   'crmFormDesign.formLink': '表单联动',
-  'crmFormDesign.formLinkSetting': '表单联动设置',
+  'crmFormDesign.formLinkSetting': '{formType}表单联动设置',
   'crmFormDesign.linkForm': '联动表单',
   'crmFormDesign.fill': '填充',
   'crmFormDesign.fillValue': '的值',

@@ -165,13 +165,11 @@ export interface FormActionButton {
   text: string;
   enable: boolean;
 }
-export interface FormConfigLinkProp {
-  formKey: FormDesignKeyEnum;
-  linkFields: {
-    current: string;
-    link: string;
-  }[];
+export interface FormFieldLinkItem {
+  current: string;
+  link: string;
 }
+export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormFieldLinkItem[]>>;
 export interface FormConfig {
   layout: number;
   labelPos: 'left' | 'top';

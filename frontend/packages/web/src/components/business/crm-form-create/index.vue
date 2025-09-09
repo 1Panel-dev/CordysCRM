@@ -68,6 +68,7 @@
     initialSourceName?: string; // 初始化详情时的名称
     otherSaveParams?: Record<string, any>;
     linkFormInfo?: Record<string, any>; // 关联表单信息
+    linkFormKey?: FormDesignKeyEnum;
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -85,7 +86,8 @@
   });
 
   const formRef = ref<FormInst>();
-  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams, linkFormInfo } = toRefs(props);
+  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams, linkFormInfo, linkFormKey } =
+    toRefs(props);
 
   const {
     fieldList,
@@ -106,6 +108,7 @@
     initialSourceName,
     otherSaveParams,
     linkFormInfo,
+    linkFormKey,
   });
 
   function getItemComponent(type: FieldTypeEnum) {

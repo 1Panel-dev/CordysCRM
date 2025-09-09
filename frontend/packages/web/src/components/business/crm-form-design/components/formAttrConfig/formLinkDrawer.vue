@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     :width="800"
-    :title="t('crmFormDesign.formLinkSetting')"
+    :title="t('crmFormDesign.formLinkSetting', { formType: t(`crmFormDesign.${props.formKey}`) })"
     :ok-text="t('common.save')"
     footer
     @confirm="save"
@@ -16,20 +16,7 @@
       require-mark-placement="left"
       class="crm-form-design-link-modal"
     >
-      <n-form-item
-        :label="t('crmFormDesign.linkForm')"
-        path="formKey"
-        label-align="left"
-        :rule="[{ required: true, message: t('common.required') }]"
-      >
-        <n-select
-          v-model:value="formModel.formKey"
-          size="medium"
-          :options="formKeyOptions"
-          @update-value="handleFormKeyChange"
-        />
-      </n-form-item>
-      <div class="mt-[16px] flex flex-col gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+      <div class="flex flex-col gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
         <div class="flex items-center justify-between">
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentForm') }}</div>
           <div class="w-[80px]"></div>
@@ -110,7 +97,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfigLinkProp } from '@lib/shared/models/system/module';
+  import { FormConfigLinkProp, FormFieldLinkItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -139,39 +126,10 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'save', value: FormConfigLinkProp): void;
+    (e: 'save', formKey: FormDesignKeyEnum, value: FormFieldLinkItem[]): void;
   }>();
 
-  const formKeyOptions = computed(() => {
-    if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
-      return [
-        {
-          label: t('crmFormDesign.clue'),
-          value: FormDesignKeyEnum.CLUE,
-        },
-      ];
-    }
-    if (props.formKey === FormDesignKeyEnum.BUSINESS) {
-      return [
-        {
-          label: t('crmFormDesign.customer'),
-          value: FormDesignKeyEnum.CUSTOMER,
-        },
-        {
-          label: t('crmFormDesign.clue'),
-          value: FormDesignKeyEnum.CLUE,
-        },
-      ];
-    }
-    return [
-      {
-        label: t('common.plan'),
-        value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
-      },
-    ];
-  });
-  const defaultFormModel: FormConfigLinkProp = {
-    formKey: formKeyOptions.value[0].value,
+  const defaultFormModel: Record<string, FormFieldLinkItem[]> = {
     linkFields: [
       {
         current: '',
@@ -181,8 +139,10 @@
   };
 
   const linkFieldsScrollbar = ref<ScrollbarInst>();
-  const formModel = ref<FormConfigLinkProp>(cloneDeep(props.linkProp || defaultFormModel));
-  const _formKey = computed(() => formModel.value.formKey);
+  const formModel = ref<Record<string, FormFieldLinkItem[]>>(
+    cloneDeep(props.linkProp?.[props.formKey] ? { linkFields: props.linkProp[props.formKey] || [] } : defaultFormModel)
+  );
+  const _formKey = computed(() => props.formKey);
 
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey: _formKey,
@@ -193,7 +153,7 @@
     formRef.value?.validate((errors) => {
       if (!errors) {
         visible.value = false;
-        emit('save', cloneDeep(formModel.value));
+        emit('save', props.formKey, cloneDeep(formModel.value.linkFields));
       }
     });
   }
@@ -202,16 +162,9 @@
     () => visible.value,
     (val) => {
       if (val) {
-        formModel.value = cloneDeep(props.linkProp || defaultFormModel);
-        if (props.linkProp?.formKey === null) {
-          formModel.value.formKey = formKeyOptions.value[0].value;
-          formModel.value.linkFields = [
-            {
-              current: '',
-              link: '',
-            },
-          ];
-        }
+        formModel.value = cloneDeep(
+          props.linkProp?.[props.formKey] ? { linkFields: props.linkProp[props.formKey] || [] } : defaultFormModel
+        );
         initFormConfig();
       }
     },
@@ -308,21 +261,6 @@
       label: t('crmFormDesign.fieldNotExist'),
       value: val,
     };
-  }
-
-  function handleFormKeyChange(val: FormDesignKeyEnum) {
-    if (val !== formModel.value.formKey) {
-      formRef.value?.restoreValidation();
-      formModel.value.linkFields = [
-        {
-          current: '',
-          link: '',
-        },
-      ];
-      nextTick(() => {
-        initFormConfig();
-      });
-    }
   }
 
   function handleCancel() {

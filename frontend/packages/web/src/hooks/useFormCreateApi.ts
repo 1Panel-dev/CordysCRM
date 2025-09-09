@@ -36,6 +36,7 @@ export interface FormCreateApiProps {
   initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Ref<Record<string, any> | undefined>;
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
+  linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -536,80 +537,84 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   function fillLinkFormFieldValue(field: FormCreateField) {
-    const linkFieldId = formConfig.value.linkProp?.linkFields?.find((e) => e.current === field.id)?.link;
-    if (linkFieldId) {
-      const linkField = props.linkFormInfo?.value?.[linkFieldId];
-      if (linkField) {
-        switch (true) {
-          case dataSourceTypes.includes(field.type):
-            // 数据源填充，且替换initialOptions
-            field.initialOptions = linkField.initialOptions || [];
-            formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.id);
-            break;
-          case multipleTypes.includes(field.type):
-            // 多选填充
-            if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
-              // 标签直接填充
-              formDetail.value[field.id] = Array.isArray(linkField.value)
-                ? linkField.value.slice(0, 10)
-                : [linkField.value];
-            } else {
-              // 其他多选类型需匹配名称相等的选项值
-              formDetail.value[field.id] =
-                field.options?.filter((e) => linkField.value.includes(e.label)).map((e) => e.value) || [];
-            }
-            break;
-          case singleTypes.includes(field.type):
-            // 单选填充需要匹配名称相同的选项值
-            formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.value || '';
-            break;
-          case linkAllAcceptTypes.includes(field.type):
-            // 文本输入类型可填充任何字段类型值
-            if (dataSourceTypes.includes(linkField.type)) {
-              // 联动的字段是数据源则填充选项名
-              formDetail.value[field.id] = linkField.value
-                .map((e: Record<string, any>) => e.name)
-                .join(',')
-                .slice(0, 255);
-            } else if (multipleTypes.includes(linkField.type)) {
-              // 联动的字段是多选则拼接选项名
-              formDetail.value[field.id] = linkField.value.join(',').slice(0, 255);
-            } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
-              // 联动的字段是日期时间则转换
-              if (linkField.dateType === 'month') {
-                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM');
-              } else if (linkField.dateType === 'date') {
-                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD');
+    if (props.linkFormKey?.value) {
+      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]?.find(
+        (e) => e.current === field.id
+      )?.link;
+      if (linkFieldId) {
+        const linkField = props.linkFormInfo?.value?.[linkFieldId];
+        if (linkField) {
+          switch (true) {
+            case dataSourceTypes.includes(field.type):
+              // 数据源填充，且替换initialOptions
+              field.initialOptions = linkField.initialOptions || [];
+              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.id);
+              break;
+            case multipleTypes.includes(field.type):
+              // 多选填充
+              if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
+                // 标签直接填充
+                formDetail.value[field.id] = Array.isArray(linkField.value)
+                  ? linkField.value.slice(0, 10)
+                  : [linkField.value];
               } else {
-                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD HH:mm:ss');
+                // 其他多选类型需匹配名称相等的选项值
+                formDetail.value[field.id] =
+                  field.options?.filter((e) => linkField.value.includes(e.label)).map((e) => e.value) || [];
               }
-            } else if (linkField.type === FieldTypeEnum.LOCATION) {
-              // 联动的字段是省市区则填充城市路径
-              const addressArr: string[] = linkField.value.split('-') || [];
-              formDetail.value[field.id] = addressArr.length
-                ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
-                : '-';
-            } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
-              formDetail.value[field.id] = linkField.value.slice(0, 255);
-            } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
-              formDetail.value[field.id] = linkField.initialOptions
-                .map((e: any) => e.name)
-                .join(',')
-                .slice(0, 255);
-            } else if (linkField.type === FieldTypeEnum.INPUT_NUMBER) {
-              formDetail.value[field.id] = linkField.value?.toString();
-            } else {
+              break;
+            case singleTypes.includes(field.type):
+              // 单选填充需要匹配名称相同的选项值
+              formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.value || '';
+              break;
+            case linkAllAcceptTypes.includes(field.type):
+              // 文本输入类型可填充任何字段类型值
+              if (dataSourceTypes.includes(linkField.type)) {
+                // 联动的字段是数据源则填充选项名
+                formDetail.value[field.id] = linkField.value
+                  .map((e: Record<string, any>) => e.name)
+                  .join(',')
+                  .slice(0, 255);
+              } else if (multipleTypes.includes(linkField.type)) {
+                // 联动的字段是多选则拼接选项名
+                formDetail.value[field.id] = linkField.value.join(',').slice(0, 255);
+              } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
+                // 联动的字段是日期时间则转换
+                if (linkField.dateType === 'month') {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM');
+                } else if (linkField.dateType === 'date') {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD');
+                } else {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD HH:mm:ss');
+                }
+              } else if (linkField.type === FieldTypeEnum.LOCATION) {
+                // 联动的字段是省市区则填充城市路径
+                const addressArr: string[] = linkField.value.split('-') || [];
+                formDetail.value[field.id] = addressArr.length
+                  ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                  : '-';
+              } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
+                formDetail.value[field.id] = linkField.value.slice(0, 255);
+              } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
+                formDetail.value[field.id] = linkField.initialOptions
+                  .map((e: any) => e.name)
+                  .join(',')
+                  .slice(0, 255);
+              } else if (linkField.type === FieldTypeEnum.INPUT_NUMBER) {
+                formDetail.value[field.id] = linkField.value?.toString();
+              } else {
+                formDetail.value[field.id] = linkField.value;
+              }
+              break;
+            case [...memberTypes, ...departmentTypes].includes(field.type):
+              formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
+              field.initialOptions = linkField.initialOptions || [];
+              break;
+            default:
               formDetail.value[field.id] = linkField.value;
-            }
-            break;
-          case [...memberTypes, ...departmentTypes].includes(field.type):
-            formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
-            field.initialOptions = linkField.initialOptions || [];
-            break;
-          default:
-            formDetail.value[field.id] = linkField.value;
-            field.initialOptions = linkField.initialOptions || [];
-            break;
+              field.initialOptions = linkField.initialOptions || [];
+              break;
+          }
         }
       }
     }

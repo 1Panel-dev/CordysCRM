@@ -128,8 +128,16 @@
     >
       <div class="crm-form-design-config-item-title">
         {{ t('crmFormDesign.formLink') }}
+      </div>
+      <div v-for="item in formKeyOptions" :key="item.value" class="flex w-full items-center gap-[8px]">
+        <n-button class="flex-1" @click="showLinkConfig(item.value)">
+          <div>{{ item.label }}</div>
+          <div v-if="formConfig.linkProp?.[item.value]">
+            {{ t('crmFormDesign.linkSettingTip', { count: formConfig.linkProp?.[item.value]?.length }) }}
+          </div>
+        </n-button>
         <CrmPopConfirm
-          v-model:show="linkClearPop"
+          v-if="formConfig.linkProp?.[item.value]"
           :title="t('crmFormDesign.linkSettingClearTip')"
           icon-type="warning"
           :content="t('crmFormDesign.linkSettingClearTipContent')"
@@ -137,20 +145,13 @@
           trigger="click"
           :negative-text="t('common.cancel')"
           placement="right-end"
-          @confirm="clearLink"
+          @confirm="clearLink(item.value)"
         >
-          <n-button type="primary" text :disabled="!formConfig.linkProp?.linkFields?.length">
+          <n-button type="primary" text>
             {{ t('common.clear') }}
           </n-button>
         </CrmPopConfirm>
       </div>
-      <n-button @click="showLinkConfig">
-        {{
-          formConfig.linkProp?.linkFields?.length
-            ? t('crmFormDesign.linkSettingTip', { count: formConfig.linkProp.linkFields.length })
-            : t('common.setting')
-        }}
-      </n-button>
     </div>
     <!-- 表单联动 End -->
   </div>
@@ -158,7 +159,7 @@
     v-model:visible="linkConfigVisible"
     :form-fields="list"
     :link-prop="formConfig.linkProp"
-    :form-key="props.formKey"
+    :form-key="currentFormLinkKey"
     @save="handleLinkConfigSave"
   />
 </template>
@@ -168,7 +169,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig, FormConfigLinkProp } from '@lib/shared/models/system/module';
+  import { FormConfig, FormFieldLinkItem } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
@@ -195,20 +196,58 @@
     });
   }
 
+  const formKeyOptions = computed(() => {
+    if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
+      return [
+        {
+          label: t('crmFormDesign.clue'),
+          value: FormDesignKeyEnum.CLUE,
+          linkClearPop: false,
+        },
+      ];
+    }
+    if (props.formKey === FormDesignKeyEnum.BUSINESS) {
+      return [
+        {
+          label: t('crmFormDesign.customer'),
+          value: FormDesignKeyEnum.CUSTOMER,
+          linkClearPop: false,
+        },
+        {
+          label: t('crmFormDesign.clue'),
+          value: FormDesignKeyEnum.CLUE,
+          linkClearPop: false,
+        },
+      ];
+    }
+    return [
+      {
+        label: t('common.plan'),
+        value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+        linkClearPop: false,
+      },
+    ];
+  });
   const linkConfigVisible = ref(false);
+  const currentFormLinkKey = ref<FormDesignKeyEnum>(formKeyOptions.value[0]?.value);
 
-  function showLinkConfig() {
+  function showLinkConfig(key: FormDesignKeyEnum) {
+    currentFormLinkKey.value = key;
     linkConfigVisible.value = true;
   }
 
-  function handleLinkConfigSave(value: FormConfigLinkProp) {
-    formConfig.value.linkProp = value;
+  function handleLinkConfigSave(formKey: FormDesignKeyEnum, value: FormFieldLinkItem[]) {
+    if (formConfig.value.linkProp) {
+      formConfig.value.linkProp[formKey] = value;
+    } else {
+      formConfig.value.linkProp = {
+        [formKey]: value,
+      };
+    }
   }
 
-  const linkClearPop = ref(false);
-  function clearLink() {
-    formConfig.value.linkProp = undefined;
-    linkClearPop.value = false;
+  function clearLink(formKey: FormDesignKeyEnum) {
+    delete formConfig.value.linkProp?.[formKey];
   }
 </script>
 
