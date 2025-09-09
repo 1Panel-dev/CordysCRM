@@ -9,6 +9,7 @@ import cn.cordys.common.dto.RoleDataScopeDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
@@ -24,6 +25,7 @@ import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.RoleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +53,38 @@ public class DataSourceService {
     private RoleService roleService;
     @Resource
     private IntegrationConfigService integrationConfigService;
+
+    @Value("${sqlbot.encrypt:false}")
+    private boolean encryptEnabled;
+    @Value("${sqlbot.aes-key:${random.value}}")
+    private String aesKey;
+    @Value("${sqlbot.aes-iv:${random.value}}")
+    private String aesIv;
+
+    private void aesEncryptDataSource(DataSourceDTO dataSource) {
+        if (BooleanUtils.isTrue(encryptEnabled)) {
+            dataSource.setHost(aesEncrypt(dataSource.getHost()));
+            dataSource.setUser(aesEncrypt(dataSource.getUser()));
+            dataSource.setPassword(aesEncrypt(dataSource.getPassword()));
+            dataSource.setDataBase(aesEncrypt(dataSource.getDataBase()));
+            dataSource.setSchema(aesEncrypt(dataSource.getSchema()));
+        }
+    }
+
+    private String aesEncrypt(String text) {
+        if (StringUtils.isBlank(text)) {
+            return text;
+        }
+        String iv = aesIv;
+        int len = iv.length();
+        if (len > 16) {
+            iv = iv.substring(0, 16);
+        }
+        if (len < 16) {
+            iv = String.format("%-" + (16 - len) + "s", iv).replace(' ', '0');
+        }
+        return CodingUtils.aesCBCEncrypt(text, aesKey, iv);
+    }
 
     /**
      * 获取当前数据库模式信息
@@ -98,6 +132,7 @@ public class DataSourceService {
             var dataSourceDTO = new DataSourceDTO();
             populateDataSourceProperties(dataSourceDTO);
             dataSourceDTO.setTables(filteredTables);
+            aesEncryptDataSource(dataSourceDTO);
 
             return SQLBotDTO.builder().code(0).data(List.of(dataSourceDTO)).build();
         } catch (Exception e) {

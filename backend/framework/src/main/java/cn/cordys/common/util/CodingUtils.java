@@ -3,10 +3,9 @@ package cn.cordys.common.util;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -209,6 +208,45 @@ public class CodingUtils {
         } catch (NoSuchAlgorithmException e) {
             // 降级方案：使用多种哈希组合减少冲突
             return str.hashCode() + "-" + str.length();
+        }
+    }
+
+    public static String aesCBCDecrypt(String src, String secretKey, String iv) {
+        if (StringUtils.isBlank(src) || StringUtils.isBlank(secretKey)) {
+            throw new IllegalArgumentException("Input or secretKey cannot be null or empty");
+        }
+        try {
+            byte[] raw = secretKey.getBytes(UTF_8);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(raw, "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec iv1 = new IvParameterSpec(iv.getBytes());
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv1);
+            byte[] encrypted1 = Base64.decodeBase64(src);
+            byte[] original = cipher.doFinal(encrypted1);
+            return new String(original, UTF_8);
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
+            // 解密的原字符串为非加密字符串，则直接返回原字符串
+            return src;
+        } catch (Exception e) {
+            throw new RuntimeException("decrypt error，please check parameters", e);
+        }
+    }
+
+    public static String aesCBCEncrypt(String src, String secretKey, String iv) {
+        if (StringUtils.isBlank(src) || StringUtils.isBlank(secretKey)) {
+            throw new IllegalArgumentException("Input or secretKey cannot be null or empty");
+        }
+        try {
+            byte[] raw = secretKey.getBytes(UTF_8);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(raw, "AES");
+            // "算法/模式/补码方式" ECB
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec iv1 = new IvParameterSpec(iv.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv1);
+            byte[] encrypted = cipher.doFinal(src.getBytes(UTF_8));
+            return Base64.encodeBase64String(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException("AES encrypt error:", e);
         }
     }
 }
