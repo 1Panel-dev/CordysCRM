@@ -6,8 +6,8 @@ export default {
   'clue.convertedTo': 'Converted',
   'clue.convertedToCustomer': 'Converted to customer',
   'clue.transferredToCustomer': 'Transferred to customer',
-  'clue.clueProgress': 'Clue progress',
-  'clue.clueSource': 'Clue source',
+  'clue.clueProgress': 'Lead progress',
+  'clue.clueSource': 'Lead source',
   'clue.batchDeleteTitleTip': 'Are you sure you want to delete {number} clues?',
   'clue.batchDeleteContentTip':
     'After deletion, members will not be able to access these clues. Please proceed with caution!',

@@ -17,7 +17,7 @@ export default {
   'mine.allMessage': 'All ',
   'mine.systemMessage': 'System message ',
   'mine.announcementMessage': 'Announcement ',
-  'mine.opportunityMessage': 'Business opportunity ',
+  'mine.opportunityMessage': 'Opportunity',
   'mine.userPhoneErrTip': 'Please enter 11-digit phone number',
   'mine.emailErrTip': 'Email format error, please re-enter',
   'mine.messageSearchPlaceholder': 'Please enter keyword',

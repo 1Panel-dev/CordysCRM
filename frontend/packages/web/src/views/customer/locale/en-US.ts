@@ -3,7 +3,7 @@ export default {
   'customer.mine': 'My Customers',
   'customer.deptCustomer': 'Department Customers',
   'customer.cooperationCustomer': 'Cooperation Customers',
-  'customer.new': 'New Customer',
+  'customer.new': 'New Account',
   'customer.deleteTitleTip': 'Are you sure to delete this customer?',
   'customer.batchDeleteTitleTip': 'Are you sure to delete {number} customers?',
   'customer.batchDeleteContentTip': 'After deletion, members cannot find this customer, please operate with caution!',
@@ -31,7 +31,7 @@ export default {
   'customer.claimTipContent':
     'After claiming, if there is no follow-up/deal within 180 days, it will be automatically returned to the high seas',
   'customer.relation': 'Relationship',
-  'customer.selectCustomer': 'Select Customer',
+  'customer.selectCustomer': 'Select Account',
   'customer.group': 'Group',
   'customer.subsidiary': 'Subsidiary',
   'customer.collaborator': 'Collaborator',

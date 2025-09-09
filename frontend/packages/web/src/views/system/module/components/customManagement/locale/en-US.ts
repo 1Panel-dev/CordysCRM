@@ -1,4 +1,4 @@
 export default {
-  'customManagement.newCustomer': 'New Customer',
+  'customManagement.newCustomer': 'New Account',
   'customManagement.newContact': 'New Contact',
 };

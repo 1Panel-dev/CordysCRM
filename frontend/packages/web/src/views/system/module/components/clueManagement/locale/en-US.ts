@@ -1,3 +1,3 @@
 export default {
-  'clueManagement.newClue': 'New Clue',
+  'clueManagement.newClue': 'New Lead',
 };

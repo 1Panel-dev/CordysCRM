@@ -11,7 +11,7 @@ export default {
   'opportunity.expirationReminder': 'Expiration reminder',
   'opportunity.gotIt': 'Got it',
   'opportunity.goMove': 'To transfer',
-  'opportunity.clueRecoveryRule': 'Clue recovery rule',
+  'opportunity.clueRecoveryRule': 'Lead recovery rule',
   'opportunity.belongDays': 'Belong days',
   'opportunity.opportunityStage': 'Opportunity stage',
   'opportunity.updateRuleContentTip': 'After updating, the updated closing rules will only take effect for new data.',

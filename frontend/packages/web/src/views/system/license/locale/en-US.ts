@@ -1,6 +1,6 @@
 export default {
   'system.license': 'License',
-  'system.license.customerName': 'Customer Name',
+  'system.license.customerName': 'Account Name',
   'system.license.authorizationTime': 'Expiration date',
   'system.license.productName': 'Product Name',
   'system.license.productionVersion': 'Production Version',

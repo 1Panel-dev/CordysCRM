@@ -11,7 +11,7 @@ export default {
   'opportunity.clearRequirements': 'Clear requirements',
   'opportunity.schemeValidation': 'Solution validation',
   'opportunity.projectProposalReport': 'Project proposal report',
-  'opportunity.businessProcurement': 'Business procurement',
+  'opportunity.businessProcurement': 'Opportunity procurement',
   'opportunity.end': 'End',
   'opportunity.progress': 'Opportunity progress',
   'opportunity.intendedProducts': 'Intended products',

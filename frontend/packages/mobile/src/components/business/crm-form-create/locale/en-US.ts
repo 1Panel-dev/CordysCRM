@@ -3,7 +3,7 @@ export default {
   'formCreate.editTitle': 'Update {name}',
   'formCreate.customer': 'Customer',
   'formCreate.contract': 'Contact',
-  'formCreate.business': 'Business',
+  'formCreate.business': 'Opportunity',
   'formCreate.product': 'Product',
   'formCreate.clue': 'Clue',
   'formCreate.pickDate': 'Pick Date',
