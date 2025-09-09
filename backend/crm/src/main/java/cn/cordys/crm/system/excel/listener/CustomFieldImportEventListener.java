@@ -89,7 +89,14 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 正则校验
 	 */
 	private final Map<String, Pattern> regexMap = new HashMap<>();
-	public static final String PHONE_REGEX = "^[(（]\\+(86)[)）]\\s?1[3-9]\\d{9}$|^[(（]\\+(852|853)[)）]\\s?\\d{8}$|^[(（]\\+(886)[)）]\\s?\\d{9,10}$";
+	/**
+	 * 除开特定的区号和格式校验, 还需兜底的其他手机格式
+	 */
+	public static final String PHONE_REGEX =
+			"^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
+					+ "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
+					+ "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
+					+ "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
 	private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
 	/**
 	 * 校验错误信息
