@@ -4,7 +4,7 @@ export default {
   'log.operationTime': '操作时间',
   'log.operationType': '操作类型',
   'log.operationScope': '操作范围',
-  'log.keyword': '操作对象',
+  'log.operationTarget': '操作对象',
   'log.operator': '登录人',
   'log.loginTime': '登录时间',
   'log.platform': '登录平台',

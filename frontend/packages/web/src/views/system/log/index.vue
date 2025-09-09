@@ -49,7 +49,7 @@
               clearable
             />
           </n-form-item>
-          <n-form-item :label="t('log.keyword')" path="keyword">
+          <n-form-item :label="t('log.operationTarget')" path="keyword">
             <n-input v-model:value="form.keyword" :placeholder="t('common.pleaseInput')" clearable />
           </n-form-item>
         </template>
