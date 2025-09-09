@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col">
+  <n-scrollbar class="flex flex-col p-[16px]">
     <div class="crm-form-design-field-title">{{ t('crmFormDesign.basicField') }}</div>
     <VueDraggable
       v-model="basicFields"
@@ -44,10 +44,11 @@
         <div>{{ t(field.name) }}</div>
       </div>
     </VueDraggable>
-  </div>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
+  import { NScrollbar } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';

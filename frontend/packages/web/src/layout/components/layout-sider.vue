@@ -16,12 +16,15 @@
       <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
         <n-menu
           v-model:value="menuValue"
+          v-model:expanded-keys="expandedKeys"
           :root-indent="24"
           :indent="appStore.getMenuIconStatus ? 38 : 8"
           :collapsed-width="appStore.collapsedWidth"
           :icon-size="18"
           :collapsed-icon-size="28"
           :options="menuOptions"
+          :render-label="renderLabel"
+          accordion
           @update-value="menuChange"
         />
       </n-scrollbar>
@@ -111,7 +114,7 @@
     OpportunityRouteEnum,
   } from '@/enums/routeEnum';
 
-  import { MenuOption } from 'naive-ui/es/menu/src/interface';
+  import { MenuGroupOption, MenuOption } from 'naive-ui/es/menu/src/interface';
 
   const { logout } = useUser();
 
@@ -122,6 +125,7 @@
   const route = useRoute();
   const collapsed = ref(appStore.getMenuCollapsed);
   const menuValue = ref<string>(AppRouteEnum.SYSTEM_ORG);
+  const expandedKeys = ref<string[]>([]);
   const personalMenuValue = ref<string>('');
   const showPersonalInfo = ref<boolean>(false);
   const personalTab = ref(PersonalEnum.INFO);
@@ -199,6 +203,19 @@
     },
   ]);
 
+  function renderLabel(option: MenuOption | MenuGroupOption) {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        trigger: () => h('div', {}, { default: () => option.label }),
+        default: () => h('div', {}, { default: () => option.label }),
+      }
+    );
+  }
+
   const showPopModal = ref(false);
   function confirmHandler() {
     addVisited();
@@ -232,6 +249,9 @@
     await router.push({ name });
     if (isRequiredExportRoute(key as OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum)) {
       initExportPop();
+    }
+    if (!routeItem.name?.toString().includes('system')) {
+      expandedKeys.value = [];
     }
   }
 

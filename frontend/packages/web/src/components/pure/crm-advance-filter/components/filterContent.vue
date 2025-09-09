@@ -33,7 +33,7 @@
               @update:value="(val) => dataIndexChange(val, listIndex)"
             />
           </n-form-item>
-          <n-form-item :path="`list[${listIndex}].operator`" class="block w-[105px]">
+          <n-form-item :path="`list[${listIndex}].operator`" class="block w-[120px]">
             <n-select
               v-model:value="item.operator"
               :disabled="!item.dataIndex || props.readonly"

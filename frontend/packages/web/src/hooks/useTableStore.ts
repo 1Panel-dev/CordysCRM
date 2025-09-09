@@ -93,13 +93,17 @@ export default function useTableStore() {
             const sameItem = tableColumnsMap.column.find((item) => item.key === e.key);
             if (sameItem) {
               // 如果是相同的列，则更新除了宽度、显隐、固定以外的属性
+              let { width } = sameItem;
               if (e.key === SpecialColumnEnum.OPERATION) {
                 const operationColumn = column.find((item) => item.key === SpecialColumnEnum.OPERATION);
-                e.width = operationColumn?.width;
+                width = operationColumn?.width;
+              } else if (e.key === SpecialColumnEnum.ORDER) {
+                const orderColumn = column.find((item) => item.key === SpecialColumnEnum.ORDER);
+                width = orderColumn?.width;
               }
               return {
                 ...e,
-                width: e.key === SpecialColumnEnum.OPERATION ? e.width : sameItem.width,
+                width,
                 showInTable: sameItem.showInTable,
                 fixed: sameItem.fixed || e.fixed,
               };

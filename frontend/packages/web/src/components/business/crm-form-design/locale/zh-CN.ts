@@ -93,6 +93,7 @@ export default {
   'crmFormDesign.business': '商机',
   'crmFormDesign.product': '产品',
   'crmFormDesign.clue': '线索',
+  'crmFormDesign.plan': '跟进计划',
   'crmFormDesign.showRule': '显隐规则',
   'crmFormDesign.showRuleSetting': '设置显隐规则',
   'crmFormDesign.choice': '选择',

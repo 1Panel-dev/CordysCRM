@@ -734,19 +734,19 @@
   >
     <div class="flex flex-col items-start gap-[12px]">
       <div v-for="rule in tempShowRules" :key="rule.value" class="flex w-full items-center gap-[8px]">
-        <div>{{ t('crmFormDesign.choice') }}</div>
+        <div class="one-line-text">{{ t('crmFormDesign.choice') }}</div>
         <n-select
           v-model:value="rule.value"
           :options="getShowRuleOptions(rule)"
           :disabled="props.disabled"
           class="w-[150px]"
         />
-        <div>{{ t('crmFormDesign.show') }}</div>
+        <div class="one-line-text">{{ t('crmFormDesign.show') }}</div>
         <n-select
           v-model:value="rule.fieldIds"
           :options="showRuleFields"
           :disabled="props.disabled || !rule.value"
-          class="w-[350px]"
+          class="w-[320px]"
           max-tag-count="responsive"
           multiple
           clearable

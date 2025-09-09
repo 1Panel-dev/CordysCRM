@@ -85,9 +85,6 @@
     width: 280px;
     background-color: var(--text-n10);
   }
-  .crm-form-design--left {
-    padding: 16px;
-  }
   .crm-form-design--center {
     @apply h-full flex-1 bg-transparent;
 

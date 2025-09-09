@@ -14,7 +14,7 @@
       :search-field-map="props.searchFieldMap"
     />
     <div class="mt-[16px] text-[var(--text-n1)]">{{ t('workbench.duplicateCheck.filterResultSort') }}</div>
-    <n-scrollbar class="mt-[8px]" x-scrollable>
+    <n-scrollbar class="pb-[12px] pt-[8px]" x-scrollable>
       <VueDraggable
         v-model="configList"
         :animation="150"
@@ -147,5 +147,3 @@
     }
   );
 </script>
-
-<style scoped></style>

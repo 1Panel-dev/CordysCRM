@@ -21,7 +21,7 @@
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentForm') }}</div>
           <div class="w-[80px]"></div>
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkForm') }}</div>
-          <div :class="formModel.linkFields.length > 1 ? 'w-[110px]' : 'w-[64px]'"></div>
+          <div :class="formModel.linkFields.length > 1 ? 'w-[115px]' : 'w-[64px]'"></div>
         </div>
         <n-scrollbar ref="linkFieldsScrollbar" class="max-h-[40vh] pr-[6px]" content-class="flex flex-col gap-[12px]">
           <div v-for="(line, index) of formModel.linkFields" :key="index" class="flex items-start justify-between">
@@ -55,7 +55,7 @@
                 "
               />
             </n-form-item>
-            <div class="ml-[12px] flex h-[32px] w-[30px] items-center text-[var(--text-n1)]">
+            <div class="ml-[12px] flex h-[32px] w-[35px] items-center text-[var(--text-n1)]">
               {{ t('crmFormDesign.fillValue') }}
             </div>
             <n-button

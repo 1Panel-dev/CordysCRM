@@ -312,7 +312,7 @@
     return minWidth;
   }
 
-  async function initColumn(hasInitStore = false) {
+  async function initColumn() {
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);
     const dragColumn: CrmDataTableColumn[] = props.draggable
       ? [
@@ -341,7 +341,7 @@
       });
       return _col;
     });
-    if (!hasInitStore && attrs.tableKey) {
+    if (attrs.tableKey) {
       await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
     }
     if (attrs.showSetting) {
@@ -503,7 +503,7 @@
   };
 
   function changeColumnsSetting() {
-    initColumn(true);
+    initColumn();
     initLayoutType();
   }
 
