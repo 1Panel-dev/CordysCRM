@@ -40,8 +40,8 @@ export default {
   'system.message.system': 'System',
   'system.message.systemNotification': 'System notification',
   'system.message.setRead': 'Mark as read',
-  'system.message.enterpriseWeChatNotice': 'Enterprise WeChat notice',
-  'system.message.confirmCloseWeChatNotice': 'Are you sure to close the enterprise wechat notification?',
+  'system.message.enterpriseWeChatNotice': 'WeCom notice',
+  'system.message.confirmCloseWeChatNotice': 'Are you sure to close the WeCom notification?',
   'system.message.weComSwitchTip':
-    'Enterprise WeChat unable to get user receives the message, please complete the enterprise WeChat structure synchronization, make sure the system consistent with the enterprise WeChat personnel data!',
+    'WeCom unable to get user receives the message, please complete the WeCom structure synchronization, make sure the system consistent with the WeCom personnel data!',
 };

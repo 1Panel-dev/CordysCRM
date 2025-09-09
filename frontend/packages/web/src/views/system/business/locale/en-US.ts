@@ -19,7 +19,7 @@ export default {
   'system.business.mailSettings.sslTip': 'If the SMTP port is 465, SSL must be enabled.',
   'system.business.mailSettings.tslTip': 'If the SMTP port is 587, TSL must be enabled.',
   'system.business.configType': '{type} config',
-  'system.business.WE_COM': 'WeChat Work',
+  'system.business.WE_COM': 'WeCom',
   'system.business.WE_COM.description': 'A professional office management tool for enterprises.',
   'system.business.DING_TALK': 'DingTalk',
   'system.business.DING_TALK.description': 'An enterprise-level intelligent mobile office platform.',
@@ -29,7 +29,7 @@ export default {
   'system.business.notConfigured': 'Not Configured',
   'system.business.notConfiguredTip':
     'Please perform a test connection first. This feature can only be enabled after a successful test connection.',
-  'system.business.corpId': 'Enterprise ID',
+  'system.business.corpId': 'CorpID',
   'system.business.agentId': 'App ID',
   'system.business.appKey': 'App Key',
   'system.business.appSecret': 'App Secret',

@@ -8,7 +8,7 @@ export default {
   'org.selectHeadPlaceholder': 'Please select a department head',
   'org.setupSuccess': 'Set up successfully',
   'org.addStaff': 'Add staff',
-  'org.enterpriseWhatSync': 'Enterprise wechat synchronization',
+  'org.enterpriseWhatSync': 'WeCom synchronization',
   'org.userName': 'Name',
   'org.gender': 'Gender',
   'org.userEmail': 'Email',
@@ -67,8 +67,8 @@ export default {
   'org.batchToggleStatusTip': 'Confirm {enable} {number} employees?',
   'org.batchDeleteUserTip': 'Confirm delete {number} employees?',
   'org.checkSyncUserHoverTip':
-    'The organization structure is enterprise WeChat synchronization data, please add members through "Synchronize organization structure"!',
-  'org.syncUserTipTitle': 'Synchronize from enterprise wechat?',
+    'The organization structure is WeCom synchronization data, please add members through "Synchronize organization structure"!',
+  'org.syncUserTipTitle': 'Synchronize from WeCom?',
   'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful!',
   'org.firstSyncUserTipContent':
     'Synchronize organizational structure will delete existing members and their resource data. This operation is irreversible. Continue?',
