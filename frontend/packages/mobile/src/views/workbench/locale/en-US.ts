@@ -6,7 +6,7 @@ export default {
   'workbench.duplicateCheck.contactResult': 'Contact result',
   'workbench.duplicateCheck.status': 'Duplicate status',
   'workbench.duplicateCheck.relatedOpportunity': 'Related opportunity',
-  'workbench.duplicateCheck.relatedClue': 'Related clue',
+  'workbench.duplicateCheck.relatedClue': 'Related lead',
   'workbench.duplicateCheck.relatedClues': 'Clue relations',
   'workbench.duplicateCheck.clueStage': 'Clue stage',
   'workbench.duplicateCheck.noSearchData': 'No search results found',

@@ -92,6 +92,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem, TableQueryParams } from '@lib/shared/models/common';
   import { CluePoolItem } from '@lib/shared/models/system/module';
@@ -145,6 +146,7 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const route = useRoute();
+  const { currentLocale } = useLocale(Message.loading);
 
   const openSea = ref<string | number>('');
   const openSeaOptions = ref<CluePoolItem[]>([]);
@@ -441,7 +443,7 @@
       ? undefined
       : {
           key: 'operation',
-          width: 150,
+          width: currentLocale.value === 'en-US' ? 200 : 150,
           fixed: 'right',
           render: (row: any) =>
             h(

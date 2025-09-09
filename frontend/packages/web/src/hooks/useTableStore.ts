@@ -93,9 +93,13 @@ export default function useTableStore() {
             const sameItem = tableColumnsMap.column.find((item) => item.key === e.key);
             if (sameItem) {
               // 如果是相同的列，则更新除了宽度、显隐、固定以外的属性
+              if (e.key === SpecialColumnEnum.OPERATION) {
+                const operationColumn = column.find((item) => item.key === SpecialColumnEnum.OPERATION);
+                e.width = operationColumn?.width;
+              }
               return {
                 ...e,
-                width: sameItem.width,
+                width: e.key === SpecialColumnEnum.OPERATION ? e.width : sameItem.width,
                 showInTable: sameItem.showInTable,
                 fixed: sameItem.fixed || e.fixed,
               };

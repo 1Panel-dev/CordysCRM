@@ -3,7 +3,7 @@ import { ClueRouteEnum } from '@/enums/routeEnum';
 import { DEFAULT_LAYOUT } from '../base';
 import type { AppRouteRecordRaw } from '../types';
 
-const clue: AppRouteRecordRaw = {
+const lead: AppRouteRecordRaw = {
   path: '/lead',
   name: ClueRouteEnum.CLUE,
   redirect: '/lead/index',
@@ -46,4 +46,4 @@ const clue: AppRouteRecordRaw = {
   ],
 };
 
-export default clue;
+export default lead;

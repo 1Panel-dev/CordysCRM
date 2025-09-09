@@ -111,6 +111,7 @@
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit, getCityPath } from '@lib/shared/method';
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
   import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
@@ -151,11 +152,8 @@
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
-  import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
-
-  const licenseStore = useLicenseStore();
 
   const userStore = useUserStore();
   // TODO license 先放开
@@ -167,6 +165,7 @@
   const { openModal } = useModal();
 
   const { t } = useI18n();
+  const { currentLocale } = useLocale(Message.loading);
 
   const props = defineProps<{
     activeNode: string | number;
@@ -739,7 +738,7 @@
     },
     {
       key: 'operation',
-      width: 170,
+      width: currentLocale.value === 'en-US' ? 210 : 170,
       fixed: 'right',
       render: (row: MemberItem) =>
         h(CrmOperationButton, {

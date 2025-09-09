@@ -54,7 +54,7 @@ export default {
   'org.resetPassWord': 'Reset Password',
   'org.noDepartmentToChoose': 'No department available',
   'org.deleteMemberTipContent': 'All data of this employee in the system will be cleared',
-  'org.deleteHasNotMovedTipContent': 'This employee has untransferred customer resources and cannot be deleted!',
+  'org.deleteHasNotMovedTipContent': 'This employee has untransferred account resources and cannot be deleted!',
   'org.attributes': 'Attributes',
   'org.disabledUserTipContent': 'After disable, staff can not log in the system, please operate with caution!',
   'org.enabledUserTipContent': 'Enabled, employees can through the mobile phone number login system',

@@ -117,6 +117,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
@@ -149,6 +150,7 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const route = useRoute();
+  const { currentLocale } = useLocale(Message.loading);
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER;
@@ -406,7 +408,7 @@
       ? undefined
       : {
           key: 'operation',
-          width: 200,
+          width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: any) =>
             ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
