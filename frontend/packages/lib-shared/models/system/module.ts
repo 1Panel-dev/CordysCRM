@@ -233,3 +233,14 @@ export interface DefaultSearchSetFormModel {
   resultDisplay: boolean;
   sortSetting: string[];
 }
+
+export interface CheckRepeatParams {
+  id: string;
+  value: string;
+  formKey: string;
+}
+
+export interface CheckRepeatInfo {
+  repeat: boolean;
+  name: string;
+}

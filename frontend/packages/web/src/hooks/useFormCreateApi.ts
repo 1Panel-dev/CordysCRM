@@ -2,7 +2,12 @@ import { useMessage } from 'naive-ui';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
-import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import {
+  FieldDataSourceTypeEnum,
+  FieldRuleEnum,
+  FieldTypeEnum,
+  FormDesignKeyEnum,
+} from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
@@ -26,6 +31,7 @@ import {
   singleTypes,
 } from '@/components/business/crm-form-design/linkFormConfig';
 
+import { checkRepeat } from '@/api/modules';
 import { lastOpportunitySteps } from '@/config/opportunity';
 import useUserStore from '@/store/modules/user';
 
@@ -73,6 +79,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     optBtnPos: 'flex-row',
   }); // 表单属性配置
   const formDetail = ref<Record<string, any>>({});
+  const originFormDetail = ref<Record<string, any>>({});
+
   // 详情
   const detail = ref<Record<string, any>>({});
   const linkFormFieldMap = ref<Record<string, any>>({}); // 关联表单字段信息映射
@@ -692,6 +700,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           makeLinkFormFields(item);
         }
       });
+      originFormDetail.value = cloneDeep(formDetail.value);
       nextTick(() => {
         unsaved.value = false;
       });
@@ -966,11 +975,41 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         // 遍历规则集合，将全量的规则配置载入
         const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
         if (staticRule) {
-          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-          staticRule.message = t(staticRule.message as string, { value: t(item.name) });
-          staticRule.type = getRuleType(item);
-          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
-            staticRule.trigger = 'none';
+          // 重复校验
+          if (staticRule.key === FieldRuleEnum.UNIQUE) {
+            staticRule.validator = async (_rule: any, value: string) => {
+              if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+                return Promise.resolve();
+              }
+
+              try {
+                const info = await checkRepeat({
+                  id: item.id,
+                  value,
+                  formKey: props.formKey.value,
+                });
+                if (info.repeat) {
+                  return Promise.reject(
+                    new Error(
+                      info.name.length
+                        ? t('crmFormCreate.repeatTip', { name: info.name })
+                        : t('crmFormCreate.repeatTipWithoutName')
+                    )
+                  );
+                }
+                return Promise.resolve();
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+              }
+            };
+          } else {
+            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+            staticRule.message = t(staticRule.message as string, { value: t(item.name) });
+            staticRule.type = getRuleType(item);
+            if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+              staticRule.trigger = 'none';
+            }
           }
           fullRules.push(staticRule);
         }

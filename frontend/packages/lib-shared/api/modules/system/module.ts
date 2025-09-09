@@ -6,6 +6,7 @@ import {
   AddCustomerPoolUrl,
   addOpportunityRuleUrl,
   AddReasonUrl,
+  CheckRepeatUrl,
   DeleteClueCapacityUrl,
   DeleteCluePoolUrl,
   DeleteCustomerCapacityUrl,
@@ -65,6 +66,8 @@ import type { ProductListItem } from '@lib/shared/models/product';
 import type {
   CapacityItem,
   CapacityParams,
+  CheckRepeatInfo,
+  CheckRepeatParams,
   CluePoolItem,
   CluePoolParams,
   DefaultSearchSetFormModel,
@@ -248,6 +251,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ProductListItem>>({ url: GetFieldProductListUrl, data });
   }
 
+  function checkRepeat(data: CheckRepeatParams) {
+    return CDR.post<CheckRepeatInfo>({ url: CheckRepeatUrl, data });
+  }
+
   function uploadTempFile(file: File | null) {
     return CDR.uploadFile<Result<string[]>>({ url: UploadTempFileUrl }, { fileList: [file] }, 'files', true);
   }
@@ -345,6 +352,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldCustomerList,
     getFieldOpportunityList,
     getFieldProductList,
+    checkRepeat,
     uploadTempFile,
     previewPicture,
     downloadPicture,

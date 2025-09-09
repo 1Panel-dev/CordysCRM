@@ -225,6 +225,7 @@ export const {
   getFieldCustomerList,
   getFieldOpportunityList,
   getFieldProductList,
+  checkRepeat,
   uploadTempFile,
   previewPicture,
   downloadPicture,

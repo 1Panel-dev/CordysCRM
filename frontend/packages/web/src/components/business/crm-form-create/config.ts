@@ -459,11 +459,11 @@ export const rules: FormCreateFieldRule[] = [
     required: true,
     message: 'common.notNull',
     label: 'common.required',
-    trigger: 'change',
+    trigger: ['change', 'blur'],
   },
   {
     key: FieldRuleEnum.UNIQUE,
-    message: 'common.valueExists',
+    trigger: 'blur',
     label: 'common.onlyOne',
     validator: () => true, // 由后台验证
   },
