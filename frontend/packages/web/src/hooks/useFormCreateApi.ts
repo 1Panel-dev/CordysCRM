@@ -10,6 +10,15 @@ import {
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
+import {
+  dataSourceTypes,
+  departmentTypes,
+  getRuleType,
+  linkAllAcceptTypes,
+  memberTypes,
+  multipleTypes,
+  singleTypes,
+} from '@lib/shared/method/formCreate';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -22,14 +31,6 @@ import {
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
-import {
-  dataSourceTypes,
-  departmentTypes,
-  linkAllAcceptTypes,
-  memberTypes,
-  multipleTypes,
-  singleTypes,
-} from '@/components/business/crm-form-design/linkFormConfig';
 
 import { checkRepeat } from '@/api/modules';
 import { lastOpportunitySteps } from '@/config/opportunity';
@@ -925,28 +926,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       return [];
     }
     return value;
-  }
-
-  function getRuleType(item: FormCreateField) {
-    if (
-      item.type === FieldTypeEnum.SELECT_MULTIPLE ||
-      item.type === FieldTypeEnum.CHECKBOX ||
-      item.type === FieldTypeEnum.INPUT_MULTIPLE ||
-      item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
-      item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
-      item.type === FieldTypeEnum.DATA_SOURCE ||
-      item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
-      item.type === FieldTypeEnum.PICTURE
-    ) {
-      return 'array';
-    }
-    if (item.type === FieldTypeEnum.DATE_TIME) {
-      return 'date';
-    }
-    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-      return 'number';
-    }
-    return 'string';
   }
 
   function initForm() {

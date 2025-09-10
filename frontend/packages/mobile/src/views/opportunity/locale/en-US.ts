@@ -22,7 +22,7 @@ export default {
   'opportunity.selectActualEndTime': 'Please select an end time',
   'opportunity.failureReason': 'Failure reason',
   'opportunity.selectFailureReason': 'Please select a failure reason',
-  'opportunity.customerChooseCompetitor': 'Customer choose competitor',
+  'opportunity.customerChooseCompetitor': 'Account choose competitor',
   'opportunity.projectFailed': 'Project failed',
   'opportunity.complexDecisionChain': 'Complex decision chain',
   'opportunity.budgetLimit': 'Budget limit',

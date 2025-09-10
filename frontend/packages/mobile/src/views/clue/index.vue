@@ -7,7 +7,7 @@
             {{ tab.title }}
           </div>
         </template>
-        <Clue v-if="tab.name === 'clue'" />
+        <Lead v-if="tab.name === 'clue'" />
         <Pool v-else-if="tab.name === 'cluePool'" />
       </van-tab>
     </van-tabs>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import Clue from './clue/index.vue';
+  import Lead from './clue/index.vue';
   import Pool from './pool/index.vue';
 
   import { hasAnyPermission } from '@/utils/permission';

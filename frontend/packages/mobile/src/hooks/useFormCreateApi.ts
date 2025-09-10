@@ -1,9 +1,20 @@
 import { showSuccessToast } from 'vant';
+import { cloneDeep } from 'lodash-es';
+import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
+import {
+  dataSourceTypes,
+  departmentTypes,
+  linkAllAcceptTypes,
+  memberTypes,
+  multipleTypes,
+  singleTypes,
+} from '@lib/shared/method/formCreate';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
+import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
 
@@ -21,6 +32,8 @@ export interface FormCreateApiProps {
   needInitDetail?: boolean;
   initialSourceName?: string; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Record<string, any>;
+  linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
+  linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -32,9 +45,30 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const descriptions = ref<CrmDescriptionItem[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
   const fieldShowControlMap = ref<Record<string, any>>({}); // 表单字段显示控制映射
+  const formConfig = ref<FormConfig>({
+    layout: 1,
+    labelPos: 'top',
+    inputWidth: 'custom',
+    optBtnContent: [
+      {
+        text: t('common.save'),
+        enable: true,
+      },
+      {
+        text: t('common.saveAndContinue'),
+        enable: false,
+      },
+      {
+        text: t('common.cancel'),
+        enable: true,
+      },
+    ],
+    optBtnPos: 'flex-row',
+  }); // 表单属性配置
   const loading = ref(false);
   const unsaved = ref(false);
   const formDetail = ref<Record<string, any>>({});
+  const originFormDetail = ref<Record<string, any>>({});
   const detail = ref<Record<string, any>>({}); // 详情
 
   function initFormShowControl() {
@@ -277,6 +311,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
         return item;
       });
+      originFormDetail.value = cloneDeep(formDetail.value);
       nextTick(() => {
         unsaved.value = false;
       });
@@ -421,10 +456,95 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     };
   }
 
+  function fillLinkFormFieldValue(field: FormCreateField) {
+    if (props.linkFormKey?.value) {
+      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]?.find(
+        (e) => e.current === field.id
+      )?.link;
+      if (linkFieldId) {
+        const linkField = props.linkFormInfo?.value?.[linkFieldId];
+        if (linkField) {
+          switch (true) {
+            case dataSourceTypes.includes(field.type):
+              // 数据源填充，且替换initialOptions
+              field.initialOptions = linkField.initialOptions || [];
+              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.id);
+              break;
+            case multipleTypes.includes(field.type):
+              // 多选填充
+              if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
+                // 标签直接填充
+                formDetail.value[field.id] = Array.isArray(linkField.value)
+                  ? linkField.value.slice(0, 10)
+                  : [linkField.value];
+              } else {
+                // 其他多选类型需匹配名称相等的选项值
+                formDetail.value[field.id] =
+                  field.options?.filter((e) => linkField.value.includes(e.label)).map((e) => e.value) || [];
+              }
+              break;
+            case singleTypes.includes(field.type):
+              // 单选填充需要匹配名称相同的选项值
+              formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.value || '';
+              break;
+            case linkAllAcceptTypes.includes(field.type):
+              // 文本输入类型可填充任何字段类型值
+              if (dataSourceTypes.includes(linkField.type)) {
+                // 联动的字段是数据源则填充选项名
+                formDetail.value[field.id] = linkField.value
+                  .map((e: Record<string, any>) => e.name)
+                  .join(',')
+                  .slice(0, 255);
+              } else if (multipleTypes.includes(linkField.type)) {
+                // 联动的字段是多选则拼接选项名
+                formDetail.value[field.id] = linkField.value.join(',').slice(0, 255);
+              } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
+                // 联动的字段是日期时间则转换
+                if (linkField.dateType === 'month') {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM');
+                } else if (linkField.dateType === 'date') {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD');
+                } else {
+                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD HH:mm:ss');
+                }
+              } else if (linkField.type === FieldTypeEnum.LOCATION) {
+                // 联动的字段是省市区则填充城市路径
+                const addressArr: string[] = linkField.value.split('-') || [];
+                formDetail.value[field.id] = addressArr.length
+                  ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                  : '-';
+              } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
+                formDetail.value[field.id] = linkField.value.slice(0, 255);
+              } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
+                formDetail.value[field.id] = linkField.initialOptions
+                  .map((e: any) => e.name)
+                  .join(',')
+                  .slice(0, 255);
+              } else if (linkField.type === FieldTypeEnum.INPUT_NUMBER) {
+                formDetail.value[field.id] = linkField.value?.toString();
+              } else {
+                formDetail.value[field.id] = linkField.value;
+              }
+              break;
+            case [...memberTypes, ...departmentTypes].includes(field.type):
+              formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
+              field.initialOptions = linkField.initialOptions || [];
+              break;
+            default:
+              formDetail.value[field.id] = linkField.value;
+              field.initialOptions = linkField.initialOptions || [];
+              break;
+          }
+        }
+      }
+    }
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
+      formConfig.value = res.formProp;
       fieldList.value = res.fields.map((item) => {
         const { defaultValue, initialOptions } = specialFormFieldInit(item);
         if (item.showControlRules?.length) {
@@ -525,6 +645,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     fieldList,
     loading,
     unsaved,
+    formConfig,
     formDetail,
     formCreateTitle,
     collaborationType,
@@ -534,6 +655,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormDetail,
     saveForm,
     initFormShowControl,
+    fillLinkFormFieldValue,
     detail,
   };
 }

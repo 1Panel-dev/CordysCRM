@@ -97,13 +97,6 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfigLinkProp, FormFieldLinkItem } from '@lib/shared/models/system/module';
-
-  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { FormCreateField } from '@/components/business/crm-form-create/types';
-
-  import useFormCreateApi from '@/hooks/useFormCreateApi';
-
   import {
     dataSourceTypes,
     departmentTypes,
@@ -113,7 +106,13 @@
     multipleTypes,
     needSameTypes,
     singleTypes,
-  } from '../../linkFormConfig';
+  } from '@lib/shared/method/formCreate';
+  import { FormConfigLinkProp, FormFieldLinkItem } from '@lib/shared/models/system/module';
+
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
+
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const visible = defineModel<boolean>('visible', { required: true });
 

@@ -10,7 +10,7 @@
   >
     <template #item="{ item }">
       <van-checkbox v-model="item.checked" :disabled="item.disabled" @change="handleChange">
-        <slot name="label">{{ item.name }}</slot>
+        <slot name="label" :item="item">{{ item.name }}</slot>
       </van-checkbox>
     </template>
   </CrmList>
@@ -18,6 +18,7 @@
     <CrmList
       ref="crmListRef"
       v-model:model-value="list"
+      v-model:loading="loading"
       :keyword="props.keyword"
       :list-params="props.listParams"
       :load-list-api="props.loadListApi"
@@ -26,7 +27,7 @@
     >
       <template #item="{ item }">
         <van-radio :name="item.id" :disabled="item.disabled">
-          <slot name="label">{{ item.name }}</slot>
+          <slot name="label" :item="item">{{ item.name }}</slot>
         </van-radio>
       </template>
     </CrmList>
@@ -39,11 +40,12 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
 
   const props = defineProps<{
+    data?: Record<string, any>[];
     keyword?: string;
     multiple?: boolean;
     listParams?: Record<string, any>;
     noPageNation?: boolean;
-    loadListApi: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
+    loadListApi?: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
@@ -52,6 +54,9 @@
   });
   const selectedRows = defineModel<Record<string, any>[]>('selectedRows', {
     default: [],
+  });
+  const loading = defineModel<boolean>('loading', {
+    default: false,
   });
 
   const list = ref<Record<string, any>[]>([]);
@@ -86,6 +91,17 @@
       loadList(true);
     }
   });
+
+  watch(
+    () => props.data,
+    (newData) => {
+      list.value = newData || [];
+      nextTick(() => {
+        loadList(true);
+      });
+    },
+    { immediate: true }
+  );
 
   defineExpose({
     loadList,

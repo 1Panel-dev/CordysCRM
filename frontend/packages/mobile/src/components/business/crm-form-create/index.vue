@@ -8,6 +8,7 @@
             v-if="item.show !== false"
             v-model:value="formDetail[item.id]"
             :field-config="item"
+            :need-init-detail="route.query.needInitDetail === 'Y'"
             @change="($event: any) => handleFieldChange($event, item)"
           />
         </template>
@@ -125,6 +126,16 @@
     }
     if (type === FieldTypeEnum.SERIAL_NUMBER) {
       return CrmFormCreateComponents.advancedComponents.serialNumber;
+    }
+    if (
+      [
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      ].includes(type)
+    ) {
+      return CrmFormCreateComponents.basicComponents.memberSelect;
     }
   }
 

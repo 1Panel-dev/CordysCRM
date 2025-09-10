@@ -2,6 +2,9 @@
   <div class="h-full overflow-auto" :class="props.class">
     <van-pull-refresh v-model="refreshing" @refresh="handleRefresh">
       <van-empty v-if="list.length === 0 && !loading && !error" :description="t('common.noData')" />
+      <van-loading v-if="loading && !refreshing" size="24px" class="w-full" vertical>
+        {{ t('common.loading') }}
+      </van-loading>
       <van-list
         v-model:loading="loading"
         v-model:error="error"
@@ -43,12 +46,14 @@
 
   const { t } = useI18n();
 
-  const loading = ref(false);
+  const loading = defineModel<boolean>('loading', {
+    default: false,
+  });
   const error = ref(false);
   const refreshing = ref(false);
   const finished = ref(false);
-  const list = defineModel<any[]>({
-    default: () => [],
+  const list = defineModel<any[]>('modelValue', {
+    default: [],
   });
   const currentPage = ref(0);
 
@@ -113,12 +118,15 @@
 
   function filterListByKeyword(keywordKeys: string | string[]) {
     if (!props.keyword?.trim()?.length) {
-      loadList(true);
+      if (props.loadListApi) {
+        loadList(true);
+      } else {
+        list.value = originData.value;
+      }
       return;
     }
     const lowerCaseVal = props.keyword.trim()?.toLowerCase();
     const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
-
     list.value = originData.value.filter((item) => {
       return keys.some((key) => item[key]?.toString().toLowerCase().includes(lowerCaseVal));
     });
