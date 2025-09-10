@@ -12,7 +12,7 @@
       <div class="mb-[16px] flex items-center justify-between gap-[12px]">
         <CrmSearchInput
           v-model:value="keyword"
-          class="!w-full"
+          class="crm-duplicateCheck-search !w-full"
           auto-search
           :debounce-time="500"
           :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
@@ -360,6 +360,9 @@
       if (!val) {
         keyword.value = '';
       }
+      nextTick(() => {
+        (document.querySelector('.crm-duplicateCheck-search input') as HTMLInputElement)?.focus();
+      });
     }
   );
 
