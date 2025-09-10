@@ -8,10 +8,12 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.RoleDataScopeDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.response.handler.RestControllerExceptionHandler;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.*;
@@ -136,7 +138,8 @@ public class DataSourceService {
 
             return SQLBotDTO.builder().code(0).data(List.of(dataSourceDTO)).build();
         } catch (Exception e) {
-            return SQLBotDTO.builder().code(1).msg("获取数据库结构失败: " + e.getMessage()).build();
+            LogUtils.error(e);
+            return SQLBotDTO.builder().code(1).message("获取数据库结构失败: " + RestControllerExceptionHandler.getStackTraceAsString(e)).build();
         }
     }
 
@@ -252,7 +255,7 @@ public class DataSourceService {
             currentUserDeptIds = dataScopeService.getDeptIdsWithChild(tree, Set.of(organizationUser.getDepartmentId()));
         }
 
-        Map<String, List<String>> customDeptRoleDeptMap = Map.of();
+        Map<String, List<String>> customDeptRoleDeptMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customDeptRoles)) {
             // 查看指定部门及其子部门数据
             List<String> customDeptRolesIds = customDeptRoles.stream()
