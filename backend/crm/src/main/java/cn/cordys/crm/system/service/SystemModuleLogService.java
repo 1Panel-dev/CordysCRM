@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.ModuleField;
@@ -23,8 +24,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS.forEach(differ -> {
-            if (Strings.CS.equals("linkFields", differ.getColumn())) {
-                differ.setColumnName(Translator.get("log." + differ.getColumn()));
+            if (isLinkFormKey(differ.getColumn())) {
+                differ.setColumnName(Translator.get("log." + differ.getColumn() + ".link"));
                 handleLinkFieldsLogDetail(differ);
             }
             if (Strings.CS.equals("module.switch", differ.getColumn())) {
@@ -32,7 +33,31 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setOldValueName(differ.getOldValue());
                 differ.setNewValueName(differ.getNewValue());
             }
+            if (Strings.CS.equals("fields", differ.getColumn())) {
+                differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                handleFieldsLogDetail(differ);
+            }
         });
+    }
+
+    /**
+     * 待定: 目前就只粗略展示字段的变更
+     * @param differ json-difference dto
+     */
+    @SuppressWarnings("unchecked")
+    private void handleFieldsLogDetail(JsonDifferenceDTO differ) {
+        List<?> oldFields = parseFieldList(differ.getOldValue());
+        List<?> newFields = parseFieldList(differ.getNewValue());
+        List<String> oldNames = oldFields.stream().map(field -> {
+            Map<String, Object> fieldMap = (Map<String, Object>) field;
+            return fieldMap.get("name").toString();
+        }).toList();
+        List<String> newNames = newFields.stream().map(field -> {
+            Map<String, Object> fieldMap = (Map<String, Object>) field;
+            return fieldMap.get("name").toString();
+        }).toList();
+        differ.setOldValueName(oldNames);
+        differ.setNewValueName(newNames);
     }
 
     private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
@@ -85,10 +110,26 @@ public class SystemModuleLogService extends BaseModuleLogService {
         return result;
     }
 
+    private List<?> parseFieldList(Object value) {
+        if (value instanceof List<?> list) {
+            return list;
+        }
+        return Collections.emptyList();
+    }
+
     private List<String> toNamePairs(Map<String, String> pairs, Map<String, String> fieldMap) {
         return pairs.entrySet().stream()
                 .map(e -> fieldMap.getOrDefault(e.getKey(), e.getKey())
                         + "-" + fieldMap.getOrDefault(e.getValue(), e.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isLinkFormKey(String key) {
+        for (FormKey formKey : FormKey.values()) {
+            if (formKey.getKey().equals(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
