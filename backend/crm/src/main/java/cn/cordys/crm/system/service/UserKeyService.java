@@ -10,13 +10,13 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.HttpMethodConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.UserKey;
 import cn.cordys.crm.system.dto.request.UserKeyUpdateRequest;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -61,7 +61,7 @@ public class UserKeyService {
         UserKey userKey = generateUserKey(userId);
         userKeyMapper.insert(userKey);
 
-        logApiKeyAction(userKey, LogType.ADD);
+        logApiKeyAction(userKey);
     }
 
     /**
@@ -136,8 +136,8 @@ public class UserKeyService {
         userKey.setId(IDGenerator.nextStr());
         userKey.setCreateUser(userId);
         userKey.setEnable(true);
-        userKey.setAccessKey(RandomStringUtils.secure().nextAlphabetic(16));
-        userKey.setSecretKey(RandomStringUtils.secure().nextAlphabetic(16));
+        userKey.setAccessKey(CodingUtils.generateAK());
+        userKey.setSecretKey(CodingUtils.generateSecretKey());
         userKey.setCreateTime(System.currentTimeMillis());
         userKey.setForever(true);
         return userKey;
@@ -154,10 +154,10 @@ public class UserKeyService {
     /**
      * 记录 API 密钥操作日志
      */
-    private void logApiKeyAction(UserKey userKey, String actionType) {
+    private void logApiKeyAction(UserKey userKey) {
         LogDTO logDTO = LogDTOBuilder.builder()
                 .organizationId(LogConstants.SYSTEM)
-                .type(actionType)
+                .type(LogType.ADD)
                 .module(LogModule.PERSONAL_INFORMATION_APIKEY)
                 .method(HttpMethodConstants.GET.name())
                 .path("/user/api/key/add")
