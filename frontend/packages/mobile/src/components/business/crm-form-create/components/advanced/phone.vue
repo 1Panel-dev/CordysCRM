@@ -3,13 +3,13 @@
     <template #input>
       <div class="flex items-baseline">
         <div class="mr-[8px] flex items-center text-[var(--primary-8)]" @click="clickAreaCode">
-          {{ areaCode }}
+          <span class="break-keep">{{ areaCode?.length ? areaCode : t('formCreate.phone.area.other') }}</span>
           <van-icon name="arrow-down" class="ml-[4px]" />
         </div>
         <van-field
           v-model="phoneNumber"
           class="phone-number !p-0"
-          type="digit"
+          type="tel"
           :disabled="props.fieldConfig.editable === false"
           :maxlength="maxLength"
           :path="props.fieldConfig.id"
@@ -32,14 +32,17 @@
 </template>
 
 <script setup lang="ts">
-  import { FieldRule } from 'vant';
+  import { FieldRule, FieldRuleValidator } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getPatternByAreaCode } from '@lib/shared/method/validate';
 
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    id: string;
+    originFormDetail?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
@@ -55,7 +58,7 @@
   const phoneNumber = ref('');
 
   function updateValue(area: string, phone: string) {
-    const fullNumber = `(${area})${phone}`;
+    const fullNumber = !area.length ? phone : `(${area})${phone}`;
     emit('change', fullNumber);
     value.value = fullNumber;
   }
@@ -66,6 +69,7 @@
     { text: `${t('formCreate.phone.area.hongKong')} +852`, value: '+852', length: 8 },
     { text: `${t('formCreate.phone.area.macau')} +853`, value: '+853', length: 8 },
     { text: `${t('formCreate.phone.area.taiwan')} +886`, value: '+886', length: 10 },
+    { text: t('formCreate.phone.area.other'), value: '', length: undefined },
   ];
 
   const showPicker = ref(false);
@@ -79,29 +83,40 @@
   const onConfirm = ({ selectedValues }: any) => {
     showPicker.value = false;
     pickerValue.value = selectedValues;
+    areaCode.value = selectedValues[0] as string;
+    if (areaCode.value?.length) {
+      phoneNumber.value = phoneNumber.value.replace(/\D+/g, ''); // 清洗数字
+    }
     updateValue(selectedValues[0], phoneNumber.value);
   };
 
   const maxLength = computed(() => {
-    return areaCodeOptions.find((item) => item.value === areaCode.value)?.length || 11;
+    return areaCodeOptions.find((item) => item.value === areaCode.value)?.length || undefined;
   });
   const required = computed(() => props.fieldConfig.rules.some((rule) => rule.key === 'required'));
 
   const mergedRules = computed<FieldRule[]>(() => {
     const rawRules = (props.fieldConfig.rules as FieldRule[]) || [];
-    const lengthRule: FieldRule = {
+    const formatRule: FieldRule = {
       trigger: ['onBlur', 'onChange'],
-      message: t('formCreate.phone.lengthValidator', { count: maxLength.value }),
-      validator: (val: string, _rule: FieldRule) => {
-        if ((!required.value && !phoneNumber.value) || !val) return true;
-        return phoneNumber.value.length === maxLength.value;
-      },
+      validator: ((val: string) => {
+        if ((!required.value && !phoneNumber.value) || !val || !areaCode.value.length) return Promise.resolve();
+        const message = [];
+        if (phoneNumber.value.length !== maxLength.value) {
+          message.push(t('formCreate.phone.lengthValidator', { count: maxLength.value }));
+        }
+        const pattern = getPatternByAreaCode(areaCode.value);
+        if (!pattern?.test(phoneNumber.value)) {
+          message.push(t('formCreate.phone.formatValidator'));
+        }
+        return !message.length ? true : message.join('；');
+      }) as FieldRuleValidator,
     };
-    return [...rawRules, lengthRule];
+    return [...rawRules, formatRule];
   });
 
   watch(
-    () => value.value,
+    () => props.originFormDetail?.[props.id],
     (val) => {
       if (!val) {
         phoneNumber.value = '';
@@ -118,10 +133,14 @@
           phoneNumber.value = number || '';
         }
       }
-      // 处理纯数字格式 (默认为中国+86)
+      // 处理纯数字格式 符合中国的就回显中国，否则回显其他
       else {
         phoneNumber.value = val;
-        areaCode.value = '+86';
+        if (getPatternByAreaCode('+86')?.test(val)) {
+          areaCode.value = '+86';
+        } else {
+          areaCode.value = '';
+        }
         updateValue(areaCode.value, phoneNumber.value);
       }
     },

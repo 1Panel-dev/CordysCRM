@@ -219,6 +219,10 @@
             // 处理数据源字段，单选传单个值
             result[item.id] = result[item.id]?.[0];
           }
+          if (item.type === FieldTypeEnum.PHONE) {
+            // 去空格
+            result[item.id] = result[item.id].replace(/[\s\uFEFF\xA0]+/g, '');
+          }
         });
         saveForm(result, isContinue, (_isContinue, res) => {
           emit('saved', isContinue, res);

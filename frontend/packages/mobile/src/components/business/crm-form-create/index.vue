@@ -6,8 +6,10 @@
           <component
             :is="getItemComponent(item.type)"
             v-if="item.show !== false"
+            :id="item.id"
             v-model:value="formDetail[item.id]"
             :field-config="item"
+            :origin-form-detail="originFormDetail"
             :need-init-detail="route.query.needInitDetail === 'Y'"
             @change="($event: any) => handleFieldChange($event, item)"
           />
@@ -157,6 +159,10 @@
           // 处理数据源字段，单选传单个值
           result[item.id] = result[item.id]?.[0];
         }
+        if (item.type === FieldTypeEnum.PHONE) {
+          // 去空格
+          result[item.id] = result[item.id].replace(/[\s\uFEFF\xA0]+/g, '');
+        }
       });
       saveForm(result, () => router.back());
     } catch (error) {
@@ -201,7 +207,10 @@
       // 唯一性校验
       staticRule.trigger = 'onBlur';
       staticRule.validator = async (value: string) => {
-        if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+        if (
+          !value.length ||
+          formDetail.value[item.id].replace(/[\s\uFEFF\xA0]+/g, '') === originFormDetail.value[item.id]
+        ) {
           return true;
         }
 

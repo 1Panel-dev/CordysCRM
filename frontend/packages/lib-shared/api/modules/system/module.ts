@@ -252,7 +252,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function checkRepeat(data: CheckRepeatParams) {
-    return CDR.post<CheckRepeatInfo>({ url: CheckRepeatUrl, data });
+    return CDR.post<CheckRepeatInfo>({ url: CheckRepeatUrl, data }, { ignoreCancelToken: true });
   }
 
   function uploadTempFile(file: File | null) {

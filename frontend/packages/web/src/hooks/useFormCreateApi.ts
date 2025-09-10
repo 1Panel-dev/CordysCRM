@@ -957,7 +957,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 重复校验
           if (staticRule.key === FieldRuleEnum.UNIQUE) {
             staticRule.validator = async (_rule: any, value: string) => {
-              if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+              if (
+                !value.length ||
+                formDetail.value[item.id].replace(/[\s\uFEFF\xA0]+/g, '') === originFormDetail.value[item.id]
+              ) {
                 return Promise.resolve();
               }
 
