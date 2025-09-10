@@ -16,8 +16,7 @@ import java.util.Objects;
  */
 public class ApiKeyHandler {
 
-    public static final String API_ACCESS_KEY = "X-Access-Key"; // API 密钥字段
-    public static final String API_SIGNATURE = "Signature";  // API 签名字段
+    public static final String AUTHORIZATION = "Authorization"; // 授权字段
 
     /**
      * 根据请求中的 API 密钥和签名获取用户 ID。
@@ -29,7 +28,25 @@ public class ApiKeyHandler {
         if (request == null) {
             return null;
         }
-        return getUser(request.getHeader(API_ACCESS_KEY), request.getHeader(API_SIGNATURE));
+
+        String authorization = request.getHeader(AUTHORIZATION);
+        if (StringUtils.isBlank(authorization)) {
+            return null;
+        }
+
+        String[] authParts = authorization.split(":", 2);
+        if (authParts.length < 2) {
+            return null;
+        }
+
+        String accessKey = authParts[0];
+        String signature = authParts[1];
+
+        if (StringUtils.isBlank(accessKey) || StringUtils.isBlank(signature)) {
+            return null;
+        }
+
+        return getUser(accessKey, signature);
     }
 
     /**
@@ -42,7 +59,8 @@ public class ApiKeyHandler {
         if (request == null) {
             return false;
         }
-        return !StringUtils.isBlank(request.getHeader(API_ACCESS_KEY)) && !StringUtils.isBlank(request.getHeader(API_SIGNATURE));
+        String authorization = request.getHeader(AUTHORIZATION);
+        return !StringUtils.isBlank(authorization) && authorization.split(":").length >= 2;
     }
 
     /**
