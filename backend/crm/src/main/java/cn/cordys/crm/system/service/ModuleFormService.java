@@ -725,8 +725,16 @@ public class ModuleFormService {
 	 * @param targetFieldVals 目标自定义字段值集合
 	 * @throws Exception 入值异常
 	 */
+	@SuppressWarnings("unchecked")
 	private void putTargetFieldVal(BaseField targetField, TransformSourceApplyDTO putVal, Class<?> targetClass, Object target, List<BaseModuleFieldValue> targetFieldVals) throws Exception {
-		Object val = (targetField instanceof InputField || targetField instanceof TextAreaField) ? putVal.getDisplayVal() : putVal.getActualVal();
+		Object val = putVal.getActualVal();
+		if (targetField instanceof InputField || targetField instanceof TextAreaField) {
+			Object displayVal = putVal.getDisplayVal();
+			if (displayVal == null) {
+				return;
+			}
+			val = displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
+		}
 		if (targetField instanceof HasOption targetFieldWithOption) {
 			val = text2Val(targetFieldWithOption.getOptions(), putVal.getDisplayVal());
 		}
