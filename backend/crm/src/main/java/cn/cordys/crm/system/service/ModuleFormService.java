@@ -582,7 +582,7 @@ public class ModuleFormService {
 	public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId, String sourceFormKey) throws Exception {
 		FormLinkFill.FormLinkFillBuilder<T> fillBuilder = FormLinkFill.builder();
 		Map<String, List<LinkField>> linkProp = targetFormConfig.getFormProp().getLinkProp();
-		if (linkProp == null) {
+		if (linkProp == null || CollectionUtils.isEmpty(linkProp.get(sourceFormKey))) {
 			return fillBuilder.entity(target).build();
 		}
 

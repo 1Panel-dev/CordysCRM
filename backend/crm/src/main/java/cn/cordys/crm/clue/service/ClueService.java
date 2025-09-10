@@ -750,6 +750,7 @@ public class ClueService {
 
         // 是否转换商机
         if (request.getOppCreated()) {
+            transformCustomer.setName(request.getOppName());
             Opportunity transformOpportunity = generateOpportunityByLinkForm(clue, transformCsAssociateDTO.getContactId(), transformCustomer, currentUser, orgId);
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
@@ -807,7 +808,8 @@ public class ClueService {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
                     customerFormConfig, orgId, FormKey.CLUE.getKey());
         } catch (Exception e) {
-            LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
+            LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
+            throw new GenericException(Translator.get("transform.customer.error"));
         }
         // 部分内置字段未配置联动, 取线索值即可
         addRequest.setName(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getName()) ?
@@ -834,7 +836,8 @@ public class ClueService {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
                     opportunityFormConfig, orgId, FormKey.CLUE.getKey());
         } catch (Exception e) {
-            LogUtils.error("try fill form value by link prop error: {}", e.getMessage());
+            LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
+            throw new GenericException(Translator.get("transform.opportunity.error"));
         }
         OpportunityAddRequest addRequest = new OpportunityAddRequest();
         if (opportunityLinkFillDTO.getEntity() != null) {
