@@ -144,6 +144,9 @@
         if (areaCodeOptions.some((opt) => opt.value === code)) {
           areaCode.value = code;
           phoneNumber.value = number || '';
+        } else {
+          areaCode.value = '';
+          phoneNumber.value = val;
         }
       }
       // 处理纯数字格式 符合中国的就回显中国，否则回显其他
