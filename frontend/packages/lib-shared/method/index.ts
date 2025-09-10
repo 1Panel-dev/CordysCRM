@@ -593,29 +593,58 @@ export function isWeComBrowser() {
 
 /**
  * 国际单位数字缩写
- * @param number 目标值
- * return: 数字+单位
+ * @param amount 金额数字
+ * @param decimals 保留小数位数
+ * @param currency 货币单位
  */
-export function abbreviateNumber(num: number) {
-  const format = (value: number, unit: string) => ({
-    value: `${Math.floor(value * 1000) / 1000}`,
-    unit,
-  });
+export function abbreviateNumber(count: number, currency: string, decimals = 2) {
+  if (Number.isNaN(count)) {
+    return { value: '-', unit: '', full: '-' };
+  }
 
-  if (num >= 100000000) {
-    return format(num / 100000000, 'B');
-  }
-  if (num >= 1000000) {
-    return format(num / 1000000, 'M');
-  }
-  if (num >= 10000) {
-    return format(num / 10000, 'W');
-  }
-  if (num >= 1000) {
-    return format(num / 1000, 'K');
-  }
-  return {
-    value: num.toString(),
-    unit: '',
+  const locale = localStorage.getItem('CRM-locale') || 'zh-CN';
+  const truncateNumber = (num: number) => {
+    const factor = 10 ** decimals;
+    return Math.floor(num * factor) / factor;
   };
+
+  const full = `${count.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })} (${currency})`;
+
+  let value = '';
+  let unit = '';
+
+  if (locale === 'zh-CN') {
+    if (count >= 1e8) {
+      value = truncateNumber(count / 1e8).toString();
+      unit = '亿';
+    } else if (count >= 1e4) {
+      value = truncateNumber(count / 1e4).toString();
+      unit = '万';
+    } else if (count >= 1e3) {
+      value = truncateNumber(count / 1e3).toString();
+      unit = '千';
+    } else {
+      value = truncateNumber(count).toString();
+      unit = '';
+    }
+  } else if (locale === 'en-US') {
+    if (count >= 1e9) {
+      value = truncateNumber(count / 1e9).toString();
+      unit = 'B';
+    } else if (count >= 1e6) {
+      value = truncateNumber(count / 1e6).toString();
+      unit = 'M';
+    } else if (count >= 1e3) {
+      value = truncateNumber(count / 1e3).toString();
+      unit = 'K';
+    } else {
+      value = truncateNumber(count).toString();
+      unit = '';
+    }
+  }
+
+  return { value, unit, full };
 }

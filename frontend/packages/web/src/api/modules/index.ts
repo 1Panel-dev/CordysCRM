@@ -284,6 +284,12 @@ export const {
   syncDE,
   getDEOrgList,
   getThirdPartyConfig,
+  updateApiKey,
+  getApiKeyList,
+  enableApiKey,
+  disableApiKey,
+  deleteApiKey,
+  addApiKey,
 } = businessApi;
 
 export const {

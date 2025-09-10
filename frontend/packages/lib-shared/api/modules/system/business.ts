@@ -1,9 +1,14 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddApiKeyUrl,
   CancelCenterExportUrl,
   CreateAuthUrl,
+  DeleteApiKeyUrl,
   DeleteAuthUrl,
+  DisableApiKeyUrl,
+  EnableApiKeyUrl,
   ExportCenterDownloadUrl,
+  GetApiKeyListUrl,
   GetAuthDetailUrl,
   GetAuthsUrl,
   GetConfigEmailUrl,
@@ -20,6 +25,7 @@ import {
   SyncDEUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
+  UpdateApiKeyUrl,
   UpdateAuthNameUrl,
   UpdateAuthStatusUrl,
   UpdateAuthUrl,
@@ -32,6 +38,7 @@ import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import type { CommonList } from '@lib/shared/models/common';
 import { CustomerFollowPlanTableParams, FollowDetailItem } from '@lib/shared/models/customer';
 import type {
+  ApiKey,
   Auth,
   AuthItem,
   AuthTableQueryParams,
@@ -39,6 +46,7 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
   DEOrgItem,
+  UpdateApiKeyParams,
 } from '@lib/shared/models/system/business';
 import {
   ExportCenterItem,
@@ -189,6 +197,37 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${CancelCenterExportUrl}/${taskId}` });
   }
 
+  // 个人中心 ApiKey
+  // 更新ApiKey
+  function updateApiKey(data: UpdateApiKeyParams) {
+    return CDR.post({ url: UpdateApiKeyUrl, data });
+  }
+
+  // 获取ApiKey列表
+  function getApiKeyList() {
+    return CDR.get<ApiKey[]>({ url: GetApiKeyListUrl });
+  }
+
+  // 开启ApiKey
+  function enableApiKey(id: string) {
+    return CDR.get({ url: EnableApiKeyUrl, params: id });
+  }
+
+  // 关闭ApiKey
+  function disableApiKey(id: string) {
+    return CDR.get({ url: DisableApiKeyUrl, params: id });
+  }
+
+  // 删除ApiKey
+  function deleteApiKey(id: string) {
+    return CDR.get({ url: DeleteApiKeyUrl, params: id });
+  }
+
+  // 新增ApiKey
+  function addApiKey() {
+    return CDR.get({ url: AddApiKeyUrl });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -217,5 +256,11 @@ export default function useProductApi(CDR: CordysAxios) {
     syncDE,
     getDEOrgList,
     getThirdPartyConfig,
+    updateApiKey,
+    getApiKeyList,
+    enableApiKey,
+    disableApiKey,
+    deleteApiKey,
+    addApiKey,
   };
 }

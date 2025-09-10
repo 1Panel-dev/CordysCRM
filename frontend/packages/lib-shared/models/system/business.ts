@@ -212,3 +212,10 @@ export interface DefaultTimeForm {
   time?: number;
   desc: string;
 }
+
+export interface UpdateApiKeyParams {
+  id: string;
+  forever?: boolean;
+  expireTime?: number;
+  description: string;
+}

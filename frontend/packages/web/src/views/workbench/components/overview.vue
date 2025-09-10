@@ -22,17 +22,19 @@
       <div class="right-cell">
         <div v-for="(dim, i) of dateKey" :key="`iconicon_facial_clue-${i}`" class="cell">
           <div class="cell-label">{{ t('workbench.dataOverview.newCreateTitle') }}</div>
-          <div
-            :class="`cell-value count ${
-              hasLeadPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
-            }`"
-            @click="goDetail(dim, defaultLeadData[dim])"
-          >
-            {{ abbreviateNumber(defaultLeadData[dim].value).value }}
-            <span class="unit">
-              {{ abbreviateNumber(defaultLeadData[dim].value).unit }}
-            </span>
-          </div>
+          <countPopover :value="defaultLeadData[dim].value" :unit="defaultLeadData[dim].unit">
+            <div
+              :class="`cell-value count ${
+                hasLeadPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+              }`"
+              @click="goDetail(dim, defaultLeadData[dim])"
+            >
+              {{ abbreviateNumber(defaultLeadData[dim].value, defaultLeadData[dim].unit).value }}
+              <span class="unit">
+                {{ abbreviateNumber(defaultLeadData[dim].value, defaultLeadData[dim].unit).unit }}
+              </span>
+            </div>
+          </countPopover>
         </div>
       </div>
       <categoryCard
@@ -49,13 +51,17 @@
             class="flex-1"
           >
             <div class="cell-label">{{ item.title }}</div>
-            <div
-              :class="`count ${hasOptPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'}`"
-              @click="goDetail(dim, item)"
-            >
-              {{ abbreviateNumber(item.value).value }}
-              <span class="unit">{{ abbreviateNumber(item.value).unit }}</span>
-            </div>
+            <countPopover :value="item.value" :unit="item.unit">
+              <div
+                :class="`count ${
+                  hasOptPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+                }`"
+                @click="goDetail(dim, item)"
+              >
+                {{ abbreviateNumber(item.value, item.unit).value }}
+                <span class="unit">{{ abbreviateNumber(item.value, item.unit).unit }}</span>
+              </div>
+            </countPopover>
           </div>
         </div>
       </div>
@@ -69,15 +75,17 @@
         <div v-for="(dim, index) of dateKey" :key="`iconicon_facial_deal_win-${index}`" class="cell">
           <div v-for="item in defaultWinOrderData[dim]" :key="`iconicon_facial_deal_win-${item.title}`" class="flex-1">
             <div class="cell-label">{{ item?.title }}</div>
-            <div
-              :class="`count ${
-                hasOptPermission ? ' cursor-pointer  text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
-              }`"
-              @click="goDetail(dim, item)"
-            >
-              {{ abbreviateNumber(item.value).value }}
-              <span class="unit">{{ abbreviateNumber(item.value).unit }}</span>
-            </div>
+            <countPopover :value="item.value" :unit="item.unit">
+              <div
+                :class="`count ${
+                  hasOptPermission ? ' cursor-pointer  text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+                }`"
+                @click="goDetail(dim, item)"
+              >
+                {{ abbreviateNumber(item.value, item.unit).value }}
+                <span class="unit">{{ abbreviateNumber(item.value, item.unit).unit }}</span>
+              </div>
+            </countPopover>
             <div class="analytics-last-time">
               <div class="text-[var(--text-n2)]">{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
               <CrmIcon
@@ -115,6 +123,7 @@
   } from '@lib/shared/models/home';
 
   import categoryCard from './categoryCard.vue';
+  import countPopover from './countPopover.vue';
 
   import { getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -161,6 +170,7 @@
     priorPeriodCompareRate: hasLeadPermission.value ? 0 : '-',
     routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
     hasPermission: hasLeadPermission.value,
+    unit: t('workbench.dataOverview.countUnit'),
   });
 
   const defaultOpportunityData = ref<Record<string, Record<string, any>>>({});
@@ -172,6 +182,7 @@
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'FOLLOWING',
       hasPermission: hasOptPermission.value,
+      unit: t('workbench.dataOverview.countUnit'),
     },
     newOpportunityAmount: {
       title: t('workbench.dataOverview.amount'),
@@ -180,6 +191,7 @@
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'FOLLOWING',
       hasPermission: hasOptPermission.value,
+      unit: t('workbench.dataOverview.amountUnit'),
     },
   });
 
@@ -192,6 +204,7 @@
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'SUCCESS',
       hasPermission: hasOptPermission.value,
+      unit: t('workbench.dataOverview.countUnit'),
     },
     successOpportunityAmount: {
       title: t('workbench.dataOverview.amount'),
@@ -200,6 +213,7 @@
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'SUCCESS',
       hasPermission: hasOptPermission.value,
+      unit: t('workbench.dataOverview.amountUnit'),
     },
   });
 

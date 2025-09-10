@@ -53,4 +53,6 @@ export default {
   'workbench.dataOverview.amount': '金额(元)',
   'workbench.dataOverview.winOrderUnit': '赢单(单)',
   'workbench.dataOverview.comparedSamePeriod': '较同期',
+  'workbench.dataOverview.countUnit': '单',
+  'workbench.dataOverview.amountUnit': '元',
 };

@@ -53,4 +53,6 @@ export default {
   'workbench.dataOverview.amount': 'Amount',
   'workbench.dataOverview.winOrderUnit': 'Win orders',
   'workbench.dataOverview.comparedSamePeriod': 'Compared period',
+  'workbench.dataOverview.countUnit': 'ORDERS',
+  'workbench.dataOverview.amountUnit': 'RMB',
 };

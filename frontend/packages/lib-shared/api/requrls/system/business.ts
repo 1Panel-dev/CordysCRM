@@ -31,3 +31,11 @@ export const GetPersonalFollowUrl = '/personal/center/follow/plan/list'; // 用�
 export const GetExportCenterListUrl = '/export/center/list'; // 查询导出任务列表
 export const ExportCenterDownloadUrl = '/export/center/download'; // 下载
 export const CancelCenterExportUrl = '/export/center/cancel'; // 取消导出
+
+// 个人中心ApiKey
+export const UpdateApiKeyUrl = '/user/api/key/update'; // 更新 ApiKey
+export const GetApiKeyListUrl = '/user/api/key/list'; // 获取 ApiKey 列表
+export const EnableApiKeyUrl = '/user/api/key/enable'; // 开启 ApiKey
+export const DisableApiKeyUrl = '/user/api/key/disable'; // 关闭 ApiKey
+export const DeleteApiKeyUrl = '/user/api/key/delete'; // 删除 ApiKey
+export const AddApiKeyUrl = '/user/api/key/add'; // 新增 ApiKey

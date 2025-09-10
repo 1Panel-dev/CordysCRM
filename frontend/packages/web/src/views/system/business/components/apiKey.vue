@@ -3,7 +3,7 @@
     <div class="flex h-full flex-col gap-[16px]">
       <div class="flex items-center">
         <div class="font-medium text-[var(--text-n1)]">{{ t('system.personal.apiKey') }}</div>
-        <n-tooltip trigger="hover" placement="right">
+        <n-tooltip placement="right">
           <template #trigger>
             <CrmIcon
               type="iconicon_help_circle"
@@ -14,11 +14,11 @@
           {{ t('system.personal.apiKeyTip') }}
         </n-tooltip>
       </div>
-      <n-tooltip placement="right" :disabled="apiKeyList.length < 5">
-        <!-- TODO 权限 v-permission="['SYSTEM_PERSONAL_API_KEY:READ+ADD']" -->
-        <template #trigger>
-          <div>
+      <div class="flex items-center">
+        <n-tooltip placement="right" :disabled="apiKeyList.length < 5">
+          <template #trigger>
             <n-button
+              v-permission="['PERSONAL_API_KEY:ADD']"
               type="primary"
               ghost
               class="n-btn-outline-primary"
@@ -28,10 +28,11 @@
             >
               {{ t('common.new') }}
             </n-button>
-          </div>
-        </template>
-        {{ t('system.personal.maxTip') }}
-      </n-tooltip>
+          </template>
+          {{ t('system.personal.maxTip') }}
+        </n-tooltip>
+      </div>
+
       <n-spin class="h-full w-full" :show="loading">
         <div class="api-list-content">
           <div v-for="item of apiKeyList" :key="item.id" class="api-item">
@@ -74,7 +75,12 @@
                   </template>
                   {{ item.description }}
                 </n-tooltip>
-                <CrmIcon type="iconicon_edit1" class="edit-icon" @click="handleEditClick(item)" />
+                <CrmIcon
+                  v-permission="['PERSONAL_API_KEY:UPDATE']"
+                  type="iconicon_edit1"
+                  class="edit-icon"
+                  @click="handleEditClick(item)"
+                />
               </div>
               <div class="api-item-label">{{ t('common.createTime') }}</div>
               <div class="api-item-value">
@@ -93,8 +99,8 @@
             </div>
             <div class="flex items-center justify-between px-[16px]">
               <div class="flex items-center gap-[8px]">
-                <!-- v-permission="['SY STEM_PERSONAL_API_KEY:READ+UPDATE']" -->
                 <n-button
+                  v-permission="['PERSONAL_API_KEY:UPDATE']"
                   size="small"
                   type="default"
                   class="outline--secondary mr-[8px] px-[8px]"
@@ -102,13 +108,19 @@
                 >
                   {{ t('system.personal.validTime') }}
                 </n-button>
-                <!--  v-permission="['SYSTEM_PERSONAL_API_KEY:READ+DELETE']" -->
-                <n-button type="error" size="small" ghost class="n-btn-outline-error" @click="deleteApiKey(item)">
+                <n-button
+                  v-permission="['PERSONAL_API_KEY:DELETE']"
+                  type="error"
+                  size="small"
+                  ghost
+                  class="n-btn-outline-error"
+                  @click="handleDeleteApiKey(item)"
+                >
                   {{ t('common.delete') }}
                 </n-button>
               </div>
-              <!--  v-permission="['SYSTEM_PERSONAL_API_KEY:READ+UPDATE']" -->
               <n-switch
+                :disabled="!hasAnyPermission(['PERSONAL_API_KEY:UPDATE'])"
                 :value="item.enable"
                 size="small"
                 :rubber-band="false"
@@ -150,7 +162,7 @@
         </n-form-item>
         <n-form-item path="desc" :label="t('system.personal.accessKeyDesc')">
           <n-input
-            v-model="timeForm.desc"
+            v-model:value="timeForm.desc"
             type="textarea"
             :placeholder="t('system.personal.accessKeyDescPlaceholder')"
             :maxlength="1000"
@@ -162,7 +174,6 @@
 </template>
 
 <script setup lang="ts">
-  // TODO xxw 等待联调
   import { ref } from 'vue';
   import { useClipboard } from '@vueuse/core';
   import {
@@ -188,6 +199,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
+  import { addApiKey, deleteApiKey, disableApiKey, enableApiKey, getApiKeyList, updateApiKey } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -199,19 +211,20 @@
 
   const { t } = useI18n();
 
+  const hasCratePermission = hasAnyPermission(['PERSONAL_API_KEY:ADD']);
   const apiKeyList = ref<ApiKeyItem[]>([]);
   const loading = ref(false);
 
   async function initApiKeys() {
     try {
       loading.value = true;
-      // const res = await getAPIKEYList();
-      // apiKeyList.value = res.map((item) => ({
-      //   ...item,
-      //   isExpire: item.forever ? false : item.expireTime < Date.now(),
-      //   desensitization: true,
-      //   showDescInput: false,
-      // }));
+      const res = await getApiKeyList();
+      apiKeyList.value = res.map((item) => ({
+        ...item,
+        isExpire: item.forever ? false : item.expireTime < Date.now(),
+        desensitization: true,
+        showDescInput: false,
+      }));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -224,7 +237,7 @@
   async function newApiKey() {
     try {
       newLoading.value = true;
-      // await addAPIKEY();
+      await addApiKey();
       Message.success(t('common.newSuccess'));
       initApiKeys();
     } catch (error) {
@@ -251,10 +264,10 @@
   async function handleDescChange(item: ApiKeyItem) {
     try {
       loading.value = true;
-      // await updateAPIKEY({
-      //   id: item.id || '',
-      //   description: item.description,
-      // });
+      await updateApiKey({
+        id: item.id || '',
+        description: item.description,
+      });
       item.showDescInput = false;
       Message.success(t('common.updateSuccess'));
     } catch (error) {
@@ -292,7 +305,7 @@
     timeModalVisible.value = true;
   }
 
-  function deleteApiKey(item: ApiKeyItem) {
+  function handleDeleteApiKey(item: ApiKeyItem) {
     openModal({
       type: 'error',
       title: t('system.personal.confirmDelete'),
@@ -301,7 +314,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // await deleteAPIKEY(item.id);
+          await deleteApiKey(item.id);
           Message.success(t('common.deleteSuccess'));
           initApiKeys();
         } catch (error) {
@@ -322,7 +335,7 @@
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
           try {
-            // await disableAPIKEY(item.id);
+            await disableApiKey(item.id);
             Message.success(t('common.closeSuccess'));
             item.enable = false;
           } catch (error) {
@@ -333,7 +346,7 @@
       });
     } else {
       try {
-        // await enableAPIKEY(item.id);
+        await enableApiKey(item.id);
         Message.success(t('common.enableSuccess'));
         item.enable = true;
       } catch (error) {
@@ -353,12 +366,12 @@
     timeFormRef.value?.validate(async (errors) => {
       if (!errors) {
         try {
-          // await updateAPIKEY({
-          //   id: activeKey.value?.id || '',
-          //   description: timeForm.value.desc,
-          //   expireTime: timeForm.value.activeTimeType === 'forever' ? 0 : dayjs(timeForm.value.time).valueOf(),
-          //   forever: timeForm.value.activeTimeType === 'forever',
-          // });
+          await updateApiKey({
+            id: activeKey.value?.id || '',
+            description: timeForm.value.desc,
+            expireTime: timeForm.value.activeTimeType === 'forever' ? 0 : dayjs(timeForm.value.time).valueOf(),
+            forever: timeForm.value.activeTimeType === 'forever',
+          });
           Message.success(t('common.updateSuccess'));
           handleTimeClose();
           initApiKeys();
@@ -370,8 +383,9 @@
     });
   }
 
-  // TODO
-  const hasCratePermission = hasAnyPermission(['SYSTEM_PERSONAL_API_KEY:READ+ADD']);
+  onBeforeMount(() => {
+    initApiKeys();
+  });
 </script>
 
 <style scoped lang="less">

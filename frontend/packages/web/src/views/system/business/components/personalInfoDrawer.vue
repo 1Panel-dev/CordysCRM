@@ -151,10 +151,14 @@
         name: PersonalEnum.MY_PLAN,
         tab: t('system.personal.plan'),
       },
-      {
-        name: PersonalEnum.API_KEY,
-        tab: t('system.personal.apiKey'),
-      },
+      ...(hasAnyPermission(['PERSONAL_API_KEY:READ'])
+        ? [
+            {
+              name: PersonalEnum.API_KEY,
+              tab: t('system.personal.apiKey'),
+            },
+          ]
+        : []),
     ];
   });
 
