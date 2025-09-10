@@ -15,8 +15,10 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
@@ -268,5 +270,14 @@ public class ProductService {
         LambdaQueryWrapper<Product> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.in(Product::getName, names);
         return productBaseMapper.selectListByLambda(lambdaQueryWrapper);
+    }
+
+    public String getProductNameByIds(List<String> ids) {
+        List<Product> productList = productBaseMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(productList)) {
+            List<String> names = productList.stream().map(Product::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
     }
 }

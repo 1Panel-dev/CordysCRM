@@ -803,7 +803,7 @@ public class ClueService {
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
         CustomerAddRequest addRequest = new CustomerAddRequest();
         ModuleFormConfigDTO customerFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        FormLinkFill<Customer> customerLinkFillDTO = new FormLinkFill<>();
+        FormLinkFill<Customer> customerLinkFillDTO;
         try {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
                     customerFormConfig, orgId, FormKey.CLUE.getKey());
@@ -831,7 +831,7 @@ public class ClueService {
      */
     public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
         ModuleFormConfigDTO opportunityFormConfig = moduleFormService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
-        FormLinkFill<Opportunity> opportunityLinkFillDTO = new FormLinkFill<>();
+        FormLinkFill<Opportunity> opportunityLinkFillDTO;
         try {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
                     opportunityFormConfig, orgId, FormKey.CLUE.getKey());

@@ -70,6 +70,10 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
             return clueService.getClueNameByIds(list);
         }
 
+        if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "PRODUCT")) {
+            return productService.getProductNameByIds(list);
+        }
+
         return StringUtils.EMPTY;
     }
 

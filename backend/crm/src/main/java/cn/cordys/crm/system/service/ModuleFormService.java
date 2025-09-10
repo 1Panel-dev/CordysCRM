@@ -12,7 +12,6 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
-import cn.cordys.common.resolver.field.DateTimeResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
@@ -26,7 +25,10 @@ import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.TransformSourceApplyDTO;
 import cn.cordys.crm.system.dto.field.*;
-import cn.cordys.crm.system.dto.field.base.*;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
+import cn.cordys.crm.system.dto.field.base.HasOption;
+import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
@@ -725,19 +727,8 @@ public class ModuleFormService {
 	 * @param targetFieldVals 目标自定义字段值集合
 	 * @throws Exception 入值异常
 	 */
-	@SuppressWarnings("unchecked")
 	private void putTargetFieldVal(BaseField targetField, TransformSourceApplyDTO putVal, Class<?> targetClass, Object target, List<BaseModuleFieldValue> targetFieldVals) throws Exception {
-		Object val = putVal.getActualVal();
-		if (targetField instanceof InputField || targetField instanceof TextAreaField) {
-			Object displayVal = putVal.getDisplayVal();
-			if (displayVal == null) {
-				return;
-			}
-			val = displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
-		}
-		if (targetField instanceof HasOption targetFieldWithOption) {
-			val = text2Val(targetFieldWithOption.getOptions(), putVal.getDisplayVal());
-		}
+		Object val = resolveTargetPutVal(targetField, putVal);
 		if (val == null) {
 			return;
 		}
@@ -760,7 +751,7 @@ public class ModuleFormService {
 	 * @param actualVal 实际值
 	 * @return 展示值
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private Object displayOfType(BaseField sourceField, Object actualVal) {
 		if (actualVal == null) {
 			return null;
@@ -770,7 +761,35 @@ public class ModuleFormService {
 		}
 		AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(sourceField.getType());
 		// 将数据库中的字符串值,转换为对应的对象值
-		return customFieldResolver.trans2Value(sourceField, actualVal.toString());
+		return customFieldResolver.trans2Value(sourceField, actualVal instanceof List ? JSON.toJSONString(actualVal) : actualVal.toString());
+	}
+
+	/**
+	 * 解析目标字段值
+	 * @param targetField 目标字段
+	 * @param sourceVal 来源值
+	 * @return 值
+	 */
+	@SuppressWarnings("unchecked")
+	public Object resolveTargetPutVal(BaseField targetField, TransformSourceApplyDTO sourceVal) {
+		if (targetField instanceof InputField || targetField instanceof TextAreaField) {
+			// 兼容处理: 文本框/多行文本框直接取展示值即可.
+			Object displayVal = sourceVal.getDisplayVal();
+			if (displayVal == null) {
+				return null;
+			}
+			return displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
+		}
+		if (targetField.multiple() && sourceVal.getActualVal() instanceof String) {
+			// 兼容处理: 单值映射多值的情况
+			sourceVal.setActualVal(List.of(sourceVal.getActualVal()));
+			sourceVal.setDisplayVal(List.of(sourceVal.getDisplayVal()));
+		}
+		if (targetField instanceof HasOption targetFieldWithOption) {
+			// 选项文本映射
+			return text2Val(targetFieldWithOption.getOptions(), sourceVal.getDisplayVal());
+		}
+		return sourceVal.getActualVal();
 	}
 
 	/**
