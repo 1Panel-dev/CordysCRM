@@ -6,7 +6,7 @@
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
       <div class="flex items-center gap-[8px]">
-        <CrmButtonGroup not-show-divider class="gap-[8px]" :list="appStore.navTopConfigList">
+        <CrmButtonGroup not-show-divider class="gap-[8px]" :list="appStore.getNavTopConfigList">
           <template #searchSlot>
             <n-button v-if="showSearch" class="p-[8px]" quaternary @click="showDuplicateCheckDrawer = true">
               <template #icon>
@@ -79,6 +79,15 @@
               </template>
             </n-popover>
           </template>
+          <template #helpSlot>
+            <CrmMoreAction placement="bottom-end" :options="moreActions" @select="selectMoreActions">
+              <n-button class="p-[8px]" quaternary>
+                <template #icon>
+                  <CrmIcon type="iconicon_help_circle" :size="16" />
+                </template>
+              </n-button>
+            </CrmMoreAction>
+          </template>
         </CrmButtonGroup>
       </div>
     </div>
@@ -102,6 +111,8 @@
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
+  import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import { lastScopedOptions } from '@/components/business/crm-duplicate-check-drawer/config';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
@@ -149,6 +160,18 @@
     } else {
       warning(t('common.copyNotSupport'));
     }
+  }
+
+  const moreActions: ActionsItem[] = [
+    {
+      label: t('settings.help.doc'),
+      key: 'helpDoc',
+      iconType: 'iconicon_help_circle',
+    },
+  ];
+
+  function selectMoreActions() {
+    window.open('https://cordys.cn/docs', '_blank');
   }
 
   onBeforeMount(() => {

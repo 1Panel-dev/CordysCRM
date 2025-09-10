@@ -22,7 +22,7 @@ import { defaultNavList } from '@/config/system';
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
-import type { AppState, PageConfig, Style, Theme } from './types';
+import type { ActionItem, AppState, PageConfig, Style, Theme } from './types';
 import type { RouteRecordRaw } from 'vue-router';
 
 const defaultThemeConfig = {
@@ -142,6 +142,26 @@ const useAppStore = defineStore('app', {
     },
     getRestoreMenuTimeStamp(state: AppState) {
       return state.restoreMenuTimeStamp;
+    },
+    getNavTopConfigList: (state: AppState) => {
+      const map = new Map(defaultNavList.map((item) => [item.key, item]));
+      const result: ActionItem[] = [];
+      const navOrder = state.navTopConfigList.map((e) => e.key);
+
+      navOrder.forEach((key) => {
+        const item = map.get(key);
+        if (item) {
+          result.push(item);
+          map.delete(key);
+        }
+      });
+
+      defaultNavList.forEach((item) => {
+        if (map.has(item.key)) {
+          result.push(item);
+        }
+      });
+      return result;
     },
   },
   actions: {
@@ -307,9 +327,12 @@ const useAppStore = defineStore('app', {
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
       await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     },
+    setNavTopOrder(navTopList: ActionItem[]) {
+      this.navTopConfigList = navTopList;
+    },
   },
   persist: {
-    paths: ['menuIconStatus', 'moduleConfigList'],
+    paths: ['menuIconStatus', 'moduleConfigList', 'navTopConfigList'],
   },
 });
 

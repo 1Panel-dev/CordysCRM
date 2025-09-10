@@ -157,8 +157,11 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const useStore = useUserStore();
 
   const convertToCustomerDrawer = defineAsyncComponent(() => import('./convertToCustomerDrawer.vue'));
   const ClueOverviewDrawer = defineAsyncComponent(() => import('./clueOverviewDrawer.vue'));
@@ -616,6 +619,7 @@
     if (route.query.dim) {
       const conditionParams = getLeadHomeConditions(route.query.dim as string);
       setAdvanceFilter(conditionParams);
+      activeTab.value = useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
     }
   }
@@ -625,7 +629,10 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: route.query.dim ? useStore.getScopedValue : activeTab.value,
+        });
         setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
       }

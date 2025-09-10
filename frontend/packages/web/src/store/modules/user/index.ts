@@ -66,6 +66,17 @@ const useUserStore = defineStore('user', {
     isAdmin(state: UserState) {
       return state.userInfo.id === 'admin';
     },
+    getScopedValue(state: UserState) {
+      const hasAllScopedData = state.userInfo.roles.some((e: any) => e?.dataScope === 'ALL');
+      const hasDepScopedData = state.userInfo.roles.some((e: any) => e?.dataScope === 'DEPT_AND_CHILD');
+      if (hasAllScopedData) {
+        return 'ALL';
+      }
+      if (hasDepScopedData) {
+        return 'DEPARTMENT';
+      }
+      return 'SELF';
+    },
   },
   actions: {
     // 设置用户信息

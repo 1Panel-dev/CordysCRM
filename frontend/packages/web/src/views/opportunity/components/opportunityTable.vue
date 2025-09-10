@@ -151,8 +151,11 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+
+  const useStore = useUserStore();
 
   const props = defineProps<{
     isCustomerTab?: boolean;
@@ -672,6 +675,7 @@
     if (route.query.dim && route.query.status) {
       const conditionParams = getOptHomeConditions(route.query.dim as string, route.query.status as string);
       setAdvanceFilter(conditionParams);
+      activeTab.value = useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
     }
   }
@@ -681,7 +685,11 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, customerId: props.sourceId });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: route.query.dim && route.query.status ? useStore.getScopedValue : activeTab.value,
+          customerId: props.sourceId,
+        });
         setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
       }

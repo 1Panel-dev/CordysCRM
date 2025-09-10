@@ -1,7 +1,7 @@
 import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import type { NavTopConfigItem } from '@/store/modules/app/types';
+import type { ActionItem } from '@/store/modules/app/types';
 
 const { t } = useI18n();
 
@@ -56,7 +56,7 @@ export const logTypeOption = [
   },
 ];
 
-export const defaultNavList: NavTopConfigItem[] = [
+export const defaultNavList: ActionItem[] = [
   {
     label: t('settings.search'),
     key: 'search',
@@ -80,5 +80,11 @@ export const defaultNavList: NavTopConfigItem[] = [
     key: 'language',
     iconType: '',
     slotName: 'languageSlot',
+  },
+  {
+    label: t('settings.navbar.help'),
+    key: 'help',
+    iconType: 'iconicon_help_circle',
+    slotName: 'helpSlot',
   },
 ];

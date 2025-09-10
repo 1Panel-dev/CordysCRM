@@ -30,12 +30,13 @@
             <div class="font-medium text-[var(--text-n1)]">{{ t('module.topNavigationConfig') }}</div>
             <div class="nav-list mt-[16px]">
               <VueDraggable
-                v-model="appStore.navTopConfigList"
+                v-model="navTopConfigList"
                 ghost-class="ghost"
                 handle=".nav-item"
                 :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+                @end="onDragNavEnd"
               >
-                <div v-for="item in appStore.navTopConfigList" :key="item.key" class="nav-item justify-between">
+                <div v-for="item in navTopConfigList" :key="item.key" class="nav-item justify-between">
                   <div class="flex w-full items-center gap-[8px] overflow-hidden">
                     <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
                     <div v-if="item.key === 'language'" class="h-[16px] w-[16px]">
@@ -87,6 +88,7 @@
 
   import { moduleNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
+  import { ActionItem } from '@/store/modules/app/types';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -179,8 +181,14 @@
     appStore.setMenuIconStatus(val);
   }
 
+  const navTopConfigList = ref<ActionItem[]>([]);
+  function onDragNavEnd() {
+    appStore.setNavTopOrder(navTopConfigList.value);
+  }
+
   onMounted(() => {
     enable.value = appStore.getMenuIconStatus;
+    navTopConfigList.value = appStore.getNavTopConfigList;
   });
 
   watch(
