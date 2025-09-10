@@ -11,6 +11,9 @@ import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.DateTimeResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
@@ -21,6 +24,7 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
+import cn.cordys.crm.system.dto.TransformSourceApplyDTO;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.*;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
@@ -609,21 +613,20 @@ public class ModuleFormService {
 				continue;
 			}
 			// 从源对象字段取值
-			Object sourceValue;
+			TransformSourceApplyDTO sourceValue;
 			try {
 				sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
 			} catch (Exception e) {
 				sourceValue = null;
-				LogUtils.error("apply source value error: {}", e.getMessage());
+				LogUtils.error("Apply source value error: {}", e.getMessage());
 			}
 
-			// 源对象中该字段无值, 跳过
-			if (sourceValue == null) {
+			// 源对象中无值, 跳过取值
+			if (sourceValue == null || sourceValue.getActualVal() == null) {
 				continue;
 			}
 			// 放入目标对象字段
 			putTargetFieldVal(targetField, sourceValue, targerClass, target, targetFieldVals);
-
 		}
 		return fillBuilder.entity(target).fields(targetFieldVals).build();
 	}
@@ -691,8 +694,9 @@ public class ModuleFormService {
 	 * @return 值
 	 * @throws Exception 取值异常
 	 */
-	private Object applySourceValue(BaseField sourceField, Class<?> sourceClass, Object source, List<BaseModuleFieldValue> sourceFieldVals) throws Exception {
+	private TransformSourceApplyDTO applySourceValue(BaseField sourceField, Class<?> sourceClass, Object source, List<BaseModuleFieldValue> sourceFieldVals) throws Exception {
 		// 来源字段取值
+		TransformSourceApplyDTO sourceApply = new TransformSourceApplyDTO();
 		Object tmpVal;
 		if (StringUtils.isNotEmpty(sourceField.getBusinessKey())) {
 			// 业务字段取值
@@ -702,8 +706,14 @@ public class ModuleFormService {
 			Optional<BaseModuleFieldValue> find = sourceFieldVals.stream().filter(fieldVal -> Strings.CS.equals(sourceField.getId(), fieldVal.getFieldId())).findFirst();
 			tmpVal = find.map(BaseModuleFieldValue::getFieldValue).orElse(null);
 		}
-		// 来源字段有选项映射
-		return sourceField instanceof HasOption sourceFieldWithOption ? val2Text(sourceFieldWithOption.getOptions(), tmpVal) : tmpVal;
+		sourceApply.setActualVal(tmpVal);
+		// 取展示值
+		if (tmpVal == null) {
+			sourceApply.setDisplayVal(null);
+		} else {
+			sourceApply.setDisplayVal(displayOfType(sourceField, sourceApply.getActualVal()));
+		}
+		return sourceApply;
 	}
 
 	/**
@@ -715,10 +725,10 @@ public class ModuleFormService {
 	 * @param targetFieldVals 目标自定义字段值集合
 	 * @throws Exception 入值异常
 	 */
-	private void putTargetFieldVal(BaseField targetField, Object putVal, Class<?> targetClass, Object target, List<BaseModuleFieldValue> targetFieldVals) throws Exception {
-		Object val = putVal;
+	private void putTargetFieldVal(BaseField targetField, TransformSourceApplyDTO putVal, Class<?> targetClass, Object target, List<BaseModuleFieldValue> targetFieldVals) throws Exception {
+		Object val = (targetField instanceof InputField || targetField instanceof TextAreaField) ? putVal.getDisplayVal() : putVal.getActualVal();
 		if (targetField instanceof HasOption targetFieldWithOption) {
-			val = text2Val(targetFieldWithOption.getOptions(), putVal);
+			val = text2Val(targetFieldWithOption.getOptions(), putVal.getDisplayVal());
 		}
 		if (val == null) {
 			return;
@@ -734,6 +744,25 @@ public class ModuleFormService {
 			targetFieldVal.setFieldValue(val);
 			targetFieldVals.add(targetFieldVal);
 		}
+	}
+
+	/**
+	 * 根据类型获取展示值
+	 * @param sourceField 来源字段
+	 * @param actualVal 实际值
+	 * @return 展示值
+	 */
+	@SuppressWarnings("unchecked")
+	private Object displayOfType(BaseField sourceField, Object actualVal) {
+		if (actualVal == null) {
+			return null;
+		}
+		if (sourceField instanceof HasOption fieldWithOption) {
+			return val2Text(fieldWithOption.getOptions(), actualVal);
+		}
+		AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(sourceField.getType());
+		// 将数据库中的字符串值,转换为对应的对象值
+		return customFieldResolver.trans2Value(sourceField, actualVal.toString());
 	}
 
 	/**
