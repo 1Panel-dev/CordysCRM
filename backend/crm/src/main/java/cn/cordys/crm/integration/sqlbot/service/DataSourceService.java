@@ -26,6 +26,7 @@ import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.RoleService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Size;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,18 +75,7 @@ public class DataSourceService {
     }
 
     private String aesEncrypt(String text) {
-        if (StringUtils.isBlank(text)) {
-            return text;
-        }
-        String iv = aesIv;
-        int len = iv.length();
-        if (len > 16) {
-            iv = iv.substring(0, 16);
-        }
-        if (len < 16) {
-            iv = String.format("%-" + (16 - len) + "s", iv).replace(' ', '0');
-        }
-        return CodingUtils.aesCBCEncrypt(text, aesKey, iv);
+        return CodingUtils.aesCBCEncrypt(text, aesKey, aesIv);
     }
 
     /**
