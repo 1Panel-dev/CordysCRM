@@ -64,12 +64,16 @@
                 v-if="item.showDescInput"
                 v-model:value="item.description"
                 type="textarea"
+                :autosize="{
+                  maxRows: 2,
+                  minRows: 2,
+                }"
                 :placeholder="t('common.pleaseInput')"
                 :maxlength="1000"
                 @blur="handleDescChange(item)"
               />
               <div v-else class="desc-line api-item-value">
-                <n-tooltip trigger="hover" :disabled="!item.description">
+                <n-tooltip trigger="hover" flip :disabled="!item.description">
                   <template #trigger>
                     <div class="one-line-text w-[300px]">{{ item.description || '-' }}</div>
                   </template>
@@ -82,7 +86,7 @@
                   @click="handleEditClick(item)"
                 />
               </div>
-              <div class="api-item-label">{{ t('common.createTime') }}</div>
+              <div class="api-item-label mt-[4px]">{{ t('common.createTime') }}</div>
               <div class="api-item-value">
                 {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
               </div>
@@ -326,6 +330,7 @@
   }
 
   async function handleBeforeEnableChange(item: ApiKeyItem) {
+    if (!hasAnyPermission(['PERSONAL_API_KEY:UPDATE'])) return;
     if (item.enable) {
       openModal({
         type: 'error',

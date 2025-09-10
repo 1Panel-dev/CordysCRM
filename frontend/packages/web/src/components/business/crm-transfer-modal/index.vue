@@ -5,6 +5,7 @@
     :title="title"
     :ok-loading="loading"
     :positive-text="props.positiveText || t('common.transfer')"
+    class="crm-form-modal"
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >

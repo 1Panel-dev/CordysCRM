@@ -199,6 +199,12 @@
         font-size: 12px;
         color: var(--text-n2);
       }
+      .n-form-item:last-of-type {
+        .n-form-item-feedback-wrapper {
+          height: 16px !important;
+          min-height: 16px !important;
+        }
+      }
     }
   }
 </style>

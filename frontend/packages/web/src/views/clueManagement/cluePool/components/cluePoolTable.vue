@@ -27,7 +27,7 @@
           :render-option="renderOption"
           :show-checkmark="false"
           label-field="name"
-          class="w-[150px]"
+          class="w-[200px]"
           @update-value="(e) => searchData(undefined, e)"
         />
         <n-button
