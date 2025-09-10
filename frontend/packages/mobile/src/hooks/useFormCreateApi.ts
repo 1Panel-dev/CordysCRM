@@ -647,6 +647,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     unsaved,
     formConfig,
     formDetail,
+    originFormDetail,
     formCreateTitle,
     collaborationType,
     sourceName,

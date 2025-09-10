@@ -44,12 +44,13 @@
   import { FormInstance } from 'vant';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
 
+  import { checkRepeat } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useUserStore from '@/store/modules/user';
 
@@ -68,6 +69,7 @@
   const {
     fieldList,
     formDetail,
+    originFormDetail,
     loading,
     formCreateTitle,
     initFormConfig,
@@ -191,6 +193,43 @@
     return 'string';
   }
 
+  function createValidatorRule(item: FormCreateField, rule: FormCreateFieldRule): FormCreateFieldRule | null {
+    const staticRule: any = cloneDeep(rules.find((e) => e.key === rule.key));
+    if (!staticRule) return null;
+
+    if (staticRule.key === FieldRuleEnum.UNIQUE) {
+      // 唯一性校验
+      staticRule.trigger = 'onBlur';
+      staticRule.validator = async (value: string) => {
+        if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+          return true;
+        }
+
+        const info = await checkRepeat({
+          id: item.id,
+          value,
+          formKey: route.query.formKey as FormDesignKeyEnum,
+        });
+        if (info.repeat) {
+          return info.name.length
+            ? t('formCreate.repeatTip', { name: info.name })
+            : t('formCreate.repeatTipWithoutName');
+        }
+        return true;
+      };
+    } else {
+      staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+      staticRule.message = t(staticRule.message as string, { value: t(item.name) });
+      staticRule.type = getRuleType(item);
+      staticRule.trigger = 'onBlur';
+      if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+        staticRule.trigger = 'none';
+      }
+    }
+
+    return staticRule;
+  }
+
   watch(
     () => mobileFieldList.value,
     () => {
@@ -207,15 +246,8 @@
         }
         const fullRules: FormCreateFieldRule[] = [];
         (item.rules || []).forEach((rule) => {
-          // 遍历规则集合，将全量的规则配置载入
-          const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
+          const staticRule = createValidatorRule(item, rule);
           if (staticRule) {
-            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-            staticRule.message = t(staticRule.message as string, { value: t(item.name) });
-            staticRule.type = getRuleType(item);
-            if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
-              staticRule.trigger = 'none';
-            }
             fullRules.push(staticRule);
           }
         });

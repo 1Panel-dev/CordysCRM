@@ -16,4 +16,6 @@ export default {
   'formCreate.phone.area.macau': 'Macau, China',
   'formCreate.phone.area.taiwan': 'Taiwan, China',
   'formCreate.phone.lengthValidator': 'Please enter the {count} digit phone number',
+  'formCreate.repeatTip': 'Duplicate with {name}',
+  'formCreate.repeatTipWithoutName': 'There are duplicate values in the system',
 };
