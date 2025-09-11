@@ -20,4 +20,6 @@ export default {
   'formCreate.phone.formatValidator': 'Please enter the phone number in the correct format',
   'formCreate.repeatTip': 'Duplicate with {name}',
   'formCreate.repeatTipWithoutName': 'There are duplicate values in the system',
+  'formCreate.upload.repeatFileTip': 'File is duplicated',
+  'formCreate.advanced.overSize': 'File size limit is {size} MB, please re-select the file',
 };

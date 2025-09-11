@@ -87,7 +87,7 @@
   });
 
   const mobileFieldList = computed(() => {
-    return fieldList.value.filter((item) => item.mobile !== false);
+    return fieldList.value.filter((item) => item.mobile !== false || item.type === FieldTypeEnum.PICTURE);
   });
 
   function getItemComponent(type: FieldTypeEnum) {
@@ -140,6 +140,9 @@
       ].includes(type)
     ) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
+    }
+    if (type === FieldTypeEnum.PICTURE) {
+      return CrmFormCreateComponents.advancedComponents.upload;
     }
   }
 

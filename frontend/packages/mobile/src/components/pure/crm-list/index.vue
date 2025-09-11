@@ -2,9 +2,6 @@
   <div class="h-full overflow-auto" :class="props.class">
     <van-pull-refresh v-model="refreshing" @refresh="handleRefresh">
       <van-empty v-if="list.length === 0 && !loading && !error" :description="t('common.noData')" />
-      <van-loading v-if="loading && !refreshing" size="24px" class="w-full" vertical>
-        {{ t('common.loading') }}
-      </van-loading>
       <van-list
         v-model:loading="loading"
         v-model:error="error"

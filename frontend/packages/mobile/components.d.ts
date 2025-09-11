@@ -45,6 +45,7 @@ declare module 'vue' {
     SerialNumber: typeof import('./src/components/business/crm-form-create/components/advanced/serialNumber.vue')['default'];
     SingleText: typeof import('./src/components/business/crm-form-create/components/basic/singleText.vue')['default'];
     Textarea: typeof import('./src/components/business/crm-form-create/components/basic/textarea.vue')['default'];
+    Upload: typeof import('./src/components/business/crm-form-create/components/advanced/upload.vue')['default'];
     VanBadge: typeof import('vant/es')['Badge'];
     VanButton: typeof import('vant/es')['Button'];
     VanCell: typeof import('vant/es')['Cell'];
@@ -79,6 +80,7 @@ declare module 'vue' {
     VanTabs: typeof import('vant/es')['Tabs'];
     VanTag: typeof import('vant/es')['Tag'];
     VanTimePicker: typeof import('vant/es')['TimePicker'];
+    VanUploader: typeof import('vant/es')['Uploader'];
     WorkflowStage: typeof import('./src/components/business/crm-workflow-card/workflowStage.vue')['default'];
   }
 }

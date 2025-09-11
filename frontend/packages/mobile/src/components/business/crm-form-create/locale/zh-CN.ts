@@ -20,4 +20,6 @@ export default {
   'formCreate.phone.formatValidator': '请输入正确格式的手机号',
   'formCreate.repeatTip': '与 {name} 的重复',
   'formCreate.repeatTipWithoutName': '系统中存在重复值',
+  'formCreate.upload.repeatFileTip': '文件重复',
+  'formCreate.advanced.overSize': '文件大小限制为 {size} MB，请重新选择文件',
 };
