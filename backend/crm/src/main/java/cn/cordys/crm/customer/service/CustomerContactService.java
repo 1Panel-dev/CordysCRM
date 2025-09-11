@@ -35,6 +35,7 @@ import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -574,5 +575,14 @@ public class CustomerContactService {
             LogUtils.error("contact import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
+    }
+
+    public String getContactNameByIds(List<String> ids) {
+        List<CustomerContact> contacts = customerContactMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(contacts)) {
+            List<String> names = contacts.stream().map(CustomerContact::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
     }
 }

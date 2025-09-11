@@ -62,6 +62,10 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
             return customerService.getCustomerNameByIds(list);
         }
 
+        if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CONTACT")) {
+            return contactService.getContactNameByIds(list);
+        }
+
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "OPPORTUNITY")) {
             return opportunityService.getOpportunityNameByIds(list);
         }
