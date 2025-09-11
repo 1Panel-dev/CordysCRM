@@ -78,12 +78,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			Row row1 = sheet.createRow(0);
 			row1.setHeightInPoints(80);
 			Cell cell1 = row1.createCell(0);
-			cell1.setCellValue("""
-                说明：
-                1、表头字体红色表示 "必填", 加粗表示 "唯一", 下划线表示支持 "多值"。
-                2、多值采用以下格式: [标签1, 标签2], 其余格式请参考表头注释。
-                3、导入时会过滤格式错误或非法字符。
-                """);
+			cell1.setCellValue(Translator.get("sheet.instruction"));
 			sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, totalColumns - 1));
 			CellStyle style = writeWorkbookHolder.getWorkbook().createCellStyle();
 			style.setWrapText(true);
