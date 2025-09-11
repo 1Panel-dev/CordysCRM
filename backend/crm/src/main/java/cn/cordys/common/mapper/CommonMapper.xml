@@ -334,6 +334,7 @@
         <if test="dataTable == 'clue'">
             and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
         </if>
+        limit 1
     </select>
 
     <select id="checkInternalRepeatName" resultType="java.lang.String">
@@ -342,5 +343,6 @@
         <if test="dataTable == 'clue'">
             and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
         </if>
+        limit 1
     </select>
 </mapper>
