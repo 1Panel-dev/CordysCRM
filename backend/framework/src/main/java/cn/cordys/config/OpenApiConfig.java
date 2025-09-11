@@ -70,7 +70,7 @@ public class OpenApiConfig {
      */
     @Bean
     public GroupedOpenApi customerApi() {
-        return createApi("customer", PRE_PACKAGES + "customer");
+        return createApi("account", PRE_PACKAGES + "customer");
     }
 
     /**
@@ -78,7 +78,7 @@ public class OpenApiConfig {
      */
     @Bean
     public GroupedOpenApi clueApi() {
-        return createApi("clue", PRE_PACKAGES + "clue");
+        return createApi("lead", PRE_PACKAGES + "clue");
     }
 
     /**
@@ -103,13 +103,5 @@ public class OpenApiConfig {
     @Bean
     public GroupedOpenApi searchApi() {
         return createApi("search", PRE_PACKAGES + "search");
-    }
-
-    /**
-     * 配置 XPack API 文档。
-     */
-    @Bean
-    public GroupedOpenApi xpackApi() {
-        return createApi("xpack", "cn.cordys.xpack");
     }
 }
