@@ -13,6 +13,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
@@ -787,7 +788,9 @@ public class ModuleFormService {
 		}
 		if (targetField instanceof InputMultipleField) {
 			// 兼容处理: 多值输入直接取展示值即可.
-			return sourceVal.getDisplayVal();
+			TextMultipleResolver textMultipleResolver = new TextMultipleResolver();
+			return new ArrayList<>(textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
+					(List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(","))));
 		}
 		if (targetField instanceof HasOption targetFieldWithOption) {
 			// 兼容处理: 选项文本映射

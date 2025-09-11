@@ -56,7 +56,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
      * @param textList 标签列表
      * @return 符合要求的标签集合
      */
-    private Set<String> getCorrectFormatInput(List<String> textList) {
+    public Set<String> getCorrectFormatInput(List<String> textList) {
         return textList.stream()
                 .map(String::trim)
                 .filter(StringUtils::isNotBlank)
