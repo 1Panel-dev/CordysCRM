@@ -126,7 +126,7 @@ export default {
   'system.personal.info.title': 'Personal center',
   'system.personal.info': 'Personal information',
   'system.personal.plan': 'My plan',
-  'system.personal.apiKey': 'API Key',
+  'system.personal.apiKey': 'API Keys',
   'system.personal.maxTip': 'Up to 5 API Key',
   'system.personal.apiKeyTip': 'Use API Key to access Cordys CRM API',
   'system.personal.validTime': 'Validity',
