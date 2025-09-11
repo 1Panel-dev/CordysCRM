@@ -21,12 +21,14 @@
         </n-button>
       </div>
     </div>
-    <overview ref="overviewRef" :dept-ids="params.deptIds" />
+    <n-scrollbar x-scrollable>
+      <overview ref="overviewRef" :dept-ids="params.deptIds" />
+    </n-scrollbar>
   </CrmCard>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NTreeSelect, TreeOption } from 'naive-ui';
+  import { NButton, NScrollbar, NTreeSelect, TreeOption } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';

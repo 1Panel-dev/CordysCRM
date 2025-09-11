@@ -1,5 +1,5 @@
 <template>
-  <n-spin :show="loading" class="w-full">
+  <n-spin :show="loading" class="w-full min-w-[1200px]">
     <div class="overview overflow-hidden">
       <div class="header header-category font-semibold text-[var(--text-n1)]">
         {{ t('workbench.dataOverview.category') }}
@@ -72,7 +72,7 @@
         bg-color="var(--info-blue)"
       />
       <div class="right-cell">
-        <div v-for="(dim, index) of dateKey" :key="`iconicon_facial_deal_win-${index}`" class="cell">
+        <div v-for="(dim, index) of dateKey" :key="`iconicon_facial_deal_win-${index}`" class="cell overflow-hidden">
           <div v-for="item in defaultWinOrderData[dim]" :key="`iconicon_facial_deal_win-${item.title}`" class="flex-1">
             <div class="cell-label">{{ item?.title }}</div>
             <countPopover :value="item.value" :unit="item.unit">
@@ -87,7 +87,7 @@
               </div>
             </countPopover>
             <div class="analytics-last-time">
-              <div class="text-[var(--text-n2)]">
+              <div class="one-line-text text-[var(--text-n2)]">
                 {{ dateKeyPriorPeriodTitleMap[dim] }}
               </div>
               <CrmIcon
@@ -99,8 +99,8 @@
                 :type="item.priorPeriodCompareRate > 0 ? 'iconicon_caret_up_small' : 'iconicon_caret_down_small'"
                 :class="getPriorPeriodClass(item.priorPeriodCompareRate)"
               />
-              <div :class="getPriorPeriodClass(item.priorPeriodCompareRate)">
-                {{ periodCompareRateAbs(item.priorPeriodCompareRate) }}
+              <div :class="`${getPriorPeriodClass(item.priorPeriodCompareRate)} flex min-w-0`">
+                <div class="one-line-text">{{ periodCompareRateAbs(item.priorPeriodCompareRate) }}</div>
                 <span v-if="typeof item.priorPeriodCompareRate === 'number'">％</span>
               </div>
             </div>
@@ -233,10 +233,10 @@
 
   const getPriorPeriodClass = (priorPeriodCompareRate?: number) => {
     if (priorPeriodCompareRate && typeof priorPeriodCompareRate === 'number' && priorPeriodCompareRate !== 0) {
-      return priorPeriodCompareRate > 0 ? 'last-time-rate-up' : 'last-time-rate-down';
+      return priorPeriodCompareRate > 0 ? 'last-time-rate-up flex-nowrap' : 'last-time-rate-down flex-nowrap';
     }
     if (priorPeriodCompareRate === 0 || typeof priorPeriodCompareRate === 'string') {
-      return 'text-[var(--text-n2)]';
+      return 'text-[var(--text-n2)] inline-flex flex-nowrap';
     }
   };
 
