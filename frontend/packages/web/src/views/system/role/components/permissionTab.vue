@@ -243,7 +243,7 @@
     {
       title: t('role.feature'),
       key: 'feature',
-      width: 90,
+      width: 120,
       className: 'feature-column',
       fixed: 'left',
       rowSpan: (rowData) => rowData.rowSpan as number,

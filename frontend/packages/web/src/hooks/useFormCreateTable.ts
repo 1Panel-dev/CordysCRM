@@ -354,7 +354,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
       {
         title: t('customer.collectionTime'),
-        width: 160,
+        width: 180,
         key: 'collectionTime',
         sortOrder: false,
         sorter: true,

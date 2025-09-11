@@ -12,7 +12,7 @@
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
-      :label-width="80"
+      :label-width="currentLocale === 'en-US' ? 100 : 80"
     >
       <n-form-item path="originPassword" :label="t('system.personal.currentPassword')">
         <n-input
@@ -32,7 +32,12 @@
           @keydown.enter.prevent
         />
       </n-form-item>
-      <n-form-item ref="rPasswordFormItemRef" first path="confirmPassword" class="confirm-password">
+      <n-form-item
+        ref="rPasswordFormItemRef"
+        first
+        path="confirmPassword"
+        :class="currentLocale === 'en-US' ? 'pl-[100px]' : 'confirm-password'"
+      >
         <n-input
           v-model:value="form.confirmPassword"
           type="password"
@@ -76,6 +81,7 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { PersonalPassword } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -86,6 +92,7 @@
   const { t } = useI18n();
   const Message = useMessage();
   const userStore = useUserStore();
+  const { currentLocale } = useLocale(Message.loading);
 
   const props = defineProps<{
     integration?: PersonalPassword;

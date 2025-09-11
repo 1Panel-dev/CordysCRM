@@ -154,10 +154,10 @@ export default {
   'system.personal.code': 'Verification code',
   'system.personal.getCode': 'Get verification code',
   'system.personal.retry': 'Reacquire',
-  'system.personal.currentPassword': 'Current password',
+  'system.personal.currentPassword': 'Current Psw',
   'system.personal.changePasswordTip':
     'Detected that you are currently using the default initial password. For the security of your account, it is recommended to change your password immediately',
-  'system.personal.password': 'New Password',
+  'system.personal.password': 'New Psw',
   'system.personal.reInput.password': 'Please enter password again',
   'system.personal.password.diff': 'Two passwords are inconsistent',
   'system.personal.password.style': 'The password must contain numbers and letters',
