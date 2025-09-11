@@ -772,21 +772,25 @@ public class ModuleFormService {
 	 */
 	@SuppressWarnings("unchecked")
 	public Object resolveTargetPutVal(BaseField targetField, TransformSourceApplyDTO sourceVal) {
+		if (targetField.multiple() && sourceVal.getActualVal() instanceof String) {
+			// 兼容处理: 单值映射多值的情况
+			sourceVal.setActualVal(List.of(sourceVal.getActualVal()));
+			sourceVal.setDisplayVal(List.of(sourceVal.getDisplayVal()));
+		}
 		if (targetField instanceof InputField || targetField instanceof TextAreaField) {
-			// 兼容处理: 文本框/多行文本框直接取展示值即可.
+			// 兼容处理: [文本, 多行文本] 按照展示值处理即可.
 			Object displayVal = sourceVal.getDisplayVal();
 			if (displayVal == null) {
 				return null;
 			}
 			return displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
 		}
-		if (targetField.multiple() && sourceVal.getActualVal() instanceof String) {
-			// 兼容处理: 单值映射多值的情况
-			sourceVal.setActualVal(List.of(sourceVal.getActualVal()));
-			sourceVal.setDisplayVal(List.of(sourceVal.getDisplayVal()));
+		if (targetField instanceof InputMultipleField) {
+			// 兼容处理: 多值输入直接取展示值即可.
+			return sourceVal.getDisplayVal();
 		}
 		if (targetField instanceof HasOption targetFieldWithOption) {
-			// 选项文本映射
+			// 兼容处理: 选项文本映射
 			return text2Val(targetFieldWithOption.getOptions(), sourceVal.getDisplayVal());
 		}
 		return sourceVal.getActualVal();
