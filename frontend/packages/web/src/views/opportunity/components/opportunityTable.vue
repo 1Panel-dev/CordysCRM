@@ -672,8 +672,9 @@
   }
 
   const homeDetailKey = computed(() => route.query.key as string);
+  const isInitQuery = ref(true);
   function setHomePageParams() {
-    if (route.query.dim && route.query.status && homeDetailKey.value) {
+    if (route.query.dim && route.query.status && homeDetailKey.value && isInitQuery.value) {
       const conditionParams = getOptHomeConditions(
         route.query.dim as string,
         route.query.status as string,
@@ -683,6 +684,7 @@
       activeTab.value = useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
     }
+    isInitQuery.value = false;
   }
 
   watch(
@@ -692,7 +694,8 @@
         checkedRowKeys.value = [];
         setLoadListParams({
           keyword: keyword.value,
-          viewId: route.query.dim && route.query.status ? useStore.getScopedValue : activeTab.value,
+          viewId:
+            route.query.dim && route.query.status && isInitQuery.value ? useStore.getScopedValue : activeTab.value,
           customerId: props.sourceId,
         });
         setHomePageParams();

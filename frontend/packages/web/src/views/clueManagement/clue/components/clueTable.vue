@@ -616,14 +616,15 @@
   }
 
   const homeDetailKey = computed(() => route.query.key as string);
-
+  const isInitQuery = ref(true);
   function setHomePageParams() {
-    if (route.query.dim && homeDetailKey.value) {
+    if (route.query.dim && homeDetailKey.value && isInitQuery.value) {
       const conditionParams = getLeadHomeConditions(route.query.dim as string, homeDetailKey.value);
       setAdvanceFilter(conditionParams);
       activeTab.value = useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
     }
+    isInitQuery.value = false;
   }
 
   watch(
@@ -633,7 +634,8 @@
         checkedRowKeys.value = [];
         setLoadListParams({
           keyword: keyword.value,
-          viewId: route.query.dim && homeDetailKey.value ? useStore.getScopedValue : activeTab.value,
+          viewId:
+            route.query.dim && homeDetailKey.value && isInitQuery.value ? useStore.getScopedValue : activeTab.value,
         });
         setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
