@@ -122,7 +122,7 @@ export default {
   'system.personal.plan': '我的计划',
   'system.personal.apiKey': 'API Keys',
   'system.personal.maxTip': '最多可添加 5 个 API key',
-  'system.personal.apiKeyTip': '可通过 API Keys 访问 Cordys CRM API',
+  'system.personal.apiKeyTip': '可通过 API Key 访问 Cordys CRM API',
   'system.personal.validTime': '有效时间',
   'system.personal.setValidTime': '设置有效时间',
   'system.personal.forever': '永久有效',
