@@ -3,7 +3,7 @@ export default {
   'common.editCustomer': 'Update Account',
   'common.newContact': 'New Contact',
   'common.editContact': 'Update Contact',
-  'common.newOpportunity': 'New Opportunity',
+  'common.newOpportunity': 'New Opt',
   'common.editOpportunity': 'Update Opportunity',
   'common.newClue': 'New Lead',
   'common.editClue': 'Update Lead',
