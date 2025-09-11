@@ -585,7 +585,7 @@
         o.failure_reason
         FROM
         opportunity o
-        INNER JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer c ON o.customer_id = c.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -662,7 +662,8 @@
         count(1)
         FROM
         opportunity o
-        INNER JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN customer_contact ct ON o.contact_id = ct.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
