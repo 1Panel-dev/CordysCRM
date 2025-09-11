@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "线索池客户")
+@Tag(name = "线索池")
 @RestController
 @RequestMapping("/pool/lead")
 public class PoolClueController {
