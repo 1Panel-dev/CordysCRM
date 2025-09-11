@@ -4,6 +4,7 @@ import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { FailureReasonTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import { getSessionStorageTempState } from '@lib/shared/method/local-storage';
 import type { TransferParams } from '@lib/shared/models/customer/index';
 
 import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -59,13 +60,14 @@ export const failureReasonOptions = [
 
 export const lastOpportunitySteps = [...opportunityBaseSteps, ...opportunityResultSteps];
 
-export const getOptHomeConditions = (dim: string, status: string): FilterResult => {
+export const getOptHomeConditions = (dim: string, status: string, homeDetailKey: string): FilterResult => {
   let start;
   let end;
   if (dim === 'YEAR') {
     start = dayjs().startOf('year').valueOf();
     end = dayjs().endOf('year').valueOf();
   }
+  const depIds = getSessionStorageTempState<Record<string, string[]>>('homeData', true)?.[homeDetailKey];
 
   return {
     searchMode: 'AND',
@@ -93,6 +95,17 @@ export const getOptHomeConditions = (dim: string, status: string): FilterResult 
         multipleValue: true,
         type: FieldTypeEnum.SELECT_MULTIPLE,
       },
+      ...(depIds?.length
+        ? [
+            {
+              value: depIds,
+              operator: OperatorEnum.IN,
+              name: 'departmentId',
+              multipleValue: false,
+              type: FieldTypeEnum.TREE_SELECT,
+            },
+          ]
+        : []),
     ],
   };
 };

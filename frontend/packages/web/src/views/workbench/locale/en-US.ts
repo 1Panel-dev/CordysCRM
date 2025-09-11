@@ -55,4 +55,8 @@ export default {
   'workbench.dataOverview.comparedSamePeriod': 'Compared period',
   'workbench.dataOverview.countUnit': 'ORDERS',
   'workbench.dataOverview.amountUnit': 'RMB',
+  'workbench.dataOverview.comparedYesterday': 'DOD',
+  'workbench.dataOverview.comparedLastWeek': 'WOW',
+  'workbench.dataOverview.comparedLastMonth': 'MOM',
+  'workbench.dataOverview.comparedLastYear': 'YOY',
 };

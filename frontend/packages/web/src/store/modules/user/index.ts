@@ -68,7 +68,9 @@ const useUserStore = defineStore('user', {
     },
     getScopedValue(state: UserState) {
       const hasAllScopedData = state.userInfo.roles.some((e: any) => e?.dataScope === 'ALL');
-      const hasDepScopedData = state.userInfo.roles.some((e: any) => e?.dataScope === 'DEPT_AND_CHILD');
+      const hasDepScopedData = state.userInfo.roles.some(
+        (e: any) => e?.dataScope === 'DEPT_AND_CHILD' || e.dataScope === 'DEPT_CUSTOM'
+      );
       if (hasAllScopedData) {
         return 'ALL';
       }

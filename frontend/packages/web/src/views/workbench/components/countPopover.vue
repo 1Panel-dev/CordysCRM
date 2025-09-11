@@ -1,10 +1,5 @@
 <template>
-  <n-popover
-    :show-arrow="false"
-    trigger="hover"
-    placement="bottom-start"
-    :disabled="typeof props.value !== 'number' || props.value < 1"
-  >
+  <n-popover :show-arrow="false" trigger="hover" placement="bottom-start" :disabled="typeof props.value !== 'number'">
     <template #trigger>
       <slot></slot>
     </template>
@@ -20,7 +15,7 @@
   import { abbreviateNumber } from '@lib/shared/method';
 
   const props = defineProps<{
-    value: number;
+    value: number | string;
     unit: string;
   }>();
 </script>

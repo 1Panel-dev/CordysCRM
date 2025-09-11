@@ -28,3 +28,26 @@ export const removeLocalStorage = (name: string) => {
     // ignore
   }
 };
+
+export const setSessionStorageTempState = (name: string, value: any) => {
+  try {
+    if (typeof value !== 'string') {
+      value = JSON.stringify(value);
+    }
+    sessionStorage.setItem(name, value);
+  } catch {
+    // ignore
+  }
+};
+
+export const getSessionStorageTempState = <T>(name: string, isJson?: boolean): T | null => {
+  try {
+    const value = sessionStorage.getItem(name);
+    if (value && isJson) {
+      return JSON.parse(value) as T;
+    }
+    return value as T;
+  } catch {
+    return null;
+  }
+};

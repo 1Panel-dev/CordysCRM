@@ -87,7 +87,9 @@
               </div>
             </countPopover>
             <div class="analytics-last-time">
-              <div class="text-[var(--text-n2)]">{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
+              <div class="text-[var(--text-n2)]">
+                {{ dateKeyPriorPeriodTitleMap[dim] }}
+              </div>
               <CrmIcon
                 v-if="
                   item.priorPeriodCompareRate &&
@@ -114,7 +116,8 @@
   import { NSpin } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { abbreviateNumber } from '@lib/shared/method';
+  import { abbreviateNumber, getGenerateId } from '@lib/shared/method';
+  import { setSessionStorageTempState } from '@lib/shared/method/local-storage';
   import {
     FollowOptStatisticDetail,
     GetHomeStatisticParams,
@@ -134,6 +137,10 @@
   const { openNewPage } = useOpenNewPage();
 
   const { t } = useI18n();
+
+  const props = defineProps<{
+    deptIds: string[];
+  }>();
 
   const headerList = [
     {
@@ -159,6 +166,13 @@
   ];
 
   const dateKey = computed<string[]>(() => headerList.map((e) => e.key));
+
+  const dateKeyPriorPeriodTitleMap: Record<string, string> = {
+    today: t('workbench.dataOverview.comparedYesterday'),
+    week: t('workbench.dataOverview.comparedLastWeek'),
+    month: t('workbench.dataOverview.comparedLastMonth'),
+    year: t('workbench.dataOverview.comparedLastYear'),
+  };
 
   const hasLeadPermission = computed(() => hasAnyPermission(['CLUE_MANAGEMENT:READ']));
   const hasOptPermission = computed(() => hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']));
@@ -233,8 +247,16 @@
 
   function goDetail(dim: string, item: Record<string, any>) {
     if (!item.hasPermission) return;
+    const homeKey = 'homeData';
+    sessionStorage.removeItem(homeKey);
+    const key = getGenerateId();
+    const homeData = {
+      [key]: props.deptIds,
+    };
+    setSessionStorageTempState(homeKey, homeData);
     openNewPage(item.routeName, {
       dim: dim.toLocaleUpperCase(),
+      key,
       ...(item.status
         ? {
             status: item.status,

@@ -671,9 +671,14 @@
     });
   }
 
+  const homeDetailKey = computed(() => route.query.key as string);
   function setHomePageParams() {
-    if (route.query.dim && route.query.status) {
-      const conditionParams = getOptHomeConditions(route.query.dim as string, route.query.status as string);
+    if (route.query.dim && route.query.status && homeDetailKey.value) {
+      const conditionParams = getOptHomeConditions(
+        route.query.dim as string,
+        route.query.status as string,
+        homeDetailKey.value
+      );
       setAdvanceFilter(conditionParams);
       activeTab.value = useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
@@ -759,6 +764,10 @@
       emit('openCustomerDrawer', params, true);
     }
   }
+
+  onBeforeUnmount(() => {
+    sessionStorage.removeItem('homeData');
+  });
 </script>
 
 <style lang="less" scoped></style>

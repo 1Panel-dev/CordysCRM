@@ -21,7 +21,7 @@
         </n-button>
       </div>
     </div>
-    <overview ref="overviewRef" />
+    <overview ref="overviewRef" :dept-ids="params.deptIds" />
   </CrmCard>
 </template>
 

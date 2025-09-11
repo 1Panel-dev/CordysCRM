@@ -55,4 +55,8 @@ export default {
   'workbench.dataOverview.comparedSamePeriod': '较同期',
   'workbench.dataOverview.countUnit': '单',
   'workbench.dataOverview.amountUnit': '元',
+  'workbench.dataOverview.comparedYesterday': '较昨日',
+  'workbench.dataOverview.comparedLastWeek': '较上周',
+  'workbench.dataOverview.comparedLastMonth': '较上月',
+  'workbench.dataOverview.comparedLastYear': '较上年',
 };

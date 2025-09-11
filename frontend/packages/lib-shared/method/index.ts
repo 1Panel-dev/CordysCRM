@@ -597,8 +597,8 @@ export function isWeComBrowser() {
  * @param decimals 保留小数位数
  * @param currency 货币单位
  */
-export function abbreviateNumber(count: number, currency: string, decimals = 2) {
-  if (Number.isNaN(count)) {
+export function abbreviateNumber(count: number | string, currency: string, decimals = 2) {
+  if (typeof count !== 'number') {
     return { value: '-', unit: '', full: '-' };
   }
 
