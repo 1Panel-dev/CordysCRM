@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "线索视图")
 @RestController
-@RequestMapping("/clue/view")
+@RequestMapping("/lead/view")
 public class ClueUserViewController {
 
     @Resource

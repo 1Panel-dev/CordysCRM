@@ -26,7 +26,7 @@ import java.util.UUID;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerContactControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/customer/contact/";
+    private static final String BASE_PATH = "/account/contact/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String LIST = "list/{0}";
     protected static final String DISABLE = "disable/{0}";

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/clue-pool")
+@RequestMapping("/lead-pool")
 @Tag(name = "线索池设置")
 public class CluePoolController {
 

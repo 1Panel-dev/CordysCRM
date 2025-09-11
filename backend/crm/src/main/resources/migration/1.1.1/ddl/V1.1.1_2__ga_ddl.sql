@@ -84,7 +84,7 @@ CREATE TABLE sys_dict
 CREATE INDEX idx_org_type ON sys_dict (organization_id ASC, type ASC);
 CREATE INDEX idx_org_name ON sys_dict (organization_id ASC, name ASC);
 
--- Add customer/clue pool reason
+-- Add customer/lead pool reason
 ALTER TABLE customer
     ADD `reason_id` VARCHAR(32) COMMENT '公海原因ID';
 CREATE INDEX idx_reason_id ON customer (reason_id);

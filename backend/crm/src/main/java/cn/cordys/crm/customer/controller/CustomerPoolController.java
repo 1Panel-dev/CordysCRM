@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer-pool")
+@RequestMapping("/account-pool")
 @Tag(name = "公海池")
 public class CustomerPoolController {
 

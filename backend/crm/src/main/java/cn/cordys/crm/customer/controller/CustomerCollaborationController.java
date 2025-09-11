@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Tag(name = "客户协作人")
 @RestController
-@RequestMapping("/customer/collaboration")
+@RequestMapping("/account/collaboration")
 public class CustomerCollaborationController {
     @Resource
     private CustomerCollaborationService customerCollaborationService;

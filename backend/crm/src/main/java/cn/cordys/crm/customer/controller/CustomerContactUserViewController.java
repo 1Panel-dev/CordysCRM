@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "联系人视图")
 @RestController
-@RequestMapping("/customer/contact/view")
+@RequestMapping("/account/contact/view")
 public class CustomerContactUserViewController {
 
     @Resource

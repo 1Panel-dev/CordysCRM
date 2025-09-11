@@ -30,8 +30,8 @@ public class ModuleFieldControllerTests extends BaseTest {
 	public static final String BASE_PATH = "/field";
 	public static final String DEPT_TREE = "/dept/tree";
 	public static final String USER_DEPT_TREE = "/user/dept/tree";
-	public static final String CLUE_SOURCE_DATA = "/source/clue";
-	public static final String CUSTOMER_SOURCE_DATA = "/source/customer";
+	public static final String CLUE_SOURCE_DATA = "/source/lead";
+	public static final String CUSTOMER_SOURCE_DATA = "/source/account";
 	public static final String CONTACT_SOURCE_DATA = "/source/contact";
 	public static final String OPPORTUNITY_SOURCE_DATA = "/source/opportunity";
 	public static final String PRODUCT_SOURCE_DATA = "/source/product";

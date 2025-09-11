@@ -23,7 +23,7 @@ public class SearchFieldMaskConfig extends BaseModel {
     @Schema(description = "数据源对应类型")
     private String dataSourceType;
 
-    @Schema(description = "搜索模块(customer/clue/等)")
+    @Schema(description = "搜索模块(customer/lead/等)")
     private String moduleType;
 
     @Schema(description = "组织id")

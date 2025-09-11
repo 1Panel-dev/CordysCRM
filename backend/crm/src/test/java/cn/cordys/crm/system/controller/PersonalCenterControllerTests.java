@@ -215,7 +215,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setName("kehu");
-        //this.requestPost("/personal/center/repeat/customer", request).andExpect(status().isOk());
+        //this.requestPost("/personal/center/repeat/account", request).andExpect(status().isOk());
 
         request = new RepeatCustomerPageRequest();
         request.setCurrent(1);
@@ -245,7 +245,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setName("kehu");
-        //this.requestPost("/personal/center/repeat/clue", request).andExpect(status().isOk());
+        //this.requestPost("/personal/center/repeat/lead", request).andExpect(status().isOk());
     }
 
     @Test
@@ -255,7 +255,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setName("kehu");
-        //this.requestPost("/personal/center/repeat/clue/detail", request).andExpect(status().isOk());
+        //this.requestPost("/personal/center/repeat/lead/detail", request).andExpect(status().isOk());
     }
 
     @Test

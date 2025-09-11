@@ -46,7 +46,7 @@ import java.util.List;
  */
 @Tag(name = "客户")
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/account")
 public class CustomerController {
 
     @Resource

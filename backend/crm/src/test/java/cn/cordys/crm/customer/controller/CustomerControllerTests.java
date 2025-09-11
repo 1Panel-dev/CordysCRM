@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/customer/";
+    private static final String BASE_PATH = "/account/";
 
     protected static final String MODULE_FORM = "module/form";
 

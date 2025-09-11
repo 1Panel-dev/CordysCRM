@@ -40,7 +40,7 @@ public class GlobalSearchController {
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @PostMapping("/clue")
+    @PostMapping("/lead")
     @Operation(summary = "全局搜索-线索")
     public Pager<List<GlobalClueResponse>> globalSearchClue(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, GlobalClueResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CLUE);
@@ -54,7 +54,7 @@ public class GlobalSearchController {
         return searchService.startSearchNoOption(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @PostMapping("/customer")
+    @PostMapping("/account")
     @Operation(summary = "全局搜索-客户")
     public Pager<List<GlobalCustomerResponse>> globalSearchCustomer(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, GlobalCustomerResponse> searchService = GlobalSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER);

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/clue-capacity")
+@RequestMapping("/lead-capacity")
 @Tag(name = "线索库容设置")
 public class ClueCapacityController {
 

@@ -43,7 +43,7 @@ import java.util.List;
 
 @RestController
 @Tag(name = "线索")
-@RequestMapping("/clue")
+@RequestMapping("/lead")
 public class ClueController {
 
     @Resource
@@ -109,7 +109,7 @@ public class ClueController {
         clueService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/transition/customer")
+    @PostMapping("/transition/account")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
     @Operation(summary = "转为客户")
     public void transitionCustomer(@Validated @RequestBody ClueTransitionCustomerRequest request) {
@@ -168,7 +168,7 @@ public class ClueController {
         return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
-    @PostMapping("/transition/customer/page")
+    @PostMapping("/transition/account/page")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.AND)
     @Operation(summary = "客户转移分页查询")
     public PagerWithOption<List<CustomerListResponse>> transitionCustomerPage(@Validated @RequestBody CustomerPageRequest request) {
@@ -176,7 +176,7 @@ public class ClueController {
         return customerService.transitionList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/re-transition/customer")
+    @PostMapping("/re-transition/account")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "批量关联已有客户")
     public void batchTransition(@Validated @RequestBody BatchReTransitionCustomerRequest request) {

@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "客户跟进计划")
 @RestController
-@RequestMapping("/customer/follow/plan")
+@RequestMapping("/account/follow/plan")
 public class CustomerFollowPlanController {
 
     @Resource

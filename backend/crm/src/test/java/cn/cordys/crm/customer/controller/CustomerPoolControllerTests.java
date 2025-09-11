@@ -45,7 +45,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	@Test
 	@Order(1)
 	void emptyPage() throws Exception {
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-pool/page", createPageRequest());
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/account-pool/page", createPageRequest());
 		Pager<List<CustomerPoolDTO>> result = getPageResult(mvcResult, CustomerPoolDTO.class);
 		assert result.getList().isEmpty();
 	}
@@ -69,7 +69,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 				.conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_NAME.getKey()));
-		this.requestPostWithOk("/customer-pool/add", request);
+		this.requestPostWithOk("/account-pool/add", request);
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	void page() throws Exception {
 		BasePageRequest request = createPageRequest();
 		request.setSort(new SortRequest("name", "desc"));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-pool/page", request);
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/account-pool/page", request);
 		Pager<List<CustomerPoolDTO>> result = getPageResult(mvcResult, CustomerPoolDTO.class);
 		assert result.getList().size() == 1;
 		testCustomerPool = result.getList().getFirst();
@@ -100,30 +100,30 @@ public class CustomerPoolControllerTests extends BaseTest {
 				.build();
 		request.setRecycleRule(recycleRule);
 		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_OWNER.getKey()));
-		this.requestPostWithOk("/customer-pool/update", request);
+		this.requestPostWithOk("/account-pool/update", request);
 	}
 
 	@Test
 	@Order(5)
 	void switchStatus() throws Exception {
-		MvcResult mvcResult = this.requestGet("/customer-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestGet("/account-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_not_exist"));
-		this.requestGetWithOk("/customer-pool/switch/" + testCustomerPool.getId());
+		this.requestGetWithOk("/account-pool/switch/" + testCustomerPool.getId());
 	}
 
 	@Test
 	@Order(6)
 	void delete() throws Exception {
-		MvcResult mvcResult = this.requestGet("/customer-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestGet("/account-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_not_exist"));
 		// insert free customer on the pool, then delete it
 		Customer freeCustomer = createFreeCustomer();
 		freeCustomer.setPoolId(testCustomerPool.getId());
 		customerMapper.insert(freeCustomer);
-		this.requestGet("/customer-pool/no-pick/" + testCustomerPool.getId());
+		this.requestGet("/account-pool/no-pick/" + testCustomerPool.getId());
 		// pick customer, delete the pool
 		customerMapper.deleteByPrimaryKey(freeCustomer.getId());
-		this.requestGetWithOk("/customer-pool/delete/" + testCustomerPool.getId());
+		this.requestGetWithOk("/account-pool/delete/" + testCustomerPool.getId());
 	}
 
 	private BasePageRequest createPageRequest() {

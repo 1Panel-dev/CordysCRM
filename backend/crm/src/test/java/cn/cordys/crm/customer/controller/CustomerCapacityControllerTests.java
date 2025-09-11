@@ -30,15 +30,15 @@ public class CustomerCapacityControllerTests extends BaseTest {
 		CapacityAddRequest request = new CapacityAddRequest();
 		request.setScopeIds(List.of("admin"));
 		request.setCapacity(10);
-		this.requestPostWithOk("/customer-capacity/add", request);
-		MvcResult mvcResult = this.requestPost("/customer-capacity/add", request).andExpect(status().is5xxServerError()).andReturn();
+		this.requestPostWithOk("/account-capacity/add", request);
+		MvcResult mvcResult = this.requestPost("/account-capacity/add", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.scope.duplicate"));
 	}
 
 	@Test
 	@Order(2)
 	void page() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/customer-capacity/get");
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/account-capacity/get");
 		List<CustomerCapacity> result = getResultDataArray(mvcResult, CustomerCapacity.class);
 		assert result.size() == 1;
 		CAPACITY_ID = result.getFirst().getId();
@@ -51,15 +51,15 @@ public class CustomerCapacityControllerTests extends BaseTest {
 		request.setId("not-exist");
 		request.setScopeIds(List.of("admin"));
 		request.setCapacity(100);
-		MvcResult mvcResult = this.requestPost("/customer-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestPost("/account-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.not.exist"));
 		request.setId(CAPACITY_ID);
-		this.requestPost("/customer-capacity/update", request);
+		this.requestPost("/account-capacity/update", request);
 	}
 
 	@Test
 	@Order(4)
 	void delete() throws Exception {
-		this.requestGetWithOk("/customer-capacity/delete/" + CAPACITY_ID);
+		this.requestGetWithOk("/account-capacity/delete/" + CAPACITY_ID);
 	}
 }

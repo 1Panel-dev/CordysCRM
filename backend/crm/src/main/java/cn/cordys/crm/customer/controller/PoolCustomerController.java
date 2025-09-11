@@ -31,7 +31,7 @@ import java.util.List;
 
 @Tag(name = "公海客户")
 @RestController
-@RequestMapping("/pool/customer")
+@RequestMapping("/pool/account")
 public class PoolCustomerController {
 
 	@Resource

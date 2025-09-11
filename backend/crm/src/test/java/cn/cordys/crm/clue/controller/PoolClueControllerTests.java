@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PoolClueControllerTests extends BaseTest {
 
-	public static final String BASE_PATH = "/pool/clue";
+	public static final String BASE_PATH = "/pool/lead";
 	public static final String GET_OPTIONS = "/options";
 	public static final String PAGE = "/page";
 	public static final String PICK = "/pick";

@@ -60,7 +60,7 @@ public class AdvancedSearchControllerTests extends BaseTest {
         request.setOwner("bb1");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer/add", request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/account/add", request);
         Customer resultData = getResultData(mvcResult, Customer.class);
         Customer customer = customerMapper.selectByPrimaryKey(resultData.getId());
         Assertions.assertEquals(request.getName(), customer.getName());
@@ -79,7 +79,7 @@ public class AdvancedSearchControllerTests extends BaseTest {
         // 创建另一个客户
         request.setName("another1");
         request.setOwner(InternalUser.ADMIN.getValue());
-        this.requestPostWithOkAndReturn("/customer/add", request);
+        this.requestPostWithOkAndReturn("/account/add", request);
 
     }
     private List<CustomerField> getCustomerFields(String customerId) {
@@ -101,7 +101,7 @@ public class AdvancedSearchControllerTests extends BaseTest {
         request.setCustomerId("customerId");
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setPhone("15451222354");
-        this.requestPostWithOkAndReturn("/customer/contact/add", request);
+        this.requestPostWithOkAndReturn("/account/contact/add", request);
     }
 
 
@@ -112,11 +112,11 @@ public class AdvancedSearchControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        this.requestPostWithOkAndReturn("/advanced/search/customer", request);
+        this.requestPostWithOkAndReturn("/advanced/search/account", request);
 
         addCustomer();
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn("/advanced/search/customer", request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/advanced/search/account", request);
         Pager<List<AdvancedCustomerResponse>> pageResult = getPageResult(mvcResult, AdvancedCustomerResponse.class);
         List<AdvancedCustomerResponse> customerList = pageResult.getList();
         Assertions.assertFalse(customerList.isEmpty());

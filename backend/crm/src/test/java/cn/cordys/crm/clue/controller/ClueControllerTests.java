@@ -39,13 +39,13 @@ import java.util.stream.Collectors;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClueControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/clue/";
+    private static final String BASE_PATH = "/lead/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String STATUS_UPDATE = "status/update";
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
-    protected static final String TRANSITION_CUSTOMER = "transition/customer";
+    protected static final String TRANSITION_CUSTOMER = "transition/account";
     protected static final String EXPORT = "export";
     protected static final String EXPORT_SELECT = "export-select";
 

@@ -72,7 +72,7 @@ public class ModuleFieldController {
 		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
 	}
 
-	@PostMapping("/source/clue")
+	@PostMapping("/source/lead")
 	@Operation(summary = "分页获取线索")
 	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
 		request.setCombineSearch(request.getCombineSearch().convert());
@@ -81,7 +81,7 @@ public class ModuleFieldController {
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
-	@PostMapping("/source/customer")
+	@PostMapping("/source/account")
 	@Operation(summary = "分页获取客户")
 	public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
 		request.setCombineSearch(request.getCombineSearch().convert());

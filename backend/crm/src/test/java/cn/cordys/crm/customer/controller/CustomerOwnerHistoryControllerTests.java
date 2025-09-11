@@ -24,7 +24,7 @@ import java.util.UUID;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerOwnerHistoryControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/customer/owner/history/" ;
+    private static final String BASE_PATH = "/account/owner/history/" ;
     protected static final String LIST = "list/{0}" ;
     private static Customer addCustomer;
 

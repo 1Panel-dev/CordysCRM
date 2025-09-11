@@ -24,7 +24,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClueFollowRecordControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/clue/follow/record/";
+    private static final String BASE_PATH = "/lead/follow/record/";
 
     private static final String POOL_PAGE = "pool/page";
 

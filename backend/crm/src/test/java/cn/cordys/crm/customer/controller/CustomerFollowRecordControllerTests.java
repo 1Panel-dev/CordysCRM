@@ -24,7 +24,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CustomerFollowRecordControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/customer/follow/record/";
+    private static final String BASE_PATH = "/account/follow/record/";
 
     private static final String POOL_PAGE = "pool/page";
 

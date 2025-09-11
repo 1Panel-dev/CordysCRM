@@ -31,7 +31,7 @@ public class HomeStatisticController {
     @Resource
     private HomeStatisticService homeStatisticService;
 
-    @PostMapping("/clue")
+    @PostMapping("/lead")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索统计")
     public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticBaseSearchRequest request) {

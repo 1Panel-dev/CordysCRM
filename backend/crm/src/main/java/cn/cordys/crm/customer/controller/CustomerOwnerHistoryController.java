@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Tag(name = "客户责任人历史")
 @RestController
-@RequestMapping("/customer/owner/history")
+@RequestMapping("/account/owner/history")
 public class CustomerOwnerHistoryController {
     @Resource
     private CustomerOwnerHistoryService customerOwnerHistoryService;

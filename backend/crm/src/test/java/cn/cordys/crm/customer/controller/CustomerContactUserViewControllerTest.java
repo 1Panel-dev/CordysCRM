@@ -23,7 +23,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CustomerContactUserViewControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/customer/contact/view/";
+    private static final String BASE_PATH = "/account/contact/view/";
 
     protected static final String DETAIL = "detail/{0}";
     protected static final String LIST = "list";

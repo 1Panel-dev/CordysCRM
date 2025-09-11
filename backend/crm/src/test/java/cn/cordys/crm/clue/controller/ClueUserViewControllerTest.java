@@ -23,7 +23,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClueUserViewControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/clue/view/";
+    private static final String BASE_PATH = "/lead/view/";
 
     protected static final String DETAIL = "detail/{0}";
     protected static final String LIST = "list";

@@ -23,7 +23,7 @@ import java.util.List;
 
 @Tag(name = "线索跟进记录")
 @RestController
-@RequestMapping("/clue/follow/record")
+@RequestMapping("/lead/follow/record")
 public class ClueFollowRecordController {
 
     @Resource

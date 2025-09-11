@@ -39,7 +39,7 @@ import java.util.List;
  */
 @Tag(name = "客户联系人")
 @RestController
-@RequestMapping("/customer/contact")
+@RequestMapping("/account/contact")
 public class CustomerContactController {
     @Resource
     private CustomerContactService customerContactService;

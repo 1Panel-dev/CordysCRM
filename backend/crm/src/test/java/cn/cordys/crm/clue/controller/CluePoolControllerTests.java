@@ -38,7 +38,7 @@ public class CluePoolControllerTests extends BaseTest {
 	@Test
 	@Order(1)
 	void emptyPage() throws Exception {
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/clue-pool/page", createPageRequest());
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-pool/page", createPageRequest());
 		Pager<List<CluePoolDTO>> result = getPageResult(mvcResult, CluePoolDTO.class);
 		assert result.getList().isEmpty();
 	}
@@ -61,7 +61,7 @@ public class CluePoolControllerTests extends BaseTest {
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		request.setHiddenFieldIds(Set.of(BusinessModuleField.CLUE_NAME.getKey()));
-		this.requestPostWithOk("/clue-pool/add", request);
+		this.requestPostWithOk("/lead-pool/add", request);
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class CluePoolControllerTests extends BaseTest {
 	void page() throws Exception {
 		BasePageRequest request = createPageRequest();
 		request.setSort(new SortRequest("name", "desc"));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/clue-pool/page", request);
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-pool/page", request);
 		Pager<List<CluePoolDTO>> result = getPageResult(mvcResult, CluePoolDTO.class);
 		assert result.getList().size() == 1;
 		testCluePool = result.getList().getFirst();
@@ -91,23 +91,23 @@ public class CluePoolControllerTests extends BaseTest {
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().build();
 		request.setRecycleRule(recycleRule);
 		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_OWNER.getKey()));
-		this.requestPostWithOk("/clue-pool/update", request);
+		this.requestPostWithOk("/lead-pool/update", request);
 	}
 
 	@Test
 	@Order(5)
 	void switchStatus() throws Exception {
-		MvcResult mvcResult = this.requestGet("/clue-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestGet("/lead-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
-		this.requestGetWithOk("/clue-pool/switch/" + testCluePool.getId());
+		this.requestGetWithOk("/lead-pool/switch/" + testCluePool.getId());
 	}
 
 	@Test
 	@Order(6)
 	void delete() throws Exception {
-		MvcResult mvcResult = this.requestGet("/clue-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestGet("/lead-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
-		this.requestGetWithOk("/clue-pool/delete/" + testCluePool.getId());
+		this.requestGetWithOk("/lead-pool/delete/" + testCluePool.getId());
 	}
 
 	private BasePageRequest createPageRequest() {

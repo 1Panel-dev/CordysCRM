@@ -28,7 +28,7 @@ public class UserSearchConfig extends BaseModel {
 	@Schema(description = "用户id")
 	private String userId;
 
-	@Schema(description = "搜索模块(customer/clue/等)")
+	@Schema(description = "搜索模块(customer/lead/等)")
 	private String moduleType;
 
 	@Schema(description = "模块顺序设置['customer','clue']")

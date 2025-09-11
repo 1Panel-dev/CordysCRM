@@ -26,7 +26,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClueFollowPlanControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/clue/follow/plan/";
+    private static final String BASE_PATH = "/lead/follow/plan/";
 
     private static final String CANCEL_PLAN = "cancel/{0}";
 

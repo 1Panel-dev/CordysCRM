@@ -40,7 +40,7 @@ public class AdvancedSearchController {
     @Resource
     private AdvancedCustomerSearchService globalSearchCustomerService;
 
-    @PostMapping("/customer")
+    @PostMapping("/account")
     @Operation(summary = "全局搜索客户相关数据")
     public PagerWithOption<List<AdvancedCustomerResponse>> advancedSearchCustomer(@Validated @RequestBody CustomerPageRequest request) {
         BaseSearchService<CustomerPageRequest, AdvancedCustomerResponse> searchService = AdvancedSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER);
@@ -56,7 +56,7 @@ public class AdvancedSearchController {
     }
 
 
-    @PostMapping("/clue")
+    @PostMapping("/lead")
     @Operation(summary = "全局搜索线索相关数据")
     public PagerWithOption<List<AdvancedClueResponse>> advancedSearchClue(@Validated @RequestBody CluePageRequest request) {
         BaseSearchService<CluePageRequest, AdvancedClueResponse> searchService = AdvancedSearchServiceFactory.getSearchService(GlobalSearchModule.CLUE);
@@ -64,7 +64,7 @@ public class AdvancedSearchController {
     }
 
 
-    @PostMapping("/clue/detail")
+    @PostMapping("/lead/detail")
     @Operation(summary = "全局搜索线索详情")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     public Pager<List<AdvancedClueResponse>> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
@@ -89,14 +89,14 @@ public class AdvancedSearchController {
     }
 
 
-    @PostMapping("/customer-pool")
+    @PostMapping("/account-pool")
     @Operation(summary = "全局搜索-公海")
     public PagerWithOption<List<AdvancedCustomerPoolResponse>> advancedSearchCustomerPool(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> searchService = AdvancedSearchServiceFactory.getSearchService(GlobalSearchModule.CUSTOMER_POOL);
         return searchService.startSearch(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @PostMapping("/clue-pool")
+    @PostMapping("/lead-pool")
     @Operation(summary = "全局搜索-线索池")
     public PagerWithOption<List<AdvancedCluePoolResponse>> advancedSearchCluePool(@Validated @RequestBody BasePageRequest request) {
         BaseSearchService<BasePageRequest, AdvancedCluePoolResponse> searchService = AdvancedSearchServiceFactory.getSearchService(GlobalSearchModule.CLUE_POOL);

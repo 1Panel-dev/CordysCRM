@@ -31,7 +31,7 @@ import java.util.List;
 
 @Tag(name = "线索池客户")
 @RestController
-@RequestMapping("/pool/clue")
+@RequestMapping("/pool/lead")
 public class PoolClueController {
 
 	@Resource

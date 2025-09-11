@@ -30,15 +30,15 @@ public class ClueCapacityControllerTests extends BaseTest {
 		CapacityAddRequest request = new CapacityAddRequest();
 		request.setScopeIds(List.of("admin"));
 		request.setCapacity(10);
-		this.requestPostWithOk("/clue-capacity/add", request);
-		MvcResult mvcResult = this.requestPost("/clue-capacity/add", request).andExpect(status().is5xxServerError()).andReturn();
+		this.requestPostWithOk("/lead-capacity/add", request);
+		MvcResult mvcResult = this.requestPost("/lead-capacity/add", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.scope.duplicate"));
 	}
 
 	@Test
 	@Order(2)
 	void page() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/clue-capacity/get");
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/lead-capacity/get");
 		List<ClueCapacity> result = getResultDataArray(mvcResult, ClueCapacity.class);
 		assert result.size() == 1;
 		CAPACITY_ID = result.getFirst().getId();
@@ -51,15 +51,15 @@ public class ClueCapacityControllerTests extends BaseTest {
 		request.setId("not-exist");
 		request.setScopeIds(List.of("admin"));
 		request.setCapacity(100);
-		MvcResult mvcResult = this.requestPost("/clue-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult = this.requestPost("/lead-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.not.exist"));
 		request.setId(CAPACITY_ID);
-		this.requestPost("/clue-capacity/update", request);
+		this.requestPost("/lead-capacity/update", request);
 	}
 
 	@Test
 	@Order(4)
 	void delete() throws Exception {
-		this.requestGetWithOk("/clue-capacity/delete/" + CAPACITY_ID);
+		this.requestGetWithOk("/lead-capacity/delete/" + CAPACITY_ID);
 	}
 }

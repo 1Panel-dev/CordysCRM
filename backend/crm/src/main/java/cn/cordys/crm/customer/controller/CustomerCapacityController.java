@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer-capacity")
+@RequestMapping("/account-capacity")
 @Tag(name = "客户库容容量设置")
 public class CustomerCapacityController {
 

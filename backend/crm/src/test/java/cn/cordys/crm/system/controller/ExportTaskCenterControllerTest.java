@@ -82,7 +82,7 @@ public class ExportTaskCenterControllerTest extends BaseTest {
         request.setOwner("bb");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
-        this.requestPostWithOkAndReturn("/customer/add", request);
+        this.requestPostWithOkAndReturn("/account/add", request);
 
         CustomerExportRequest requestE = new CustomerExportRequest();
         requestE.setCurrent(1);
@@ -95,11 +95,11 @@ public class ExportTaskCenterControllerTest extends BaseTest {
         List<ExportHeadDTO> list = new ArrayList<>();
         list.add(exportHeadDTO);
         requestE.setHeadList(list);
-        MvcResult mvcResult2 = this.requestPostWithOkAndReturn("/customer/export-all", requestE);
+        MvcResult mvcResult2 = this.requestPostWithOkAndReturn("/account/export-all", requestE);
         String resultData = getResultData(mvcResult2, String.class);
         this.requestGetWithOk(CANCEL+resultData);
         Thread.sleep(1500);
-        mvcResult2 = this.requestPostWithOkAndReturn("/customer/export-all", requestE);
+        mvcResult2 = this.requestPostWithOkAndReturn("/account/export-all", requestE);
         resultData = getResultData(mvcResult2, String.class);
         Thread.sleep(1500);
         // 等待导出任务完成

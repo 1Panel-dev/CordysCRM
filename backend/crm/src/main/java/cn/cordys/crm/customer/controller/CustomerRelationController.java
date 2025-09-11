@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Tag(name = "客户关系")
 @RestController
-@RequestMapping("/customer/relation")
+@RequestMapping("/account/relation")
 public class CustomerRelationController {
     @Resource
     private CustomerRelationService customerRelationService;
