@@ -50,12 +50,20 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 			return customerService.getCustomerName(value);
 		}
 
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CONTACT")) {
+			return contactService.getContactName(value);
+		}
+
 		if(Strings.CI.equals(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
 			return opportunityService.getOpportunityName(value);
 		}
 
 		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CLUE")) {
 			return clueService.getClueName(value);
+		}
+
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), "PRODUCT")) {
+			return productService.getProductName(value);
 		}
 
 		return StringUtils.EMPTY;

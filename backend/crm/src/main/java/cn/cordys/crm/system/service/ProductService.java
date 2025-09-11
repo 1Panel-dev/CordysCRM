@@ -19,6 +19,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.Clue;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
@@ -38,10 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -270,6 +268,11 @@ public class ProductService {
         LambdaQueryWrapper<Product> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.in(Product::getName, names);
         return productBaseMapper.selectListByLambda(lambdaQueryWrapper);
+    }
+
+    public String getProductName(String id) {
+        Product product = productBaseMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(product).map(Product::getName).orElse(null);
     }
 
     public String getProductNameByIds(List<String> ids) {
