@@ -1,7 +1,7 @@
 <h1 align="center">Cordys CRM</h1>
 <h3 align="center">集信息化、数字化、智能化于一体的开源 CRM 系统</h3>
 <p align="center">
-  <a href="https://github.com/1Panel-dev/CordysCRM/releases"><img src="https://img.shields.io/github/v/release/1Panel/CordysCRM" alt="Latest release"></a>
+  <a href="https://github.com/1Panel-dev/CordysCRM/releases"><img src="https://img.shields.io/github/v/release/1Panel-dev/CordysCRM" alt="Latest release"></a>
   <a href="https://github.com/1Panel-dev/CordysCRM"><img src="https://img.shields.io/github/stars/1Panel-dev/CordysCRM?color=%231890FF&style=flat-square" alt="Stars"></a>    
   <a href="https://hub.docker.com/r/1panel/cordys-crm"><img src="https://img.shields.io/docker/pulls/1panel/cordys-crm?label=downloads" alt="Download"></a><br/>
 </p>
@@ -14,7 +14,7 @@ Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系�
 
 > 注：Cordys CRM 预计在2025年底正式开源并发布，现已开启公测。
 
-<img alt="Cordys CRM Overview" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png" />
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-video.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
 
 **Cordys CRM** 的核心优势是：
 
@@ -50,11 +50,11 @@ docker run -d \
 
 ### 联系我们
 
-安装完成后，可以参考此 [快速入门指南](https://jlx18gc3up.feishu.cn/docx/VMJzdCipnoj5fYxcbakcWQSAnCh)。
+安装完成后，可以参考此 [快速入门指南](https://cordys.cn/docs/)。
 
 在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
-<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png" />
+<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
 
 ## UI 展示
 
@@ -75,14 +75,19 @@ docker run -d \
 - [x] 2025.06：v1.0 开发完成
 - [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
 - [x] 2025.08：完成和 SQLBot 和 DataEase 的对接
-- [x] 2025.09：v1.1.5 发布，开始公测
+- [x] 2025.08.27：[v1.1.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.5) 发布，开始公测
+- [x] 2025.08.27：[v1.1.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.6) 发布
+- [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布
+- [x] 2025.09.05：[v1.1.8](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.8) 发布
 - [ ] 2025.10：完成和 MaxKB 的对接
 - [ ] 2025.11：代码开源、正式发布
 
 ## 技术栈
 
+-  AI 智能体能力: [MaxKB](https://github.com/1Panel-dev/MaxKB)
+-  数据可视化能力: [DataEase](https://github.com/dataease/dataease)
 -  后端: [Spring Boot](https://spring.io/projects/spring-boot)
--  前端: [Vue.js](https://vuejs.org/) , [Naive-UI](https://www.naiveui.com/) , [Vant-UI](https://vant-ui.github.io/)
+-  前端: [Vue.js](https://vuejs.org/) 、[Naive-UI](https://www.naiveui.com/) 、[Vant-UI](https://vant-ui.github.io/)
 -  中间件: [MySQL](https://www.mysql.com/) , [Redis](https://redis.com/)
 -  基础设施: [Docker](https://www.docker.com/)
 
