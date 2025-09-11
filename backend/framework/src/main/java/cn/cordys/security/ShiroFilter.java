@@ -70,6 +70,9 @@ public class ShiroFilter {
         // 验证 License 的路径
         filterChainDefinitionMap.put("/license/validate/**", "anon");
 
+        // 一些 MCP 三方接口, 无需鉴权
+        filterChainDefinitionMap.put("/mcp/**", "anon");
+
         return filterChainDefinitionMap;
     }
 

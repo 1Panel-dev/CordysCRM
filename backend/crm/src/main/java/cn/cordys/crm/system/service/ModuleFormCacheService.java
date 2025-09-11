@@ -2,6 +2,10 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.HasOption;
+import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.field.base.SimpleField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import jakarta.annotation.Resource;
@@ -10,6 +14,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,5 +76,25 @@ public class ModuleFormCacheService {
 						.toList()
 		);
 		return businessModuleFormConfig;
+	}
+
+	/**
+	 * 获取MCP表单需要的字段
+	 * @param formKey 表单Key
+	 * @param organizationId 组织ID
+	 * @return 字段列表
+	 */
+	public List<SimpleField> getMcpFields(String formKey, String organizationId) {
+		ModuleFormConfigDTO businessFormConfig = getBusinessFormConfig(formKey, organizationId);
+		return businessFormConfig.getFields().stream().filter(BaseField::canImport).map(field -> {
+			SimpleField simpleField = new SimpleField();
+			simpleField.setName(field.getName());
+			simpleField.setRequired(field.needRequireCheck());
+			simpleField.setUnique(field.needRepeatCheck());
+			if (field instanceof HasOption fieldWithOption) {
+				simpleField.setOptions(fieldWithOption.getOptions().stream().map(OptionProp::getLabel).toList());
+			}
+			return simpleField;
+		}).toList();
 	}
 }
