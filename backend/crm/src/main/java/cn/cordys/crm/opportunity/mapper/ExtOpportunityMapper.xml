@@ -507,7 +507,7 @@
     o.failure_reason
     FROM
     opportunity o
-    INNER JOIN customer c ON o.customer_id = c.id
+    LEFT JOIN customer c ON o.customer_id = c.id
         where o.id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
