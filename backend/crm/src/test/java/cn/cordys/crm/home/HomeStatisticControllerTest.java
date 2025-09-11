@@ -24,7 +24,7 @@ public class HomeStatisticControllerTest extends BaseTest {
 
     protected static final String OPPORTUNITY = "opportunity";
     protected static final String OPPORTUNITY_SUCCESS = "opportunity/success";
-    protected static final String CLUE = "clue";
+    protected static final String CLUE = "lead";
     protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override

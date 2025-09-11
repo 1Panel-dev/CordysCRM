@@ -13,34 +13,34 @@ export const switchOpportunityStatusUrl = '/opportunity-rule/switch'; // 模块-
 export const deleteOpportunityUrl = '/opportunity-rule/delete'; // 模块-商机-删除商机规则
 
 // 模块-线索池
-export const GetCluePoolPageUrl = '/clue-pool/page'; // 分页获取线索池
-export const AddCluePoolUrl = '/clue-pool/add'; // 新增线索池
-export const UpdateCluePoolUrl = '/clue-pool/update'; // 编辑线索池
-export const QuickUpdateCluePoolUrl = '/clue-pool/quick-update'; // 快捷编辑线索池
-export const SwitchCluePoolStatusUrl = '/clue-pool/switch'; // 启用/禁用线索池
-export const DeleteCluePoolUrl = '/clue-pool/delete'; // 删除线索池
-export const NoPickCluePoolUrl = '/clue-pool/no-pick'; // 未领取线索
+export const GetCluePoolPageUrl = '/lead-pool/page'; // 分页获取线索池
+export const AddCluePoolUrl = '/lead-pool/add'; // 新增线索池
+export const UpdateCluePoolUrl = '/lead-pool/update'; // 编辑线索池
+export const QuickUpdateCluePoolUrl = '/lead-pool/quick-update'; // 快捷编辑线索池
+export const SwitchCluePoolStatusUrl = '/lead-pool/switch'; // 启用/禁用线索池
+export const DeleteCluePoolUrl = '/lead-pool/delete'; // 删除线索池
+export const NoPickCluePoolUrl = '/lead-pool/no-pick'; // 未领取线索
 
 // 模块-线索库容
-export const GetClueCapacityPageUrl = '/clue-capacity/get'; // 获取线索库容规则
-export const AddClueCapacityUrl = '/clue-capacity/add'; // 添加线索库容规则
-export const UpdateClueCapacityUrl = '/clue-capacity/update'; // 更新线索库容规则
-export const DeleteClueCapacityUrl = '/clue-capacity/delete'; // 删除线索库容规则
+export const GetClueCapacityPageUrl = '/lead-capacity/get'; // 获取线索库容规则
+export const AddClueCapacityUrl = '/lead-capacity/add'; // 添加线索库容规则
+export const UpdateClueCapacityUrl = '/lead-capacity/update'; // 更新线索库容规则
+export const DeleteClueCapacityUrl = '/lead-capacity/delete'; // 删除线索库容规则
 
 // 模块-客户库容
-export const GetCustomerCapacityPageUrl = '/customer-capacity/get'; // 获取客户库容
-export const AddCustomerCapacityUrl = '/customer-capacity/add'; // 添加客户库容规则
-export const UpdateCustomerCapacityUrl = '/customer-capacity/update'; // 更新客户库容规则
-export const DeleteCustomerCapacityUrl = '/customer-capacity/delete'; // 删除客户库容规则
+export const GetCustomerCapacityPageUrl = '/account-capacity/get'; // 获取客户库容
+export const AddCustomerCapacityUrl = '/account-capacity/add'; // 添加客户库容规则
+export const UpdateCustomerCapacityUrl = '/account-capacity/update'; // 更新客户库容规则
+export const DeleteCustomerCapacityUrl = '/account-capacity/delete'; // 删除客户库容规则
 
 // 模块-公海池
-export const GetCustomerPoolPageUrl = '/customer-pool/page'; // 分页获取公海池
-export const AddCustomerPoolUrl = '/customer-pool/add'; // 新增公海池
-export const UpdateCustomerPoolUrl = '/customer-pool/update'; // 编辑公海池
-export const QuickUpdateCustomerPoolUrl = '/customer-pool/quick-update'; // 快捷编辑公海池
-export const SwitchCustomerPoolStatusUrl = '/customer-pool/switch'; // 启用/禁用公海池
-export const DeleteCustomerPoolUrl = '/customer-pool/delete'; // 删除公海池
-export const NoPickCustomerPoolUrl = '/customer-pool/no-pick'; // 未领取线索
+export const GetCustomerPoolPageUrl = '/account-pool/page'; // 分页获取公海池
+export const AddCustomerPoolUrl = '/account-pool/add'; // 新增公海池
+export const UpdateCustomerPoolUrl = '/account-pool/update'; // 编辑公海池
+export const QuickUpdateCustomerPoolUrl = '/account-pool/quick-update'; // 快捷编辑公海池
+export const SwitchCustomerPoolStatusUrl = '/account-pool/switch'; // 启用/禁用公海池
+export const DeleteCustomerPoolUrl = '/account-pool/delete'; // 删除公海池
+export const NoPickCustomerPoolUrl = '/account-pool/no-pick'; // 未领取线索
 
 // 模块-表单设计
 export const GetFormDesignConfigUrl = '/module/form/config'; // 获取表单设计配置
@@ -49,9 +49,9 @@ export const GetFieldDeptUerTreeUrl = '/field/user/dept/tree'; // 获取部门�
 export const GetFieldDeptTreeUrl = '/field/dept/tree'; // 获取部门树
 export const GetFieldProductListUrl = '/field/source/product'; // 获取产品列表
 export const GetFieldOpportunityListUrl = '/field/source/opportunity'; // 获取商机列表
-export const GetFieldCustomerListUrl = '/field/source/customer'; // 获取客户列表
+export const GetFieldCustomerListUrl = '/field/source/account'; // 获取客户列表
 export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
-export const GetFieldClueListUrl = '/field/source/clue'; // 获取线索列表
+export const GetFieldClueListUrl = '/field/source/lead'; // 获取线索列表
 export const CheckRepeatUrl = '/field/check/repeat'; // 查重
 
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
