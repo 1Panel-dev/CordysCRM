@@ -12,7 +12,7 @@
         <img :src="innerLogo" class="h-[52px] w-[240px]" />
       </div>
       <div class="title-0 mt-[16px] flex justify-center">
-        <span class="title-welcome one-line-text max-w-[300px]">
+        <span class="title-welcome">
           {{ t(innerSlogan || '') || t('login.form.title') }}
         </span>
       </div>
@@ -358,7 +358,9 @@
   /* stylelint-disable color-function-notation */
   .login-form {
     @apply flex flex-1 flex-col items-center justify-center;
+    margin-top: -10%;
     .title-welcome {
+      @apply flex items-center justify-center;
       font-size: 20px;
       color: var(--primary-8);
     }

@@ -9,7 +9,7 @@ export default {
   'login.form.password.placeholder': 'Please enter your password',
   'login.form.rememberPassword': 'Remember password',
   'login.form.forgetPassword': 'Forgot password',
-  'login.form.login': 'login',
+  'login.form.login': 'Login',
   'login.form.register': 'register account',
   'login.form.normalLogin': 'Normal login',
   'login.form.oauth2Test': 'OAuth2 Test',
