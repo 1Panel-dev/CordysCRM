@@ -1,4 +1,5 @@
 import { useRouter } from 'vue-router';
+import { AxiosResponse } from 'axios';
 
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { getQueryVariable, getUrlParameterWidthRegExp, isWeComBrowser } from '@lib/shared/method';
@@ -58,9 +59,11 @@ export default function useLogin() {
         // 或者在不刷新页面的情况下更新URL（比如使用 History API）
         window.history.replaceState({}, document.title, newUrl);
       } else {
-        const res = await getThirdConfigByType<Result<ConfigSynchronization>>(CompanyTypeEnum.WE_COM_OAUTH2);
+        const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
+          CompanyTypeEnum.WE_COM_OAUTH2
+        );
         if (res) {
-          const { data } = res;
+          const { data } = res.data;
           const redirectUrl = `${window.location.origin}/mobile`;
           const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
             data.corpId
