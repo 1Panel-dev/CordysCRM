@@ -342,6 +342,7 @@ public class PoolClueService {
 		clue.setOwner(ownerId);
 		clue.setCollectionTime(System.currentTimeMillis());
 		clue.setStage(ClueStatus.FOLLOWING.name());
+		clue.setUpdateUser(ownerId);
 		clue.setUpdateTime(System.currentTimeMillis());
 		extClueMapper.updateIncludeNullById(clue);
 

@@ -381,11 +381,12 @@ public class PoolCustomerService {
 		customer.setInSharedPool(false);
 		customer.setOwner(ownerId);
 		customer.setCollectionTime(System.currentTimeMillis());
+		customer.setUpdateUser(ownerId);
 		customer.setUpdateTime(System.currentTimeMillis());
 		extCustomerMapper.updateIncludeNullById(customer);
 
 		//更新联系人
-		customerContactService.updateContactOwner(customerId, ownerId, "-", currentOrgId);
+		customerContactService.updateContactOwner(customerId, ownerId, InternalUser.ADMIN.getValue(), currentOrgId);
 
 		// 日志
 		LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());
