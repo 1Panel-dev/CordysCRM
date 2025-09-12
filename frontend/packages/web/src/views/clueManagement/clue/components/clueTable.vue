@@ -621,7 +621,7 @@
     if (route.query.dim && homeDetailKey.value && isInitQuery.value) {
       const conditionParams = getLeadHomeConditions(route.query.dim as string, homeDetailKey.value);
       setAdvanceFilter(conditionParams);
-      activeTab.value = useStore.getScopedValue;
+      activeTab.value = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
       tableAdvanceFilterRef.value?.setAdvancedFilter(conditionParams, true);
     }
     isInitQuery.value = false;
@@ -632,10 +632,10 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
+        const valueScoped = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
         setLoadListParams({
           keyword: keyword.value,
-          viewId:
-            route.query.dim && homeDetailKey.value && isInitQuery.value ? useStore.getScopedValue : activeTab.value,
+          viewId: route.query.dim && homeDetailKey.value && isInitQuery.value ? valueScoped : activeTab.value,
         });
         setHomePageParams();
         crmTableRef.value?.setColumnSort(val);

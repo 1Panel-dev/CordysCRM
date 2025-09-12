@@ -139,7 +139,7 @@
   const { t } = useI18n();
 
   const props = defineProps<{
-    deptIds: string[];
+    params: GetHomeStatisticParams;
   }>();
 
   const headerList = [
@@ -246,17 +246,24 @@
   };
 
   function goDetail(dim: string, item: Record<string, any>) {
+    const { searchType, deptIds } = props.params;
     if (!item.hasPermission) return;
     const homeKey = 'homeData';
     sessionStorage.removeItem(homeKey);
     const key = getGenerateId();
     const homeData = {
-      [key]: props.deptIds,
+      [key]: searchType === 'ALL' ? [] : deptIds,
     };
+
     setSessionStorageTempState(homeKey, homeData);
     openNewPage(item.routeName, {
       dim: dim.toLocaleUpperCase(),
       key,
+      ...(searchType === 'SELF'
+        ? {
+            type: searchType,
+          }
+        : {}),
       ...(item.status
         ? {
             status: item.status,

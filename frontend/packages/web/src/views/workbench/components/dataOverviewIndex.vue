@@ -22,7 +22,7 @@
       </div>
     </div>
     <n-scrollbar x-scrollable>
-      <overview ref="overviewRef" :dept-ids="params.deptIds" />
+      <overview ref="overviewRef" :params="params" />
     </n-scrollbar>
   </CrmCard>
 </template>
