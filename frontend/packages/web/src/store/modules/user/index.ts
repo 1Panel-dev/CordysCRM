@@ -71,7 +71,7 @@ const useUserStore = defineStore('user', {
       const hasDepScopedData = state.userInfo.roles.some(
         (e: any) => e?.dataScope === 'DEPT_AND_CHILD' || e.dataScope === 'DEPT_CUSTOM'
       );
-      if (hasAllScopedData) {
+      if (hasAllScopedData || this.isAdmin) {
         return 'ALL';
       }
       if (hasDepScopedData) {
