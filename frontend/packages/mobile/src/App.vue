@@ -30,9 +30,6 @@
     const isWXWork = navigator.userAgent.includes('wxwork');
     if (!loginStatus && isWXWork) {
       await oAuthLogin();
-      router.replace({
-        name: AppRouteEnum.WORKBENCH,
-      });
       return;
     }
     router.replace({ name: AppRouteEnum.WORKBENCH });
