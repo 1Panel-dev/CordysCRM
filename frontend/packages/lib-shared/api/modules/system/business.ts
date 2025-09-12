@@ -90,10 +90,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 根据类型获取开启的三方扫码设置
-  function getThirdConfigByType(type: string) {
-    return CDR.get<ConfigSynchronization>(
+  function getThirdConfigByType<T = ConfigSynchronization>(type: string) {
+    return CDR.get<T>(
       { url: `${GetThirdConfigByTypeUrl}/${type}` },
-      { noErrorTip: type === CompanyTypeEnum.SQLBot }
+      {
+        noErrorTip: [CompanyTypeEnum.SQLBot, CompanyTypeEnum.WE_COM_OAUTH2].includes(type as CompanyTypeEnum),
+        isReturnNativeResponse: type === CompanyTypeEnum.WE_COM_OAUTH2,
+      }
     );
   }
 

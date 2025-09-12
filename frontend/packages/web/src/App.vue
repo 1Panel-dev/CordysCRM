@@ -15,6 +15,7 @@
 <script setup lang="ts">
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import useLocale from '@lib/shared/locale/useLocale';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
@@ -58,7 +59,7 @@
         const boolean = userStore.qrCodeLogin(res.data.data);
         if (boolean) {
           setLoginExpires();
-          setLoginType('WE_COM_OAUTH2');
+          setLoginType(CompanyTypeEnum.WE_COM_OAUTH2);
 
           goUserHasPermissionPage();
           setLoading(false);

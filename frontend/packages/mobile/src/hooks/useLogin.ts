@@ -1,7 +1,9 @@
 import { useRouter } from 'vue-router';
 
+import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { getQueryVariable, getUrlParameterWidthRegExp, isWeComBrowser } from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+import { ConfigSynchronization } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
 
 import { getThirdConfigByType, getWeComOauthCallback } from '@/api/modules';
@@ -20,7 +22,7 @@ export default function useLogin() {
       const success = userStore.setLoginInfo(res.data.data);
       if (success) {
         setLoginExpires();
-        setLoginType('WE_COM_OAUTH2');
+        setLoginType(CompanyTypeEnum.WE_COM_OAUTH2);
         const { redirect, ...othersQuery } = router.currentRoute.value.query;
         await router.replace({
           name: (redirect as string) || AppRouteEnum.WORKBENCH,
@@ -56,18 +58,25 @@ export default function useLogin() {
         // 或者在不刷新页面的情况下更新URL（比如使用 History API）
         window.history.replaceState({}, document.title, newUrl);
       } else {
-        const res = await getThirdConfigByType('WE_COM_OAUTH2');
-        const redirectUrl = `${window.location.origin}/mobile`;
-        const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
-          res.corpId
-        }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
-          res.agentId
-        }#wechat_redirect`;
-        window.location.replace(url);
+        const res = await getThirdConfigByType<Result<ConfigSynchronization>>(CompanyTypeEnum.WE_COM_OAUTH2);
+        if (res) {
+          const { data } = res;
+          const redirectUrl = `${window.location.origin}/mobile`;
+          const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
+            data.corpId
+          }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
+            data.agentId
+          }#wechat_redirect`;
+          window.location.replace(url);
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      if ((error as Result).code === 100500) {
+        router.replace({ name: 'login' });
+      }
+
       if ((error as Result).code === 401) {
         router.replace(AUTH_DISABLED_ROUTE_NAME);
       }
