@@ -50,6 +50,8 @@ export type ActionItem = {
 //  界面配置对象
 export interface PageConfig extends ThemeConfig, LoginConfig, PlatformConfig {}
 
+export type PageConfigKeys = keyof PageConfig;
+
 export interface AppState {
   pageSize: number;
   showSizePicker: boolean;

@@ -39,3 +39,7 @@ export const EnableApiKeyUrl = '/user/api/key/enable'; // 开启 ApiKey
 export const DisableApiKeyUrl = '/user/api/key/disable'; // 关闭 ApiKey
 export const DeleteApiKeyUrl = '/user/api/key/delete'; // 删除 ApiKey
 export const AddApiKeyUrl = '/user/api/key/add'; // 新增 ApiKey
+
+// 界面设置
+export const SavePageConfigUrl = '/ui/display/save'; // 保存界面配置
+export const GetPageConfigUrl = '/ui/display/info'; // 获取界面配置

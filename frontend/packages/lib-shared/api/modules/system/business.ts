@@ -16,11 +16,13 @@ import {
   GetDEOrgListUrl,
   GetDETokenUrl,
   GetExportCenterListUrl,
+  GetPageConfigUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
   GetThirdConfigByTypeUrl,
   GetThirdPartyConfigUrl,
   GetThirdTypeListUrl,
+  SavePageConfigUrl,
   SendEmailCodeUrl,
   SyncDEUrl,
   TestConfigEmailUrl,
@@ -46,6 +48,8 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
   DEOrgItem,
+  PageConfigReturns,
+  SavePageConfigParams,
   UpdateApiKeyParams,
 } from '@lib/shared/models/system/business';
 import {
@@ -231,6 +235,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: AddApiKeyUrl });
   }
 
+  // 保存界面配置
+  function savePageConfig(data: SavePageConfigParams) {
+    return CDR.uploadFile({ url: SavePageConfigUrl }, data, 'files');
+  }
+
+  // 获取界面配置
+  function getPageConfig() {
+    return CDR.get<PageConfigReturns>({ url: GetPageConfigUrl }, { ignoreCancelToken: true });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -265,5 +279,7 @@ export default function useProductApi(CDR: CordysAxios) {
     disableApiKey,
     deleteApiKey,
     addApiKey,
+    savePageConfig,
+    getPageConfig,
   };
 }

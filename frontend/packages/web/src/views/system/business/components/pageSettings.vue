@@ -19,7 +19,9 @@
 
   <!-- 登录页配置 -->
   <CrmCard class="mb-[16px]" :loading="pageLoading" hide-footer auto-height>
-    {{ t('system.config.page.loginPageConfig') }}
+    <div class="config-title">
+      {{ t('system.config.page.loginPageConfig') }}
+    </div>
     <div class="config-content">
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
@@ -28,14 +30,14 @@
         </n-button>
       </div>
       <div class="config-main">
-        <div ref="loginPageFullRef" class="config-preview">
+        <div ref="loginPageFullRef" class="config-preview relative">
           <div :class="['config-preview-head', isLoginPageFullscreen ? 'config-preview-head-full' : '']">
-            <div class="flex items-center justify-between">
-              <img :src="pageConfig.icon[0]?.url ? pageConfig.icon[0].url : '/logo.png'" class="h-[18px] w-[18px]" />
+            <div class="flex flex-1 items-center overflow-hidden">
+              <img :src="pageConfig.icon[0]?.url ? pageConfig.icon[0].url : '/logo.svg'" class="h-[18px] w-[18px]" />
               <div class="one-line-text ml-[4px] text-[10px]">{{ pageConfig.title }}</div>
             </div>
             <CrmIcon
-              class="cursor-pointer text-[var(--text-n2)]"
+              class="relative right-[12px] z-10 cursor-pointer text-[var(--text-n2)]"
               :type="!isLoginPageFullscreen ? 'iconicon_full_screen_one' : 'iconicon_off_screen'"
               @click="loginFullscreenToggle"
             />
@@ -95,7 +97,9 @@
 
   <!-- 平台主页面配置 -->
   <CrmCard class="mb-[88px]" :loading="pageLoading" hide-footer auto-height>
-    {{ t('system.config.page.platformConfig') }}
+    <div class="config-title">
+      {{ t('system.config.page.platformConfig') }}
+    </div>
     <div class="config-content border border-solid border-[var(--text-n8)] !bg-[var(--text-n10)]">
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
@@ -103,7 +107,8 @@
           {{ t('system.config.page.reset') }}
         </n-button>
       </div>
-      <div :class="['config-main', '!h-[290px]']">
+      <!-- 平台主页预览盒子 -->
+      <div :class="['config-main', '!h-[290px]', currentLocale === 'en-US' ? '!h-[340px]' : '']">
         <div ref="platformPageFullRef" class="config-preview relative">
           <CrmIcon
             class="absolute right-[12px] top-[8px] z-[998] cursor-pointer text-[var(--text-n2)]"
@@ -191,6 +196,7 @@
   import { FormInst, NButton, NForm, NFormItem, NInput, NLayout, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { scrollIntoView } from '@lib/shared/method/dom';
   import { sleep } from '@lib/shared/method/index';
 
@@ -210,6 +216,7 @@
   const { t } = useI18n();
   const appStore = useAppStore();
   const Message = useMessage();
+  const { currentLocale } = useLocale(Message.loading);
 
   const pageLoading = ref(false);
   const pageConfig = ref({ ...appStore.pageConfig, slogan: t(appStore.pageConfig.slogan) });
@@ -277,11 +284,15 @@
   );
 
   const loginPageFullRef = ref<HTMLElement | null>(null);
-  const { isFullScreen: isLoginPageFullscreen, toggleFullScreen: loginFullscreenToggle } =
-    useFullScreen(loginPageFullRef);
+  const { isFullScreen: isLoginPageFullscreen, toggleFullScreen: loginFullscreenToggle } = useFullScreen(
+    loginPageFullRef,
+    true
+  );
   const platformPageFullRef = ref<HTMLElement | null>(null);
-  const { isFullScreen: isPlatformPageFullscreen, toggleFullScreen: platformFullscreenToggle } =
-    useFullScreen(platformPageFullRef);
+  const { isFullScreen: isPlatformPageFullscreen, toggleFullScreen: platformFullscreenToggle } = useFullScreen(
+    platformPageFullRef,
+    true
+  );
 
   const loginConfigFormRef = ref<FormInst | null>(null);
   const platformConfigFormRef = ref<FormInst | null>(null);
@@ -375,6 +386,11 @@
 </script>
 
 <style lang="less" scoped>
+  .config-title {
+    @apply flex items-center font-medium;
+
+    margin-bottom: 16px;
+  }
   .config-content {
     margin-top: 8px;
     padding: 16px;
@@ -385,6 +401,7 @@
       margin-bottom: 8px;
       @apply flex items-center justify-between;
     }
+    // 对应  config-preview
     .config-main {
       display: flex;
       overflow: hidden;
@@ -399,7 +416,10 @@
       @media screen and (min-width: 1800px) {
         height: auto;
       }
+      // 对应login-preview
       .config-preview {
+        @apply relative;
+
         width: 740px;
         background-color: var(--text-n10);
         @media screen and (min-width: 1600px) {
@@ -409,6 +429,7 @@
           width: 100%;
         }
         .config-preview-head {
+          gap: 24px;
           @apply flex items-center justify-between;
 
           padding: 8px;
@@ -445,6 +466,7 @@
       .config-form {
         margin-left: 16px;
         width: 40%;
+        min-width: 300px;
       }
     }
     .config-content-tip {

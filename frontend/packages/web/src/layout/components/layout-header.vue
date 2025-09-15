@@ -74,9 +74,9 @@
                   <n-divider class="!my-0" />
                   <div class="flex flex-col gap-[8px]">
                     <div class="flex items-center justify-between">
-                      <div>
-                        License
-                        <CrmTag class="ml-8px" :type="getLicenseStatus.status" theme="light">
+                      <div class="flex items-center gap-[8px]">
+                        <div class="font-semibold text-[var(--text-n1)]">License</div>
+                        <CrmTag tooltip-disabled :type="getLicenseStatus.status" theme="light">
                           {{ getLicenseStatus.title }}
                         </CrmTag>
                       </div>

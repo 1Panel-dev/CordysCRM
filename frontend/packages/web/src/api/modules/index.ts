@@ -293,6 +293,8 @@ export const {
   disableApiKey,
   deleteApiKey,
   addApiKey,
+  getPageConfig,
+  savePageConfig,
 } = businessApi;
 
 export const {

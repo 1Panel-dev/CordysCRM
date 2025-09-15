@@ -3,8 +3,6 @@ import type { PageConfig, Style, Theme } from '@/store/modules/app/types';
 
 import Color from 'color';
 
-const appStore = useAppStore();
-
 /**
  * 获取颜色对象的 rgb 色值
  * @param color Color对象
@@ -22,6 +20,7 @@ export function getRGBinnerVal(color: Color) {
  * @param primaryColor 主题色
  */
 export function setCustomTheme(primaryColor: string) {
+  const appStore = useAppStore();
   const styleTag = document.createElement('style');
   styleTag.id = 'CRM-CUSTOM-THEME';
   const primary = new Color(primaryColor);
@@ -61,6 +60,7 @@ export function setCustomTheme(primaryColor: string) {
  * 主题重置为默认主题
  */
 export function resetTheme() {
+  const appStore = useAppStore();
   const prevStyleTag = document.getElementById('CRM-CUSTOM-THEME');
   if (prevStyleTag) {
     prevStyleTag.remove();
@@ -74,6 +74,7 @@ export function resetTheme() {
  */
 export function setPlatformColor(color: string, isFollow = false) {
   const styleTag = document.createElement('style');
+  const appStore = useAppStore();
   styleTag.id = 'CRM-CUSTOM-STYLE';
   const white = Color('#fff');
   // 跟随主题色，设置为P1
@@ -96,6 +97,7 @@ export function setPlatformColor(color: string, isFollow = false) {
  * 平台风格重置为默认平台风格
  */
 export function resetStyle() {
+  const appStore = useAppStore();
   const prevStyleTag = document.getElementById('CRM-CUSTOM-STYLE');
   if (prevStyleTag) {
     prevStyleTag.remove();

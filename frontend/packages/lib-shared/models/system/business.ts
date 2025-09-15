@@ -219,3 +219,26 @@ export interface UpdateApiKeyParams {
   expireTime?: number;
   description: string;
 }
+
+interface ParamItem {
+  paramKey: string; // 参数的 key
+  paramValue: string; // 参数的值
+  type: string; // 参数类型，一般是 string
+}
+
+// 保存基础信息、邮箱信息接口入参
+export type SaveInfoParams = ParamItem[];
+
+// 界面设置
+export interface SavePageConfigParams {
+  fileList: (File | undefined)[];
+  request: (Record<string, any> | undefined)[];
+}
+
+interface FileParamItem extends ParamItem {
+  file: string;
+  fileName: string;
+}
+
+// 页面配置返回参数
+export type PageConfigReturns = FileParamItem[];

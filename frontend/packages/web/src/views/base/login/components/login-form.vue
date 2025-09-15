@@ -358,9 +358,11 @@
   /* stylelint-disable color-function-notation */
   .login-form {
     @apply flex flex-1 flex-col items-center justify-center;
-    margin-top: -10%;
+
+    transform: translateY(-10%);
     .title-welcome {
       @apply flex items-center justify-center;
+
       font-size: 20px;
       color: var(--primary-8);
     }

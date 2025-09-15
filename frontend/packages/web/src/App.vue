@@ -112,6 +112,21 @@
     }
   }
 
+  onBeforeMount(async () => {
+    try {
+      if (licenseStore.isEnterpriseVersion()) {
+        licenseStore.getValidateLicense();
+      }
+      if (licenseStore.hasLicense()) {
+        // TODO 等待联调
+        // appStore.initPageConfig();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  });
+
   onMounted(() => {
     adjustOSTheme();
     licenseStore.getValidateLicense();
