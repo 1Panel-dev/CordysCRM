@@ -11,8 +11,17 @@ import java.util.List;
 @Data
 public class SimpleField {
 
+	@Schema(description = "ID")
+	private String id;
+
 	@Schema(description = "名称")
 	private String name;
+
+	@Schema(description = "类型")
+	private String type;
+
+	@Schema(description = "业务字段名")
+	private String businessKey;
 
 	@Schema(description = "选项枚举值")
 	private List<String> options;

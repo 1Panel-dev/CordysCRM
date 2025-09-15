@@ -88,7 +88,10 @@ public class ModuleFormCacheService {
 		ModuleFormConfigDTO businessFormConfig = getBusinessFormConfig(formKey, organizationId);
 		return businessFormConfig.getFields().stream().filter(BaseField::canImport).map(field -> {
 			SimpleField simpleField = new SimpleField();
+			simpleField.setId(field.getId());
+			simpleField.setBusinessKey(field.getBusinessKey());
 			simpleField.setName(field.getName());
+			simpleField.setType(field.getType());
 			simpleField.setRequired(field.needRequireCheck());
 			simpleField.setUnique(field.needRepeatCheck());
 			if (field instanceof HasOption fieldWithOption) {
