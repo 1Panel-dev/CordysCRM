@@ -38,31 +38,31 @@
 
   // TODO license 先放开
   // const tabList = ref([{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }]);
-  const tabList = ref([
+
+  const initTabList = [
+    { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'syncOrganization', tab: t('system.business.tab.third') },
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
     { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
-  ]);
-  // TODO license 先放开
-  // watch(
-  //   () => xPack.value,
-  //   async (val) => {
-  //     if (val) {
-  //       tabList.value = [
-  //         { name: 'syncOrganization', tab: t('system.business.tab.third') },
-  //         { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
-  //         { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
-  //       ];
-  //       activeTab.value = 'syncOrganization';
-  //     } else {
-  //       tabList.value = [{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }];
-  //       activeTab.value = 'mailSettings';
-  //     }
-  //   },
-  //   {
-  //     immediate: true,
-  //   }
-  // );
+  ];
+
+  const tabList = ref([...initTabList]);
+
+  watch(
+    () => xPack.value,
+    async (val) => {
+      if (val) {
+        tabList.value = [...initTabList];
+        activeTab.value = 'pageSettings';
+      } else {
+        tabList.value = initTabList.filter((e) => e.name !== 'pageSettings');
+        activeTab.value = 'syncOrganization';
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped>

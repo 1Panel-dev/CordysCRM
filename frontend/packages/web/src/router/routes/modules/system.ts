@@ -17,7 +17,6 @@ const system: AppRouteRecordRaw = {
       'SYSTEM_NOTICE:READ',
       'SYSTEM_SETTING:READ',
       'OPERATION_LOG:READ',
-      'LICENSE:READ',
     ],
     icon: 'iconicon_set_up',
     collapsedLocale: 'menu.collapsedSettings',
@@ -66,15 +65,6 @@ const system: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.settings.businessSetting',
         permissions: ['SYSTEM_SETTING:READ'],
-      },
-    },
-    {
-      path: 'license',
-      name: SystemRouteEnum.SYSTEM_LICENSE,
-      component: () => import('@/views/system/license/index.vue'),
-      meta: {
-        locale: 'menu.settings.license',
-        permissions: ['LICENSE:READ'],
       },
     },
     {

@@ -1,26 +1,4 @@
 <template>
-  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 64 : 0">
-    <n-scrollbar x-scrollable content-class="flex w-full items-center justify-center">
-      <div class="license-wrapper">
-        <CrmSvg width="888px" class="mb-[40px] flex-shrink-0" height="180px" name="cordysBackground" />
-        <div class="license-content">
-          <div class="license-column">
-            <div v-for="item in licenseInfo" :key="item.label" class="mb-[24px]">
-              {{ item.label }}
-            </div>
-            <n-button v-permission="['LICENSE:EDIT']" strong text type="primary" @click="handleUpdate">
-              {{ t('system.license.authorityUpdate') }}
-            </n-button>
-          </div>
-          <div class="license-column font-medium">
-            <div v-for="item in licenseInfo" :key="`${item.label}-${item.value}`" class="mb-[24px]">
-              {{ item.value ?? '-' }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </n-scrollbar>
-  </CrmCard>
   <CrmDrawer
     v-model:show="visible"
     :width="600"
@@ -63,14 +41,12 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NButton, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
+  import { ref } from 'vue';
+  import { FormInst, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { addCommasToNumber } from '@lib/shared/method';
 
-  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
 
   import { addLicense } from '@/api/modules';
@@ -81,12 +57,15 @@
   const { t } = useI18n();
   const Message = useMessage();
 
+  const visible = defineModel<boolean>('visible', {
+    required: true,
+  });
+
   const form = ref<{
     licenseCode: string | null;
   }>({
     licenseCode: '',
   });
-  const visible = ref(false);
 
   const fileList = ref([]);
 
@@ -94,10 +73,6 @@
     visible.value = false;
     form.value.licenseCode = null;
     fileList.value = [];
-  }
-
-  function handleUpdate() {
-    visible.value = true;
   }
 
   const formRef = ref<FormInst | null>(null);
@@ -147,63 +122,6 @@
       }
     }
   );
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'valid':
-        return t('system.license.valid');
-      case 'expired':
-        return t('system.license.invalid');
-      default:
-        return t('system.license.failure');
-    }
-  };
-
-  const licenseInfo = computed(() => {
-    const { corporation, expired, product, edition, count, licenseVersion } = licenseStore?.licenseInfo || {};
-    return [
-      {
-        label: t('system.license.customerName'),
-        value: corporation,
-      },
-      { label: t('system.license.authorizationTime'), value: expired },
-      { label: t('system.license.productName'), value: product },
-      { label: t('system.license.productionVersion'), value: edition },
-      { label: t('system.license.licenseVersion'), value: licenseVersion },
-      { label: t('system.license.authorizationsCount'), value: addCommasToNumber(count || 0) },
-      {
-        label: t('system.license.authorizationStatus'),
-        value: getStatusText(licenseStore.licenseInfo?.status as string),
-      },
-    ];
-  });
-
-  onBeforeMount(() => {
-    licenseStore.getValidateLicense();
-  });
 </script>
 
-<style scoped lang="less">
-  .license-content-class {
-    @apply flex !w-full items-center justify-center;
-  }
-  .license-wrapper {
-    display: flex;
-    align-items: center;
-    padding: 24px;
-    width: 936px;
-    min-height: 628px;
-    color: var(--text-n1);
-    flex-direction: column;
-    .license-content {
-      display: flex;
-      gap: 220px;
-    }
-    .license-column {
-      display: flex;
-      align-items: flex-start;
-      text-align: left;
-      flex-direction: column;
-    }
-  }
-</style>
+<style scoped></style>

@@ -67,6 +67,37 @@
                     {{ appStore.versionInfo.copyright }}
                   </div>
                 </div>
+                <div
+                  v-if="licenseStore.isEnterpriseVersion() && hasAnyPermission(['LICENSE:READ'])"
+                  class="flex flex-col gap-[4px]"
+                >
+                  <n-divider class="!my-0" />
+                  <div class="flex flex-col gap-[8px]">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        License
+                        <CrmTag class="ml-8px" :type="getLicenseStatus.status" theme="light">
+                          {{ getLicenseStatus.title }}
+                        </CrmTag>
+                      </div>
+                      <n-button v-permission="['LICENSE:EDIT']" text type="primary" @click="handleUpdate">
+                        {{ t('system.license.authorityUpdate') }}
+                      </n-button>
+                    </div>
+                    <div class="flex items-center gap-[8px]">
+                      <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                        {{ t('system.license.customerName') }}
+                      </div>
+                      <div class="font-semibold">{{ licenseStore?.licenseInfo?.corporation }}</div>
+                    </div>
+                    <div class="flex items-center gap-[8px]">
+                      <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                        {{ t('system.license.authorizationTime') }}
+                      </div>
+                      <div class="font-semibold">{{ licenseStore?.licenseInfo?.expired }}</div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <template #trigger>
                 <n-button class="p-[8px]" quaternary>
@@ -92,6 +123,7 @@
       </div>
     </div>
     <MessageDrawer v-model:show="showMessageDrawer" />
+    <licenseDrawer v-model:visible="showLicenseDrawer" />
     <Suspense>
       <CrmDuplicateCheckDrawer v-model:visible="showDuplicateCheckDrawer" />
     </Suspense>
@@ -101,7 +133,7 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
-  import { NBadge, NButton, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
+  import { NBadge, NButton, NDivider, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -114,14 +146,18 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { lastScopedOptions } from '@/components/business/crm-duplicate-check-drawer/config';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
+  import licenseDrawer from '@/views/system/license/licenseDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import { changeLocaleBackEnd } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -134,6 +170,7 @@
 
   const appStore = useAppStore();
   const userStore = useUserStore();
+  const licenseStore = useLicenseStore();
 
   function changeLanguage(locale: LocaleType) {
     changeLocaleBackEnd(locale);
@@ -148,6 +185,33 @@
   function showMessage() {
     showMessageDrawer.value = true;
   }
+
+  const showLicenseDrawer = ref(false);
+  function handleUpdate() {
+    showLicenseDrawer.value = true;
+  }
+  const getLicenseStatus = computed<{
+    title: string;
+    status: 'default' | 'error' | 'warning' | 'primary' | 'info' | 'success';
+  }>(() => {
+    switch (licenseStore.licenseInfo?.status) {
+      case 'valid':
+        return {
+          title: t('system.license.valid'),
+          status: 'success',
+        };
+      case 'expired':
+        return {
+          title: t('system.license.invalid'),
+          status: 'error',
+        };
+      default:
+        return {
+          title: t('system.license.failure'),
+          status: 'error',
+        };
+    }
+  });
 
   const showSearch = computed(() => lastScopedOptions.value.length);
   const showDuplicateCheckDrawer = ref(false);
