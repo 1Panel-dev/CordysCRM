@@ -24,7 +24,7 @@ public class SimpleField {
 	private String businessKey;
 
 	@Schema(description = "选项枚举值")
-	private List<String> options;
+	private List<OptionProp> options;
 
 	@Schema(description = "是否必填")
 	private boolean required;

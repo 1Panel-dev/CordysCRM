@@ -26,10 +26,7 @@ import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.TransformSourceApplyDTO;
 import cn.cordys.crm.system.dto.field.*;
-import cn.cordys.crm.system.dto.field.base.BaseField;
-import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
-import cn.cordys.crm.system.dto.field.base.HasOption;
-import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.field.base.*;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
@@ -824,5 +821,28 @@ public class ModuleFormService {
 				moduleFormBlobMapper.updateById(formBlob);
 			}
 		}
+	}
+
+	/**
+	 * 获取MCP表单需要的字段
+	 * @param formKey 表单Key
+	 * @param organizationId 组织ID
+	 * @return 字段列表
+	 */
+	public List<SimpleField> getMcpFields(String formKey, String organizationId) {
+		ModuleFormConfigDTO businessFormConfig = getBusinessFormConfig(formKey, organizationId);
+		return businessFormConfig.getFields().stream().filter(BaseField::canImport).map(field -> {
+			SimpleField simpleField = new SimpleField();
+			simpleField.setId(field.getId());
+			simpleField.setBusinessKey(field.getBusinessKey());
+			simpleField.setName(field.getName());
+			simpleField.setType(field.getType());
+			simpleField.setRequired(field.needRequireCheck());
+			simpleField.setUnique(field.needRepeatCheck());
+			if (field instanceof HasOption fieldWithOption) {
+				simpleField.setOptions(fieldWithOption.getOptions());
+			}
+			return simpleField;
+		}).toList();
 	}
 }

@@ -77,27 +77,4 @@ public class ModuleFormCacheService {
 		);
 		return businessModuleFormConfig;
 	}
-
-	/**
-	 * 获取MCP表单需要的字段
-	 * @param formKey 表单Key
-	 * @param organizationId 组织ID
-	 * @return 字段列表
-	 */
-	public List<SimpleField> getMcpFields(String formKey, String organizationId) {
-		ModuleFormConfigDTO businessFormConfig = getBusinessFormConfig(formKey, organizationId);
-		return businessFormConfig.getFields().stream().filter(BaseField::canImport).map(field -> {
-			SimpleField simpleField = new SimpleField();
-			simpleField.setId(field.getId());
-			simpleField.setBusinessKey(field.getBusinessKey());
-			simpleField.setName(field.getName());
-			simpleField.setType(field.getType());
-			simpleField.setRequired(field.needRequireCheck());
-			simpleField.setUnique(field.needRepeatCheck());
-			if (field instanceof HasOption fieldWithOption) {
-				simpleField.setOptions(fieldWithOption.getOptions().stream().map(OptionProp::getLabel).toList());
-			}
-			return simpleField;
-		}).toList();
-	}
 }
