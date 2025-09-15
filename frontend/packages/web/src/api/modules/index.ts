@@ -50,6 +50,9 @@ export const {
   batchDeleteProduct,
   batchUpdateProduct,
   dragSortProduct,
+  preCheckImportProduct,
+  downloadProductTemplate,
+  importProduct,
 } = productApi;
 
 export const {

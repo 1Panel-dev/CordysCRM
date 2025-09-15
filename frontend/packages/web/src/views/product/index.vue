@@ -17,7 +17,7 @@
         @refresh="searchData"
       >
         <template #actionLeft>
-          <div class="flex items-center">
+          <div class="flex items-center gap-[12px]">
             <n-button
               v-permission="['PRODUCT_MANAGEMENT:ADD']"
               type="primary"
@@ -30,6 +30,13 @@
             >
               {{ t('product.createProduct') }}
             </n-button>
+            <!-- TODO 联调 -->
+            <CrmImportButton
+              v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:IMPORT'])"
+              :api-type="FormDesignKeyEnum.PRODUCT"
+              :title="t('module.productManagement')"
+              @import-success="() => searchData()"
+            />
           </div>
         </template>
         <template #actionRight>
@@ -64,6 +71,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
   import { batchDeleteProduct, batchUpdateProduct, deleteProduct, dragSortProduct } from '@/api/modules';

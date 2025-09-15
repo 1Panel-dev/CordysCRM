@@ -4,10 +4,13 @@ import {
   BatchDeleteProductUrl,
   BatchUpdateProductUrl,
   DeleteProductUrl,
+  DownloadProductTemplateUrl,
   DragSortProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
   GetProductUrl,
+  ImportProductUrl,
+  PreCheckProductImportUrl,
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
 import type { CommonList, TableDraggedParams, TableQueryParams } from '@lib/shared/models/common';
@@ -18,6 +21,7 @@ import type {
   UpdateProductParams,
 } from '@lib/shared/models/product';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加产品
@@ -64,6 +68,24 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragSortProductUrl, data });
   }
 
+  function preCheckImportProduct(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckProductImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadProductTemplate() {
+    return CDR.get(
+      {
+        url: DownloadProductTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importProduct(file: File) {
+    return CDR.uploadFile({ url: ImportProductUrl }, { fileList: [file] }, 'file');
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -74,5 +96,8 @@ export default function useProductApi(CDR: CordysAxios) {
     batchDeleteProduct,
     batchUpdateProduct,
     dragSortProduct,
+    preCheckImportProduct,
+    downloadProductTemplate,
+    importProduct,
   };
 }

@@ -6,21 +6,25 @@ import {
   downloadContactTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
+  downloadProductTemplate,
   importAccount,
   importContact,
   importLead,
   importOpportunity,
+  importProduct,
   preCheckImportAccount,
   preCheckImportContact,
   preCheckImportLead,
   preCheckImportOpt,
+  preCheckImportProduct,
 } from '@/api/modules';
 
 export type ImportApiType =
   | FormDesignKeyEnum.CLUE
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CUSTOMER
-  | FormDesignKeyEnum.CONTACT;
+  | FormDesignKeyEnum.CONTACT
+  | FormDesignKeyEnum.PRODUCT;
 
 export interface importRequestType {
   preCheck: (file: File) => Promise<{ data: ValidateInfo }>;
@@ -48,5 +52,10 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: preCheckImportOpt,
     save: importOpportunity,
     download: downloadOptTemplate,
+  },
+  [FormDesignKeyEnum.PRODUCT]: {
+    preCheck: preCheckImportProduct,
+    save: importProduct,
+    download: downloadProductTemplate,
   },
 };
