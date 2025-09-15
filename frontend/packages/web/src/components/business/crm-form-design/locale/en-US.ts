@@ -146,4 +146,5 @@ export default {
   'crmFormDesign.rangeLimit': 'Limit Selectable Range',
   'crmFormDesign.linkFieldSettingClearTip': 'Are you sure you want to clear the field linkage?',
   'crmFormDesign.linkFieldSettingClearTipContent': 'After clearing, the field will no longer display linked values',
+  'crmFormDesign.mobile': 'Mobile',
 };

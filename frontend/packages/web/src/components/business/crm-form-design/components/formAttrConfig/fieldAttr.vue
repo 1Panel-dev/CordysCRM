@@ -701,6 +701,26 @@
         </n-checkbox>
       </div>
       <!-- 字段权限 End -->
+      <!-- 移动端 -->
+      <div class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.mobile') }}
+        </div>
+        <n-checkbox
+          v-model:checked="fieldConfig.mobile"
+          :disabled="fieldConfig.disabledProps?.includes('mobile')"
+          @update-checked="
+            ($event) => {
+              if ($event === false) {
+                fieldConfig.mobile = false;
+              }
+            }
+          "
+        >
+          {{ t('crmFormDesign.readable') }}
+        </n-checkbox>
+      </div>
+      <!-- 移动端 End -->
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}

@@ -144,4 +144,5 @@ export default {
   'crmFormDesign.rangeLimit': '限制可选范围',
   'crmFormDesign.linkFieldSettingClearTip': '确定清空字段联动吗？',
   'crmFormDesign.linkFieldSettingClearTipContent': '清空后，字段将不再联动显示值',
+  'crmFormDesign.mobile': '移动端',
 };

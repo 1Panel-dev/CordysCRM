@@ -93,6 +93,7 @@ export const inputDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
 };
 
@@ -107,6 +108,7 @@ export const textareaDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
 };
 
@@ -121,6 +123,7 @@ export const inputNumberDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   numberFormat: 'number',
   decimalPlaces: false,
@@ -139,6 +142,7 @@ export const dateTimeDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   dateType: 'datetime',
   dateDefaultType: 'custom', // 自定义日期类型
@@ -156,6 +160,7 @@ export const radioDefaultFieldConfig: FormCreateField = {
   options: [],
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   direction: 'vertical',
 };
@@ -172,6 +177,7 @@ export const checkboxDefaultFieldConfig: FormCreateField = {
   options: [],
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   direction: 'vertical',
 };
@@ -188,6 +194,7 @@ export const selectDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   multiple: false,
 };
@@ -204,6 +211,7 @@ export const selectMultipleDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   multiple: false,
 };
@@ -218,6 +226,7 @@ export const memberDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   defaultValue: [],
   initialOptions: [],
@@ -234,6 +243,7 @@ export const memberMultipleDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   defaultValue: [],
   initialOptions: [],
@@ -250,6 +260,7 @@ export const departmentDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   defaultValue: [],
   initialOptions: [],
@@ -266,6 +277,7 @@ export const departmentMultipleDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   defaultValue: [],
   initialOptions: [],
@@ -282,6 +294,7 @@ export const dividerDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   dividerClass: 'divider--normal',
   dividerColor: '#edf0f1',
@@ -298,6 +311,7 @@ export const tagInputDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   defaultValue: [],
 };
@@ -330,6 +344,7 @@ export const pictureDefaultFieldConfig: FormCreateField = {
   defaultValue: [],
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   uploadLimit: 10,
   uploadSizeLimit: 20,
@@ -349,6 +364,7 @@ export const locationDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   locationType: 'PCD',
 };
@@ -364,6 +380,7 @@ export const phoneDefaultFieldConfig: FormCreateField = {
   defaultValue: null,
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
 };
 
@@ -377,6 +394,7 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   multiple: false,
   defaultValue: [],
@@ -408,6 +426,7 @@ export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: true,
+  mobile: true,
   rules: [],
   multiple: false,
   defaultValue: [],
@@ -440,6 +459,7 @@ export const serialNumberDefaultFieldConfig: FormCreateField = {
   description: '',
   readable: true,
   editable: false,
+  mobile: true,
   rules: [],
   serialNumberRules: ['Opp', '-', 'yyyyMM', '-', 6],
 };
