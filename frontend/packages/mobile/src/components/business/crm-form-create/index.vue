@@ -118,10 +118,9 @@
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }
-    // TODO lmy
-    // if (type === FieldTypeEnum.LOCATION) {
-    //   return CrmFormCreateComponents.advancedComponents.location;
-    // }
+    if (type === FieldTypeEnum.LOCATION) {
+      return CrmFormCreateComponents.advancedComponents.location;
+    }
     if (type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }

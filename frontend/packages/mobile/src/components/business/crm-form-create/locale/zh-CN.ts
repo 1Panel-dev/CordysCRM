@@ -22,4 +22,6 @@ export default {
   'formCreate.repeatTipWithoutName': '系统中存在重复值',
   'formCreate.upload.repeatFileTip': '文件重复',
   'formCreate.advanced.overSize': '文件大小限制为 {size} MB，请重新选择文件',
+  'formCreate.advanced.selectLocation': '请选择地址',
+  'formCreate.advanced.inputLocationDetail': '请输入详细地址',
 };
