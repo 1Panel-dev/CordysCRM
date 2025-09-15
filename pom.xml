@@ -50,7 +50,7 @@
         <guava.version>33.4.8-jre</guava.version>
         <commons-compress.version>1.28.0</commons-compress.version>
         <jwt.version>3.12.1</jwt.version>
-
+        <swagger-annotations.version>2.2.36</swagger-annotations.version>
     </properties>
 
     <dependencies>
