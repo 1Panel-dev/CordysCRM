@@ -144,21 +144,12 @@
         if (areaCodeOptions.some((opt) => opt.value === code)) {
           areaCode.value = code;
           phoneNumber.value = number || '';
-        } else {
-          areaCode.value = '';
-          phoneNumber.value = val;
+          return;
         }
       }
-      // 处理纯数字格式 符合中国的就回显中国，否则回显其他
-      else {
-        phoneNumber.value = val;
-        if (getPatternByAreaCode('+86')?.test(val)) {
-          areaCode.value = '+86';
-        } else {
-          areaCode.value = '';
-        }
-        updateValue();
-      }
+      phoneNumber.value = val;
+      areaCode.value = '';
+      updateValue();
     },
     { immediate: true }
   );

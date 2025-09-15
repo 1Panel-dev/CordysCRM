@@ -127,25 +127,15 @@
         const endBracket = val.indexOf(')');
         const code = val.substring(1, endBracket);
         const number = val.substring(endBracket + 1);
-
         if (areaCodeOptions.some((opt) => opt.value === code)) {
           areaCode.value = code;
           phoneNumber.value = number || '';
-        } else {
-          areaCode.value = '';
-          phoneNumber.value = val;
+          return;
         }
       }
-      // 处理纯数字格式 符合中国的就回显中国，否则回显其他
-      else {
-        phoneNumber.value = val;
-        if (getPatternByAreaCode('+86')?.test(val)) {
-          areaCode.value = '+86';
-        } else {
-          areaCode.value = '';
-        }
-        updateValue(areaCode.value, phoneNumber.value);
-      }
+      phoneNumber.value = val;
+      areaCode.value = '';
+      updateValue(areaCode.value, phoneNumber.value);
     },
     { immediate: true }
   );

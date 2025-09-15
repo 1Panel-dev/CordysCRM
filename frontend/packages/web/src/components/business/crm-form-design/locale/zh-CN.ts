@@ -21,7 +21,7 @@ export default {
   'crmFormDesign.phone.area.hongKong': '中国香港',
   'crmFormDesign.phone.area.macau': '中国澳门',
   'crmFormDesign.phone.area.taiwan': '中国台湾',
-  'crmFormDesign.phone.area.other': '其他国家',
+  'crmFormDesign.phone.area.other': '其它',
   'crmFormDesign.phone.lengthValidator': '请输入 {count} 位手机号',
   'crmFormDesign.phone.formatValidator': '请输入正确格式的手机号',
   'crmFormDesign.emptyTip': '从左侧 拖拽 或 点击 添加字段',

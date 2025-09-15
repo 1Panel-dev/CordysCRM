@@ -16,7 +16,7 @@ export default {
   'formCreate.phone.area.macau': '中国澳门',
   'formCreate.phone.area.taiwan': '中国台湾',
   'formCreate.phone.lengthValidator': '请输入 {count} 位手机号',
-  'formCreate.phone.area.other': '其他国家',
+  'formCreate.phone.area.other': '其它',
   'formCreate.phone.formatValidator': '请输入正确格式的手机号',
   'formCreate.repeatTip': '与 {name} 的重复',
   'formCreate.repeatTipWithoutName': '系统中存在重复值',

@@ -21,7 +21,7 @@ export default {
   'crmFormDesign.phone.area.hongKong': 'Hong Kong, China',
   'crmFormDesign.phone.area.macau': 'Macau, China',
   'crmFormDesign.phone.area.taiwan': 'Taiwan, China',
-  'crmFormDesign.phone.area.other': 'Other countries',
+  'crmFormDesign.phone.area.other': 'Other',
   'crmFormDesign.phone.lengthValidator': 'Please enter the {count} digit phone number',
   'crmFormDesign.phone.formatValidator': 'Please enter the phone number in the correct format',
   'crmFormDesign.emptyTip': 'Drag or click from the left to add fields',
