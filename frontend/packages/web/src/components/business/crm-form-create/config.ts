@@ -1,4 +1,3 @@
-import { AdvancedSearchOptPageUrl } from '@lib/shared/api/requrls/opportunity';
 import {
   FieldDataSourceTypeEnum,
   FieldRuleEnum,

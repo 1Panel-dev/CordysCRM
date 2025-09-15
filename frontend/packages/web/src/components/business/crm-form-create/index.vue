@@ -55,6 +55,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -73,7 +74,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
-    (e: 'init', title: string): void;
+    (e: 'init', title: string, formViewSize?: FormViewSize): void;
     (e: 'saved', isContinue: boolean, res: any): void;
   }>();
 
@@ -254,7 +255,7 @@
 
   onBeforeMount(async () => {
     await initFormConfig();
-    emit('init', formCreateTitle.value);
+    emit('init', formCreateTitle.value, formConfig.value.viewSize);
     if (props.sourceId && props.needInitDetail) {
       await initFormDetail();
     }

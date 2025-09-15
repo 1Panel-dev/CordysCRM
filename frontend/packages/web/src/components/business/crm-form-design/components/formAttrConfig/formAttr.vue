@@ -1,6 +1,20 @@
 <template>
   <div class="p-[16px]">
     <div class="crm-form-design-config-item">
+      <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.viewSize') }}</div>
+      <n-radio-group v-model:value="formConfig.viewSize">
+        <n-radio-button value="large">
+          {{ t('crmFormDesign.large') }}
+        </n-radio-button>
+        <n-radio-button value="medium">
+          {{ t('crmFormDesign.medium') }}
+        </n-radio-button>
+        <n-radio-button value="small">
+          {{ t('crmFormDesign.small') }}
+        </n-radio-button>
+      </n-radio-group>
+    </div>
+    <div class="crm-form-design-config-item">
       <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.formLayout') }}</div>
       <n-radio-group v-model:value="formConfig.layout" @update-value="handleLayoutChange">
         <n-radio-button :value="1">

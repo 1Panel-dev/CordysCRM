@@ -78,6 +78,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       },
     ],
     optBtnPos: 'flex-row',
+    viewSize: 'large',
   }); // 表单属性配置
   const formDetail = ref<Record<string, any>>({});
   const originFormDetail = ref<Record<string, any>>({});

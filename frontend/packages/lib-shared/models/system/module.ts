@@ -170,12 +170,14 @@ export interface FormFieldLinkItem {
   link: string;
 }
 export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormFieldLinkItem[]>>;
+export type FormViewSize = 'small' | 'medium' | 'large';
 export interface FormConfig {
   layout: number;
   labelPos: 'left' | 'top';
   inputWidth: 'custom' | 'full';
   optBtnContent: FormActionButton[];
   optBtnPos: FormFooterDirection;
+  viewSize?: FormViewSize;
   linkProp?: FormConfigLinkProp;
 }
 

@@ -147,4 +147,8 @@ export default {
   'crmFormDesign.linkFieldSettingClearTip': 'Are you sure you want to clear the field linkage?',
   'crmFormDesign.linkFieldSettingClearTipContent': 'After clearing, the field will no longer display linked values',
   'crmFormDesign.mobile': 'Mobile',
+  'crmFormDesign.viewSize': 'Form View',
+  'crmFormDesign.small': 'Small',
+  'crmFormDesign.medium': 'Medium',
+  'crmFormDesign.large': 'Large',
 };

@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer
     v-model:show="visible"
-    width="100%"
+    :width="drawerWidth"
     :footer="false"
     :closable="false"
     :close-on-esc="false"
@@ -33,7 +33,7 @@
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
-      @init="($event) => (formCreateTitle = $event)"
+      @init="handleFormInit"
     />
   </CrmDrawer>
 </template>
@@ -43,6 +43,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -71,8 +72,21 @@
     required: true,
   });
   const formCreateTitle = ref('');
+  const formViewSize = ref<FormViewSize>('large');
   const loading = ref(false);
   const unsaved = ref(false);
+
+  const drawerWidth = computed(() => {
+    switch (formViewSize.value) {
+      case 'small':
+        return '50%';
+      case 'medium':
+        return '75%';
+      case 'large':
+      default:
+        return '100%';
+    }
+  });
 
   function showUnsavedLeaveTip() {
     openModal({
@@ -85,6 +99,11 @@
         visible.value = false;
       },
     });
+  }
+
+  function handleFormInit(title: string, viewSize?: FormViewSize) {
+    formCreateTitle.value = title;
+    formViewSize.value = viewSize || 'large';
   }
 
   function handleBack() {
