@@ -2,10 +2,6 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.crm.system.dto.field.base.BaseField;
-import cn.cordys.crm.system.dto.field.base.HasOption;
-import cn.cordys.crm.system.dto.field.base.OptionProp;
-import cn.cordys.crm.system.dto.field.base.SimpleField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import jakarta.annotation.Resource;
@@ -14,7 +10,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;

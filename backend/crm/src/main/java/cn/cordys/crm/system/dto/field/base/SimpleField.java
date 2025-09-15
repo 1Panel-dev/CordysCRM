@@ -29,6 +29,6 @@ public class SimpleField {
 	@Schema(description = "是否必填")
 	private boolean required;
 
-	@Schema(description = "是否唯一")
-	private boolean unique;
+	@Schema(description = "数据源类型")
+	private String dataSourceType;
 }

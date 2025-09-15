@@ -838,9 +838,13 @@ public class ModuleFormService {
 			simpleField.setName(field.getName());
 			simpleField.setType(field.getType());
 			simpleField.setRequired(field.needRequireCheck());
-			simpleField.setUnique(field.needRepeatCheck());
 			if (field instanceof HasOption fieldWithOption) {
 				simpleField.setOptions(fieldWithOption.getOptions());
+			}
+			if (field instanceof DatasourceField datasourceField) {
+				simpleField.setDataSourceType(datasourceField.getDataSourceType());
+			} else if (field instanceof DatasourceMultipleField datasourceMultipleField) {
+				simpleField.setDataSourceType(datasourceMultipleField.getDataSourceType());
 			}
 			return simpleField;
 		}).toList();
