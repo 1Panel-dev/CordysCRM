@@ -35,6 +35,18 @@ start_redis() {
     fi
 }
 
+start_mcp() {
+    log_info "启动 MCP 服务..."
+    /shells/start-mcp.sh &
+    if /shells/wait-for-it.sh 127.0.0.1:8082 --timeout=120 --strict; then
+        log_info "MCP 服务已就绪"
+        return 0
+    else
+        log_error "MCP 服务启动失败或超时"
+        return 1
+    fi
+}
+
 get_property() {
     local key=$1
     grep "^${key}=" /opt/cordys/conf/cordys-crm.properties | cut -d'=' -f2 | tr -d '[:space:]'
@@ -68,8 +80,14 @@ main() {
     sh /shells/start-cordys.sh
 
     # 启动 MCP 服务
-    log_info "启动 MCP 服务 ..."
-    sh /shells/start-mcp.sh
+    # 检查Redis配置并启动
+   mcpEmbeddedEnabled=$(get_property "mcp.embedded.enabled")
+   if [[ "${mcpEmbeddedEnabled}" == "true" ]]; then
+       log_info "启动内置 MCP ... "
+       start_mcp
+   else
+       log_info "使用外部 MCP 服务"
+   fi
 }
 
 # 执行主函数
