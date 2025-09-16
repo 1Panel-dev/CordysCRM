@@ -41,32 +41,19 @@ start_redis() {
     fi
 }
 
-start_cordys() {
-    log_info "启动 Cordys CRM 应用..."
-    sh /shells/start-cordys.sh &
+start_mcp_after_cordys() {
+      mcpEmbeddedEnabled=$(get_property "mcp.embedded.enabled")
+      if [[ "${mcpEmbeddedEnabled}" == "true" ]]; then
+          log_info "启动内置 MCP 服务 ..."
+          /shells/wait-for-it.sh 127.0.0.1:8081 --timeout=120 --strict
 
-    # 等待 Cordys CRM 主应用端口就绪
-    if /shells/wait-for-it.sh 127.0.0.1:8081 --timeout=120 --strict; then
-        log_info "Cordys CRM 应用已就绪"
-        return 0
-    else
-        log_error "Cordys CRM 应用启动超时或失败"
-        exit 1
-    fi
-}
-
-start_mcp() {
-    log_info "启动 MCP 服务..."
-    sh /shells/start-mcp.sh &
-
-    # 等待 MCP 端口就绪
-    if /shells/wait-for-it.sh 127.0.0.1:8082 --timeout=120 --strict; then
-        log_info "MCP 服务已就绪"
-        return 0
-    else
-        log_error "MCP 服务启动失败或超时"
-        exit 1
-    fi
+          log_info "Cordys CRM 已就绪，启动 MCP..."
+          sh /shells/start-mcp.sh &
+          /shells/wait-for-it.sh 127.0.0.1:8082 --timeout=120 --strict
+          log_info "MCP 已就绪"
+      else
+          log_info "使用外部 MCP 服务"
+      fi
 }
 
 # ------------------------------
@@ -108,21 +95,8 @@ main() {
         log_info "使用外部 Redis 服务"
     fi
 
-    # ------------------------------
-    # Cordys CRM 主应用
-    # ------------------------------
-    start_cordys
-
-    # ------------------------------
-    # MCP 服务
-    # ------------------------------
-    mcpEmbeddedEnabled=$(get_property "mcp.embedded.enabled")
-    if [[ "${mcpEmbeddedEnabled}" == "true" ]]; then
-        log_info "启动内置 MCP 服务 ..."
-        start_mcp
-    else
-        log_info "使用外部 MCP 服务"
-    fi
+    start_mcp_after_cordys &
+    sh /shells/start-cordys.sh
 
     log_info "Cordys CRM 环境启动完成！"
 }
