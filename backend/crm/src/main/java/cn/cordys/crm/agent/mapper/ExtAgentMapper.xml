@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.agent.mapper.ExtAgentMapper">
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id)
+        from agent
+        where name = #{name}
+        and organization_id = #{orgId}
+        and agent_module_id = #{agentModuleId}
+        <if test="id != null and id != ''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <select id="getNextPosByOrgId" resultType="java.lang.Long">
+        SELECT max(pos)
+        FROM agent
+        where organization_id = #{orgId}
+    </select>
+
+
+    <select id="getDetail" resultType="cn.cordys.crm.agent.dto.response.AgentDetailResponse">
+        SELECT
+            a.id,
+            a.NAME,
+            a.agent_module_id,
+            a.scope_id,
+            a.script,
+            a.description,
+            am.NAME as agentModuleName
+        FROM
+            agent a
+                INNER JOIN agent_module am ON a.agent_module_id = am.id
+        where a.id = #{id}
+    </select>
+
+
+    <select id="list" resultType="cn.cordys.crm.agent.dto.response.AgentPageResponse">
+        select
+        a.id,
+        a.name,
+        a.agent_module_id,
+        a.scope_id,
+        a.script,
+        a.description,
+        a.create_time,
+        a.update_time,
+        a.pos,
+        a.organization_id,
+        a.create_user,
+        a.update_user,
+        am.NAME as agentModuleName
+        from agent a
+        INNER JOIN agent_module am ON a.agent_module_id = am.id
+        where a.organization_id = #{orgId}
+        <if test="userId != null and userId != 'admin'">
+            AND (
+            (
+            JSON_CONTAINS(a.`scope_id`, json_array(#{userId}))
+            or a.`scope_id` = '[]'
+            <foreach collection="departmentIds" item="departmentId">
+                or JSON_CONTAINS(a.`scope_id`, json_array(#{departmentId}))
+            </foreach>
+            )
+            or a.create_user = #{userId}
+            )
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            and a.name like concat('%', #{request.keyword},'%')
+        </if>
+        <if test="request.agentModuleIds != null and request.agentModuleIds.size() > 0">
+            and a.agent_module_id in
+            <foreach collection="request.agentModuleIds" item="agentModuleId" separator="," open="(" close=")">
+                #{agentModuleId}
+            </foreach>
+        </if>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'create_time'">
+                        a.`create_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'name'">
+                        a.`name` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'agent_module_name'">
+                        a.`agent_module_id` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'create_user_name'">
+                        a.`create_user` ${sortType}
+                    </when>
+                    <otherwise>
+                        order by a.create_time desc
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by a.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

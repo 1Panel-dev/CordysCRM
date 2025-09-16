@@ -1,0 +1,300 @@
+package cn.cordys.crm.agent.service;
+
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.pager.PageUtils;
+import cn.cordys.common.pager.Pager;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.NodeSortUtils;
+import cn.cordys.common.util.Translator;
+import cn.cordys.crm.agent.domain.Agent;
+import cn.cordys.crm.agent.dto.AgentLogDTO;
+import cn.cordys.crm.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.agent.dto.response.AgentDetailResponse;
+import cn.cordys.crm.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.agent.mapper.ExtAgentCollectionMapper;
+import cn.cordys.crm.agent.mapper.ExtAgentMapper;
+import cn.cordys.crm.system.dto.ScopeNameDTO;
+import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.service.DepartmentService;
+import cn.cordys.crm.system.service.UserExtendService;
+import cn.cordys.mybatis.BaseMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class AgentBaseService {
+
+    @Resource
+    private ExtAgentMapper extAgentMapper;
+    @Resource
+    private AgentModuleService agentModuleService;
+    @Resource
+    private BaseMapper<Agent> agentMapper;
+    @Resource
+    private UserExtendService userExtendService;
+    @Resource
+    private ExtAgentCollectionMapper extAgentCollectionMapper;
+    @Resource
+    private ExtOrganizationUserMapper extOrganizationUserMapper;
+    @Resource
+    private DepartmentService departmentService;
+    @Resource
+    private ExtUserMapper extUserMapper;
+
+    /**
+     * 添加智能体
+     *
+     * @param request
+     * @param orgId
+     * @param userId
+     * @return
+     */
+    @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
+    public Agent addAgent(AgentAddRequest request, String orgId, String userId) {
+        checkAgentName(request.getName(), request.getAgentModuleId(), orgId, null);
+        agentModuleService.checkAgentModule(request.getAgentModuleId());
+        String id = IDGenerator.nextStr();
+        Agent agent = new Agent();
+        agent.setId(id);
+        agent.setName(request.getName());
+        agent.setAgentModuleId(request.getAgentModuleId());
+        agent.setOrganizationId(orgId);
+        agent.setPos(getNextPos(orgId));
+        agent.setScopeId(JSON.toJSONString(request.getScopeIds()));
+        agent.setScript(request.getScript());
+        agent.setDescription(request.getDescription());
+        agent.setCreateTime(System.currentTimeMillis());
+        agent.setCreateUser(userId);
+        agent.setUpdateTime(System.currentTimeMillis());
+        agent.setUpdateUser(userId);
+        agentMapper.insert(agent);
+
+        //日志
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .modifiedValue(agent)
+                .resourceId(id)
+                .resourceName(agent.getName())
+                .build());
+
+        return agent;
+    }
+
+
+    /**
+     * 同一文件下智能体名称唯一
+     *
+     * @param name
+     * @param agentModuleId
+     * @param orgId
+     * @param id
+     */
+    private void checkAgentName(String name, String agentModuleId, String orgId, String id) {
+        if (extAgentMapper.countByName(name, agentModuleId, orgId, id) > 0) {
+            throw new GenericException(Translator.get("agent_name_exist"));
+        }
+    }
+
+
+    private Long getNextPos(String orgId) {
+        Long pos = extAgentMapper.getNextPosByOrgId(orgId);
+        return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
+    }
+
+
+    /**
+     * 智能体详情
+     *
+     * @param id
+     * @return
+     */
+    public AgentDetailResponse getDetail(String id) {
+        AgentDetailResponse response = extAgentMapper.getDetail(id);
+        if (response != null && !StringUtils.isBlank(response.getScopeId())) {
+            response.setMembers(userExtendService.getScope(JSON.parseArray(response.getScopeId(), String.class)));
+        }
+        return response;
+    }
+
+
+    /**
+     * 更新智能体
+     *
+     * @param request
+     * @param orgId
+     * @param userId
+     */
+    @OperationLog(module = LogModule.AGENT, type = LogType.UPDATE)
+    public void updateAgent(AgentUpdateRequest request, String orgId, String userId) {
+        checkAgentName(request.getName(), request.getAgentModuleId(), orgId, request.getId());
+        Agent originalAgent = checkAgent(request.getId());
+        AgentLogDTO originalDetail = getLogDetail(originalAgent.getId());
+
+        Agent agent = new Agent();
+        BeanUtils.copyBean(agent, request);
+        agent.setScopeId(JSON.toJSONString(request.getScopeIds()));
+        agent.setUpdateTime(System.currentTimeMillis());
+        agent.setUpdateUser(userId);
+        agentMapper.update(agent);
+
+        AgentLogDTO newDetail = getLogDetail(originalAgent.getId());
+
+        // 添加日志上下文
+        String resourceName = Optional.ofNullable(originalAgent.getName()).orElse(originalAgent.getName());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .originalValue(originalDetail)
+                        .modifiedValue(newDetail)
+                        .resourceId(request.getId())
+                        .resourceName(resourceName)
+                        .build()
+        );
+    }
+
+
+    private AgentLogDTO getLogDetail(String id) {
+        AgentDetailResponse detail = getDetail(id);
+        AgentLogDTO detailDTO = new AgentLogDTO();
+        BeanUtils.copyBean(detailDTO, detail);
+        List<String> names = detail.getMembers().stream().map(ScopeNameDTO::getName).toList();
+        detailDTO.setMembers(names);
+        return detailDTO;
+    }
+
+    private Agent checkAgent(String id) {
+        Agent agent = agentMapper.selectByPrimaryKey(id);
+        if (agent == null) {
+            throw new GenericException(Translator.get("agent_blank"));
+        }
+        return agent;
+    }
+
+
+    /**
+     * 重命名智能体
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    @OperationLog(module = LogModule.AGENT, type = LogType.UPDATE)
+    public void rename(AgentRenameRequest request, String userId, String orgId) {
+        Agent originalAgent = checkAgent(request.getId());
+        checkAgentName(request.getName(), request.getAgentModuleId(), orgId, request.getId());
+        Agent agent = BeanUtils.copyBean(new Agent(), request);
+        agent.setUpdateTime(System.currentTimeMillis());
+        agent.setName(request.getName());
+        agent.setUpdateUser(userId);
+        agentMapper.update(agent);
+
+        // 添加日志上下文
+        String resourceName = Optional.ofNullable(agent.getName()).orElse(originalAgent.getName());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .originalValue(originalAgent)
+                        .modifiedValue(checkAgent(request.getId()))
+                        .resourceId(request.getId())
+                        .resourceName(resourceName)
+                        .build()
+        );
+    }
+
+
+    /**
+     * 删除智能体
+     *
+     * @param id
+     */
+    @OperationLog(module = LogModule.AGENT, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
+        Agent agent = checkAgent(id);
+        agentMapper.deleteByPrimaryKey(id);
+        extAgentCollectionMapper.deleteByAgentId(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(agent.getName());
+    }
+
+
+    /**
+     * 智能体列表
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public Pager<List<AgentPageResponse>> getList(AgentPageRequest request, String userId, String orgId) {
+        List<String> departmentIds = new ArrayList<>();
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
+            List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
+            departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
+        }
+
+
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<AgentPageResponse> agentList = extAgentMapper.list(request, userId, orgId, departmentIds);
+        handleData(agentList, userId);
+        return PageUtils.setPageInfo(page, agentList);
+    }
+
+
+    /**
+     * 数据处理
+     *
+     * @param agentList
+     * @param userId
+     */
+    private void handleData(List<AgentPageResponse> agentList, String userId) {
+        if (CollectionUtils.isNotEmpty(agentList)) {
+            //创建人 更新人
+            List<String> ids = new ArrayList<>();
+            ids.addAll(agentList.stream().map(AgentPageResponse::getCreateUser).toList());
+            ids.addAll(agentList.stream().map(AgentPageResponse::getUpdateUser).toList());
+            List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
+            Map<String, String> userMap = optionDTOS
+                    .stream()
+                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+            Set<String> myCollects = new HashSet<>(extAgentCollectionMapper.getByUserId(userId));
+
+            agentList.forEach(dashboard -> {
+                dashboard.setMembers(userExtendService.getScope(JSON.parseArray(dashboard.getScopeId(), String.class)));
+                if (userMap.containsKey(dashboard.getCreateUser())) {
+                    dashboard.setCreateUserName(userMap.get(dashboard.getCreateUser()));
+                }
+                if (userMap.containsKey(dashboard.getUpdateUser())) {
+                    dashboard.setUpdateUserName(userMap.get(dashboard.getUpdateUser()));
+                }
+                if (myCollects.contains(dashboard.getId())) {
+                    dashboard.setMyCollect(true);
+                }
+            });
+        }
+
+    }
+}

@@ -1,0 +1,78 @@
+package cn.cordys.crm.agent.controller;
+
+
+import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.pager.Pager;
+import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.agent.domain.Agent;
+import cn.cordys.crm.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.agent.dto.response.AgentDetailResponse;
+import cn.cordys.crm.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.agent.service.AgentBaseService;
+import cn.cordys.security.SessionUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Tag(name = "智能体")
+@RestController
+@RequestMapping("/agent")
+public class AgentController {
+
+    @Resource
+    private AgentBaseService agentBaseService;
+
+    @PostMapping("/add")
+    @RequiresPermissions(PermissionConstants.AGENT_ADD)
+    @Operation(summary = "智能体-添加")
+    public Agent addAgent(@Validated @RequestBody AgentAddRequest request) {
+        return agentBaseService.addAgent(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+
+    @GetMapping("/detail/{id}")
+    @Operation(summary = "智能体-详情")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public AgentDetailResponse getDetail(@PathVariable String id) {
+        return agentBaseService.getDetail(id);
+    }
+
+
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
+    @Operation(summary = "智能体-更新")
+    public void updateAgent(@Validated @RequestBody AgentUpdateRequest request) {
+        agentBaseService.updateAgent(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+
+    @PostMapping("/rename")
+    @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
+    @Operation(summary = "智能体-重命名")
+    public void rename(@Validated @RequestBody AgentRenameRequest request) {
+        agentBaseService.rename(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/delete/{id}")
+    @RequiresPermissions(PermissionConstants.AGENT_DELETE)
+    @Operation(summary = "智能体-删除")
+    public void delete(@PathVariable String id) {
+        agentBaseService.delete(id);
+    }
+
+
+    @PostMapping("/page")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    @Operation(summary = "智能体列表")
+    public Pager<List<AgentPageResponse>> list(@Validated @RequestBody AgentPageRequest request) {
+        return agentBaseService.getList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+}

@@ -113,4 +113,5 @@ public class LogModule {
      * 仪表板
      */
     public static final String DASHBOARD = "DASHBOARD";
+    public static final String AGENT = "AGENT";
 }

@@ -141,4 +141,12 @@ public class PermissionConstants {
     public static final String PERSONAL_API_KEY_UPDATE = "PERSONAL_API_KEY:UPDATE";
     public static final String PERSONAL_API_KEY_DELETE = "PERSONAL_API_KEY:DELETE";
     /*------ end: PERSON INFO ------*/
+
+
+    /*------ start: AGENT ------*/
+    public static final String AGENT_READ = "AGENT:READ";
+    public static final String AGENT_ADD = "AGENT:ADD";
+    public static final String AGENT_UPDATE = "AGENT:UPDATE";
+    public static final String AGENT_DELETE = "AGENT:DELETE";
+    /*------ end: AGENT ------*/
 }

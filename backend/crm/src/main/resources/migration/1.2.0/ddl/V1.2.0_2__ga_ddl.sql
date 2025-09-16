@@ -10,6 +10,7 @@ CREATE TABLE agent
     `pos`             BIGINT       NOT NULL DEFAULT 0 COMMENT '同一节点下顺序',
     `scope_id`        TEXT         NOT NULL COMMENT '应用范围',
     `script`          TEXT         NOT NULL COMMENT '嵌入脚本',
+    `description`     VARCHAR(1000) COMMENT '描述',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',

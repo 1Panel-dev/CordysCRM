@@ -28,4 +28,7 @@ public class Agent extends BaseModel {
 
 	@Schema(description = "嵌入脚本")
 	private String script;
+
+	@Schema(description = "描述")
+	private String description;
 }
