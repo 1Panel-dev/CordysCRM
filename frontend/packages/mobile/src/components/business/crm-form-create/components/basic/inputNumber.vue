@@ -1,18 +1,15 @@
 <template>
   <van-field
-    v-model="value"
+    v-model="displayValue"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
-    type="number"
+    type="text"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
     :disabled="props.fieldConfig.editable === false"
-    :max="1000000000"
-    :min="props.fieldConfig.min"
     clearable
-    :formatter="format"
-    format-trigger="onBlur"
-    @update:model-value="(val) => emit('change', val)"
+    @blur="onBlur"
+    @focus="onFocus"
   >
     <template v-if="props.fieldConfig.numberFormat === 'percent'" #right-icon> % </template>
   </van-field>
@@ -30,43 +27,86 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'change', value: number): void;
+    (e: 'change', value?: number): void;
   }>();
 
   const { t } = useI18n();
 
-  const value = defineModel<any>('value', {
-    default: null,
+  const value = defineModel<string>('value', {
+    default: '',
   });
+
+  const displayValue = ref('');
 
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val || value.value;
+      displayValue.value = val || value.value;
     },
     {
       immediate: true,
     }
   );
 
-  // TODO lmy 千分位没效果
-  // 失焦时格式化显示（千分位 + 精度）
-  function format(val: string): string {
-    if (!val) return '';
+  // 失去焦点时：清理非法字符 → 限制小数点 → min/max → 精度 → 千分位
+  function onBlur() {
+    if (!displayValue.value) {
+      value.value = '';
+      emit('change', undefined);
+      return;
+    }
 
-    const num = Number(val.replace(/,/g, ''));
-    if (Number.isNaN(num)) return '';
+    // 只保留数字和小数点
+    let clean = displayValue.value.replace(/[^\d.]/g, '');
+
+    // 限制只能有一个小数点
+    const dotIndex = clean.indexOf('.');
+    if (dotIndex !== -1) {
+      clean = clean.substring(0, dotIndex + 1) + clean.substring(dotIndex + 1).replace(/\./g, '');
+    }
+
+    let num = Number(clean);
+    if (Number.isNaN(num)) {
+      value.value = '';
+      displayValue.value = '';
+      emit('change', '');
+      return;
+    }
+
+    // 限制 min/max
+    if (props.fieldConfig.min != null && num < props.fieldConfig.min) {
+      num = props.fieldConfig.min;
+    }
+    if (props.fieldConfig.max != null && num > props.fieldConfig.max) {
+      num = props.fieldConfig.max;
+    }
+
+    if (!props.fieldConfig.max && num > 1000000000) {
+      num = 1000000000;
+    }
 
     const precision = props.fieldConfig.precision ?? 0;
+    num = Number(num.toFixed(precision));
 
+    // 更新真实值
+    value.value = String(num);
+    emit('change', num);
+
+    // 更新显示值（千分位/小数位）
     if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
-      // 带千分位 + 小数位
-      return num.toLocaleString('en-US', {
+      displayValue.value = num.toLocaleString('en-US', {
         minimumFractionDigits: precision,
         maximumFractionDigits: precision,
       });
+    } else {
+      displayValue.value = String(num);
     }
-    // 仅处理小数位
-    return num.toFixed(precision);
+  }
+
+  // 聚焦时：去掉千分位，方便编辑
+  function onFocus() {
+    if (!displayValue.value) return;
+    displayValue.value = displayValue.value.replace(/,/g, '');
   }
 </script>
