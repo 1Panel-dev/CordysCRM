@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.dto;
+package cn.cordys.crm.integration.agent.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.dto.request;
+package cn.cordys.crm.integration.agent.dto.request;
 
 import cn.cordys.common.dto.BasePageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;

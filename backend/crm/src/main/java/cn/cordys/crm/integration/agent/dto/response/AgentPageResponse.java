@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.dto.response;
+package cn.cordys.crm.integration.agent.dto.response;
 
 import cn.cordys.crm.system.dto.ScopeNameDTO;
 import io.swagger.v3.oas.annotations.media.Schema;

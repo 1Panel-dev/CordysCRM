@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.integration.agent.mapper.ExtAgentCollectionMapper">
+
+    <delete id="deleteByAgentId" parameterType="java.lang.String">
+        delete from agent_collection
+        where agent_id = #{agentId}
+    </delete>
+
+
+    <select id="getByUserId" resultType="java.lang.String">
+        select agent_id from agent_collection where user_id = #{userId}
+    </select>
+
+    <select id="checkCollect" resultType="java.lang.Integer">
+        select count(id) from agent_collection
+        where user_id = #{userId} and agent_id = #{id}
+    </select>
+
+    <delete id="unCollect">
+        delete from agent_collection
+        where agent_id = #{agentId}
+          and user_id =#{userId}
+    </delete>
+
+    <select id="collectList" resultType="cn.cordys.crm.integration.agent.dto.response.AgentPageResponse">
+        SELECT
+        a.id,
+        a.name,
+        a.agent_module_id,
+        a.scope_id,
+        a.script,
+        a.description,
+        a.create_time,
+        a.update_time,
+        a.pos,
+        a.organization_id,
+        a.create_user,
+        a.update_user,
+        am.NAME as agentModuleName
+        FROM
+        agent_collection ac
+        INNER JOIN agent a ON ac.agent_id = a.id
+        INNER JOIN agent_module am ON a.agent_module_id = am.id
+        where ac.user_id = #{userId}
+        and a.organization_id = #{orgId}
+        <if test="request.keyword != null and request.keyword != ''">
+            and a.name like concat('%', #{request.keyword},'%')
+        </if>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'create_time'">
+                        a.`create_time` ${sortType}
+                    </when>
+                    <otherwise>
+                        order by a.create_time desc
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by a.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+</mapper>

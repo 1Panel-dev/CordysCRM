@@ -1,10 +1,11 @@
 package cn.cordys.crm.agent;
 
-import cn.cordys.crm.agent.domain.Agent;
-import cn.cordys.crm.agent.dto.request.AgentAddRequest;
-import cn.cordys.crm.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.agent.dto.request.AgentRenameRequest;
-import cn.cordys.crm.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.crm.integration.agent.domain.Agent;
+import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.mybatis.BaseMapper;
@@ -30,6 +31,9 @@ public class AgentControllerTests extends BaseTest {
 
     protected static final String DETAIL = "detail/{0}";
     protected static final String RENAME = "rename";
+    protected static final String COLLECT = "collect/{0}";
+    protected static final String UN_COLLECT = "un-collect/{0}";
+    protected static final String COLLECT_PAGE = "collect/page";
 
     @Override
     protected String getBasePath() {
@@ -93,6 +97,30 @@ public class AgentControllerTests extends BaseTest {
         request.setPageSize(30);
         this.requestPost(DEFAULT_PAGE, request);
     }
+
+
+    @Test
+    @Order(6)
+    void testCollect() throws Exception {
+        this.requestGet(COLLECT, addAgent.getId());
+    }
+
+    @Test
+    @Order(7)
+    void testUnCollect() throws Exception {
+        this.requestGet(UN_COLLECT, addAgent.getId());
+    }
+
+    @Test
+    @Order(8)
+    void testCollectPage() throws Exception {
+        BasePageRequest request = new BasePageRequest();
+        request.setCurrent(1);
+        request.setPageSize(30);
+        this.requestPost(COLLECT_PAGE, addAgent.getId());
+    }
+
+
 
     @Test
     @Order(12)

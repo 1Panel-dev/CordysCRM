@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.cordys.crm.agent.mapper.ExtAgentMapper">
+<mapper namespace="cn.cordys.crm.integration.agent.mapper.ExtAgentMapper">
 
     <select id="countByName" resultType="java.lang.Integer">
         select count(id)
@@ -21,7 +21,7 @@
     </select>
 
 
-    <select id="getDetail" resultType="cn.cordys.crm.agent.dto.response.AgentDetailResponse">
+    <select id="getDetail" resultType="cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse">
         SELECT
             a.id,
             a.NAME,
@@ -37,7 +37,7 @@
     </select>
 
 
-    <select id="list" resultType="cn.cordys.crm.agent.dto.response.AgentPageResponse">
+    <select id="list" resultType="cn.cordys.crm.integration.agent.dto.response.AgentPageResponse">
         select
         a.id,
         a.name,

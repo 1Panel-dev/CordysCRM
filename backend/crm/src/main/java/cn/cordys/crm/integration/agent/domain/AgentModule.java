@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.domain;
+package cn.cordys.crm.integration.agent.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;

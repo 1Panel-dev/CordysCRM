@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.service;
+package cn.cordys.crm.integration.agent.service;
 
 import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
@@ -16,16 +17,18 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.agent.domain.Agent;
-import cn.cordys.crm.agent.dto.AgentLogDTO;
-import cn.cordys.crm.agent.dto.request.AgentAddRequest;
-import cn.cordys.crm.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.agent.dto.request.AgentRenameRequest;
-import cn.cordys.crm.agent.dto.request.AgentUpdateRequest;
-import cn.cordys.crm.agent.dto.response.AgentDetailResponse;
-import cn.cordys.crm.agent.dto.response.AgentPageResponse;
-import cn.cordys.crm.agent.mapper.ExtAgentCollectionMapper;
-import cn.cordys.crm.agent.mapper.ExtAgentMapper;
+import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
+import cn.cordys.crm.integration.agent.domain.Agent;
+import cn.cordys.crm.integration.agent.domain.AgentCollection;
+import cn.cordys.crm.integration.agent.dto.AgentLogDTO;
+import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
+import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.integration.agent.mapper.ExtAgentCollectionMapper;
+import cn.cordys.crm.integration.agent.mapper.ExtAgentMapper;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
@@ -64,6 +67,8 @@ public class AgentBaseService {
     private DepartmentService departmentService;
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private BaseMapper<AgentCollection> agentCollectionMapper;
 
     /**
      * 添加智能体
@@ -296,5 +301,57 @@ public class AgentBaseService {
             });
         }
 
+    }
+
+
+    /**
+     * 收藏
+     *
+     * @param id
+     * @param userId
+     */
+    public void collect(String id, String userId) {
+        checkCollect(id, userId);
+        AgentCollection agentCollection = new AgentCollection();
+        agentCollection.setId(IDGenerator.nextStr());
+        agentCollection.setAgentId(id);
+        agentCollection.setUserId(userId);
+        agentCollection.setCreateTime(System.currentTimeMillis());
+        agentCollection.setUpdateTime(System.currentTimeMillis());
+        agentCollection.setCreateUser(userId);
+        agentCollection.setUpdateUser(userId);
+        agentCollectionMapper.insert(agentCollection);
+    }
+
+    private void checkCollect(String id, String userId) {
+        if (extAgentCollectionMapper.checkCollect(id, userId) > 0) {
+            throw new GenericException(Translator.get("agent_collect_exist"));
+        }
+    }
+
+
+    /**
+     * 取消收藏
+     *
+     * @param agentId
+     * @param userId
+     */
+    public void unCollect(String agentId, String userId) {
+        extAgentCollectionMapper.unCollect(agentId, userId);
+    }
+
+
+    /**
+     * 收藏列表
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public List<AgentPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
+        List<AgentPageResponse> agentList = extAgentCollectionMapper.collectList(request, userId, orgId);
+        handleData(agentList, userId);
+        return agentList;
     }
 }

@@ -1,9 +1,9 @@
-package cn.cordys.crm.agent.mapper;
+package cn.cordys.crm.integration.agent.mapper;
 
 
-import cn.cordys.crm.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.agent.dto.response.AgentDetailResponse;
-import cn.cordys.crm.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
+import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

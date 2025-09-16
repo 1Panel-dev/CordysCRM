@@ -1,4 +1,4 @@
-package cn.cordys.crm.agent.dto.request;
+package cn.cordys.crm.integration.agent.dto.request;
 
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;

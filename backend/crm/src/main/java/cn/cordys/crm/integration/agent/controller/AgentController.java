@@ -1,18 +1,23 @@
-package cn.cordys.crm.agent.controller;
+package cn.cordys.crm.integration.agent.controller;
 
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.agent.domain.Agent;
-import cn.cordys.crm.agent.dto.request.AgentAddRequest;
-import cn.cordys.crm.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.agent.dto.request.AgentRenameRequest;
-import cn.cordys.crm.agent.dto.request.AgentUpdateRequest;
-import cn.cordys.crm.agent.dto.response.AgentDetailResponse;
-import cn.cordys.crm.agent.dto.response.AgentPageResponse;
-import cn.cordys.crm.agent.service.AgentBaseService;
+import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
+import cn.cordys.crm.integration.agent.domain.Agent;
+import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
+import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.integration.agent.service.AgentBaseService;
 import cn.cordys.security.SessionUtils;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -74,5 +79,29 @@ public class AgentController {
     @Operation(summary = "智能体列表")
     public Pager<List<AgentPageResponse>> list(@Validated @RequestBody AgentPageRequest request) {
         return agentBaseService.getList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/collect/{id}")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    @Operation(summary = "智能体收藏")
+    public void collect(@PathVariable String id) {
+        agentBaseService.collect(id, SessionUtils.getUserId());
+    }
+
+
+    @GetMapping("/un-collect/{id}")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    @Operation(summary = "智能体取消收藏")
+    public void unCollect(@PathVariable String id) {
+        agentBaseService.unCollect(id, SessionUtils.getUserId());
+    }
+
+
+    @PostMapping("/collect/page")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    @Operation(summary = "智能体收藏列表")
+    public Pager<List<AgentPageResponse>> collectPage(@Validated @RequestBody BasePageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, agentBaseService.collectList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
     }
 }

@@ -1,9 +1,9 @@
-package cn.cordys.crm.agent.service;
+package cn.cordys.crm.integration.agent.service;
 
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.agent.domain.AgentModule;
+import cn.cordys.crm.integration.agent.domain.AgentModule;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
