@@ -42,8 +42,7 @@ const defaultLoginConfig = {
 };
 const defaultPlatformConfig = {
   logoPlatform: [],
-  platformName: 'Cordys CRM',
-  helpDoc: 'https://metersphere.io/docs/v3.x/',
+  helpDoc: 'https://cordys.cn/docs/',
 };
 
 const defaultModuleConfig = [
@@ -363,7 +362,7 @@ const useAppStore = defineStore('app', {
               // 四个属性值为文件类型，单独处理
               this.pageConfig[key] = [
                 {
-                  url: e.fileName,
+                  url: `/ui/display/preview?paramKey=ui-${key}`,
                   name: e.paramValue,
                 },
               ] as any;
@@ -416,7 +415,7 @@ const useAppStore = defineStore('app', {
     },
   },
   persist: {
-    paths: ['menuIconStatus', 'winOrderConfig', 'moduleConfigList', 'navTopConfigList'],
+    paths: ['menuIconStatus', 'pageConfig', 'winOrderConfig', 'moduleConfigList', 'navTopConfigList'],
   },
 });
 

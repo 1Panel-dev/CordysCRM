@@ -349,10 +349,11 @@
   async function initSuccessOptDetail(params: GetHomeStatisticParams) {
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
     try {
-      const { deptIds, searchType } = params;
+      const { deptIds, searchType, priorPeriodEnable } = params;
       const result = await getHomeSuccessOptStatistic({
         deptIds,
         searchType,
+        priorPeriodEnable,
       });
       Object.keys(defaultWinOrderData.value).forEach((k) => {
         const resultArr: string[] = Object.keys(result);

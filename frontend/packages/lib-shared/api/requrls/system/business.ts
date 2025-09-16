@@ -43,3 +43,19 @@ export const AddApiKeyUrl = '/user/api/key/add'; // 新增 ApiKey
 // 界面设置
 export const SavePageConfigUrl = '/ui/display/save'; // 保存界面配置
 export const GetPageConfigUrl = '/ui/display/info'; // 获取界面配置
+export const GetPageConfigImagePreviewUrl = '/ui/display/preview'; // 图片预览
+export const GetTitleImgUrl = `${
+  import.meta.env.VITE_API_BASE_URL
+}${GetPageConfigImagePreviewUrl}?paramKey=ui.logoPlatform`;
+// 获取登录 logo
+export const GetLoginLogoUrl = `${
+  import.meta.env.VITE_API_BASE_URL
+}${GetPageConfigImagePreviewUrl}?paramKey=ui.loginLogo`;
+// 获取登录大图
+export const GetLoginImageUrl = `${
+  import.meta.env.VITE_API_BASE_URL
+}/ui/display/preview/login-image?paramKey=ui.loginImage`;
+// 获取平台标签图标
+export const GetPlatformIconUrl = `${
+  import.meta.env.VITE_API_BASE_URL
+}${GetPageConfigImagePreviewUrl}?paramKey=ui.icon`;

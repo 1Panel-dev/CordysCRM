@@ -115,7 +115,7 @@ export default {
   'system.config.page.platformName': '系统名称',
   'system.config.page.platformNameTip': '全站通用产品名称，建议字数 8',
   'system.config.page.helpDocTip': '可设置帮助文档跳转链接，默认为官方帮助文档',
-  'system.config.page.cancel': '放弃更新',
+  'system.config.page.cancel': '恢复默认',
   'system.config.page.save': '保存并应用',
   'system.personal.info.title': '个人中心',
   'system.personal.info': '个人信息',

@@ -26,7 +26,7 @@
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
         <n-button type="primary" text @click="resetLoginPageConfig">
-          {{ t('system.config.page.reset') }}
+          {{ t('common.resetDefault') }}
         </n-button>
       </div>
       <div class="config-main">
@@ -44,8 +44,12 @@
           </div>
           <!-- 登录页预览实际渲染 DOM，按三种屏幕尺寸缩放 -->
           <div :class="['page-preview', isLoginPageFullscreen ? 'page-preview-full' : 'page-preview-normal']">
-            <Banner :banner="pageConfig.loginImage[0]?.url ?? undefined" is-preview />
-            <LoginForm :slogan="pageConfig.slogan" :logo="pageConfig.loginLogo[0]?.url ?? undefined" is-preview />
+            <Banner :banner="pageConfig.loginImage[0]?.url ?? defaultLoginImage" is-preview />
+            <LoginForm
+              :slogan="pageConfig.slogan"
+              :logo="pageConfig.loginLogo[0]?.url ?? defaultLoginLogo"
+              is-preview
+            />
           </div>
         </div>
         <div class="config-form">
@@ -104,7 +108,7 @@
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
         <n-button type="primary" text @click="resetPlatformConfig">
-          {{ t('system.config.page.reset') }}
+          {{ t('common.resetDefault') }}
         </n-button>
       </div>
       <!-- 平台主页预览盒子 -->
@@ -124,7 +128,7 @@
             ]"
           >
             <n-layout>
-              <LayoutHeader :logo="pageConfig.logoPlatform[0]?.url ?? '/logo.png'" :name="pageConfig.platformName" />
+              <LayoutHeader is-preview :logo="pageConfig.logoPlatform[0]?.url ?? defaultPlatformLogo" />
               <n-layout class="flex-1" has-sider>
                 <div class="w-[180px] bg-[var(--text-n10)]"></div>
                 <div class="w-full bg-[var(--text-n9)]"></div>
@@ -144,25 +148,6 @@
             :tip="item.tip"
           />
           <n-form ref="platformConfigFormRef" :model="pageConfig">
-            <n-form-item
-              :label="t('system.config.page.platformName')"
-              path="platformName"
-              :rule="[
-                {
-                  required: true,
-                  trigger: ['change', 'blur'],
-                  message: t('common.notNull', { value: t('system.config.page.platformName') }),
-                },
-              ]"
-            >
-              <n-input
-                v-model:value="pageConfig.platformName"
-                allow-clear
-                :maxlength="255"
-                :placeholder="t('common.pleaseInput')"
-              />
-              <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.config.page.platformNameTip') }}</div>
-            </n-form-item>
             <n-form-item :label="t('settings.help.doc')" path="helpDoc">
               <n-input
                 v-model:value="pageConfig.helpDoc"
@@ -209,10 +194,14 @@
   import Banner from '@/views/base/login/components/banner.vue';
   import LoginForm from '@/views/base/login/components/login-form.vue';
 
+  import { savePageConfig } from '@/api/modules';
   import useFullScreen from '@/hooks/useFullScreen';
   import useAppStore from '@/store/modules/app';
   import { setCustomTheme, setPlatformColor, watchStyle, watchTheme } from '@/utils/theme';
 
+  const defaultLoginImage = `${import.meta.env.BASE_URL}images/login-banner.png`;
+  const defaultLoginLogo = `${import.meta.env.BASE_URL}images/login-logo.svg`;
+  const defaultPlatformLogo = `${import.meta.env.BASE_URL}images/logo_CORDYS.svg`;
   const { t } = useI18n();
   const appStore = useAppStore();
   const Message = useMessage();
@@ -354,14 +343,102 @@
     pageConfig.value = { ...appStore.getDefaultPageConfig, slogan: t(appStore.defaultLoginConfig.slogan) };
   }
 
+  function makeParams() {
+    const request = [
+      {
+        paramKey: 'ui.icon',
+        paramValue: pageConfig.value.icon[0]?.url,
+        type: 'file',
+        fileName: pageConfig.value.icon[0]?.name,
+        original: pageConfig.value.icon.length === 0, // 是否为默认值
+        hasFile: pageConfig.value.icon[0]?.file, // 是否是上传了文件
+        organizationId: appStore.orgId,
+      },
+      {
+        paramKey: 'ui.loginLogo',
+        paramValue: pageConfig.value.loginLogo[0]?.url,
+        type: 'file',
+        fileName: pageConfig.value.loginLogo[0]?.name,
+        original: pageConfig.value.loginLogo.length === 0,
+        hasFile: pageConfig.value.loginLogo[0]?.file,
+        organizationId: appStore.orgId,
+      },
+      {
+        paramKey: 'ui.loginImage',
+        paramValue: pageConfig.value.loginImage[0]?.url,
+        type: 'file',
+        fileName: pageConfig.value.loginImage[0]?.name,
+        original: pageConfig.value.loginImage.length === 0,
+        hasFile: pageConfig.value.loginImage[0]?.file,
+        organizationId: appStore.orgId,
+      },
+      {
+        paramKey: 'ui.logoPlatform',
+        paramValue: pageConfig.value.logoPlatform[0]?.url,
+        type: 'file',
+        fileName: pageConfig.value.logoPlatform[0]?.name,
+        original: pageConfig.value.logoPlatform.length === 0,
+        hasFile: pageConfig.value.logoPlatform[0]?.file,
+        organizationId: appStore.orgId,
+      },
+      { paramKey: 'ui.slogan', paramValue: pageConfig.value.slogan, type: 'text', organizationId: appStore.orgId },
+      { paramKey: 'ui.title', paramValue: pageConfig.value.title, type: 'text', organizationId: appStore.orgId },
+      {
+        paramKey: 'ui.style',
+        paramValue: pageConfig.value.style === 'custom' ? pageConfig.value.customStyle : pageConfig.value.style,
+        type: 'text',
+        organizationId: appStore.orgId,
+      },
+      {
+        paramKey: 'ui.theme',
+        paramValue: pageConfig.value.theme === 'custom' ? pageConfig.value.customTheme : pageConfig.value.theme,
+        type: 'text',
+        organizationId: appStore.orgId,
+      },
+      { paramKey: 'ui.helpDoc', paramValue: pageConfig.value.helpDoc, type: 'text', organizationId: appStore.orgId },
+    ].filter((e) => {
+      if (e.type === 'file') {
+        return e.hasFile || e.original;
+      }
+      return true;
+    });
+    const fileList = [
+      pageConfig.value.icon[0]?.file
+        ? new File([pageConfig.value.icon[0].file as File], `ui.icon,${pageConfig.value.icon[0].file?.name}`)
+        : undefined,
+      pageConfig.value.loginLogo[0]?.file
+        ? new File(
+            [pageConfig.value.loginLogo[0].file as File],
+            `ui.loginLogo,${pageConfig.value.loginLogo[0].file?.name}`
+          )
+        : undefined,
+      pageConfig.value.loginImage[0]?.file
+        ? new File(
+            [pageConfig.value.loginImage[0].file as File],
+            `ui.loginImage,${pageConfig.value.loginImage[0].file?.name}`
+          )
+        : undefined,
+      pageConfig.value.logoPlatform[0]?.file
+        ? new File(
+            [pageConfig.value.logoPlatform[0]?.file as File],
+            `ui.logoPlatform,${pageConfig.value.logoPlatform[0].file?.name}`
+          )
+        : undefined,
+    ].filter((e) => e !== undefined);
+    return { request, fileList };
+  }
+
+  const isSave = ref(false); // 是否保存，没有保存但是更改了主题配置需要重置一下。保存了就不需要重置了。
+
   // 保存并应用
   async function save() {
     try {
       pageLoading.value = true;
-      // TODO lmy 联调 (第一版不上)
+      await savePageConfig(makeParams());
       Message.success(t('common.saveSuccess'));
       await sleep(300);
-      window.location.reload();
+      // TODO
+      // window.location.reload();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
