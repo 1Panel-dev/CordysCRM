@@ -18,7 +18,7 @@ export default {
   'settings.help.gitHubProject': 'GitHub 项目',
   'settings.help.enterpriseVersionTrial': '企业版试用',
   'settings.help.APIDoc': 'API文档',
-  'settings.help.versionInfo': '版本信息',
+  'settings.help.versionInfo': '关于',
   'settings.help.currentVersion': '当前版本',
   'settings.help.latestVersion': '最新版本',
   'settings.menu': '菜单栏',

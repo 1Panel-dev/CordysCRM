@@ -18,7 +18,7 @@ export default {
   'settings.help.gitHubProject': 'GitHub project',
   'settings.help.enterpriseVersionTrial': 'Enterprise version trial',
   'settings.help.APIDoc': 'API docs',
-  'settings.help.versionInfo': 'Version info',
+  'settings.help.versionInfo': 'About',
   'settings.help.currentVersion': 'Current Version',
   'settings.help.latestVersion': 'Latest Version',
   'settings.menu': 'Menu',
