@@ -86,7 +86,7 @@
                 <span class="unit">{{ abbreviateNumber(item.value, item.unit).unit }}</span>
               </div>
             </countPopover>
-            <div class="analytics-last-time">
+            <div v-if="appStore.getWinOrderStatus.status" class="analytics-last-time">
               <div class="one-line-text text-[var(--text-n2)]">
                 {{ dateKeyPriorPeriodTitleMap[dim] }}
               </div>
@@ -130,9 +130,12 @@
 
   import { getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
+
+  const appStore = useAppStore();
 
   const { openNewPage } = useOpenNewPage();
 
@@ -246,7 +249,7 @@
   };
 
   function goDetail(dim: string, item: Record<string, any>) {
-    const { searchType, deptIds } = props.params;
+    const { searchType, deptIds, timeField } = props.params;
     if (!item.hasPermission) return;
     const homeKey = 'homeData';
     sessionStorage.removeItem(homeKey);
@@ -266,6 +269,7 @@
         : {}),
       ...(item.status
         ? {
+            timeField,
             status: item.status,
           }
         : {}),
@@ -292,7 +296,11 @@
   async function initLeadDetail(params: GetHomeStatisticParams) {
     if (!hasAnyPermission(['CLUE_MANAGEMENT:READ'])) return;
     try {
-      const result = await getHomeLeadStatistic(params);
+      const { deptIds, searchType } = params;
+      const result = await getHomeLeadStatistic({
+        deptIds,
+        searchType,
+      });
       Object.keys(defaultLeadData.value).forEach((k) => {
         const resultArr: string[] = Object.keys(result);
         const leadKey: string | undefined = resultArr.find((e) =>
@@ -341,7 +349,11 @@
   async function initSuccessOptDetail(params: GetHomeStatisticParams) {
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
     try {
-      const result = await getHomeSuccessOptStatistic(params);
+      const { deptIds, searchType } = params;
+      const result = await getHomeSuccessOptStatistic({
+        deptIds,
+        searchType,
+      });
       Object.keys(defaultWinOrderData.value).forEach((k) => {
         const resultArr: string[] = Object.keys(result);
         const optKeys: string[] = resultArr.filter((e) => e.toLocaleUpperCase().includes(k.toLocaleUpperCase()));

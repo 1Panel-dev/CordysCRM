@@ -76,4 +76,11 @@ export interface AppState {
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
   versionInfo: SystemVersion; // 版本信息
   navTopConfigList: ActionItem[];
+  winOrderConfig: Record<
+    string,
+    {
+      status: boolean;
+      dimType: string;
+    }
+  >; // 首页用户赢单配置
 }

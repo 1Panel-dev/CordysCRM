@@ -114,6 +114,7 @@ const useAppStore = defineStore('app', {
       hasNewVersion: false,
     },
     navTopConfigList: cloneDeep(defaultNavList),
+    winOrderConfig: {},
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -164,6 +165,15 @@ const useAppStore = defineStore('app', {
         }
       });
       return result;
+    },
+    getWinOrderStatus(state: AppState) {
+      const userId = useUserStore().userInfo.id;
+      return (
+        state.winOrderConfig[userId] ?? {
+          status: true,
+          dimType: 'CREATE_TIME',
+        }
+      );
     },
   },
   actions: {
@@ -294,6 +304,13 @@ const useAppStore = defineStore('app', {
       this.menuIconStatus[userStore.userInfo.id] = val;
     },
     /**
+     * 设置首页用户赢单配置
+     */
+    setWinOrderStatus(val: { status: boolean; dimType: string }) {
+      const userStore = useUserStore();
+      this.winOrderConfig[userStore.userInfo.id] = val;
+    },
+    /**
      * 初始化首页消息
      */
     async initMessage() {
@@ -399,7 +416,7 @@ const useAppStore = defineStore('app', {
     },
   },
   persist: {
-    paths: ['menuIconStatus', 'moduleConfigList', 'navTopConfigList'],
+    paths: ['menuIconStatus', 'winOrderConfig', 'moduleConfigList', 'navTopConfigList'],
   },
 });
 

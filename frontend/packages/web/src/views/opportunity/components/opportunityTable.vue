@@ -674,10 +674,12 @@
   const homeDetailKey = computed(() => route.query.key as string);
   const isInitQuery = ref(true);
   function setHomePageParams() {
-    if (route.query.dim && route.query.status && homeDetailKey.value && isInitQuery.value) {
+    const { dim, status, timeField } = route.query;
+    if (dim && status && timeField && homeDetailKey.value && isInitQuery.value) {
       const conditionParams = getOptHomeConditions(
-        route.query.dim as string,
-        route.query.status as string,
+        dim as string,
+        status as string,
+        timeField as string,
         homeDetailKey.value
       );
       setAdvanceFilter(conditionParams);
@@ -693,10 +695,10 @@
       if (val) {
         checkedRowKeys.value = [];
         const valueScoped = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
-
+        const { dim, status, timeField } = route.query;
         setLoadListParams({
           keyword: keyword.value,
-          viewId: route.query.dim && route.query.status && isInitQuery.value ? valueScoped : activeTab.value,
+          viewId: dim && status && timeField && isInitQuery.value ? valueScoped : activeTab.value,
           customerId: props.sourceId,
         });
         setHomePageParams();

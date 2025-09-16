@@ -16,6 +16,52 @@
           children-field="children"
           @update:value="changeHandler"
         />
+        <n-popover
+          v-model:show="popoverVisible"
+          trigger="click"
+          placement="bottom-end"
+          class="crm-table-column-setting-popover"
+          @update:show="handleUpdateShow"
+        >
+          <template #trigger>
+            <n-button
+              :ghost="popoverVisible"
+              :type="popoverVisible ? 'primary' : 'default'"
+              class="outline--secondary px-[8px]"
+            >
+              <CrmIcon
+                type="iconicon_set_up"
+                :class="`cursor-pointer ${popoverVisible ? 'text-[var(--primary-8)]' : ''}`"
+                :size="16"
+              />
+            </n-button>
+          </template>
+          <div class="mb-[4px] flex flex-col gap-[8px] p-[8px]">
+            <div class="mb-[4px]">
+              <n-radio-group v-model:value="winOrderType" name="layoutType">
+                <n-radio-button v-for="e in winOrderTypeList" :key="e.value" :value="e.value" :label="e.label" />
+              </n-radio-group>
+            </div>
+            <div v-if="winOrderType === 'winOrderSet'" class="flex items-center justify-between px-[8px]">
+              <div>{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
+              <n-switch
+                v-model:value="params.priorPeriodEnable"
+                size="small"
+                :rubber-band="false"
+                @update:value="handleChange"
+              />
+            </div>
+            <div v-if="winOrderType === 'optSet'" class="flex flex-col gap-[8px] px-[8px]">
+              <div>{{ t('workbench.dataOverview.statisticalDimension') }}</div>
+              <n-select
+                v-model:value="params.timeField"
+                :options="dimTypeOptions"
+                :placeholder="t('common.pleaseSelect')"
+                @update:value="handleChange"
+              />
+            </div>
+          </div>
+        </n-popover>
         <n-button type="default" class="outline--secondary px-[8px]" @click="refresh">
           <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
         </n-button>
@@ -28,8 +74,20 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NScrollbar, NTreeSelect, TreeOption } from 'naive-ui';
+  import {
+    NButton,
+    NPopover,
+    NRadioButton,
+    NRadioGroup,
+    NScrollbar,
+    NSelect,
+    NSwitch,
+    NTreeSelect,
+    SelectOption,
+    TreeOption,
+  } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
   import { GetHomeStatisticParams } from '@lib/shared/models/home';
@@ -37,16 +95,20 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
   import overview from './overview.vue';
 
   import { getHomeDepartmentTree } from '@/api/modules';
-  import { useUserStore } from '@/store';
+  import { useAppStore, useUserStore } from '@/store';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
-
+  const appStore = useAppStore();
   const params = ref<GetHomeStatisticParams>({
     deptIds: [],
     searchType: '', // ALL/SELF/DEPARTMENT
+    timeField: appStore.getWinOrderStatus.dimType,
+    priorPeriodEnable: appStore.getWinOrderStatus.status,
   });
 
   const activeDeptId = ref('');
@@ -149,7 +211,84 @@
     }
   );
 
-  onMounted(() => {
+  const winOrderType = ref('optSet');
+  const winOrderTypeList = [
+    {
+      value: 'optSet',
+      label: t('workbench.dataOverview.opportunitySet'),
+    },
+    {
+      value: 'winOrderSet',
+      label: t('workbench.dataOverview.windOrderConfig'),
+    },
+  ];
+
+  const dimTypeOptions = ref<SelectOption[]>([]);
+
+  async function initDimType() {
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) {
+      dimTypeOptions.value = [
+        {
+          value: 'CREATE_TIME',
+          label: t('common.createTime'),
+        },
+      ];
+      params.value.timeField = 'CREATE_TIME';
+      const { timeField, priorPeriodEnable } = params.value;
+      appStore.setWinOrderStatus({
+        dimType: timeField,
+        status: priorPeriodEnable ?? false,
+      });
+      return;
+    }
+    try {
+      const res = await getFormConfigApiMap[FormDesignKeyEnum.BUSINESS]();
+      const endTimeItem = res.fields.find((e) => e.businessKey === 'expectedEndTime');
+
+      dimTypeOptions.value = [
+        {
+          value: 'CREATE_TIME',
+          label: t('common.createTime'),
+        },
+        {
+          value: 'EXPECTED_END_TIME',
+          label: endTimeItem?.name ?? '',
+        },
+      ];
+      const { status, dimType } = appStore.getWinOrderStatus;
+      params.value.priorPeriodEnable = status;
+      params.value.timeField = dimType;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const popoverVisible = ref(false);
+  const hasChange = ref(false);
+  async function handleUpdateShow(show: boolean) {
+    if (!show) {
+      if (hasChange.value) {
+        const { timeField, priorPeriodEnable } = params.value;
+        appStore.setWinOrderStatus({
+          dimType: timeField ?? 'CREATE_TIME',
+          status: priorPeriodEnable ?? false,
+        });
+        refresh();
+      }
+    } else {
+      const { status, dimType } = appStore.getWinOrderStatus;
+      params.value.priorPeriodEnable = status;
+      params.value.timeField = dimType;
+    }
+  }
+
+  function handleChange() {
+    hasChange.value = true;
+  }
+
+  onMounted(async () => {
+    await initDimType();
     initDepartList();
   });
 </script>
@@ -165,4 +304,8 @@
   }
 </style>
 
-<style lang="less"></style>
+<style lang="less">
+  .win-order-config-popover {
+    padding: 0 !important;
+  }
+</style>

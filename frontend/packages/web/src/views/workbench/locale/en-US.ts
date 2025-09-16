@@ -59,4 +59,7 @@ export default {
   'workbench.dataOverview.comparedLastWeek': 'WOW',
   'workbench.dataOverview.comparedLastMonth': 'MOM',
   'workbench.dataOverview.comparedLastYear': 'YOY',
+  'workbench.dataOverview.windOrderConfig': 'Win order',
+  'workbench.dataOverview.opportunitySet': 'Opportunity set',
+  'workbench.dataOverview.statisticalDimension': 'Dimension',
 };

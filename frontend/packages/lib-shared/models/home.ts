@@ -1,6 +1,8 @@
 export interface GetHomeStatisticParams {
   searchType: string;
   deptIds: string[];
+  timeField?: string;
+  priorPeriodEnable?: boolean;
 }
 
 export interface DimPeriodValue {

@@ -60,7 +60,12 @@ export const failureReasonOptions = [
 
 export const lastOpportunitySteps = [...opportunityBaseSteps, ...opportunityResultSteps];
 
-export const getOptHomeConditions = (dim: string, status: string, homeDetailKey: string): FilterResult => {
+export const getOptHomeConditions = (
+  dim: string,
+  status: string,
+  timeField: string,
+  homeDetailKey: string
+): FilterResult => {
   let start;
   let end;
   if (dim === 'YEAR') {
@@ -69,13 +74,14 @@ export const getOptHomeConditions = (dim: string, status: string, homeDetailKey:
   }
   const depIds = getSessionStorageTempState<Record<string, string[]>>('homeData', true)?.[homeDetailKey];
 
+  const timeFieldKey = timeField === 'CREATE_TIME' ? 'createTime' : 'expectedEndTime';
   return {
     searchMode: 'AND',
     conditions: [
       {
         value: dim !== 'YEAR' ? dim : [start, end],
         operator: dim !== 'YEAR' ? OperatorEnum.DYNAMICS : OperatorEnum.BETWEEN,
-        name: status === 'SUCCESS' ? 'expectedEndTime' : 'createTime',
+        name: status === 'SUCCESS' ? 'expectedEndTime' : timeFieldKey,
         multipleValue: false,
         type: FieldTypeEnum.TIME_RANGE_PICKER,
       },

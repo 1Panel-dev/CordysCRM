@@ -59,4 +59,7 @@ export default {
   'workbench.dataOverview.comparedLastWeek': '较上周',
   'workbench.dataOverview.comparedLastMonth': '较上月',
   'workbench.dataOverview.comparedLastYear': '较上年',
+  'workbench.dataOverview.windOrderConfig': '赢单设置',
+  'workbench.dataOverview.opportunitySet': '商机设置',
+  'workbench.dataOverview.statisticalDimension': '统计维度',
 };
