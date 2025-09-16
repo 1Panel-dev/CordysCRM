@@ -218,7 +218,10 @@ public class CodingUtils {
     }
 
     public static String aesCBCEncrypt(String src, String secretKey, String iv) {
-        if (StringUtils.isBlank(src) || StringUtils.isBlank(secretKey)) {
+        if (StringUtils.isBlank(src)) {
+            return src;
+        }
+        if (StringUtils.isBlank(secretKey)) {
             throw new IllegalArgumentException("Input or secretKey cannot be null or empty");
         }
         try {
