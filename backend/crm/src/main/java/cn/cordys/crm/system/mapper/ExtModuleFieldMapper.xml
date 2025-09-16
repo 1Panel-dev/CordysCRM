@@ -23,6 +23,12 @@
         </foreach>
     </select>
 
+    <select id="resolveIdsByName" resultType="java.lang.String">
+        select id from ${tableName} where name in
+        <foreach collection="names" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
 
     <select id="getSourceOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where organization_id = #{orgId}

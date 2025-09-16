@@ -77,6 +77,15 @@ public class ModuleFormService {
 
 	private static final String CONTROL_RULES_KEY = "showControlRules";
 
+	public static final Map<String, String> TYPE_SOURCE_MAP;
+
+	static {
+		TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
+				FieldType.DEPARTMENT.name(), "sys_department", FieldSourceType.CUSTOMER.name(), "customer",
+				FieldSourceType.CLUE.name(), "clue", FieldSourceType.CONTACT.name(), "customer_contact",
+				FieldSourceType.OPPORTUNITY.name(), "opportunity", FieldSourceType.PRODUCT.name(), "product");
+	}
+
 	/**
 	 * 获取模块表单配置
 	 * @param formKey 表单Key
@@ -312,14 +321,24 @@ public class ModuleFormService {
 			});
 		}
 
-		Map<String, String> sourceMap = initTypeSourceMap();
 		typeIdsMap.forEach((fieldId, ids) -> {
-			List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(sourceMap.get(idTypeMap.get(fieldId)), ids);
+			List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(idTypeMap.get(fieldId)), ids);
 			if (CollectionUtils.isNotEmpty(options)) {
 				optionMap.put(fieldId, options);
 			}
 		});
 		return optionMap;
+	}
+
+	public List<String> resolveSourceNames(String type, List<String> nameList) {
+		if (CollectionUtils.isEmpty(nameList)) {
+			return new ArrayList<>();
+		}
+		if (!TYPE_SOURCE_MAP.containsKey(type)) {
+			LogUtils.error("未知的数据源类型：{}", type);
+			return new ArrayList<>();
+		}
+		return extModuleFieldMapper.resolveIdsByName(TYPE_SOURCE_MAP.get(type), nameList);
 	}
 
 	/**

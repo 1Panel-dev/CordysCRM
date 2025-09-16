@@ -20,10 +20,12 @@ import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
+import cn.cordys.crm.system.dto.request.FieldResolveRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
 import cn.cordys.crm.system.dto.response.product.ProductListResponse;
 import cn.cordys.crm.system.service.ModuleFieldService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.crm.system.service.ProductService;
 import cn.cordys.security.SessionUtils;
@@ -47,6 +49,8 @@ public class ModuleFieldController {
 	private ModuleService moduleService;
 	@Resource
 	private ModuleFieldService moduleFieldService;
+	@Resource
+	private ModuleFormService moduleFormService;
 	@Resource
 	private CustomerService customerService;
 	@Resource
@@ -121,5 +125,11 @@ public class ModuleFieldController {
 	@Operation(summary = "校验重复值")
 	public FieldRepeatCheckResponse checkRepeat(@Valid @RequestBody FieldRepeatCheckRequest checkRequest) {
 		return moduleFieldService.checkRepeat(checkRequest, OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/resolve/business")
+	@Operation(summary = "解析业务ID")
+	public List<String> resolveBusinessId(@Valid @RequestBody FieldResolveRequest request) {
+		return moduleFormService.resolveSourceNames(request.getSourceType(), request.getNames());
 	}
 }
