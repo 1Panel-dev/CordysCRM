@@ -62,10 +62,11 @@ public class ShiroConfig {
         shiroFilterFactoryBean.getFilters().put("authc", new AuthFilter());
 
         // 配置过滤器链
-        Map<String, String> filterChainDefinitionMap = shiroFilterFactoryBean.getFilterChainDefinitionMap();
-        filterChainDefinitionMap.putAll(ShiroFilter.loadBaseFilterChain());
-        filterChainDefinitionMap.putAll(ShiroFilter.ignoreCsrfFilter());
-        filterChainDefinitionMap.put("/**", "apikey, csrf, authc");
+        Map<String, String> definitionMap = shiroFilterFactoryBean.getFilterChainDefinitionMap();
+        ShiroFilter.chain();
+        definitionMap.putAll(ShiroFilter.loadBaseFilterChain());
+        definitionMap.putAll(ShiroFilter.ignoreCsrfFilter());
+        definitionMap.put("/**", "apikey, csrf, authc");
 
         return shiroFilterFactoryBean;
     }

@@ -126,4 +126,29 @@ public class CommonBeanFactory implements ApplicationContextAware {
         Set<BeanDefinition> defs = scanner.findCandidateComponents(basePackage);
         return !defs.isEmpty();
     }
+
+    /**
+     * 调用指定类的静态方法
+     *
+     * @param className      类的全名，例如 "com.example.MyClass"
+     * @param methodName     方法名
+     * @param parameterTypes 方法参数类型
+     * @param args           方法参数
+     * @return 方法返回值
+     */
+    public static void invokeStatic(String className, String methodName, Class<?>[] parameterTypes, Object... args) {
+        try {
+            // 1. 加载类
+            Class<?> clazz = Class.forName(className);
+
+            // 2. 获取方法
+            Method method = clazz.getMethod(methodName, parameterTypes);
+
+            // 3. 调用静态方法，第一个参数传 null
+            method.invoke(null, args);
+
+        } catch (Exception ignored) {
+        }
+    }
+
 }
