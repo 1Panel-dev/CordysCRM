@@ -3,7 +3,7 @@
     <div class="mb-[8px] flex items-center justify-between">
       <div class="flex items-center">
         {{ props.title }}
-        <CrmTag v-show="fileList.length" theme="light" type="warning" class="ml-[4px]" size="small">
+        <CrmTag v-show="fileList[0]?.file" theme="light" type="warning" class="ml-[4px]" size="small">
           {{ t('common.unsaved') }}
         </CrmTag>
       </div>

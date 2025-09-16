@@ -121,7 +121,7 @@ export default {
   'system.config.page.platformName': 'System Name',
   'system.config.page.platformNameTip': 'Global product name, recommended within 8 characters.',
   'system.config.page.helpDocTip': 'Set a help document link. Defaults to the official documentation.',
-  'system.config.page.cancel': 'Discard Changes',
+  'system.config.page.cancel': 'Reset default',
   'system.config.page.save': 'Save & Apply',
   'system.personal.info.title': 'Personal center',
   'system.personal.info': 'Personal information',

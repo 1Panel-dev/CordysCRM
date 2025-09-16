@@ -1,6 +1,10 @@
 <template>
   <n-layout class="default-layout">
-    <LayoutHeader v-if="!route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)" />
+    <LayoutHeader
+      v-if="!route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)"
+      :is-preview="innerProps.isPreview"
+      :logo="innerLogo"
+    />
     <n-layout class="flex-1" has-sider>
       <LayoutSider />
       <PageContent />
@@ -18,7 +22,28 @@
 
   import { DashboardRouteEnum } from '@/enums/routeEnum';
 
+  const defaultPlatformLogo = `${import.meta.env.BASE_URL}images/logo_CORDYS.svg`;
+
   const route = useRoute();
+
+  interface Props {
+    isPreview?: boolean;
+    logo?: string;
+  }
+
+  const props = defineProps<Props>();
+
+  const innerProps = ref<Props>(props);
+
+  watch(
+    () => props.logo,
+    () => {
+      innerProps.value = { ...props };
+    }
+  );
+  const innerLogo = computed(() =>
+    props.isPreview && innerProps.value.logo ? innerProps.value.logo : defaultPlatformLogo
+  );
 </script>
 
 <style lang="less">

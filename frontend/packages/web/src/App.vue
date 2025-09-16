@@ -15,6 +15,7 @@
 <script setup lang="ts">
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
+  import { GetPlatformIconUrl } from '@lib/shared/api/requrls/system/business';
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import useLocale from '@lib/shared/locale/useLocale';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
@@ -27,6 +28,7 @@
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
+  import { setFavicon, watchStyle, watchTheme } from '@/utils/theme';
 
   import useDiscreteApi from './hooks/useDiscreteApi';
   import { WHITE_LIST } from './router/constants';
@@ -111,6 +113,9 @@
       document.documentElement.style.setProperty('--text-n9', 'var(--text-n8)');
     }
   }
+  watchStyle(appStore.pageConfig.style, appStore.pageConfig);
+  watchTheme(appStore.pageConfig.theme, appStore.pageConfig);
+  setFavicon(GetPlatformIconUrl);
 
   onBeforeMount(async () => {
     try {
@@ -119,7 +124,7 @@
       }
       if (licenseStore.hasLicense()) {
         // TODO 等待联调
-        // appStore.initPageConfig();
+        appStore.initPageConfig();
       }
     } catch (error) {
       // eslint-disable-next-line no-console

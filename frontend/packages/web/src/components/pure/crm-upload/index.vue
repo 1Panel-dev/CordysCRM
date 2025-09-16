@@ -137,8 +137,15 @@
   });
 
   function handleChange(file: CrmFileItem, fileList: Array<CrmFileItem>) {
+    const lastFileList = fileList.map((e: any) => {
+      return {
+        ...e,
+        url: URL.createObjectURL(e.file),
+      };
+    });
     file.local = true;
-    emit('change', fileList, file);
+    file.url = URL.createObjectURL(file.file as Blob);
+    emit('change', lastFileList, file);
   }
 
   // 判断文件是否重复

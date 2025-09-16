@@ -35,7 +35,6 @@ export interface LoginConfig {
 //  平台配置对象
 export interface PlatformConfig {
   logoPlatform: (UploadFileInfo | never)[];
-  platformName: string;
   helpDoc: string;
 }
 

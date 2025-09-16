@@ -1,7 +1,7 @@
 <template>
   <n-layout-header class="flex" bordered>
-    <div class="flex px-[24px] py-[14px]">
-      <CrmSvg name="logo_CORDYS" height="28px" width="130px" />
+    <div class="flex max-w-[300px] px-[24px] py-[14px]">
+      <img :src="props.logo" class="h-[28px]" />
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
@@ -61,12 +61,6 @@
                   </div>
                   <div class="font-semibold">{{ appStore.versionInfo.latestVersion }}</div>
                 </div>
-                <div class="flex items-center justify-between">
-                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">Cordys CRM</div>
-                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
-                    {{ appStore.versionInfo.copyright }}
-                  </div>
-                </div>
                 <div
                   v-if="licenseStore.isEnterpriseVersion() && hasAnyPermission(['LICENSE:READ'])"
                   class="flex flex-col gap-[4px]"
@@ -96,6 +90,12 @@
                       </div>
                       <div class="font-semibold">{{ licenseStore?.licenseInfo?.expired }}</div>
                     </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">Cordys CRM</div>
+                  <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                    {{ appStore.versionInfo.copyright }}
                   </div>
                 </div>
               </div>
@@ -171,6 +171,11 @@
   const appStore = useAppStore();
   const userStore = useUserStore();
   const licenseStore = useLicenseStore();
+
+  const props = defineProps<{
+    isPreview?: boolean;
+    logo?: string;
+  }>();
 
   function changeLanguage(locale: LocaleType) {
     changeLocaleBackEnd(locale);
