@@ -70,7 +70,7 @@
     if (Number.isNaN(num)) {
       value.value = '';
       displayValue.value = '';
-      emit('change', '');
+      emit('change', undefined);
       return;
     }
 
