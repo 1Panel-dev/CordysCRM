@@ -29,6 +29,12 @@ public class LogModule {
     public static final String SYSTEM_BUSINESS_THIRD = "SYSTEM_BUSINESS_THIRD";
 
     /**
+     * 界面设置
+     */
+    public static final String SYSTEM_BUSINESS_UI = "SYSTEM_BUSINESS_UI";
+
+
+    /**
      * 用户
      */
     public static final String SYSTEM_USER = "SYSTEM_USER";

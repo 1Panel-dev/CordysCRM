@@ -64,6 +64,19 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_user_id ON agent_collection (user_id ASC);
 
+CREATE TABLE sys_ui_settings(
+                                `param_key` VARCHAR(100) NOT NULL   COMMENT 'key' ,
+                                `param_value` VARCHAR(255)    COMMENT 'value' ,
+                                `type` VARCHAR(100) NOT NULL  DEFAULT text COMMENT 'type' ,
+                                `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+                                PRIMARY KEY (param_key)
+)  COMMENT = '界面设置'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+
+CREATE INDEX idx_organization_id ON sys_ui_settings(organization_id ASC);
+COLLATE = utf8mb4_general_ci;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
