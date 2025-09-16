@@ -17,19 +17,18 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
+import cn.cordys.crm.dashboard.dto.MoveNodeSortDTO;
+import cn.cordys.crm.dashboard.service.DashboardSortService;
 import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.domain.AgentCollection;
 import cn.cordys.crm.integration.agent.dto.AgentLogDTO;
-import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import cn.cordys.crm.integration.agent.mapper.ExtAgentCollectionMapper;
 import cn.cordys.crm.integration.agent.mapper.ExtAgentMapper;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
+import cn.cordys.crm.system.dto.request.NodeMoveRequest;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.DepartmentService;
@@ -41,6 +40,10 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +52,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class AgentBaseService {
+public class AgentBaseService extends DashboardSortService {
 
     @Resource
     private ExtAgentMapper extAgentMapper;
@@ -69,6 +72,8 @@ public class AgentBaseService {
     private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<AgentCollection> agentCollectionMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     /**
      * 添加智能体
@@ -287,16 +292,16 @@ public class AgentBaseService {
 
             Set<String> myCollects = new HashSet<>(extAgentCollectionMapper.getByUserId(userId));
 
-            agentList.forEach(dashboard -> {
-                dashboard.setMembers(userExtendService.getScope(JSON.parseArray(dashboard.getScopeId(), String.class)));
-                if (userMap.containsKey(dashboard.getCreateUser())) {
-                    dashboard.setCreateUserName(userMap.get(dashboard.getCreateUser()));
+            agentList.forEach(agent -> {
+                agent.setMembers(userExtendService.getScope(JSON.parseArray(agent.getScopeId(), String.class)));
+                if (userMap.containsKey(agent.getCreateUser())) {
+                    agent.setCreateUserName(userMap.get(agent.getCreateUser()));
                 }
-                if (userMap.containsKey(dashboard.getUpdateUser())) {
-                    dashboard.setUpdateUserName(userMap.get(dashboard.getUpdateUser()));
+                if (userMap.containsKey(agent.getUpdateUser())) {
+                    agent.setUpdateUserName(userMap.get(agent.getUpdateUser()));
                 }
-                if (myCollects.contains(dashboard.getId())) {
-                    dashboard.setMyCollect(true);
+                if (myCollects.contains(agent.getId())) {
+                    agent.setMyCollect(true);
                 }
             });
         }
@@ -353,5 +358,60 @@ public class AgentBaseService {
         List<AgentPageResponse> agentList = extAgentCollectionMapper.collectList(request, userId, orgId);
         handleData(agentList, userId);
         return agentList;
+    }
+
+
+    /**
+     * 拖拽排序
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public void editPos(AgentEditPosRequest request, String userId, String orgId) {
+        Agent agent = checkAgent(request.getMoveId());
+        if (!Strings.CS.equals(request.getAgentModuleId(), agent.getAgentModuleId())) {
+            agentModuleService.checkAgentModule(request.getAgentModuleId());
+            checkAgentName(agent.getName(), request.getAgentModuleId(), orgId, agent.getId());
+
+            agent.setAgentModuleId(request.getAgentModuleId());
+            agent.setUpdateUser(userId);
+            agent.setUpdateTime(System.currentTimeMillis());
+            agentMapper.update(agent);
+        }
+        if (Strings.CS.equals(request.getTargetId(), request.getMoveId())) {
+            return;
+        }
+        moveNode(request, orgId);
+    }
+
+
+    public void moveNode(AgentEditPosRequest posRequest, String orgId) {
+        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(), posRequest.getMoveMode(), true);
+        MoveNodeSortDTO sortDTO = super.getNodeSortDTO(
+                orgId,
+                request,
+                extAgentMapper::selectDragInfoById,
+                extAgentMapper::selectNodeByPosOperator
+        );
+        super.sort(sortDTO);
+    }
+
+
+    @Override
+    public void updatePos(String id, long pos) {
+        extAgentMapper.updatePos(id, pos);
+    }
+
+    @Override
+    public void refreshPos(String orgId) {
+        List<String> posIds = extAgentMapper.selectIdByOrgIdOrderByPos(orgId);
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtAgentMapper batchUpdateMapper = sqlSession.getMapper(ExtAgentMapper.class);
+        for (int i = 0; i < posIds.size(); i++) {
+            batchUpdateMapper.updatePos(posIds.get(i), i * NodeSortUtils.DEFAULT_NODE_INTERVAL_POS);
+        }
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
 }

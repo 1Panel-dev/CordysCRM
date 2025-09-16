@@ -6,12 +6,8 @@ import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
 import cn.cordys.crm.integration.agent.domain.Agent;
-import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
-import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import cn.cordys.crm.integration.agent.service.AgentBaseService;
@@ -104,4 +100,13 @@ public class AgentController {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, agentBaseService.collectList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
     }
+
+
+    @PostMapping("/edit/pos")
+    @Operation(summary = "智能体-拖拽排序")
+    @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
+    public void editPos(@Validated @RequestBody AgentEditPosRequest request) {
+        agentBaseService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 }

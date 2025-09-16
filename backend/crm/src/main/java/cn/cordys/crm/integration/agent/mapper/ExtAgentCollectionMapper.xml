@@ -73,4 +73,9 @@
         </choose>
     </sql>
 
+
+    <select id="countMyCollect" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(id) from agent_collection
+        where user_id = #{userId}
+    </select>
 </mapper>

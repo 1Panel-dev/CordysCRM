@@ -109,4 +109,69 @@
             </otherwise>
         </choose>
     </sql>
+
+
+    <select id="selectDragInfoById" resultType="cn.cordys.crm.dashboard.dto.DropNode">
+        SELECT id, pos
+        FROM agent
+        WHERE id = #{dragNodeId}
+    </select>
+
+
+    <select id="selectNodeByPosOperator"
+            parameterType="cn.cordys.common.dto.NodeSortQueryParam"
+            resultType="cn.cordys.crm.dashboard.dto.DropNode">
+        SELECT id, pos
+        FROM agent
+        WHERE organization_id = #{nodeSortQueryParam.parentId}
+        <if test="nodeSortQueryParam.operator == 'moreThan'">
+            AND pos &gt; #{nodeSortQueryParam.pos}
+        </if>
+        <if test="nodeSortQueryParam.operator == 'lessThan'">
+            AND pos &lt; #{nodeSortQueryParam.pos}
+        </if>
+        ORDER BY pos
+        <if test="nodeSortQueryParam.operator == 'lessThan' or nodeSortQueryParam.operator == 'latest'">
+            DESC
+        </if>
+        LIMIT 1
+    </select>
+
+    <update id="updatePos">
+        update agent
+        set pos =#{pos}
+        where id = #{id}
+    </update>
+
+    <select id="selectIdByOrgIdOrderByPos" resultType="java.lang.String">
+        SELECT id
+        FROM agent
+        WHERE organization_id = #{orgId}
+        ORDER BY pos
+    </select>
+
+
+    <select id="selectAgentNode" resultType="cn.cordys.crm.integration.agent.dto.AgentTreeNode">
+        SELECT
+        id,
+        NAME,
+        agent_module_id as parent_id,
+        organization_id,
+        'AGENT' as type,
+        resource_id
+        FROM
+        agent
+        WHERE organization_id = #{orgId}
+        <if test="userId != null and userId != 'admin'">
+            AND ((
+            JSON_CONTAINS(`scope_id`, json_array(#{userId}))
+            or `scope_id` = '[]'
+            <foreach collection="departmentIds" item="departmentId">
+                or JSON_CONTAINS(`scope_id`, json_array(#{departmentId}))
+            </foreach>
+            )
+            or create_user = #{userId} )
+        </if>
+
+    </select>
 </mapper>

@@ -365,7 +365,7 @@ public class DashboardService extends DashboardSortService {
 
 
     public void moveNode(DashboardEditPosRequest posRequest, String orgId) {
-        NodeMoveRequest request = super.getNodeMoveRequest(posRequest, true);
+        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(), posRequest.getMoveMode(), true);
         MoveNodeSortDTO sortDTO = super.getNodeSortDTO(
                 orgId,
                 request,

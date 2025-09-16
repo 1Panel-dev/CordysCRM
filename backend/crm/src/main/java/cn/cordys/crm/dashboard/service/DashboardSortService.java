@@ -7,7 +7,6 @@ import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.dashboard.dto.DropNode;
 import cn.cordys.crm.dashboard.dto.MoveNodeSortDTO;
-import cn.cordys.crm.dashboard.dto.request.DashboardEditPosRequest;
 import cn.cordys.crm.system.dto.request.NodeMoveRequest;
 import org.apache.commons.lang3.Strings;
 
@@ -27,14 +26,13 @@ public abstract class DashboardSortService {
     /**
      * 构建节点移动的请求参数
      *
-     * @param posRequest 拖拽的前端请求参数
-     * @param isDesc     是否是降序排列
+     * @param isDesc 是否是降序排列
      */
-    public NodeMoveRequest getNodeMoveRequest(DashboardEditPosRequest posRequest, boolean isDesc) {
+    public NodeMoveRequest getNodeMoveRequest(String moveId, String targetId, String moveMode, boolean isDesc) {
         NodeMoveRequest request = new NodeMoveRequest();
-        request.setDragNodeId(posRequest.getMoveId());
-        request.setDropNodeId(posRequest.getTargetId());
-        request.setAndConvertDropPosition(posRequest.getMoveMode(), isDesc);
+        request.setDragNodeId(moveId);
+        request.setDropNodeId(targetId);
+        request.setAndConvertDropPosition(moveMode, isDesc);
         return request;
     }
 

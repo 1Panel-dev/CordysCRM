@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.integration.agent.mapper.ExtAgentModuleMapper">
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id) from agent_module
+        where name = #{name}
+        and organization_id = #{orgId}
+        and parent_id = #{parentId}
+        <if test="id != null and id != ''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <select id="getNextPosByOrgId" resultType="java.lang.Long">
+        SELECT max(pos)
+        FROM agent_module
+        where organization_id = #{orgId}
+    </select>
+
+    <select id="countAgentByIds" resultType="java.lang.Integer">
+        select count(id)
+        from agent
+        where agent_module_id in
+        <foreach collection="agentModuleIds" item="agentModuleId" index="index" open="(" close=")" separator=",">
+            #{agentModuleId}
+        </foreach>
+        and organization_id = #{orgId}
+    </select>
+
+    <select id="selectTreeNode" resultType="cn.cordys.crm.integration.agent.dto.AgentTreeNode">
+        SELECT id, name, parent_id, organization_id, 'MODULE' AS type
+        FROM agent_module
+        where organization_id = #{orgId}
+        ORDER BY pos
+    </select>
+
+    <select id="selectBaseModuleById" resultType="cn.cordys.common.dto.BaseTree">
+        SELECT id, name, pos, organization_id, parent_id
+        FROM agent_module
+        WHERE id = #{dragNodeId}
+    </select>
+
+    <select id="selectModuleByParentIdAndPosOperator"
+            parameterType="cn.cordys.common.dto.NodeSortQueryParam"
+            resultType="cn.cordys.common.dto.BaseTree">
+        SELECT id, name, pos, organization_id, parent_id
+        FROM agent_module
+        WHERE parent_id = #{nodeSortQueryParam.parentId}
+        <if test="nodeSortQueryParam.operator == 'moreThan'">
+            AND pos &gt; #{nodeSortQueryParam.pos}
+        </if>
+        <if test="nodeSortQueryParam.operator == 'lessThan'">
+            AND pos &lt; #{nodeSortQueryParam.pos}
+        </if>
+        ORDER BY pos
+        <if test="nodeSortQueryParam.operator == 'lessThan' or nodeSortQueryParam.operator == 'latest'">
+            DESC
+        </if>
+        LIMIT 1
+    </select>
+
+
+    <select id="selectChildrenIds" resultType="java.lang.String">
+        SELECT id FROM agent_module WHERE parent_id  = #{parentId}
+        ORDER BY pos ASC
+    </select>
+
+
+    <update id="updatePos">
+        update agent_module
+        set pos =#{pos}
+        where id = #{id}
+    </update>
+</mapper>
