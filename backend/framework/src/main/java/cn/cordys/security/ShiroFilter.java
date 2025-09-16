@@ -101,6 +101,7 @@ public final class ShiroFilter {
     private static void addPublicPathFilters() {
         FILTER_CHAIN_DEFINITION_MAP.put("/display/info", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/pic/preview/**", "anon");
+        FILTER_CHAIN_DEFINITION_MAP.put("/ui/display/preview", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/anonymous/**", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/system/version/current", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/sse/subscribe/**", "anon");
