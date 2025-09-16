@@ -228,19 +228,17 @@ public class HomeStatisticService {
         HomeStatisticSearchResponse response = new HomeStatisticSearchResponse();
         Future<Long> getCount = executor.submit(() -> statisticFunction.apply(request));
         try {
+
+            Long count = getCount.get();
+            response.setValue(count);
+
             if (request.comparePeriod()) {
                 HomeStatisticSearchWrapperRequest periodRequest = copyHomeStatisticSearchWrapperRequest(request);
                 periodRequest.setStartTime(periodRequest.getPeriodStartTime());
                 periodRequest.setEndTime(periodRequest.getPeriodEndTime());
                 Future<Long> getPeriodCount = executor.submit(() -> statisticFunction.apply(periodRequest));
-
-                Long count = getCount.get();
-                response.setValue(count);
                 Long periodCount = getPeriodCount.get();
                 response.setPriorPeriodCompareRate(getPriorPeriodCompareRate(count, periodCount));
-            } else {
-                Long count = getCount.get();
-                response.setValue(count);
             }
         } catch (Exception e) {
             LogUtils.error(e);

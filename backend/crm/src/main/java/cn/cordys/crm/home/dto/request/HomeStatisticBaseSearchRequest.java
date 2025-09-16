@@ -22,4 +22,16 @@ public class HomeStatisticBaseSearchRequest {
 
     @Schema(description = "部门ID集合")
     private Set<String> deptIds;
+
+    @EnumValue(enumClass = TimeFieldEnum.class)
+    @Schema(description = "用于检索的时间字段(CREATE_TIME, EXPECTED_END_TIME)")
+    private String timeField;
+
+    @Schema(description = "是否显示上期数据")
+    private Boolean priorPeriodEnable;
+
+    public enum TimeFieldEnum {
+        CREATE_TIME,
+        EXPECTED_END_TIME
+    }
 }

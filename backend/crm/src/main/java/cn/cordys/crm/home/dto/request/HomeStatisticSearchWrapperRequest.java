@@ -4,6 +4,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.crm.home.constants.HomeStatisticPeriod;
 import lombok.Data;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.DayOfWeek;
@@ -33,7 +34,7 @@ public class HomeStatisticSearchWrapperRequest {
     }
 
     public boolean comparePeriod() {
-        return StringUtils.isNotBlank(staticRequest.getPeriod());
+        return StringUtils.isNotBlank(staticRequest.getPeriod()) && BooleanUtils.isTrue(staticRequest.getPriorPeriodEnable());
     }
 
     public void clearStartTimeAndEndTie() {
