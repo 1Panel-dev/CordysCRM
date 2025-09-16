@@ -66,6 +66,10 @@ main() {
     # 启动 Cordys CRM 应用
     log_info "启动 Crodys CRM 应用 ..."
     sh /shells/start-cordys.sh
+
+    # 启动 MCP 服务
+    log_info "启动 MCP 服务 ..."
+    sh /shells/start-mcp.sh
 }
 
 # 执行主函数
