@@ -3,6 +3,7 @@ package cn.cordys.crm.integration.agent.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
@@ -107,6 +108,13 @@ public class AgentController {
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
     public void editPos(@Validated @RequestBody AgentEditPosRequest request) {
         agentBaseService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping(value = "/option")
+    @Operation(summary = "用户可选智能体下拉option")
+    public List<OptionDTO> getAgentList() {
+        return agentBaseService.getAgentOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }

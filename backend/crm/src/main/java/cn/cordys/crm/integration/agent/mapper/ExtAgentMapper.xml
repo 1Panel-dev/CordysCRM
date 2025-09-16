@@ -151,14 +151,12 @@
     </select>
 
 
-    <select id="selectAgentNode" resultType="cn.cordys.crm.integration.agent.dto.AgentTreeNode">
+    <select id="selectAgentNode" resultType="cn.cordys.common.dto.BaseTreeNode">
         SELECT
         id,
         NAME,
         agent_module_id as parent_id,
-        organization_id,
-        'AGENT' as type,
-        resource_id
+        organization_id
         FROM
         agent
         WHERE organization_id = #{orgId}
@@ -173,5 +171,27 @@
             or create_user = #{userId} )
         </if>
 
+    </select>
+
+
+    <select id="getOptions" resultType="cn.cordys.common.dto.OptionDTO">
+        select
+        a.id,
+        a.name
+        from agent a
+        where a.organization_id = #{orgId}
+        <if test="userId != null and userId != 'admin'">
+            AND (
+            (
+            JSON_CONTAINS(a.`scope_id`, json_array(#{userId}))
+            or a.`scope_id` = '[]'
+            <foreach collection="departmentIds" item="departmentId">
+                or JSON_CONTAINS(a.`scope_id`, json_array(#{departmentId}))
+            </foreach>
+            )
+            or a.create_user = #{userId}
+            )
+        </if>
+        order by a.create_time desc
     </select>
 </mapper>

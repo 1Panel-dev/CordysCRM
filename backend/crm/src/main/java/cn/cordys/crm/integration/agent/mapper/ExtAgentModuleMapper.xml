@@ -29,8 +29,8 @@
         and organization_id = #{orgId}
     </select>
 
-    <select id="selectTreeNode" resultType="cn.cordys.crm.integration.agent.dto.AgentTreeNode">
-        SELECT id, name, parent_id, organization_id, 'MODULE' AS type
+    <select id="selectTreeNode" resultType="cn.cordys.common.dto.BaseTreeNode">
+        SELECT id, name, parent_id, organization_id
         FROM agent_module
         where organization_id = #{orgId}
         ORDER BY pos

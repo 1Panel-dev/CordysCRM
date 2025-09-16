@@ -2,9 +2,9 @@ package cn.cordys.crm.integration.agent.controller;
 
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.integration.agent.domain.AgentModule;
-import cn.cordys.crm.integration.agent.dto.AgentTreeNode;
 import cn.cordys.crm.integration.agent.dto.request.AgentModuleAddRequest;
 import cn.cordys.crm.integration.agent.dto.request.AgentModuleRenameRequest;
 import cn.cordys.crm.integration.agent.service.AgentModuleService;
@@ -56,8 +56,8 @@ public class AgentModuleController {
     @GetMapping("/tree")
     @Operation(summary = "智能体-文件树查询")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public List<AgentTreeNode> getTree() {
-        return agentModuleService.getTree(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public List<BaseTreeNode> getTree() {
+        return agentModuleService.getTree(OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/count")

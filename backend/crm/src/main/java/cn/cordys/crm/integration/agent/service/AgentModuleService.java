@@ -15,7 +15,6 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.agent.domain.AgentModule;
-import cn.cordys.crm.integration.agent.dto.AgentTreeNode;
 import cn.cordys.crm.integration.agent.dto.request.AgentModuleAddRequest;
 import cn.cordys.crm.integration.agent.dto.request.AgentModuleRenameRequest;
 import cn.cordys.crm.integration.agent.mapper.ExtAgentCollectionMapper;
@@ -225,25 +224,12 @@ public class AgentModuleService extends MoveNodeService {
     /**
      * 智能体树结构
      *
-     * @param userId
      * @param orgId
      * @return
      */
-    public List<AgentTreeNode> getTree(String userId, String orgId) {
-        List<AgentTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
-        //查询模块下仪表板数据
-        List<String> departmentIds = getDepartmentIds(userId, orgId);
-        List<AgentTreeNode> agentNode = extAgentMapper.selectAgentNode(departmentIds, orgId, userId);
-
-        Set<String> myCollects = new HashSet<>(extAgentCollectionMapper.getByUserId(userId));
-        agentNode.forEach(node -> {
-            if (myCollects.contains(node.getId())) {
-                node.setMyCollect(true);
-            }
-        });
-
-        agentNode.addAll(moduleNode);
-        return AgentTreeNode.buildTree(agentNode);
+    public List<BaseTreeNode> getTree(String orgId) {
+        List<BaseTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
+        return BaseTreeNode.buildTree(moduleNode);
     }
 
 
@@ -266,12 +252,12 @@ public class AgentModuleService extends MoveNodeService {
      * @return
      */
     public Map<String, Long> moduleCount(String userId, String orgId) {
-        List<AgentTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
+        List<BaseTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
         //查询模块下仪表板数据
         List<String> departmentIds = getDepartmentIds(userId, orgId);
-        List<AgentTreeNode> agentNode = extAgentMapper.selectAgentNode(departmentIds, orgId, userId);
+        List<BaseTreeNode> agentNode = extAgentMapper.selectAgentNode(departmentIds, orgId, userId);
 
-        List<AgentTreeNode> agentTreeNodes = AgentTreeNode.buildTree(moduleNode);
+        List<BaseTreeNode> agentTreeNodes = BaseTreeNode.buildTree(moduleNode);
 
         Map<String, Integer> moduleCountMap = agentNode.stream()
                 .collect(Collectors.groupingBy(
@@ -280,7 +266,7 @@ public class AgentModuleService extends MoveNodeService {
                 ));
 
         Map<String, Long> countMap = new HashMap<>();
-        for (AgentTreeNode root : agentTreeNodes) {
+        for (BaseTreeNode root : agentTreeNodes) {
             // 递归计算每个节点的仪表板数量
             calculateAgentCount(root, countMap, moduleCountMap);
         }

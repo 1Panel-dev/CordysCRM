@@ -1,9 +1,10 @@
 package cn.cordys.crm.integration.agent.mapper;
 
 
+import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.NodeSortQueryParam;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.dashboard.dto.DropNode;
-import cn.cordys.crm.integration.agent.dto.AgentTreeNode;
 import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
@@ -30,5 +31,7 @@ public interface ExtAgentMapper {
 
     List<String> selectIdByOrgIdOrderByPos(@Param("orgId") String orgId);
 
-    List<AgentTreeNode> selectAgentNode(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId, @Param("userId") String userId);
+    List<BaseTreeNode> selectAgentNode(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId, @Param("userId") String userId);
+
+    List<OptionDTO> getOptions(@Param("userId") String userId, @Param("orgId") String orgId, @Param("departmentIds") List<String> departmentIds);
 }

@@ -414,4 +414,23 @@ public class AgentBaseService extends DashboardSortService {
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
+
+
+    /**
+     * 获取用户可选智能体选项
+     *
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public List<OptionDTO> getAgentOptions(String userId, String orgId) {
+        List<String> departmentIds = new ArrayList<>();
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
+            List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
+            departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
+        }
+        List<OptionDTO> agentOptions = extAgentMapper.getOptions(userId, orgId, departmentIds);
+        return agentOptions;
+    }
 }
