@@ -460,4 +460,5 @@ export const {
   getAgentDetail,
   agentDelete,
   agentCollect,
+  getAgentOptions,
 } = agentApi;

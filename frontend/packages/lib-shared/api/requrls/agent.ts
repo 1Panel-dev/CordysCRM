@@ -14,3 +14,4 @@ export const unCollectAgentUrl = '/agent/un-collect'; // 取消收藏智能体
 export const agentDetailUrl = '/agent/detail'; // 获取智能体详情
 export const agentDeleteUrl = '/agent/delete'; // 删除智能体
 export const agentCollectUrl = '/agent/collect'; // 收藏智能体
+export const agentOptionUrl = '/agent/option'; // 智能体选项

@@ -20,6 +20,7 @@ import {
   agentModuleMoveUrl,
   agentModuleRenameUrl,
   agentModuleTreeUrl,
+  agentOptionUrl,
   agentPageUrl,
   renameAgentUrl,
   unCollectAgentUrl,
@@ -104,6 +105,11 @@ export default function useAgentApi(CDR: CordysAxios) {
     return CDR.get({ url: `${agentCollectUrl}/${id}` });
   }
 
+  // 获取智能体选项
+  function getAgentOptions() {
+    return CDR.get({ url: agentOptionUrl });
+  }
+
   return {
     agentModuleRename,
     agentModuleMove,
@@ -120,5 +126,6 @@ export default function useAgentApi(CDR: CordysAxios) {
     getAgentDetail,
     agentDelete,
     agentCollect,
+    getAgentOptions,
   };
 }

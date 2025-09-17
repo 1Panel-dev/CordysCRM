@@ -9,6 +9,10 @@
             :placeholder="t('common.pleaseSelect')"
             class="w-[200px]"
             :disabled="agentList.length === 0"
+            :loading="loading"
+            label-field="name"
+            value-field="id"
+            @update-value="handleAgentChange"
           />
         </template>
         {{ t('agentDrawer.unAddedAgent') }}
@@ -36,6 +40,7 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
+  import { getAgentOptions } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
 
   import { AgentRouteEnum } from '@/enums/routeEnum';
@@ -48,11 +53,11 @@
     required: true,
   });
 
-  const activeAgent = ref<string | undefined>(undefined);
+  const activeAgent = ref<string | undefined>(localStorage.getItem('crm-agent-drawer-active-agent') || undefined);
   const agentList = ref<Record<string, any>[]>([]);
   const firstValidApiKey = computed(() => userStore.apiKeyList.find((key) => !key.isExpire));
   const activeAgentScript = computed(() => {
-    const script = agentList.value.find((agent) => agent.id === activeAgent.value)?.script as string;
+    const script = (agentList.value.find((agent) => agent.id === activeAgent.value)?.script as string) || '';
     let result = script.replace(/\$\{ak\}/g, firstValidApiKey.value?.accessKey || '');
     result = result.replace(/\$\{sk\}/g, firstValidApiKey.value?.secretKey || '');
     result = result.replace(/\$\{username\}/g, userStore.userInfo.name);
@@ -63,6 +68,32 @@
     visible.value = false;
     router.push({ name: AgentRouteEnum.AGENT_INDEX });
   }
+
+  const loading = ref(false);
+  async function initAgentList() {
+    try {
+      loading.value = true;
+      agentList.value = await getAgentOptions();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function handleAgentChange(val: string) {
+    localStorage.setItem('crm-agent-drawer-active-agent', val);
+  }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initAgentList();
+      }
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

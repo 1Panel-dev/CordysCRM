@@ -25,7 +25,7 @@
       </template>
     </CrmSplitPanel>
   </CrmCard>
-  <addAgentModal v-model:show="show" :folder-tree="folderTree" :dashboard-id="activeAgentId" @finish="handleFinish" />
+  <addAgentModal v-model:show="show" :folder-tree="folderTree" :agent-id="activeAgentId" @finish="handleFinish" />
 </template>
 
 <script setup lang="ts">
@@ -72,8 +72,8 @@
   }
 
   function handleEditAgent(id: string) {
-    show.value = true;
     activeAgentId.value = id;
+    show.value = true;
   }
 
   function handleCollectAgent() {
