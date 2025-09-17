@@ -19,7 +19,7 @@
   const appStore = useAppStore();
 
   const innerBanner = computed(() =>
-    props.banner && props.isPreview ? props.banner : appStore.pageConfig.loginLogo[0]?.url ?? defaultLoginImage
+    props.banner ? props.banner : appStore.pageConfig.loginImage[0]?.url ?? defaultLoginImage
   );
 </script>
 
