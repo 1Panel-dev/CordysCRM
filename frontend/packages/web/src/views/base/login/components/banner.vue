@@ -20,6 +20,7 @@
 
 <style lang="less" scoped>
   .banner-wrap {
+    @apply relative;
     .img {
       width: 100%;
       object-fit: cover;
@@ -27,10 +28,10 @@
     .logo-link {
       @apply absolute;
 
-      top: 40px;
-      left: 30px;
-      width: 400px;
-      height: 100px;
+      top: 5%;
+      left: 5%;
+      width: 37%;
+      height: 7%;
     }
   }
 </style>

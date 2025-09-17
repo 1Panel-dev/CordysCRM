@@ -702,7 +702,7 @@
       </div>
       <!-- 字段权限 End -->
       <!-- 移动端 -->
-      <div class="crm-form-design-config-item">
+      <div v-if="fieldConfig.type !== FieldTypeEnum.INPUT_MULTIPLE" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.mobile') }}
         </div>
