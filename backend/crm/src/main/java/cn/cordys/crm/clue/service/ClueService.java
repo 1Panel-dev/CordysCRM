@@ -343,7 +343,9 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
-        productService.checkProductList(request.getProducts());
+        if (CollectionUtils.isNotEmpty(request.getProducts())) {
+            productService.checkProductList(request.getProducts());
+        }
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         if (StringUtils.isBlank(request.getOwner())) {
             clue.setOwner(userId);
