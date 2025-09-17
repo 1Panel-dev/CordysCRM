@@ -29,4 +29,11 @@ public interface ExtModuleFieldMapper {
     List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword, @Param("orgId") String orgId);
 
     List<ModuleField> getModuleField(@Param("orgId") String orgId, @Param("formKeys") List<String> formKeys);
+
+    /**
+     * 批量更新移动端显示
+     * @param ids ID集合
+     * @param mobile 移动端显示
+     */
+    void batchUpdateMobile(@Param("ids") List<String> ids, @Param("mobile") Boolean mobile);
 }

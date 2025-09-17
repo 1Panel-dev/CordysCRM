@@ -16,6 +16,13 @@
         </foreach>
     </delete>
 
+    <update id="batchUpdateMobile" parameterType="java.lang.String">
+        update sys_module_field set mobile = #{mobile} where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
     <select id="getSourceOptionsByIds" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">

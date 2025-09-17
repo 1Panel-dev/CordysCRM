@@ -858,6 +858,19 @@ public class ModuleFormService {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public void modifyFieldMobile() {
+		List<ModuleField> moduleFields = moduleFieldMapper.selectAll(null);
+		List<String> fieldIds = moduleFields.stream().map(ModuleField::getId).toList();
+		List<ModuleFieldBlob> moduleFieldBlobs = moduleFieldBlobMapper.selectByIds(fieldIds);
+		for (ModuleFieldBlob fieldBlob : moduleFieldBlobs) {
+			Map<String, Object> propMap = JSON.parseMap(fieldBlob.getProp());
+			propMap.put("mobile", true);
+			fieldBlob.setProp(JSON.toJSONString(propMap));
+			moduleFieldBlobMapper.updateById(fieldBlob);
+		}
+		extModuleFieldMapper.batchUpdateMobile(fieldIds, true);
+	}
 
 	/**
 	 * 获取MCP表单需要的字段

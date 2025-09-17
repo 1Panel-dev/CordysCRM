@@ -12,7 +12,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class DataInitService {
     private BaseMapper<Parameter> parameterMapper;
     @Resource
     private Redisson redisson;
-	@Autowired
+	@Resource
 	private ModuleFieldService moduleFieldService;
 
     public void initOneTime() {
@@ -44,6 +43,7 @@ public class DataInitService {
             initOneTime(moduleFieldService::modifyDateProp, "modify.form.date");
             initOneTime(moduleFormService::modifyFormLinkProp, "modify.form.link");
             initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
+            initOneTime(moduleFormService::modifyFieldMobile, "modify.field.mobile");
         } finally {
             lock.unlock();
         }

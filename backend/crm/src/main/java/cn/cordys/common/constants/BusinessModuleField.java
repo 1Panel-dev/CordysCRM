@@ -22,22 +22,22 @@ public enum BusinessModuleField {
     /**
      * 客户名称
      */
-    CUSTOMER_NAME("customerName", "name", Set.of("rules.required"), FormKey.CUSTOMER.getKey()),
+    CUSTOMER_NAME("customerName", "name", Set.of("rules.required", "mobile"), FormKey.CUSTOMER.getKey()),
     /**
      * 负责人
      */
-    CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules.required"), FormKey.CUSTOMER.getKey()),
+    CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules.required", "mobile"), FormKey.CUSTOMER.getKey()),
     /*------ end: CUSTOMER ------*/
 
     /*------ start: CLUE ------*/
     /**
      * 线索名称
      */
-    CLUE_NAME("clueName", "name", Set.of("rules.required"), FormKey.CLUE.getKey()),
+    CLUE_NAME("clueName", "name", Set.of("rules.required", "mobile"), FormKey.CLUE.getKey()),
     /**
      * 负责人
      */
-    CLUE_OWNER("clueOwner", "owner", Set.of("rules.required"), FormKey.CLUE.getKey()),
+    CLUE_OWNER("clueOwner", "owner", Set.of("rules.required", "mobile"), FormKey.CLUE.getKey()),
     /**
      * 联系人
      */
@@ -60,11 +60,11 @@ public enum BusinessModuleField {
     /**
      * 联系人责任人
      */
-    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules.required"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules.required", "mobile"), FormKey.CONTACT.getKey()),
     /**
      * 联系人名称
      */
-    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules.required"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules.required", "mobile"), FormKey.CONTACT.getKey()),
     /**
      * 联系人电话
      */
@@ -76,7 +76,7 @@ public enum BusinessModuleField {
     /**
      * 商机名称
      */
-    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules.required", "mobile"), FormKey.OPPORTUNITY.getKey()),
     /**
      * 客户名称
      */
@@ -105,7 +105,7 @@ public enum BusinessModuleField {
     /**
      * 负责人
      */
-    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules.required", "mobile"), FormKey.OPPORTUNITY.getKey()),
     /*------ end: OPPORTUNITY ------*/
 
 
@@ -114,11 +114,11 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules.required"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules.required", "mobile"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules.required", "mobile"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 商机id
      */
@@ -126,11 +126,11 @@ public enum BusinessModuleField {
     /**
      * 线索id
      */
-    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules.required", "mobile"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules.required", "mobile"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 联系人id
      */
@@ -154,11 +154,11 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules.required"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules.required", "mobile"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules.required", "mobile"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 商机id
      */
@@ -166,11 +166,11 @@ public enum BusinessModuleField {
     /**
      * 线索id
      */
-    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules.required", "mobile"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules.required", "mobile"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 联系人id
      */
@@ -192,9 +192,9 @@ public enum BusinessModuleField {
     /*------ end: FOLLOW_UP_PLAN ------*/
 
     /*------ start: PRODUCT ------*/
-    PRODUCT_NAME("productName", "name", Set.of("rules.required"), FormKey.PRODUCT.getKey()),
+    PRODUCT_NAME("productName", "name", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey()),
     PRODUCT_PRICE("productPrice", "price", Set.of(), FormKey.PRODUCT.getKey()),
-    PRODUCT_STATUS("productStatus", "status", Set.of("rules.required"), FormKey.PRODUCT.getKey());
+    PRODUCT_STATUS("productStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey());
     /*------ end: PRODUCT ------*/
     /**
      * 字段 key，field.json 中的 internalKey
