@@ -141,6 +141,11 @@
       key: ModuleConfigEnum.DASHBOARD,
       icon: 'iconicon_dashboard1',
     },
+    {
+      label: t('module.agent'),
+      key: ModuleConfigEnum.AGENT,
+      icon: 'iconicon_bot',
+    },
   ]);
 
   const moduleNavList = ref<ModuleNavItem[]>([]);

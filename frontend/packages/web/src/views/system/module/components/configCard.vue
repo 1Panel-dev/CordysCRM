@@ -93,7 +93,6 @@
 <script setup lang="ts">
   import { RendererElement } from 'vue';
   import { NButton, NDivider, NSwitch, NTooltip, useMessage } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
 
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -122,7 +121,7 @@
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import router from '@/router';
-  import useLicenseStore from '@/store/modules/setting/license';
+  // import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { SystemRouteEnum } from '@/enums/routeEnum';
@@ -130,7 +129,7 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const { t } = useI18n();
-  const licenseStore = useLicenseStore();
+  // const licenseStore = useLicenseStore();
 
   const props = defineProps<{
     list: ModuleNavItem[];
@@ -312,7 +311,7 @@
     }
   }
 
-  const moduleConfigList = ref<ModuleConfigItem[]>([
+  const staticConfigList = [
     {
       label: t('module.workbenchHome'),
       key: ModuleConfigEnum.HOME,
@@ -409,7 +408,25 @@
       ],
       enable: true,
     },
-  ]);
+    {
+      label: t('module.agent'),
+      key: ModuleConfigEnum.AGENT,
+      icon: 'iconicon_bot',
+      groupList: [],
+      enable: true,
+    },
+  ];
+  const moduleConfigList = computed<ModuleConfigItem[]>(() =>
+    staticConfigList.map((item) => {
+      const findConfigItem = props.list.find((e) => e.key === item.key);
+      return {
+        ...item,
+        enable: findConfigItem?.enable ?? false,
+        id: findConfigItem?.id ?? '',
+        disabled: findConfigItem?.disabled ?? false,
+      };
+    })
+  );
 
   // 切换模块状态
   async function toggleModule(enable: boolean, item: ModuleConfigItem) {
@@ -519,35 +536,6 @@
     }
   }
 
-  function initModuleConfigList() {
-    const newList = cloneDeep(moduleConfigList.value);
-    const dashboardList: ModuleConfigItem[] =
-      // TODO license 先放开
-      // licenseStore.hasLicense() && !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
-      !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
-        ? [
-            {
-              label: t('common.dashboard'),
-              key: ModuleConfigEnum.DASHBOARD,
-              icon: 'iconicon_dashboard1',
-              groupList: [],
-              enable: true,
-            },
-          ]
-        : [];
-
-    const list: ModuleConfigItem[] = newList.concat(dashboardList);
-    moduleConfigList.value = list.map((item) => {
-      const findConfigItem = props.list.find((e) => e.key === item.key);
-      return {
-        ...item,
-        enable: findConfigItem?.enable ?? false,
-        id: findConfigItem?.id ?? '',
-        disabled: findConfigItem?.disabled ?? false,
-      };
-    });
-  }
-
   function initRenderReasonSwitch() {
     renderAccountReasonConfig.value = renderReason(
       ReasonTypeEnum.CUSTOMER_POOL_RS,
@@ -614,13 +602,6 @@
       if (val) {
         getGlobalReasonConfig();
       }
-    }
-  );
-
-  watch(
-    () => props.list,
-    () => {
-      initModuleConfigList();
     }
   );
 

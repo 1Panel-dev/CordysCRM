@@ -1,6 +1,7 @@
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 
 import {
+  AgentRouteEnum,
   ClueRouteEnum,
   CustomerRouteEnum,
   DashboardRouteEnum,
@@ -42,6 +43,7 @@ export const featureRouteMap: Record<string, any> = {
   [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,
   [ClueRouteEnum.CLUE_MANAGEMENT]: ModuleConfigEnum.CLUE_MANAGEMENT,
   [DashboardRouteEnum.DASHBOARD]: ModuleConfigEnum.DASHBOARD,
+  [AgentRouteEnum.AGENT]: ModuleConfigEnum.AGENT,
 };
 
 export const allMenuRouteMap: Record<string, any> = {

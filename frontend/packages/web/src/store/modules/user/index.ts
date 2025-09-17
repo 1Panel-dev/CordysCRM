@@ -6,12 +6,13 @@ import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import { removeScript } from '@lib/shared/method/scriptLoader';
+import type { ApiKeyItem } from '@lib/shared/models/system/business';
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 
 import NotifyContent from '@/views/system/message/components/notifyContent.vue';
 
-import { isLogin, login, signout } from '@/api/modules';
+import { getApiKeyList, isLogin, login, signout } from '@/api/modules';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
@@ -27,6 +28,7 @@ export interface UserState {
   userInfo: UserInfo;
   clientIdRandomId: string; // 客户端随机id
   notify: NotificationReactive | null;
+  apiKeyList: ApiKeyItem[];
 }
 
 const useUserStore = defineStore('user', {
@@ -60,6 +62,7 @@ const useUserStore = defineStore('user', {
     },
     clientIdRandomId: '',
     notify: null,
+    apiKeyList: [],
   }),
 
   getters: {
@@ -204,6 +207,20 @@ const useUserStore = defineStore('user', {
     destroySystemNotify() {
       if (typeof this.notify?.destroy === 'function') {
         this.notify?.destroy();
+      }
+    },
+    async initApiKeyList() {
+      try {
+        const res = await getApiKeyList();
+        this.apiKeyList = res.map((item) => ({
+          ...item,
+          isExpire: item.forever ? false : item.expireTime < Date.now(),
+          desensitization: true,
+          showDescInput: false,
+        }));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
       }
     },
   },

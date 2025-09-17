@@ -32,6 +32,7 @@ export default {
     'menu.customer': 'Account',
     'menu.contact': 'Contact',
     'menu.dashboard': 'Dashboard',
+    'menu.agent': 'Agent',
     'menu.settings.businessSetting': 'Enterprise',
     'menu.settings.license': 'License',
     'menu.settings.messageSetting': 'Notification',

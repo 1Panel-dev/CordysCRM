@@ -311,6 +311,9 @@
       menuValue.value = _route.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {
       menuValue.value = _route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+      if (_route.name?.toString().includes('system')) {
+        expandedKeys.value = [AppRouteEnum.SYSTEM];
+      }
     }
   }
 

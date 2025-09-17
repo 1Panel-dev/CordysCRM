@@ -1,0 +1,124 @@
+import type {
+  AddAgentModuleParams,
+  AddAgentParams,
+  AgentModuleRenameParams,
+  AgentModuleTreeNode,
+  AgentRenameParams,
+  AgentTableQueryParams,
+  UpdateAgentParams,
+} from '../../models/agent';
+import type { ModuleDragParams, TableQueryParams } from '../../models/common';
+import {
+  addAgentUrl,
+  agentCollectPageUrl,
+  agentCollectUrl,
+  agentDeleteUrl,
+  agentDetailUrl,
+  agentModuleAddUrl,
+  agentModuleCountUrl,
+  agentModuleDeleteUrl,
+  agentModuleMoveUrl,
+  agentModuleRenameUrl,
+  agentModuleTreeUrl,
+  agentPageUrl,
+  renameAgentUrl,
+  unCollectAgentUrl,
+  updateAgentUrl,
+} from '../requrls/agent';
+import type { CrmTreeNodeData } from '@cordys/web/src/components/pure/crm-tree/type';
+import type { CordysAxios } from '@lib/shared/api/http/Axios';
+
+export default function useAgentApi(CDR: CordysAxios) {
+  // 智能体模块重命名
+  function agentModuleRename(data: AgentModuleRenameParams) {
+    return CDR.post({ url: agentModuleRenameUrl, data });
+  }
+
+  // 智能体模块移动
+  function agentModuleMove(data: ModuleDragParams) {
+    return CDR.post({ url: agentModuleMoveUrl, data });
+  }
+
+  // 智能体模块删除
+  function agentModuleDelete(ids: string[]) {
+    return CDR.post({ url: agentModuleDeleteUrl, data: ids });
+  }
+
+  // 添加智能体模块
+  function agentModuleAdd(data: AddAgentModuleParams) {
+    return CDR.post({ url: agentModuleAddUrl, data });
+  }
+
+  // 获取智能体模块树
+  function getAgentModuleTree() {
+    return CDR.get<CrmTreeNodeData<AgentModuleTreeNode>[]>({ url: agentModuleTreeUrl });
+  }
+
+  // 获取智能体模块树数量
+  function getAgentModuleTreeCount() {
+    return CDR.get<Record<string, number>>({ url: agentModuleCountUrl });
+  }
+
+  // 更新智能体
+  function updateAgent(data: UpdateAgentParams) {
+    return CDR.post({ url: updateAgentUrl, data });
+  }
+
+  // 智能体重命名
+  function agentRename(data: AgentRenameParams) {
+    return CDR.post({ url: renameAgentUrl, data });
+  }
+
+  // 获取智能体列表
+  function getAgentPage(data: AgentTableQueryParams) {
+    return CDR.post({ url: agentPageUrl, data });
+  }
+
+  // 获取智能体收藏列表
+  function getAgentCollectPage(data: TableQueryParams) {
+    return CDR.post({ url: agentCollectPageUrl, data });
+  }
+
+  // 添加智能体
+  function addAgent(data: AddAgentParams) {
+    return CDR.post({ url: addAgentUrl, data });
+  }
+
+  // 取消收藏智能体
+  function unCollectAgent(id: string) {
+    return CDR.get({ url: `${unCollectAgentUrl}/${id}` });
+  }
+
+  // 获取智能体详情
+  function getAgentDetail(id: string) {
+    return CDR.get({ url: `${agentDetailUrl}/${id}` });
+  }
+
+  // 删除智能体
+  function agentDelete(id: string) {
+    return CDR.get({ url: `${agentDeleteUrl}/${id}` });
+  }
+
+  // 收藏智能体
+  function agentCollect(id: string) {
+    return CDR.get({ url: `${agentCollectUrl}/${id}` });
+  }
+
+  return {
+    agentModuleRename,
+    agentModuleMove,
+    agentModuleDelete,
+    agentModuleAdd,
+    getAgentModuleTree,
+    getAgentModuleTreeCount,
+    updateAgent,
+    agentRename,
+    getAgentPage,
+    getAgentCollectPage,
+    addAgent,
+    unCollectAgent,
+    getAgentDetail,
+    agentDelete,
+    agentCollect,
+  };
+}

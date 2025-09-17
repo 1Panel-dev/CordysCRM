@@ -15,7 +15,7 @@
         </n-tooltip>
       </div>
       <div class="flex items-center">
-        <n-tooltip placement="right" :disabled="apiKeyList.length < 5">
+        <n-tooltip placement="right" :disabled="userStore.apiKeyList.length < 5">
           <template #trigger>
             <n-button
               v-permission="['PERSONAL_API_KEY:ADD']"
@@ -23,7 +23,7 @@
               ghost
               class="n-btn-outline-primary"
               :loading="newLoading"
-              :disabled="apiKeyList.length >= 5"
+              :disabled="userStore.apiKeyList.length >= 5"
               @click="newApiKey"
             >
               {{ t('common.new') }}
@@ -35,7 +35,7 @@
 
       <n-spin class="h-full w-full" :show="loading">
         <div class="api-list-content">
-          <div v-for="item of apiKeyList" :key="item.id" class="api-item">
+          <div v-for="item of userStore.apiKeyList" :key="item.id" class="api-item">
             <div class="mb-[8px] border-b border-solid border-[var(--text-n8)]">
               <div class="px-[16px]">
                 <div class="api-item-label">Access Key</div>
@@ -132,7 +132,10 @@
               />
             </div>
           </div>
-          <div v-if="apiKeyList.length === 0" class="col-span-8 flex w-full items-center justify-center p-[44px]">
+          <div
+            v-if="userStore.apiKeyList.length === 0"
+            class="col-span-8 flex w-full items-center justify-center p-[44px]"
+          >
             {{ hasCratePermission ? t('system.personal.noData') : t('system.personal.empty') }}
             <n-button v-if="hasCratePermission" text class="ml-[8px]" type="primary" @click="newApiKey">
               {{ t('common.new') }}
@@ -203,47 +206,26 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  import { addApiKey, deleteApiKey, disableApiKey, enableApiKey, getApiKeyList, updateApiKey } from '@/api/modules';
+  import { addApiKey, deleteApiKey, disableApiKey, enableApiKey, updateApiKey } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
-
   const { copy, isSupported } = useClipboard({ legacy: true });
-
   const Message = useMessage();
-
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const hasCratePermission = hasAnyPermission(['PERSONAL_API_KEY:ADD']);
-  const apiKeyList = ref<ApiKeyItem[]>([]);
   const loading = ref(false);
-
-  async function initApiKeys() {
-    try {
-      loading.value = true;
-      const res = await getApiKeyList();
-      apiKeyList.value = res.map((item) => ({
-        ...item,
-        isExpire: item.forever ? false : item.expireTime < Date.now(),
-        desensitization: true,
-        showDescInput: false,
-      }));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
-  }
-
   const newLoading = ref(false);
   async function newApiKey() {
     try {
       newLoading.value = true;
       await addApiKey();
       Message.success(t('common.newSuccess'));
-      initApiKeys();
+      userStore.initApiKeyList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -320,7 +302,7 @@
         try {
           await deleteApiKey(item.id);
           Message.success(t('common.deleteSuccess'));
-          initApiKeys();
+          userStore.initApiKeyList();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -379,7 +361,7 @@
           });
           Message.success(t('common.updateSuccess'));
           handleTimeClose();
-          initApiKeys();
+          userStore.initApiKeyList();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -389,7 +371,7 @@
   }
 
   onBeforeMount(() => {
-    initApiKeys();
+    userStore.initApiKeyList();
   });
 </script>
 

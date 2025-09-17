@@ -22,6 +22,9 @@ export enum ModuleConfigEnum {
 
   /** 仪表板 */
   DASHBOARD = 'dashboard',
+
+  /** 智能体 */
+  AGENT = 'agent',
 }
 
 // 添加员工API

@@ -1,4 +1,5 @@
 import createAxios from '@lib/shared/api/http';
+import useAgentApi from '@lib/shared/api/modules/agent';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useDashboard from '@lib/shared/api/modules/dashboard';
@@ -39,6 +40,7 @@ const sysApi = useSysApi(CDR);
 const licenseApi = useLicenseApi(CDR);
 const dashboardApi = useDashboard(CDR);
 const homeApi = useHomeApi(CDR);
+const agentApi = useAgentApi(CDR);
 
 export const {
   addProduct,
@@ -441,3 +443,21 @@ export const {
 
 export const { getHomeDepartmentTree, getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } =
   homeApi;
+
+export const {
+  agentModuleRename,
+  agentModuleMove,
+  agentModuleDelete,
+  agentModuleAdd,
+  getAgentModuleTree,
+  getAgentModuleTreeCount,
+  updateAgent,
+  agentRename,
+  getAgentPage,
+  getAgentCollectPage,
+  addAgent,
+  unCollectAgent,
+  getAgentDetail,
+  agentDelete,
+  agentCollect,
+} = agentApi;

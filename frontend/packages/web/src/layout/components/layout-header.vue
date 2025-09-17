@@ -36,7 +36,11 @@
               </n-badge>
             </n-button>
           </template>
-
+          <template #agentSlot>
+            <n-button class="p-[8px]" quaternary @click="showAgent">
+              <CrmSvg name="icon_bot" :size="16" />
+            </n-button>
+          </template>
           <template #versionInfoSlot>
             <n-popover position="left" content-class="w-[320px]" class="!p-[16px]">
               <div class="flex flex-col gap-[8px]">
@@ -128,6 +132,7 @@
       <CrmDuplicateCheckDrawer v-model:visible="showDuplicateCheckDrawer" />
     </Suspense>
   </n-layout-header>
+  <agentDrawer v-model:visible="showAgentDrawer" />
 </template>
 
 <script setup lang="ts">
@@ -160,6 +165,8 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
+
+  const agentDrawer = defineAsyncComponent(() => import('@/components/business/crm-agent-drawer/index.vue'));
 
   const route = useRoute();
 
@@ -217,6 +224,10 @@
         };
     }
   });
+  const showAgentDrawer = ref(false);
+  function showAgent() {
+    showAgentDrawer.value = true;
+  }
 
   const showSearch = computed(() => lastScopedOptions.value.length);
   const showDuplicateCheckDrawer = ref(false);

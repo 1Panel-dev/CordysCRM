@@ -94,4 +94,5 @@ export default {
   'module.configReasonTooltip': 'It can be enabled after configuration',
   'module.topNavigationConfig': 'Top Navigation Settings',
   'module.desensitizationSet': 'Desensitization set',
+  'module.agent': 'Agent',
 };

@@ -64,6 +64,12 @@ export const defaultNavList: ActionItem[] = [
     slotName: 'searchSlot',
   },
   {
+    label: t('menu.agent'),
+    key: 'agent',
+    iconType: 'iconicon_bot',
+    slotName: 'agentSlot',
+  },
+  {
     label: t('settings.navbar.alerts'),
     key: 'alerts',
     iconType: 'iconicon-alarmclock',

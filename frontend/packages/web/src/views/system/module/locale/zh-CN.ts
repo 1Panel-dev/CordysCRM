@@ -91,4 +91,5 @@ export default {
   'module.configReasonTooltip': '配置后可开启',
   'module.topNavigationConfig': '顶部导航配置',
   'module.desensitizationSet': '脱敏设置',
+  'module.agent': '智能体',
 };

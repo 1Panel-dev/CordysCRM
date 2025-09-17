@@ -51,6 +51,10 @@ const defaultModuleConfig = [
     enable: true,
   },
   {
+    moduleKey: ModuleConfigEnum.AGENT,
+    enable: true,
+  },
+  {
     moduleKey: ModuleConfigEnum.HOME,
     enable: true,
   },
@@ -146,7 +150,16 @@ const useAppStore = defineStore('app', {
       return state.restoreMenuTimeStamp;
     },
     getNavTopConfigList: (state: AppState) => {
-      const map = new Map(defaultNavList.map((item) => [item.key, item]));
+      const map = new Map(
+        defaultNavList
+          .filter((item) => {
+            if (item.key === 'agent') {
+              return state.moduleConfigList.some((module) => module.moduleKey === 'agent' && module.enable);
+            }
+            return true;
+          })
+          .map((item) => [item.key, item])
+      );
       const result: ActionItem[] = [];
       const navOrder = state.navTopConfigList.map((e) => e.key);
 

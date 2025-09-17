@@ -44,6 +44,11 @@ export enum WorkbenchRouteEnum {
   WORKBENCH_INDEX = 'workbenchIndex',
 }
 
+export enum AgentRouteEnum {
+  AGENT = 'agent',
+  AGENT_INDEX = 'agentIndex',
+}
+
 export enum DashboardRouteEnum {
   DASHBOARD = 'dashboard',
   DASHBOARD_INDEX = 'dashboardIndex',

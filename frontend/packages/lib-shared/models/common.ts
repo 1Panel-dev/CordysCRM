@@ -78,3 +78,9 @@ export interface SystemVersion {
   copyright: string; // 版权信息
   hasNewVersion: boolean; // 是否有新版本
 }
+
+export interface ModuleDragParams {
+  dragNodeId: string;
+  dropNodeId: string;
+  dropPosition: number;
+}
