@@ -184,6 +184,7 @@ const useAppStore = defineStore('app', {
         state.winOrderConfig[userId] ?? {
           status: true,
           dimType: 'CREATE_TIME',
+          userField: 'OWNER',
         }
       );
     },
@@ -318,7 +319,7 @@ const useAppStore = defineStore('app', {
     /**
      * 设置首页用户赢单配置
      */
-    setWinOrderStatus(val: { status: boolean; dimType: string }) {
+    setWinOrderStatus(val: { status: boolean; dimType: string; userField: string }) {
       const userStore = useUserStore();
       this.winOrderConfig[userStore.userInfo.id] = val;
     },

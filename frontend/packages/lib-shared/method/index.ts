@@ -623,9 +623,6 @@ export function abbreviateNumber(count: number | string, currency: string, decim
     } else if (count >= 1e4) {
       value = truncateNumber(count / 1e4).toString();
       unit = '万';
-    } else if (count >= 1e3) {
-      value = truncateNumber(count / 1e3).toString();
-      unit = '千';
     } else {
       value = truncateNumber(count).toString();
       unit = '';

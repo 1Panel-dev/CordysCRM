@@ -48,9 +48,10 @@ export default {
   'workbench.dataOverview.thisWeek': 'This week',
   'workbench.dataOverview.thisMonth': 'This month',
   'workbench.dataOverview.thisYear': 'This year',
-  'workbench.dataOverview.newCreateTitle': 'New created',
-  'workbench.dataOverview.followingOrder': 'Following up',
-  'workbench.dataOverview.amount': 'Amount',
+  'workbench.dataOverview.newCreateTitle': 'New',
+  'workbench.dataOverview.followingOrder': 'Opportunities',
+  'workbench.dataOverview.amount': 'Opportunity Amount',
+  'workbench.dataOverview.winAmount': 'Win Amount',
   'workbench.dataOverview.winOrderUnit': 'Win orders',
   'workbench.dataOverview.comparedSamePeriod': 'Compared period',
   'workbench.dataOverview.countUnit': 'ORDERS',
@@ -62,4 +63,9 @@ export default {
   'workbench.dataOverview.windOrderConfig': 'Win order',
   'workbench.dataOverview.opportunitySet': 'Opportunity set',
   'workbench.dataOverview.statisticalDimension': 'Dimension',
+  'workbench.dataOverview.clueSet': 'Lead Settings',
+  'workbench.dataOverview.statisticalDimensionTip1':
+    'Creator: Counts all leads created by the specified user within the given time period, including those in the lead pool and those converted to customers.',
+  'workbench.dataOverview.statisticalDimensionTip2':
+    'Owner: Counts all leads managed by the specified owner within the given time period.',
 };

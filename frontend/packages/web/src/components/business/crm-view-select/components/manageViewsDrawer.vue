@@ -206,9 +206,9 @@
         return h(NSwitch, {
           value: row.enable,
           rubberBand: false,
-          disabled: row.id === CustomerSearchTypeEnum.ALL,
+          disabled: row.type === 'internal',
           onClick: async () => {
-            if (row.id === CustomerSearchTypeEnum.ALL) return;
+            if (row.type === 'internal') return;
             await viewStore.toggleEnabled(props.type, row);
             emit('handleDeleteOrDisable', row.id);
           },

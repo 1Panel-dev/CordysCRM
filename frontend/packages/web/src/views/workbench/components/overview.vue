@@ -1,12 +1,12 @@
 <template>
   <n-spin :show="loading" class="w-full min-w-[1200px]">
     <div class="overview overflow-hidden">
-      <div class="header header-category font-semibold text-[var(--text-n1)]">
+      <div class="header header-category pl-[16px] text-left font-semibold text-[var(--text-n1)]">
         {{ t('workbench.dataOverview.category') }}
       </div>
       <div class="category-time w-full">
         <div v-for="(item, index) of headerList" :key="`${item.icon}-${index}`" class="header">
-          <div class="header-time flex items-center justify-center gap-[8px]">
+          <div class="header-time ml-[16px] flex items-center justify-start gap-[8px]">
             <CrmIcon :type="item.icon" :size="24" class="text-[var(--info-blue)]" />
             <div class="font-semibold text-[var(--text-n1)]">{{ item.title }}</div>
           </div>
@@ -25,7 +25,9 @@
           <countPopover :value="defaultLeadData[dim].value" :unit="defaultLeadData[dim].unit">
             <div
               :class="`cell-value count ${
-                hasLeadPermission ? 'cursor-pointer text-[var(--primary-8)]' : 'text-[var(--text-n4)]'
+                hasLeadPermission && params.userField === 'OWNER'
+                  ? 'cursor-pointer text-[var(--primary-8)]'
+                  : 'text-[var(--text-n4)]'
               }`"
               @click="goDetail(dim, defaultLeadData[dim])"
             >
@@ -224,7 +226,7 @@
       unit: t('workbench.dataOverview.countUnit'),
     },
     successOpportunityAmount: {
-      title: t('workbench.dataOverview.amount'),
+      title: t('workbench.dataOverview.winAmount'),
       value: hasOptPermission.value ? 0 : '-',
       priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
@@ -249,8 +251,8 @@
   };
 
   function goDetail(dim: string, item: Record<string, any>) {
-    const { searchType, deptIds, timeField } = props.params;
-    if (!item.hasPermission) return;
+    const { searchType, deptIds, timeField, userField } = props.params;
+    if (!item.hasPermission || userField === 'CREATE_USER') return;
     const homeKey = 'homeData';
     sessionStorage.removeItem(homeKey);
     const key = getGenerateId();
@@ -296,10 +298,11 @@
   async function initLeadDetail(params: GetHomeStatisticParams) {
     if (!hasAnyPermission(['CLUE_MANAGEMENT:READ'])) return;
     try {
-      const { deptIds, searchType } = params;
+      const { deptIds, searchType, userField } = params;
       const result = await getHomeLeadStatistic({
         deptIds,
         searchType,
+        userField,
       });
       Object.keys(defaultLeadData.value).forEach((k) => {
         const resultArr: string[] = Object.keys(result);
@@ -408,7 +411,6 @@
     .header {
       height: 48px;
       font-size: 16px;
-      text-align: center;
       background: var(--info-4);
       line-height: 48px;
       &.header-category {

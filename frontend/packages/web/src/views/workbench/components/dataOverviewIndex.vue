@@ -60,6 +60,28 @@
                 @update:value="handleChange"
               />
             </div>
+            <div v-if="winOrderType === 'clueSet'" class="flex flex-col gap-[8px] px-[8px]">
+              <div class="flex items-center">
+                <div>{{ t('workbench.dataOverview.statisticalDimension') }}</div>
+                <n-tooltip>
+                  <template #trigger>
+                    <CrmIcon
+                      type="iconicon_info_circle_filled"
+                      :size="16"
+                      class="ml-[4px] cursor-pointer text-[var(--text-n4)]"
+                    />
+                  </template>
+                  <div>{{ t('workbench.dataOverview.statisticalDimensionTip1') }}</div>
+                  <div>{{ t('workbench.dataOverview.statisticalDimensionTip2') }}</div>
+                </n-tooltip>
+              </div>
+              <n-select
+                v-model:value="params.userField"
+                :options="userFieldOptions"
+                :placeholder="t('common.pleaseSelect')"
+                @update:value="handleChange"
+              />
+            </div>
           </div>
         </n-popover>
         <n-button type="default" class="outline--secondary px-[8px]" @click="refresh">
@@ -82,6 +104,7 @@
     NScrollbar,
     NSelect,
     NSwitch,
+    NTooltip,
     NTreeSelect,
     SelectOption,
     TreeOption,
@@ -108,6 +131,7 @@
     deptIds: [],
     searchType: '', // ALL/SELF/DEPARTMENT
     timeField: appStore.getWinOrderStatus.dimType,
+    userField: appStore.getWinOrderStatus.userField,
     priorPeriodEnable: appStore.getWinOrderStatus.status,
   });
 
@@ -211,8 +235,12 @@
     }
   );
 
-  const winOrderType = ref('optSet');
+  const winOrderType = ref('clueSet');
   const winOrderTypeList = [
+    {
+      value: 'clueSet',
+      label: t('workbench.dataOverview.clueSet'),
+    },
     {
       value: 'optSet',
       label: t('workbench.dataOverview.opportunitySet'),
@@ -225,6 +253,17 @@
 
   const dimTypeOptions = ref<SelectOption[]>([]);
 
+  const userFieldOptions = [
+    {
+      value: 'CREATE_USER',
+      label: t('common.creator'),
+    },
+    {
+      value: 'OWNER',
+      label: t('common.head'),
+    },
+  ];
+
   async function initDimType() {
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) {
       dimTypeOptions.value = [
@@ -234,9 +273,10 @@
         },
       ];
       params.value.timeField = 'CREATE_TIME';
-      const { timeField, priorPeriodEnable } = params.value;
+      const { timeField, priorPeriodEnable, userField } = params.value;
       appStore.setWinOrderStatus({
         dimType: timeField,
+        userField: userField ?? 'OWNER',
         status: priorPeriodEnable ?? false,
       });
       return;
@@ -255,9 +295,10 @@
           label: endTimeItem?.name ?? '',
         },
       ];
-      const { status, dimType } = appStore.getWinOrderStatus;
+      const { status, dimType, userField } = appStore.getWinOrderStatus;
       params.value.priorPeriodEnable = status;
       params.value.timeField = dimType;
+      params.value.userField = userField;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -269,17 +310,19 @@
   async function handleUpdateShow(show: boolean) {
     if (!show) {
       if (hasChange.value) {
-        const { timeField, priorPeriodEnable } = params.value;
+        const { timeField, priorPeriodEnable, userField } = params.value;
         appStore.setWinOrderStatus({
           dimType: timeField ?? 'CREATE_TIME',
           status: priorPeriodEnable ?? false,
+          userField: userField ?? 'OWNER',
         });
         refresh();
       }
     } else {
-      const { status, dimType } = appStore.getWinOrderStatus;
+      const { status, dimType, userField } = appStore.getWinOrderStatus;
       params.value.priorPeriodEnable = status;
       params.value.timeField = dimType;
+      params.value.userField = userField;
     }
   }
 

@@ -80,6 +80,7 @@ export interface AppState {
     {
       status: boolean;
       dimType: string;
+      userField: string;
     }
   >; // 首页用户赢单配置
 }

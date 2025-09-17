@@ -1,6 +1,7 @@
 export interface GetHomeStatisticParams {
   searchType: string;
   deptIds: string[];
+  userField?: string;
   timeField?: string;
   priorPeriodEnable?: boolean;
 }
