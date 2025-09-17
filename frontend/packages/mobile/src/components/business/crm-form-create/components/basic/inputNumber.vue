@@ -27,13 +27,13 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'change', value?: number): void;
+    (e: 'change', value?: number | null): void;
   }>();
 
   const { t } = useI18n();
 
-  const value = defineModel<string>('value', {
-    default: '',
+  const value = defineModel<number | null>('value', {
+    default: null,
   });
 
   const displayValue = ref('');
@@ -52,8 +52,8 @@
   // 失去焦点时：清理非法字符 → 限制小数点 → min/max → 精度 → 千分位
   function onBlur() {
     if (!displayValue.value) {
-      value.value = '';
-      emit('change', undefined);
+      value.value = null;
+      emit('change', null);
       return;
     }
 
@@ -68,9 +68,9 @@
 
     let num = Number(clean);
     if (Number.isNaN(num)) {
-      value.value = '';
+      value.value = null;
       displayValue.value = '';
-      emit('change', undefined);
+      emit('change', null);
       return;
     }
 
@@ -90,7 +90,7 @@
     num = Number(num.toFixed(precision));
 
     // 更新真实值
-    value.value = String(num);
+    value.value = num;
     emit('change', num);
 
     // 更新显示值（千分位/小数位）

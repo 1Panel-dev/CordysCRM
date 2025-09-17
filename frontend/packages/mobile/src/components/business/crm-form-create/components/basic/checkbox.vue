@@ -9,6 +9,7 @@
         v-model="value"
         direction="horizontal"
         shape="square"
+        class="gap-y-[8px]"
         :disabled="props.fieldConfig.editable === false"
         @change="($event) => emit('change', $event)"
       >

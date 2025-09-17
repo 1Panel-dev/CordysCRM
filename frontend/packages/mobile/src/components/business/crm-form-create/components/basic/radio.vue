@@ -8,6 +8,7 @@
       <van-radio-group
         v-model="value"
         direction="horizontal"
+        class="gap-y-[8px]"
         :disabled="props.fieldConfig.editable === false"
         @change="($event) => emit('change', $event)"
       >
