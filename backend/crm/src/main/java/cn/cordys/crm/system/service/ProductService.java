@@ -261,7 +261,7 @@ public class ProductService {
     }
 
     public void checkProductList(List<String> products) {
-        if (products.size() > 20) {
+        if (products != null && products.size() > 20) {
             throw new GenericException(Translator.get("product.length"));
         }
     }
