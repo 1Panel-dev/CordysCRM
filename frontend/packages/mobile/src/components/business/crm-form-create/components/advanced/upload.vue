@@ -6,6 +6,7 @@
         :before-read="handleBeforeRead"
         :before-delete="handleBeforeDelete"
         :after-read="handleAfterRead"
+        multiple
       />
     </template>
   </van-field>
@@ -16,6 +17,7 @@
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { Result } from '@lib/shared/types/axios';
 
   import { uploadTempFile } from '@/api/modules';
 
@@ -39,7 +41,10 @@
   function handleBeforeRead(file: File | File[]) {
     if (fileList.value.length > 0) {
       // 附件上传校验名称重复
-      const isRepeat = fileList.value.filter((item) => item.file?.name === (file as File).name).length >= 1;
+      const isRepeat =
+        fileList.value.filter((item) =>
+          Array.isArray(file) ? file.some((e) => e.name === item.file?.name) : item.file?.name === file.name
+        ).length >= 1;
       if (isRepeat) {
         showToast(t('formCreate.upload.repeatFileTip'));
         return false;
@@ -47,7 +52,7 @@
     }
     const maxSize = props.fieldConfig.uploadSizeLimit || 20;
     const _maxSize = maxSize * 1024 * 1024;
-    if ((file as File).size > _maxSize) {
+    if (Array.isArray(file) ? file.some((f) => f.size > _maxSize) : file.size > _maxSize) {
       showToast(t('formCreate.advanced.overSize', { size: maxSize }));
       return false;
     }
@@ -60,19 +65,41 @@
   }
 
   async function handleAfterRead(file: UploaderFileListItem | UploaderFileListItem[]) {
-    try {
-      if ((file as UploaderFileListItem).file) {
-        (file as UploaderFileListItem).status = 'uploading';
-        const res = await uploadTempFile((file as UploaderFileListItem).file!);
-        fileKeys.value.push(...res.data);
-        (file as UploaderFileListItem).status = 'done';
-        (file as UploaderFileListItem).content = `${PreviewPictureUrl}/${res.data[0]}`;
-        emit('change', fileKeys.value, fileList.value);
+    if (Array.isArray(file)) {
+      const requestArr: Promise<Result<string[]>>[] = [];
+      file.forEach((f) => {
+        if (f.file) {
+          requestArr.push(uploadTempFile(f.file!));
+          f.status = 'uploading';
+        }
+      });
+      try {
+        const resArr = await Promise.all(requestArr);
+        resArr.forEach((res, index) => {
+          fileKeys.value.push(...res.data);
+          file[index].status = 'done';
+          file[index].content = `${PreviewPictureUrl}/${res.data[0]}`;
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      (file as UploaderFileListItem).status = 'failed';
+      emit('change', fileKeys.value, fileList.value);
+    } else {
+      try {
+        if (file.file) {
+          file.status = 'uploading';
+          const res = await uploadTempFile(file.file!);
+          fileKeys.value.push(...res.data);
+          file.status = 'done';
+          file.content = `${PreviewPictureUrl}/${res.data[0]}`;
+          emit('change', fileKeys.value, fileList.value);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        file.status = 'failed';
+      }
     }
   }
 
@@ -80,6 +107,7 @@
     const index = fileList.value.findIndex((item) => item.content === file.content);
     if (index !== -1) {
       fileKeys.value = fileKeys.value.filter((key) => `${PreviewPictureUrl}/${key}` !== file.content);
+      fileList.value.splice(index, 1);
     }
   }
 
@@ -90,7 +118,7 @@
         fileList.value = [];
       } else if (fileList.value.length !== fileKeys.value.length) {
         fileKeys.value.forEach((key) => {
-          if (!fileList.value.some((item) => item.content === key)) {
+          if (!fileList.value.some((item) => item.content === `${PreviewPictureUrl}/${key}`)) {
             fileList.value.push({
               url: `${PreviewPictureUrl}/${key}`,
               content: `${PreviewPictureUrl}/${key}`,

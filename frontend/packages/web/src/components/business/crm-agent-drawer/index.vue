@@ -27,7 +27,7 @@
           </n-button>
         </div>
       </n-empty>
-      <div v-else v-html="activeAgentScript"></div>
+      <div v-else class="h-full" v-html="activeAgentScript"></div>
     </div>
   </CrmDrawer>
 </template>
@@ -74,6 +74,10 @@
     try {
       loading.value = true;
       agentList.value = await getAgentOptions();
+      if (!activeAgent.value && agentList.value.length > 0) {
+        activeAgent.value = agentList.value[0].id;
+        localStorage.setItem('crm-agent-drawer-active-agent', agentList.value[0].id);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

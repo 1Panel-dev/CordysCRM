@@ -87,7 +87,7 @@
   });
 
   const mobileFieldList = computed(() => {
-    return fieldList.value.filter((item) => item.mobile !== false || item.type === FieldTypeEnum.PICTURE);
+    return fieldList.value.filter((item) => item.mobile !== false);
   });
 
   function getItemComponent(type: FieldTypeEnum) {
