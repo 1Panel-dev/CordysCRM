@@ -3,11 +3,11 @@ package cn.cordys.crm.integration.agent.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.integration.agent.domain.Agent;
+import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
 import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
@@ -113,7 +113,7 @@ public class AgentController {
 
     @GetMapping(value = "/option")
     @Operation(summary = "用户可选智能体下拉option")
-    public List<OptionDTO> getAgentList() {
+    public List<AgentOptionDTO> getAgentList() {
         return agentBaseService.getAgentOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

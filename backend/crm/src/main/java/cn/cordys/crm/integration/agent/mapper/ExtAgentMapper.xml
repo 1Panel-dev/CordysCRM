@@ -174,10 +174,11 @@
     </select>
 
 
-    <select id="getOptions" resultType="cn.cordys.common.dto.OptionDTO">
+    <select id="getOptions" resultType="cn.cordys.crm.integration.agent.dto.AgentOptionDTO">
         select
         a.id,
-        a.name
+        a.name,
+        a.script
         from agent a
         where a.organization_id = #{orgId}
         <if test="userId != null and userId != 'admin'">

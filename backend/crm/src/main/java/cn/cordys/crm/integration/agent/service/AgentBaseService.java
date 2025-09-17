@@ -22,6 +22,7 @@ import cn.cordys.crm.dashboard.service.DashboardSortService;
 import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.domain.AgentCollection;
 import cn.cordys.crm.integration.agent.dto.AgentLogDTO;
+import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
 import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
@@ -423,14 +424,14 @@ public class AgentBaseService extends DashboardSortService {
      * @param orgId
      * @return
      */
-    public List<OptionDTO> getAgentOptions(String userId, String orgId) {
+    public List<AgentOptionDTO> getAgentOptions(String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
         if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
             List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
             departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
         }
-        List<OptionDTO> agentOptions = extAgentMapper.getOptions(userId, orgId, departmentIds);
+        List<AgentOptionDTO> agentOptions = extAgentMapper.getOptions(userId, orgId, departmentIds);
         return agentOptions;
     }
 }
