@@ -14,6 +14,8 @@ import java.util.Map;
 @Data
 public class FormProp {
 
+	@Schema(description = "表单视图")
+	private String viewSize;
 	@Schema(description = "布局")
 	private int layout;
 	@Schema(description = "标题位置")

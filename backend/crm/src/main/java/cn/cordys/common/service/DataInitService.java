@@ -43,6 +43,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initForm, "init.form");
             initOneTime(moduleFieldService::modifyDateProp, "modify.form.date");
             initOneTime(moduleFormService::modifyFormLinkProp, "modify.form.link");
+            initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
         } finally {
             lock.unlock();
         }

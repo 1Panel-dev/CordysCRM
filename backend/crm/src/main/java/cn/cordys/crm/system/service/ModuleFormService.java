@@ -843,6 +843,23 @@ public class ModuleFormService {
 	}
 
 	/**
+	 * 表单属性处理(视图)
+	 */
+	@SuppressWarnings("unchecked")
+	public void modifyFormProp() {
+		List<ModuleForm> moduleForms = moduleFormMapper.selectAll(null);
+		List<String> formIds = moduleForms.stream().map(ModuleForm::getId).toList();
+		List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formIds);
+		for (ModuleFormBlob formBlob : moduleFormBlobs) {
+			Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+			propMap.put("viewSize", "large");
+			formBlob.setProp(JSON.toJSONString(propMap));
+			moduleFormBlobMapper.updateById(formBlob);
+		}
+	}
+
+
+	/**
 	 * 获取MCP表单需要的字段
 	 * @param formKey 表单Key
 	 * @param organizationId 组织ID
