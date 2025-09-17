@@ -9,6 +9,7 @@ import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
 import cn.cordys.crm.system.dto.response.product.ProductListResponse;
@@ -18,10 +19,12 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -103,5 +106,26 @@ public class ProductController {
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     public void editPos(@Validated @RequestBody PosRequest request) {
         productService.editPos(request);
+    }
+
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        productService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
+    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
+        return productService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
+    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+        return productService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

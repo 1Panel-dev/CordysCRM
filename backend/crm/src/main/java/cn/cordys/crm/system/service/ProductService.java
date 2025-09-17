@@ -7,6 +7,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.exception.GenericException;
@@ -14,30 +15,44 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.ServiceUtils;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
+import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.Clue;
+import cn.cordys.crm.clue.domain.ClueField;
+import cn.cordys.crm.clue.domain.ClueFieldBlob;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Product;
+import cn.cordys.crm.system.domain.ProductField;
+import cn.cordys.crm.system.domain.ProductFieldBlob;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
 import cn.cordys.crm.system.dto.response.product.ProductListResponse;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.mapper.ExtProductMapper;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,6 +78,10 @@ public class ProductService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private BaseMapper<ProductField> productFieldMapper;
+    @Resource
+    private BaseMapper<ProductFieldBlob> productFieldBlobMapper;
 
     public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -282,5 +301,87 @@ public class ProductService {
             return String.join(",", names);
         }
         return StringUtils.EMPTY;
+    }
+
+    /**
+     * 下载导入的模板
+     *
+     * @param response 响应
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        // 产品表单字段
+        List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.PRODUCT.getKey(), currentOrg);
+
+        new EasyExcelExporter(Objects.class)
+                .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
+                        Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+    }
+
+    /**
+     * 导入检查
+     *
+     * @param file       导入文件
+     * @param currentOrg 当前组织
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, currentOrg);
+    }
+
+    /**
+     * 产品导入
+     *
+     * @param file        导入文件
+     * @param currentOrg  当前组织
+     * @param currentUser 当前用户
+     * @return 导入返回信息
+     */
+    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRODUCT.getKey(), currentOrg);
+            CustomImportAfterDoConsumer<Product, BaseResourceField> afterDo = (products, productFields, productFieldBlobs) -> {
+                List<LogDTO> logs = new ArrayList<>();
+                products.forEach(product -> {
+                    product.setPos(getNextOrder(currentOrg));
+                    logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, product.getName()));
+                });
+                productBaseMapper.batchInsert(products);
+                productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
+                productFieldBlobMapper.batchInsert(productFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
+                // record logs
+                logService.batchAdd(logs);
+            };
+            CustomFieldImportEventListener<Product, ProductField> eventListener = new CustomFieldImportEventListener<>(fields, Product.class, currentOrg, currentUser,
+                    productFieldMapper, afterDo, 2000);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("product import error: ", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    /**
+     * 检查导入的文件
+     *
+     * @param file       文件
+     * @param currentOrg 当前组织
+     * @return 检查信息
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.PRODUCT.getKey(), currentOrg);
+            CustomFieldCheckEventListener<ProductField> eventListener = new CustomFieldCheckEventListener<>(fields, "product", currentOrg, productFieldMapper);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("product import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
     }
 }
