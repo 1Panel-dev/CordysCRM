@@ -152,7 +152,7 @@ export function setFavicon(url: string) {
   const head = document.querySelector('head');
   const link = document.createElement('link');
   link.rel = 'shortcut icon';
-  link.href = url;
+  link.href = `${url}&v=${Date.now()}`;
   link.type = 'image/x-icon';
 
   // 移除之前的 favicon
