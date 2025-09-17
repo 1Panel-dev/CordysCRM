@@ -360,7 +360,7 @@ public class ProductService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("product import error: ", e.getMessage());
+            LogUtils.error("product import error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

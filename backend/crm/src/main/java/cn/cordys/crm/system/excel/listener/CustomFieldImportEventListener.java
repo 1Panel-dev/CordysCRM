@@ -224,7 +224,8 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			consumer.accept(this.dataList, this.fields, this.blobFields);
 		} catch (Exception e) {
 			// 入库异常,不影响后续批次
-			LogUtils.error("批量插入异常: {}" + e.getMessage());
+			LogUtils.error("批量插入异常: {}", e.getCause().getMessage());
+			throw new GenericException(e.getCause());
 		} finally {
 			// 批次插入成功统计
 			successCount += this.dataList.size();
@@ -257,6 +258,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 					try {
 						setPropertyValue(entity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
 					} catch (Exception e) {
+						LogUtils.error("import error, cannot set property. {}", e.getMessage());
 						throw new GenericException(e);
 					}
 				} else {

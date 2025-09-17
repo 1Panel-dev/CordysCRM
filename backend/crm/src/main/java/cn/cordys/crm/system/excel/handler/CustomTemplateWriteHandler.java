@@ -160,12 +160,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 		StringBuilder sb = new StringBuilder();
 		InputNumberField numberField = (InputNumberField) field;
 		if (Strings.CS.equals(numberField.getNumberFormat(), NumberResolver.PERCENT_FORMAT)) {
-			sb.append(Translator.get("format.preview")).append(": 99%, ");
+			sb.append(Translator.get("format.preview")).append(": 99.9999%, ").append(Translator.get("keep.decimal.places"));
 		} else {
-			sb.append(Translator.get("format.preview")).append(": 999, ");
-		}
-		if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
-			sb.append(Translator.getWithArgs("keep.decimal.places", numberField.getPrecision()));
+			sb.append(Translator.get("format.preview")).append(": 9999999999.9, ").append(Translator.get("keep.decimal.places"));
 		}
 		return sb.toString();
 	}
