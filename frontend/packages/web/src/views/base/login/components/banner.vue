@@ -8,14 +8,19 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
 
+  import { defaultLoginImage } from '@/config/business';
+  import { useAppStore } from '@/store';
+
   const props = defineProps<{
     isPreview?: boolean;
     banner?: string;
   }>();
 
-  const innerBanner = computed(() => {
-    return props.banner || '/images/login-banner.png';
-  });
+  const appStore = useAppStore();
+
+  const innerBanner = computed(() =>
+    props.banner && props.isPreview ? props.banner : appStore.pageConfig.loginLogo[0]?.url ?? defaultLoginImage
+  );
 </script>
 
 <style lang="less" scoped>

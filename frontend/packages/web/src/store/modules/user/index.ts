@@ -16,9 +16,10 @@ import { getApiKeyList, isLogin, login, signout } from '@/api/modules';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
+import useAppStore from '@/store/modules/app/index';
+import useLicenseStore from '@/store/modules/setting/license';
 import { getFirstRouteNameByPermission } from '@/utils/permission';
 
-import useAppStore from '../app';
 import type { NotificationOptions, NotificationReactive } from 'naive-ui';
 
 const { notification } = useDiscreteApi();
@@ -105,6 +106,10 @@ const useUserStore = defineStore('user', {
     // 登出回调
     logoutCallBack() {
       const appStore = useAppStore();
+      const licenseStore = useLicenseStore();
+      if (!licenseStore.hasLicense()) {
+        appStore.resetPageConfig();
+      }
       appStore.disconnectSystemMessageSSE();
       this.destroySystemNotify();
       // 重置用户信息

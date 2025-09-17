@@ -103,6 +103,7 @@
   import useVisit from '@/hooks/useVisit';
   import type { AppRouteRecordRaw } from '@/router/routes/types';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
   import { getFirstRouterNameByCurrentRoute, hasAnyPermission } from '@/utils/permission';
 
@@ -121,6 +122,7 @@
   const { t } = useI18n();
   const appStore = useAppStore();
   const userStore = useUserStore();
+  const licenseStore = useLicenseStore();
   const router = useRouter();
   const route = useRoute();
   const collapsed = ref(appStore.getMenuCollapsed);
@@ -276,6 +278,11 @@
     } else {
       await userStore.logout();
       logout();
+      if (!licenseStore.hasLicense()) {
+        // license到期后，退出登录重置界面配置
+        appStore.resetPageConfig();
+        window.location.reload();
+      }
     }
   }
 

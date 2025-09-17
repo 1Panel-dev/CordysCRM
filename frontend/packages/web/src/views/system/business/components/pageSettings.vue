@@ -2,14 +2,14 @@
   <!-- 风格、主题色配置 -->
   <CrmCard class="mb-[16px]" :loading="pageLoading" hide-footer auto-height>
     <div class="flex items-center gap-[16px]">
-      <div class="w-[60px]"> {{ t('system.business.page.platformStyle') }}</div>
+      <div class="w-[60px] font-medium"> {{ t('system.business.page.platformStyle') }}</div>
       <CrmTab v-model:active-tab="pageConfig.theme" no-content :tab-list="themeList" type="segment" />
     </div>
     <div v-if="pageConfig.theme === 'custom'" class="ml-[4px] mt-[4px]">
       <CrmColorSelect key="customTheme" v-model:pure-color="pageConfig.customTheme" />
     </div>
     <div class="mt-[16px] flex items-center gap-[16px]">
-      <div class="w-[60px]">{{ t('system.business.page.background') }}</div>
+      <div class="w-[60px] font-medium">{{ t('system.business.page.background') }}</div>
       <CrmTab v-model:active-tab="pageConfig.style" no-content :tab-list="styleList" type="segment" />
     </div>
     <div v-if="pageConfig.style === 'custom'" class="my-[4px] ml-[4px]">
@@ -33,7 +33,7 @@
         <div ref="loginPageFullRef" class="config-preview relative">
           <div :class="['config-preview-head', isLoginPageFullscreen ? 'config-preview-head-full' : '']">
             <div class="flex flex-1 items-center overflow-hidden">
-              <img :src="pageConfig.icon[0]?.url ? pageConfig.icon[0].url : '/logo.svg'" class="h-[18px] w-[18px]" />
+              <img :src="pageConfig.icon[0]?.url ?? '/logo.svg'" class="h-[18px] w-[18px]" />
               <div class="one-line-text ml-[4px] text-[10px]">{{ pageConfig.title }}</div>
             </div>
             <CrmIcon
@@ -195,13 +195,11 @@
   import LoginForm from '@/views/base/login/components/login-form.vue';
 
   import { savePageConfig } from '@/api/modules';
+  import { defaultLoginImage, defaultLoginLogo, defaultPlatformLogo } from '@/config/business';
   import useFullScreen from '@/hooks/useFullScreen';
   import useAppStore from '@/store/modules/app';
   import { setCustomTheme, setPlatformColor, watchStyle, watchTheme } from '@/utils/theme';
 
-  const defaultLoginImage = `${import.meta.env.BASE_URL}images/login-banner.png`;
-  const defaultLoginLogo = `${import.meta.env.BASE_URL}images/login-logo.svg`;
-  const defaultPlatformLogo = `${import.meta.env.BASE_URL}images/logo_CORDYS.svg`;
   const { t } = useI18n();
   const appStore = useAppStore();
   const Message = useMessage();
@@ -437,8 +435,7 @@
       await savePageConfig(makeParams());
       Message.success(t('common.saveSuccess'));
       await sleep(300);
-      // TODO
-      // window.location.reload();
+      window.location.reload();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -460,6 +457,26 @@
       scrollIntoView(errDom, { block: 'center' });
     }
   }
+
+  onBeforeUnmount(() => {
+    if (isSave.value === false) {
+      // 离开前未保存，需要判断是否更改了主题和风格，改了的话需要重置回来
+      if (
+        pageConfig.value.style === 'custom'
+          ? pageConfig.value.customStyle !== appStore.pageConfig.style
+          : pageConfig.value.style !== appStore.pageConfig.style
+      ) {
+        watchStyle(appStore.pageConfig.style, appStore.pageConfig);
+      }
+      if (
+        pageConfig.value.theme === 'custom'
+          ? pageConfig.value.customTheme !== appStore.pageConfig.theme
+          : pageConfig.value.theme !== appStore.pageConfig.theme
+      ) {
+        watchTheme(appStore.pageConfig.theme, appStore.pageConfig);
+      }
+    }
+  });
 </script>
 
 <style lang="less" scoped>
@@ -478,7 +495,6 @@
       margin-bottom: 8px;
       @apply flex items-center justify-between;
     }
-    // 对应  config-preview
     .config-main {
       display: flex;
       overflow: hidden;
@@ -493,7 +509,6 @@
       @media screen and (min-width: 1800px) {
         height: auto;
       }
-      // 对应login-preview
       .config-preview {
         @apply relative;
 

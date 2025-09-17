@@ -30,7 +30,6 @@
             >
               {{ t('product.createProduct') }}
             </n-button>
-            <!-- TODO 联调 -->
             <CrmImportButton
               v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:IMPORT'])"
               :api-type="FormDesignKeyEnum.PRODUCT"

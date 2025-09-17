@@ -91,7 +91,7 @@ export default {
   'system.business.authenticationSettings.propertyMap': 'Property Mapping',
   'system.business.authenticationSettings.testLogin': 'Test Login',
 
-  'system.business.page.platformStyle': 'Platform Style',
+  'system.business.page.platformStyle': 'Theme Color',
   'system.business.page.background': 'Background Color',
   'system.business.page.follow': 'Follow Theme Color',
   'system.business.page.replace': 'Replace Image',
@@ -114,7 +114,7 @@ export default {
   'system.config.page.sloganTip': 'Displayed below the product logo.',
   'system.config.page.title': 'Website Name',
   'system.config.page.titleTip': 'Displayed on the browser tab.',
-  'system.config.page.platformConfig': 'Platform Settings',
+  'system.config.page.platformConfig': 'Settings',
   'system.config.page.platformLogo': 'Logo',
   'system.config.page.platformLogoTip':
     'Displayed in the theme bar. Recommended: SVG or PNG format with a transparent background, height under 32px, and file size under 200KB.',

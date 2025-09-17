@@ -47,15 +47,3 @@ export const GetPageConfigImagePreviewUrl = '/ui/display/preview'; // 图片预�
 export const GetTitleImgUrl = `${
   import.meta.env.VITE_API_BASE_URL
 }${GetPageConfigImagePreviewUrl}?paramKey=ui.logoPlatform`;
-// 获取登录 logo
-export const GetLoginLogoUrl = `${
-  import.meta.env.VITE_API_BASE_URL
-}${GetPageConfigImagePreviewUrl}?paramKey=ui.loginLogo`;
-// 获取登录大图
-export const GetLoginImageUrl = `${
-  import.meta.env.VITE_API_BASE_URL
-}/ui/display/preview/login-image?paramKey=ui.loginImage`;
-// 获取平台标签图标
-export const GetPlatformIconUrl = `${
-  import.meta.env.VITE_API_BASE_URL
-}${GetPageConfigImagePreviewUrl}?paramKey=ui.icon`;

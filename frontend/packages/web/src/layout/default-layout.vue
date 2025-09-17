@@ -20,9 +20,9 @@
   import LayoutSider from './components/layout-sider.vue';
   import PageContent from './page-content.vue';
 
-  import { DashboardRouteEnum } from '@/enums/routeEnum';
+  import { defaultPlatformLogo } from '@/config/business';
 
-  const defaultPlatformLogo = `${import.meta.env.BASE_URL}images/logo_CORDYS.svg`;
+  import { DashboardRouteEnum } from '@/enums/routeEnum';
 
   const route = useRoute();
 

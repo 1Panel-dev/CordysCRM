@@ -50,9 +50,11 @@
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
 
   import { addLicense } from '@/api/modules';
+  import { useAppStore } from '@/store';
   import useLicenseStore from '@/store/modules/setting/license';
 
   const licenseStore = useLicenseStore();
+  const appStore = useAppStore();
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -89,8 +91,12 @@
             code = `"${code}"`;
           }
           await addLicense(code);
-          licenseStore.getValidateLicense();
+          await licenseStore.getValidateLicense();
           Message.success(t('common.updateSuccess'));
+          if (licenseStore.hasLicense()) {
+            appStore.initPageConfig();
+            window.location.reload();
+          }
           handleCancel();
         } catch (e) {
           // eslint-disable-next-line no-console

@@ -4,17 +4,20 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 import { mapTree } from '@lib/shared/method';
 
 import { pathMap, PathMapItem } from '@/config/pathMap';
+import useLicenseStore from '@/store/modules/setting/license';
 
 const { t } = useI18n();
 
+const licenseStore = useLicenseStore();
 export default function usePathMap() {
   const getModuleOptions = () => {
     return mapTree<CascaderOption>(pathMap, (e) => {
-      return {
+      const item = {
         value: e.key,
         label: t(e.locale),
         children: e.children,
       };
+      return !licenseStore.isEnterpriseVersion() && e.key === 'SYSTEM_BUSINESS_UI' ? null : item;
     });
   };
 

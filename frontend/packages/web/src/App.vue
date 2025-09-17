@@ -15,7 +15,6 @@
 <script setup lang="ts">
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
-  import { GetPlatformIconUrl } from '@lib/shared/api/requrls/system/business';
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import useLocale from '@lib/shared/locale/useLocale';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
@@ -115,16 +114,18 @@
   }
   watchStyle(appStore.pageConfig.style, appStore.pageConfig);
   watchTheme(appStore.pageConfig.theme, appStore.pageConfig);
-  setFavicon(GetPlatformIconUrl);
 
-  onBeforeMount(async () => {
+  onBeforeMount(() => {
     try {
       if (licenseStore.isEnterpriseVersion()) {
         licenseStore.getValidateLicense();
       }
-      if (licenseStore.hasLicense()) {
-        // TODO 等待联调
+      const { isLoginPage } = useUser();
+      if (licenseStore.hasLicense() && !isLoginPage()) {
         appStore.initPageConfig();
+        if (appStore.pageConfig.icon[0]?.url) {
+          setFavicon(appStore.pageConfig.icon[0]?.url);
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -134,7 +135,6 @@
 
   onMounted(() => {
     adjustOSTheme();
-    licenseStore.getValidateLicense();
     window.onerror = (_message) => {
       if (typeof _message === 'string' && _message.includes('Failed to fetch dynamically imported')) {
         showUpdateMessage();

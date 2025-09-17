@@ -1,11 +1,11 @@
 <template>
   <n-layout-header class="flex" bordered>
     <div class="flex max-w-[300px] px-[24px] py-[14px]">
-      <img :src="props.logo" class="h-[28px]" />
+      <img :src="innerLogo" class="h-[28px]" />
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
-      <div class="flex items-center gap-[8px]">
+      <div v-if="!props.isPreview" class="flex items-center gap-[8px]">
         <CrmButtonGroup not-show-divider class="gap-[8px]" :list="appStore.getNavTopConfigList">
           <template #searchSlot>
             <n-button v-if="showSearch" class="p-[8px]" quaternary @click="showDuplicateCheckDrawer = true">
@@ -159,6 +159,7 @@
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import { changeLocaleBackEnd } from '@/api/modules';
+  import { defaultPlatformLogo } from '@/config/business';
   import useAppStore from '@/store/modules/app';
   import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
@@ -172,7 +173,6 @@
 
   const { success, warning, loading } = useMessage();
   const { t } = useI18n();
-
   const { changeLocale, currentLocale } = useLocale(loading);
 
   const appStore = useAppStore();
@@ -251,7 +251,7 @@
   ];
 
   function selectMoreActions() {
-    window.open('https://cordys.cn/docs', '_blank');
+    window.open(appStore.pageConfig.helpDoc, '_blank');
   }
 
   onBeforeMount(() => {
@@ -262,6 +262,10 @@
     appStore.connectSystemMessageSSE(userStore.showSystemNotify);
     appStore.showSQLBot();
   });
+
+  const innerLogo = computed(() =>
+    props.isPreview && props.logo ? props.logo : appStore.pageConfig.logoPlatform[0]?.url ?? defaultPlatformLogo
+  );
 </script>
 
 <style lang="less" scoped></style>

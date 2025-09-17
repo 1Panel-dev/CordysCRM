@@ -139,6 +139,14 @@ export const pathMap: PathMapItem[] = [
         locale: 'menu.settings.businessSetting',
         children: [
           {
+            key: 'SYSTEM_BUSINESS_UI',
+            route: AppRouteEnum.SYSTEM_BUSINESS,
+            locale: 'system.business.tab.interfaceSettings',
+            routeQuery: {
+              tab: 'pageSettings',
+            },
+          },
+          {
             key: 'SYSTEM_BUSINESS_THIRD',
             route: AppRouteEnum.SYSTEM_BUSINESS,
             locale: 'system.business.tab.third',

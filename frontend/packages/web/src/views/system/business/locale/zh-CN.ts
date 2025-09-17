@@ -86,11 +86,11 @@ export default {
   'system.business.authenticationSettings.propertyMap': '属性映射',
   'system.business.authenticationSettings.testLogin': '测试登录',
 
-  'system.business.page.platformStyle': '平台风格',
+  'system.business.page.platformStyle': '主题色',
   'system.business.page.background': '背景色',
   'system.business.page.follow': '跟随主题色',
   'system.business.page.replace': '替换图片',
-  'system.config.page.loginPageConfig': '平台登录设置',
+  'system.config.page.loginPageConfig': '登录页面设置',
   'system.config.page.pagePreview': '页面预览',
   'system.config.page.reset': '撤销修改',
   'system.config.page.loginPreviewTip': 'tips:默认为 Cordys 系统界面，支持自定义平台界面设置',
@@ -108,7 +108,7 @@ export default {
   'system.config.page.sloganTip': '产品 Logo 下的 Slogan',
   'system.config.page.title': '网站名称',
   'system.config.page.titleTip': '显示在网页 Tab 的平台名称',
-  'system.config.page.platformConfig': '平台设置',
+  'system.config.page.platformConfig': '设置',
   'system.config.page.platformLogo': 'Logo',
   'system.config.page.platformLogoTip':
     '主题栏显示的 logo；建议使用 SVG 或 PNG 格式透明背景图片，高度小于 32px；图片大小仅支持 200kb 以内',

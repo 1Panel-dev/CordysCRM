@@ -133,8 +133,8 @@
 
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
   // import { getPlatformParamUrl } from '@/api/modules/user';
-  // import { GetLoginLogoUrl } from '@/api/requrls/setting/config';
   import { getThirdTypeList } from '@/api/modules';
+  import { defaultLoginLogo } from '@/config/business';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
@@ -164,7 +164,7 @@
   }>();
 
   const innerLogo = computed(() => {
-    return props.isPreview && props.logo ? props.logo : '/images/login-logo.svg'; // TODO: GetLoginLogoUrl();
+    return props.isPreview && props.logo ? props.logo : appStore.pageConfig.loginLogo[0]?.url ?? defaultLoginLogo;
   });
 
   const innerSlogan = computed(() => {
@@ -215,6 +215,10 @@
             authenticate: userInfo.value.authenticate,
             platform: 'WEB',
           });
+          await licenseStore.getValidateLicense();
+          if (licenseStore.hasLicense()) {
+            appStore.initPageConfig();
+          }
           setLoginExpires();
           setLoginType(userInfo.value.authenticate);
           Message.success(t('login.form.login.success'));

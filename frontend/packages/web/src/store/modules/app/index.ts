@@ -369,13 +369,22 @@ const useAppStore = defineStore('app', {
         if (Array.isArray(res) && res.length > 0) {
           let hasStyleChange = false;
           let hasThemeChange = false;
+          // 清空无数据的时候使用默认值
+          ['icon', 'loginLogo', 'loginImage', 'logoPlatform'].forEach((key) => {
+            this.pageConfig[key as PageConfigKeys] = [
+              {
+                url: null,
+                name: null,
+              },
+            ] as any;
+          });
           res.forEach((e) => {
             const key = e.paramKey.split('ui.')[1] as PageConfigKeys; // 参数名前缀ui.去掉
             if (['icon', 'loginLogo', 'loginImage', 'logoPlatform'].includes(key)) {
               // 四个属性值为文件类型，单独处理
               this.pageConfig[key] = [
                 {
-                  url: `/ui/display/preview?paramKey=ui-${key}`,
+                  url: `/ui/display/preview?paramKey=ui.${key}`,
                   name: e.paramValue,
                 },
               ] as any;
@@ -425,6 +434,10 @@ const useAppStore = defineStore('app', {
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    },
+    resetPageConfig() {
+      const { t } = useI18n();
+      this.pageConfig = { ...this.getDefaultPageConfig, slogan: t(this.defaultLoginConfig.slogan) };
     },
   },
   persist: {
