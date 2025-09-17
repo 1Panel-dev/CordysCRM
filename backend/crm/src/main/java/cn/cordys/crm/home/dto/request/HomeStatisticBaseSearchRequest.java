@@ -27,11 +27,20 @@ public class HomeStatisticBaseSearchRequest {
     @Schema(description = "用于检索的时间字段(CREATE_TIME, EXPECTED_END_TIME)")
     private String timeField;
 
+    @EnumValue(enumClass = UserFieldEnum.class)
+    @Schema(description = "用于检索的用户字段(CREATE_USER, OWNER)")
+    private String userField;
+
     @Schema(description = "是否显示上期数据")
     private Boolean priorPeriodEnable;
 
     public enum TimeFieldEnum {
         CREATE_TIME,
         EXPECTED_END_TIME
+    }
+
+    public enum UserFieldEnum {
+        CREATE_USER,
+        OWNER
     }
 }

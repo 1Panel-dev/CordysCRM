@@ -368,9 +368,10 @@
     <select id="selectClueCount" resultType="java.lang.Long">
         select count(*) from clue c
 
-        <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
-            join sys_organization_user sou on c.owner = sou.user_id
-            and (
+        <if test="request.staticRequest.userField == 'CREATE_USER'">
+            <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
+                join sys_organization_user sou on c.create_user = sou.user_id
+                and (
                 sou.department_id in
                 <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
@@ -378,7 +379,23 @@
                 <if test="request.dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{request.userId}
                 </if>
-            )
+                )
+            </if>
+        </if>
+
+        <if test="request.staticRequest.userField != 'CREATE_USER'">
+            <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
+                join sys_organization_user sou on c.owner = sou.user_id
+                and (
+                sou.department_id in
+                <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                <if test="request.dataPermission.viewId == 'ALL'">
+                    or sou.user_id = #{request.userId}
+                </if>
+                )
+            </if>
         </if>
 
         <if test="unfollowed">
@@ -387,7 +404,9 @@
 
         where c.organization_id = #{request.orgId}
           and (c.transition_id is null or c.transition_id= '')
-          and c.in_shared_pool is false
+            <if test="request.staticRequest.userField != 'CREATE_USER'">
+                and c.in_shared_pool is false
+            </if>
         <if test="unfollowed">
             and fur.id is null
         </if>
