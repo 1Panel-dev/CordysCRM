@@ -346,7 +346,7 @@ public class ProductService {
                 List<LogDTO> logs = new ArrayList<>();
                 products.forEach(product -> {
                     product.setPos(getNextOrder(currentOrg));
-                    logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, product.getName()));
+                    logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
                 });
                 productBaseMapper.batchInsert(products);
                 productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
