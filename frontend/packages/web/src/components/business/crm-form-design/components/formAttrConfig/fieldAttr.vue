@@ -530,7 +530,7 @@
           </div>
         </template>
       </div>
-      <!-- inputNumber End -->
+      <!-- 流水号属性 End -->
       <!-- 默认值 -->
       <div
         v-if="

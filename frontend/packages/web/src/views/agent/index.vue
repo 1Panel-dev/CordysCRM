@@ -20,15 +20,25 @@
           :offspring-ids="offspringIds"
           @create="handleAddAgent"
           @edit="handleEditAgent"
+          @detail="handleAgentDetail"
           @collect="handleCollectAgent"
+          @delete="refreshTree"
         />
       </template>
     </CrmSplitPanel>
   </CrmCard>
-  <addAgentModal v-model:show="show" :folder-tree="folderTree" :agent-id="activeAgentId" @finish="handleFinish" />
+  <addAgentModal
+    v-model:show="show"
+    :folder-tree="folderTree"
+    :agent-id="activeAgentId"
+    :is-detail="isDetail"
+    :active-folder="activeNode?.id"
+    @finish="handleFinish"
+  />
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { TreeSelectOption } from 'naive-ui';
 
   import { mapTree } from '@lib/shared/method';
@@ -39,6 +49,8 @@
   import addAgentModal from './components/addAgentModal.vue';
   import agentTable from './components/table.vue';
   import tree from './components/tree.vue';
+
+  const route = useRoute();
 
   const show = ref(false);
   const folderTree = ref<TreeSelectOption[]>([]);
@@ -57,6 +69,13 @@
     offspringIds.value = _offspringIds as Array<string>;
   }
 
+  const isDetail = ref(false);
+  function handleAddAgent() {
+    activeAgentId.value = '';
+    show.value = true;
+    isDetail.value = false;
+  }
+
   function handleFolderTreeInit(_tree: CrmTreeNodeData[]) {
     folderTree.value = mapTree(_tree, (item) => {
       if (item.children?.length === 0) {
@@ -64,16 +83,21 @@
       }
       return item;
     });
-  }
-
-  function handleAddAgent() {
-    activeAgentId.value = '';
-    show.value = true;
+    if (route.query.showAdd === 'Y') {
+      handleAddAgent();
+    }
   }
 
   function handleEditAgent(id: string) {
     activeAgentId.value = id;
     show.value = true;
+    isDetail.value = false;
+  }
+
+  function handleAgentDetail(id: string) {
+    activeAgentId.value = id;
+    show.value = true;
+    isDetail.value = true;
   }
 
   function handleCollectAgent() {
@@ -88,6 +112,11 @@
   function handleFinish() {
     folderTreeRef.value?.initTree();
     refreshTable();
+  }
+
+  function refreshTree() {
+    folderTreeRef.value?.initTree();
+    folderTreeRef.value?.initModuleCount();
   }
 </script>
 

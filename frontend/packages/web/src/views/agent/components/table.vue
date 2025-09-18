@@ -49,6 +49,7 @@
   const emit = defineEmits<{
     (e: 'create'): void;
     (e: 'edit', id: string): void;
+    (e: 'detail', id: string): void;
     (e: 'collect'): void;
     (e: 'delete'): void;
   }>();
@@ -59,7 +60,7 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableRefreshId = ref(0);
-  async function removeDashboard(row: any) {
+  async function removeAgent(row: any) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
@@ -103,7 +104,7 @@
         emit('edit', row.id);
         break;
       case 'delete':
-        removeDashboard(row);
+        removeAgent(row);
         break;
       default:
         break;
@@ -157,7 +158,7 @@
                 {
                   class: 'flex-1 overflow-hidden',
                   onClick: () => {
-                    emit('edit', row.id);
+                    emit('detail', row.id);
                   },
                 },
                 { trigger: () => row.name, default: () => row.name }
@@ -177,7 +178,7 @@
     },
     {
       title: t('agent.folder'),
-      key: 'dashboardModuleName',
+      key: 'agentModuleName',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -223,14 +224,14 @@
     },
   ];
 
-  const dashboardTable = useTable(getAgentPage, {
+  const agentTable = useTable(getAgentPage, {
     showSetting: false,
     columns,
     permission: [],
     containerClass: '.crm-agent-table',
   });
 
-  const dashboardCollectTable = useTable(
+  const agentCollectTable = useTable(
     getAgentCollectPage,
     {
       showSetting: false,
@@ -248,16 +249,17 @@
   // 当前展示的表格数据类型
   const currentTable = computed(() => {
     if (props.isFavorite) {
-      return dashboardCollectTable;
+      return agentCollectTable;
     }
-    return dashboardTable;
+    return agentTable;
   });
 
   const keyword = ref('');
   function searchData(val?: string) {
+    console.log(val);
     currentTable.value.setLoadListParams({
       keyword: val ?? keyword.value,
-      dashboardModuleIds:
+      agentModuleIds:
         props.activeFolderId && !['all', 'favorite'].includes(props.activeFolderId)
           ? Array.from(new Set([props.activeFolderId, ...(props.offspringIds || [])])).filter(
               (item) => item && !['all', 'favorite'].includes(item)

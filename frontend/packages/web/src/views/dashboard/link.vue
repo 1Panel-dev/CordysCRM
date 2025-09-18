@@ -24,6 +24,7 @@
           @create="handleAddDashboard"
           @edit="handleEditDashboard"
           @collect="handleCollectDashboard"
+          @delete="refreshTree"
         />
         <dashboard
           v-else-if="activeNode"
@@ -129,6 +130,11 @@
   function handleFinish() {
     folderTreeRef.value?.initTree();
     refreshTable();
+  }
+
+  function refreshTree() {
+    folderTreeRef.value?.initTree();
+    folderTreeRef.value?.initModuleCount();
   }
 </script>
 

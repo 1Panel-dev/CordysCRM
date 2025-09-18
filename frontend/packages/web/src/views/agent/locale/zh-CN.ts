@@ -16,4 +16,5 @@ export default {
   'agent.unConfig': '未配置三方信息',
   'agent.goConfig': '去配置',
   'agent.script': '嵌入脚本',
+  'agent.agentDetail': '智能体详情',
 };

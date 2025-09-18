@@ -66,7 +66,7 @@
 
   function jump() {
     visible.value = false;
-    router.push({ name: AgentRouteEnum.AGENT_INDEX });
+    router.push({ name: AgentRouteEnum.AGENT_INDEX, query: { showAdd: 'Y' } });
   }
 
   const loading = ref(false);
@@ -74,9 +74,15 @@
     try {
       loading.value = true;
       agentList.value = await getAgentOptions();
-      if (!activeAgent.value && agentList.value.length > 0) {
+      if (
+        (!activeAgent.value && agentList.value.length > 0) ||
+        (activeAgent.value && !agentList.value.find((agent) => agent.id === activeAgent.value))
+      ) {
         activeAgent.value = agentList.value[0].id;
         localStorage.setItem('crm-agent-drawer-active-agent', agentList.value[0].id);
+      } else if (agentList.value.length === 0) {
+        activeAgent.value = undefined;
+        localStorage.removeItem('crm-agent-drawer-active-agent');
       }
     } catch (error) {
       // eslint-disable-next-line no-console

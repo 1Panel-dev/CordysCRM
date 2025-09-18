@@ -553,6 +553,7 @@
 
   defineExpose({
     initTree,
+    initModuleCount,
     toggleDashboardCollect,
   });
 </script>

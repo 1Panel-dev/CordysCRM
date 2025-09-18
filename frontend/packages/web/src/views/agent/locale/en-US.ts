@@ -16,4 +16,5 @@ export default {
   'agent.unConfig': 'Not Configured Third-Party Information',
   'agent.goConfig': 'Go to Configuration',
   'agent.script': 'Embed Script',
+  'agent.agentDetail': 'Agent Detail',
 };

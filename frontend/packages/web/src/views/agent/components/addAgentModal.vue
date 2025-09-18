@@ -1,7 +1,7 @@
 <template>
   <CrmModal
     v-model:show="show"
-    :title="props.agentId ? t('agent.updateAgent') : t('agent.addAgent')"
+    :title="title"
     :ok-loading="loading"
     :positive-text="props.agentId ? t('common.update') : t('common.add')"
     size="large"
@@ -15,6 +15,7 @@
         ref="formRef"
         :model="form"
         label-placement="left"
+        :disabled="props.isDetail"
         :rules="{
           name: [
             {
@@ -66,6 +67,7 @@
             v-model:selected-list="form.scopeIds"
             :api-type-key="MemberApiTypeEnum.FORM_FIELD"
             :member-types="memberTypes"
+            :disabled="props.isDetail"
           />
         </n-form-item>
         <n-form-item :label="t('agent.script')" path="script">
@@ -108,6 +110,8 @@
   const props = defineProps<{
     agentId?: string;
     folderTree: TreeSelectOption[];
+    isDetail?: boolean;
+    activeFolder?: string;
   }>();
   const emit = defineEmits<{
     (e: 'finish'): void;
@@ -137,6 +141,15 @@
       value: MemberSelectTypeEnum.ORG,
     },
   ];
+  const title = computed(() => {
+    if (props.isDetail) {
+      return t('agent.agentDetail');
+    }
+    if (props.agentId) {
+      return t('agent.updateAgent');
+    }
+    return t('agent.addAgent');
+  });
 
   function renderLabel({ option }: { option: TreeOption; checked: boolean; selected: boolean }) {
     return h(
@@ -194,7 +207,7 @@
         handleCancel();
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error('Failed to add dashboard:', error);
+        console.error('Failed to add agent:', error);
       } finally {
         loading.value = false;
       }
@@ -212,7 +225,7 @@
       };
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Failed to initialize dashboard detail:', error);
+      console.error('Failed to initialize agent detail:', error);
     } finally {
       detailLoading.value = false;
     }
@@ -224,7 +237,10 @@
       if (val && props.agentId) {
         initDetail();
       } else {
-        form.value.agentModuleId = (props.folderTree[0]?.id as string) || '';
+        form.value.agentModuleId =
+          ((props.activeFolder && !['favorite', 'all'].includes(props.activeFolder)
+            ? props.activeFolder
+            : props.folderTree[0]?.id) as string) || '';
       }
     },
     { immediate: true }

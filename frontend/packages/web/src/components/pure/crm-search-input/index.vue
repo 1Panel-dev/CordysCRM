@@ -7,6 +7,8 @@
     @keydown="handleKeyDown"
     @input="handleInput"
     @clear="() => emit('search', '')"
+    @compositionstart="handleCompositionStart"
+    @compositionend="handleCompositionEnd"
   >
     <template #suffix>
       <n-icon>
@@ -39,9 +41,18 @@
     required: true,
   });
 
+  const isComposing = ref(false);
+  function handleCompositionStart() {
+    isComposing.value = true;
+  }
+
+  function handleCompositionEnd() {
+    isComposing.value = false;
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     // 防止autoSearch开启后，中文输入法下回车emit两次
-    if (e.key === 'Enter' && !props.autoSearch) {
+    if (e.key === 'Enter' && !props.autoSearch && !isComposing.value) {
       emit('search', keyword.value);
     }
   }
