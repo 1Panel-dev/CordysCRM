@@ -34,6 +34,7 @@ docker run -d \
   --name cordys-crm \
   --restart unless-stopped \
   -p 8081:8081 \
+  -p 8082:8082 \
   -v ~/cordys:/opt/cordys \
   1panel/cordys-crm
 ```
