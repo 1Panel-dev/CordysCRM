@@ -174,7 +174,7 @@ public class AgentBaseService extends DashboardSortService {
         AgentLogDTO newDetail = getLogDetail(originalAgent.getId());
 
         // 添加日志上下文
-        String resourceName = Optional.ofNullable(originalAgent.getName()).orElse(originalAgent.getName());
+        String resourceName = Optional.ofNullable(agent.getName()).orElse(originalAgent.getName());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .originalValue(originalDetail)

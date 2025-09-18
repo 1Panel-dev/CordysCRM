@@ -12,7 +12,7 @@ public class AgentLogDTO {
     private String name;
 
     @Schema(description = "文件夹名称")
-    private String AgentModuleName;
+    private String agentModuleName;
 
     @Schema(description = "可查看人员集合")
     private List<String> members;
