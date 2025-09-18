@@ -37,11 +37,29 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setColumnName(Translator.get("log." + differ.getColumn()));
                 handleFieldsLogDetail(differ);
             }
+            if (Strings.CS.equals("sort", differ.getColumn())) {
+                differ.setColumnName(Translator.get("module.main.nav"));
+                handleModuleMainNav(differ);
+            }
         });
+    }
+
+    private void handleModuleMainNav(JsonDifferenceDTO differ) {
+        List<?> oldFields = parseFieldList(differ.getOldValue());
+        List<?> newFields = parseFieldList(differ.getNewValue());
+        List<String> oldNames = oldFields.stream().map(field -> {
+            return Translator.get((String) field);
+        }).toList();
+        List<String> newNames = newFields.stream().map(field -> {
+            return Translator.get((String) field);
+        }).toList();
+        differ.setOldValueName(oldNames);
+        differ.setNewValueName(newNames);
     }
 
     /**
      * 待定: 目前就只粗略展示字段的变更
+     *
      * @param differ json-difference dto
      */
     @SuppressWarnings("unchecked")
