@@ -38,6 +38,7 @@ export default function useLogin() {
       if ((error as Result).code === 401) {
         router.replace('login');
       }
+      console.log('error', 'TODO 调试代码');
     }
   }
 
@@ -76,9 +77,10 @@ export default function useLogin() {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-      if ((error as Result).code === 100500) {
-        router.replace({ name: 'login' });
-      }
+      // TODO 调试代码
+      // if ((error as Result).code === 100500) {
+      //   router.replace({ name: 'login' });
+      // }
 
       if ((error as Result).code === 401) {
         router.replace(AUTH_DISABLED_ROUTE_NAME);

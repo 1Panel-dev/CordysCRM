@@ -28,11 +28,15 @@
     changeLocale(navigator.language as LocaleType);
     const loginStatus = await userStore.isLogin();
     const isWXWork = navigator.userAgent.includes('wxwork');
+
+    console.log(loginStatus, 'TODO 调试代码');
+
     if (!loginStatus && isWXWork) {
+      console.log(loginStatus, 'TODO 调试代码 oAuthLogin 之前');
+
       await oAuthLogin();
       return;
     }
-    router.replace({ name: AppRouteEnum.WORKBENCH });
     licenseStore.getValidateLicense();
   });
 </script>
