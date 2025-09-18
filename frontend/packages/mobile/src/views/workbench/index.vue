@@ -173,10 +173,6 @@
   );
 
   onBeforeMount(() => {
-    // TODO 测试代码
-    const tokenExists = hasToken();
-    console.log(tokenExists, ';tokenExiststokenExists');
-
     appStore.initMessage();
     appStore.connectSystemMessageSSE();
   });

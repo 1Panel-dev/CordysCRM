@@ -9,6 +9,7 @@
   import { showLoadingToast } from 'vant';
 
   import useLocale from '@lib/shared/locale/useLocale';
+  import { hasToken } from '@lib/shared/method/auth';
   import { LocaleType } from '@lib/shared/types/global';
 
   import useLicenseStore from '@/store/modules/setting/license';
@@ -29,14 +30,11 @@
     const loginStatus = await userStore.isLogin();
     const isWXWork = navigator.userAgent.includes('wxwork');
 
-    console.log(loginStatus, 'TODO 调试代码');
-
-    if (!loginStatus && isWXWork) {
-      console.log(loginStatus, 'TODO 调试代码 oAuthLogin 之前');
-
+    if (!loginStatus && !hasToken() && isWXWork) {
       await oAuthLogin();
       return;
     }
+    router.replace({ name: AppRouteEnum.WORKBENCH });
     licenseStore.getValidateLicense();
   });
 </script>
