@@ -42,7 +42,6 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val || value.value;
-      displayValue.value = val || value.value;
     },
     {
       immediate: true,
@@ -69,7 +68,6 @@
     let num = Number(clean);
     if (Number.isNaN(num)) {
       value.value = null;
-      displayValue.value = '';
       emit('change', null);
       return;
     }
@@ -92,16 +90,6 @@
     // 更新真实值
     value.value = num;
     emit('change', num);
-
-    // 更新显示值（千分位/小数位）
-    if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
-      displayValue.value = num.toLocaleString('en-US', {
-        minimumFractionDigits: precision,
-        maximumFractionDigits: precision,
-      });
-    } else {
-      displayValue.value = String(num);
-    }
   }
 
   // 聚焦时：去掉千分位，方便编辑
@@ -109,4 +97,26 @@
     if (!displayValue.value) return;
     displayValue.value = displayValue.value.replace(/,/g, '');
   }
+
+  watch(
+    () => value.value,
+    (val) => {
+      if (val) {
+        // 更新显示值（千分位/小数位）
+        if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
+          displayValue.value = val.toLocaleString('en-US', {
+            minimumFractionDigits: props.fieldConfig.precision ?? 0,
+            maximumFractionDigits: props.fieldConfig.precision ?? 0,
+          });
+        } else {
+          displayValue.value = String(val);
+        }
+      } else {
+        displayValue.value = '';
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
