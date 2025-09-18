@@ -62,9 +62,18 @@
   const list = ref<Record<string, any>[]>([]);
   const crmListRef = ref<InstanceType<typeof CrmList>>();
 
+  const selectedMap = ref<Map<string, Record<string, any>>>(new Map()); // 用 Map 来存储所有已选行，避免被过滤掉
+
   function handleChange() {
     if (props.multiple) {
-      selectedRows.value = list.value.filter((e) => e.checked);
+      list.value.forEach((item) => {
+        if (item.checked) {
+          selectedMap.value.set(item.id, item);
+        } else {
+          selectedMap.value.delete(item.id);
+        }
+      });
+      selectedRows.value = Array.from(selectedMap.value.values());
       value.value = selectedRows.value.map((e) => e.id);
     } else {
       selectedRows.value = list.value.filter((e) => e.id === value.value);
@@ -96,6 +105,11 @@
     () => props.data,
     (newData) => {
       list.value = newData || [];
+
+      list.value.forEach((item) => {
+        item.checked = selectedMap.value.has(item.id);
+      });
+
       nextTick(() => {
         loadList(true);
       });

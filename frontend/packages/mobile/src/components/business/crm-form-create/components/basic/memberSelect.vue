@@ -204,6 +204,7 @@
 
   function handleClick() {
     if (props.fieldConfig.editable) {
+      keyword.value = '';
       showPicker.value = true;
       nextTick(() => {
         loadData();
