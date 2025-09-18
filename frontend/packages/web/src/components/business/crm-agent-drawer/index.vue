@@ -53,7 +53,7 @@
     required: true,
   });
 
-  const activeAgent = ref<string | undefined>(localStorage.getItem('crm-agent-drawer-active-agent') || undefined);
+  const activeAgent = ref<string | null>(localStorage.getItem('crm-agent-drawer-active-agent') || null);
   const agentList = ref<Record<string, any>[]>([]);
   const firstValidApiKey = computed(() => userStore.apiKeyList.find((key) => !key.isExpire));
   const activeAgentScript = computed(() => {
@@ -74,15 +74,18 @@
     try {
       loading.value = true;
       agentList.value = await getAgentOptions();
-      if (
-        (!activeAgent.value && agentList.value.length > 0) ||
-        (activeAgent.value && !agentList.value.find((agent) => agent.id === activeAgent.value))
-      ) {
-        activeAgent.value = agentList.value[0].id;
-        localStorage.setItem('crm-agent-drawer-active-agent', agentList.value[0].id);
+
+      const hasAgentId = agentList.value.find((agent) => agent.id === activeAgent.value);
+      if ((!activeAgent.value && agentList.value.length > 0) || (activeAgent.value && !hasAgentId)) {
+        activeAgent.value = agentList.value[0]?.id ?? null;
+        if (activeAgent.value) {
+          localStorage.setItem('crm-agent-drawer-active-agent', activeAgent.value);
+        } else {
+          localStorage.removeItem('crm-agent-drawer-active-agent');
+        }
       } else if (agentList.value.length === 0) {
-        activeAgent.value = undefined;
         localStorage.removeItem('crm-agent-drawer-active-agent');
+        activeAgent.value = null;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
