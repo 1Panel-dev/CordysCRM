@@ -388,7 +388,7 @@
     emit('selectNode', { id: folderId }, selectedKeys.value, []);
   }
 
-  onBeforeMount(async () => {
+  onMounted(async () => {
     await initTree(true);
     initModuleCount();
   });
