@@ -71,6 +71,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { hasToken } from '@lib/shared/method/auth';
   import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -172,6 +173,10 @@
   );
 
   onBeforeMount(() => {
+    // TODO 测试代码
+    const tokenExists = hasToken();
+    console.log(tokenExists, ';tokenExiststokenExists');
+
     appStore.initMessage();
     appStore.connectSystemMessageSSE();
   });

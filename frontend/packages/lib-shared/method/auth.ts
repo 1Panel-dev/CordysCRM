@@ -25,7 +25,7 @@ const clearToken = () => {
   localStorage.removeItem(CSRF_TOKEN);
 };
 
-const hasToken = (name: string) => {
+const hasToken = () => {
   return !!localStorage.getItem(SESSION_ID) && !!localStorage.getItem(CSRF_TOKEN);
 };
 
