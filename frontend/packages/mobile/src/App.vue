@@ -27,7 +27,7 @@
 
   onBeforeMount(async () => {
     changeLocale(navigator.language as LocaleType);
-    const loginStatus = await userStore.isLogin();
+    const loginStatus = await userStore.isLogin(true);
     const isWXWork = navigator.userAgent.includes('wxwork');
 
     if (!loginStatus && !hasToken() && isWXWork) {

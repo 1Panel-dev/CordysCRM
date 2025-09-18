@@ -88,9 +88,9 @@ const useUserStore = defineStore('user', {
         return false;
       }
     },
-    async isLogin() {
+    async isLogin(isDisabledErrorTip = false) {
       try {
-        const res = await isLogin();
+        const res = await isLogin(isDisabledErrorTip);
         if (!res) {
           return false;
         }

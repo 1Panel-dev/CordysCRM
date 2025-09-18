@@ -24,8 +24,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 是否登录
-  function isLogin() {
-    return CDR.get<UserInfo>({ url: isLoginUrl }, { ignoreCancelToken: true });
+  function isLogin(isDisabledErrorTip = false) {
+    return CDR.get<UserInfo>({ url: isLoginUrl }, { ignoreCancelToken: true, noErrorTip: isDisabledErrorTip });
   }
 
   // 获取登录密钥
