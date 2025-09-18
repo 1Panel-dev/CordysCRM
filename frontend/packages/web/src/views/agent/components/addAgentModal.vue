@@ -6,6 +6,7 @@
     :positive-text="props.agentId ? t('common.update') : t('common.add')"
     size="large"
     :show-continue="!props.agentId"
+    :footer="!props.isDetail"
     @confirm="handleConfirm"
     @cancel="handleCancel"
     @continue="handleConfirm(true)"
