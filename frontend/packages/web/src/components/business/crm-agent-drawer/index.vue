@@ -100,6 +100,7 @@
     () => visible.value,
     (val) => {
       if (val) {
+        userStore.initApiKeyList();
         initAgentList();
       }
     }

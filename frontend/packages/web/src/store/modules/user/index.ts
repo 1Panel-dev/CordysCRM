@@ -18,7 +18,7 @@ import useUser from '@/hooks/useUser';
 import router from '@/router';
 import useAppStore from '@/store/modules/app/index';
 import useLicenseStore from '@/store/modules/setting/license';
-import { getFirstRouteNameByPermission } from '@/utils/permission';
+import { getFirstRouteNameByPermission, hasAnyPermission } from '@/utils/permission';
 
 import type { NotificationOptions, NotificationReactive } from 'naive-ui';
 
@@ -215,6 +215,7 @@ const useUserStore = defineStore('user', {
       }
     },
     async initApiKeyList() {
+      if (!hasAnyPermission(['PERSONAL_API_KEY:READ'])) return;
       try {
         const res = await getApiKeyList();
         this.apiKeyList = res.map((item) => ({

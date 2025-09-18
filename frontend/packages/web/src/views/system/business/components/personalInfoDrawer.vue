@@ -88,7 +88,7 @@
           :any-permission="['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']"
         />
       </CrmCard>
-      <apiKey v-else />
+      <apiKey v-if="activeTab === PersonalEnum.API_KEY" />
     </n-scrollbar>
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
