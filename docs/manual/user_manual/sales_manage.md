@@ -44,19 +44,21 @@
 
 > **注意**：转客户的线索不会展示在线索列表中。
 
-![image-20250918114641384](/Users/luoting/Library/Application Support/typora-user-images/image-20250918114641384.png)
+![线索转换](../img/user_manual/image-20250918114641384.png)
+
+
 
 线索转客户需管理员在“客户表单设置”中配置好表单联动，即可将线索信息快捷填充到客户表单。
 
-![image-20250918113810902](/Users/luoting/Library/Application Support/typora-user-images/image-20250918113810902.png)
+![线索转客户](../img/user_manual/image-20250918113810902.png)
 
 管理员进入【系统-模块设置】，点击「客户表单设置」，进入「表单属性」，设置表单联动。
 
-![image-20250918114122155](/Users/luoting/Library/Application Support/typora-user-images/image-20250918114122155.png)
+![客户表单设置](../img/user_manual/image-20250918114122155.png)
 
 配置好线索表单字段与客户表单字段的映射关系，在进行「线索转客户」操作时即可一键填充相应信息。
 
-![image-20250918114143362](/Users/luoting/Library/Application Support/typora-user-images/image-20250918114143362.png)
+![客户表单联动](../img/user_manual/image-20250918114143362.png)
 
 ---
 
