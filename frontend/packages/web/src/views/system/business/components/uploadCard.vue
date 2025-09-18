@@ -15,7 +15,7 @@
         :max-size="props.maxSize"
         :size-unit="props.sizeUnit"
       >
-        <n-button type="default" class="outline--secondary" size="tiny">
+        <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="default" class="outline--secondary" size="tiny">
           {{ t('system.business.page.replace') }}
         </n-button>
       </CrmUpload>

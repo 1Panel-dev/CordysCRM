@@ -25,7 +25,7 @@
     <div class="config-content">
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
-        <n-button type="primary" text @click="resetLoginPageConfig">
+        <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" text @click="resetLoginPageConfig">
           {{ t('common.resetDefault') }}
         </n-button>
       </div>
@@ -107,7 +107,7 @@
     <div class="config-content border border-solid border-[var(--text-n8)] !bg-[var(--text-n10)]">
       <div class="config-content-head">
         {{ t('system.config.page.pagePreview') }}
-        <n-button type="primary" text @click="resetPlatformConfig">
+        <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" text @click="resetPlatformConfig">
           {{ t('common.resetDefault') }}
         </n-button>
       </div>
@@ -168,10 +168,10 @@
     class="base-box-shadow fixed bottom-0 right-0 z-[999] flex justify-end gap-[16px] bg-[var(--text-n10)] p-[24px]"
     :style="{ width: `calc(100% - ${menuWidth}px)` }"
   >
-    <n-button secondary @click="resetAll">
+    <n-button v-permission="['SYSTEM_SETTING:UPDATE']" secondary @click="resetAll">
       {{ t('system.config.page.cancel') }}
     </n-button>
-    <n-button type="primary" @click="beforeSave">
+    <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" @click="beforeSave">
       {{ t('system.config.page.save') }}
     </n-button>
   </div>
