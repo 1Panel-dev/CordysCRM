@@ -388,5 +388,34 @@
         ]
       }
     ]
+  },
+  {
+    "id": "AGENT_MANAGEMENT",
+    "name": "permission.agent_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "AGENT",
+        "name": "permission.agent.name",
+        "permissions": [
+          {
+            "id": "AGENT:READ",
+            "license": false
+          },
+          {
+            "id": "AGENT:ADD",
+            "license": false
+          },
+          {
+            "id": "AGENT:UPDATE",
+            "license": false
+          },
+          {
+            "id": "AGENT:DELETE",
+            "license": false
+          }
+        ]
+      }
+    ]
   }
 ]
