@@ -34,17 +34,24 @@ export function setCustomTheme(primaryColor: string) {
   const P5 = getRGBinnerVal(primary.mix(white, 0.8));
   const P6 = getRGBinnerVal(primary.mix(white, 0.9));
   const P7 = getRGBinnerVal(primary.mix(white, 0.95));
+
+  const transferColor = (primaryColorString: string) => {
+    const temPrimary = primaryColorString.toString().replace(/rgba?\(|\)/g, ''); // "r, g, b" 或 "r, g, b, a"
+    const isRgba = temPrimary.split(',').length === 4;
+    return `${isRgba ? `rgba(${primaryColorString})` : `rgb(${primaryColorString})`};`;
+  };
+
   styleTag.innerHTML = `
     :root {
-      --primary-0: rgb(${P0});
-      --primary-1: rgb(${P1});
-      --primary-2: rgb(${P2});
-      --primary-3: rgb(${P3});
-      --primary-4: rgb(${P4});
-      --primary-5: rgb(${P5});
-      --primary-6: rgb(${P6});
-      --primary-7: rgb(${P7});
-      --primary-8: rgb(${P});
+      --primary-0: ${transferColor(P0)};
+      --primary-1: ${transferColor(P1)};
+      --primary-2: ${transferColor(P2)};
+      --primary-3: ${transferColor(P3)};
+      --primary-4: ${transferColor(P4)};
+      --primary-5: ${transferColor(P5)};
+      --primary-6: ${transferColor(P6)};
+      --primary-7: ${transferColor(P7)};
+      --primary-8: ${transferColor(P)};
     }
   `;
   // 移除之前的 style 标签（如果有）
