@@ -37,6 +37,11 @@ export const pathMap: PathMapItem[] = [
     route: AppRouteEnum.DASHBOARD_INDEX,
   },
   {
+    key: 'AGENT',
+    locale: 'menu.agent',
+    route: AppRouteEnum.AGENT_INDEX,
+  },
+  {
     key: 'CUSTOMER',
     route: AppRouteEnum.CUSTOMER,
     locale: 'module.customerManagement',

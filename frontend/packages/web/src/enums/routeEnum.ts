@@ -70,4 +70,5 @@ export const AppRouteEnum = {
   ...PersonalRouteEnum,
   ...WorkbenchRouteEnum,
   ...DashboardRouteEnum,
+  ...AgentRouteEnum,
 };

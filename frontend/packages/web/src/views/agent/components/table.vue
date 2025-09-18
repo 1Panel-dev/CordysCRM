@@ -256,7 +256,6 @@
 
   const keyword = ref('');
   function searchData(val?: string) {
-    console.log(val);
     currentTable.value.setLoadListParams({
       keyword: val ?? keyword.value,
       agentModuleIds:
