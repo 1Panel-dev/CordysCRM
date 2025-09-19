@@ -1,5 +1,5 @@
 <h1 align="center">Cordys CRM</h1>
-<h3 align="center">集信息化、数字化、智能化于一体的开源 CRM 系统</h3>
+<h3 align="center">新一代的开源 AI CRM 系统</h3>
 <p align="center">
   <a href="https://github.com/1Panel-dev/CordysCRM/releases"><img src="https://img.shields.io/github/v/release/1Panel-dev/CordysCRM" alt="Latest release"></a>
   <a href="https://github.com/1Panel-dev/CordysCRM"><img src="https://img.shields.io/github/stars/1Panel-dev/CordysCRM?color=%231890FF&style=flat-square" alt="Stars"></a>    
@@ -8,20 +8,20 @@
 
 <hr/>
 
-**Cordys CRM** 是 [飞致云](https://fit2cloud.com/) 出品的中国首个开源 AI CRM，集信息化、数字化和智能化于一体。
+**Cordys CRM** 是新一代的开源 AI CRM 系统，是集信息化、数字化、智能化于一体的「客户关系管理系统」，由 [飞致云](https://fit2cloud.com/) 匠心出品。
 
 Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系统）融合而成，寓意“关系的纽带系统”，诠释了 CRM 的本质：连接客户，缔造长期价值。
 
 > 注：Cordys CRM 预计在2025年底正式开源并发布，现已开启公测。
 
-[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-video.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
 
 **Cordys CRM** 的核心优势是： 
 
 - **灵活易用**：现代化的使用体验，灵活可配置的表单、流程和权限，轻松助力企业实现销售自动化；
 - **安全可控**：私有化部署，确保所有客户数据和业务信息都存储在企业自己的服务器上，企业对数据拥有完全的控制权；
 - **BI 加持**：借助 [DataEase](https://github.com/dataease/dataease) 强大的嵌入式能力和 [SQLBot](https://github.com/dataease/SQLBot) 的智能问数能力，轻松助力企业实现高效的数据分析和可视化；
-- **AI 加持**：借助 [MaxKB](https://github.com/1Panel-dev/MaxKB) 强大的智能体开发能力，轻松助力企业实现各类销售智能体。
+- **AI 加持**：开放 MCP Server，借助 [MaxKB](https://github.com/1Panel-dev/MaxKB) 强大的智能体开发能力，轻松助力企业实现各类销售智能体。
 
 ## 快速开始
 
@@ -34,13 +34,14 @@ docker run -d \
   --name cordys-crm \
   --restart unless-stopped \
   -p 8081:8081 \
+  -p 8082:8082 \
   -v ~/cordys:/opt/cordys \
   1panel/cordys-crm
 ```
 
-除了命令行方式，你也可以通过 [1Panel 应用商店](https://1panel.cn/) 快速安装部署 Cordys CRM。
+你也可以通过 [1Panel 应用商店](https://cordys.cn/docs/installation/1panel_installtion/) 来安装部署 Cordys CRM。
 
-在无法联网的环境中，还可以下载 [离线安装包](https://community.fit2cloud.com/#/products/cordys-crm/information) 进行部署。
+在无法联网的环境中，还可以通过 [离线安装包方式](https://cordys.cn/docs/installation/offline_installtion/) 来安装部署 Cordys CRM。
 
 ### 访问方式
 
@@ -50,7 +51,7 @@ docker run -d \
 
 ### 联系我们
 
-安装完成后，可以参考此 [快速入门指南](https://cordys.cn/docs/)。
+安装完成后，可以参考此 [在线文档](https://cordys.cn/docs/) 来使用 Cordys CRM。
 
 在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
@@ -80,7 +81,7 @@ docker run -d \
 - [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布
 - [x] 2025.09.05：[v1.1.8](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.8) 发布
 - [x] 2025.09.12：[v1.1.9](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.9) 发布
-- [ ] 2025.10：完成和 MaxKB 的对接
+- [x] 2025.09.19：[v1.2.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.0) 发布，开放 MCP Server，并完成和 MaxKB 的对接
 - [ ] 2025.11：代码开源、正式发布
 
 ## 技术栈

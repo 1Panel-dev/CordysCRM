@@ -3,7 +3,7 @@
 !!! Abstract ""
     部署服务器要求：
 
-    - 操作系统: Ubuntu 22.04 / CentOS 7.6 64 位系统
+    - 操作系统: 支持主流 Linux 发行版本（基于 Debian / RedHat，包括国产操作系统，内核版本要求 ≥ 3.10）
     - CPU/内存: 4 核 8 G
     - 磁盘空间: 100G
 
@@ -24,6 +24,7 @@
 |------|:---------|:--------------------------|
 | 22   | SSH      | 安装、升级及管理使用                |
 | 8081 | Web 服务端口 | 默认 Web 服务访问端口，可根据实际情况进行更改 |
+| 8082 | Mcp Server 服务端口 | 默认 Mcp 服务访问端口，可根据实际情况进行更改 |
 
 
 
@@ -82,9 +83,10 @@
         CORDYS_REDIS_PASSWORD=CordysCRM@redis
         ## Redis地址
         CORDYS_REDIS_HOST=$(hostname -I|cut -d" " -f 1)
-        
-        ## memory limit
-        CORDYS_MEM_LIMIT=2g
+         
+        #MCP Server
+        CORDYS_MCP_EXTERNAL_SERVER=false
+        CORDYS_MCP_SERVER_PORT=8082 
     ```
 
 

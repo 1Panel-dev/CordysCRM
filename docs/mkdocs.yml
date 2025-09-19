@@ -1,7 +1,7 @@
-site_name: 'Cordys CRM 文档'
-site_url: 'https://cordys.cn/docs'
-site_description: 'Cordys CRM 是 飞致云 出品的中国首个开源 AI CRM，集信息化、数字化和智能化于一体'
-site_author: 'Cordys CRM 开源项目组'
+site_name: 'Cordys CRM 在线文档'
+site_url: 'https://cordys.cn/docs/'
+site_description: 'Cordys CRM 在线文档'
+site_author: '飞致云'
 repo_name: 'Cordys CRM'
 repo_url: 'https://github.com/1Panel-dev/CordysCRM'
 
@@ -41,20 +41,17 @@ theme:
 nav:
     - 产品介绍: index.md
     - 快速入门: quick_start.md
-    - 更新日志: changelog.md
     - 系统架构: system_arch.md
     - 安装部署:
         - 1Panel 安装: installation/1panel_installtion.md
-        - 离线安装: installation/offline_installtion.md
         - 在线安装: installation/online_installtion.md
+        - 离线安装: installation/offline_installtion.md        
         - 离线升级: installation/offline_upgrade.md
         - 命令行工具: installation/cli.md
-        - 源码运行: installation/source_run.md
     - 功能手册:
         - 添加组织架构:
               - 从企业微信同步: user_manual/sync-from-wecom.md
               - 手动管理组织架构: user_manual/org-manage.md
-
         - 配置角色与权限:  user_manual/role_permission.md
         - 配置业务表单: user_manual/form_config.md
         - 产品信息录入: user_manual/product_entry.md
@@ -63,6 +60,8 @@ nav:
         - 接入 SQLBot 实现智能问数:  user_manual/sqlbot.md
         - 接入 DataEase 实现数据分析:  user_manual/dataease.md
         - 接入 MaxKB 实现销售智能体:  user_manual/maxkb.md
+    - MCP 服务: mcp_server.md
+    - 更新日志: changelog.md
     - 联系我们: contact.md
     
 markdown_extensions:
@@ -96,7 +95,6 @@ markdown_extensions:
     - pymdownx.tilde
     - pymdownx.betterem
     - pymdownx.progressbar
-#    - lightgallery
     - pymdownx.tabbed:
         alternate_style: true
 
