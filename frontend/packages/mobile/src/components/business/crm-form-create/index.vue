@@ -112,10 +112,9 @@
     if (type === FieldTypeEnum.SELECT) {
       return CrmFormCreateComponents.basicComponents.pick;
     }
-    // TODO 暂时隐藏
-    // if (type === FieldTypeEnum.SELECT_MULTIPLE) {
-    //   return CrmFormCreateComponents.basicComponents.multiplePick;
-    // }
+    if (type === FieldTypeEnum.SELECT_MULTIPLE) {
+      return CrmFormCreateComponents.basicComponents.multiplePick;
+    }
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }

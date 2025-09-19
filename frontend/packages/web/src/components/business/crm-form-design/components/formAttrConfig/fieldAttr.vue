@@ -702,11 +702,7 @@
       </div>
       <!-- 字段权限 End -->
       <!-- 移动端 -->
-      <!-- TODO 下拉多选写好后 去掉 fieldConfig.type !== FieldTypeEnum.SELECT_MULTIPLE 判断 -->
-      <div
-        v-if="fieldConfig.type !== FieldTypeEnum.INPUT_MULTIPLE && fieldConfig.type !== FieldTypeEnum.SELECT_MULTIPLE"
-        class="crm-form-design-config-item"
-      >
+      <div v-if="fieldConfig.type !== FieldTypeEnum.INPUT_MULTIPLE" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.mobile') }}
         </div>
