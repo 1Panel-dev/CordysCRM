@@ -83,9 +83,6 @@
       }
       return item;
     });
-    if (route.query.showAdd === 'Y') {
-      handleAddAgent();
-    }
   }
 
   function handleEditAgent(id: string) {
@@ -118,6 +115,21 @@
     folderTreeRef.value?.initTree();
     folderTreeRef.value?.initModuleCount();
   }
+
+  watch(
+    () => route.query.t,
+    () => {
+      if (route.query.showAdd === 'Y' && folderTree.value.length > 0) {
+        handleAddAgent();
+      }
+    }
+  );
+
+  onBeforeMount(() => {
+    if (route.query.showAdd === 'Y') {
+      handleAddAgent();
+    }
+  });
 </script>
 
 <style lang="less" scoped></style>

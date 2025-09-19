@@ -246,6 +246,14 @@
     },
     { immediate: true }
   );
+
+  watch(
+    () => props.activeFolder,
+    (val) => {
+      form.value.agentModuleId =
+        ((val && !['favorite', 'all'].includes(val) ? val : props.folderTree[0]?.id) as string) || '';
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

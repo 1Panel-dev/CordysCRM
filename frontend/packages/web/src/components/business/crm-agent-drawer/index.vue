@@ -66,14 +66,18 @@
 
   function jump() {
     visible.value = false;
-    router.push({ name: AgentRouteEnum.AGENT_INDEX, query: { showAdd: 'Y' } });
+    if (router.currentRoute.value.name === AgentRouteEnum.AGENT_INDEX) {
+      router.replace({ name: AgentRouteEnum.AGENT_INDEX, query: { showAdd: 'Y', t: Date.now() } });
+    } else {
+      router.push({ name: AgentRouteEnum.AGENT_INDEX, query: { showAdd: 'Y' } });
+    }
   }
 
   const loading = ref(false);
   async function initAgentList() {
     try {
       loading.value = true;
-      agentList.value = await getAgentOptions();
+      // agentList.value = await getAgentOptions();
 
       const hasAgentId = agentList.value.find((agent) => agent.id === activeAgent.value);
       if ((!activeAgent.value && agentList.value.length > 0) || (activeAgent.value && !hasAgentId)) {
