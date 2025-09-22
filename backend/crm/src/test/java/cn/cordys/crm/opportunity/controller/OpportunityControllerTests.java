@@ -35,6 +35,7 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String CONTACT_LIST = "contact/list/{0}";
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
+    protected static final String STATISTIC = "statistic";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -63,6 +64,13 @@ public class OpportunityControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(2)
+    void testStatistic() throws Exception {
+        OpportunitySearchStatisticRequest request = new OpportunitySearchStatisticRequest();
+        this.requestPostWithOkAndReturn(STATISTIC, request);
     }
 
 

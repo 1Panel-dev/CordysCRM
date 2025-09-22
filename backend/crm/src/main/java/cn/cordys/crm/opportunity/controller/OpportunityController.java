@@ -14,6 +14,7 @@ import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.*;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.opportunity.service.OpportunityExportService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -65,6 +66,16 @@ public class OpportunityController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/statistic")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "商机统计")
+    public OpportunitySearchStatisticResponse searchStatistic(@Validated @RequestBody OpportunitySearchStatisticRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return opportunityService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
 

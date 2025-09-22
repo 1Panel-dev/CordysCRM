@@ -24,9 +24,6 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.customer.domain.CustomerContact;
-import cn.cordys.crm.customer.domain.CustomerContactField;
-import cn.cordys.crm.customer.domain.CustomerContactFieldBlob;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.service.CustomerContactService;
@@ -38,6 +35,7 @@ import cn.cordys.crm.opportunity.domain.OpportunityRule;
 import cn.cordys.crm.opportunity.dto.request.*;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -128,6 +126,11 @@ public class OpportunityService {
 
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    public OpportunitySearchStatisticResponse searchStatistic(OpportunitySearchStatisticRequest request, String userId, String orgId,
+                                                              DeptDataPermissionDTO deptDataPermission) {
+         return extOpportunityMapper.searchStatistic(request, orgId, userId, deptDataPermission);
     }
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<OpportunityListResponse> list, List<OpportunityListResponse> buildList) {

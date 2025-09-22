@@ -8,9 +8,11 @@ import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.search.response.advanced.AdvancedOpportunityResponse;
 import cn.cordys.crm.search.response.advanced.OpportunityRepeatResponse;
 import cn.cordys.crm.search.response.global.GlobalOpportunityResponse;
@@ -24,6 +26,9 @@ public interface ExtOpportunityMapper {
 
     List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,
                                        @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
+    OpportunitySearchStatisticResponse searchStatistic(@Param("request") OpportunitySearchStatisticRequest request, @Param("orgId") String orgId,
+                                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
 

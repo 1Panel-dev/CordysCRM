@@ -89,6 +89,60 @@
         </include>
     </select>
 
+    <select id="searchStatistic" resultType="cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse">
+        SELECT
+        sum(o.amount) as amount,
+        sum(o.amount)  / count(*) as averageAmount
+        FROM
+        opportunity o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on o.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where o.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and o.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            o.name like concat('%', #{request.keyword},'%')
+            or c.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+
+        <if test="request.viewId != null and request.viewId != '' and request.viewId == 'OPPORTUNITY_SUCCESS'">
+            and o.stage = 'SUCCESS'
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+    </select>
+
 
     <sql id="sort">
         <choose>
