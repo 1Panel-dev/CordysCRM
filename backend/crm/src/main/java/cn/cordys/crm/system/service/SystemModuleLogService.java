@@ -41,6 +41,11 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setColumnName(Translator.get("module.main.nav"));
                 handleModuleMainNav(differ);
             }
+
+            if (Strings.CS.equals("navigationSort", differ.getColumn())) {
+                differ.setColumnName(Translator.get("top.navigation"));
+                handleModuleMainNav(differ);
+            }
         });
     }
 
