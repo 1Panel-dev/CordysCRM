@@ -42,7 +42,7 @@ export default function useProductApi(CDR: CordysAxios) {
   function getWeComOauthCallback(code: string) {
     return CDR.get<AxiosResponse<Result<UserInfo>>>(
       { url: weComOauthCallbackUrl, params: { code } },
-      { ignoreCancelToken: true, isReturnNativeResponse: true }
+      { ignoreCancelToken: true, isReturnNativeResponse: true, noErrorTip: true }
     );
   }
 

@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
@@ -38,6 +39,7 @@
 
   const { setLoading } = useLoading();
   const { message } = useDiscreteApi();
+  const router = useRouter();
 
   const userStore = useUserStore();
   const licenseStore = useLicenseStore();
@@ -81,6 +83,9 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      if ((error as Result).code === 100500) {
+        router.replace({ name: 'login' });
+      }
       if ((error as Result).code === 401) {
         logout();
       }
