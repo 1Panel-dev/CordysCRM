@@ -281,10 +281,12 @@ public class SSOService {
         userUpdate.setUpdateTime(System.currentTimeMillis());
         userBaseMapper.updateById(userUpdate);
 
-        UserExtend userExtend = new UserExtend();
-        userExtend.setId(user.getId());
-        userExtend.setAvatar(weComUser.getAvatar());
-        userExtendBaseMapper.update(userExtend);
+        if (StringUtils.isNotBlank(weComUser.getAvatar())) {
+            UserExtend userExtend = new UserExtend();
+            userExtend.setId(user.getId());
+            userExtend.setAvatar(weComUser.getAvatar());
+            userExtendBaseMapper.update(userExtend);
+        }
     }
 
     private void updateDingTalkUserInfo(UserDTO user, DingTalkUserResponse dingTalkUser) {
