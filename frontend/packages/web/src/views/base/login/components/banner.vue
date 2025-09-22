@@ -1,12 +1,16 @@
 <template>
   <div class="banner-wrap">
     <img class="img" :style="props.isPreview ? 'height: 100%;' : 'height: 100vh'" :src="innerBanner" />
-    <a href="https://cordys.cn/" target="_blank" class="logo-link"></a>
+    <a href="https://cordys.cn/" target="_blank" class="logo-link">
+      <CrmSvg name="login-logo" class="logo" />
+    </a>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { computed } from 'vue';
+
+  import CrmSvg from '@/components/pure/crm-svg/index.vue';
 
   import { defaultLoginImage } from '@/config/business';
   import { useAppStore } from '@/store';
@@ -37,6 +41,10 @@
       left: 5%;
       width: 37%;
       height: 7%;
+      .logo {
+        width: 100%;
+        height: 100%;
+      }
     }
   }
 </style>
