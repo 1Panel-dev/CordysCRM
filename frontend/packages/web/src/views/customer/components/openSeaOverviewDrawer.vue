@@ -29,6 +29,7 @@
       <div class="h-full pt-[16px]">
         <CrmHeaderTable
           v-if="activeTab === 'headRecord'"
+          :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
           :load-list-api="getCustomerHeaderList"
         />

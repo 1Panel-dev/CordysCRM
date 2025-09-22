@@ -59,6 +59,7 @@
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
+          :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
           :load-list-api="getCustomerHeaderList"
         />

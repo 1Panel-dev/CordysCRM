@@ -23,6 +23,7 @@
   import { ref } from 'vue';
   import dayjs from 'dayjs';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CustomerContractTableParams, HeaderHistoryItem } from '@lib/shared/models/customer';
@@ -35,17 +36,25 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
+  import useReasonConfig from '@/hooks/useReasonConfig';
+
   const { t } = useI18n();
 
   const props = defineProps<{
+    formKey: FormDesignKeyEnum;
     sourceId: string; // 资源id
     loadListApi: (data: CustomerContractTableParams) => Promise<CrmTableDataItem<HeaderHistoryItem>>;
   }>();
 
-  const columns: CrmDataTableColumn[] = [
+  const { reasonEnable, initReasonConfig } = useReasonConfig(props.formKey);
+
+  await initReasonConfig();
+
+  const columns = computed<CrmDataTableColumn[]>(() => [
     {
       title: t('common.head'),
       key: 'owner',
+      width: 120,
       sortOrder: false,
       sorter: 'default',
       render: (row: HeaderHistoryItem) => {
@@ -56,6 +65,7 @@
     {
       title: t('opportunity.department'),
       key: 'departmentId',
+      width: 100,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.departmentName });
       },
@@ -63,6 +73,7 @@
     {
       title: t('opportunity.belongStartTime'),
       key: 'collectionTime',
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -72,21 +83,38 @@
     {
       title: t('opportunity.belongEndTime'),
       key: 'endTime',
+      width: 120,
       sortOrder: false,
       sorter: 'default',
       ellipsis: {
         tooltip: true,
       },
     },
+    // TODO 还没有对接字段 xinxinwu
+    ...((reasonEnable.value
+      ? [
+          {
+            title: t('customer.recycleReason'),
+            width: 120,
+            key: 'reasonId',
+            ellipsis: {
+              tooltip: true,
+            },
+            sortOrder: false,
+            render: (row: any) => row.reasonName || '-',
+          },
+        ]
+      : []) as CrmDataTableColumn[]),
     {
       title: t('common.operator'),
       key: 'operator',
+      width: 100,
       resizable: false,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.operatorName });
       },
     },
-  ];
+  ]);
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable<HeaderHistoryItem>(
     props.loadListApi,
@@ -94,7 +122,7 @@
       tableKey: TableKeyEnum.OPPORTUNITY_HEAD_LIST,
       showSetting: true,
       showPagination: false,
-      columns,
+      columns: columns.value,
       containerClass: '.crm-header-table',
     },
     (row: HeaderHistoryItem) => {

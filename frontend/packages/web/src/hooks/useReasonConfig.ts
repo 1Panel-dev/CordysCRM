@@ -23,14 +23,16 @@ function getReasonKey(formKey: FormDesignKeyEnum) {
 
 export default function useReasonConfig(formKey: FormDesignKeyEnum) {
   const reasonOptions = ref<FilterOption[]>([]);
+  const reasonEnable = ref(false);
   const reasonKey = ref();
   reasonKey.value = getReasonKey(formKey);
 
   async function initReasonConfig() {
     if (!reasonKey.value) return;
     try {
-      const { dictList } = await getReasonConfig(reasonKey.value);
+      const { dictList, enable } = await getReasonConfig(reasonKey.value);
       reasonOptions.value = dictList.map((e) => ({ label: e.name, value: e.id }));
+      reasonEnable.value = enable;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -40,5 +42,6 @@ export default function useReasonConfig(formKey: FormDesignKeyEnum) {
   return {
     initReasonConfig,
     reasonOptions,
+    reasonEnable,
   };
 }

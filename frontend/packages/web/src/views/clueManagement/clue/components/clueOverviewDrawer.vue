@@ -57,7 +57,12 @@
           :show-action="showAction"
         />
 
-        <CrmHeaderTable v-if="activeTab === 'headRecord'" :source-id="sourceId" :load-list-api="getClueHeaderList" />
+        <CrmHeaderTable
+          v-if="activeTab === 'headRecord'"
+          :form-key="FormDesignKeyEnum.CLUE_POOL"
+          :source-id="sourceId"
+          :load-list-api="getClueHeaderList"
+        />
       </div>
       <CrmFormCreateDrawer
         v-model:visible="formDrawerVisible"
