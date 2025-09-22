@@ -30,6 +30,7 @@
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"
         :get-description-fun="getDescriptionFun"
         key-field="id"
+        :disabled-open-detail="props.followApiKey !== 'myPlan'"
         :type="props.activeType"
         :empty-text="emptyText"
         :get-disabled-fun="getShowAction"

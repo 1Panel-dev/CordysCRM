@@ -79,9 +79,11 @@ export interface CustomerOpportunityTableParams extends TableQueryParams {
 export interface CustomerFollowRecordListItem {
   id: string;
   customerId: string;
+  customerName: string;
   opportunityId: string;
   type: string;
   clueId: string;
+  clueName: string;
   content: string; // 跟进内容
   organizationId: string;
   owner: string;

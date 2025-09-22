@@ -48,7 +48,20 @@
                 </div>
               </template> -->
               <template v-for="ele in props.getDescriptionFun(item)" :key="ele.key" #[ele.key]="{ item: descItem }">
-                <slot :name="ele.key" :desc-item="descItem" :item="item"></slot>
+                <slot
+                  v-if="
+                    ['customerName', 'clueName'].includes(ele.key) &&
+                    props.type === 'followPlan' &&
+                    !props.disabledOpenDetail
+                  "
+                  name="customerName"
+                >
+                  <CrmTableButton @click="goDetail(ele.key, item)">
+                    {{ ele.value }}
+                    <template #trigger> {{ ele.value }} </template>
+                  </CrmTableButton>
+                </slot>
+                <slot v-else :name="ele.key" :desc-item="descItem" :item="item"></slot>
               </template>
             </CrmDetailCard>
           </div>
@@ -72,8 +85,13 @@
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import StatusTagSelect from './statusTagSelect.vue';
+
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const props = defineProps<{
@@ -83,6 +101,7 @@
     getDisabledFun: (item: FollowDetailItem) => boolean;
     virtualScrollHeight: string;
     emptyText?: string;
+    disabledOpenDetail?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -108,6 +127,21 @@
   function getShowTime(item: FollowDetailItem) {
     const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
     return time ? dayjs(time).format('YYYY-MM-DD') : '-';
+  }
+
+  const { openNewPage } = useOpenNewPage();
+  function goDetail(key: string, item: FollowDetailItem) {
+    if (key === 'clueName') {
+      openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
+        id: item.clueId,
+        transitionType: undefined,
+        name: item.clueName,
+      });
+    } else {
+      openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+        id: item.customerId,
+      });
+    }
   }
 </script>
 
