@@ -612,7 +612,7 @@ public class ClueService {
     }
 
     /**
-     * 移入公海
+     * 移入线索池
      *
      * @param request     请求参数
      * @param currentUser 当前用户

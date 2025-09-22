@@ -139,7 +139,7 @@ public class ClueController {
 
     @PostMapping("/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
-    @Operation(summary = "移入公海")
+    @Operation(summary = "移入线索池")
     public BatchAffectResponse toPool(@Validated @RequestBody PoolReasonRequest request) {
         return clueService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
