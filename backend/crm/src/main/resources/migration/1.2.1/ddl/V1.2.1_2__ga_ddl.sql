@@ -20,6 +20,12 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON sys_navigation(organization_id ASC);
 
+alter table customer_owner
+    add reason_id varchar(32) null comment '公海原因ID';
+
+alter table clue_owner
+    add reason_id VARCHAR(32) null comment '线索池原因ID';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

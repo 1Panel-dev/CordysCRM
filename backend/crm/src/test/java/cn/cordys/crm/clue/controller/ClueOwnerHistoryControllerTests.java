@@ -59,7 +59,7 @@ class ClueOwnerHistoryControllerTests extends BaseTest {
         clueAddRequest.setProducts(List.of("cc"));
         addClue = clueService.add(clueAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
-        ClueOwner clueOwner = clueOwnerHistoryService.add(addClue, InternalUser.ADMIN.getValue());
+        ClueOwner clueOwner = clueOwnerHistoryService.add(addClue, InternalUser.ADMIN.getValue(), false);
         // 校验成功数据
         Assertions.assertEquals(clueOwner.getClueId(), addClue.getId());
         Assertions.assertEquals(clueOwner.getOperator(), InternalUser.ADMIN.getValue());

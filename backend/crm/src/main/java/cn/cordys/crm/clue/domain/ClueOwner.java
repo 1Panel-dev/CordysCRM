@@ -32,4 +32,7 @@ public class ClueOwner  {
 
 	@Schema(description = "操作人")
 	private String operator;
+
+	@Schema(description = "线索池原因ID")
+	private String reasonId;
 }

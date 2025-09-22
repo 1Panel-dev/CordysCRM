@@ -155,7 +155,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         );
 
         // 记录责任人历史
-        clueOwnerHistoryService.add(clue, InternalUser.ADMIN.getValue());
+        clueOwnerHistoryService.add(clue, InternalUser.ADMIN.getValue(), false);
 
         // 更新线索数据
         clue.setPoolId(pool.getId());

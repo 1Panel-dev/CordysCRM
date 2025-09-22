@@ -32,4 +32,7 @@ public class CustomerOwner {
 
     @Schema(description = "操作人")
     private String operator;
+
+    @Schema(description = "公海原因ID")
+    private String reasonId;
 }

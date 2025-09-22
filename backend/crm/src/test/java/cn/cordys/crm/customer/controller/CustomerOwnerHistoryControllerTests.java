@@ -58,7 +58,7 @@ class CustomerOwnerHistoryControllerTests extends BaseTest {
         customerAddRequest.setOwner(InternalUser.ADMIN.getValue());
         addCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
-        CustomerOwner customerOwner = customerOwnerHistoryService.add(addCustomer, InternalUser.ADMIN.getValue());
+        CustomerOwner customerOwner = customerOwnerHistoryService.add(addCustomer, InternalUser.ADMIN.getValue(), false);
         // 校验成功数据
         Assertions.assertEquals(customerOwner.getCustomerId(), addCustomer.getId());
         Assertions.assertEquals(customerOwner.getOperator(), InternalUser.ADMIN.getValue());

@@ -184,7 +184,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         );
 
         // 插入责任人历史
-        customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue());
+        customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue(), false);
 
         // 更新客户信息
         customer.setPoolId(pool.getId());

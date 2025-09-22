@@ -392,7 +392,7 @@ public class CustomerService {
 
 
                 // 如果责任人有修改，则添加责任人历史
-                customerOwnerHistoryService.add(originCustomer, userId);
+                customerOwnerHistoryService.add(originCustomer, userId, false);
                 sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
                 // 重置领取时间
                 customer.setCollectionTime(System.currentTimeMillis());
@@ -570,12 +570,12 @@ public class CustomerService {
                     NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, customer.getName(), currentUser,
                     orgId, List.of(customer.getOwner()), true);
             // 插入责任人历史
-            customerOwnerHistoryService.add(customer, currentUser);
+            customer.setReasonId(request.getReasonId());
+            customerOwnerHistoryService.add(customer, currentUser, true);
             customer.setPoolId(customerPool.getId());
             customer.setInSharedPool(true);
             customer.setOwner(null);
             customer.setCollectionTime(null);
-            customer.setReasonId(request.getReasonId());
             customer.setUpdateUser(currentUser);
             customer.setUpdateTime(System.currentTimeMillis());
             // 回收客户至公海

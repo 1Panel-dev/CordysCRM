@@ -24,4 +24,7 @@ public class CustomerOwnerListResponse extends CustomerOwner {
     @Schema(description = "归属部门名称")
     private String departmentName;
 
+    @Schema(description = "回收原因名称")
+    private String reasonName;
+
 }

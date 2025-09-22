@@ -383,7 +383,7 @@ public class ClueService {
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!Strings.CS.equals(request.getOwner(), originClue.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
-                clueOwnerHistoryService.add(originClue, userId);
+                clueOwnerHistoryService.add(originClue, userId, false);
                 sendTransferNotice(List.of(originClue), request.getOwner(), userId, orgId);
             }
         }
@@ -596,12 +596,12 @@ public class ClueService {
                     NotificationConstants.Event.CLUE_MOVED_POOL, clue.getName(), currentUser,
                     orgId, List.of(clue.getOwner()), true);
             // 插入责任人历史
-            clueOwnerHistoryService.add(clue, currentUser);
+            clue.setReasonId(request.getReasonId());
+            clueOwnerHistoryService.add(clue, currentUser, true);
             clue.setPoolId(cluePool.getId());
             clue.setInSharedPool(true);
             clue.setOwner(null);
             clue.setCollectionTime(null);
-            clue.setReasonId(request.getReasonId());
             clue.setUpdateUser(currentUser);
             clue.setUpdateTime(System.currentTimeMillis());
             extClueMapper.moveToPool(clue);
