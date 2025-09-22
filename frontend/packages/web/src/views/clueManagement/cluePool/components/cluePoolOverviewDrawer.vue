@@ -63,6 +63,9 @@
   import { assignClue, deleteCluePool, getClueHeaderList, pickClue } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { ClueRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
     detail?: Partial<CluePoolListItem>;
@@ -81,6 +84,7 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const Message = useMessage();
+  const { openNewPage } = useOpenNewPage();
 
   const sourceId = computed(() => props.detail?.id ?? '');
 
@@ -190,6 +194,11 @@
       Message.success(t('common.claimSuccess'));
       emit('refresh');
       show.value = false;
+      openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
+        id: sourceId.value,
+        transitionType: props.detail?.transitionType,
+        name: props.detail?.name,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

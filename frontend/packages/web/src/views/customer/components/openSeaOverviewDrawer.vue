@@ -69,6 +69,9 @@
     pickOpenSeaCustomer,
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
 
   const refreshKey = ref(0);
 
@@ -85,6 +88,7 @@
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
+  const { openNewPage } = useOpenNewPage();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -193,6 +197,9 @@
       Message.success(t('common.claimSuccess'));
       emit('change');
       show.value = false;
+      openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+        id,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

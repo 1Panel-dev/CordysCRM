@@ -137,8 +137,11 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { ClueRouteEnum } from '@/enums/routeEnum';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
@@ -146,6 +149,7 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const route = useRoute();
+  const { openNewPage } = useOpenNewPage();
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL;
@@ -317,15 +321,20 @@
   }
 
   // 领取
-  async function handleClaim(id: string) {
+  async function handleClaim(row: CluePoolListItem) {
     try {
       claimLoading.value = true;
       await pickClue({
-        clueId: id,
+        clueId: row.id,
         poolId: poolId.value,
       });
       Message.success(t('common.claimSuccess'));
       tableRefreshId.value += 1;
+      openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
+        id: row.id,
+        transitionType: row.transitionType,
+        name: row.name,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -396,7 +405,7 @@
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
     switch (actionKey) {
       case 'pop-claim':
-        handleClaim(row.id);
+        handleClaim(row);
         break;
       case 'pop-distribute':
         handleDistribute(row.id);

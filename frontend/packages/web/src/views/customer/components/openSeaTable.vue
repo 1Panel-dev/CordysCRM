@@ -124,8 +124,11 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
@@ -147,6 +150,7 @@
   const Message = useMessage();
   const route = useRoute();
   const { currentLocale } = useLocale(Message.loading);
+  const { openNewPage } = useOpenNewPage();
 
   const openSea = ref<string | number>('');
   const openSeaOptions = ref<CluePoolItem[]>([]);
@@ -341,15 +345,18 @@
     });
   }
 
-  async function handleClaim(id: string) {
+  async function handleClaim(row: any) {
     try {
       claimLoading.value = true;
       await pickOpenSeaCustomer({
-        customerId: id,
+        customerId: row.id,
         poolId: openSea.value,
       });
       Message.success(t('common.claimSuccess'));
       tableRefreshId.value += 1;
+      openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+        id: row.id,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -410,7 +417,7 @@
   function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'pop-claim':
-        handleClaim(row.id);
+        handleClaim(row);
         break;
       case 'pop-distribute':
         handleDistribute(row.id);
