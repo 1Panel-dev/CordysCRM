@@ -220,13 +220,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [
       {
         title: t('customer.recycleReason'),
-        key: 'reasonId',
+        key: 'reasonName',
       },
     ],
     [FormDesignKeyEnum.CLUE_POOL]: [
       {
         title: t('customer.recycleReason'),
-        key: 'reasonId',
+        key: 'reasonName',
       },
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalFields,
