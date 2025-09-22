@@ -45,4 +45,6 @@ export default {
   'opportunity.requirementChange': 'Requirement change',
   'opportunity.mine': 'Mine',
   'opportunity.noOpenSeaPermission': 'No permission to view public sea accounts',
+  'opportunity.averageAmount': 'Average amount',
+  'opportunity.totalAmount': 'Total amount',
 };

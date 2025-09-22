@@ -23,6 +23,7 @@ export const GetOpportunityContactListUrl = 'opportunity/contact/list'; // 商�
 export const UpdateOptFollowPlanStatusUrl = '/opportunity/follow/plan/status/update'; // 更新商机跟进计划状态
 export const ExportOpportunityAllUrl = '/opportunity/export-all'; // 商机导出
 export const ExportOpportunitySelectedUrl = '/opportunity/export-select'; // 商机导出选中
+export const GetOptStatisticUrl = '/opportunity/statistic'; // 商机列表的金额数据
 export const AdvancedSearchOptPageUrl = '/advanced/search/opportunity'; // 全局高级搜索商机列表
 export const AdvancedSearchOptDetailUrl = '/advanced/search/opportunity/detail'; // 全局搜索商机详情
 export const GlobalSearchOptPageUrl = '/global/search/opportunity'; // 全局搜索商机列表

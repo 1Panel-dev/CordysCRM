@@ -45,4 +45,6 @@ export default {
   'opportunity.requirementChange': '需求变化',
   'opportunity.mine': '我的',
   'opportunity.noOpenSeaPermission': '无权查看公海客户',
+  'opportunity.averageAmount': '平均金额',
+  'opportunity.totalAmount': '总金额',
 };

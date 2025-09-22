@@ -268,5 +268,6 @@ export default function useTable<T>(
     advanceFilter,
     setAdvanceFilter,
     code,
+    filterItem,
   };
 }

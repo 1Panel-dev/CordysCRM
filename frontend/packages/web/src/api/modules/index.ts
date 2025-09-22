@@ -97,6 +97,7 @@ export const {
   preCheckImportOpt,
   downloadOptTemplate,
   importOpportunity,
+  getOptStatistic,
 } = opportunityApi;
 
 export const {

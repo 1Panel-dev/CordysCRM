@@ -22,6 +22,7 @@ import {
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
+  GetOptStatisticUrl,
   GetOptTabUrl,
   GlobalSearchOptPageUrl,
   ImportOpportunityUrl,
@@ -196,6 +197,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportOpportunitySelectedUrl, data });
   }
 
+  // 商机列表的金额数据
+  function getOptStatistic(data: TableQueryParams) {
+    return CDR.post({ url: GetOptStatisticUrl, data });
+  }
+
   // 视图
   function addBusinessView(data: ViewParams) {
     return CDR.post({ url: AddBusinessViewUrl, data });
@@ -299,5 +305,6 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportOpt,
     downloadOptTemplate,
     importOpportunity,
+    getOptStatistic,
   };
 }

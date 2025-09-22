@@ -107,8 +107,11 @@
       v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished"
       class="crm-table-bottom-tip flex text-center"
     >
-      <div v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)" :class="`flex flex-1 items-start`">
-        {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+      <div :class="`flex flex-1 items-start`">
+        <div v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)">
+          {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+        </div>
+        <slot name="totalRight"></slot>
       </div>
       <div
         v-if="hasFinished && !attrs.loading"
@@ -133,7 +136,6 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';

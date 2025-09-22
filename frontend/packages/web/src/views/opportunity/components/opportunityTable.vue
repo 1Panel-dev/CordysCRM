@@ -10,7 +10,7 @@
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
-    @filter-change="propsEvent.filterChange"
+    @filter-change="filterChange"
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
@@ -73,6 +73,26 @@
         @refresh-table-data="searchData"
       />
     </template>
+    <template v-if="showStatisticInfo" #totalRight>
+      <div class="ml-[24px]">
+        {{ t('opportunity.averageAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(statisticInfo?.averageAmount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(statisticInfo?.averageAmount, '').unit }}
+          </span>
+        </span>
+      </div>
+      <div class="ml-[24px]">
+        {{ t('opportunity.totalAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(statisticInfo?.amount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(statisticInfo?.amount, '').unit }}
+          </span>
+        </span>
+      </div>
+    </template>
   </CrmTable>
   <TransferModal
     v-model:show="showTransferModal"
@@ -123,7 +143,7 @@
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { characterLimit } from '@lib/shared/method';
+  import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
@@ -145,7 +165,7 @@
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules';
+  import { batchDeleteOpt, deleteOpt, getOptStatistic, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, getOptHomeConditions, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -573,7 +593,16 @@
     hiddenTotal: !!props.hiddenTotal,
     readonly: props.readonly,
   });
-  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const {
+    propsRes,
+    propsEvent,
+    tableQueryParams,
+    loadList,
+    setLoadListParams,
+    setAdvanceFilter,
+    filterItem,
+    advanceFilter,
+  } = useTableRes;
 
   const exportParams = computed(() => {
     return {
@@ -583,6 +612,24 @@
     };
   });
 
+  const showStatisticInfo = computed(() => propsRes.value.columns.find((i) => i.key === 'amount'));
+  const statisticInfo = ref({ amount: 0, averageAmount: 0 });
+  async function getStatistic(_keyword?: string) {
+    try {
+      const res = await getOptStatistic({
+        keyword: _keyword ?? keyword.value,
+        viewId: activeTab.value,
+        customerId: props.sourceId,
+        combineSearch: advanceFilter,
+        filters: filterItem.value,
+      });
+      statisticInfo.value = res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isAdvancedSearchMode = ref(false);
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
@@ -590,6 +637,7 @@
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
+    getStatistic();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
@@ -659,9 +707,14 @@
       customerId: props.sourceId,
     });
     loadList();
+    getStatistic(_keyword);
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
+  function filterChange(val: any) {
+    propsEvent.value.filterChange(val);
+    getStatistic();
+  }
   handleSearchData.value = searchData;
 
   function searchByKeyword(val: string) {
@@ -703,6 +756,7 @@
         });
         setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
+        getStatistic();
       }
     },
     { immediate: true }
