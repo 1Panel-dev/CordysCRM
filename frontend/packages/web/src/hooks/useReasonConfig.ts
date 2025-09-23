@@ -8,9 +8,11 @@ import { FilterOption } from 'naive-ui/es/data-table/src/interface';
 function getReasonKey(formKey: FormDesignKeyEnum) {
   switch (formKey) {
     case FormDesignKeyEnum.CUSTOMER_OPEN_SEA:
+    case FormDesignKeyEnum.CUSTOMER:
     case FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC:
       return ReasonTypeEnum.CUSTOMER_POOL_RS;
     case FormDesignKeyEnum.CLUE_POOL:
+    case FormDesignKeyEnum.CLUE:
     case FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL:
       return ReasonTypeEnum.CLUE_POOL_RS;
     case FormDesignKeyEnum.BUSINESS:

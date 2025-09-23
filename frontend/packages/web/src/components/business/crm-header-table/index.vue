@@ -46,7 +46,7 @@
     loadListApi: (data: CustomerContractTableParams) => Promise<CrmTableDataItem<HeaderHistoryItem>>;
   }>();
 
-  const { reasonEnable, initReasonConfig } = useReasonConfig(props.formKey);
+  const { reasonEnable, initReasonConfig, reasonOptions } = useReasonConfig(props.formKey);
 
   await initReasonConfig();
 
@@ -100,6 +100,9 @@
               tooltip: true,
             },
             sortOrder: false,
+            sorter: 'default',
+            filter: 'default',
+            filterOptions: reasonOptions.value,
             render: (row: any) => row.reasonName || '-',
           },
         ]

@@ -198,6 +198,19 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     },
     {
+      title: t('customer.recycleReason'),
+      width: 120,
+      key: 'reasonId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      filterOptions: reasonOptions.value,
+      filter: true,
+      render: (row: any) => row.reasonName || '-',
+    },
+    {
       title: t('customer.remainingVesting'),
       width: 120,
       key: 'reservedDays',
@@ -367,6 +380,19 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
+      },
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'reasonId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: (row: any) => row.reasonName || '-',
       },
       {
         title: t('customer.remainingVesting'),
