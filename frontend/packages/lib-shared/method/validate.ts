@@ -57,13 +57,13 @@ export function validatePassword(password: string): boolean {
 export function getPatternByAreaCode(code: string): RegExp | null {
   switch (code) {
     case '+86': // 中国大陆
-      return /^1[3-9]\d{9}$/;
+      return /^\d{10,12}$/;
     case '+852': // 香港
-      return /^[5689]\d{7}$/;
+      return /^\d{8}$/;
     case '+853': // 澳门
-      return /^6\d{7}$/;
+      return /^\d{8}$/;
     case '+886': // 台湾
-      return /^09\d{8}$/;
+      return /^\d{8,11}$/;
     default: // 其他
       return /^\d+$/;
   }

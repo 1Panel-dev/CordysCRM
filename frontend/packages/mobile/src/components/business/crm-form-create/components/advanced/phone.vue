@@ -65,10 +65,10 @@
 
   // 区号选项
   const areaCodeOptions = [
-    { text: `${t('formCreate.phone.area.china')} +86`, value: '+86', length: 11 },
+    { text: `${t('formCreate.phone.area.china')} +86`, value: '+86', length: 12 },
     { text: `${t('formCreate.phone.area.hongKong')} +852`, value: '+852', length: 8 },
     { text: `${t('formCreate.phone.area.macau')} +853`, value: '+853', length: 8 },
-    { text: `${t('formCreate.phone.area.taiwan')} +886`, value: '+886', length: 10 },
+    { text: `${t('formCreate.phone.area.taiwan')} +886`, value: '+886', length: 11 },
     { text: t('formCreate.phone.area.other'), value: '', length: undefined },
   ];
 
@@ -102,9 +102,6 @@
       validator: ((val: string) => {
         if ((!required.value && !phoneNumber.value) || !val || !areaCode.value.length) return Promise.resolve();
         const message = [];
-        if (phoneNumber.value.length !== maxLength.value) {
-          message.push(t('formCreate.phone.lengthValidator', { count: maxLength.value }));
-        }
         const pattern = getPatternByAreaCode(areaCode.value);
         if (!pattern?.test(phoneNumber.value)) {
           message.push(t('formCreate.phone.formatValidator'));
