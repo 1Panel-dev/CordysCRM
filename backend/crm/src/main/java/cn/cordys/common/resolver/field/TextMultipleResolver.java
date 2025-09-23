@@ -34,7 +34,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
 
 
     @Override
-	public Object trans2Value(InputMultipleField inputMultipleField, String value) {
+    public Object trans2Value(InputMultipleField inputMultipleField, String value) {
         if (StringUtils.isEmpty(value)) {
             return StringUtils.EMPTY;
         }
@@ -53,7 +53,9 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
 
     /**
      * 要求标签最多10个, 且每个标签长度不超过64个字符
+     *
      * @param textList 标签列表
+     *
      * @return 符合要求的标签集合
      */
     public Set<String> getCorrectFormatInput(List<String> textList) {

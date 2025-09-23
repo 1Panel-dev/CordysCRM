@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AddNotificationJobTests {
@@ -33,7 +33,7 @@ public class AddNotificationJobTests {
 
     void saveNotice() {
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
-        announcementReceiveTypeDTO.setUserIds(List.of("aaa","bbb"));
+        announcementReceiveTypeDTO.setUserIds(List.of("aaa", "bbb"));
         Announcement announcement = new Announcement();
         announcement.setId("SDDFDJJND");
         announcement.setSubject("Test");
@@ -41,8 +41,8 @@ public class AddNotificationJobTests {
         announcement.setStartTime(1727165733128L);
         announcement.setCreateTime(1727165816848L);
         announcement.setUpdateTime(System.currentTimeMillis());
-        announcement.setEndTime(System.currentTimeMillis()+5000);
-        announcement.setReceiver(JSON.toJSONString(List.of("aaa","bbb")).getBytes());
+        announcement.setEndTime(System.currentTimeMillis() + 5000);
+        announcement.setReceiver(JSON.toJSONString(List.of("aaa", "bbb")).getBytes());
         announcement.setOrganizationId("100001");
         announcement.setNotice(false);
         announcement.setReceiveType(JSON.toJSONBytes(announcementReceiveTypeDTO));
@@ -53,7 +53,7 @@ public class AddNotificationJobTests {
 
     @Test
     @Order(0)
-    public void cleanupNotificationSuccess(){
+    public void cleanupNotificationSuccess() {
         saveNotice();
         List<Announcement> createTimeAsc = announcementBaseMapper.selectAll("create_time asc");
         Assertions.assertTrue(CollectionUtils.isNotEmpty(createTimeAsc));

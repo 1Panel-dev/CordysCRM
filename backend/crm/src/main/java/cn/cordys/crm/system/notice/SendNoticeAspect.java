@@ -49,7 +49,6 @@ public class SendNoticeAspect {
     private final static String UPDATE_USER = "updateUser";
 
 
-
     @Pointcut("@annotation(cn.cordys.crm.system.notice.SendNotice)")
     public void pointcut() {
     }

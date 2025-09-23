@@ -11,12 +11,12 @@ import lombok.Data;
 @Data
 public class CustomerOpportunityPageRequest extends OpportunityPageRequest {
 
-	@NotBlank
-	@Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String customerId;
+    @NotBlank
+    @Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String customerId;
 
-	@Override
-	public String getCustomerId() {
-		return customerId;
-	}
+    @Override
+    public String getCustomerId() {
+        return customerId;
+    }
 }

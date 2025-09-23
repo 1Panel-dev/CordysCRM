@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClueControllerTests extends BaseTest {
@@ -67,14 +67,14 @@ class ClueControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-     @Test
-     @Order(0)
-     void testModuleField() throws Exception {
-         this.requestGetWithOkAndReturn(MODULE_FORM);
+    @Test
+    @Order(0)
+    void testModuleField() throws Exception {
+        this.requestGetWithOkAndReturn(MODULE_FORM);
 
-         // 校验权限
-         requestGetPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ), MODULE_FORM);
-     }
+        // 校验权限
+        requestGetPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ), MODULE_FORM);
+    }
 
     @Test
     @Order(0)
@@ -284,6 +284,7 @@ class ClueControllerTests extends BaseTest {
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, TAB);
     }
+
     @Test
     @Order(5)
     void transitionCustomer() throws Exception {

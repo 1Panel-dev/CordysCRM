@@ -7,7 +7,6 @@ import cn.cordys.common.uid.utils.ValuedEnum;
  * WorkerNodeType
  * <li>CONTAINER: Such as Docker
  * <li>ACTUAL: Actual machine
- *
  */
 public enum WorkerNodeType implements ValuedEnum<Integer> {
 

@@ -15,7 +15,9 @@ public class BeanUtils {
      * @param target 目标对象
      * @param source 源对象
      * @param <T>    目标对象类型
+     *
      * @return 目标对象
+     *
      * @throws RuntimeException 如果复制过程失败，抛出运行时异常
      */
     public static <T> T copyBean(T target, Object source) {
@@ -34,7 +36,9 @@ public class BeanUtils {
      * @param source           源对象
      * @param ignoreProperties 要忽略的属性名称
      * @param <T>              目标对象类型
+     *
      * @return 目标对象
+     *
      * @throws RuntimeException 如果复制过程失败，抛出运行时异常
      */
     public static <T> T copyBean(T target, Object source, String... ignoreProperties) {
@@ -51,6 +55,7 @@ public class BeanUtils {
      *
      * @param fieldName 字段名称
      * @param bean      Java Bean 对象
+     *
      * @return 字段的值，如果获取失败则返回 null
      */
     public static Object getFieldValueByName(String fieldName, Object bean) {
@@ -93,6 +98,7 @@ public class BeanUtils {
      * @param bean      Java Bean 对象
      * @param fieldName 字段名称
      * @param type      字段类型
+     *
      * @return setter 方法，如果获取失败则返回 null
      */
     public static Method getMethod(Object bean, String fieldName, Class<?> type) {

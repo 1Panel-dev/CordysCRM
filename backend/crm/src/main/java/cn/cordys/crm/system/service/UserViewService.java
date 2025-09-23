@@ -57,6 +57,7 @@ public class UserViewService {
      * @param userId       用户ID
      * @param orgId        组织ID
      * @param resourceType 视图类型
+     *
      * @return 新增的用户视图
      */
     public UserView add(UserViewAddRequest request, String userId, String orgId, String resourceType) {
@@ -154,6 +155,7 @@ public class UserViewService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public UserView update(UserViewUpdateRequest request, String userId, String orgId) {
@@ -205,6 +207,7 @@ public class UserViewService {
      * @param id
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public UserViewResponse getViewDetail(String id, String userId, String orgId, String formKey) {
@@ -298,6 +301,7 @@ public class UserViewService {
      * @param resourceType
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {

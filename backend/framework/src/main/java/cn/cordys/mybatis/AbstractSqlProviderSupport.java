@@ -23,6 +23,7 @@ public abstract class AbstractSqlProviderSupport {
      * 生成 SQL 的抽象方法，由子类实现。
      *
      * @param criteria 查询条件
+     *
      * @return SQL 实例
      */
     abstract String sql(Object criteria);
@@ -78,6 +79,7 @@ public abstract class AbstractSqlProviderSupport {
      *
      * @param criteria 查询条件
      * @param context  MyBatis 提供的上下文
+     *
      * @return 构建的 SQL 脚本
      */
     String invoke(Object criteria, ProviderContext context) {
@@ -89,6 +91,7 @@ public abstract class AbstractSqlProviderSupport {
      *
      * @param criteria 查询条件
      * @param table    表的元信息
+     *
      * @return SQL 脚本字符串
      */
     String buildSql(Object criteria, EntityTable table) {
@@ -115,6 +118,7 @@ public abstract class AbstractSqlProviderSupport {
      * @param criteria 查询条件
      * @param func     对字段进行操作的函数
      * @param ignorePk 是否忽略主键字段
+     *
      * @return 操作后的字段数组
      */
     String[] ignoreNullAndCombined(Object criteria, Function<Field, String> func, boolean ignorePk) {
@@ -134,6 +138,7 @@ public abstract class AbstractSqlProviderSupport {
      *
      * @param criteria 查询条件
      * @param func     对字段进行操作的函数
+     *
      * @return 操作后的字段数组
      */
     String[] ignoreNullAndCombined(Object criteria, Function<Field, String> func) {
@@ -144,6 +149,7 @@ public abstract class AbstractSqlProviderSupport {
      * 获取并缓存表信息结构。
      *
      * @param context MyBatis 提供的上下文
+     *
      * @return 表的元信息
      */
     EntityTable tableInfo(ProviderContext context) {
@@ -154,7 +160,9 @@ public abstract class AbstractSqlProviderSupport {
      * 获取 BaseMapper 接口中的泛型类型。
      *
      * @param context ProviderContext
+     *
      * @return 泛型类型对应的 Class 对象
+     *
      * @throws IllegalStateException 如果未找到 BaseMapper 的泛型类
      */
     Class<?> entityType(ProviderContext context) {
@@ -173,6 +181,7 @@ public abstract class AbstractSqlProviderSupport {
      * 绑定字段到参数。
      *
      * @param field 目标字段
+     *
      * @return 参数绑定表达式
      */
     String bindParameter(Field field) {
@@ -183,6 +192,7 @@ public abstract class AbstractSqlProviderSupport {
      * 获取字段对应的列名。
      *
      * @param field 目标字段
+     *
      * @return 字段对应的列名
      */
     String columnName(Field field) {
@@ -194,6 +204,7 @@ public abstract class AbstractSqlProviderSupport {
      *
      * @param bean  目标对象
      * @param field 目标字段
+     *
      * @return 字段的值
      */
     Object value(Object bean, Field field) {

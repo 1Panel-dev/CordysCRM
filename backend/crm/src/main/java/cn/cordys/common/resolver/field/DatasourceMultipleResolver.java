@@ -56,7 +56,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List list = JSON.parseArray(value,String.class);
+        List list = JSON.parseArray(value, String.class);
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CUSTOMER")) {
             return customerService.getCustomerNameByIds(list);
@@ -93,7 +93,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
             List<String> ids = customerList.stream().map(Customer::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
-        if(Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
+        if (Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
             List<Opportunity> opportunityList = opportunityService.getOpportunityListByNames(names);
             List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;

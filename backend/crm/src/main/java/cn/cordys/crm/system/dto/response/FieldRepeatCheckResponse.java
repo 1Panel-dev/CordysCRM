@@ -8,8 +8,8 @@ import lombok.Data;
 @Builder
 public class FieldRepeatCheckResponse {
 
-	@Schema(description = "是否重复")
-	private boolean repeat;
-	@Schema(description = "重复名称")
-	private String name;
+    @Schema(description = "是否重复")
+    private boolean repeat;
+    @Schema(description = "重复名称")
+    private String name;
 }

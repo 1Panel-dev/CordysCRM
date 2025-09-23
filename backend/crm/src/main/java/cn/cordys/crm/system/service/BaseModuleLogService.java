@@ -190,7 +190,7 @@ public abstract class BaseModuleLogService {
     }
 
     private String formatDataTime(String value) {
-        if(StringUtils.isBlank(value)||Strings.CI.equals(value, "null")){
+        if (StringUtils.isBlank(value) || Strings.CI.equals(value, "null")) {
             return StringUtils.EMPTY;
         }
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
@@ -261,6 +261,7 @@ public abstract class BaseModuleLogService {
 
     /**
      * 线索名称
+     *
      * @param differ
      */
     protected void setClueName(JsonDifferenceDTO differ) {

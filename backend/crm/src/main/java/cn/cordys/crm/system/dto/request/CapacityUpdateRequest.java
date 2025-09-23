@@ -11,14 +11,14 @@ import java.util.List;
 @Data
 public class CapacityUpdateRequest {
 
-	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	@NotBlank
-	private String id;
-	@NotNull
-	@Schema(description = "范围ID集合")
-	private List<String> scopeIds;
-	@Schema(description = "容量")
-	private Integer capacity;
-	@Schema(description = "过滤条件集合")
-	private List<FilterConditionDTO> filters;
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank
+    private String id;
+    @NotNull
+    @Schema(description = "范围ID集合")
+    private List<String> scopeIds;
+    @Schema(description = "容量")
+    private Integer capacity;
+    @Schema(description = "过滤条件集合")
+    private List<FilterConditionDTO> filters;
 }

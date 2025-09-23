@@ -39,6 +39,7 @@ public final class ClassUtils {
      * 判断传入的类型是否是布尔类型（包括原生布尔和包装类型布尔）。
      *
      * @param type 要检查的类类型。
+     *
      * @return 如果是布尔类型或其包装类型，则返回 {@code true}，否则返回 {@code false}。
      */
     public static boolean isBoolean(Class<?> type) {
@@ -49,6 +50,7 @@ public final class ClassUtils {
      * 判断传入的类是否为代理类。
      *
      * @param clazz 要检查的类。
+     *
      * @return 如果类是代理类，返回 {@code true}，否则返回 {@code false}。
      */
     public static boolean isProxy(Class<?> clazz) {
@@ -67,7 +69,9 @@ public final class ClassUtils {
      *
      * @param name        类的全限定名。
      * @param classLoader 类加载器。
+     *
      * @return 与类名对应的类对象。
+     *
      * @throws GenericException 如果类无法找到或加载。
      */
     public static Class<?> toClassConfident(String name, ClassLoader classLoader) {
@@ -83,7 +87,9 @@ public final class ClassUtils {
      *
      * @param className    类的全限定名。
      * @param classLoaders 类加载器数组。
+     *
      * @return 与类名对应的类对象。
+     *
      * @throws ClassNotFoundException 如果无法找到类。
      */
     private static Class<?> loadClass(String className, ClassLoader[] classLoaders) throws ClassNotFoundException {
@@ -103,6 +109,7 @@ public final class ClassUtils {
      * 获取用于加载类的类加载器数组。
      *
      * @param classLoader 主类加载器。
+     *
      * @return 用于加载类的类加载器数组。
      */
     private static ClassLoader[] getClassLoaders(ClassLoader classLoader) {

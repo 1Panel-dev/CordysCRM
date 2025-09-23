@@ -56,6 +56,7 @@ public class ModuleFieldTablePermissionHandler extends OrgTablePermissionHandler
      * 解析模块字段SQL
      *
      * @param fields 字段列表
+     *
      * @return 拼接的SQL字符串
      */
     protected String parseFieldsSql(String filedValueTableName, List<BaseField> fields) {
@@ -74,6 +75,7 @@ public class ModuleFieldTablePermissionHandler extends OrgTablePermissionHandler
      * 将字段列表转换为SQLBot的FieldDTO对象列表
      *
      * @param fields 字段列表
+     *
      * @return 转换后的FieldDTO对象列表
      */
     protected List<FieldDTO> parse2SQLBotFields(List<BaseField> fields) {

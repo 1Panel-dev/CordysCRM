@@ -21,34 +21,34 @@ import java.util.List;
 @Tag(name = "线索库容设置")
 public class ClueCapacityController {
 
-	@Resource
-	private ClueCapacityService clueCapacityService;
+    @Resource
+    private ClueCapacityService clueCapacityService;
 
-	@GetMapping("/get")
-	@Operation(summary = "获取线索库容设置")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public List<ClueCapacityDTO> list() {
-		return clueCapacityService.list(OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/get")
+    @Operation(summary = "获取线索库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public List<ClueCapacityDTO> list() {
+        return clueCapacityService.list(OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/add")
-	@Operation(summary = "添加线索库容设置")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void add(@Validated @RequestBody CapacityAddRequest request) {
-		clueCapacityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/add")
+    @Operation(summary = "添加线索库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void add(@Validated @RequestBody CapacityAddRequest request) {
+        clueCapacityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/update")
-	@Operation(summary = "修改线索库容设置")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void update(@Validated @RequestBody CapacityUpdateRequest request) {
-		clueCapacityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/update")
+    @Operation(summary = "修改线索库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void update(@Validated @RequestBody CapacityUpdateRequest request) {
+        clueCapacityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@GetMapping("/delete/{id}")
-	@Operation(summary = "删除线索库容设置")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void delete(@PathVariable("id") @Validated String id) {
-		clueCapacityService.delete(id);
-	}
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除线索库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void delete(@PathVariable("id") @Validated String id) {
+        clueCapacityService.delete(id);
+    }
 }

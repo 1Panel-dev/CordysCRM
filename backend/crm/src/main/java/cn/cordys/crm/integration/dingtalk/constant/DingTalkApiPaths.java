@@ -9,5 +9,4 @@ public interface DingTalkApiPaths {
     String DING_USER_TOKEN_URL = "https://api.dingtalk.com/v1.0/oauth2/userAccessToken";
 
 
-
 }

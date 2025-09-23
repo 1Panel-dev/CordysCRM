@@ -12,21 +12,21 @@ import lombok.Data;
 @Table(name = "sys_attachment")
 public class Attachment extends BaseModel {
 
-	@Schema(description = "名称")
-	private String name;
+    @Schema(description = "名称")
+    private String name;
 
-	@Schema(description = "类型")
-	private String type;
+    @Schema(description = "类型")
+    private String type;
 
-	@Schema(description = "大小")
-	private Long size;
+    @Schema(description = "大小")
+    private Long size;
 
-	@Schema(description = "存储方式")
-	private String storage;
+    @Schema(description = "存储方式")
+    private String storage;
 
-	@Schema(description = "资源ID")
-	private String resourceId;
+    @Schema(description = "资源ID")
+    private String resourceId;
 
-	@Schema(description = "组织ID")
-	private String organizationId;
+    @Schema(description = "组织ID")
+    private String organizationId;
 }

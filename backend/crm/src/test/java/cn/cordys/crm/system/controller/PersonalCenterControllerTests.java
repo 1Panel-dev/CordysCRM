@@ -43,11 +43,11 @@ public class PersonalCenterControllerTests extends BaseTest {
     @Resource
     private BaseMapper<Department> departmentBaseMapper;
     @Resource
-    private BaseMapper<Customer>customerBaseMapper;
+    private BaseMapper<Customer> customerBaseMapper;
     @Resource
-    private BaseMapper<CustomerContact>customerContactBaseMapper;
+    private BaseMapper<CustomerContact> customerContactBaseMapper;
     @Resource
-    private BaseMapper<User>userBaseMapper;
+    private BaseMapper<User> userBaseMapper;
 
     @Resource
     private ExtUserMapper extUserMapper;
@@ -161,7 +161,6 @@ public class PersonalCenterControllerTests extends BaseTest {
     }
 
 
-
     @Test
     @Order(4)
     public void getRepeatCustomer() throws Exception {
@@ -174,7 +173,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         opportunity.setAmount(BigDecimal.ONE);
         opportunity.setPossible(BigDecimal.TEN);
         opportunity.setStage(StageType.CREATE.name());
-        opportunity.setProducts(List.of("1","2"));
+        opportunity.setProducts(List.of("1", "2"));
         opportunity.setContactId("admin");
         opportunity.setId(IDGenerator.nextStr());
         opportunity.setCreateTime(System.currentTimeMillis());
@@ -265,7 +264,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setName("kehu");
-       // this.requestPost("/personal/center/repeat/opportunity/detail", request).andExpect(status().isOk());
+        // this.requestPost("/personal/center/repeat/opportunity/detail", request).andExpect(status().isOk());
     }
 
     @Test
@@ -278,14 +277,14 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().isOk());
         String PREFIX = "personal_email_code:";  // Redis 存储前缀
         stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
-        PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
+        PersonalPasswordRequest personalPasswordRequest = new PersonalPasswordRequest();
         personalPasswordRequest.setPassword("Gyq124");
         personalPasswordRequest.setOriginPassword("678911");
         this.requestPost("/personal/center/info/reset", personalPasswordRequest);
         extUserMapper.updateUserPassword(CodingUtils.md5(DEFAULT_USER_PASSWORD), "admin");
-       // personalPasswordRequest.setPassword(DEFAULT_USER_PASSWORD);
-        adminAuthInfo=null;
-        permissionAuthInfo=null;
+        // personalPasswordRequest.setPassword(DEFAULT_USER_PASSWORD);
+        adminAuthInfo = null;
+        permissionAuthInfo = null;
         //DEFAULT_USER_PASSWORD=CodingUtils.md5("Gyq124");
         login();
 

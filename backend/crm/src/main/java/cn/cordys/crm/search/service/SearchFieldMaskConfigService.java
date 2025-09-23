@@ -140,6 +140,7 @@ public class SearchFieldMaskConfigService {
      * 获取脱敏字段配置
      *
      * @param orgId
+     *
      * @return
      */
     public FieldMaskConfigDTO get(String orgId) {

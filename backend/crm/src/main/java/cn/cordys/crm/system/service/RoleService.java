@@ -97,6 +97,7 @@ public class RoleService {
      * 翻译内置角色名
      *
      * @param role
+     *
      * @return
      */
     public Role translateInternalRole(Role role) {
@@ -110,6 +111,7 @@ public class RoleService {
      * 翻译内置角色名
      *
      * @param roleKey
+     *
      * @return
      */
     public String translateInternalRole(String roleKey) {
@@ -442,6 +444,7 @@ public class RoleService {
      * 翻译默认的权限名称
      *
      * @param p
+     *
      * @return
      */
     public String translateDefaultPermissionName(Permission p) {
@@ -458,6 +461,7 @@ public class RoleService {
      * 查询用户组对应的权限ID
      *
      * @param roleId
+     *
      * @return
      */
     public Set<String> getPermissionIdSetByRoleId(String roleId) {
@@ -470,6 +474,7 @@ public class RoleService {
      * 查询用户组对应的权限列表
      *
      * @param roleId
+     *
      * @return
      */
     public List<RolePermission> getRolePermissionByRoleId(String roleId) {

@@ -76,6 +76,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public FollowUpRecord add(FollowUpRecordAddRequest request, String userId, String orgId) {
@@ -142,6 +143,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      *
      * @param request
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -201,6 +203,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param orgId
      * @param resourceType
      * @param type
+     *
      * @return
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> poolList(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
@@ -283,6 +286,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * 获取跟进记录详情
      *
      * @param id
+     *
      * @return
      */
     public FollowUpRecordDetailResponse get(String id, String orgId) {
@@ -334,6 +338,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param orgId
      * @param resourceType
      * @param type
+     *
      * @return
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {

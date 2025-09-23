@@ -32,7 +32,8 @@ public interface ExtModuleFieldMapper {
 
     /**
      * 批量更新移动端显示
-     * @param ids ID集合
+     *
+     * @param ids    ID集合
      * @param mobile 移动端显示
      */
     void batchUpdateMobile(@Param("ids") List<String> ids, @Param("mobile") Boolean mobile);

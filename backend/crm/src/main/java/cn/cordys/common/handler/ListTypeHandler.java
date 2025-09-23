@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListTypeHandler extends BaseTypeHandler<List<String>>{
+public class ListTypeHandler extends BaseTypeHandler<List<String>> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
         String d = toJSONString(parameter);

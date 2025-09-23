@@ -78,8 +78,8 @@ public class DataEaseClient {
     }
 
     public List<SysVariableValueDTO> listSysVariableValue(String sysVariableId) {
-         return post("sysVariable/value/selected/1/10000", Map.of("sysVariableId", sysVariableId), SysVariableValueListResponse.class).getData()
-                 .getRecords();
+        return post("sysVariable/value/selected/1/10000", Map.of("sysVariableId", sysVariableId), SysVariableValueListResponse.class).getData()
+                .getRecords();
     }
 
     public SysVariableDTO editSysVariable(SysVariableUpdateRequest request) {

@@ -248,6 +248,7 @@ public class DepartmentService extends MoveNodeService {
      *
      * @param ids
      * @param orgId
+     *
      * @return
      */
     public boolean deleteCheck(List<String> ids, String orgId) {
@@ -293,6 +294,7 @@ public class DepartmentService extends MoveNodeService {
      * @param departmentTree
      * @param operatorId
      * @param departmentMap
+     *
      * @return
      */
     public Map<String, String> createDepartment(List<String> departmentPath, String orgId, List<BaseTreeNode> departmentTree, String operatorId, Map<String, String> departmentMap, List<LogDTO> logs) {
@@ -456,6 +458,7 @@ public class DepartmentService extends MoveNodeService {
      *
      * @param orgId
      * @param resource
+     *
      * @return
      */
     public Department getInternalDepartment(String orgId, String resource) {
@@ -482,6 +485,7 @@ public class DepartmentService extends MoveNodeService {
      * 获取全部部门
      *
      * @param orgId
+     *
      * @return
      */
     public List<Department> getDepartmentByOrgId(String orgId) {
@@ -493,6 +497,7 @@ public class DepartmentService extends MoveNodeService {
      * 获取责任人
      *
      * @param userList
+     *
      * @return
      */
     public List<DepartmentCommander> getDepartmentCommander(List<OrganizationUser> userList) {
@@ -520,6 +525,7 @@ public class DepartmentService extends MoveNodeService {
      * 获取部门选项
      *
      * @param ids 部门ID集合
+     *
      * @return 部门选项
      */
     public List<Department> getDepartmentOptionsByIds(List<String> ids) {
@@ -548,8 +554,10 @@ public class DepartmentService extends MoveNodeService {
     /**
      * 按照部门负责人优先排序
      * 并且设置上负责人标识
+     *
      * @param orgId
      * @param userNodes
+     *
      * @return
      */
     public List<DeptUserTreeNode> sortByCommander(String orgId, List<DeptUserTreeNode> userNodes) {

@@ -24,8 +24,8 @@ import java.util.UUID;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClueOwnerHistoryControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/lead/owner/history/" ;
-    protected static final String LIST = "list/{0}" ;
+    private static final String BASE_PATH = "/lead/owner/history/";
+    protected static final String LIST = "list/{0}";
     private static Clue addClue;
 
     @Resource

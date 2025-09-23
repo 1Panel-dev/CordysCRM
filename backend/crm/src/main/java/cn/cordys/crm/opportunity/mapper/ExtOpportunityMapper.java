@@ -61,6 +61,7 @@ public interface ExtOpportunityMapper {
 
     /**
      * 全量更新商机
+     *
      * @param opportunity 商机
      */
     void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);

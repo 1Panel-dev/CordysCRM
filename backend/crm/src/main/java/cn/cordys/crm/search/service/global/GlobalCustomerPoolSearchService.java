@@ -44,7 +44,6 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
     private ModuleFormCacheService moduleFormCacheService;
 
 
-
     @Override
     public Pager<List<GlobalCustomerPoolResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
         //获取查询关键字
@@ -154,7 +153,6 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
 
         return hasPool && hasPermission;
     }
-
 
 
 }

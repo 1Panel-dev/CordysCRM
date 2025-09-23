@@ -70,12 +70,12 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
                 YearMonth::from);
 
         Instant instant = switch (parsed) {
-			case LocalDateTime localDateTime -> localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-			case LocalDate localDate -> localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-			case YearMonth yearMonth -> yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-			default -> throw new DateTimeParseException("无法解析日期时间: " + text, text, 0);
-		};
+            case LocalDateTime localDateTime -> localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+            case LocalDate localDate -> localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            case YearMonth yearMonth -> yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+            default -> throw new DateTimeParseException("无法解析日期时间: " + text, text, 0);
+        };
 
-		return instant.toEpochMilli();
+        return instant.toEpochMilli();
     }
 }

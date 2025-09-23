@@ -103,7 +103,7 @@ public class EasyExcelExporter {
     public void exportMultiSheetTplWithSharedHandler(HttpServletResponse response, List<List<String>> headList, String fileName,
                                                      String mainSheetName, String tipSheetName, WriteHandler sharedHandler, WriteHandler styleHandler) {
         buildExportResponse(response, fileName);
-        try (ExcelWriter writer = EasyExcel.write(response.getOutputStream()).build()){
+        try (ExcelWriter writer = EasyExcel.write(response.getOutputStream()).build()) {
             WriteSheet mainSheet = EasyExcel.writerSheet(0, mainSheetName)
                     .head(headList)
                     .registerWriteHandler(sharedHandler)

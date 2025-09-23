@@ -4,9 +4,10 @@ import java.util.List;
 
 public interface HasOption {
 
-	/**
-	 * 获取选项集合
-	 * @return 选项集合
-	 */
-	List<OptionProp> getOptions();
+    /**
+     * 获取选项集合
+     *
+     * @return 选项集合
+     */
+    List<OptionProp> getOptions();
 }

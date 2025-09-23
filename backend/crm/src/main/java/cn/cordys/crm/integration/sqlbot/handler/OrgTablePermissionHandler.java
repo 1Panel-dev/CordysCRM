@@ -51,7 +51,7 @@ public class OrgTablePermissionHandler implements TablePermissionHandler {
     }
 
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
-       return getDefaultFieldSql(sqlBotField);
+        return getDefaultFieldSql(sqlBotField);
     }
 
     protected String getDefaultFieldSql(FieldDTO sqlBotField) {
@@ -81,6 +81,7 @@ public class OrgTablePermissionHandler implements TablePermissionHandler {
      *
      * @param fields
      * @param disabledFieldNames
+     *
      * @return
      */
     protected List<FieldDTO> filterSystemFields(List<FieldDTO> fields, Set<String> disabledFieldNames) {
@@ -101,6 +102,7 @@ public class OrgTablePermissionHandler implements TablePermissionHandler {
      *
      * @param stream
      * @param fieldName
+     *
      * @return
      */
     protected <T> String getSystemOptionFileSql(Stream<T> stream, Function<T, String> getKeyFunc, Function<T, String> getNameFunc, String fieldName) {

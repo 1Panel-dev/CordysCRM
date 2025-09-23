@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 @Component
 public class MailNoticeSender extends AbstractNoticeSender {
 
-   @Resource
-   private MailSender mailSender;
+    @Resource
+    private MailSender mailSender;
 
     public void sendMail(String context, NoticeModel noticeModel, String organizationId, String subjectText) throws Exception {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());

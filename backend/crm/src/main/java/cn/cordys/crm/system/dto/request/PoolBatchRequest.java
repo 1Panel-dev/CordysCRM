@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class PoolBatchRequest {
 
-	@NotNull
-	@Schema(description = "批量ID集合")
-	private List<String> batchIds;
+    @NotNull
+    @Schema(description = "批量ID集合")
+    private List<String> batchIds;
 }

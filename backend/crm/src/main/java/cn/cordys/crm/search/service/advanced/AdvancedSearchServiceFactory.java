@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class AdvancedSearchServiceFactory {
 
-    private static final HashMap<String, BaseSearchService<?,?>> searchServiceMap = new HashMap<>();
+    private static final HashMap<String, BaseSearchService<?, ?>> searchServiceMap = new HashMap<>();
 
     static {
         searchServiceMap.put(GlobalSearchModule.OPPORTUNITY, CommonBeanFactory.getBean(AdvancedOpportunitySearchService.class));

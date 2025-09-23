@@ -82,7 +82,9 @@ public abstract class DataScopeTablePermissionHandler extends ModuleFieldTablePe
 
     /**
      * 将数组转成IN的条件字符串
+     *
      * @param ids
+     *
      * @return
      */
     protected String getInConditionStr(Collection<String> ids) {

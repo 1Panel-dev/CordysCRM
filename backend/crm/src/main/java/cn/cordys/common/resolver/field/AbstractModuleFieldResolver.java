@@ -33,7 +33,9 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 将数据库的字符串值转换为对应的参数值
+     *
      * @param value
+     *
      * @return
      */
     public Object parse2Value(T selectField, String value) {
@@ -42,7 +44,9 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 将数据库的字符串值转换为对应的参数值
+     *
      * @param value
+     *
      * @return
      */
     public Object trans2Value(T selectField, String value) {
@@ -51,8 +55,10 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 字段文本 => 值
+     *
      * @param field 字段
-     * @param text 文本
+     * @param text  文本
+     *
      * @return 字段值
      */
     public Object text2Value(T field, String text) {
@@ -62,7 +68,9 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 将对应的参数值转换成字符串
+     *
      * @param value
+     *
      * @return
      */
     public String parse2String(T selectField, Object value) {
@@ -122,7 +130,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected String getJsonString(Object value) {
-        return value == null ? null :JSON.toJSONString(value);
+        return value == null ? null : JSON.toJSONString(value);
     }
 
     private boolean hasValidatorKey(List<RuleProp> rules, String validatorKey) {

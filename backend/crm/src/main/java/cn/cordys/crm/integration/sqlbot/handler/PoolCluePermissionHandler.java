@@ -80,7 +80,7 @@ public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
         } else if (Strings.CS.equals(fieldName, "pool_id")) {
             sqlBotField.setName("pool_name");
             sqlBotField.setComment("线索池名称");
-            return "(select pool.name from clue_pool pool where c.pool_id = pool.id limit 1) as pool_name" ;
+            return "(select pool.name from clue_pool pool where c.pool_id = pool.id limit 1) as pool_name";
         } else {
             return getDefaultFieldSql(sqlBotField);
         }

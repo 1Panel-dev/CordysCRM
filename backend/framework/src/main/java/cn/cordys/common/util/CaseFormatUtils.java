@@ -9,6 +9,7 @@ public class CaseFormatUtils {
      * 将驼峰字符串转换为下划线分隔的字符串。
      *
      * @param camelStr 驼峰字符串
+     *
      * @return 下划线字符串
      */
     public static String camelToUnderscore(String camelStr) {
@@ -20,6 +21,7 @@ public class CaseFormatUtils {
      *
      * @param camelStr  驼峰字符串
      * @param separator 分隔符
+     *
      * @return 分隔符字符串
      */
     public static String convertCamelToSeparator(String camelStr, char separator) {
@@ -44,7 +46,9 @@ public class CaseFormatUtils {
 
     /**
      * 将字符串首字母转换为大写
+     *
      * @param input 输入字符串
+     *
      * @return 首字母大写的字符串
      */
     public static String capitalizeFirstLetter(String input) {

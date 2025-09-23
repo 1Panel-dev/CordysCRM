@@ -74,6 +74,7 @@ public abstract class BaseTest {
     protected String getBasePath() {
         return StringUtils.EMPTY;
     }
+
     @Resource
     protected PermissionCache permissionCache;
 
@@ -221,6 +222,7 @@ public abstract class BaseTest {
      * @param permissionIds         多个权限
      * @param url                   请求url
      * @param requestBuilderGetFunc 请求构造器
+     *
      * @throws Exception 请求抛出异常
      */
     public void requestPermissionsTest(List<String> permissionIds, String url, Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc, MockMvc mockMvc) throws Exception {
@@ -272,6 +274,7 @@ public abstract class BaseTest {
      * @param permissionId
      * @param url
      * @param requestBuilderGetFunc 请求构造器，一个 builder 只能使用一次，需要重新生成
+     *
      * @throws Exception
      */
     public void requestPermissionTest(String permissionId, String url, Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc) throws Exception {
@@ -322,6 +325,7 @@ public abstract class BaseTest {
      * 给用户组绑定对应权限
      *
      * @param permissionId
+     *
      * @return
      */
     private RolePermission initUserRolePermission(String permissionId) {
@@ -376,6 +380,7 @@ public abstract class BaseTest {
      * @param url
      * @param paramMap
      * @param uriVariables
+     *
      * @return
      */
     private MockMultipartHttpServletRequestBuilder getMultipartRequestBuilderWithParam(String url, MultiValueMap<String, Object> paramMap, Object[] uriVariables) {

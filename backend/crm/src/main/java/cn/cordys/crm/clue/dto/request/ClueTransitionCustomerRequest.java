@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class ClueTransitionCustomerRequest extends CustomerAddRequest {
 
-	@NotBlank
-	@Schema(description = "线索ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String clueId;
+    @NotBlank
+    @Schema(description = "线索ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String clueId;
 }

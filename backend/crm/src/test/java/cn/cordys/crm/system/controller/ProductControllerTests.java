@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductControllerTests extends BaseTest {
@@ -46,7 +46,7 @@ class ProductControllerTests extends BaseTest {
 
     private static final List<String> batchIds = new ArrayList<>();
     private static String moduleFieldPriceId = "";
-    private static String moduleFieldStatusId=  "";
+    private static String moduleFieldStatusId = "";
 
     @Resource
     private BaseMapper<Product> productBaseMapper;
@@ -110,12 +110,12 @@ class ProductControllerTests extends BaseTest {
         ModuleField example = new ModuleField();
         example.setFormId(moduleForm.getId());
         List<ModuleField> select = moduleFieldMapper.select(example);
-        ModuleField moduleFieldPrice= select
+        ModuleField moduleFieldPrice = select
                 .stream()
                 .filter(field -> Strings.CS.equals(field.getInternalKey(), "productPrice"))
                 .findFirst().orElse(null);
         moduleFieldPriceId = moduleFieldPrice.getId();
-        ModuleField moduleFieldStatus= select
+        ModuleField moduleFieldStatus = select
                 .stream()
                 .filter(field -> Strings.CS.equals(field.getInternalKey(), "productStatus"))
                 .findFirst().orElse(null);
@@ -125,7 +125,7 @@ class ProductControllerTests extends BaseTest {
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
 
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
 
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
@@ -137,7 +137,7 @@ class ProductControllerTests extends BaseTest {
         request.setName("productTwo");
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
 
@@ -148,7 +148,7 @@ class ProductControllerTests extends BaseTest {
         request.setName("productThree");
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
         // 校验请求成功数据
@@ -161,7 +161,7 @@ class ProductControllerTests extends BaseTest {
         request.setName("productFour");
         request.setPrice(BigDecimal.valueOf(100000000000d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         this.requestPost(DEFAULT_ADD, request).andExpect(status().is4xxClientError());
 
     }
@@ -177,7 +177,7 @@ class ProductControllerTests extends BaseTest {
         request.setStatus("2");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
-        Assertions.assertTrue(Strings.CI.equals(product.getStatus(),"2"));
+        Assertions.assertTrue(Strings.CI.equals(product.getStatus(), "2"));
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
 
@@ -245,10 +245,10 @@ class ProductControllerTests extends BaseTest {
         this.requestPostWithOk("batch/update", request);
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
-        Assertions.assertEquals(BigDecimal.valueOf(30000,4), getResponse.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(30000, 4), getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
             if (Strings.CI.equalsAny(moduleField.getFieldId(), moduleFieldStatusId)) {
-                Assertions.assertEquals("1",moduleField.getFieldValue());
+                Assertions.assertEquals("1", moduleField.getFieldValue());
             }
         }
         // 校验权限

@@ -58,6 +58,7 @@ public class LoginController {
      * 获取 RSA 公钥。
      *
      * @return 返回 RSA 公钥。
+     *
      * @throws Exception 可能抛出的异常。
      */
     @GetMapping(value = "/get-key")
@@ -71,7 +72,9 @@ public class LoginController {
      * 用户登录。
      *
      * @param request 登录请求对象，包含用户名和密码。
+     *
      * @return 登录结果。
+     *
      * @throws GenericException 如果已登录且当前用户与请求用户名不同，抛出异常。
      */
     @PostMapping(value = "/login")

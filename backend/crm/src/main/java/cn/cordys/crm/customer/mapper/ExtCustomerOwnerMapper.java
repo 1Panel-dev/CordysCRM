@@ -4,7 +4,6 @@ import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import org.apache.ibatis.annotations.Param;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-24 11:06:10
  */

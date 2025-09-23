@@ -30,71 +30,71 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpportunityRuleControllerTests extends BaseTest {
 
-	private static OpportunityRuleDTO editRule;
-	@Resource
-	private BaseMapper<OpportunityRule> opportunityRuleMapper;
+    private static OpportunityRuleDTO editRule;
+    @Resource
+    private BaseMapper<OpportunityRule> opportunityRuleMapper;
 
-	@Test
-	@Order(1)
-	void emptyPage() throws Exception {
-		BasePageRequest request = new BasePageRequest();
-		request.setCurrent(1);
-		request.setPageSize(10);
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
-		Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);
-		assert result.getList().isEmpty();
-	}
+    @Test
+    @Order(1)
+    void emptyPage() throws Exception {
+        BasePageRequest request = new BasePageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
+        Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);
+        assert result.getList().isEmpty();
+    }
 
-	@Test
-	@Order(2)
-	void add() throws Exception {
-		OpportunityRuleAddRequest request = OpportunityRuleAddRequest.builder()
-				.name("rule").ownerIds(List.of("cc")).scopeIds(List.of("cc"))
-				.enable(true).auto(false).build();
-		this.requestPostWithOk("/opportunity-rule/add", request);
-	}
+    @Test
+    @Order(2)
+    void add() throws Exception {
+        OpportunityRuleAddRequest request = OpportunityRuleAddRequest.builder()
+                .name("rule").ownerIds(List.of("cc")).scopeIds(List.of("cc"))
+                .enable(true).auto(false).build();
+        this.requestPostWithOk("/opportunity-rule/add", request);
+    }
 
-	@Test
-	@Order(3)
-	void page() throws Exception {
-		BasePageRequest request = new BasePageRequest();
-		request.setCurrent(1);
-		request.setPageSize(10);
-		request.setSort(new SortRequest("name", "desc"));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
-		Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);
-		assert result.getList().size() == 1;
-		editRule = result.getList().getFirst();
-	}
+    @Test
+    @Order(3)
+    void page() throws Exception {
+        BasePageRequest request = new BasePageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setSort(new SortRequest("name", "desc"));
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
+        Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);
+        assert result.getList().size() == 1;
+        editRule = result.getList().getFirst();
+    }
 
 
-	@Test
-	@Order(4)
-	void update() throws Exception {
-		OpportunityRuleUpdateRequest request = new OpportunityRuleUpdateRequest();
-		BeanUtils.copyBean(request, editRule);
-		request.setOwnerIds(List.of("admin"));
-		request.setScopeIds(List.of("admin"));
-		this.requestPostWithOk("/opportunity-rule/update", request);
-		// update owner id by sql
-		editRule.setOwnerId(JSON.toJSONString(List.of("admin")));
-		opportunityRuleMapper.updateById(editRule);
-		this.requestPostWithOk("/opportunity-rule/update", request);
-	}
+    @Test
+    @Order(4)
+    void update() throws Exception {
+        OpportunityRuleUpdateRequest request = new OpportunityRuleUpdateRequest();
+        BeanUtils.copyBean(request, editRule);
+        request.setOwnerIds(List.of("admin"));
+        request.setScopeIds(List.of("admin"));
+        this.requestPostWithOk("/opportunity-rule/update", request);
+        // update owner id by sql
+        editRule.setOwnerId(JSON.toJSONString(List.of("admin")));
+        opportunityRuleMapper.updateById(editRule);
+        this.requestPostWithOk("/opportunity-rule/update", request);
+    }
 
-	@Test
-	@Order(5)
-	void switchStatus() throws Exception {
-		MvcResult mvcResult = this.requestGet("/opportunity-rule/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
-		this.requestGetWithOk("/opportunity-rule/switch/" + editRule.getId());
-	}
+    @Test
+    @Order(5)
+    void switchStatus() throws Exception {
+        MvcResult mvcResult = this.requestGet("/opportunity-rule/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
+        this.requestGetWithOk("/opportunity-rule/switch/" + editRule.getId());
+    }
 
-	@Test
-	@Order(6)
-	void delete() throws Exception {
-		MvcResult mvcResult = this.requestGet("/opportunity-rule/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
-		this.requestGetWithOk("/opportunity-rule/delete/" + editRule.getId());
-	}
+    @Test
+    @Order(6)
+    void delete() throws Exception {
+        MvcResult mvcResult = this.requestGet("/opportunity-rule/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
+        this.requestGetWithOk("/opportunity-rule/delete/" + editRule.getId());
+    }
 }

@@ -49,6 +49,7 @@ public class TokenService {
      *
      * @param corpId     企业ID
      * @param corpSecret 企业应用 密钥
+     *
      * @return String token
      */
     public String getAssessToken(String corpId, String corpSecret) {
@@ -80,6 +81,7 @@ public class TokenService {
      *
      * @param appKey    企业应用 ID ClientId
      * @param appSecret 企业应用 密钥
+     *
      * @return String token
      */
     public String getDingTalkToken(String appKey, String appSecret) {
@@ -111,6 +113,7 @@ public class TokenService {
      * @param appKey    企业应用 ID ClientId 应用id。可使用扫码登录应用或者第三方个人小程序的appId。
      * @param appSecret 企业应用 密钥
      * @param code      授权码OAuth 2.0 临时授权码
+     *
      * @return String token
      */
     public String getDingTalkUserToken(String appKey, String appSecret, String code) {
@@ -141,6 +144,7 @@ public class TokenService {
      *
      * @param agentId   appId 飞书自建应用凭证
      * @param appSecret appSecret
+     *
      * @return tenantAccessToken
      */
     public String getLarkToken(String agentId, String appSecret) {
@@ -172,6 +176,7 @@ public class TokenService {
      * IP + 端口 是否连通
      *
      * @param fullUrl 完整的URL地址
+     *
      * @return bool
      */
     public boolean pingDeUrl(String fullUrl) {
@@ -228,6 +233,7 @@ public class TokenService {
     /**
      * @param code   code
      * @param config 认证配置的map
+     *
      * @return access_token
      */
     public String getGitHubOAuth2Token(String code, Map<String, String> config) {

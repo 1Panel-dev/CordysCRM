@@ -10,12 +10,12 @@ import lombok.Data;
 @Data
 public class DictSwitchRequest {
 
-	@NotEmpty
-	@EnumValue(enumClass = DictModule.class)
-	@Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String module;
+    @NotEmpty
+    @EnumValue(enumClass = DictModule.class)
+    @Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String module;
 
-	@NotNull
-	@Schema(description = "开启关闭", requiredMode = Schema.RequiredMode.REQUIRED)
-	private Boolean enable;
+    @NotNull
+    @Schema(description = "开启关闭", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Boolean enable;
 }

@@ -54,6 +54,7 @@ public class JSON {
      * 将对象序列化为 JSON 字符串。
      *
      * @param value 需要序列化的对象
+     *
      * @return JSON 字符串
      */
     public static String toJSONString(Object value) {
@@ -68,6 +69,7 @@ public class JSON {
      * 将对象序列化为格式化的 JSON 字符串（带缩进）。
      *
      * @param value 需要序列化的对象
+     *
      * @return 格式化的 JSON 字符串
      */
     public static String toFormatJSONString(Object value) {
@@ -82,6 +84,7 @@ public class JSON {
      * 将对象序列化为字节数组。
      *
      * @param value 需要序列化的对象
+     *
      * @return JSON 字节数组
      */
     public static byte[] toJSONBytes(Object value) {
@@ -96,6 +99,7 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Java 对象。
      *
      * @param content JSON 字符串
+     *
      * @return 反序列化后的 Java 对象
      */
     public static Object parseObject(String content) {
@@ -105,9 +109,10 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象。
      *
-     * @param content JSON 字符串
+     * @param content   JSON 字符串
      * @param valueType 目标 Java 类
-     * @param <T> Java 类的类型
+     * @param <T>       Java 类的类型
+     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(String content, Class<T> valueType) {
@@ -121,9 +126,10 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象。
      *
-     * @param content JSON 字符串
+     * @param content   JSON 字符串
      * @param valueType 目标 Java 类型引用
-     * @param <T> Java 类的类型
+     * @param <T>       Java 类的类型
+     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(String content, TypeReference<T> valueType) {
@@ -137,9 +143,10 @@ public class JSON {
     /**
      * 将输入流中的 JSON 数据反序列化为 Java 对象。
      *
-     * @param src 输入流
+     * @param src       输入流
      * @param valueType 目标 Java 类
-     * @param <T> Java 类的类型
+     * @param <T>       Java 类的类型
+     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(InputStream src, Class<T> valueType) {
@@ -154,6 +161,7 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Java 对象的集合。
      *
      * @param content JSON 字符串
+     *
      * @return 反序列化后的集合对象
      */
     public static List parseArray(String content) {
@@ -163,9 +171,10 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象的集合。
      *
-     * @param content JSON 字符串
+     * @param content   JSON 字符串
      * @param valueType 集合元素类型
-     * @param <T> 集合元素类型
+     * @param <T>       集合元素类型
+     *
      * @return 反序列化后的集合对象
      */
     public static <T> List<T> parseArray(String content, Class<T> valueType) {
@@ -180,9 +189,10 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象的集合。
      *
-     * @param content JSON 字符串
+     * @param content   JSON 字符串
      * @param valueType 集合元素类型引用
-     * @param <T> 集合元素类型
+     * @param <T>       集合元素类型
+     *
      * @return 反序列化后的集合对象
      */
     public static <T> List<T> parseArray(String content, TypeReference<T> valueType) {
@@ -199,11 +209,13 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Map 对象。
      *
      * @param jsonObject JSON 字符串
+     *
      * @return 反序列化后的 Map 对象
      */
     public static Map parseMap(String jsonObject) {
         try {
-            return objectMapper.readValue(jsonObject, new TypeReference<>() {});
+            return objectMapper.readValue(jsonObject, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON 反序列化失败", e);
         }

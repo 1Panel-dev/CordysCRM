@@ -87,7 +87,7 @@ public class LogDTO {
      * 带参构造函数，用于快速初始化日志数据
      *
      * @param organizationId 组织ID
-     * @param resourceId       数据源ID
+     * @param resourceId     数据源ID
      * @param createUser     创建用户
      * @param type           日志类型
      * @param module         模块

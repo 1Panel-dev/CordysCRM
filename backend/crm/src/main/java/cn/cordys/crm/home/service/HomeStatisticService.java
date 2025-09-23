@@ -164,6 +164,7 @@ public class HomeStatisticService {
      * 获取新增线索统计
      *
      * @param request
+     *
      * @return
      */
     public Long getNewClueCount(HomeStatisticSearchWrapperRequest request) {
@@ -180,6 +181,7 @@ public class HomeStatisticService {
      * 获取新增商机数量
      *
      * @param request
+     *
      * @return
      */
     public Long getNewOpportunityCount(HomeStatisticSearchWrapperRequest request) {
@@ -190,6 +192,7 @@ public class HomeStatisticService {
      * 获取新增商机总额数量
      *
      * @param request
+     *
      * @return
      */
     public Long getNewOpportunityAmount(HomeStatisticSearchWrapperRequest request) {
@@ -200,6 +203,7 @@ public class HomeStatisticService {
      * 获取赢单数量
      *
      * @param request
+     *
      * @return
      */
     public Long getSuccessOpportunityCount(HomeStatisticSearchWrapperRequest request) {
@@ -210,6 +214,7 @@ public class HomeStatisticService {
      * 获取赢单总额
      *
      * @param request
+     *
      * @return
      */
     public Long getSuccessOpportunityAmount(HomeStatisticSearchWrapperRequest request) {
@@ -221,6 +226,7 @@ public class HomeStatisticService {
      *
      * @param request
      * @param statisticFunction
+     *
      * @return
      */
     public HomeStatisticSearchResponse getStatisticSearchResponse(HomeStatisticSearchWrapperRequest request,
@@ -255,6 +261,7 @@ public class HomeStatisticService {
      *
      * @param request
      * @param permission
+     *
      * @return
      */
     public DeptDataPermissionDTO getDeptDataPermissionDTO(HomeStatisticBaseSearchRequest request, String permission) {
@@ -331,6 +338,7 @@ public class HomeStatisticService {
      *
      * @param tree
      * @param deptIds
+     *
      * @return
      */
     public List<BaseTreeNode> pruningTree(List<BaseTreeNode> tree, Set<String> deptIds) {

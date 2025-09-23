@@ -82,11 +82,13 @@ public class AdvancedSearchControllerTests extends BaseTest {
         this.requestPostWithOkAndReturn("/account/add", request);
 
     }
+
     private List<CustomerField> getCustomerFields(String customerId) {
         CustomerField example = new CustomerField();
         example.setResourceId(customerId);
         return customerFieldMapper.select(example);
     }
+
     private ModuleForm getModuleForm() {
         ModuleForm example = new ModuleForm();
         example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
@@ -137,7 +139,6 @@ public class AdvancedSearchControllerTests extends BaseTest {
         Assertions.assertFalse(customerList.isEmpty());
 
     }
-
 
 
 }

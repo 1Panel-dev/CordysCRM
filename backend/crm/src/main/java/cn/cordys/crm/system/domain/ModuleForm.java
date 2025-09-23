@@ -15,9 +15,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "sys_module_form")
 public class ModuleForm extends BaseModel {
 
-	@Schema(description = "表单Key")
-	private String formKey;
+    @Schema(description = "表单Key")
+    private String formKey;
 
-	@Schema(description = "组织id")
-	private String organizationId;
+    @Schema(description = "组织id")
+    private String organizationId;
 }

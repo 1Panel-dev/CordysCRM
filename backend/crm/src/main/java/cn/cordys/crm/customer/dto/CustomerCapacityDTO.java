@@ -11,8 +11,8 @@ import java.util.List;
 @Data
 public class CustomerCapacityDTO extends CustomerCapacity {
 
-	@Schema(description = "成员集合")
-	private List<ScopeNameDTO> members;
-	@Schema(description = "过滤条件集合")
-	private List<FilterConditionDTO> filters;
+    @Schema(description = "成员集合")
+    private List<ScopeNameDTO> members;
+    @Schema(description = "过滤条件集合")
+    private List<FilterConditionDTO> filters;
 }

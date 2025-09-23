@@ -7,7 +7,7 @@ import lombok.Data;
 
 /**
  * 产品自定义属性大文本
- * 
+ *
  * @author jianxing
  * @date 2025-02-27 14:43:46
  */

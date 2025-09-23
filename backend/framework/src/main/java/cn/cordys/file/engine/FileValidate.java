@@ -12,6 +12,7 @@ public class FileValidate {
      * Validates the file names to ensure they do not contain illegal characters.
      *
      * @param fileNames The file names to validate.
+     *
      * @throws GenericException if any file name is invalid.
      */
     public static void validateFileName(String... fileNames) {

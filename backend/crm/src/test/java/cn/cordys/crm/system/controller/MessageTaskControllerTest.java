@@ -63,20 +63,19 @@ public class MessageTaskControllerTest extends BaseTest {
         Map<String, Object> resource = new HashMap<>();
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID, List.of("aa"), true);
 
         messageTaskRequest.setSysEnable(false);
         messageTaskRequest.setWeComEnable(true);
-       mvcResult1 = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
+        mvcResult1 = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
         updateReturnData1 = mvcResult1.getResponse().getContentAsString(StandardCharsets.UTF_8);
         resultHolder1 = JSON.parseObject(updateReturnData1, ResultHolder.class);
         messageTask2 = JSON.parseObject(JSON.toJSONString(resultHolder1.getData()), MessageTask.class);
         Assertions.assertNotNull(messageTask2);
-       resource = new HashMap<>();
+        resource = new HashMap<>();
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
-
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID, List.of("aa"), true);
 
 
     }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class UserUpdateRequest extends UserAddRequest{
+public class UserUpdateRequest extends UserAddRequest {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank

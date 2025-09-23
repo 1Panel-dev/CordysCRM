@@ -31,7 +31,7 @@ public class OrganizationSettingsControllerTests extends BaseTest {
     public void testAdd() throws Exception {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("test.com");
-        emailDTO.setPort("25");   
+        emailDTO.setPort("25");
         emailDTO.setPassword("test");
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
@@ -45,7 +45,7 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         Assertions.assertNotNull(organizationConfigDetail);
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("test.com");
-        emailDTO.setPort("25");   
+        emailDTO.setPort("25");
         emailDTO.setPassword("test");
         emailDTO.setAccount("sddd");
         emailDTO.setFrom("sddd");
@@ -79,5 +79,5 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         this.requestPost("/organization/settings/email/test", emailDTO, status().is5xxServerError());
     }
 
-   
+
 } 

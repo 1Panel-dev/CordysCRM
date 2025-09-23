@@ -15,8 +15,8 @@ public class ExportTaskStopService {
 
     /**
      * 重启时将所有导出中的任务停止,并且需要设置为失败
-      */
+     */
     public void stopPreparedAll() {
-        extExportTaskMapper.updateExportTaskStatus(ExportConstants.ExportStatus.ERROR.name(),ExportConstants.ExportStatus.PREPARED.name());
+        extExportTaskMapper.updateExportTaskStatus(ExportConstants.ExportStatus.ERROR.name(), ExportConstants.ExportStatus.PREPARED.name());
     }
 }

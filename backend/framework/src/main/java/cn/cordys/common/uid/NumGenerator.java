@@ -37,6 +37,7 @@ public class NumGenerator {
      * 根据指定的应用场景生成唯一的数字 ID。
      *
      * @param scope 应用场景（例如：接口用例）
+     *
      * @return 唯一的数字 ID
      */
     public static long nextNum(ApplicationNumScope scope) {
@@ -48,6 +49,7 @@ public class NumGenerator {
      *
      * @param prefix 前缀，例如：ORGANIZATION_ID + "_" + DOMAIN
      * @param scope  应用场景（例如：接口用例）
+     *
      * @return 唯一的数字 ID
      */
     public static long nextNum(String prefix, ApplicationNumScope scope) {

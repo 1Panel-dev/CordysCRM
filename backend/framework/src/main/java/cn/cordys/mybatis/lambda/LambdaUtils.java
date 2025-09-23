@@ -20,6 +20,7 @@ public final class LambdaUtils {
      * </p>
      *
      * @param func 需要解析的 Lambda 对象。
+     *
      * @return 返回 Lambda 表达式的实现方法名称。
      */
     public static String extract(XFunction<?, ?> func) {

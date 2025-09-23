@@ -99,6 +99,7 @@ public class DefaultUidGenerator implements DisposableBean {
      * Get UID
      *
      * @return UID
+     *
      * @throws GenericException in the case: Clock moved backwards; Exceeds the max timestamp
      */
     protected synchronized long nextId() {

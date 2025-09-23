@@ -145,8 +145,10 @@ public class CustomerCollaborationService {
 
     /**
      * 是否有客户协作关系
-     * @param userId 协作人
+     *
+     * @param userId     协作人
      * @param customerId 客户ID
+     *
      * @return bool
      */
     public boolean hasCollaboration(String userId, String customerId) {

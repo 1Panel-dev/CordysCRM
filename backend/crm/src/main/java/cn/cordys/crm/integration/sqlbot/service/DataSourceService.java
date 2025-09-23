@@ -148,6 +148,7 @@ public class DataSourceService {
      * @param filteredTables
      * @param sqlBotTableMap
      * @param rolePermissions
+     *
      * @return
      */
     private List<TableDTO> filterTable(String userId, List<TableDTO> filteredTables, Map<String, SQLBotTable> sqlBotTableMap, List<RolePermissionDTO> rolePermissions) {

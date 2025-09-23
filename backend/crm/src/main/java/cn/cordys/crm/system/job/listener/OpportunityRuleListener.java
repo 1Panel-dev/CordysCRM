@@ -49,7 +49,7 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
         try {
             execute();
         } catch (Exception e) {
-            LogUtils.error("商机资源回收异常: " , e.getMessage());
+            LogUtils.error("商机资源回收异常: ", e.getMessage());
         }
     }
 

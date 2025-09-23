@@ -87,6 +87,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源和模块字段的 map
      *
      * @param resourceId
+     *
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
@@ -260,6 +261,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 查询指定资源的模块字段值
      *
      * @param resourceIds
+     *
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds) {
@@ -270,6 +272,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 查询指定资源的模块字段值
      *
      * @param resourceIds
+     *
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {

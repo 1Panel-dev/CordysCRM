@@ -99,7 +99,7 @@ public enum BusinessModuleField {
     /**
      * 联系人
      */
-    OPPORTUNITY_CONTACT("opportunityContact", "contactId",Set.of(), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_CONTACT("opportunityContact", "contactId", Set.of(), FormKey.OPPORTUNITY.getKey()),
 
     /**
      * 负责人
@@ -233,8 +233,10 @@ public enum BusinessModuleField {
 
     /**
      * 判断业务字段是否被删除
+     *
      * @param formKey 表单 key
-     * @param fields 字段集合
+     * @param fields  字段集合
+     *
      * @return 是否被删除
      */
     public static boolean isBusinessDeleted(String formKey, List<BaseField> fields) {
@@ -249,7 +251,9 @@ public enum BusinessModuleField {
 
     /**
      * 判断是否有重复的字段
+     *
      * @param fields 字段集合
+     *
      * @return 是否有重复的字段
      */
     public static boolean hasRepeatName(List<BaseField> fields) {
@@ -261,7 +265,9 @@ public enum BusinessModuleField {
 
     /**
      * 通过Key查询业务字段
+     *
      * @param internalKey 业务key
+     *
      * @return 业务字段
      */
     public static BusinessModuleField ofKey(String internalKey) {

@@ -15,12 +15,12 @@ import lombok.Data;
 @Table(name = "sys_role_scope_dept")
 public class RoleScopeDept {
 
-	@Schema(description = "ID")
-	private String id;
+    @Schema(description = "ID")
+    private String id;
 
-	@Schema(description = "角色ID")
-	private String roleId;
+    @Schema(description = "角色ID")
+    private String roleId;
 
-	@Schema(description = "部门ID")
-	private String departmentId;
+    @Schema(description = "部门ID")
+    private String departmentId;
 }

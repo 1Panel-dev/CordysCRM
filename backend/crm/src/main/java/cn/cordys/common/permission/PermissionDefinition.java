@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * 加载的权限定义
+ *
  * @author jianxing
  */
 @Data

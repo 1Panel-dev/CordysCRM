@@ -8,6 +8,7 @@ import java.util.Set;
 
 /**
  * 部门的数据权限
+ *
  * @author jianxing
  */
 @Data

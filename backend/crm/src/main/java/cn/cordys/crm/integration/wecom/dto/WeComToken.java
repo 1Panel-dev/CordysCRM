@@ -15,7 +15,7 @@ public class WeComToken extends WeComResponseEntity {
     private String accessToken;
 
     /**
-     * 	凭证的有效时间（秒）
+     * 凭证的有效时间（秒）
      */
     @JsonProperty("expires_in")
     private String expiresIn;

@@ -8,9 +8,9 @@ import lombok.Data;
 @Table(name = "sys_module_form_blob")
 public class ModuleFormBlob {
 
-	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String id;
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String id;
 
-	@Schema(description = "属性")
-	private String prop;
+    @Schema(description = "属性")
+    private String prop;
 }

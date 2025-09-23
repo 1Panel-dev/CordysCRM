@@ -25,6 +25,7 @@ public enum StorageType {
      * </p>
      *
      * @param storageType 字符串表示的存储类型
+     *
      * @return 对应的枚举值，或 {@code null} 如果没有匹配的枚举
      */
     public static StorageType fromString(String storageType) {

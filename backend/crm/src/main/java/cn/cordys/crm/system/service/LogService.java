@@ -42,6 +42,7 @@ public class LogService implements OperationLogHandler {
      * 根据 LogDTO 创建一个 OperationLogBlob 实体对象。
      *
      * @param log 日志数据传输对象
+     *
      * @return OperationLogBlob
      */
     private OperationLogBlob getBlob(LogDTO log) {
@@ -73,6 +74,7 @@ public class LogService implements OperationLogHandler {
      * 截断日志内容，确保其不超过500个字符。
      *
      * @param content 日志内容
+     *
      * @return 截取后的日志内容
      */
     private String subStrContent(String content) {

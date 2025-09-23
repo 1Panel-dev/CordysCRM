@@ -12,6 +12,7 @@ public class NodeSortUtils {
      *
      * @param previousNodePos 前一个节点的pos     如果没有节点则为-1
      * @param nextNodePos     后一个节点的pos     如果没有节点则为-1
+     *
      * @return 计算后的num值以及是否需要刷新整棵树的num(如果两个节点之间的num值小于2则需要刷新整棵树的num)
      */
     public static NodeSortCountResultDTO countModuleSort(long previousNodePos, long nextNodePos) {

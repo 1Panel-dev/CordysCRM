@@ -24,9 +24,10 @@ public class ApiKeyFilter extends AnonymousFilter {
      * 如果没有 API 密钥且用户未认证，则允许请求通过。
      * 如果提供了 API 密钥，则使用该密钥尝试认证用户。
      *
-     * @param request  Servlet 请求
-     * @param response Servlet 响应
+     * @param request     Servlet 请求
+     * @param response    Servlet 响应
      * @param mappedValue 过滤器链中的映射值
+     *
      * @return 如果请求应该继续处理返回 true，否则返回 false
      */
     @Override

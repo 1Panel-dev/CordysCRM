@@ -34,7 +34,6 @@ public class NotificationControllerTests extends BaseTest {
     public static final String ANNOUNCEMENT_LAST_LIST = "/notification/last/announcement/list";
 
 
-
     @Resource
     private ExtNotificationMapper extNotificationMapper;
     @Resource
@@ -153,7 +152,6 @@ public class NotificationControllerTests extends BaseTest {
         List<NotificationDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
         Assertions.assertFalse(optionDTOS.isEmpty());
     }
-
 
 
 }

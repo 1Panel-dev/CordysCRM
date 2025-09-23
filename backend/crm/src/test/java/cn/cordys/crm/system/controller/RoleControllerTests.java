@@ -503,6 +503,7 @@ class RoleControllerTests extends BaseTest {
      * 查询角色对应的权限ID
      *
      * @param roleId
+     *
      * @return
      */
     public Set<String> getPermissionIdSetByRoleId(String roleId) {

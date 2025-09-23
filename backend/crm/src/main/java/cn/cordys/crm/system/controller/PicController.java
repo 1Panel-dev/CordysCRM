@@ -18,18 +18,18 @@ import java.util.List;
 @Tag(name = "图片管理")
 public class PicController {
 
-	@Resource
-	private PicService picService;
+    @Resource
+    private PicService picService;
 
-	@PostMapping("/upload/temp")
-	@Operation(summary = "上传临时图片")
-	public List<String> uploadTmpPic(@RequestParam("files") List<MultipartFile> files) {
-		return picService.uploadTempPic(files);
-	}
+    @PostMapping("/upload/temp")
+    @Operation(summary = "上传临时图片")
+    public List<String> uploadTmpPic(@RequestParam("files") List<MultipartFile> files) {
+        return picService.uploadTempPic(files);
+    }
 
-	@GetMapping("/preview/{id}")
-	@Operation(summary = "预览图片")
-	public ResponseEntity<org.springframework.core.io.Resource> preview(@PathVariable String id) {
-		return picService.getPicResource(id);
-	}
+    @GetMapping("/preview/{id}")
+    @Operation(summary = "预览图片")
+    public ResponseEntity<org.springframework.core.io.Resource> preview(@PathVariable String id) {
+        return picService.getPicResource(id);
+    }
 }

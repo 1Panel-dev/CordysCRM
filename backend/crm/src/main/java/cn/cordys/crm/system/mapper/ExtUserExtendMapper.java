@@ -11,7 +11,9 @@ public interface ExtUserExtendMapper {
 
     /**
      * 根据范围ID分组
+     *
      * @param scopeIds 范围ID集合
+     *
      * @return 分组结果
      */
     List<ScopeNameDTO> groupByScopeIds(@Param("ids") List<String> scopeIds);

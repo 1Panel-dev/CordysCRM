@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 @Table(name = "sys_notification")
-public class Notification{
-    
+public class Notification {
+
     @Schema(description = "ID")
     private String id;
 
@@ -40,7 +40,7 @@ public class Notification{
 
     @Schema(description = "资源名称")
     private String resourceName;
-    
+
     @Schema(description = "通知内容")
     private byte[] content;
 

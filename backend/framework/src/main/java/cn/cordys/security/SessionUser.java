@@ -42,8 +42,9 @@ public class SessionUser extends UserDTO implements Serializable {
     /**
      * 从 UserDTO 创建 SessionUser 对象，并生成 CSRF Token 和会话 ID。
      *
-     * @param user     用户数据对象
+     * @param user      用户数据对象
      * @param sessionId 会话 ID
+     *
      * @return {@link SessionUser} 对象
      */
     public static SessionUser fromUser(UserDTO user, String sessionId) {

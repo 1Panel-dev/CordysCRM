@@ -41,7 +41,9 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * 拦截方法执行，进行日志记录逻辑的处理。
      *
      * @param invocation 方法调用上下文
+     *
      * @return 方法执行结果
+     *
      * @throws Throwable 执行过程中的异常
      */
     @Override
@@ -57,7 +59,9 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * @param target  目标对象
      * @param method  目标方法
      * @param args    方法参数
+     *
      * @return 方法的返回结果
+     *
      * @throws Throwable 执行过程中的异常
      */
     private Object execute(MethodInvocation invoker, Object target, Method method, Object[] args) throws Throwable {
@@ -98,8 +102,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
     /**
      * 处理日志记录逻辑，根据方法执行结果生成操作日志。
      *
-     * @param methodExecuteResult      方法执行结果
-     * @param operations               日志操作集合
+     * @param methodExecuteResult 方法执行结果
+     * @param operations          日志操作集合
      */
     private void processLogRecords(MethodExecuteResult methodExecuteResult, Collection<OperationLogBuilder> operations) {
         if (CollectionUtils.isEmpty(operations)) {
@@ -124,8 +128,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
     /**
      * 处理成功的日志记录。
      *
-     * @param methodExecuteResult      方法执行结果
-     * @param operation                日志操作信息
+     * @param methodExecuteResult 方法执行结果
+     * @param operation           日志操作信息
      */
     private void handleSuccessLog(MethodExecuteResult methodExecuteResult, OperationLogBuilder operation) {
         List<String> templates = getSpElTemplates(operation);

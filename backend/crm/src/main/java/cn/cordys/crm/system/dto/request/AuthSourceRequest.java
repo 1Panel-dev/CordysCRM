@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class AuthSourceRequest extends BasePageRequest {
 
-    @Schema(description =  "认证设置id")
+    @Schema(description = "认证设置id")
     private String configId;
 
 }

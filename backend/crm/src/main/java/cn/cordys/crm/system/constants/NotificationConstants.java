@@ -36,70 +36,70 @@ public class NotificationConstants {
         // -----客户管理----
         //新建客户
         @Schema(description = "message.customer_add")
-        String  CUSTOMER_ADD="CUSTOMER_ADD";
+        String CUSTOMER_ADD = "CUSTOMER_ADD";
         @Schema(description = "message.customer_concat_add")
-        String  CUSTOMER_CONCAT_ADD="CUSTOMER_CONCAT_ADD";
+        String CUSTOMER_CONCAT_ADD = "CUSTOMER_CONCAT_ADD";
         @Schema(description = "message.customer_collaboration_add")
-        String  CUSTOMER_COLLABORATION_ADD="CUSTOMER_COLLABORATION_ADD";
-       //被转移客户
-       @Schema(description = "message.customer_transferred_customer")
-        String  CUSTOMER_TRANSFERRED_CUSTOMER="CUSTOMER_TRANSFERRED_CUSTOMER";
+        String CUSTOMER_COLLABORATION_ADD = "CUSTOMER_COLLABORATION_ADD";
+        //被转移客户
+        @Schema(description = "message.customer_transferred_customer")
+        String CUSTOMER_TRANSFERRED_CUSTOMER = "CUSTOMER_TRANSFERRED_CUSTOMER";
         //客户自动移入公海
         @Schema(description = "message.customer_automatic_move_high_seas")
-        String CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS="CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS";
+        String CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS = "CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS";
         //客户被动移入公海（到时间）
         @Schema(description = "message.customer_moved_high_seas")
-        String CUSTOMER_MOVED_HIGH_SEAS="CUSTOMER_MOVED_HIGH_SEAS";
+        String CUSTOMER_MOVED_HIGH_SEAS = "CUSTOMER_MOVED_HIGH_SEAS";
         //客户被删除
         @Schema(description = "message.customer_deleted")
-        String CUSTOMER_DELETED="CUSTOMER_DELETED";
+        String CUSTOMER_DELETED = "CUSTOMER_DELETED";
         //公海客户被分配
         @Schema(description = "message.high_seas_customer_distributed")
-        String HIGH_SEAS_CUSTOMER_DISTRIBUTED="HIGH_SEAS_CUSTOMER_DISTRIBUTED";
+        String HIGH_SEAS_CUSTOMER_DISTRIBUTED = "HIGH_SEAS_CUSTOMER_DISTRIBUTED";
         //跟进计划到期
         @Schema(description = "message.customer_follow_up_plan_due")
-        String CUSTOMER_FOLLOW_UP_PLAN_DUE="CUSTOMER_FOLLOW_UP_PLAN_DUE";
+        String CUSTOMER_FOLLOW_UP_PLAN_DUE = "CUSTOMER_FOLLOW_UP_PLAN_DUE";
         //----线索管理----
         //自动移入线索池
         @Schema(description = "message.clue_automatic_move_pool")
-        String CLUE_AUTOMATIC_MOVE_POOL="CLUE_AUTOMATIC_MOVE_POOL";
+        String CLUE_AUTOMATIC_MOVE_POOL = "CLUE_AUTOMATIC_MOVE_POOL";
         //被动移入线索池
         @Schema(description = "message.clue_moved_pool")
-        String CLUE_MOVED_POOL="CLUE_MOVED_POOL";
+        String CLUE_MOVED_POOL = "CLUE_MOVED_POOL";
         //转为客户
         @Schema(description = "message.clue_convert_customer")
-        String CLUE_CONVERT_CUSTOMER="CLUE_CONVERT_CUSTOMER";
-        ///转为商机
+        String CLUE_CONVERT_CUSTOMER = "CLUE_CONVERT_CUSTOMER";
+        /// 转为商机
         @Schema(description = "message.clue_convert_business")
-        String CLUE_CONVERT_BUSINESS="CLUE_CONVERT_BUSINESS";
+        String CLUE_CONVERT_BUSINESS = "CLUE_CONVERT_BUSINESS";
         //转移线索
         @Schema(description = "message.transfer_clue")
-        String TRANSFER_CLUE="TRANSFER_CLUE";
+        String TRANSFER_CLUE = "TRANSFER_CLUE";
         //删除线索
         @Schema(description = "message.clue_deleted")
-        String CLUE_DELETED="CLUE_DELETED";
+        String CLUE_DELETED = "CLUE_DELETED";
         //分配线索
         @Schema(description = "message.clue_distributed")
-        String CLUE_DISTRIBUTED="CLUE_DISTRIBUTED";
+        String CLUE_DISTRIBUTED = "CLUE_DISTRIBUTED";
         //导入线索
         @Schema(description = "message.clue_import")
-        String CLUE_IMPORT="CLUE_IMPORT";
+        String CLUE_IMPORT = "CLUE_IMPORT";
         //跟进计划到期
         @Schema(description = "message.clue_follow_up_plan_due")
-        String CLUE_FOLLOW_UP_PLAN_DUE="CLUE_FOLLOW_UP_PLAN_DUE";
+        String CLUE_FOLLOW_UP_PLAN_DUE = "CLUE_FOLLOW_UP_PLAN_DUE";
         //-------商机管理----
         //商机删除
         @Schema(description = "message.business_deleted")
-        String BUSINESS_DELETED="BUSINESS_DELETED";
+        String BUSINESS_DELETED = "BUSINESS_DELETED";
         //商机转移
         @Schema(description = "message.business_transfer")
-        String BUSINESS_TRANSFER="BUSINESS_TRANSFER";
+        String BUSINESS_TRANSFER = "BUSINESS_TRANSFER";
         //商机导入
         @Schema(description = "message.business_import")
-        String BUSINESS_IMPORT="BUSINESS_IMPORT";
+        String BUSINESS_IMPORT = "BUSINESS_IMPORT";
         //跟进计划提醒
         @Schema(description = "message.business_follow_up_plan_due")
-        String BUSINESS_FOLLOW_UP_PLAN_DUE="BUSINESS_FOLLOW_UP_PLAN_DUE";
+        String BUSINESS_FOLLOW_UP_PLAN_DUE = "BUSINESS_FOLLOW_UP_PLAN_DUE";
     }
 
     public interface RelatedUser {
@@ -119,7 +119,7 @@ public class NotificationConstants {
         @Schema(description = "message.customer_collaboration_add_text")
         String CUSTOMER_COLLABORATION_ADD_TEXT = "CUSTOMER_COLLABORATION_ADD_TEXT";
 
-       // 请注意！${OPERATOR}将${customerName}客户转移给您,请知悉！
+        // 请注意！${OPERATOR}将${customerName}客户转移给您,请知悉！
         @Schema(description = "message.customer_transferred_customer_text")
         String CUSTOMER_TRANSFERRED_CUSTOMER_TEXT = "CUSTOMER_TRANSFERRED_CUSTOMER_TEXT";
 
@@ -199,6 +199,6 @@ public class NotificationConstants {
 
     public interface SensitiveField {
         String id = "id";
-        String organizationId="organizationId";
+        String organizationId = "organizationId";
     }
 }

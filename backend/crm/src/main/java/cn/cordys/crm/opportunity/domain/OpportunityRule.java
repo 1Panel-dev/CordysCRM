@@ -9,27 +9,27 @@ import lombok.Data;
 @Table(name = "opportunity_rule")
 public class OpportunityRule extends BaseModel {
 
-	@Schema(description = "规则名称")
-	private String name;
+    @Schema(description = "规则名称")
+    private String name;
 
-	@Schema(description = "组织ID")
-	private String organizationId;
+    @Schema(description = "组织ID")
+    private String organizationId;
 
-	@Schema(description = "管理员ID")
-	private String ownerId;
+    @Schema(description = "管理员ID")
+    private String ownerId;
 
-	@Schema(description = "范围ID")
-	private String scopeId;
+    @Schema(description = "范围ID")
+    private String scopeId;
 
-	@Schema(description = "启用/禁用")
-	private Boolean enable;
+    @Schema(description = "启用/禁用")
+    private Boolean enable;
 
-	@Schema(description = "自动回收")
-	private Boolean auto;
+    @Schema(description = "自动回收")
+    private Boolean auto;
 
-	@Schema(description = "操作符")
-	private String operator;
+    @Schema(description = "操作符")
+    private String operator;
 
-	@Schema(description = "回收条件")
-	private String condition;
+    @Schema(description = "回收条件")
+    private String condition;
 }

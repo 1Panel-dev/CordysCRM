@@ -6,8 +6,8 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- *
  * 权限所属资源，例如 SYSTEM_ROLE
+ *
  * @author jianxing
  */
 @Data

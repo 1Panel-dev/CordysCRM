@@ -10,9 +10,9 @@ import java.util.List;
 @Data
 public class ModuleFormConfigDTO {
 
-	@Schema(description = "字段集合及其属性")
-	private List<BaseField> fields;
+    @Schema(description = "字段集合及其属性")
+    private List<BaseField> fields;
 
-	@Schema(description = "表单属性")
-	private FormProp formProp;
+    @Schema(description = "表单属性")
+    private FormProp formProp;
 }

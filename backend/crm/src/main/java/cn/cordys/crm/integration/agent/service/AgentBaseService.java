@@ -82,6 +82,7 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param orgId
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
@@ -140,6 +141,7 @@ public class AgentBaseService extends DashboardSortService {
      * 智能体详情
      *
      * @param id
+     *
      * @return
      */
     public AgentDetailResponse getDetail(String id) {
@@ -256,6 +258,7 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public Pager<List<AgentPageResponse>> getList(AgentPageRequest request, String userId, String orgId) {
@@ -353,6 +356,7 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public List<AgentPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
@@ -422,6 +426,7 @@ public class AgentBaseService extends DashboardSortService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public List<AgentOptionDTO> getAgentOptions(String userId, String orgId) {

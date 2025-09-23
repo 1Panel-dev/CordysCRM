@@ -63,6 +63,7 @@ public class DashboardModuleService extends MoveNodeService {
      * @param request
      * @param orgId
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
@@ -192,6 +193,7 @@ public class DashboardModuleService extends MoveNodeService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public List<DashboardTreeNode> getTree(String userId, String orgId) {
@@ -259,6 +261,7 @@ public class DashboardModuleService extends MoveNodeService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public Map<String, Long> moduleCount(String userId, String orgId) {
@@ -360,7 +363,9 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 获取文件夹名称
+     *
      * @param id
+     *
      * @return
      */
     public String getDashboardModuleName(String id) {

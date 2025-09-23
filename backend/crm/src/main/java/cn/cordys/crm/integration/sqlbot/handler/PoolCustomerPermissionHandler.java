@@ -71,7 +71,7 @@ public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandl
         if (Strings.CS.equals(fieldName, "pool_id")) {
             sqlBotField.setName("pool_name");
             sqlBotField.setComment("公海名称");
-            return "(select pool.name from customer_pool pool where c.pool_id = pool.id limit 1) as pool_name" ;
+            return "(select pool.name from customer_pool pool where c.pool_id = pool.id limit 1) as pool_name";
         } else {
             return getDefaultFieldSql(sqlBotField);
         }

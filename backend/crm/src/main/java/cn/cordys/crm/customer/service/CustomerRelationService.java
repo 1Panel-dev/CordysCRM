@@ -103,6 +103,7 @@ public class CustomerRelationService {
     /**
      * 校验添加的子公司是否已经有所属的集团了
      * 一个公司只能有一个集团
+     *
      * @param customerId
      * @param relations
      */
@@ -135,7 +136,7 @@ public class CustomerRelationService {
     }
 
     public void deleteByCustomerId(String customerId) {
-       deleteByCustomerIds(List.of(customerId));
+        deleteByCustomerIds(List.of(customerId));
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {

@@ -3,7 +3,7 @@ package cn.cordys.crm.integration.dingtalk.response;
 import lombok.Data;
 
 @Data
-public class DingTalkUserResponse extends DingTalkResponseEntity{
+public class DingTalkUserResponse extends DingTalkResponseEntity {
 
     /**
      * 用户的钉钉昵称。

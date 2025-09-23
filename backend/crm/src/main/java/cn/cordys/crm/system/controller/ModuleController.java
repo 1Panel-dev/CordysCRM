@@ -24,46 +24,46 @@ import java.util.List;
 @Tag(name = "模块设置")
 public class ModuleController {
 
-	@Resource
-	private ModuleService moduleService;
+    @Resource
+    private ModuleService moduleService;
 
-	@PostMapping("/list")
-	@Operation(summary = "获取模块设置列表")
-	public List<ModuleDTO> getModuleList(@Validated @RequestBody ModuleRequest request) {
-		return moduleService.getModuleList(request);
-	}
+    @PostMapping("/list")
+    @Operation(summary = "获取模块设置列表")
+    public List<ModuleDTO> getModuleList(@Validated @RequestBody ModuleRequest request) {
+        return moduleService.getModuleList(request);
+    }
 
-	@GetMapping("/form/list")
-	@Operation(summary = "获取表单列表")
-	public List<OptionDTO> getFormList() {
-		return moduleService.getFormList();
-	}
+    @GetMapping("/form/list")
+    @Operation(summary = "获取表单列表")
+    public List<OptionDTO> getFormList() {
+        return moduleService.getFormList();
+    }
 
-	@GetMapping("/switch/{id}")
-	@Operation(summary = "单个模块开启或关闭")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-	public void switchModule(@PathVariable String id) {
-		moduleService.switchModule(id, SessionUtils.getUserId());
-	}
+    @GetMapping("/switch/{id}")
+    @Operation(summary = "单个模块开启或关闭")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+    public void switchModule(@PathVariable String id) {
+        moduleService.switchModule(id, SessionUtils.getUserId());
+    }
 
-	@PostMapping("/sort")
-	@Operation(summary = "模块排序")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-	public void sortModule(@Validated @RequestBody ModuleSortRequest request) {
-		moduleService.sort(request, SessionUtils.getUserId());
-	}
+    @PostMapping("/sort")
+    @Operation(summary = "模块排序")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+    public void sortModule(@Validated @RequestBody ModuleSortRequest request) {
+        moduleService.sort(request, SessionUtils.getUserId());
+    }
 
-	@GetMapping("/user/dept/tree")
-	@Operation(summary = "获取部门用户树")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
-	public List<DeptUserTreeNode> getDeptUserTree() {
-		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/user/dept/tree")
+    @Operation(summary = "获取部门用户树")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
+    public List<DeptUserTreeNode> getDeptUserTree() {
+        return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+    }
 
-	@GetMapping("/role/tree")
-	@Operation(summary = "获取角色树")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
-	public List<RoleUserTreeNode> getRoleTree() {
-		return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/role/tree")
+    @Operation(summary = "获取角色树")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
+    public List<RoleUserTreeNode> getRoleTree() {
+        return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
+    }
 }

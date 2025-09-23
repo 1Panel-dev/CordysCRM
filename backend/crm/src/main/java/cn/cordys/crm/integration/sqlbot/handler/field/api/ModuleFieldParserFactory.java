@@ -13,6 +13,7 @@ import java.util.Map;
 public class ModuleFieldParserFactory {
     private static final Map<String, ModuleFieldParser> MODULE_FIELD_PARSER_MAP = new HashMap<>();
     private static final DefaultParser DEFAULT_PARSER = new DefaultParser();
+
     static {
         registerFieldParser(FieldType.SELECT, new SelectParser());
         registerFieldParser(FieldType.SELECT_MULTIPLE, new SelectMultipleParser());

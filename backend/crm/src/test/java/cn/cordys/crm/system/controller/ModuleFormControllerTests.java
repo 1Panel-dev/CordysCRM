@@ -24,36 +24,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ModuleFormControllerTests extends BaseTest{
+public class ModuleFormControllerTests extends BaseTest {
 
-	public static List<BaseField> fields;
+    public static List<BaseField> fields;
 
-	@Test
-	@Order(1)
-	void testGetFieldList() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CLUE.getKey());
-		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() > 1;
-		fields = formConfig.getFields();
-	}
+    @Test
+    @Order(1)
+    void testGetFieldList() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CLUE.getKey());
+        ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
+        assert formConfig.getFields().size() > 1;
+        fields = formConfig.getFields();
+    }
 
-	@Test
-	@Order(2)
-	void testSaveFields() throws Exception {
-		ModuleFormSaveRequest request = new ModuleFormSaveRequest();
-		request.setFormKey("none-key");
-		request.setFields(List.of());
-		request.setFormProp(new FormProp());
-		MvcResult mvcResult = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("module.form.not_exist"));
-		request.setFormKey(FormKey.CLUE.getKey());
-		request.setFields(fields);
-		this.requestPostWithOk("/module/form/save", request);
-		BaseField field = new SelectField();
-		field.setId("select-id");
-		field.setType(FieldType.SELECT.name());
-		request.setFields(List.of(field));
-		MvcResult mvcResult1 = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.form.business_field.deleted"));
-	}
+    @Test
+    @Order(2)
+    void testSaveFields() throws Exception {
+        ModuleFormSaveRequest request = new ModuleFormSaveRequest();
+        request.setFormKey("none-key");
+        request.setFields(List.of());
+        request.setFormProp(new FormProp());
+        MvcResult mvcResult = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("module.form.not_exist"));
+        request.setFormKey(FormKey.CLUE.getKey());
+        request.setFields(fields);
+        this.requestPostWithOk("/module/form/save", request);
+        BaseField field = new SelectField();
+        field.setId("select-id");
+        field.setType(FieldType.SELECT.name());
+        request.setFields(List.of(field));
+        MvcResult mvcResult1 = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.form.business_field.deleted"));
+    }
 }

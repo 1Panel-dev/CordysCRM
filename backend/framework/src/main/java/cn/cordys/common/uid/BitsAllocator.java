@@ -67,7 +67,7 @@ public class BitsAllocator {
     public long allocate(long deltaSeconds, long workerId, long sequence) {
         return (deltaSeconds << timestampShift) | (workerId << workerIdShift) | sequence;
     }
-    
+
     /**
      * Getters
      */
@@ -106,10 +106,10 @@ public class BitsAllocator {
     public int getWorkerIdShift() {
         return workerIdShift;
     }
-    
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
+
 }

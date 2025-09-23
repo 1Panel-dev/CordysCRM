@@ -31,7 +31,9 @@ public class SerializedLambda implements Serializable {
      * 该方法通过序列化和反序列化过程提取 Lambda 表达式的元信息。
      *
      * @param serializable 可序列化对象，通常为 Lambda 表达式。
+     *
      * @return 提取的 {@link SerializedLambda} 对象。
+     *
      * @throws GenericException 如果序列化或反序列化过程中出现异常。
      */
     public static SerializedLambda extract(Serializable serializable) {

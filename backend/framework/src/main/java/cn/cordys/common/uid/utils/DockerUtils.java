@@ -7,22 +7,26 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DockerUtils
- * 
-
  */
 public abstract class DockerUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerUtils.class);
 
-    /** Environment param keys */
+    /**
+     * Environment param keys
+     */
     private static final String ENV_KEY_HOST = "JPAAS_HOST";
     private static final String ENV_KEY_PORT = "JPAAS_HTTP_PORT";
     private static final String ENV_KEY_PORT_ORIGINAL = "JPAAS_HOST_PORT_8080";
 
-    /** Docker host & port */
+    /**
+     * Docker host & port
+     */
     private static String DOCKER_HOST = "";
     private static String DOCKER_PORT = "";
 
-    /** Whether is docker */
+    /**
+     * Whether is docker
+     */
     private static boolean IS_DOCKER;
 
     static {
@@ -31,7 +35,7 @@ public abstract class DockerUtils {
 
     /**
      * Retrieve docker host
-     * 
+     *
      * @return empty string if not a docker
      */
     public static String getDockerHost() {
@@ -40,7 +44,7 @@ public abstract class DockerUtils {
 
     /**
      * Retrieve docker port
-     * 
+     *
      * @return empty string if not a docker
      */
     public static String getDockerPort() {
@@ -49,7 +53,7 @@ public abstract class DockerUtils {
 
     /**
      * Whether a docker
-     * 
+     *
      * @return
      */
     public static boolean isDocker() {

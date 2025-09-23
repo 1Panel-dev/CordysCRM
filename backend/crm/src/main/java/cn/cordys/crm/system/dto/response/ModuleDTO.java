@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class ModuleDTO extends Module {
 
-	@Schema(description = "国际化名称")
-	private String translateName;
+    @Schema(description = "国际化名称")
+    private String translateName;
 }

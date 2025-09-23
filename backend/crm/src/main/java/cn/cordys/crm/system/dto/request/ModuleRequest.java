@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 public class ModuleRequest {
 
-	@Size(min = 1, max = 32, message = "{announcement.organizationId.length_range}", groups = {Created.class, Updated.class})
-	@NotBlank(message = "{announcement.organizationId.not_blank}", groups = {Created.class, Updated.class})
-	@Schema(description = "组织ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String organizationId;
+    @Size(min = 1, max = 32, message = "{announcement.organizationId.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{announcement.organizationId.not_blank}", groups = {Created.class, Updated.class})
+    @Schema(description = "组织ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String organizationId;
 }

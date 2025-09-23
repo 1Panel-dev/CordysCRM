@@ -8,8 +8,6 @@ import java.util.Enumeration;
 
 /**
  * NetUtils
- * 
-
  */
 public abstract class NetUtils {
 
@@ -30,6 +28,7 @@ public abstract class NetUtils {
      * Retrieve the first validated local ip address(the Public and LAN ip addresses are validated).
      *
      * @return the local address
+     *
      * @throws SocketException the socket exception
      */
     public static InetAddress getLocalInetAddress() throws SocketException {
@@ -60,7 +59,7 @@ public abstract class NetUtils {
 
     /**
      * Retrieve local address
-     * 
+     *
      * @return the string local address
      */
     public static String getLocalAddress() {

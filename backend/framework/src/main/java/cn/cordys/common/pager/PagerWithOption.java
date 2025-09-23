@@ -10,9 +10,9 @@ import java.util.Map;
 @Data
 public class PagerWithOption<T> extends Pager<T> {
 
-	/**
-	 * 选项集合
-	 */
-	@Schema(description = "选项集合")
-	private Map<String, List<OptionDTO>> optionMap;
+    /**
+     * 选项集合
+     */
+    @Schema(description = "选项集合")
+    private Map<String, List<OptionDTO>> optionMap;
 }

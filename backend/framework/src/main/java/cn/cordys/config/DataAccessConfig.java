@@ -32,7 +32,9 @@ public class DataAccessConfig {
      *
      * @param injectionPoint 当前注入点的信息，用于解析目标泛型类型
      * @param <E>            泛型参数，表示实体类类型
+     *
      * @return 对应实体类的 {@link BaseMapper} 实例
+     *
      * @throws IllegalArgumentException 如果注入点的字段类型无法解析
      */
     @Bean

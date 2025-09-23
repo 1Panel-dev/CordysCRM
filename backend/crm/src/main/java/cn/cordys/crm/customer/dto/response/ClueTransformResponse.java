@@ -8,6 +8,6 @@ import lombok.Data;
 @Builder
 public class ClueTransformResponse {
 
-	@Schema(description = "目标ID")
-	private String transformId;
+    @Schema(description = "目标ID")
+    private String transformId;
 }

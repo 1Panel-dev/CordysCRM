@@ -69,6 +69,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public FollowUpPlan add(FollowUpPlanAddRequest request, String userId, String orgId) {
@@ -97,6 +98,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -155,6 +157,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param resourceType
      * @param type
      * @param customerData
+     *
      * @return
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
@@ -241,6 +244,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * 跟进计划详情
      *
      * @param id
+     *
      * @return
      */
     public FollowUpPlanDetailResponse get(String id, String orgId) {
@@ -297,7 +301,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
             throw new GenericException("plan_not_found");
         }
         //检查跟进计划是否可以取消,如果是已完成，并且已转记录的跟进计划，则不允许取消
-        if(followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
+        if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
             return;
         }
         FollowUpPlan plan = new FollowUpPlan();
@@ -340,7 +344,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (followUpPlan == null) {
             throw new GenericException("plan_not_found");
         }
-        if(followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
+        if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
             return;
         }
         followUpPlan = new FollowUpPlan();

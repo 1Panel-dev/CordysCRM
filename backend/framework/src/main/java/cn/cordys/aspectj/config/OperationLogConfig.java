@@ -26,7 +26,9 @@ public class OperationLogConfig implements ImportAware {
 
     /**
      * 创建 LogRecordAopAdvisor 实例，配置日志记录的切面和拦截器。
+     *
      * @param operationLogInterceptor LogRecordInterceptor 实例
+     *
      * @return LogRecordAopAdvisor 实例
      */
     @DependsOn("logRecordInterceptor")
@@ -41,6 +43,7 @@ public class OperationLogConfig implements ImportAware {
 
     /**
      * 创建 LogRecordInterceptor 实例，配置日志记录的拦截器。
+     *
      * @return LogRecordInterceptor 实例
      */
     @Bean
@@ -53,6 +56,7 @@ public class OperationLogConfig implements ImportAware {
 
     /**
      * 设置导入的元数据，在此处读取日志记录相关的配置。
+     *
      * @param importMetadata 导入的元数据
      */
     @Override

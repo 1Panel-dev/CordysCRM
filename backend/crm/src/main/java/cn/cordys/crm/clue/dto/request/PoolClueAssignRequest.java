@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class PoolClueAssignRequest {
 
-	@NotBlank
-	@Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String clueId;
+    @NotBlank
+    @Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String clueId;
 
-	@NotBlank
-	@Schema(description = "分配用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String assignUserId;
+    @NotBlank
+    @Schema(description = "分配用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String assignUserId;
 }

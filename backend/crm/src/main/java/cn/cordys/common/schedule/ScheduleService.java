@@ -46,6 +46,7 @@ public class ScheduleService {
      * 获取下一个任务编号。
      *
      * @param organizationId 项目 ID
+     *
      * @return 下一个任务编号
      */
     public long getNextNum(String organizationId) {
@@ -56,6 +57,7 @@ public class ScheduleService {
      * 根据任务 ID 获取定时任务。
      *
      * @param scheduleId 定时任务 ID
+     *
      * @return 定时任务对象
      */
     public Schedule getSchedule(String scheduleId) {
@@ -66,6 +68,7 @@ public class ScheduleService {
      * 编辑定时任务信息。
      *
      * @param schedule 要更新的定时任务对象
+     *
      * @return 更新的记录数
      */
     public int editSchedule(Schedule schedule) {

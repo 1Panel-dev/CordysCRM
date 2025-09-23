@@ -12,5 +12,5 @@ public class SseMessageDTO {
 
     private List<NotificationDTO> notificationDTOList;
 
-    private List<NotificationDTO>announcementDTOList;
+    private List<NotificationDTO> announcementDTOList;
 }

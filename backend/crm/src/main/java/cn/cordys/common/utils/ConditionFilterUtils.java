@@ -76,7 +76,7 @@ public class ConditionFilterUtils {
                 item.setValue(BaseCondition.transferKeyword(strValue));
             }
 
-            if (item.getValue() != null && Strings.CS.contains(item.getType(),"MULTIPLE" )
+            if (item.getValue() != null && Strings.CS.contains(item.getType(), "MULTIPLE")
                     && Strings.CS.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.EQUALS.name(),
                     FilterCondition.CombineConditionOperator.NOT_EQUALS.name())) {
                 // 转义 mysql 的特殊字符

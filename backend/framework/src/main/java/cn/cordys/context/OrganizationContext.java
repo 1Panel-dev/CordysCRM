@@ -24,6 +24,7 @@ public class OrganizationContext {
 
     /**
      * 获取组织ID，并校验权限
+     *
      * @return
      */
     public static String getOrganizationId() {
@@ -63,12 +64,13 @@ public class OrganizationContext {
 
     /**
      * 设置组织ID
+     *
      * @param organizationId
      */
     public static void setOrganizationId(String organizationId) {
         ORGANIZATION_ID.set(organizationId);
     }
-    
+
     public static void clear() {
         ORGANIZATION_ID.remove();
     }

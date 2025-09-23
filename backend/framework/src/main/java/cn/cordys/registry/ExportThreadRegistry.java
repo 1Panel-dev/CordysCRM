@@ -41,6 +41,7 @@ public final class ExportThreadRegistry {
      * 检查任务是否已被中断
      *
      * @param taskId 任务ID
+     *
      * @return 如果任务不存在或已被中断返回true，否则返回false
      */
     public static boolean isInterrupted(String taskId) {
@@ -61,6 +62,7 @@ public final class ExportThreadRegistry {
      * 检查任务是否存在
      *
      * @param taskId 任务ID
+     *
      * @return 如果任务存在返回true
      */
     public static boolean exists(String taskId) {

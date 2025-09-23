@@ -27,47 +27,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModuleControllerTests extends BaseTest {
 
-	private static final String LIST_ALL = "/module/list";
-	private static final String SWITCH = "/module/switch/";
-	private static final String SORT = "/module/sort";
+    private static final String LIST_ALL = "/module/list";
+    private static final String SWITCH = "/module/switch/";
+    private static final String SORT = "/module/sort";
 
-	@Resource
-	private ModuleService moduleService;
-	@Resource
-	private BaseMapper<Module> moduleMapper;
+    @Resource
+    private ModuleService moduleService;
+    @Resource
+    private BaseMapper<Module> moduleMapper;
 
-	@Test
-	@Order(1)
-	void testInitModuleList() {
-		moduleService.initModule("default");
-		List<Module> modules = moduleMapper.selectAll("pos");
-		assert !modules.isEmpty();
-	}
+    @Test
+    @Order(1)
+    void testInitModuleList() {
+        moduleService.initModule("default");
+        List<Module> modules = moduleMapper.selectAll("pos");
+        assert !modules.isEmpty();
+    }
 
-	@Test
-	@Order(2)
-	void testGetModuleListAndSwitch() throws Exception {
-		ModuleRequest request = new ModuleRequest();
-		request.setOrganizationId("default");
-		MvcResult mvcResult = this.requestPostWithOkAndReturn(LIST_ALL, request);
-		List<ModuleDTO> modules = getResultDataArray(mvcResult, ModuleDTO.class);
-		assert !modules.isEmpty();
-		String param = modules.getFirst().getId();
-		this.requestGetWithOk(SWITCH + param);
-		// permission check
-		requestGetPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SWITCH + param);
-		// switch not exist module
-		MvcResult mvcResult1 = this.requestGet(SWITCH + "none").andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.not_exist"));
-		ModuleSortRequest sortRequest = new ModuleSortRequest();
-		sortRequest.setDragModuleId(param);
-		sortRequest.setStart(1L);
-		sortRequest.setEnd(3L);
-		this.requestPostWithOk(SORT, sortRequest);
-		sortRequest.setStart(3L);
-		sortRequest.setEnd(1L);
-		this.requestPostWithOk(SORT, sortRequest);
-		// permission check
-		requestPostPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SORT, sortRequest);
-	}
+    @Test
+    @Order(2)
+    void testGetModuleListAndSwitch() throws Exception {
+        ModuleRequest request = new ModuleRequest();
+        request.setOrganizationId("default");
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(LIST_ALL, request);
+        List<ModuleDTO> modules = getResultDataArray(mvcResult, ModuleDTO.class);
+        assert !modules.isEmpty();
+        String param = modules.getFirst().getId();
+        this.requestGetWithOk(SWITCH + param);
+        // permission check
+        requestGetPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SWITCH + param);
+        // switch not exist module
+        MvcResult mvcResult1 = this.requestGet(SWITCH + "none").andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.not_exist"));
+        ModuleSortRequest sortRequest = new ModuleSortRequest();
+        sortRequest.setDragModuleId(param);
+        sortRequest.setStart(1L);
+        sortRequest.setEnd(3L);
+        this.requestPostWithOk(SORT, sortRequest);
+        sortRequest.setStart(3L);
+        sortRequest.setEnd(1L);
+        this.requestPostWithOk(SORT, sortRequest);
+        // permission check
+        requestPostPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SORT, sortRequest);
+    }
 }

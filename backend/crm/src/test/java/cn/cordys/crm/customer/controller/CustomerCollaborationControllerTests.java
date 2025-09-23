@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 import java.util.UUID;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerCollaborationControllerTests extends BaseTest {
@@ -79,7 +79,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         Assertions.assertEquals(request.getCustomerId(), customerId);
         Assertions.assertEquals(request.getCollaborationType(), customerCollaboration.getCollaborationType());
         Assertions.assertEquals(request.getUserId(), customerCollaboration.getUserId());
-        
+
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DEFAULT_ADD, request);
     }
@@ -114,7 +114,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
             Assertions.assertEquals(customerCollaboration, result);
             Assertions.assertNotNull(customerCollaborationListResponse.getUpdateUserName());
         });
-        
+
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
     }

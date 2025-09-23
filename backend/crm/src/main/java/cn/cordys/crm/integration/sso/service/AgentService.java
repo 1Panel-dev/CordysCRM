@@ -17,6 +17,7 @@ public class AgentService {
      *
      * @param accessToken token
      * @param agentId     企业应用id
+     *
      * @return String token
      */
     public Boolean getWeComAgent(String accessToken, String agentId) {

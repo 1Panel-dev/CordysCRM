@@ -7,12 +7,12 @@ import lombok.Data;
 @Data
 public class PoolCluePickRequest {
 
-	@NotBlank
-	@Schema(description = "线索ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String clueId;
+    @NotBlank
+    @Schema(description = "线索ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String clueId;
 
-	@NotBlank
-	@Schema(description = "线索池ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String poolId;
+    @NotBlank
+    @Schema(description = "线索池ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String poolId;
 
 }

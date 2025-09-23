@@ -56,6 +56,7 @@ public class BaseService {
      *
      * @param object
      * @param <T>
+     *
      * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
@@ -67,6 +68,7 @@ public class BaseService {
      *
      * @param list
      * @param <T>
+     *
      * @return
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
@@ -105,6 +107,7 @@ public class BaseService {
      *
      * @param object
      * @param <T>
+     *
      * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
@@ -116,6 +119,7 @@ public class BaseService {
      *
      * @param list
      * @param <T>
+     *
      * @return
      */
     public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
@@ -159,6 +163,7 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
+     *
      * @return
      */
     public Map<String, String> getUserNameMap(List<String> userIds) {
@@ -185,6 +190,7 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
+     *
      * @return
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
@@ -214,6 +220,7 @@ public class BaseService {
      * 获取联系人ID和名称的映射
      *
      * @param contactIds
+     *
      * @return
      */
     public Map<String, String> getContactMap(List<String> contactIds) {
@@ -295,7 +302,9 @@ public class BaseService {
 
     /**
      * 客户id与名称映射
+     *
      * @param customerIds
+     *
      * @return
      */
     public Map<String, String> getCustomerMap(List<String> customerIds) {
@@ -309,7 +318,9 @@ public class BaseService {
 
     /**
      * 商机id与名称映射
+     *
      * @param opportunityIds
+     *
      * @return
      */
     public Map<String, String> getOpportunityMap(List<String> opportunityIds) {
@@ -324,7 +335,9 @@ public class BaseService {
 
     /**
      * 线索id与名称映射
+     *
      * @param clueIds
+     *
      * @return
      */
     public Map<String, String> getClueMap(List<String> clueIds) {
@@ -339,7 +352,9 @@ public class BaseService {
 
     /**
      * 联系人id和电话映射
+     *
      * @param contactIds
+     *
      * @return
      */
     public Map<String, String> getContactPhone(List<String> contactIds) {

@@ -13,13 +13,13 @@ import java.util.List;
 @Builder
 public class ImportResponse implements Serializable {
 
-	@Serial
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-	@Schema(description = "成功数量")
-	private int successCount;
-	@Schema(description = "失败数量")
-	private int failCount;
-	@Schema(description = "报错信息")
-	private List<ExcelErrData> errorMessages;
+    @Schema(description = "成功数量")
+    private int successCount;
+    @Schema(description = "失败数量")
+    private int failCount;
+    @Schema(description = "报错信息")
+    private List<ExcelErrData> errorMessages;
 }

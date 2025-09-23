@@ -203,6 +203,7 @@ public class WeComDepartmentService {
      *
      * @param accessToken   访问令牌
      * @param departmentIds 部门ID列表
+     *
      * @return 部门ID与用户列表的映射
      */
     private Map<String, List<WeComUser>> getDepartmentUser(String accessToken, List<Long> departmentIds) {
@@ -238,6 +239,7 @@ public class WeComDepartmentService {
      * 获取部门列表
      *
      * @param accessToken 访问令牌
+     *
      * @return 部门列表
      */
     private List<WeComDepartment> getDepartmentList(String accessToken) {

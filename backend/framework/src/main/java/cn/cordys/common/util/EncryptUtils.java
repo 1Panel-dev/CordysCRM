@@ -15,6 +15,7 @@ public class EncryptUtils extends CodingUtils {
      * AES加密方法
      *
      * @param o 要加密的对象
+     *
      * @return 加密后的字符串，若传入对象为空则返回null
      */
     public static String aesEncrypt(Object o) {
@@ -28,6 +29,7 @@ public class EncryptUtils extends CodingUtils {
      * AES解密方法
      *
      * @param o 要解密的对象
+     *
      * @return 解密后的字符串，若传入对象为空则返回null
      */
     public static String aesDecrypt(Object o) {
@@ -43,6 +45,7 @@ public class EncryptUtils extends CodingUtils {
      * @param o        要解密的对象列表
      * @param attrName 需要解密的属性名
      * @param <T>      对象类型
+     *
      * @return 解密后的对象列表
      */
     public static <T> Object aesDecrypt(List<T> o, String attrName) {
@@ -66,6 +69,7 @@ public class EncryptUtils extends CodingUtils {
      * MD5加密方法
      *
      * @param o 要加密的对象
+     *
      * @return 加密后的MD5字符串，若传入对象为空则返回null
      */
     public static String md5Encrypt(Object o) {

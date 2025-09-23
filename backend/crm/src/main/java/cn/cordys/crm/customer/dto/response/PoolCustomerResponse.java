@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class PoolCustomerResponse {
 
-	private String customerName;
+    private String customerName;
 }

@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CustomerExportRequest extends CustomerPageRequest{
+public class CustomerExportRequest extends CustomerPageRequest {
 
     @Schema(description = "文件名")
     private String fileName;

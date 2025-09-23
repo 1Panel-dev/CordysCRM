@@ -30,6 +30,7 @@ public class CodingUtils {
      * MD5加密（默认UTF-8字符集）
      *
      * @param src 要加密的字符串
+     *
      * @return 加密后的MD5字符串
      */
     public static String md5(String src) {
@@ -41,6 +42,7 @@ public class CodingUtils {
      *
      * @param src     要加密的字符串
      * @param charset 使用的字符集
+     *
      * @return 加密后的MD5字符串
      */
     public static String md5(String src, String charset) {
@@ -72,6 +74,7 @@ public class CodingUtils {
      * BASE64解密
      *
      * @param src 待解密的字符串
+     *
      * @return 解密后的字符串
      */
     public static String base64Decoding(String src) {
@@ -91,6 +94,7 @@ public class CodingUtils {
      * BASE64加密
      *
      * @param src 待加密的字符串
+     *
      * @return 加密后的字符串
      */
     public static String base64Encoding(String src) {
@@ -111,6 +115,7 @@ public class CodingUtils {
      * @param src       待加密的字符串
      * @param secretKey 加密密钥（16字节）
      * @param iv        初始向量（12字节）
+     *
      * @return 加密后的字符串
      */
     public static String aesEncrypt(String src, String secretKey, byte[] iv) {
@@ -138,6 +143,7 @@ public class CodingUtils {
      * @param src       待解密的字符串
      * @param secretKey 解密密钥（16字节）
      * @param iv        初始向量（12字节）
+     *
      * @return 解密后的字符串
      */
     public static String aesDecrypt(String src, String secretKey, byte[] iv) {
@@ -194,6 +200,7 @@ public class CodingUtils {
      * 计算字符串的哈希值（SHA-256）并返回其前16个字符的十六进制表示
      *
      * @param str 需要计算哈希值的字符串
+     *
      * @return 字符串的哈希值（16个字符的十六进制表示）
      */
     public static String hashStr(String str) {

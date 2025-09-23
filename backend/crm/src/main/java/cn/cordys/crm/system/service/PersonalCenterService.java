@@ -131,6 +131,7 @@ public class PersonalCenterService {
      *
      * @param email email
      * @param code  code
+     *
      * @return message
      */
     public boolean verifyCode(String email, String code) {
@@ -150,6 +151,7 @@ public class PersonalCenterService {
      *
      * @param personalPasswordRequest 包含邮箱、验证码和新密码的请求对象
      * @param operatorId              操作者用户ID
+     *
      * @throws GenericException 验证码错误或密码重置失败时抛出
      */
     public void resetUserPassword(PersonalPasswordRequest personalPasswordRequest, String operatorId) {
@@ -178,6 +180,7 @@ public class PersonalCenterService {
      *
      * @param originPassword
      * @param userId
+     *
      * @return
      */
     private boolean checkPwd(String originPassword, String userId) {
@@ -223,6 +226,7 @@ public class PersonalCenterService {
      * @param request        分页查询请求参数
      * @param userId         当前用户ID
      * @param organizationId 组织ID
+     *
      * @return 分页的跟进计划列表及选项数据
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> getPlanList(

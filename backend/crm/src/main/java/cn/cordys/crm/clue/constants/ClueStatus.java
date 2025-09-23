@@ -30,12 +30,12 @@ public enum ClueStatus {
     FAIL("FAIL", "失败");
 
     private final String key;
-	private final String name;
+    private final String name;
 
-	ClueStatus(String key, String name) {
-		this.key = key;
+    ClueStatus(String key, String name) {
+        this.key = key;
         this.name = name;
-	}
+    }
 
     public static String getByKey(String key) {
         for (ClueStatus status : ClueStatus.values()) {

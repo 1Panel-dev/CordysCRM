@@ -11,8 +11,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OptionDTO implements Serializable {
-    @Schema(description =  "选项ID")
+    @Schema(description = "选项ID")
     private String id;
-    @Schema(description =  "选项名称")
+    @Schema(description = "选项名称")
     private String name;
 }

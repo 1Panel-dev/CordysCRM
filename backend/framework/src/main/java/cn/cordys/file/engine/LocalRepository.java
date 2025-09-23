@@ -35,7 +35,9 @@ public class LocalRepository implements FileRepository {
      *
      * @param multipartFile 要保存的文件，类型为 {@link MultipartFile}。
      * @param request       文件请求信息，包含文件的存储路径、文件名等信息。
+     *
      * @return 返回保存后的文件路径。
+     *
      * @throws IOException 如果保存文件过程中发生 I/O 错误，抛出异常。
      */
     @Override
@@ -53,6 +55,7 @@ public class LocalRepository implements FileRepository {
      * 创建文件夹目录。
      *
      * @param request 文件请求信息，包含文件夹路径信息。
+     *
      * @throws RuntimeException 如果创建目录失败，抛出运行时异常。
      */
     private void createFileDir(FileRequest request) {
@@ -68,6 +71,7 @@ public class LocalRepository implements FileRepository {
      *
      * @param bytes   文件的字节数组。
      * @param request 文件请求信息，包含文件存储路径、文件名等。
+     *
      * @throws IOException 如果保存文件过程中发生 I/O 错误，抛出异常。
      */
     @Override
@@ -92,7 +96,9 @@ public class LocalRepository implements FileRepository {
      *
      * @param inputStream 文件内容的输入流。
      * @param request     文件请求信息，包含文件存储路径、文件名等。
+     *
      * @return 返回保存后的文件路径。
+     *
      * @throws Exception 如果保存文件过程中发生错误，抛出异常。
      */
     @Override
@@ -106,6 +112,7 @@ public class LocalRepository implements FileRepository {
      * 删除文件。
      *
      * @param request 文件请求信息，包含待删除文件的路径、文件名等。
+     *
      * @throws Exception 如果删除文件过程中发生错误，抛出异常。
      */
     @Override
@@ -122,6 +129,7 @@ public class LocalRepository implements FileRepository {
      * 删除指定文件夹及其所有内容。
      *
      * @param request 文件请求信息，包含待删除文件夹路径的文件请求。
+     *
      * @throws Exception 如果删除文件夹过程中发生错误，抛出异常。
      */
     @Override
@@ -145,7 +153,9 @@ public class LocalRepository implements FileRepository {
      * 获取文件的字节内容。
      *
      * @param request 文件请求信息，包含文件路径和文件名。
+     *
      * @return 返回文件的字节数组。
+     *
      * @throws Exception 如果获取文件内容过程中发生错误，抛出异常。
      */
     @Override
@@ -158,7 +168,9 @@ public class LocalRepository implements FileRepository {
      * 获取文件的输入流。
      *
      * @param request 文件请求信息，包含文件路径和文件名。
+     *
      * @return 返回文件内容的输入流。
+     *
      * @throws Exception 如果获取文件输入流过程中发生错误，抛出异常。
      */
     @Override
@@ -171,6 +183,7 @@ public class LocalRepository implements FileRepository {
      *
      * @param request   文件请求信息，包含待下载文件的路径。
      * @param localPath 下载到本地的路径。
+     *
      * @throws UnsupportedOperationException 本方法未实现，调用时会抛出异常。
      */
     @Override
@@ -198,6 +211,7 @@ public class LocalRepository implements FileRepository {
      * 获取指定文件夹下的文件名列表（未实现）。
      *
      * @param request 文件请求信息，包含文件夹路径。
+     *
      * @return 返回文件夹中文件的文件名列表。
      */
     @Override
@@ -210,6 +224,7 @@ public class LocalRepository implements FileRepository {
      * 获取指定文件夹下的文件列表
      *
      * @param request 文件请求信息，包含目标文件夹的标识符或路径。
+     *
      * @return 文件列表
      */
     @Override
@@ -226,6 +241,7 @@ public class LocalRepository implements FileRepository {
      * 复制文件到指定目录
      *
      * @param request 文件复制请求信息。
+     *
      * @throws GenericException 如果复制文件时发生不支持的操作，抛出系统异常。
      */
     @Override
@@ -239,6 +255,7 @@ public class LocalRepository implements FileRepository {
      * 获取指定文件的大小。
      *
      * @param request 文件请求信息，包含待获取大小的文件路径和文件名。
+     *
      * @return 返回文件的大小（字节数）。
      */
     @Override
@@ -251,6 +268,7 @@ public class LocalRepository implements FileRepository {
      * 获取文件的完整路径。
      *
      * @param request 文件请求信息，包含文件夹路径和文件名。
+     *
      * @return 返回文件的完整路径。
      */
     private String getFilePath(FileRequest request) {
@@ -262,6 +280,7 @@ public class LocalRepository implements FileRepository {
      * 获取文件所在的文件夹路径。
      *
      * @param request 文件请求信息，包含文件夹路径。
+     *
      * @return 返回文件夹路径。
      */
     private String getFileDir(FileRequest request) {
@@ -273,6 +292,7 @@ public class LocalRepository implements FileRepository {
      * 获取默认的文件夹路径
      *
      * @param folder 文件夹名称
+     *
      * @return 文件夹路径
      */
     private String getFolderWithDefaultDir(String folder) {

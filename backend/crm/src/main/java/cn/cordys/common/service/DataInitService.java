@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-03 12:01:54
  */
@@ -31,8 +30,8 @@ public class DataInitService {
     private BaseMapper<Parameter> parameterMapper;
     @Resource
     private Redisson redisson;
-	@Resource
-	private ModuleFieldService moduleFieldService;
+    @Resource
+    private ModuleFieldService moduleFieldService;
 
     public void initOneTime() {
         RLock lock = redisson.getLock("init_data_lock");

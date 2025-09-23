@@ -98,6 +98,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param value    字段值
      * @param operator 操作符
      * @param type     字段类型
+     *
      * @return FilterCondition
      */
     public FilterCondition getFilterCondition(String name, Object value, String operator, String type) {
@@ -115,6 +116,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * 获取产品ID和名称的映射关系
      *
      * @param orgId 组织ID
+     *
      * @return 产品ID和名称的映射关系
      */
     public Map<String, String> getProductNameMap(String orgId) {
@@ -127,6 +129,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param keyword 关键字
      * @param orgId   组织ID
+     *
      * @return 客户ID列表
      */
     public List<String> getCustomerIds(String keyword, String orgId) {
@@ -144,6 +147,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param orgId  组织ID
      * @param userId 用户ID
+     *
      * @return 公海池ID和名称的映射关系
      */
     public Map<String, String> getUserCustomerPool(String orgId, String userId) {
@@ -168,6 +172,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param orgId  组织ID
      * @param userId 用户ID
+     *
      * @return 线索池ID和名称的映射关系
      */
     public Map<String, String> getUserCluePool(String orgId, String userId) {
@@ -242,6 +247,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * 获取搜索字段脱敏配置
      *
      * @param orgId 组织ID
+     *
      * @return 搜索字段脱敏配置列表
      */
     public List<SearchFieldMaskConfig> getSearchFieldMaskConfigs(String orgId, String moduleType) {
@@ -254,6 +260,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * 获取用户搜索配置
      *
      * @param userId 用户ID
+     *
      * @return 用户搜索配置列表
      */
     public List<UserSearchConfig> getUserSearchConfigs(String userId, String orgId) {
@@ -272,6 +279,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param moduleFormConfigDTO      模块表单配置
      * @param searchFieldMaskConfigMap 脱敏配置映射关系
      * @param hasPermission            是否有权限查看
+     *
      * @return 自定义字段值列表
      */
     public List<BaseModuleFieldValue> getBaseModuleFieldValues(Set<String> fieldIdSet, String id, Map<String, List<BaseModuleFieldValue>> moduleFiledMap, ModuleFormConfigDTO moduleFormConfigDTO, Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission) {
@@ -345,6 +353,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param searchFieldMaskConfig 脱敏配置
      * @param fieldValue            字段值
+     *
      * @return 脱敏后的字段值
      */
     private Object setStringFieldValue(SearchFieldMaskConfig searchFieldMaskConfig, Object fieldValue) {
@@ -384,6 +393,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param products       产品ID列表
      * @param productNameMap 产品ID和名称的映射关系
+     *
      * @return 产品名称列表
      */
     public List<String> getProductNames(List<String> products, Map<String, String> productNameMap) {
@@ -421,6 +431,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param entity         实体对象
      * @param clazz          实体类
      * @param <A>            实体类型
+     *
      * @return 内置字段列表
      */
     public <A> List<BaseModuleFieldValue> buildInternalField(Map<String, String> internalKeyMap, Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission, A entity,

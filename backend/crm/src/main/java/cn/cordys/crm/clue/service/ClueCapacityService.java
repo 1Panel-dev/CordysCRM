@@ -31,98 +31,99 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class ClueCapacityService {
 
-	@Resource
-	private BaseMapper<ClueCapacity> clueCapacityMapper;
-	@Resource
-	private UserExtendService userExtendService;
-	@Resource
-	private ExtClueCapacityMapper extClueCapacityMapper;
+    @Resource
+    private BaseMapper<ClueCapacity> clueCapacityMapper;
+    @Resource
+    private UserExtendService userExtendService;
+    @Resource
+    private ExtClueCapacityMapper extClueCapacityMapper;
 
-	/**
-	 * 分页获取线索库容设置
-	 * @return 线索库容设置列表
-	 */
-	public List<ClueCapacityDTO> list(String currentOrgId) {
-		List<ClueCapacityDTO> capacityData = new ArrayList<>();
-		LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).orderByDesc(ClueCapacity::getCreateTime);
+    /**
+     * 分页获取线索库容设置
+     *
+     * @return 线索库容设置列表
+     */
+    public List<ClueCapacityDTO> list(String currentOrgId) {
+        List<ClueCapacityDTO> capacityData = new ArrayList<>();
+        LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).orderByDesc(ClueCapacity::getCreateTime);
         List<ClueCapacity> capacities = clueCapacityMapper.selectListByLambda(wrapper);
-		if (CollectionUtils.isEmpty(capacities)) {
-			return new ArrayList<>();
-		}
-		capacities.stream().sorted(Comparator.comparing(ClueCapacity::getCreateTime)).forEach(capacity -> {
-			ClueCapacityDTO capacityDTO = new ClueCapacityDTO();
-			capacityDTO.setId(capacity.getId());
-			capacityDTO.setCapacity(capacity.getCapacity());
-			capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
-			capacityData.add(capacityDTO);
-		});
-		return capacityData;
-	}
+        if (CollectionUtils.isEmpty(capacities)) {
+            return new ArrayList<>();
+        }
+        capacities.stream().sorted(Comparator.comparing(ClueCapacity::getCreateTime)).forEach(capacity -> {
+            ClueCapacityDTO capacityDTO = new ClueCapacityDTO();
+            capacityDTO.setId(capacity.getId());
+            capacityDTO.setCapacity(capacity.getCapacity());
+            capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
+            capacityData.add(capacityDTO);
+        });
+        return capacityData;
+    }
 
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
-	public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
-		List<ClueCapacity> oldCapacities = clueCapacityMapper.selectAll(null);
-		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
-				.collect(Collectors.toList());
-		boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
-		if (duplicate) {
-			throw new GenericException(Translator.get("capacity.scope.duplicate"));
-		}
-		ClueCapacity capacity = new ClueCapacity();
-		capacity.setId(IDGenerator.nextStr());
-		capacity.setOrganizationId(currentOrgId);
-		capacity.setCapacity(request.getCapacity());
-		capacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
-		capacity.setCreateTime(System.currentTimeMillis());
-		capacity.setCreateUser(currentUserId);
-		capacity.setUpdateTime(System.currentTimeMillis());
-		capacity.setUpdateUser(currentUserId);
-		clueCapacityMapper.insert(capacity);
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
+    public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
+        List<ClueCapacity> oldCapacities = clueCapacityMapper.selectAll(null);
+        List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+                .collect(Collectors.toList());
+        boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
+        if (duplicate) {
+            throw new GenericException(Translator.get("capacity.scope.duplicate"));
+        }
+        ClueCapacity capacity = new ClueCapacity();
+        capacity.setId(IDGenerator.nextStr());
+        capacity.setOrganizationId(currentOrgId);
+        capacity.setCapacity(request.getCapacity());
+        capacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
+        capacity.setCreateTime(System.currentTimeMillis());
+        capacity.setCreateUser(currentUserId);
+        capacity.setUpdateTime(System.currentTimeMillis());
+        capacity.setUpdateUser(currentUserId);
+        clueCapacityMapper.insert(capacity);
 
-		// 添加日志上下文
-		OperationLogContext.setContext(LogContextInfo.builder()
-				.modifiedValue(capacity)
-				.resourceId(capacity.getId())
-				.resourceName(Translator.get("module.clue.capacity.setting"))
-				.build());
-	}
+        // 添加日志上下文
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .modifiedValue(capacity)
+                .resourceId(capacity.getId())
+                .resourceName(Translator.get("module.clue.capacity.setting"))
+                .build());
+    }
 
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
-	public void update(CapacityUpdateRequest request, String currentUserId, String currentOrgId) {
-		ClueCapacity oldCapacity = clueCapacityMapper.selectByPrimaryKey(request.getId());
-		if (oldCapacity == null) {
-			throw new GenericException(Translator.get("capacity.not.exist"));
-		}
-		LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).nq(ClueCapacity::getId, request.getId());
-		List<ClueCapacity> oldCapacities = clueCapacityMapper.selectListByLambda(wrapper);
-		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
-				.collect(Collectors.toList());
-		boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
-		if (duplicate) {
-			throw new GenericException(Translator.get("capacity.scope.duplicate"));
-		}
-		oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
-		oldCapacity.setCapacity(request.getCapacity());
-		oldCapacity.setUpdateTime(System.currentTimeMillis());
-		oldCapacity.setUpdateUser(currentUserId);
-		extClueCapacityMapper.updateCapacity(oldCapacity);
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
+    public void update(CapacityUpdateRequest request, String currentUserId, String currentOrgId) {
+        ClueCapacity oldCapacity = clueCapacityMapper.selectByPrimaryKey(request.getId());
+        if (oldCapacity == null) {
+            throw new GenericException(Translator.get("capacity.not.exist"));
+        }
+        LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).nq(ClueCapacity::getId, request.getId());
+        List<ClueCapacity> oldCapacities = clueCapacityMapper.selectListByLambda(wrapper);
+        List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+                .collect(Collectors.toList());
+        boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
+        if (duplicate) {
+            throw new GenericException(Translator.get("capacity.scope.duplicate"));
+        }
+        oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
+        oldCapacity.setCapacity(request.getCapacity());
+        oldCapacity.setUpdateTime(System.currentTimeMillis());
+        oldCapacity.setUpdateUser(currentUserId);
+        extClueCapacityMapper.updateCapacity(oldCapacity);
 
-		OperationLogContext.setContext(
-				LogContextInfo.builder()
-						.resourceId(request.getId())
-						.resourceName(Translator.get("module.clue.capacity.setting"))
-						.originalValue(oldCapacity)
-						.modifiedValue(clueCapacityMapper.selectByPrimaryKey(request.getId()))
-						.build()
-		);
-	}
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(request.getId())
+                        .resourceName(Translator.get("module.clue.capacity.setting"))
+                        .originalValue(oldCapacity)
+                        .modifiedValue(clueCapacityMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
+    }
 
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
-	public void delete(String id) {
-		clueCapacityMapper.deleteByPrimaryKey(id);
-		// 设置操作对象
-		OperationLogContext.setResourceName(Translator.get("module.clue.capacity.setting"));
-	}
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
+        clueCapacityMapper.deleteByPrimaryKey(id);
+        // 设置操作对象
+        OperationLogContext.setResourceName(Translator.get("module.clue.capacity.setting"));
+    }
 }

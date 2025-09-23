@@ -10,6 +10,6 @@ import java.util.List;
 @Data
 public class ClueCapacityDTO extends ClueCapacity {
 
-	@Schema(description = "成员集合")
-	private List<ScopeNameDTO> members;
+    @Schema(description = "成员集合")
+    private List<ScopeNameDTO> members;
 }

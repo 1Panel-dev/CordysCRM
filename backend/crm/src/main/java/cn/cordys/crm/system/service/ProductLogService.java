@@ -22,17 +22,17 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class ProductLogService extends BaseModuleLogService {
 
-   @Resource
-   private BaseMapper<ModuleField>moduleFieldBaseMapper;
     @Resource
-    private BaseMapper<ModuleForm>moduleFormBaseMapper;
+    private BaseMapper<ModuleField> moduleFieldBaseMapper;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormBaseMapper;
 
     private static final String PRODUCT_PICTURE = "productPic";
 
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.PRODUCT.getKey());
-        String pictureModuleFieldId= "";
+        String pictureModuleFieldId = "";
         String timeModuleFieldId = "";
         List<ModuleForm> moduleForms = moduleFormBaseMapper.selectListByLambda(new LambdaQueryWrapper<ModuleForm>()
                 .eq(ModuleForm::getOrganizationId, orgId)
@@ -63,10 +63,10 @@ public class ProductLogService extends BaseModuleLogService {
                 setProductPicName(differ);
             }
             if (Strings.CS.equals(differ.getColumn(), timeModuleFieldId)) {
-                if (differ.getOldValue()!=null) {
+                if (differ.getOldValue() != null) {
                     differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
                 }
-                if (differ.getNewValue()!=null) {
+                if (differ.getNewValue() != null) {
                     differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
                 }
             }
@@ -90,14 +90,14 @@ public class ProductLogService extends BaseModuleLogService {
      * @param differ businessModuleField
      */
     private void setProductFieldName(JsonDifferenceDTO differ) {
-        if (Strings.CI.equals(differ.getOldValue().toString(), "1")){
+        if (Strings.CI.equals(differ.getOldValue().toString(), "1")) {
             differ.setOldValueName(Translator.get("product.shelves"));
-        }else{
+        } else {
             differ.setOldValueName(Translator.get("product.unShelves"));
         }
-        if (Strings.CI.equals(differ.getNewValue().toString(), "1")){
+        if (Strings.CI.equals(differ.getNewValue().toString(), "1")) {
             differ.setNewValueName(Translator.get("product.shelves"));
-        }else{
+        } else {
             differ.setNewValueName(Translator.get("product.unShelves"));
         }
     }

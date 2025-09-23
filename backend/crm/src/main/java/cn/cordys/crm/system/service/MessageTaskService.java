@@ -131,6 +131,7 @@ public class MessageTaskService {
      * 根据项目id 获取当前项目的消息设置
      *
      * @param organizationId 组织ID
+     *
      * @return List<MessageTaskDTO>
      */
     public List<MessageTaskDTO> getMessageList(String organizationId) {
@@ -180,7 +181,7 @@ public class MessageTaskService {
         extMessageTaskMapper.updateMessageTask(messageTaskBatchRequest, organizationId);
         // 添加日志上下文
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
-        List<LogDTO>logDTOList=new ArrayList<>();
+        List<LogDTO> logDTOList = new ArrayList<>();
         for (MessageTask messageTask : oldMessageList) {
             MessageTaskLogDTO oldDTO = buildLogDTO(messageTask, messageTask.getEmailEnable(), messageTask.getSysEnable(), messageTask.getWeComEnable(), eventMap);
             MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskBatchRequest.getEmailEnable(), messageTaskBatchRequest.getSysEnable(), messageTaskBatchRequest.getWeComEnable(), eventMap);

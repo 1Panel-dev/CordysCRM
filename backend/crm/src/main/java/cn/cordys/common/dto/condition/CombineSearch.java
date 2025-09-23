@@ -66,7 +66,7 @@ public class CombineSearch {
                 if (CollectionUtils.isEmpty(valueList)) {
                     /*
                      * 兜底处理, 防止前端[EMPTY, NOT_EMPTY]条件产生脏数据导致报错
-                      */
+                     */
                     iterator.remove();
                     continue;
                 }

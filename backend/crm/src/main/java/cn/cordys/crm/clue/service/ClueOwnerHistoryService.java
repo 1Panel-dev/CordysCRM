@@ -99,7 +99,7 @@ public class ClueOwnerHistoryService {
                 }).toList();
     }
 
-    public ClueOwner add(Clue clue, String userId,  Boolean addReason) {
+    public ClueOwner add(Clue clue, String userId, Boolean addReason) {
         ClueOwner clueOwner = new ClueOwner();
         clueOwner.setOwner(clue.getOwner());
         clueOwner.setOperator(userId);

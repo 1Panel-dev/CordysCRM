@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class LinkField {
 
-	@NotEmpty
-	@Schema(description = "当前字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String current;
-	@NotEmpty
-	@Schema(description = "联动字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String link;
+    @NotEmpty
+    @Schema(description = "当前字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String current;
+    @NotEmpty
+    @Schema(description = "联动字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String link;
 }

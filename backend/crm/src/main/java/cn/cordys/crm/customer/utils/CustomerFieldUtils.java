@@ -11,7 +11,7 @@ public class CustomerFieldUtils {
         LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("collectionTime",TimeUtils.getDataTimeStr(data.getCollectionTime()));
+        systemFiledMap.put("collectionTime", TimeUtils.getDataTimeStr(data.getCollectionTime()));
         systemFiledMap.put("createUser", data.getCreateUserName());
         systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());

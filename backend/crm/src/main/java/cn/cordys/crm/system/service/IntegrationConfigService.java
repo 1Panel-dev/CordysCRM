@@ -127,6 +127,7 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
+     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {

@@ -12,7 +12,6 @@ import java.util.List;
 
 
 /**
- *
  * @author jianxing
  * @date 2025-01-03 10:48:10
  */
@@ -36,7 +35,7 @@ public class RoleUpdateRequest {
     @Schema(description = "指定部门权限时，部门的ID")
     private List<String> deptIds;
 
-    @Schema(description =  "菜单下的权限列表")
+    @Schema(description = "菜单下的权限列表")
     @Valid
     private List<PermissionUpdateRequest> permissions;
 

@@ -38,6 +38,7 @@ public interface ExtCustomerContactMapper {
      * @param uniqueRequest 请求参数
      * @param customerId    客户ID
      * @param orgId         组织ID
+     *
      * @return 联系人数量
      */
     long getUniqueContactCount(@Param("request") ContactUniqueRequest uniqueRequest, @Param("customerId") String customerId, @Param("orgId") String orgId);

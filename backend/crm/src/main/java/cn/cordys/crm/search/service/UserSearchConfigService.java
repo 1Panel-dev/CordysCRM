@@ -274,6 +274,7 @@ public class UserSearchConfigService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public SearchFieldResponse get(String userId, String orgId) {
@@ -311,6 +312,7 @@ public class UserSearchConfigService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     private List<UserSearchConfig> getConfigList(String userId, String orgId) {

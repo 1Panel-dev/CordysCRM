@@ -13,6 +13,7 @@ public class KMeansUtils {
      *
      * @param data 输入的数据集，每个数据点是一个特征向量。
      * @param k    聚类的簇数。
+     *
      * @return 包含每个数据点所属簇的列表，元素值为簇的索引。
      */
     public static List<Integer> performKMeans(List<double[]> data, int k) {
@@ -52,6 +53,7 @@ public class KMeansUtils {
      *
      * @param data 输入的数据集，每个数据点是一个特征向量。
      * @param k    聚类的簇数。
+     *
      * @return 初始化的 K 个质心。
      */
     private static List<double[]> initializeCentroids(List<double[]> data, int k) {
@@ -68,6 +70,7 @@ public class KMeansUtils {
      *
      * @param point     输入的数据点。
      * @param centroids 所有的质心列表。
+     *
      * @return 最近质心的索引。
      */
     private static int findClosestCentroid(double[] point, List<double[]> centroids) {
@@ -88,6 +91,7 @@ public class KMeansUtils {
      *
      * @param point1 第一个数据点。
      * @param point2 第二个数据点。
+     *
      * @return 两个数据点之间的欧几里得距离。
      */
     private static double euclideanDistance(double[] point1, double[] point2) {
@@ -104,6 +108,7 @@ public class KMeansUtils {
      * @param data         输入的数据集，每个数据点是一个特征向量。
      * @param clusters     每个数据点所属的簇的索引。
      * @param clusterIndex 当前簇的索引。
+     *
      * @return 该簇的新质心。
      */
     private static double[] recalculateCentroid(List<double[]> data, List<Integer> clusters, int clusterIndex) {

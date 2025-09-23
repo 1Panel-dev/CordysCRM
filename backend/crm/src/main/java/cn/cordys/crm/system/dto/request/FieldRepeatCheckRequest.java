@@ -12,15 +12,15 @@ import lombok.Data;
 @Data
 public class FieldRepeatCheckRequest {
 
-	@NotBlank
-	@Schema(description = "字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String id;
+    @NotBlank
+    @Schema(description = "字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String id;
 
-	@NotBlank
-	@Schema(description = "值", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String value;
+    @NotBlank
+    @Schema(description = "值", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String value;
 
-	@NotBlank
-	@Schema(description = "表单Key", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String formKey;
+    @NotBlank
+    @Schema(description = "表单Key", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String formKey;
 }

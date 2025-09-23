@@ -120,7 +120,8 @@ public class FilterCondition {
                         LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
                         long timestamp = getTimestamp(startOfWeek.atStartOfDay());
                         weeks.add(timestamp);
-                        LocalDate now = LocalDate.now().with(DayOfWeek.SUNDAY);;
+                        LocalDate now = LocalDate.now().with(DayOfWeek.SUNDAY);
+                        ;
                         long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
                         weeks.add(timestampEnd);
                         return weeks;

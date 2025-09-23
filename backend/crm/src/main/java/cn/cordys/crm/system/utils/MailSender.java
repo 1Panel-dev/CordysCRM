@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Properties;
+
 @Component
 public class MailSender {
 
@@ -103,6 +104,7 @@ public class MailSender {
             }
         }
     }
+
     public JavaMailSenderImpl getMailSender(EmailDTO emailDTO) {
         Properties props = new Properties();
         JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();

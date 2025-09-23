@@ -10,10 +10,10 @@ import java.util.List;
 @Data
 public class FieldResolveRequest {
 
-	@NotBlank
-	@Schema(description = "字段业务来源", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String sourceType;
-	@NotEmpty
-	@Schema(description = "字段名称", requiredMode = Schema.RequiredMode.REQUIRED)
-	private List<String> names;
+    @NotBlank
+    @Schema(description = "字段业务来源", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String sourceType;
+    @NotEmpty
+    @Schema(description = "字段名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<String> names;
 }

@@ -69,8 +69,9 @@ public class JsonDifferenceUtils {
 
     /**
      * 比较数组节点 (ID作为节点唯一性)
-     * @param oldNode 旧节点
-     * @param newNode 新节点
+     *
+     * @param oldNode           旧节点
+     * @param newNode           新节点
      * @param jsonDifferenceDTO 差异属性集合  [节点1:属性1:值1 => 值2]
      */
     private static void compareArrayNodesById(JsonNode oldNode, JsonNode newNode, List<JsonDifferenceDTO> jsonDifferenceDTO) {

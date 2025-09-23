@@ -66,6 +66,7 @@ public class ModuleService {
      * 获取系统模块配置列表
      *
      * @param request 请求参数
+     *
      * @return 模块配置列表
      */
     public List<ModuleDTO> getModuleList(ModuleRequest request) {
@@ -85,6 +86,7 @@ public class ModuleService {
 
     /**
      * 获取表单集合
+     *
      * @return 表单集合
      */
     public List<OptionDTO> getFormList() {
@@ -177,6 +179,7 @@ public class ModuleService {
      * 获取角色树
      *
      * @param orgId 组织ID
+     *
      * @return 角色树
      */
     public List<RoleUserTreeNode> getRoleTree(String orgId) {
@@ -224,6 +227,7 @@ public class ModuleService {
      * 获取排序之后的模块菜单
      *
      * @param organizationId 组织ID
+     *
      * @return 模块列表
      */
     private List<String> getModuleSortKeys(String organizationId) {
@@ -237,6 +241,7 @@ public class ModuleService {
      * 检查仪表盘功能是否启用
      *
      * @param organizationId 组织ID
+     *
      * @return 仪表盘是否启用
      */
     private boolean isDashboardEnabled(String organizationId) {

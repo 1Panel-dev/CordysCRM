@@ -66,6 +66,7 @@ public class OperationLogContext {
 
     /**
      * 设置资源名称
+     *
      * @param resourceName
      */
     public static void setResourceName(String resourceName) {
@@ -80,6 +81,7 @@ public class OperationLogContext {
      * 获取当前方法栈中指定的变量值。
      *
      * @param key 变量名
+     *
      * @return 变量值，如果找不到则返回 null
      */
     public static Object getVariable(String key) {
@@ -96,6 +98,7 @@ public class OperationLogContext {
      * </p>
      *
      * @param key 变量名
+     *
      * @return 变量值，如果找不到则返回 null
      */
     public static Object getMethodOrGlobal(String key) {

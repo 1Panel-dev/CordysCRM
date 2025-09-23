@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-03 16:52:34
  */
@@ -51,35 +50,35 @@ public class RoleController {
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     @Operation(summary = "角色列表")
-    public List<RoleListResponse> list(){
+    public List<RoleListResponse> list() {
         return roleService.list(OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     @Operation(summary = "角色详情")
-    public RoleGetResponse get(@PathVariable String id){
+    public RoleGetResponse get(@PathVariable String id) {
         return roleService.get(id);
     }
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD)
     @Operation(summary = "添加角色")
-    public Role add(@Validated @RequestBody RoleAddRequest request){
+    public Role add(@Validated @RequestBody RoleAddRequest request) {
         return roleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_UPDATE)
     @Operation(summary = "更新角色")
-    public Role update(@Validated @RequestBody RoleUpdateRequest request){
+    public Role update(@Validated @RequestBody RoleUpdateRequest request) {
         return roleService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除角色")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_DELETE)
-    public void delete(@PathVariable String id){
+    public void delete(@PathVariable String id) {
         roleService.delete(id, OrganizationContext.getOrganizationId());
     }
 

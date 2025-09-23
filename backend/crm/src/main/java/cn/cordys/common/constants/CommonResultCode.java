@@ -5,6 +5,7 @@ import cn.cordys.common.exception.IResultCode;
 /**
  * 通用功能状态码
  * 通用功能返回的状态码
+ *
  * @author jianxing
  */
 public enum CommonResultCode implements IResultCode {

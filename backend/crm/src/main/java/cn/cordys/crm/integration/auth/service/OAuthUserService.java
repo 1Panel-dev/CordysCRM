@@ -34,6 +34,7 @@ public class OAuthUserService {
      *
      * @param userInfoUrl 获取用户信息url
      * @param accessToken token
+     *
      * @return Map<String, Object>
      */
     public Map<String, Object> getGitHubUser(String userInfoUrl, String accessToken) {
@@ -53,6 +54,7 @@ public class OAuthUserService {
      *
      * @param assessToken token
      * @param code        code
+     *
      * @return WeComUserResponse
      */
     public WeComUserResponse getWeComUser(String assessToken, String code) {
@@ -83,6 +85,7 @@ public class OAuthUserService {
      * 获取钉钉用户信息
      *
      * @param dingToken 用户token
+     *
      * @return DingTalkUserResponse
      */
     public DingTalkUserResponse getDingTalkUser(String dingToken) {

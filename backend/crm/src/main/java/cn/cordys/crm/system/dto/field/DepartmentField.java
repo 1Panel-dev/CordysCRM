@@ -13,12 +13,12 @@ import java.util.List;
 @JsonTypeName(value = "DEPARTMENT")
 @EqualsAndHashCode(callSuper = true)
 public class DepartmentField extends BaseField {
-	@Schema(description = "默认值")
-	private String defaultValue;
+    @Schema(description = "默认值")
+    private String defaultValue;
 
-	@Schema(description = "是否当前部门")
-	private Boolean hasCurrentUserDept;
+    @Schema(description = "是否当前部门")
+    private Boolean hasCurrentUserDept;
 
-	@Schema(description = "默认值初始化选项")
-	private List<Department> initialOptions;
+    @Schema(description = "默认值初始化选项")
+    private List<Department> initialOptions;
 }

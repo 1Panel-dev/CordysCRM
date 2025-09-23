@@ -28,12 +28,14 @@ public abstract class MoveNodeService {
     private static final String DRAG_NODE_NOT_EXIST = "drag_node.not.exist";
 
     public static final String ROOT_NODE_PARENT_ID = "NONE";
+
     /**
      * 构建节点排序的参数
      *
      * @param request           拖拽的前端请求参数
      * @param selectIdNodeFunc  通过id查询节点的函数
      * @param selectPosNodeFunc 通过parentId和Pos运算符查询节点的函数
+     *
      * @return
      */
     public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc, boolean isDepartment) {

@@ -237,6 +237,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * @param isAdmin        是否是管理员
      * @param customers      客户列表
      * @param enabledModules 已启用模块列表
+     *
      * @return 商机数量映射(客户ID - > 数量)
      */
     private Map<String, String> getOpportunityCounts(List<String> permissions,
@@ -268,6 +269,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * @param isAdmin        是否是管理员
      * @param customers      客户列表
      * @param enabledModules 已启用模块列表
+     *
      * @return 线索数量映射(客户名称 - > 数量)
      */
     private Map<String, String> getClueCounts(List<String> permissions,
@@ -296,6 +298,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * 安全解析数量字符串
      *
      * @param count 数量字符串
+     *
      * @return 解析后的整型数量(空字符串返回0)
      */
     private int parseCount(String count) {
@@ -335,6 +338,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * 获取重复商机详情列表
      *
      * @param request 包含商机ID的查询请求
+     *
      * @return 重复商机响应列表(包含产品名称信息)
      */
     public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(

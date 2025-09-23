@@ -14,9 +14,9 @@ import java.util.Map;
 @JsonTypeName(value = "DATA_SOURCE")
 @EqualsAndHashCode(callSuper = true)
 public class DatasourceField extends BaseField {
-	@EnumValue(enumClass = FieldSourceType.class)
-	@Schema(description = "数据源类型")
-	private String dataSourceType;
-	@Schema(description = "过滤条件")
-	private Map<String, Object> combineSearch;
+    @EnumValue(enumClass = FieldSourceType.class)
+    @Schema(description = "数据源类型")
+    private String dataSourceType;
+    @Schema(description = "过滤条件")
+    private Map<String, Object> combineSearch;
 }

@@ -125,6 +125,7 @@ public class PicService {
      * 获取图片流
      *
      * @param picId 图片ID
+     *
      * @return 图片流
      */
     public ResponseEntity<org.springframework.core.io.Resource> getPicResource(String picId) {
@@ -168,6 +169,7 @@ public class PicService {
      * 获取临时文件目录
      *
      * @param tempFileId 临时文件ID
+     *
      * @return 临时文件目录
      */
     private String getTempFileDir(String tempFileId) {
@@ -180,6 +182,7 @@ public class PicService {
      * @param organizationId 组织ID
      * @param resourceId     资源ID
      * @param fileId         文件ID
+     *
      * @return 转存文件目录
      */
     private String getTransferFileDir(String organizationId, String resourceId, String fileId) {
@@ -190,6 +193,7 @@ public class PicService {
      * 判断是否svg文件
      *
      * @param fileName 文件名
+     *
      * @return 是否svg
      */
     private boolean isSvg(String fileName) {

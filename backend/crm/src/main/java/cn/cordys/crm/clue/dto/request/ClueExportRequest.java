@@ -18,11 +18,11 @@ import java.util.List;
 @AllArgsConstructor
 public class ClueExportRequest extends CluePageRequest {
 
-	@NotBlank
-	@Schema(description = "文件名", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String fileName;
+    @NotBlank
+    @Schema(description = "文件名", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String fileName;
 
-	@NotNull
-	@Schema(description = "表头信息", requiredMode = Schema.RequiredMode.REQUIRED)
-	private List<ExportHeadDTO> headList;
+    @NotNull
+    @Schema(description = "表头信息", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<ExportHeadDTO> headList;
 }

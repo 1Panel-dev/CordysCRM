@@ -45,11 +45,11 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List ids = JSON.parseArray(value,String.class);
+        List ids = JSON.parseArray(value, String.class);
 
         List names = extUserMapper.selectUserNameByIds(ids);
 
-        if(CollectionUtils.isNotEmpty(names)) {
+        if (CollectionUtils.isNotEmpty(names)) {
             return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
         }
 
@@ -63,7 +63,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
         }
         List<String> names = parseFakeJsonArray(text);
         List<String> ids = extUserMapper.selectUserIdsByNames(names);
-        if(CollectionUtils.isNotEmpty(ids)) {
+        if (CollectionUtils.isNotEmpty(ids)) {
             return ids;
         }
         return names;

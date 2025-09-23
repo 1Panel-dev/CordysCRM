@@ -780,6 +780,7 @@ public class ClueService {
      * 同名客户选择器
      *
      * @param customers 客户列表
+     *
      * @return 客户
      */
     public Customer selectorCs(List<Customer> customers, String clueOwner) {
@@ -798,6 +799,7 @@ public class ClueService {
      * @param clue        线索
      * @param currentUser 当前用户
      * @param orgId       组织ID
+     *
      * @return 客户
      */
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
@@ -827,6 +829,7 @@ public class ClueService {
      * @param contactId   联系人ID
      * @param currentUser 当前用户
      * @param orgId       组织ID
+     *
      * @return 商机
      */
     public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
@@ -913,6 +916,7 @@ public class ClueService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -928,6 +932,7 @@ public class ClueService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -963,6 +968,7 @@ public class ClueService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {

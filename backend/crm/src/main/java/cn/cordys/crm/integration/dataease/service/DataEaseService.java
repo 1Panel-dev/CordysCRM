@@ -77,6 +77,7 @@ public class DataEaseService {
      *
      * @param appId     应用ID
      * @param appSecret 应用密钥
+     *
      * @return JWT Token
      */
     private String generateJwtToken(String appId, String appSecret, String account) {

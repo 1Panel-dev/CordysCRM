@@ -10,7 +10,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AnnouncementRequest{
+public class AnnouncementRequest {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{user.id.not_blank}", groups = {Updated.class})

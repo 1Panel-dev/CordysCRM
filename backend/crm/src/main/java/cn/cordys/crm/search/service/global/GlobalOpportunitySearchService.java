@@ -52,7 +52,6 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
     private ModuleFormCacheService moduleFormCacheService;
 
 
-
     @Override
     public Pager<List<GlobalOpportunityResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
         //获取查询关键字
@@ -82,7 +81,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-            return PageUtils.setPageInfo(page, null);
+                return PageUtils.setPageInfo(page, null);
             }
             for (UserSearchConfig userSearchConfig : opportunitySearchConfigs) {
                 //如果和固定展示列名重复不加入fieldIdSet
@@ -172,7 +171,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                 opportunityListResponse.setModuleFields(returnOpportunityFields);
             }
             Opportunity opportunity = internalKeyValueMap.get(opportunityListResponse.getId());
-            if (opportunity !=null && StringUtils.isNotBlank(opportunity.getContactId())) {
+            if (opportunity != null && StringUtils.isNotBlank(opportunity.getContactId())) {
                 opportunity.setContactId(opportunityListResponse.getContactName());
             }
             List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, opportunity, Opportunity.class);

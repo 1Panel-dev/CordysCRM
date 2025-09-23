@@ -143,6 +143,7 @@ public class RingBuffer {
      * If there is no more available UID to be taken, the specified {@link RejectedTakeBufferHandler} will be applied<br>
      *
      * @return UID
+     *
      * @throws IllegalStateException if the cursor moved back
      */
     public long take() {

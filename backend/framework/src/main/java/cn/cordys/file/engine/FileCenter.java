@@ -25,6 +25,7 @@ public class FileCenter {
      * 根据给定的存储类型返回对应的 {@link FileRepository} 实现。
      *
      * @param storage 存储类型枚举值，指示所需的存储实现（如 S3、LOCAL）。
+     *
      * @return 返回对应的 {@link FileRepository} 实现，如果存储类型未知，则返回默认的仓库。
      */
     public static FileRepository getRepository(String storage) {

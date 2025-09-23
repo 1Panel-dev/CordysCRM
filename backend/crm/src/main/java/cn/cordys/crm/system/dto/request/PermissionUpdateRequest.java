@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PermissionUpdateRequest {
     @NotBlank
-    @Schema(description =  "权限ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "权限ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
-    @Schema(description =  "是否启用该权限", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "是否启用该权限", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean enable = false;
 }

@@ -14,38 +14,38 @@ import java.util.Set;
 @Data
 public class CluePoolUpdateRequest {
 
-	@NotBlank
-	@Size(max = 32)
-	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String id;
+    @NotBlank
+    @Size(max = 32)
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String id;
 
-	@NotBlank
-	@Size(max = 255)
-	@Schema(description = "线索池名称")
-	private String name;
+    @NotBlank
+    @Size(max = 255)
+    @Schema(description = "线索池名称")
+    private String name;
 
-	@NotNull
-	@Schema(description = "范围ID集合")
-	private List<String> scopeIds;
+    @NotNull
+    @Schema(description = "范围ID集合")
+    private List<String> scopeIds;
 
-	@NotNull
-	@Schema(description = "管理员ID集合")
-	private List<String> ownerIds;
+    @NotNull
+    @Schema(description = "管理员ID集合")
+    private List<String> ownerIds;
 
-	@NotNull
-	@Schema(description = "启用/禁用")
-	private Boolean enable;
+    @NotNull
+    @Schema(description = "启用/禁用")
+    private Boolean enable;
 
-	@NotNull
-	@Schema(description = "自动回收")
-	private Boolean auto;
+    @NotNull
+    @Schema(description = "自动回收")
+    private Boolean auto;
 
-	@Schema(description = "领取规则")
-	private CluePoolPickRuleDTO pickRule;
+    @Schema(description = "领取规则")
+    private CluePoolPickRuleDTO pickRule;
 
-	@Schema(description = "回收规则")
-	private CluePoolRecycleRuleDTO recycleRule;
+    @Schema(description = "回收规则")
+    private CluePoolRecycleRuleDTO recycleRule;
 
-	@Schema(description = "隐藏字段ID集合")
-	private Set<@NotBlank String> hiddenFieldIds;
+    @Schema(description = "隐藏字段ID集合")
+    private Set<@NotBlank String> hiddenFieldIds;
 }

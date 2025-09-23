@@ -32,7 +32,7 @@ public class RoleAddRequest {
     @Schema(description = "指定部门权限时，部门的ID")
     private List<String> deptIds;
 
-    @Schema(description =  "菜单下的权限列表", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "菜单下的权限列表", requiredMode = Schema.RequiredMode.REQUIRED)
     @Valid
     private List<PermissionUpdateRequest> permissions;
 

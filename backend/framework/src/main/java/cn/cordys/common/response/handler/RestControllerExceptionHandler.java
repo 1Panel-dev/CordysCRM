@@ -38,6 +38,7 @@ public class RestControllerExceptionHandler {
      * 处理数据校验异常，返回具体字段的校验信息。
      *
      * @param ex MethodArgumentNotValidException 异常
+     *
      * @return ResultHolder 返回封装的错误信息，HTTP 状态码 400
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -58,6 +59,7 @@ public class RestControllerExceptionHandler {
      *
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
+     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -70,6 +72,7 @@ public class RestControllerExceptionHandler {
      * 处理 MSException 异常，根据 errorCode 设置 HTTP 状态码和业务状态码。
      *
      * @param e MSException 异常
+     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
     @ExceptionHandler(GenericException.class)
@@ -103,6 +106,7 @@ public class RestControllerExceptionHandler {
      * 处理 NOT_FOUND 异常，拼接资源名称以提供更详细的错误信息。
      *
      * @param message 错误信息模板
+     *
      * @return String 拼接后的错误信息
      */
     private static String getNotFoundMessage(String message) {
@@ -120,6 +124,7 @@ public class RestControllerExceptionHandler {
      * 处理所有类型的异常，返回 HTTP 状态码 500 并格式化异常栈信息。
      *
      * @param e Exception 异常
+     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
     @ExceptionHandler({Exception.class})
@@ -140,6 +145,7 @@ public class RestControllerExceptionHandler {
      *
      * @param request HttpServletRequest 请求
      * @param e       异常信息
+     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
     @ExceptionHandler({EofException.class})
@@ -162,6 +168,7 @@ public class RestControllerExceptionHandler {
      * @param request   HttpServletRequest 请求
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
+     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(ShiroException.class)
@@ -176,6 +183,7 @@ public class RestControllerExceptionHandler {
      * @param request   HttpServletRequest 请求
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
+     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(UnauthorizedException.class)
@@ -194,6 +202,7 @@ public class RestControllerExceptionHandler {
      * 格式化异常栈信息。
      *
      * @param e Exception 异常
+     *
      * @return String 异常栈的字符串表示
      */
     public static String getStackTraceAsString(Exception e) {

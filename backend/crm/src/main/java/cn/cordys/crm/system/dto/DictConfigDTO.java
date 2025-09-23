@@ -11,8 +11,8 @@ import java.util.List;
 @Builder
 public class DictConfigDTO {
 
-	@Schema(description = "字典值是否启用")
-	private Boolean enable;
-	@Schema(description = "字典值列表")
-	private List<Dict> dictList;
+    @Schema(description = "字典值是否启用")
+    private Boolean enable;
+    @Schema(description = "字典值列表")
+    private List<Dict> dictList;
 }

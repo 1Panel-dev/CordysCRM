@@ -9,10 +9,10 @@ import java.util.List;
 @Data
 public class BatchPoolReasonRequest {
 
-	@NotNull
-	@Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-	private List<String> ids;
+    @NotNull
+    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<String> ids;
 
-	@Schema(description = "原因")
-	private String reasonId;
+    @Schema(description = "原因")
+    private String reasonId;
 }

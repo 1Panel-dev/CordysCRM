@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerControllerTests extends BaseTest {
@@ -55,7 +55,6 @@ class CustomerControllerTests extends BaseTest {
 
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
-
 
 
     private static Customer addCustomer;
@@ -83,14 +82,14 @@ class CustomerControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-     @Test
-     @Order(0)
-     void testModuleField() throws Exception {
-         this.requestGetWithOkAndReturn(MODULE_FORM);
+    @Test
+    @Order(0)
+    void testModuleField() throws Exception {
+        this.requestGetWithOkAndReturn(MODULE_FORM);
 
-         // 校验权限
-         requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ), MODULE_FORM);
-     }
+        // 校验权限
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ), MODULE_FORM);
+    }
 
     @Test
     @Order(0)
@@ -274,7 +273,7 @@ class CustomerControllerTests extends BaseTest {
         exportTask.setCreateTime(oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         exportTaskBaseMapper.updateById(exportTask);
         exportTaskCenterService.clean();
-       System.out.println(resourceResponseEntity.getBody().exists());
+        System.out.println(resourceResponseEntity.getBody().exists());
     }
 
     @Test

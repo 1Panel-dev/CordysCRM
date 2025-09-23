@@ -20,6 +20,7 @@ public class RegionUtils {
 
     /**
      * get all regions
+     *
      * @return regions
      */
     public static List<RegionCode> getRegionCodes() {
@@ -38,13 +39,14 @@ public class RegionUtils {
 
     /**
      * load region
+     *
      * @return region list
      */
     private static List<RegionCode> loadRegionData() {
         try (InputStream is = LocationResolver.class.getClassLoader()
                 .getResourceAsStream("region/region.json")) {
             return JSON.parseObject(is, new TypeReference<>() {
-			});
+            });
         } catch (Exception e) {
             throw new RuntimeException("加载行政区划数据失败", e);
         }
@@ -52,7 +54,9 @@ public class RegionUtils {
 
     /**
      * address => code
+     *
      * @param name address
+     *
      * @return code
      */
     public static String nameToCode(String name) {

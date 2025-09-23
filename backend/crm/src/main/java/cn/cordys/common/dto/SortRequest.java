@@ -67,6 +67,7 @@ public class SortRequest {
      * 返回 true 表示存在 SQL 注入风险
      *
      * @param script
+     *
      * @return
      */
     public static boolean checkSqlInjection(String script) {

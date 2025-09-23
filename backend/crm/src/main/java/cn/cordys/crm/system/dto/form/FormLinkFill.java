@@ -14,12 +14,12 @@ import java.util.List;
 @AllArgsConstructor
 public class FormLinkFill<T> {
 
-	/**
-	 * 主表实体
-	 */
-	private T entity;
-	/**
-	 * 自定义字段属性值
-	 */
-	private List<BaseModuleFieldValue> fields;
+    /**
+     * 主表实体
+     */
+    private T entity;
+    /**
+     * 自定义字段属性值
+     */
+    private List<BaseModuleFieldValue> fields;
 }

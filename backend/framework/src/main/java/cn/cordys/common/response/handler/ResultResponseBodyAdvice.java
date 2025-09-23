@@ -27,6 +27,7 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      *
      * @param methodParameter 当前请求的方法参数
      * @param converterType   转换器类型
+     *
      * @return 如果支持则返回 true，否则返回 false
      */
     @Override
@@ -45,6 +46,7 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      * @param converterType      当前使用的消息转换器类型
      * @param serverHttpRequest  当前的 HTTP 请求
      * @param serverHttpResponse 当前的 HTTP 响应
+     *
      * @return 处理后的响应体内容
      */
     @Override

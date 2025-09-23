@@ -18,14 +18,13 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-08 17:42:41
  */
 public interface ExtClueMapper {
 
     List<ClueListResponse> list(@Param("request") CluePageRequest request, @Param("orgId") String orgId,
-                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
@@ -35,41 +34,50 @@ public interface ExtClueMapper {
 
     /**
      * 移入线索池
+     *
      * @param clue 线索池
      */
-    void moveToPool(@Param("clue")Clue clue);
+    void moveToPool(@Param("clue") Clue clue);
 
     /**
      * 获取线索重复数据数量
+     *
      * @param customerNames 客户名称列表
+     *
      * @return 重复数据数量
      */
     List<OptionDTO> getRepeatCountMap(@Param("customerNames") List<String> customerNames);
 
     /**
      * 获取相似线索列表
+     *
      * @param customerName 客户名称
+     *
      * @return 相似线索列表
      */
     List<AdvancedClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 获取重复线索列表
+     *
      * @param customerName 客户名称
+     *
      * @return 重复线索列表
      */
     List<AdvancedClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 查询用户负责的线索条数
+     *
      * @param ownerId 负责用户ID
+     *
      * @return 数量
      */
     long getOwnerCount(@Param("ownerId") String ownerId);
 
     List<ClueListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
+    Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed") boolean unfollowed);
 
     List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
@@ -81,6 +89,7 @@ public interface ExtClueMapper {
 
 
     List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
     long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     List<Clue> searchColumnsByIds(@Param("columns") List<String> columns, @Param("ids") List<String> ids);
@@ -88,13 +97,16 @@ public interface ExtClueMapper {
 
     /**
      * 根据ID全量更新线索
+     *
      * @param clue 线索
      */
     void updateIncludeNullById(@Param("clue") Clue clue);
 
     /**
      * 检查字段值是否唯一
+     *
      * @param field 字段值
+     *
      * @return bool
      */
     boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);

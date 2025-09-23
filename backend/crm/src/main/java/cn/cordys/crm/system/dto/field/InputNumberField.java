@@ -11,24 +11,24 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class InputNumberField extends BaseField {
 
-	@Schema(description = "默认值")
-	private Double defaultValue;
+    @Schema(description = "默认值")
+    private Double defaultValue;
 
-	@Schema(description = "最小值范围")
-	private Integer min;
+    @Schema(description = "最小值范围")
+    private Integer min;
 
-	@Schema(description = "最大值范围")
-	private Integer max;
+    @Schema(description = "最大值范围")
+    private Integer max;
 
-	@Schema(description = "格式", allowableValues = {"percent", "number"})
-	private String numberFormat;
+    @Schema(description = "格式", allowableValues = {"percent", "number"})
+    private String numberFormat;
 
-	@Schema(description = "保留小数点位数")
-	private Boolean decimalPlaces;
+    @Schema(description = "保留小数点位数")
+    private Boolean decimalPlaces;
 
-	@Schema(description = "位数")
-	private int precision;
+    @Schema(description = "位数")
+    private int precision;
 
-	@Schema(description = "显示千分位")
-	private Boolean showThousandsSeparator;
+    @Schema(description = "显示千分位")
+    private Boolean showThousandsSeparator;
 }

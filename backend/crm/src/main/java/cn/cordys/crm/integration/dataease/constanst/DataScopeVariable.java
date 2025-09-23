@@ -13,6 +13,7 @@ public enum DataScopeVariable {
 
     private String permission;
     private DataScopeDeptVariable dataScopeDeptVariable;
+
     DataScopeVariable(String permission, DataScopeDeptVariable dataScopeDeptVariable) {
         this.permission = permission;
         this.dataScopeDeptVariable = dataScopeDeptVariable;

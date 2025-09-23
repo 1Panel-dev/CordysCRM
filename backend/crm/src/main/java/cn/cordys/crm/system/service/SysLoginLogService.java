@@ -60,6 +60,7 @@ public class SysLoginLogService {
      * 登录日志列表查询
      *
      * @param request
+     *
      * @return
      */
     public List<LoginLogListResponse> list(LoginLogRequest request, String orgId) {

@@ -100,6 +100,7 @@ public class CustomerExportService extends BaseExportService {
      * @param userId             用户ID
      * @param orgId              组织id
      * @param deptDataPermission 部门数据权限
+     *
      * @return 导出数据列表
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, CustomerExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
@@ -142,6 +143,7 @@ public class CustomerExportService extends BaseExportService {
      * @param userId  用户ID
      * @param request 导出选择请求
      * @param orgId   组织ID
+     *
      * @return 导出任务ID
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
@@ -207,6 +209,7 @@ public class CustomerExportService extends BaseExportService {
      * @param ids      选中数据ID列表
      * @param orgId    组织ID
      * @param taskId   任务ID
+     *
      * @return 导出数据列表
      */
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {

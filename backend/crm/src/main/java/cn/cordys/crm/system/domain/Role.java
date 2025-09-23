@@ -16,18 +16,18 @@ import lombok.Data;
 @Table(name = "sys_role")
 public class Role extends BaseModel {
 
-	@Schema(description = "角色名称")
-	private String name;
+    @Schema(description = "角色名称")
+    private String name;
 
-	@Schema(description = "是否是内置角色")
-	private Boolean internal;
+    @Schema(description = "是否是内置角色")
+    private Boolean internal;
 
-	@Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
-	private String dataScope;
+    @Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
+    private String dataScope;
 
-	@Schema(description = "描述")
-	private String description;
+    @Schema(description = "描述")
+    private String description;
 
-	@Schema(description = "组织id")
-	private String organizationId;
+    @Schema(description = "组织id")
+    private String organizationId;
 }

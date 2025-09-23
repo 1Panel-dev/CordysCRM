@@ -71,6 +71,7 @@ public class CluePoolService {
      * 分页获取线索池
      *
      * @param request 分页参数
+     *
      * @return 线索池列表
      */
     public List<CluePoolDTO> page(BasePageRequest request, String organizationId) {
@@ -144,7 +145,7 @@ public class CluePoolService {
             if (Strings.CS.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)
                     && Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
                 String[] split = condition.getValue().split(",");
-                if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
+                if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2) {
                     String dateValue = split[0];
                     String dateUnit = split[1];
                     dateUnit = switch (dateUnit) {
@@ -153,21 +154,21 @@ public class CluePoolService {
                         case "week" -> "BEFORE_WEEK";
                         default -> dateUnit;
                     };
-                    condition.setValue("CUSTOM,"+ dateValue + "," + dateUnit);
+                    condition.setValue("CUSTOM," + dateValue + "," + dateUnit);
                 }
             }
         });
     }
 
     public List<CluePoolFieldConfigDTO> getCluePoolFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
-		return fields.stream().map(field -> {
-			CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
-			hiddenFieldDTO.setFieldId(field.getId());
-			hiddenFieldDTO.setFieldName(field.getName());
-			hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-			hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
-			return hiddenFieldDTO;
-		}).toList();
+        return fields.stream().map(field -> {
+            CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
+            hiddenFieldDTO.setFieldId(field.getId());
+            hiddenFieldDTO.setFieldName(field.getName());
+            hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+            hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
+            return hiddenFieldDTO;
+        }).toList();
     }
 
     public List<CluePoolHiddenField> getCluePoolHiddenFieldsByPoolIds(List<String> poolIds) {
@@ -369,8 +370,10 @@ public class CluePoolService {
 
     /**
      * 获取负责人默认线索池ID
-     * @param ownerIds 负责人ID集合
+     *
+     * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
+     *
      * @return 默认线索池
      */
     public Map<String, CluePool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
@@ -391,8 +394,10 @@ public class CluePoolService {
 
     /**
      * 匹配多个范围的线索池
+     *
      * @param scopeIds 范围ID集合
-     * @param pools 线索池列表
+     * @param pools    线索池列表
+     *
      * @return 命中范围的线索池列表
      */
     public List<CluePool> matchMultiScope(List<String> scopeIds, List<CluePool> pools) {
@@ -414,9 +419,10 @@ public class CluePoolService {
     /**
      * 计算剩余归属天数
      *
-     * @param pool 线索池
+     * @param pool           线索池
      * @param collectionTime 领取时间
-     * @param createTime 创建时间
+     * @param createTime     创建时间
+     *
      * @return 剩余归属天数
      */
     public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, Long collectionTime, Long createTime) {
@@ -433,6 +439,7 @@ public class CluePoolService {
      * 校验线索池是否存在
      *
      * @param id 线索池ID
+     *
      * @return 线索池
      */
     private CluePool checkPoolExist(String id) {
@@ -445,7 +452,9 @@ public class CluePoolService {
 
     /**
      * 获取负责人最佳匹配公海
+     *
      * @param pools 公海列表
+     *
      * @return 公海集合
      */
     public Map<List<String>, CluePool> getOwnersBestMatchPoolMap(List<CluePool> pools) {
@@ -466,8 +475,10 @@ public class CluePoolService {
 
     /**
      * 校验线索是否符合回收规则
-     * @param clue 线索
+     *
+     * @param clue        线索
      * @param recycleRule 回收规则
+     *
      * @return 是否符合回收规则
      */
     public boolean checkRecycled(Clue clue, CluePoolRecycleRule recycleRule) {
@@ -482,8 +493,10 @@ public class CluePoolService {
 
     /**
      * 是否匹配时间规则
+     *
      * @param condition 规则
-     * @param clue 线索
+     * @param clue      线索
+     *
      * @return 是否匹配
      */
     private boolean matchTime(RuleConditionDTO condition, Clue clue) {

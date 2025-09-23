@@ -20,80 +20,80 @@ import java.util.List;
 
 public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceField> {
 
-	private static final CustomerService customerService;
-	private static final OpportunityService opportunityService;
-	private static final ClueService clueService;
-	private static final CustomerContactService contactService;
-	private static final ProductService productService;
+    private static final CustomerService customerService;
+    private static final OpportunityService opportunityService;
+    private static final ClueService clueService;
+    private static final CustomerContactService contactService;
+    private static final ProductService productService;
 
-	static {
-		customerService = CommonBeanFactory.getBean(CustomerService.class);
-		opportunityService = CommonBeanFactory.getBean(OpportunityService.class);
-		clueService = CommonBeanFactory.getBean(ClueService.class);
-		contactService = CommonBeanFactory.getBean(CustomerContactService.class);
-		productService = CommonBeanFactory.getBean(ProductService.class);
-	}
+    static {
+        customerService = CommonBeanFactory.getBean(CustomerService.class);
+        opportunityService = CommonBeanFactory.getBean(OpportunityService.class);
+        clueService = CommonBeanFactory.getBean(ClueService.class);
+        contactService = CommonBeanFactory.getBean(CustomerContactService.class);
+        productService = CommonBeanFactory.getBean(ProductService.class);
+    }
 
-	@Override
-	public void validate(DatasourceField customField, Object value) {
+    @Override
+    public void validate(DatasourceField customField, Object value) {
 
-	}
+    }
 
 
-	@Override
-	public Object trans2Value(DatasourceField datasourceField, String value) {
-		if (StringUtils.isBlank(value)) {
-			return StringUtils.EMPTY;
-		}
+    @Override
+    public Object trans2Value(DatasourceField datasourceField, String value) {
+        if (StringUtils.isBlank(value)) {
+            return StringUtils.EMPTY;
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CUSTOMER")) {
-			return customerService.getCustomerName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CUSTOMER")) {
+            return customerService.getCustomerName(value);
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CONTACT")) {
-			return contactService.getContactName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CONTACT")) {
+            return contactService.getContactName(value);
+        }
 
-		if(Strings.CI.equals(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
-			return opportunityService.getOpportunityName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
+            return opportunityService.getOpportunityName(value);
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), "CLUE")) {
-			return clueService.getClueName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CLUE")) {
+            return clueService.getClueName(value);
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), "PRODUCT")) {
-			return productService.getProductName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), "PRODUCT")) {
+            return productService.getProductName(value);
+        }
 
-		return StringUtils.EMPTY;
-	}
+        return StringUtils.EMPTY;
+    }
 
-	@Override
-	public Object text2Value(DatasourceField field, String text) {
-		if (StringUtils.isBlank(text)) {
-			return StringUtils.EMPTY;
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), "CUSTOMER")) {
-			List<Customer> customerList = customerService.getCustomerListByNames(List.of(text));
-			return CollectionUtils.isEmpty(customerList) ? text : customerList.getFirst().getId();
-		}
-		if(Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
-			List<Opportunity> opportunityList = opportunityService.getOpportunityListByNames(List.of(text));
-			return CollectionUtils.isEmpty(opportunityList) ? text : opportunityList.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), "CLUE")) {
-			List<Clue> clueList = clueService.getClueListByNames(List.of(text));
-			return CollectionUtils.isEmpty(clueList) ? text : clueList.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), "CONTACT")) {
-			List<CustomerContact> contactList = contactService.getContactListByNames(List.of(text));
-			return CollectionUtils.isEmpty(contactList) ? text : contactList.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), "PRODUCT")) {
-			List<Product> productList = productService.getProductListByNames(List.of(text));
-			return CollectionUtils.isEmpty(productList) ? text : productList.getFirst().getId();
-		}
-		return text;
-	}
+    @Override
+    public Object text2Value(DatasourceField field, String text) {
+        if (StringUtils.isBlank(text)) {
+            return StringUtils.EMPTY;
+        }
+        if (Strings.CI.equals(field.getDataSourceType(), "CUSTOMER")) {
+            List<Customer> customerList = customerService.getCustomerListByNames(List.of(text));
+            return CollectionUtils.isEmpty(customerList) ? text : customerList.getFirst().getId();
+        }
+        if (Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
+            List<Opportunity> opportunityList = opportunityService.getOpportunityListByNames(List.of(text));
+            return CollectionUtils.isEmpty(opportunityList) ? text : opportunityList.getFirst().getId();
+        }
+        if (Strings.CI.equals(field.getDataSourceType(), "CLUE")) {
+            List<Clue> clueList = clueService.getClueListByNames(List.of(text));
+            return CollectionUtils.isEmpty(clueList) ? text : clueList.getFirst().getId();
+        }
+        if (Strings.CI.equals(field.getDataSourceType(), "CONTACT")) {
+            List<CustomerContact> contactList = contactService.getContactListByNames(List.of(text));
+            return CollectionUtils.isEmpty(contactList) ? text : contactList.getFirst().getId();
+        }
+        if (Strings.CI.equals(field.getDataSourceType(), "PRODUCT")) {
+            List<Product> productList = productService.getProductListByNames(List.of(text));
+            return CollectionUtils.isEmpty(productList) ? text : productList.getFirst().getId();
+        }
+        return text;
+    }
 }

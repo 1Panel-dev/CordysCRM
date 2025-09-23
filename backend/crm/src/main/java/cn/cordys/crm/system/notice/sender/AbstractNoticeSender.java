@@ -72,7 +72,7 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         }
     }
 
-    protected List<String>getResourceUserIds(List<String> userIds, String organizationId){
+    protected List<String> getResourceUserIds(List<String> userIds, String organizationId) {
         if (CollectionUtils.isNotEmpty(userIds)) {
             return extUserMapper.getOrgUserResourceIds(userIds, organizationId);
         } else {

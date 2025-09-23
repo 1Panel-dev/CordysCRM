@@ -4,6 +4,7 @@ import lombok.Getter;
 
 /**
  * 系统内置用户ID
+ *
  * @author jianxing
  */
 @Getter

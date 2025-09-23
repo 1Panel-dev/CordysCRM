@@ -54,5 +54,5 @@ public interface ExtUserMapper {
 
     void updateUserInfo(@Param("user") OrganizationUser user);
 
-    List<String>getOrgUserResourceIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+    List<String> getOrgUserResourceIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 }

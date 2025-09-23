@@ -30,8 +30,9 @@ public class MessageDetailService {
     /**
      * 获取唯一的消息任务
      *
-     * @param module  任务类型
+     * @param module         任务类型
      * @param organizationId 项目ID
+     *
      * @return List<MessageDetail>list
      */
     public List<MessageDetailDTO> searchMessageByTypeAndOrgId(String module, boolean useTemplate, String template, String organizationId) {
@@ -49,7 +50,7 @@ public class MessageDetailService {
         if (messageTaskLists == null) {
             return new ArrayList<>();
         }
-        getMessageDetailDTOs(useTemplate, template,  messageDetailDTOS, messageTaskLists);
+        getMessageDetailDTOs(useTemplate, template, messageDetailDTOS, messageTaskLists);
         return messageDetailDTOS.stream()
                 .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo)).reversed())
                 .distinct()
@@ -63,7 +64,7 @@ public class MessageDetailService {
             //获取同一任务所有的接收人
             MessageTask messageTask = messageTaskList.getFirst();
             MessageDetailDTO messageDetailDTO = new MessageDetailDTO();
-            BeanUtils.copyBean(messageDetailDTO,messageTask);
+            BeanUtils.copyBean(messageDetailDTO, messageTask);
             if (!useTemplate) {
                 String template = MessageTemplateUtils.getTemplate(messageTask.getEvent());
                 messageDetailDTO.setTemplate(template);

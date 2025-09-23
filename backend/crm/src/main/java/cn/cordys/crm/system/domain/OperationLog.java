@@ -13,7 +13,7 @@ import lombok.Data;
  */
 @Data
 @Table(name = "sys_operation_log")
-public class OperationLog  {
+public class OperationLog {
 
     @Schema(description = "主键")
     private String id;

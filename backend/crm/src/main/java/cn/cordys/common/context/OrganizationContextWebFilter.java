@@ -12,6 +12,7 @@ import java.io.IOException;
 /**
  * 组织信息的 Web 过滤器
  * 拦截请求，设置组织上下文
+ *
  * @author jianxing
  */
 public class OrganizationContextWebFilter extends OncePerRequestFilter {
@@ -19,6 +20,7 @@ public class OrganizationContextWebFilter extends OncePerRequestFilter {
      * 组织信息的请求头名称
      */
     public static final String ORGANIZATION_ID_HEADER = "Organization-Id";
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

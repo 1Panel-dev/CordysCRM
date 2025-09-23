@@ -66,7 +66,7 @@ public class AnnouncementControllerTests extends BaseTest {
                         JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
                 Pager.class);
         LogUtils.info(tableData.getList().toString());
-       
+
     }
 
     @Test

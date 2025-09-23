@@ -67,8 +67,8 @@ public enum SQLBotTable {
 
     public static Set<String> getDataScopePermissions() {
         return Arrays.stream(values())
-            .filter(SQLBotTable::isDataScope)
-            .map(SQLBotTable::getPermission)
-            .collect(Collectors.toSet());
+                .filter(SQLBotTable::isDataScope)
+                .map(SQLBotTable::getPermission)
+                .collect(Collectors.toSet());
     }
 }

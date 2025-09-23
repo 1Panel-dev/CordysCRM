@@ -69,6 +69,7 @@ public class AnnouncementController {
 
     /**
      * 编辑公告。
+     *
      * @param announcementRequest 公告对象。
      */
     @PostMapping(value = "/announcement/edit")
@@ -80,6 +81,7 @@ public class AnnouncementController {
 
     /**
      * 删除公告。
+     *
      * @param announcementId 公告id。
      */
     @GetMapping(value = "/announcement/delete/{announcementId}")

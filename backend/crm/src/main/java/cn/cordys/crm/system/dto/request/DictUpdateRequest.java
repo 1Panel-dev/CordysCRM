@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class DictUpdateRequest {
 
-	@NotEmpty
-	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String id;
+    @NotEmpty
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String id;
 
-	@NotEmpty
-	@Schema(description = "字典值", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String name;
+    @NotEmpty
+    @Schema(description = "字典值", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String name;
 }

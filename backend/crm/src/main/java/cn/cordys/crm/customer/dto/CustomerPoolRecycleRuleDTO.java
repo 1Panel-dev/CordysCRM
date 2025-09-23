@@ -15,9 +15,9 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomerPoolRecycleRuleDTO {
 
-	@Schema(description = "操作符")
-	private String operator;
+    @Schema(description = "操作符")
+    private String operator;
 
-	@Schema(description = "规则条件集合")
-	private List<RuleConditionDTO> conditions;
+    @Schema(description = "规则条件集合")
+    private List<RuleConditionDTO> conditions;
 }

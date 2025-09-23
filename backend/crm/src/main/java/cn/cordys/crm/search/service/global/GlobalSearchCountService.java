@@ -67,35 +67,35 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         List<FilterCondition> conditions;
         if (enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
             if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
-              //查客户
+                //查客户
                 conditions = new ArrayList<>();
                 long customerCount = getCustomerCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, (int)customerCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, (int) customerCount));
             }
             if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查客户联系人
                 conditions = new ArrayList<>();
                 long contactCount = getContactCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, (int)contactCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, (int) contactCount));
             }
             if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查公海
                 conditions = new ArrayList<>();
                 long publicCount = getPublicCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, (int)publicCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, (int) publicCount));
             }
         }
         if (enabledModules.contains(ModuleKey.CLUE.getKey())) {
             if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long clueCount = getClueCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int)clueCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int) clueCount));
 
             }
             if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long cluePoolCount = getCluePoolCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, (int)cluePoolCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, (int) cluePoolCount));
             }
         }
 
@@ -103,7 +103,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             if (permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long opportunityCount = getOpportunityCount(keyword, orgId, userSearchConfigs, list, conditions, request);
-                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, (int)opportunityCount));
+                list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, (int) opportunityCount));
             }
         }
         return list;
@@ -111,12 +111,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取商机数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getOpportunityCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
@@ -151,12 +153,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取线索池数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getCluePoolCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
@@ -193,12 +197,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取线索数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
@@ -234,12 +240,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取公海数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getPublicCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
@@ -267,12 +275,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取客户联系人数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getContactCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
@@ -281,7 +291,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
                 return 0L;
-            }else {
+            } else {
                 for (UserSearchConfig userSearchConfig : contactSearchConfigs) {
                     buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
                 }
@@ -311,12 +321,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
 
     /**
      * 获取客户数量
-     * @param keyword 关键字
-     * @param orgId 组织ID
+     *
+     * @param keyword           关键字
+     * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list 返回结果集
-     * @param conditions 查询条件
-     * @param request 分页参数
+     * @param list              返回结果集
+     * @param conditions        查询条件
+     * @param request           分页参数
+     *
      * @return 数量
      */
     private long getCustomerCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {

@@ -27,6 +27,7 @@ public class RecycleConditionUtils {
      *
      * @param conditions  回收条件
      * @param reserveTime 回收时间
+     *
      * @return 回收天数
      */
     public static Integer calcRecycleDays(List<RuleConditionDTO> conditions, Long reserveTime) {
@@ -61,6 +62,7 @@ public class RecycleConditionUtils {
      *
      * @param condition 回收条件
      * @param matchTime 匹配时间
+     *
      * @return 是否匹配
      */
     public static boolean matchTime(RuleConditionDTO condition, Long matchTime) {

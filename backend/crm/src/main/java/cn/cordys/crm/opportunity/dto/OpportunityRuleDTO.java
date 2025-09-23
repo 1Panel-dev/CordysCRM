@@ -10,12 +10,12 @@ import java.util.List;
 @Data
 public class OpportunityRuleDTO extends OpportunityRule {
 
-	@Schema(description = "成员集合")
-	private List<ScopeNameDTO> members;
-	@Schema(description = "管理员集合")
-	private List<ScopeNameDTO> owners;
-	@Schema(description = "创建人名称")
-	private String createUserName;
-	@Schema(description = "更新人名称")
-	private String updateUserName;
+    @Schema(description = "成员集合")
+    private List<ScopeNameDTO> members;
+    @Schema(description = "管理员集合")
+    private List<ScopeNameDTO> owners;
+    @Schema(description = "创建人名称")
+    private String createUserName;
+    @Schema(description = "更新人名称")
+    private String updateUserName;
 }

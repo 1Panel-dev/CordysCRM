@@ -46,7 +46,7 @@ public class ProductController {
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
-    public ModuleFormConfigDTO getModuleFormConfig(){
+    public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
     }
 
@@ -54,42 +54,42 @@ public class ProductController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "产品列表")
-    public PagerWithOption<List<ProductListResponse>> list(@Validated @RequestBody ProductPageRequest request){
+    public PagerWithOption<List<ProductListResponse>> list(@Validated @RequestBody ProductPageRequest request) {
         return productService.list(request, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "产品详情")
-    public ProductGetResponse get(@PathVariable String id){
+    public ProductGetResponse get(@PathVariable String id) {
         return productService.get(id);
     }
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_ADD)
     @Operation(summary = "添加产品")
-    public Product add(@Validated @RequestBody ProductEditRequest request){
+    public Product add(@Validated @RequestBody ProductEditRequest request) {
         return productService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "更新产品")
-    public Product update(@Validated @RequestBody ProductEditRequest request){
+    public Product update(@Validated @RequestBody ProductEditRequest request) {
         return productService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新产品")
-    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request){
-         productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request) {
+        productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_DELETE)
     @Operation(summary = "删除产品")
-    public void delete(@PathVariable String id){
+    public void delete(@PathVariable String id) {
         productService.delete(id);
     }
 

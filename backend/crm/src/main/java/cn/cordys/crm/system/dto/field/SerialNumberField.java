@@ -13,6 +13,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class SerialNumberField extends BaseField {
 
-	@Schema(description = "流水号规则")
-	private List<String> serialNumberRules;
+    @Schema(description = "流水号规则")
+    private List<String> serialNumberRules;
 }

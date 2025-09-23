@@ -10,7 +10,8 @@ import cn.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 public interface TablePermissionHandler {
     /**
      * 处理表
-     * @param table 表信息
+     *
+     * @param table            表信息
      * @param tableHandleParam 处理参数
      */
     void handleTable(TableDTO table, TableHandleParam tableHandleParam);

@@ -21,24 +21,24 @@ import java.util.List;
 @Tag(name = "导出中心")
 public class ExportTaskCenterController {
 
-	@Resource
-	private ExportTaskCenterService exportTaskCenterService;
+    @Resource
+    private ExportTaskCenterService exportTaskCenterService;
 
-	@PostMapping("/list")
-	@Operation(summary = "查询导出任务列表")
-	public List<ExportTask> queryList(@RequestBody ExportTaskCenterQueryRequest request) {
-		return exportTaskCenterService.list(request, SessionUtils.getUserId());
-	}
+    @PostMapping("/list")
+    @Operation(summary = "查询导出任务列表")
+    public List<ExportTask> queryList(@RequestBody ExportTaskCenterQueryRequest request) {
+        return exportTaskCenterService.list(request, SessionUtils.getUserId());
+    }
 
-	@GetMapping("/cancel/{taskId}")
-	@Operation(summary = "取消导出")
-	public void cancel(@PathVariable("taskId") String taskId) {
-		exportTaskCenterService.cancel(taskId);
-	}
+    @GetMapping("/cancel/{taskId}")
+    @Operation(summary = "取消导出")
+    public void cancel(@PathVariable("taskId") String taskId) {
+        exportTaskCenterService.cancel(taskId);
+    }
 
-	@GetMapping("/download/{taskId}")
-	@Operation(summary = "下载")
-	public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable("taskId") String taskId) {
-		return exportTaskCenterService.download(taskId);
-	}
+    @GetMapping("/download/{taskId}")
+    @Operation(summary = "下载")
+    public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable("taskId") String taskId) {
+        return exportTaskCenterService.download(taskId);
+    }
 }

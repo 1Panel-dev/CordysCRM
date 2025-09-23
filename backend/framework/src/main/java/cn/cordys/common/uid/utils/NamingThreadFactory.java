@@ -99,6 +99,7 @@ public class NamingThreadFactory implements ThreadFactory {
      * Get sequence for different naming prefix
      *
      * @param invoker
+     *
      * @return
      */
     private long getSequence(String invoker) {

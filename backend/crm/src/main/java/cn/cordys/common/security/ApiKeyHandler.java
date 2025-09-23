@@ -22,6 +22,7 @@ public class ApiKeyHandler {
      * 根据请求中的 API 密钥和签名获取用户 ID。
      *
      * @param request HTTP 请求
+     *
      * @return 用户 ID，如果请求无效则返回 null
      */
     public static String getUser(HttpServletRequest request) {
@@ -53,6 +54,7 @@ public class ApiKeyHandler {
      * 判断请求是否包含有效的 API 密钥和签名。
      *
      * @param request HTTP 请求
+     *
      * @return 如果请求包含有效的 API 密钥和签名，返回 true；否则返回 false
      */
     public static Boolean isApiKeyCall(HttpServletRequest request) {
@@ -69,7 +71,9 @@ public class ApiKeyHandler {
      *
      * @param accessKey API 密钥
      * @param signature API 签名
+     *
      * @return 用户 ID
+     *
      * @throws RuntimeException 如果验证失败，会抛出相应的异常
      */
     public static String getUser(String accessKey, String signature) {

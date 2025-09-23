@@ -46,6 +46,7 @@ public class RsaUtils {
      * 获取当前的 RSA 密钥对，如果未创建则生成新的密钥对。
      *
      * @return 当前的 RSA 密钥对
+     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey getRsaKey() throws NoSuchAlgorithmException {
@@ -68,6 +69,7 @@ public class RsaUtils {
      * 创建一个 1024 位的 RSA 密钥对。
      *
      * @return 生成的 RSA 密钥对
+     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey createKeys() throws NoSuchAlgorithmException {
@@ -78,7 +80,9 @@ public class RsaUtils {
      * 创建一个指定大小的 RSA 密钥对。
      *
      * @param keySize 密钥大小（例如：1024，2048）
+     *
      * @return 生成的 RSA 密钥对
+     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey createKeys(int keySize) throws NoSuchAlgorithmException {
@@ -109,7 +113,9 @@ public class RsaUtils {
      *
      * @param originalText 原文
      * @param privateKey   私钥（Base64 编码）
+     *
      * @return 加密后的密文
+     *
      * @throws NoSuchAlgorithmException 如果加密失败
      */
     public static String privateEncrypt(String originalText, String privateKey) throws Exception {
@@ -122,7 +128,9 @@ public class RsaUtils {
      *
      * @param originalText 原文
      * @param privateKey   私钥
+     *
      * @return 加密后的密文
+     *
      * @throws Exception 如果加密失败
      */
     private static String privateEncrypt(String originalText, RSAPrivateKey privateKey) throws Exception {
@@ -138,7 +146,9 @@ public class RsaUtils {
      *
      * @param cipherText 密文
      * @param privateKey 私钥（Base64 编码）
+     *
      * @return 解密后的原文
+     *
      * @throws NoSuchAlgorithmException 如果解密失败
      */
     public static String privateDecrypt(String cipherText, String privateKey) throws Exception {
@@ -151,7 +161,9 @@ public class RsaUtils {
      *
      * @param cipherText 密文
      * @param privateKey 私钥
+     *
      * @return 解密后的原文
+     *
      * @throws Exception 如果解密失败
      */
     private static String privateDecrypt(String cipherText, RSAPrivateKey privateKey) throws Exception {
@@ -166,7 +178,9 @@ public class RsaUtils {
      * 获取私钥对象。
      *
      * @param privateKey 私钥（Base64 编码）
+     *
      * @return 私钥对象
+     *
      * @throws NoSuchAlgorithmException 如果无法获取私钥
      */
     private static RSAPrivateKey getPrivateKey(String privateKey) throws NoSuchAlgorithmException {
@@ -186,7 +200,9 @@ public class RsaUtils {
      * @param opmode  操作模式（加密/解密）
      * @param data    待加解密的数据
      * @param keySize 密钥大小
+     *
      * @return 处理后的数据
+     *
      * @throws Exception 如果处理过程中发生错误
      */
     private static byte[] rsaSplitCodec(Cipher cipher, int opmode, byte[] data, int keySize) throws Exception {

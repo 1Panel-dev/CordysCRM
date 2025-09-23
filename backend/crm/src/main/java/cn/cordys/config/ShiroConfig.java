@@ -46,6 +46,7 @@ public class ShiroConfig {
      * </p>
      *
      * @param sessionManager 默认的 Web 安全管理器
+     *
      * @return 配置好的 {@link ShiroFilterFactoryBean} 实例
      */
     @Bean
@@ -103,6 +104,7 @@ public class ShiroConfig {
      * @param sessionManager 会话管理器
      * @param cacheManager   缓存管理器
      * @param localRealm     自定义 Realm 实例
+     *
      * @return 配置好的 {@link DefaultWebSecurityManager} 实例
      */
     @Bean(name = "securityManager")
@@ -159,6 +161,7 @@ public class ShiroConfig {
      * </p>
      *
      * @param sessionManager 默认的 Web 安全管理器
+     *
      * @return 配置好的 {@link AuthorizationAttributeSourceAdvisor} 实例
      */
     @Bean

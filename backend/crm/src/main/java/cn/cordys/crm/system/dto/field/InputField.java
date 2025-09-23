@@ -11,6 +11,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class InputField extends BaseField {
 
-	@Schema(description = "默认值")
-	private String defaultValue;
+    @Schema(description = "默认值")
+    private String defaultValue;
 }

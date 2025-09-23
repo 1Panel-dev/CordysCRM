@@ -10,6 +10,6 @@ import lombok.Data;
 @Data
 public class ClueTransitionOpportunityRequest extends OpportunityAddRequest {
 
-	@Schema(description = "线索ID")
-	private String clueId;
+    @Schema(description = "线索ID")
+    private String clueId;
 }

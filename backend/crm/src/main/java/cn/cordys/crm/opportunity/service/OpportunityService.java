@@ -130,7 +130,7 @@ public class OpportunityService {
 
     public OpportunitySearchStatisticResponse searchStatistic(OpportunitySearchStatisticRequest request, String userId, String orgId,
                                                               DeptDataPermissionDTO deptDataPermission) {
-         return extOpportunityMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+        return extOpportunityMapper.searchStatistic(request, orgId, userId, deptDataPermission);
     }
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<OpportunityListResponse> list, List<OpportunityListResponse> buildList) {
@@ -235,6 +235,7 @@ public class OpportunityService {
      * @param request
      * @param operatorId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
@@ -429,6 +430,7 @@ public class OpportunityService {
      *
      * @param id
      * @param orgId
+     *
      * @return
      */
     public OpportunityDetailResponse get(String id, String orgId) {
@@ -564,6 +566,7 @@ public class OpportunityService {
 
     /**
      * 下载导入的模板
+     *
      * @param response 响应
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
@@ -577,8 +580,10 @@ public class OpportunityService {
 
     /**
      * 导入检查
-     * @param file 导入文件
+     *
+     * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -590,9 +595,11 @@ public class OpportunityService {
 
     /**
      * 商机导入
-     * @param file 导入文件
-     * @param currentOrg 当前组织
+     *
+     * @param file        导入文件
+     * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -623,8 +630,10 @@ public class OpportunityService {
 
     /**
      * 检查导入的文件
-     * @param file 文件
+     *
+     * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {

@@ -111,6 +111,7 @@ public class AnnouncementService {
                         .build()
         );
     }
+
     @NotNull
     private AnnouncementLogDTO buildNewLogDTO(AnnouncementRequest request, Announcement announcement, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         AnnouncementLogDTO announcementLogDTO = new AnnouncementLogDTO();
@@ -118,10 +119,10 @@ public class AnnouncementService {
         List<String> receiverName = getReceiverName(announcementReceiveTypeDTO);
         announcementLogDTO.setReceiver(receiverName);
         announcementLogDTO.setContent(request.getContent());
-        if (request.getStartTime()!= null) {
+        if (request.getStartTime() != null) {
             announcementLogDTO.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(request.getStartTime()));
         }
-        if (request.getEndTime()!= null) {
+        if (request.getEndTime() != null) {
             announcementLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(request.getEndTime()));
         }
         return announcementLogDTO;
@@ -201,7 +202,7 @@ public class AnnouncementService {
     private void dealReceiverIds(AnnouncementRequest request, Set<String> userSet, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
             List<String> depIds = extDepartmentMapper.selectChildrenByIds(request.getDeptIds());
-            if (CollectionUtils.isNotEmpty(depIds)){
+            if (CollectionUtils.isNotEmpty(depIds)) {
                 userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(depIds));
             }
             announcementReceiveTypeDTO.setDeptIds(request.getDeptIds());
@@ -213,7 +214,8 @@ public class AnnouncementService {
     }
 
     /**
-     *  删除缓存中的公告提示
+     * 删除缓存中的公告提示
+     *
      * @param announcementId 公告id
      * @param organizationId 组织Id
      */
@@ -305,6 +307,7 @@ public class AnnouncementService {
      * 公告列表分页查询
      *
      * @param request request
+     *
      * @return 公告列表
      */
     public List<AnnouncementDTO> page(AnnouncementPageRequest request) {
@@ -322,6 +325,7 @@ public class AnnouncementService {
      * 获取公告
      *
      * @param id 公告id
+     *
      * @return AnnouncementDTO
      */
     public AnnouncementDTO detail(String id) {
@@ -360,8 +364,8 @@ public class AnnouncementService {
         }
     }
 
-    public List<String> getReceiverName(AnnouncementReceiveTypeDTO announcementReceiveTypeDTO){
-        List<String>returnNames = new ArrayList<>();
+    public List<String> getReceiverName(AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
+        List<String> returnNames = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
             List<String> names = extDepartmentMapper.getNameByIds(announcementReceiveTypeDTO.getDeptIds());
             returnNames.addAll(names);

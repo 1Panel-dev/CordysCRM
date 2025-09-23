@@ -86,6 +86,7 @@ public abstract class BaseExportService {
      *
      * @param fileId
      * @param fileName
+     *
      * @return
      */
     public File prepareExportFile(String fileId, String fileName, String orgId) {
@@ -178,7 +179,7 @@ public abstract class BaseExportService {
 
 
     public void checkFileName(String fileName) {
-        if(fileName.contains("/")) {
+        if (fileName.contains("/")) {
             throw new GenericException(Translator.get("file_name_illegal"));
         }
     }

@@ -120,6 +120,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * 获取需要被考虑回收的客户列表
      *
      * @param recycleOwnersIds 需要考虑回收的负责人ID列表
+     *
      * @return 符合初步条件的客户列表
      */
     private List<Customer> getCustomersForRecycle(List<String> recycleOwnersIds) {
@@ -132,6 +133,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * 获取客户池回收规则
      *
      * @param pools 客户池列表
+     *
      * @return 池ID到回收规则的映射
      */
     private Map<String, CustomerPoolRecycleRule> getPoolRecycleRules(List<CustomerPool> pools) {

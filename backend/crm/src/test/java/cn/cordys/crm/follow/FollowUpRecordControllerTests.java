@@ -29,8 +29,4 @@ public class FollowUpRecordControllerTests extends BaseTest {
     }
 
 
-
-
-
-
 }

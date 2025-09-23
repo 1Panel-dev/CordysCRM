@@ -92,9 +92,9 @@ public class NotificationService {
             }
         }
         Set<String> range = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
-        if (CollectionUtils.isNotEmpty(range)){
+        if (CollectionUtils.isNotEmpty(range)) {
             for (String value : range) {
-                stringRedisTemplate.delete(MSG_PREFIX+value);
+                stringRedisTemplate.delete(MSG_PREFIX + value);
             }
         }
         stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
@@ -180,7 +180,7 @@ public class NotificationService {
         if (CollectionUtils.isEmpty(modules)) {
             return new ArrayList<>();
         }
-        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId, modules);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
     }

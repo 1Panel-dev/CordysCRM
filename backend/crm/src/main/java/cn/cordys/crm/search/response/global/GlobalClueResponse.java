@@ -40,6 +40,4 @@ public class GlobalClueResponse {
     private List<BaseModuleFieldValue> moduleFields;
 
 
-
-
 }

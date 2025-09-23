@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class TransformCsAssociateDTO {
 
-	/**
-	 * 联系人ID
-	 */
-	private String contactId;
+    /**
+     * 联系人ID
+     */
+    private String contactId;
 }

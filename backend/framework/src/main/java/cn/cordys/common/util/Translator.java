@@ -30,6 +30,7 @@ public class Translator {
      * 根据给定的消息键获取翻译内容。
      *
      * @param key 消息键
+     *
      * @return 翻译后的消息，如果没有找到对应的消息，则返回 "Not Support Key: " + key
      */
     public static String get(String key) {
@@ -41,6 +42,7 @@ public class Translator {
      *
      * @param key            消息键
      * @param defaultMessage 默认消息
+     *
      * @return 翻译后的消息，若未找到则返回默认消息
      */
     public static String get(String key, String defaultMessage) {
@@ -52,6 +54,7 @@ public class Translator {
      *
      * @param key    消息键
      * @param locale 指定的语言环境
+     *
      * @return 翻译后的消息
      */
     public static String get(String key, Locale locale) {
@@ -64,6 +67,7 @@ public class Translator {
      *
      * @param key  消息键
      * @param args 格式化参数
+     *
      * @return 翻译后的消息
      */
     public static String getWithArgs(String key, Object... args) {

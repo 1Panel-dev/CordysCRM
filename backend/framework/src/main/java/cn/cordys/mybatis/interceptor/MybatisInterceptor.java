@@ -43,7 +43,9 @@ public class MybatisInterceptor implements Interceptor {
      * 拦截目标方法并进行加密或解密处理。
      *
      * @param invocation 当前调用的信息
+     *
      * @return 处理后的结果对象
+     *
      * @throws Throwable 如果处理过程中出现异常
      */
     @Override
@@ -86,6 +88,7 @@ public class MybatisInterceptor implements Interceptor {
      * 获取与指定对象相关的配置。
      *
      * @param p 目标对象
+     *
      * @return 对象的配置信息
      */
     private Map<String, Map<String, MybatisInterceptorConfig>> getConfig(Object p) {
@@ -132,7 +135,9 @@ public class MybatisInterceptor implements Interceptor {
      * 处理加密操作。
      *
      * @param obj 目标对象
+     *
      * @return 加密后的对象
+     *
      * @throws Throwable 如果加密过程中出现异常
      */
     private Object process(Object obj) throws Throwable {
@@ -180,7 +185,9 @@ public class MybatisInterceptor implements Interceptor {
      * 处理解密操作。
      *
      * @param obj 目标对象
+     *
      * @return 解密后的对象
+     *
      * @throws Throwable 如果解密过程中出现异常
      */
     private Object undo(Object obj) throws Throwable {
@@ -225,6 +232,7 @@ public class MybatisInterceptor implements Interceptor {
      * 创建插件对象。
      *
      * @param target 目标对象
+     *
      * @return 包装后的对象
      */
     @Override

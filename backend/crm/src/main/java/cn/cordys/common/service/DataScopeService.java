@@ -63,8 +63,10 @@ public class DataScopeService {
 
     /**
      * 获取用户角色的数据权限
+     *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String permission) {
@@ -159,6 +161,7 @@ public class DataScopeService {
     /**
      * @param userId
      * @param orgId
+     *
      * @return
      */
     private DeptDataPermissionDTO getDeptDataPermissionForDeptSearchType(String userId, String orgId, String permission) {
@@ -184,6 +187,7 @@ public class DataScopeService {
      *
      * @param tree
      * @param deptIds
+     *
      * @return
      */
     public List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
@@ -201,7 +205,9 @@ public class DataScopeService {
 
     /**
      * 获取树节点及其子节点的ID
+     *
      * @param tree
+     *
      * @return
      */
     private List<String> getNodeIdsWithChild(List<BaseTreeNode> tree) {
@@ -218,6 +224,7 @@ public class DataScopeService {
 
     /**
      * 校验数据权限
+     *
      * @param userId
      * @param orgId
      */

@@ -30,9 +30,4 @@ public class MessageTaskDetailDTO implements Serializable {
     private Boolean weComEnable;
 
 
-
-
-
-
-
 }

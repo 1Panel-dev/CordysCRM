@@ -14,8 +14,7 @@ public class RepeatCustomerResponse {
     private List<AdvancedCustomerResponse> customerData;
 
     @Schema(description = "线索重复数据")
-    private List<ClueListResponse>clueList;
-
+    private List<ClueListResponse> clueList;
 
 
 }

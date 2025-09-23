@@ -242,6 +242,7 @@ public class LogUtils {
      *
      * @param msg 要输出的日志信息
      * @param ex  异常信息
+     *
      * @return 格式化后的日志信息
      */
     private static String getMsg(Object msg, Throwable ex) {
@@ -255,6 +256,7 @@ public class LogUtils {
      * 获取日志信息。
      *
      * @param msg 要输出的日志信息
+     *
      * @return 格式化后的日志信息
      */
     private static String getMsg(Object msg) {
@@ -285,6 +287,7 @@ public class LogUtils {
      * 将异常堆栈信息转换为字符串。
      *
      * @param e 异常
+     *
      * @return 异常堆栈的字符串表示
      */
     public static String toString(Throwable e) {

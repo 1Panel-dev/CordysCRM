@@ -13,7 +13,7 @@ public class DingTalkToken extends DingTalkResponseEntity {
     private String accessToken;
 
     /**
-     * 	accessToken的过期时间，单位秒。
+     * accessToken的过期时间，单位秒。
      */
     @JsonProperty("expireIn")
     private String expireIn;

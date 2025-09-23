@@ -20,7 +20,7 @@ public class DepartmentMultipleParser extends TextFieldParser<DepartmentMultiple
 
     @Override
     public String parseSql(String fieldValueTable, DepartmentMultipleField field) {
-        return MessageFormat.format(MULTIPLE_DEPARTMENT_OPTION_FIELD_SQL_TEMPLATE ,
+        return MessageFormat.format(MULTIPLE_DEPARTMENT_OPTION_FIELD_SQL_TEMPLATE,
                 fieldValueTable + "_blob",
                 field.getId(),
                 field.getId()

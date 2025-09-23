@@ -18,12 +18,12 @@ import java.util.List;
 @Tag(name = "MCP三方接口")
 public class McpController {
 
-	@Resource
-	private ModuleFormService moduleFormService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
-	@GetMapping("/form/config/{formKey}")
-	@Operation(summary = "获取表单配置")
-	public List<SimpleField> getMcpField(@PathVariable String formKey) {
-		return moduleFormService.getMcpFields(formKey, OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/form/config/{formKey}")
+    @Operation(summary = "获取表单配置")
+    public List<SimpleField> getMcpField(@PathVariable String formKey) {
+        return moduleFormService.getMcpFields(formKey, OrganizationContext.getOrganizationId());
+    }
 }

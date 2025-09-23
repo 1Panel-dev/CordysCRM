@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AnnouncementDTO extends Announcement{
+public class AnnouncementDTO extends Announcement {
 
     @Schema(description = "公告内容")
     private String contentText;

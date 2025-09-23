@@ -51,7 +51,7 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
                         .stream()
                         .map(OptionProp::getLabel)
                         .collect(Collectors.joining(","))
-                + ")" ;
+                + ")";
     }
 
     protected String parseEmptyOptionSql(BaseField field) {
@@ -65,6 +65,7 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
      * UNION ALL SELECT '官网咨询', '2'
      *
      * @param options
+     *
      * @return
      */
     protected static String parseOptionSql(List<OptionProp> options) {

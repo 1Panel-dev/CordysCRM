@@ -37,7 +37,7 @@ public class CluePermissionHandler extends DataScopeTablePermissionHandler {
 
         super.handleTable(table, tableHandleParam, formConfig);
 
-        String sql = table.getSql() + " and in_shared_pool is false and (c.transition_id is null or c.transition_id = '')" ;
+        String sql = table.getSql() + " and in_shared_pool is false and (c.transition_id is null or c.transition_id = '')";
         table.setSql(sql);
     }
 

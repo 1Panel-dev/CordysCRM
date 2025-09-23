@@ -31,6 +31,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * 设置ApplicationContext，Spring容器会自动注入上下文。
      *
      * @param ctx 当前的Spring应用上下文
+     *
      * @throws BeansException 如果出现错误
      */
     public void setApplicationContext(@NotNull ApplicationContext ctx) throws BeansException {
@@ -41,6 +42,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * 根据Bean名称获取Bean实例
      *
      * @param beanName Bean的名称
+     *
      * @return 返回Bean实例，若未找到则返回null
      */
     public static Object getBean(String beanName) {
@@ -61,6 +63,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      *
      * @param className Bean的类型
      * @param <T>       返回的Bean类型
+     *
      * @return 返回Bean实例，若未找到则返回null
      */
     public static <T> T getBean(Class<T> className) {
@@ -81,6 +84,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      *
      * @param className Bean的类型
      * @param <T>       返回的Bean类型
+     *
      * @return 返回所有类型为className的Bean实例的Map
      */
     public static <T> Map<String, T> getBeansOfType(Class<T> className) {
@@ -93,6 +97,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * @param beanName       Bean的名称
      * @param methodFunction 方法选择器函数，接受Bean的类类型并返回一个Method对象
      * @param args           方法调用的参数
+     *
      * @return 返回方法的执行结果，若发生异常则返回null
      */
     public static Object invoke(String beanName, Function<Class<?>, Method> methodFunction, Object... args) {
@@ -134,6 +139,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * @param methodName     方法名
      * @param parameterTypes 方法参数类型
      * @param args           方法参数
+     *
      * @return 方法返回值
      */
     public static void invokeStatic(String className, String methodName, Class<?>[] parameterTypes, Object... args) {

@@ -56,6 +56,7 @@ public class CustomerContactExportService extends BaseExportService {
      * @param orgId
      * @param deptDataPermission
      * @param locale
+     *
      * @return
      */
     public String export(String userId, CustomerContactExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
@@ -114,6 +115,7 @@ public class CustomerContactExportService extends BaseExportService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
+     *
      * @return
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, CustomerContactExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
@@ -158,6 +160,7 @@ public class CustomerContactExportService extends BaseExportService {
      * @param request
      * @param orgId
      * @param locale
+     *
      * @return
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {

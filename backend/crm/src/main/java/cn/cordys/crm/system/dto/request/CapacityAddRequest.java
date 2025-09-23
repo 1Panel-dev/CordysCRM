@@ -12,11 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 public class CapacityAddRequest {
 
-	@NotNull
-	@Schema(description = "范围ID集合")
-	private List<String> scopeIds;
-	@Schema(description = "容量")
-	private Integer capacity;
-	@Schema(description = "过滤条件集合")
-	private List<FilterConditionDTO> filters;
+    @NotNull
+    @Schema(description = "范围ID集合")
+    private List<String> scopeIds;
+    @Schema(description = "容量")
+    private Integer capacity;
+    @Schema(description = "过滤条件集合")
+    private List<FilterConditionDTO> filters;
 }

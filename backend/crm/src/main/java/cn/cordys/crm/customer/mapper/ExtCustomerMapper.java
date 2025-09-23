@@ -58,6 +58,7 @@ public interface ExtCustomerMapper {
      *
      * @param ownerId 负责人ID
      * @param filters 过滤条件集合
+     *
      * @return 客户数量
      */
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
@@ -79,6 +80,7 @@ public interface ExtCustomerMapper {
 
     /**
      * 根据ID全量更新客户信息
+     *
      * @param customer 客户
      */
     void updateIncludeNullById(@Param("customer") Customer customer);

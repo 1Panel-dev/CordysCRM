@@ -106,6 +106,7 @@ public class AgentModuleService extends MoveNodeService {
      * @param request
      * @param orgId
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
@@ -225,6 +226,7 @@ public class AgentModuleService extends MoveNodeService {
      * 智能体树结构
      *
      * @param orgId
+     *
      * @return
      */
     public List<BaseTreeNode> getTree(String orgId) {
@@ -249,6 +251,7 @@ public class AgentModuleService extends MoveNodeService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public Map<String, Long> moduleCount(String userId, String orgId) {

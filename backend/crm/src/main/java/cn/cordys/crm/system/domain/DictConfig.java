@@ -11,12 +11,12 @@ import lombok.Data;
 @Table(name = "sys_dict_config")
 public class DictConfig {
 
-	@Schema(description = "字典类型")
-	private String module;
+    @Schema(description = "字典类型")
+    private String module;
 
-	@Schema(description = "组织ID")
-	private String organizationId;
+    @Schema(description = "组织ID")
+    private String organizationId;
 
-	@Schema(description = "是否启用")
-	private Boolean enabled;
+    @Schema(description = "是否启用")
+    private Boolean enabled;
 }

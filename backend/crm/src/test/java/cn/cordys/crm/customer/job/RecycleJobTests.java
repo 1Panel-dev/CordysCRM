@@ -18,33 +18,33 @@ import org.springframework.test.context.jdbc.SqlConfig;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RecycleJobTests extends BaseTest {
 
-	@Resource
-	private CustomerPoolRecycleListener customerPoolRecycleListener;
+    @Resource
+    private CustomerPoolRecycleListener customerPoolRecycleListener;
 
-	@Resource
-	private CluePoolRecycleListener cluePoolRecycleListener;
+    @Resource
+    private CluePoolRecycleListener cluePoolRecycleListener;
 
-	@Test
-	@Order(1)
-	@Sql(scripts = {"/dml/init_customer_recycle_test.sql"},
-			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-			executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-	@Sql(scripts = {"/dml/cleanup_customer_recycle_test.sql"},
-			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-			executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-	public void testCustomerRecycle() {
-		customerPoolRecycleListener.recycle();
-	}
+    @Test
+    @Order(1)
+    @Sql(scripts = {"/dml/init_customer_recycle_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_customer_recycle_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testCustomerRecycle() {
+        customerPoolRecycleListener.recycle();
+    }
 
-	@Test
-	@Order(2)
-	@Sql(scripts = {"/dml/init_clue_recycle_test.sql"},
-			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-			executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-	@Sql(scripts = {"/dml/cleanup_clue_recycle_test.sql"},
-			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-			executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-	public void testClueRecycle() {
-		cluePoolRecycleListener.recycle();
-	}
+    @Test
+    @Order(2)
+    @Sql(scripts = {"/dml/init_clue_recycle_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_clue_recycle_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testClueRecycle() {
+        cluePoolRecycleListener.recycle();
+    }
 }

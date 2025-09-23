@@ -42,10 +42,10 @@ public class Pager<T> {
     /**
      * 带参构造函数，用于初始化分页对象。
      *
-     * @param list      数据列表
-     * @param total     总记录数
-     * @param pageSize  每页记录数
-     * @param current   当前页码
+     * @param list     数据列表
+     * @param total    总记录数
+     * @param pageSize 每页记录数
+     * @param current  当前页码
      */
     public Pager(T list, long total, long pageSize, long current) {
         this.list = list;

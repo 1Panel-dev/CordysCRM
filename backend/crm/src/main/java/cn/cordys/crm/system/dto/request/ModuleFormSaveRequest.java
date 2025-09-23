@@ -17,15 +17,15 @@ import java.util.List;
 @AllArgsConstructor
 public class ModuleFormSaveRequest {
 
-	@Size(max = 20)
-	@NotBlank
-	@Schema(description = "表单KEY", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String formKey;
+    @Size(max = 20)
+    @NotBlank
+    @Schema(description = "表单KEY", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String formKey;
 
-	@Schema(description = "保存字段集合")
-	private List<BaseField> fields;
+    @Schema(description = "保存字段集合")
+    private List<BaseField> fields;
 
-	@NotNull
-	@Schema(description = "表单属性")
-	private FormProp formProp;
+    @NotNull
+    @Schema(description = "表单属性")
+    private FormProp formProp;
 }

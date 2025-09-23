@@ -63,6 +63,7 @@ public class MybatisConfig {
      * </p>
      *
      * @param interceptorConfigs 配置的拦截器列表
+     *
      * @return 配置好的自定义拦截器实例
      */
     @Bean
@@ -98,6 +99,7 @@ public class MybatisConfig {
      * </p>
      *
      * @param properties 数据源的基础配置
+     *
      * @return 配置好的主数据源实例
      */
     @Bean
@@ -119,6 +121,7 @@ public class MybatisConfig {
      * </p>
      *
      * @param properties Quartz 数据源的基础配置
+     *
      * @return 配置好的 Quartz 数据源实例
      */
     @Bean

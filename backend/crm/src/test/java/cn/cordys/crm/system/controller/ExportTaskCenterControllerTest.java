@@ -48,7 +48,6 @@ public class ExportTaskCenterControllerTest extends BaseTest {
     private BaseMapper<ModuleForm> moduleFormMapper;
 
 
-
     @Order(1)
     @Test
     void testList() throws Exception {
@@ -66,7 +65,7 @@ public class ExportTaskCenterControllerTest extends BaseTest {
     @Order(1)
     @Test
     void testCancel() throws Exception {
-        this.requestGet(CANCEL+"/rr").andExpect(status().is5xxServerError());
+        this.requestGet(CANCEL + "/rr").andExpect(status().is5xxServerError());
         ModuleForm moduleForm = getModuleForm();
 
         ModuleField example = new ModuleField();
@@ -97,13 +96,13 @@ public class ExportTaskCenterControllerTest extends BaseTest {
         requestE.setHeadList(list);
         MvcResult mvcResult2 = this.requestPostWithOkAndReturn("/account/export-all", requestE);
         String resultData = getResultData(mvcResult2, String.class);
-        this.requestGetWithOk(CANCEL+resultData);
+        this.requestGetWithOk(CANCEL + resultData);
         Thread.sleep(1500);
         mvcResult2 = this.requestPostWithOkAndReturn("/account/export-all", requestE);
         resultData = getResultData(mvcResult2, String.class);
         Thread.sleep(1500);
         // 等待导出任务完成
-        this.requestGetStreamWithOk(DOWN_LOAD+resultData);
+        this.requestGetStreamWithOk(DOWN_LOAD + resultData);
 
 
     }

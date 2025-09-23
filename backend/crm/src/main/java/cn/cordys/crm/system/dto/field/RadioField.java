@@ -17,15 +17,15 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class RadioField extends BaseField implements HasOption {
 
-	@Schema(description = "选项值")
-	private List<OptionProp> options;
+    @Schema(description = "选项值")
+    private List<OptionProp> options;
 
-	@Schema(description = "默认值")
-	private String defaultValue;
+    @Schema(description = "默认值")
+    private String defaultValue;
 
-	@Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
-	private String direction;
+    @Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
+    private String direction;
 
-	@Schema(description = "联动属性")
-	private LinkProp linkProp;
+    @Schema(description = "联动属性")
+    private LinkProp linkProp;
 }
