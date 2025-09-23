@@ -3,7 +3,6 @@ package cn.cordys.common.constants;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.*;

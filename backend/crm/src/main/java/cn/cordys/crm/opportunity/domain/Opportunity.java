@@ -1,7 +1,6 @@
 package cn.cordys.crm.opportunity.domain;
 
 import cn.cordys.common.domain.BaseModel;
-import cn.cordys.common.handler.ListTypeHandler;
 import cn.cordys.common.util.BigDecimalNoTrailingZeroSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;

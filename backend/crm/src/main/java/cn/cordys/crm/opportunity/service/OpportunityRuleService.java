@@ -18,7 +18,6 @@ import cn.cordys.crm.opportunity.domain.OpportunityRule;
 import cn.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import cn.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
-import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
 import cn.cordys.crm.system.constants.RecycleConditionColumnKey;
 import cn.cordys.crm.system.constants.RecycleConditionOperator;

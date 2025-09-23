@@ -1,12 +1,12 @@
 package cn.cordys.crm.agent;
 
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
 import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
 import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
 import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
-import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;

@@ -202,10 +202,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         boolean hasPool = userPoolMap.containsKey(clueListResponse.getPoolId());
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
 
-        if (hasPool && hasPermission) {
-            return true;
-        }
-        return false;
+        return hasPool && hasPermission;
     }
 
 
