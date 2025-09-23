@@ -163,9 +163,9 @@ const useUserStore = defineStore('user', {
         return false;
       }
     },
-    async isLogin() {
+    async isLogin(isDisabledErrorTip = false) {
       try {
-        const res = await isLogin();
+        const res = await isLogin(isDisabledErrorTip);
         if (!res) {
           return false;
         }
@@ -181,9 +181,9 @@ const useUserStore = defineStore('user', {
         return false;
       }
     },
-    async checkIsLogin() {
+    async checkIsLogin(isDisabledErrorTip = false) {
       const { isLoginPage } = useUser();
-      const isLoginStatus = await this.isLogin();
+      const isLoginStatus = await this.isLogin(isDisabledErrorTip);
       if (isLoginStatus) {
         if (isLoginPage()) {
           const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());

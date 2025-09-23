@@ -18,7 +18,7 @@
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+  import { hasToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
   import type { Result } from '@lib/shared/types/axios';
 
@@ -93,9 +93,13 @@
   }
 
   onBeforeMount(async () => {
-    await handleOauthLogin();
+    const isWXWork = navigator.userAgent.includes('wxwork');
+    if (!hasToken() && isWXWork) {
+      await handleOauthLogin();
+    }
+
     if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
-      await userStore.checkIsLogin();
+      await userStore.checkIsLogin(isWXWork);
       appStore.setLoginLoading(false);
     }
   });
