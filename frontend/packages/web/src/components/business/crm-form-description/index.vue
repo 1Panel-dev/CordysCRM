@@ -13,8 +13,22 @@
       </template>
       <template #[FieldTypeEnum.TEXTAREA]="{ item }">
         <div class="flex w-full items-center justify-between">
-          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+          <div class="mr-[4px] whitespace-nowrap text-[var(--text-n2)]">{{ item.label }}</div>
           <div v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+        </div>
+      </template>
+      <!-- 链接字段 -->
+      <template #[FieldTypeEnum.LINK]="{ item }">
+        <div class="flex w-full items-center justify-between">
+          <div class="mr-[4px] whitespace-nowrap text-[var(--text-n2)]">{{ item.label }}</div>
+          <n-tooltip :delay="300">
+            <template #trigger>
+              <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
+                {{ item.value }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
         </div>
       </template>
       <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
@@ -48,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NImage, NImageGroup, NSpace, NSpin } from 'naive-ui';
+  import { NImage, NImageGroup, NSpace, NSpin, NTooltip } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -127,6 +141,15 @@
       inCustomerPool: detail.value.inCustomerPool,
       poolId: detail.value.poolId,
     });
+  }
+
+  // 打开链接
+  function openLink(item: any) {
+    if (item.openMode === 'openInCurrent') {
+      window.location.href = item.value;
+    } else {
+      window.open(item.value, '_blank');
+    }
   }
 
   watch(

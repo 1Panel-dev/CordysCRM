@@ -463,6 +463,20 @@ export const serialNumberDefaultFieldConfig: FormCreateField = {
   serialNumberRules: ['Opp', '-', 'yyyyMM', '-', 6],
 };
 
+export const linkDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.LINK,
+  icon: 'iconicon_link2',
+  name: 'system.message.href',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  mobile: true,
+  rules: [],
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
@@ -470,6 +484,7 @@ export const advancedFields: FormCreateField[] = [
   dataSourceDefaultFieldConfig,
   dataSourceMultipleDefaultFieldConfig,
   serialNumberDefaultFieldConfig,
+  linkDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -513,6 +528,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.DATA_SOURCE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.SERIAL_NUMBER]: [],
+  [FieldTypeEnum.LINK]: [FieldRuleEnum.REQUIRED],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

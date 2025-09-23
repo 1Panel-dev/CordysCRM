@@ -531,6 +531,38 @@
         </template>
       </div>
       <!-- 流水号属性 End -->
+      <!-- 链接 -->
+      <template v-else-if="fieldConfig.type === FieldTypeEnum.LINK">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.linkSource') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.linkSource"
+            :disabled="fieldConfig.disabledProps?.includes('linkSource')"
+            :options="linkSourceOptions"
+            default-value="userInput"
+          />
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.openMode') }}</div>
+          <n-radio-group
+            v-model:value="fieldConfig.openMode"
+            :disabled="fieldConfig.disabledProps?.includes('openMode')"
+            name="radiogroup"
+            class="flex"
+            default-value="openInNew"
+          >
+            <n-radio-button value="openInNew" class="flex-1 text-center">
+              {{ t('crmFormDesign.openInNew') }}
+            </n-radio-button>
+            <n-radio-button value="openInCurrent" class="flex-1 text-center">
+              {{ t('crmFormDesign.openInCurrent') }}
+            </n-radio-button>
+          </n-radio-group>
+        </div>
+      </template>
+      <!-- 链接 End -->
       <!-- 默认值 -->
       <div
         v-if="
@@ -544,6 +576,7 @@
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.SERIAL_NUMBER,
+            FieldTypeEnum.LINK,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -993,6 +1026,13 @@
     },
     {
       value: 'divider--double',
+    },
+  ];
+
+  const linkSourceOptions = [
+    {
+      label: t('crmFormDesign.userInput'),
+      value: 'userInput',
     },
   ];
 

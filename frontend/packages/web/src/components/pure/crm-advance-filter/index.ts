@@ -46,6 +46,7 @@ const COMMON_SELECTION_OPERATORS = [IN, NOT_IN, EMPTY, NOT_EMPTY];
 export const operatorOptionsMap: Record<string, { value: string; label: string }[]> = {
   [FieldTypeEnum.INPUT]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.TEXTAREA]: COMMON_TEXT_OPERATORS,
+  [FieldTypeEnum.LINK]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.PHONE]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.INPUT_NUMBER]: [EQUAL, GT, LT, GE, LE],
   [FieldTypeEnum.SELECT]: COMMON_SELECTION_OPERATORS,

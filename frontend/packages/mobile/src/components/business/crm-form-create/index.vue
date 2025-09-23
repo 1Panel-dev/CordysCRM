@@ -143,6 +143,9 @@
     if (type === FieldTypeEnum.PICTURE) {
       return CrmFormCreateComponents.advancedComponents.upload;
     }
+    if (type === FieldTypeEnum.LINK) {
+      return CrmFormCreateComponents.advancedComponents.link;
+    }
   }
 
   function handleFieldChange(value: any, item: FormCreateField) {

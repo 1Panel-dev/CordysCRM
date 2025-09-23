@@ -149,4 +149,9 @@ export default {
   'crmFormDesign.small': '小',
   'crmFormDesign.medium': '中',
   'crmFormDesign.large': '大',
+  'crmFormDesign.userInput': '用户输入',
+  'crmFormDesign.linkSource': '链接来源',
+  'crmFormDesign.openMode': '打开方式',
+  'crmFormDesign.openInCurrent': '当前窗口',
+  'crmFormDesign.openInNew': '新窗口',
 };

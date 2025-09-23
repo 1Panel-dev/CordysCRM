@@ -151,4 +151,9 @@ export default {
   'crmFormDesign.small': 'Small',
   'crmFormDesign.medium': 'Medium',
   'crmFormDesign.large': 'Large',
+  'crmFormDesign.userInput': 'User Input',
+  'crmFormDesign.linkSource': 'Link Source',
+  'crmFormDesign.openMode': 'Open Mode',
+  'crmFormDesign.openInCurrent': 'Current Window',
+  'crmFormDesign.openInNew': 'New Window',
 };

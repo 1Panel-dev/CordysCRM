@@ -111,6 +111,9 @@ export interface FormCreateField {
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
   linkRange?: (string | number)[]; // 联动限制可选范围
+  // 链接
+  linkSource?: string;
+  openMode?: string;
 }
 
 export interface FormDetail {

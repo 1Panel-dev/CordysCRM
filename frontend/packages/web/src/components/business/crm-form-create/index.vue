@@ -163,6 +163,9 @@
     if (type === FieldTypeEnum.SERIAL_NUMBER) {
       return CrmFormCreateComponents.advancedComponents.serialNumber;
     }
+    if (type === FieldTypeEnum.LINK) {
+      return CrmFormCreateComponents.advancedComponents.link;
+    }
   }
 
   function applyFieldLink(item: FormCreateField) {
