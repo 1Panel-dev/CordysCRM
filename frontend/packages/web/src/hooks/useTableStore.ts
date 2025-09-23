@@ -62,8 +62,8 @@ export default function useTableStore() {
     const orderColumn = newArr.find((item) => item.key === SpecialColumnEnum.ORDER);
     const dragColumn = newArr.find((item) => item.key === SpecialColumnEnum.DRAG);
     if (orderColumn && selectionColumn) {
-      // 如果有排序列和选择列，则将选择列插入到排序列之后
-      sorted.splice(1, 0, selectionColumn);
+      // 如果有排序列和选择列，则将选择列插入到排序列之前
+      sorted.splice(0, 0, selectionColumn);
     } else if (selectionColumn) {
       // 如果只有选择列，则将其放在最前面
       sorted.unshift(selectionColumn);
@@ -156,8 +156,8 @@ export default function useTableStore() {
         const orderColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.ORDER);
         const dragColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.DRAG);
         columns = columns.filter((col) => col.key !== SpecialColumnEnum.OPERATION);
-        if (selectColumn) columns.unshift(selectColumn);
         if (orderColumn) columns.unshift(orderColumn);
+        if (selectColumn) columns.unshift(selectColumn);
         if (dragColumn) columns.unshift(dragColumn);
         if (operationColumn) {
           columns.push({

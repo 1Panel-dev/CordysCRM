@@ -315,7 +315,12 @@
   }
 
   async function initColumn() {
+    const specialColumnsKeys = [SpecialColumnEnum.DRAG, SpecialColumnEnum.SELECTION, SpecialColumnEnum.ORDER];
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);
+    const hasOrderColumn = props.columns.find((e) => e.key === SpecialColumnEnum.ORDER);
+    const hasDisabledColumn = props.columns.find(
+      (e) => e.columnSelectorDisabled && !specialColumnsKeys.includes(e.key as SpecialColumnEnum)
+    );
     const dragColumn: CrmDataTableColumn[] = props.draggable
       ? [
           {
@@ -326,14 +331,28 @@
           },
         ]
       : [];
-    // 无任何权限不展示选择列
-    const propsColumns =
-      !hasAnyPermission((attrs?.permission || []) as string[]) && hasSelectedColumn
-        ? props.columns.filter((e) => e.type !== SpecialColumnEnum.SELECTION)
-        : props.columns;
+    const hasPermission = hasAnyPermission((attrs?.permission || []) as string[]);
+    const propsColumns = props.columns.filter(
+      (c) =>
+        c.key !== SpecialColumnEnum.DRAG && c.type !== SpecialColumnEnum.SELECTION && c.key !== SpecialColumnEnum.ORDER
+    );
+
+    if (hasDisabledColumn) {
+      const disabledIndex = propsColumns.indexOf(hasDisabledColumn);
+      if (disabledIndex > -1) {
+        propsColumns.splice(disabledIndex, 1);
+      }
+    }
+
+    const specialColumns = [
+      ...dragColumn,
+      ...(hasPermission && hasSelectedColumn ? [hasSelectedColumn] : []),
+      ...(hasOrderColumn ? [hasOrderColumn] : []),
+      ...(hasDisabledColumn ? [hasDisabledColumn] : []),
+    ];
 
     // 将render去掉，防止报错
-    let columns = dragColumn.concat(propsColumns);
+    let columns = specialColumns.concat(propsColumns);
     columns = cloneDeep(columns).map((column: CrmDataTableColumn) => {
       const _col = { ...column };
       Object.keys(_col).forEach((key) => {
