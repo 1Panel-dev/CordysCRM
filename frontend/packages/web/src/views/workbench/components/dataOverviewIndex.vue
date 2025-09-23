@@ -152,9 +152,12 @@
   }
 
   function setSearchType(isInit: boolean, activeId?: string) {
+    const firstDeptId = originDepartmentOptions.value[0]?.id;
+    const searchType = originDepartmentOptions.value.length > 1 ? 'DEPARTMENT' : 'ALL';
+
     if (isInit) {
-      params.value.searchType = useStore.userInfo.roles.some((e: any) => e?.dataScope === 'SELF') ? 'SELF' : 'ALL';
-      activeDeptId.value = params.value.searchType === 'SELF' ? 'SELF' : originDepartmentOptions.value[0]?.id;
+      params.value.searchType = originDepartmentOptions.value.length === 0 ? 'SELF' : searchType;
+      activeDeptId.value = params.value.searchType === 'SELF' ? 'SELF' : firstDeptId;
       return;
     }
 
@@ -164,12 +167,12 @@
 
     if (activeDeptId.value === 'SELF') {
       params.value.searchType = 'SELF';
-    } else if (activeDeptId.value !== originDepartmentOptions.value[0]?.id) {
+    } else if (activeDeptId.value === firstDeptId) {
+      params.value.searchType = useStore.isAdmin ? 'ALL' : searchType;
+    } else if (activeDeptId.value) {
       params.value.searchType = 'DEPARTMENT';
-    } else if (useStore.isAdmin || activeDeptId.value === originDepartmentOptions.value[0]?.id) {
-      params.value.searchType = 'ALL';
     } else {
-      params.value.searchType = useStore.userInfo.roles.some((e: any) => e?.dataScope === 'SELF') ? 'SELF' : 'ALL';
+      params.value.searchType = originDepartmentOptions.value.length === 0 ? 'SELF' : searchType;
     }
   }
 
@@ -197,6 +200,8 @@
       setSearchType(true);
       if (params.value.searchType === 'ALL') {
         params.value.deptIds = getSpringIds(result);
+      } else if (params.value.searchType === 'DEPARTMENT') {
+        params.value.deptIds = [activeDeptId.value, ...getSpringIds(originDepartmentOptions.value[0]?.children ?? [])];
       } else {
         params.value.deptIds = [];
       }
