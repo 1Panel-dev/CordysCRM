@@ -252,7 +252,8 @@
 
   function goDetail(dim: string, item: Record<string, any>) {
     const { searchType, deptIds, timeField, userField } = props.params;
-    if (!item.hasPermission || userField === 'CREATE_USER') return;
+    if (!item.hasPermission || (userField === 'CREATE_USER' && item.routeName === AppRouteEnum.CLUE_MANAGEMENT_CLUE))
+      return;
     const homeKey = 'homeData';
     sessionStorage.removeItem(homeKey);
     const key = getGenerateId();
