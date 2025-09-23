@@ -38,13 +38,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/product/";
-
     protected static final String MODULE_FORM = "module/form";
-
-    private static Product addProduct;
-
+    private static final String BASE_PATH = "/product/";
     private static final List<String> batchIds = new ArrayList<>();
+    private static Product addProduct;
     private static String moduleFieldPriceId = "";
     private static String moduleFieldStatusId = "";
 

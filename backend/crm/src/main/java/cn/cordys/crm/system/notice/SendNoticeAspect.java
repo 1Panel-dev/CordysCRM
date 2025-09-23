@@ -35,19 +35,16 @@ import java.util.Objects;
 @Aspect
 @Component
 public class SendNoticeAspect {
-    @Resource
-    private CommonNoticeSendService commonNoticeSendService;
-
-    private final ExpressionParser parser = new SpelExpressionParser();
-    private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
-    private final ThreadLocal<String> source = new ThreadLocal<>();
-
     private final static String ID = "id";
     private final static String CREATE_USER = "createUser";
     private final static String CREATE_TIME = "createTime";
     private final static String UPDATE_TIME = "updateTime";
     private final static String UPDATE_USER = "updateUser";
-
+    private final ExpressionParser parser = new SpelExpressionParser();
+    private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
+    private final ThreadLocal<String> source = new ThreadLocal<>();
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
     @Pointcut("@annotation(cn.cordys.crm.system.notice.SendNotice)")
     public void pointcut() {

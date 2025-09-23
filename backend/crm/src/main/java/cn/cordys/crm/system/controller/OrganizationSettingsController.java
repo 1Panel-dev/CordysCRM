@@ -25,19 +25,15 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/organization/settings")
 public class OrganizationSettingsController {
+    private static final String DEFAULT_ORGANIZATION_ID = "100001";
     @Resource
     private IntegrationConfigService integrationConfigService;
-
     @Resource
     private DataEaseService dataEaseService;
     @Resource
     private DataEaseSyncService dataEaseSyncService;
-
     @Resource
     private OrganizationConfigService organizationConfigService;
-
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
-
 
     //获取邮件设置
     @GetMapping("/email")

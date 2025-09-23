@@ -13,10 +13,10 @@ import java.util.List;
 
 public class LocationResolver extends AbstractModuleFieldResolver<LocationField> {
 
-    private static final String SPILT_STR = "-";
-    private static SoftReference<List<RegionCode>> regionCodeRef;
     public static final String PCD = "PCD";
     public static final String PC = "PC";
+    private static final String SPILT_STR = "-";
+    private static SoftReference<List<RegionCode>> regionCodeRef;
 
     public static List<RegionCode> getRegionCodes() {
         List<RegionCode> regions = null;

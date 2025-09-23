@@ -45,6 +45,28 @@ public class MessageTaskService {
     @Resource
     private LogService logService;
 
+    @NotNull
+    private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Boolean weComEnable, Map<String, String> eventMap) {
+        MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
+        newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
+        if (emailEnable != null) {
+            newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        } else {
+            newDTO.setEmailEnable(oldMessageTask.getEmailEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        }
+        if (sysEnable != null) {
+            newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        } else {
+            newDTO.setSysEnable(oldMessageTask.getSysEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        }
+        if (weComEnable != null) {
+            newDTO.setWeComEnable(weComEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        } else {
+            newDTO.setWeComEnable(oldMessageTask.getWeComEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        }
+        return newDTO;
+    }
+
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
@@ -103,28 +125,6 @@ public class MessageTaskService {
         logService.add(logDTO);
 
         return messageTask;
-    }
-
-    @NotNull
-    private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Boolean weComEnable, Map<String, String> eventMap) {
-        MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
-        newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
-        if (emailEnable != null) {
-            newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setEmailEnable(oldMessageTask.getEmailEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (sysEnable != null) {
-            newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setSysEnable(oldMessageTask.getSysEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (weComEnable != null) {
-            newDTO.setWeComEnable(weComEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setWeComEnable(oldMessageTask.getWeComEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        return newDTO;
     }
 
     /**

@@ -27,22 +27,20 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AgentControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/agent/";
-
     protected static final String DETAIL = "detail/{0}";
     protected static final String RENAME = "rename";
     protected static final String COLLECT = "collect/{0}";
     protected static final String UN_COLLECT = "un-collect/{0}";
     protected static final String COLLECT_PAGE = "collect/page";
+    private static final String BASE_PATH = "/agent/";
+    private static Agent addAgent;
+    @Resource
+    private BaseMapper<Agent> agentMapper;
 
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-    private static Agent addAgent;
-    @Resource
-    private BaseMapper<Agent> agentMapper;
 
     @Sql(scripts = {"/dml/init_agent_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),

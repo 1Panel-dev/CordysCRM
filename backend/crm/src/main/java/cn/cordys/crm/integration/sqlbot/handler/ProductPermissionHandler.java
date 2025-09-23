@@ -23,12 +23,12 @@ import java.util.Set;
 @Component
 public class ProductPermissionHandler extends ModuleFieldTablePermissionHandler {
 
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+
     {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.PRODUCT, this);
     }
-
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
 
     @Override
     public void handleTable(TableDTO table, TableHandleParam tableHandleParam) {

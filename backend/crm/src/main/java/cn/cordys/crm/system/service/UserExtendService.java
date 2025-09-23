@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserExtendService {
 
+    public static final String ROOT_NODE_PARENT_ID = "NONE";
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
@@ -37,8 +38,6 @@ public class UserExtendService {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<User> userMapper;
-
-    public static final String ROOT_NODE_PARENT_ID = "NONE";
 
     /**
      * 获取范围的所有负责人ID

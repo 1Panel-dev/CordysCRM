@@ -25,7 +25,6 @@ public class DataHandleUtils {
     private final OrganizationConfigService organizationConfigService;
     private final List<Department> addDepartments = new ArrayList<>();
     private final List<Department> updateDepartments = new ArrayList<>();
-    private List<WeComDepartment> weComDepartmentTree;
     private final List<User> addUsers = new ArrayList<>();
     private final List<User> updateUsers = new ArrayList<>();
     private final List<UserExtend> userExtends = new ArrayList<>();
@@ -34,6 +33,7 @@ public class DataHandleUtils {
     private final Map<String, List<WeComUser>> departmentUserMap;
     private final List<DepartmentCommander> departmentCommanders = new ArrayList<>();
     private final Department internalDepartment;
+    private List<WeComDepartment> weComDepartmentTree;
     private Long nextPos;
 
     public DataHandleUtils(String orgId, Map<String, List<WeComUser>> departmentUserMap) {

@@ -43,24 +43,18 @@ import java.util.stream.Collectors;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/account/";
-
     protected static final String MODULE_FORM = "module/form";
-
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String OPTION = "option";
     protected static final String OPPORTUNITY_PAGE = "opportunity/page";
-
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
-
-
+    private static final String BASE_PATH = "/account/";
+    private static final List<String> batchIds = new ArrayList<>();
     private static Customer addCustomer;
     private static Customer anotherCustomer;
-    private static final List<String> batchIds = new ArrayList<>();
-
     @Resource
     private BaseMapper<Customer> customerMapper;
 

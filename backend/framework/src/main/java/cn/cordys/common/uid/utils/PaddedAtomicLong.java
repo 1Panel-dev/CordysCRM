@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.utils;
 
 import java.util.concurrent.atomic.AtomicLong;

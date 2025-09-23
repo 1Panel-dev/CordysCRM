@@ -48,6 +48,7 @@ import static cn.cordys.security.SessionUtils.kickOutUser;
 @Service
 public class PersonalCenterService {
 
+    private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -66,14 +67,8 @@ public class PersonalCenterService {
     private ExtUserRoleMapper extUserRoleMapper;
     @Resource
     private BaseMapper<Module> moduleMapper;
-
-
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
-
-
-    private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
-
 
     public UserResponse getUserDetail(String id, String orgId) {
         if (Strings.CS.equals(id, InternalUser.ADMIN.getValue())) {

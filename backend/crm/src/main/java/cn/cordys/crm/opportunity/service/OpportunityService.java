@@ -79,6 +79,7 @@ import java.util.stream.Stream;
 @Transactional(rollbackFor = Exception.class)
 public class OpportunityService {
 
+    public static final String SUCCESS = "SUCCESS";
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
     @Resource
@@ -113,8 +114,6 @@ public class OpportunityService {
     private BaseMapper<OpportunityField> opportunityFieldMapper;
     @Resource
     private BaseMapper<OpportunityFieldBlob> opportunityFieldBlobMapper;
-
-    public static final String SUCCESS = "SUCCESS";
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission) {

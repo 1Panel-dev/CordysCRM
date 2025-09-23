@@ -15,19 +15,16 @@ import java.util.function.Function;
 
 public abstract class MoveNodeService {
 
+    public static final String ROOT_NODE_PARENT_ID = "NONE";
     protected static final long LIMIT_POS = NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
-
-    public abstract void updatePos(String id, long pos);
-
-    public abstract void refreshPos(String testPlanId);
-
-
     private static final String MOVE_POS_OPERATOR_LESS = "lessThan";
     private static final String MOVE_POS_OPERATOR_MORE = "moreThan";
     private static final String MOVE_POS_OPERATOR_LATEST = "latest";
     private static final String DRAG_NODE_NOT_EXIST = "drag_node.not.exist";
 
-    public static final String ROOT_NODE_PARENT_ID = "NONE";
+    public abstract void updatePos(String id, long pos);
+
+    public abstract void refreshPos(String testPlanId);
 
     /**
      * 构建节点排序的参数

@@ -17,16 +17,6 @@ public class Translator {
     private static MessageSource messageSource;
 
     /**
-     * 注入 MessageSource 用于国际化消息处理。
-     *
-     * @param messageSource Spring 的 MessageSource 实例
-     */
-    @Resource
-    public void setMessageSource(MessageSource messageSource) {
-        Translator.messageSource = messageSource;
-    }
-
-    /**
      * 根据给定的消息键获取翻译内容。
      *
      * @param key 消息键
@@ -72,5 +62,15 @@ public class Translator {
      */
     public static String getWithArgs(String key, Object... args) {
         return messageSource.getMessage(key, args, "Not Support Key: " + key, LocaleContextHolder.getLocale());
+    }
+
+    /**
+     * 注入 MessageSource 用于国际化消息处理。
+     *
+     * @param messageSource Spring 的 MessageSource 实例
+     */
+    @Resource
+    public void setMessageSource(MessageSource messageSource) {
+        Translator.messageSource = messageSource;
     }
 }

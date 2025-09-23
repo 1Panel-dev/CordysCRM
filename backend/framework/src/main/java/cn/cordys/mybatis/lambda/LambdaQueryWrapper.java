@@ -25,6 +25,26 @@ public class LambdaQueryWrapper<T> {
     // 存储排序条件
     private final List<String> orderByClauses = new LinkedList<>();
 
+    /**
+     * 返回 true 表示存在 SQL 注入风险
+     *
+     * @param script
+     */
+    public static void checkSqlInjection(String script) {
+        if (StringUtils.isEmpty(script)) {
+            return;
+        }
+        // 检测危险SQL模式
+        java.util.regex.Pattern dangerousPattern = java.util.regex.Pattern.compile(
+                "(;|--|#|'|\"|/\\*|\\*/|\\b(select|insert|update|delete|drop|alter|truncate|exec|union|xp_)\\b)",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+
+        // 返回true表示存在注入风险
+        if (dangerousPattern.matcher(script).find()) {
+            throw new IllegalArgumentException("SQL injection risk detected in script: " + script);
+        }
+    }
+
     private void addCondition(XFunction<T, ?> column, Object value, String operator) {
         if (ObjectUtils.isEmpty(value)) {
             return; // 如果值为 null，则不添加条件
@@ -189,26 +209,6 @@ public class LambdaQueryWrapper<T> {
         addCondition(inClause);
         params.put(paramKey, valueList);
         return this;
-    }
-
-    /**
-     * 返回 true 表示存在 SQL 注入风险
-     *
-     * @param script
-     */
-    public static void checkSqlInjection(String script) {
-        if (StringUtils.isEmpty(script)) {
-            return;
-        }
-        // 检测危险SQL模式
-        java.util.regex.Pattern dangerousPattern = java.util.regex.Pattern.compile(
-                "(;|--|#|'|\"|/\\*|\\*/|\\b(select|insert|update|delete|drop|alter|truncate|exec|union|xp_)\\b)",
-                java.util.regex.Pattern.CASE_INSENSITIVE);
-
-        // 返回true表示存在注入风险
-        if (dangerousPattern.matcher(script).find()) {
-            throw new IllegalArgumentException("SQL injection risk detected in script: " + script);
-        }
     }
 
     /**

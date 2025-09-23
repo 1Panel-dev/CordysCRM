@@ -34,6 +34,15 @@ import java.util.stream.Collectors;
 public class CustomFieldImportEventListener<T, F extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
 
     /**
+     * 除开特定的区号和格式校验, 还需兜底的其他手机格式
+     */
+    public static final String PHONE_REGEX =
+            "^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
+                    + "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
+                    + "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
+                    + "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
+    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+    /**
      * 主表数据
      */
     @Getter
@@ -60,12 +69,7 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
      */
     private final String currentOrg;
     private final String operator;
-    /**
-     * 初始化集合参数 {表头, 字段, 内置业务字段}
-     */
-    private Map<Integer, String> headMap;
     private final Map<String, BaseField> fieldMap;
-    private Map<String, BusinessModuleField> businessFieldMap;
     /**
      * 校验属性 {必填, 唯一}
      */
@@ -90,28 +94,24 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
      */
     private final Map<String, Pattern> regexMap = new HashMap<>();
     /**
-     * 除开特定的区号和格式校验, 还需兜底的其他手机格式
+     * 后置处理函数
      */
-    public static final String PHONE_REGEX =
-            "^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
-                    + "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
-                    + "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
-                    + "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
-    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+    private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
+    private final SerialNumGenerator serialNumGenerator;
     /**
      * 校验错误信息
      */
     @Getter
     protected List<ExcelErrData> errList = new ArrayList<>();
     /**
-     * 后置处理函数
+     * 初始化集合参数 {表头, 字段, 内置业务字段}
      */
-    private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
+    private Map<Integer, String> headMap;
+    private Map<String, BusinessModuleField> businessFieldMap;
     /**
      * 序列化字段及生成器
      */
     private BaseField serialField;
-    private final SerialNumGenerator serialNumGenerator;
     /**
      * 成功条数
      */

@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.buffer;
 
 import java.util.List;

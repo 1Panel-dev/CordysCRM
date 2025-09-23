@@ -69,6 +69,12 @@ class RoleControllerTests extends BaseTest {
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
 
+    private static void assertInternalRole(RoleListResponse role) {
+        Assertions.assertEquals(role.getName(), Translator.get("role." + role.getId()));
+        Assertions.assertEquals(role.getCreateUserName(), "Administrator");
+        Assertions.assertEquals(role.getUpdateUserName(), "Administrator");
+    }
+
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -95,12 +101,6 @@ class RoleControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_LIST);
-    }
-
-    private static void assertInternalRole(RoleListResponse role) {
-        Assertions.assertEquals(role.getName(), Translator.get("role." + role.getId()));
-        Assertions.assertEquals(role.getCreateUserName(), "Administrator");
-        Assertions.assertEquals(role.getUpdateUserName(), "Administrator");
     }
 
     @Test

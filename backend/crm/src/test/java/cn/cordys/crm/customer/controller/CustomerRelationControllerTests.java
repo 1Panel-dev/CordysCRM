@@ -27,15 +27,12 @@ import java.util.UUID;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerRelationControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/account/relation/";
-
     protected static final String LIST = "list/{0}";
-
     protected static final String SAVE = "save/{0}";
     protected static final String ADD = "add/{0}";
     protected static final String UPDATE = "update/{0}";
     protected static final String DELETE = "delete/{0}";
-
+    private static final String BASE_PATH = "/account/relation/";
     private static Customer addCustomer;
     private static CustomerRelation addCustomerRelation;
     private static Customer anotherAddCustomer;

@@ -56,6 +56,14 @@ public class DashboardModuleService extends MoveNodeService {
     @Resource
     private DepartmentService departmentService;
 
+    private static void buildIdNodeMap(List<BaseTreeNode> nodeList, Map<String, BaseTreeNode> idNodeMap) {
+        for (BaseTreeNode node : nodeList) {
+            idNodeMap.put(node.getId(), node);
+            if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                buildIdNodeMap(node.getChildren(), idNodeMap);
+            }
+        }
+    }
 
     /**
      * 添加文件夹
@@ -92,7 +100,6 @@ public class DashboardModuleService extends MoveNodeService {
         return dashboardModule;
     }
 
-
     public Long getNextPos(String orgId) {
         Long pos = extDashboardModuleMapper.getNextPosByOrgId(orgId);
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
@@ -111,7 +118,6 @@ public class DashboardModuleService extends MoveNodeService {
             throw new GenericException(Translator.get("dashboard_module_name_exist"));
         }
     }
-
 
     /**
      * 重命名文件夹
@@ -142,7 +148,6 @@ public class DashboardModuleService extends MoveNodeService {
         );
     }
 
-
     public DashboardModule checkDashboardModule(String id) {
         DashboardModule dashboardModule = dashboardModuleMapper.selectByPrimaryKey(id);
         if (dashboardModule == null) {
@@ -150,7 +155,6 @@ public class DashboardModuleService extends MoveNodeService {
         }
         return dashboardModule;
     }
-
 
     /**
      * 删除文件夹
@@ -174,7 +178,6 @@ public class DashboardModuleService extends MoveNodeService {
         logService.batchAdd(logs);
     }
 
-
     /**
      * 删除校验
      *
@@ -186,7 +189,6 @@ public class DashboardModuleService extends MoveNodeService {
             throw new GenericException(Translator.get("dashboard_module_cannot_delete"));
         }
     }
-
 
     /**
      * 仪表板树结构
@@ -224,7 +226,6 @@ public class DashboardModuleService extends MoveNodeService {
         return departmentIds;
     }
 
-
     public List<String> getParentIds(List<BaseTreeNode> departmentTree, String departmentId) {
         List<String> ids = new ArrayList<>();
         if (CollectionUtils.isEmpty(departmentTree) || StringUtils.isBlank(departmentId)) {
@@ -245,16 +246,6 @@ public class DashboardModuleService extends MoveNodeService {
 
         return ids;
     }
-
-    private static void buildIdNodeMap(List<BaseTreeNode> nodeList, Map<String, BaseTreeNode> idNodeMap) {
-        for (BaseTreeNode node : nodeList) {
-            idNodeMap.put(node.getId(), node);
-            if (CollectionUtils.isNotEmpty(node.getChildren())) {
-                buildIdNodeMap(node.getChildren(), idNodeMap);
-            }
-        }
-    }
-
 
     /**
      * 数量

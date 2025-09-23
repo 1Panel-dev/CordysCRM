@@ -21,6 +21,8 @@ public class ServiceUtils {
      * 保存资源名称，在处理 NOT_FOUND 异常时，拼接资源名称
      */
     private static final ThreadLocal<String> resourceName = new ThreadLocal<>();
+    // 反射元数据缓存，减少重复反射开销
+    private static final Map<Class<?>, Accessors> ACCESSOR_CACHE = new ConcurrentHashMap<>();
 
     public static String getResourceName() {
         return resourceName.get();
@@ -29,9 +31,6 @@ public class ServiceUtils {
     public static void clearResourceName() {
         resourceName.remove();
     }
-
-    // 反射元数据缓存，减少重复反射开销
-    private static final Map<Class<?>, Accessors> ACCESSOR_CACHE = new ConcurrentHashMap<>();
 
     public static <T> void updatePosFieldByAsc(
             PosRequest request,

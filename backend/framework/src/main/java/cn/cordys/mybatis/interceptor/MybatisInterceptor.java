@@ -32,12 +32,11 @@ import java.util.concurrent.ConcurrentHashMap;
 })
 public class MybatisInterceptor implements Interceptor {
 
+    private final ConcurrentHashMap<String, Class> classMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Map<String, Map<String, MybatisInterceptorConfig>>> interceptorConfigMap = new ConcurrentHashMap<>();
     @Setter
     @Getter
     private List<MybatisInterceptorConfig> interceptorConfigList;
-
-    private final ConcurrentHashMap<String, Class> classMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Map<String, Map<String, MybatisInterceptorConfig>>> interceptorConfigMap = new ConcurrentHashMap<>();
 
     /**
      * 拦截目标方法并进行加密或解密处理。

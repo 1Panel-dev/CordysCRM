@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClueControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/lead/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String STATUS_UPDATE = "status/update";
     protected static final String BATCH_TRANSFER = "batch/transfer";
@@ -48,11 +47,10 @@ class ClueControllerTests extends BaseTest {
     protected static final String TRANSITION_CUSTOMER = "transition/account";
     protected static final String EXPORT = "export";
     protected static final String EXPORT_SELECT = "export-select";
-
+    private static final String BASE_PATH = "/lead/";
+    private static final List<String> batchIds = new ArrayList<>();
     private static Clue addClue;
     private static Clue anotherClue;
-    private static final List<String> batchIds = new ArrayList<>();
-
     @Resource
     private BaseMapper<Clue> clueMapper;
 

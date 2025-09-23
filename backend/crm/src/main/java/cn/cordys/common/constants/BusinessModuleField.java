@@ -196,6 +196,18 @@ public enum BusinessModuleField {
     PRODUCT_STATUS("productStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey());
     /*------ end: PRODUCT ------*/
     /**
+     * 业务字段缓存
+     */
+    private static final Map<String, BusinessModuleField> INTERNAL_CACHE = new HashMap<>();
+
+    static {
+        for (BusinessModuleField field : values()) {
+            // 防止ofKey方法频繁调用
+            INTERNAL_CACHE.put(field.key, field);
+        }
+    }
+
+    /**
      * 字段 key，field.json 中的 internalKey
      */
     private final String key;
@@ -211,18 +223,6 @@ public enum BusinessModuleField {
      * 表单 key
      */
     private final String formKey;
-
-    /**
-     * 业务字段缓存
-     */
-    private static final Map<String, BusinessModuleField> INTERNAL_CACHE = new HashMap<>();
-
-    static {
-        for (BusinessModuleField field : values()) {
-            // 防止ofKey方法频繁调用
-            INTERNAL_CACHE.put(field.key, field);
-        }
-    }
 
     BusinessModuleField(String key, String businessKey, Set<String> disabledProps, String formKey) {
         this.key = key;

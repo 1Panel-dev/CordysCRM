@@ -46,6 +46,14 @@ import java.util.Optional;
 @Transactional(rollbackFor = Exception.class)
 public class SSOService {
 
+    private static final String DEFAULT_ORGANIZATION_ID = "100001";
+    private static final String ERROR_CODE_NOT_EXIST = "code_not_exist";
+    private static final String ERROR_AUTH_SETTING_NOT_EXISTS = "auth.setting.no.exists";
+    private static final String ERROR_AUTH_GET_USER_ERROR = "auth.get.user.error";
+    private static final String ERROR_USER_NOT_EXIST = "user_not_exist";
+    private static final String ERROR_AUTH_LOGIN_DISABLE = "auth.login.un_enable";
+    private static final String ERROR_THIRD_CONFIG_NOT_EXIST = "third.config.not.exist";
+    private static final String ERROR_THIRD_CONFIG_DISABLE = "third.config.un.enable";
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
     @Resource
@@ -62,15 +70,6 @@ public class SSOService {
     private OAuthUserService oauthUserService;
     @Resource
     private TokenService tokenService;
-
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
-    private static final String ERROR_CODE_NOT_EXIST = "code_not_exist";
-    private static final String ERROR_AUTH_SETTING_NOT_EXISTS = "auth.setting.no.exists";
-    private static final String ERROR_AUTH_GET_USER_ERROR = "auth.get.user.error";
-    private static final String ERROR_USER_NOT_EXIST = "user_not_exist";
-    private static final String ERROR_AUTH_LOGIN_DISABLE = "auth.login.un_enable";
-    private static final String ERROR_THIRD_CONFIG_NOT_EXIST = "third.config.not.exist";
-    private static final String ERROR_THIRD_CONFIG_DISABLE = "third.config.un.enable";
 
     public SessionUser exchangeGitOauth2(String code) {
         validateCode(code);

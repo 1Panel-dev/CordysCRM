@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.utils;
 
 import org.apache.commons.lang3.StringUtils;

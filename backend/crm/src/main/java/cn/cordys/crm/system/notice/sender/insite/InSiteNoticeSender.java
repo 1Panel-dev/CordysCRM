@@ -28,6 +28,9 @@ import java.util.Set;
 @Component
 public class InSiteNoticeSender extends AbstractNoticeSender {
 
+    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
+    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
+    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
     @Resource
     private BaseMapper<Notification> notificationBaseMapper;
     @Resource
@@ -36,11 +39,6 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
     private SseService sseService;
     @Resource
     private MessagePublisher messagePublisher;
-
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
-
 
     public void sendAnnouncement(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel, String context, String subjectText) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());

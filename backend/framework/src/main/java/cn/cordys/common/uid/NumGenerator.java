@@ -23,15 +23,12 @@ public class NumGenerator {
 
     // 限制每次生成的最大数量
     private static final long LIMIT = 1;
-
-    // Redisson 实例，用于获取分布式 ID 生成器
-    private static Redisson redisson;
-
-    // StringRedisTemplate 用于操作 Redis
-    private static StringRedisTemplate stringRedisTemplate;
-
     // 特定的子范围，用于表示二级的用例
     private static final List<ApplicationNumScope> SUB_NUM = List.of(ApplicationNumScope.SYSTEM);
+    // Redisson 实例，用于获取分布式 ID 生成器
+    private static Redisson redisson;
+    // StringRedisTemplate 用于操作 Redis
+    private static StringRedisTemplate stringRedisTemplate;
 
     /**
      * 根据指定的应用场景生成唯一的数字 ID。

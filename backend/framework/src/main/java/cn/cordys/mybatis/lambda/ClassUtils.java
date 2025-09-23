@@ -11,16 +11,6 @@ import java.util.List;
  */
 public final class ClassUtils {
 
-    private static ClassLoader systemClassLoader;
-
-    static {
-        try {
-            systemClassLoader = ClassLoader.getSystemClassLoader();
-        } catch (SecurityException ignored) {
-            // Google App Engine 中的 AccessControlException 异常
-        }
-    }
-
     /**
      * 代理类名称的列表。
      */
@@ -30,6 +20,15 @@ public final class ClassUtils {
             "javassist.util.proxy.ProxyObject", // javassist
             "org.apache.ibatis.javassist.util.proxy.ProxyObject" // javassist
     );
+    private static ClassLoader systemClassLoader;
+
+    static {
+        try {
+            systemClassLoader = ClassLoader.getSystemClassLoader();
+        } catch (SecurityException ignored) {
+            // Google App Engine 中的 AccessControlException 异常
+        }
+    }
 
     // 私有构造函数，防止实例化
     private ClassUtils() {

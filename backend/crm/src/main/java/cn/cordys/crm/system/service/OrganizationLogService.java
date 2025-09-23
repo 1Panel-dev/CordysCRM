@@ -20,69 +20,6 @@ public class OrganizationLogService extends BaseModuleLogService {
     @Resource
     private OrganizationUserService organizationUserService;
 
-    @Override
-    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
-
-        differenceDTOS.forEach(differ -> {
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.roles"))) {
-                handRoleValueName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.commander"))) {
-                setUserFieldName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
-                setDepartmentName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
-                setSupervisorName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.enable"))) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.gender"))) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
-                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
-                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
-            }
-        });
-    }
-
-
-    protected void setDepartmentName(JsonDifferenceDTO differ) {
-        if (differ.getOldValue() != null) {
-            String userName = departmentService.getDepartmentName(differ.getOldValue().toString());
-            differ.setOldValueName(userName);
-        }
-        if (differ.getNewValue() != null) {
-            String userName = departmentService.getDepartmentName(differ.getNewValue().toString());
-            differ.setNewValueName(userName);
-        }
-    }
-
-
-    protected void setSupervisorName(JsonDifferenceDTO differ) {
-        if (differ.getOldValue() != null) {
-            String userName = organizationUserService.getSupervisorName(differ.getOldValue().toString());
-            differ.setOldValueName(userName);
-        }
-        if (differ.getNewValue() != null) {
-            String userName = organizationUserService.getSupervisorName(differ.getNewValue().toString());
-            differ.setNewValueName(userName);
-        }
-    }
-
-
     private static void handRoleValueName(JsonDifferenceDTO differ) {
         List<String> oldValueNames = new ArrayList<>();
         if (differ.getOldValue() instanceof List) {
@@ -124,5 +61,65 @@ public class OrganizationLogService extends BaseModuleLogService {
         }
         differ.setNewValueName(newValueNames);
 
+    }
+
+    @Override
+    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+        super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
+
+        differenceDTOS.forEach(differ -> {
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.roles"))) {
+                handRoleValueName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.commander"))) {
+                setUserFieldName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
+                setDepartmentName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
+                setSupervisorName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.enable"))) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.gender"))) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
+                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+            }
+        });
+    }
+
+    protected void setDepartmentName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            String userName = departmentService.getDepartmentName(differ.getOldValue().toString());
+            differ.setOldValueName(userName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = departmentService.getDepartmentName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+    protected void setSupervisorName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            String userName = organizationUserService.getSupervisorName(differ.getOldValue().toString());
+            differ.setOldValueName(userName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = organizationUserService.getSupervisorName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
     }
 }

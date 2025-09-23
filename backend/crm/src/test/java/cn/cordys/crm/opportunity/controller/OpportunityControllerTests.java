@@ -27,7 +27,6 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpportunityControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String TAB = "tab";
@@ -36,7 +35,7 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
     protected static final String STATISTIC = "statistic";
-
+    private static final String BASE_PATH = "/opportunity/";
     private static Opportunity addOpportunity;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;

@@ -25,16 +25,14 @@ import java.util.List;
 public class OpportunityFollowRecordControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/follow/record/";
+    private static FollowUpRecord addFollowUpRecord;
+    @Resource
+    private BaseMapper<FollowUpRecord> followUpRecordMapper;
 
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-
-    private static FollowUpRecord addFollowUpRecord;
-    @Resource
-    private BaseMapper<FollowUpRecord> followUpRecordMapper;
 
     @Test
     @Order(1)

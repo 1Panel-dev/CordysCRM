@@ -31,15 +31,6 @@ public class CSHttpClient {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
-    @Data
-    public static class DownloadInfo {
-        private String latestVersion;
-        private String currentVersion;
-        private String edition;
-        private boolean updateAvailable;
-        private int year;
-    }
-
     /**
      * 基于完整 URL 的 GET 调用（保留以兼容旧用法）。
      *
@@ -139,5 +130,14 @@ public class CSHttpClient {
         } catch (Exception e) {
             return Year.now().getValue();
         }
+    }
+
+    @Data
+    public static class DownloadInfo {
+        private String latestVersion;
+        private String currentVersion;
+        private String edition;
+        private boolean updateAvailable;
+        private int year;
     }
 }

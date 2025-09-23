@@ -35,13 +35,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
 
     private static final String CANCEL_PLAN = "cancel/{0}";
     private static final String STATUS_UPDATE = "status/update";
-
-    @Override
-    protected String getBasePath() {
-        return BASE_PATH;
-    }
-
-
     private static FollowUpPlan addFollowUpPlan;
     @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
@@ -51,6 +44,11 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     private BaseMapper<Customer> customerMapper;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
+
+    @Override
+    protected String getBasePath() {
+        return BASE_PATH;
+    }
 
     @Test
     @Order(1)

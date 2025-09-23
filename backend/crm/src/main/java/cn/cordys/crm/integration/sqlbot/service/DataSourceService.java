@@ -45,6 +45,17 @@ import java.util.stream.Collectors;
 @Service
 public class DataSourceService {
 
+    private static final DatabaseConfig MYSQL_CONFIG = new DatabaseConfig(
+            "jdbc:mysql://",
+            List.of("sys_", "qrtz_"),
+            3306
+    );
+    // MySQL JDBC URL解析正则
+    private static final Pattern MYSQL_URL_PATTERN =
+            Pattern.compile("jdbc:mysql://([^:/]+)(?::(\\d+))?/([^?]+)(?:\\?(.*))?");
+    private final String url;
+    private final String username;
+    private final String password;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -55,13 +66,26 @@ public class DataSourceService {
     private RoleService roleService;
     @Resource
     private IntegrationConfigService integrationConfigService;
-
     @Value("${sqlbot.encrypt:false}")
     private boolean encryptEnabled;
     @Value("${sqlbot.aes-key:${random.value}}")
     private String aesKey;
     @Value("${sqlbot.aes-iv:${random.value}}")
     private String aesIv;
+    @Resource
+    private ExtDataSourceMapper extDataSourceMapper;
+
+    /**
+     * 构造函数依赖注入
+     */
+    public DataSourceService(
+            @Value("${spring.datasource.url}") String url,
+            @Value("${sqlbot.datasource.username:${spring.datasource.username}}") String username,
+            @Value("${sqlbot.datasource.password:${spring.datasource.password}}") String password) {
+        this.url = url;
+        this.username = username;
+        this.password = password;
+    }
 
     private void aesEncryptDataSource(DataSourceDTO dataSource) {
         if (BooleanUtils.isTrue(encryptEnabled)) {
@@ -289,44 +313,6 @@ public class DataSourceService {
     }
 
     /**
-     * MySQL数据库配置
-     */
-    private record DatabaseConfig(
-            String jdbcPrefix,
-            List<String> excludedTablePrefixes,
-            int defaultPort
-    ) {
-    }
-
-    private static final DatabaseConfig MYSQL_CONFIG = new DatabaseConfig(
-            "jdbc:mysql://",
-            List.of("sys_", "qrtz_"),
-            3306
-    );
-
-    // MySQL JDBC URL解析正则
-    private static final Pattern MYSQL_URL_PATTERN =
-            Pattern.compile("jdbc:mysql://([^:/]+)(?::(\\d+))?/([^?]+)(?:\\?(.*))?");
-
-    private final String url;
-    private final String username;
-    private final String password;
-    @Resource
-    private ExtDataSourceMapper extDataSourceMapper;
-
-    /**
-     * 构造函数依赖注入
-     */
-    public DataSourceService(
-            @Value("${spring.datasource.url}") String url,
-            @Value("${sqlbot.datasource.username:${spring.datasource.username}}") String username,
-            @Value("${sqlbot.datasource.password:${spring.datasource.password}}") String password) {
-        this.url = url;
-        this.username = username;
-        this.password = password;
-    }
-
-    /**
      * 从数据库URL中提取数据库名称
      */
     private String extractDatabaseName() {
@@ -405,5 +391,15 @@ public class DataSourceService {
         } catch (NumberFormatException e) {
             return MYSQL_CONFIG.defaultPort();
         }
+    }
+
+    /**
+     * MySQL数据库配置
+     */
+    private record DatabaseConfig(
+            String jdbcPrefix,
+            List<String> excludedTablePrefixes,
+            int defaultPort
+    ) {
     }
 }

@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.utils;
 
 import org.springframework.util.Assert;

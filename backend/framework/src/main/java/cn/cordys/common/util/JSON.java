@@ -27,15 +27,13 @@ import java.util.Map;
  */
 public class JSON {
 
+    // 默认最大字符串长度
+    public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
     // ObjectMapper 实例，用于 JSON 操作
     private static final ObjectMapper objectMapper = JsonMapper.builder()
             .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)  // 允许 JSON 中未转义的控制字符
             .build();
-
     private static final TypeFactory typeFactory = objectMapper.getTypeFactory();
-
-    // 默认最大字符串长度
-    public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
 
     // 静态初始化块，配置 ObjectMapper
     static {

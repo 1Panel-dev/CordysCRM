@@ -18,16 +18,15 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class ExtScheduleService {
 
+    // TODO: Add RESOURCE_TYPES
+    private static final List<String> RESOURCE_TYPES = List.of(
+    );
     @Resource
     private BaseMapper<Schedule> scheduleMapper;
     @Resource
     private ScheduleManager scheduleManager;
     @Resource
     private ExtScheduleMapper extScheduleMapper;
-
-    // TODO: Add RESOURCE_TYPES
-    private static final List<String> RESOURCE_TYPES = List.of(
-    );
 
     public void startEnableSchedules() {
         long count = scheduleMapper.countByExample(new Schedule());

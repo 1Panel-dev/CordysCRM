@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 @Service
 public class PoolCustomerService {
 
+    public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -74,8 +75,6 @@ public class PoolCustomerService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private CustomerContactService customerContactService;
-
-    public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
     /**
      * 获取当前用户公海选项

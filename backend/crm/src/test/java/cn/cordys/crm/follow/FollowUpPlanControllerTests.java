@@ -13,9 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FollowUpPlanControllerTests extends BaseTest {
 
-    private static final String BASE_PATH = "/follow/record/";
     protected static final String MODULE_FORM = "module/form";
-
+    private static final String BASE_PATH = "/follow/record/";
 
     @Override
     protected String getBasePath() {

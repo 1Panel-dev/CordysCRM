@@ -20,12 +20,12 @@ import java.util.Set;
 @Component
 public class ContactPermissionHandler extends DataScopeTablePermissionHandler {
 
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+
     {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.CONTACT, this);
     }
-
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
 
     @Override
     public void handleTable(TableDTO table, TableHandleParam tableHandleParam) {

@@ -28,6 +28,21 @@ public class EasyExcelExporter {
         this.clazz = clazz;
     }
 
+    public static void resetCellMaxTextLength() {
+        SpreadsheetVersion excel2007 = SpreadsheetVersion.EXCEL2007;
+        if (excel2007.getMaxTextLength() < Integer.MAX_VALUE) {
+            Field field;
+            try {
+                field = excel2007.getClass().getDeclaredField("_maxTextLength");
+                field.setAccessible(true);
+                field.set(excel2007, Integer.MAX_VALUE);
+            } catch (Exception e) {
+                LogUtils.error(e);
+                throw new GenericException(e.getMessage());
+            }
+        }
+    }
+
     public void export(HttpServletResponse response, List data, String fileName, String sheetName) {
         buildExportResponse(response, fileName);
         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
@@ -118,21 +133,6 @@ public class EasyExcelExporter {
         } catch (IOException e) {
             LogUtils.error(e);
             throw new GenericException(e.getMessage());
-        }
-    }
-
-    public static void resetCellMaxTextLength() {
-        SpreadsheetVersion excel2007 = SpreadsheetVersion.EXCEL2007;
-        if (excel2007.getMaxTextLength() < Integer.MAX_VALUE) {
-            Field field;
-            try {
-                field = excel2007.getClass().getDeclaredField("_maxTextLength");
-                field.setAccessible(true);
-                field.set(excel2007, Integer.MAX_VALUE);
-            } catch (Exception e) {
-                LogUtils.error(e);
-                throw new GenericException(e.getMessage());
-            }
         }
     }
 }

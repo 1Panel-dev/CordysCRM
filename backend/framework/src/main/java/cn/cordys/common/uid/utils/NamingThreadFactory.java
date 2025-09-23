@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.utils;
 
 import cn.cordys.common.util.LogUtils;
@@ -20,14 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NamingThreadFactory implements ThreadFactory {
     /**
-     * Thread name pre
-     * -- GETTER --
-     * Getters & Setters
-     */
-    @Setter
-    @Getter
-    private String name;
-    /**
      * Is daemon thread
      */
     private final boolean daemon;
@@ -39,6 +30,14 @@ public class NamingThreadFactory implements ThreadFactory {
      * Sequences for multi thread name prefix
      */
     private final ConcurrentHashMap<String, AtomicLong> sequences;
+    /**
+     * Thread name pre
+     * -- GETTER --
+     * Getters & Setters
+     */
+    @Setter
+    @Getter
+    private String name;
 
     /**
      * Constructors

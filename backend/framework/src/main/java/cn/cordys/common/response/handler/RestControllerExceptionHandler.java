@@ -35,6 +35,38 @@ import java.util.Map;
 public class RestControllerExceptionHandler {
 
     /**
+     * 处理 NOT_FOUND 异常，拼接资源名称以提供更详细的错误信息。
+     *
+     * @param message 错误信息模板
+     *
+     * @return String 拼接后的错误信息
+     */
+    private static String getNotFoundMessage(String message) {
+        String resourceName = ServiceUtils.getResourceName();
+        if (StringUtils.isNotBlank(resourceName)) {
+            message = String.format(message, Translator.get(resourceName, resourceName));
+        } else {
+            message = String.format(message, Translator.get("resource.name"));
+        }
+        ServiceUtils.clearResourceName();
+        return message;
+    }
+
+    /**
+     * 格式化异常栈信息。
+     *
+     * @param e Exception 异常
+     *
+     * @return String 异常栈的字符串表示
+     */
+    public static String getStackTraceAsString(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw, true));
+        LogUtils.error(sw.toString());
+        return sw.toString();
+    }
+
+    /**
      * 处理数据校验异常，返回具体字段的校验信息。
      *
      * @param ex MethodArgumentNotValidException 异常
@@ -100,24 +132,6 @@ public class RestControllerExceptionHandler {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResultHolder.error(code, Translator.get(message, message), e.getMessage()));
         }
-    }
-
-    /**
-     * 处理 NOT_FOUND 异常，拼接资源名称以提供更详细的错误信息。
-     *
-     * @param message 错误信息模板
-     *
-     * @return String 拼接后的错误信息
-     */
-    private static String getNotFoundMessage(String message) {
-        String resourceName = ServiceUtils.getResourceName();
-        if (StringUtils.isNotBlank(resourceName)) {
-            message = String.format(message, Translator.get(resourceName, resourceName));
-        } else {
-            message = String.format(message, Translator.get("resource.name"));
-        }
-        ServiceUtils.clearResourceName();
-        return message;
     }
 
     /**
@@ -195,20 +209,5 @@ public class RestControllerExceptionHandler {
     @ExceptionHandler(AsyncRequestNotUsableException.class)
     public ResultHolder asyncRequestNotUsableExceptionHandler(HttpServletRequest request, HttpServletResponse response, Exception exception) {
         return null;
-    }
-
-
-    /**
-     * 格式化异常栈信息。
-     *
-     * @param e Exception 异常
-     *
-     * @return String 异常栈的字符串表示
-     */
-    public static String getStackTraceAsString(Exception e) {
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw, true));
-        LogUtils.error(sw.toString());
-        return sw.toString();
     }
 }

@@ -28,19 +28,6 @@ public class BaseCondition {
     @Valid
     private CombineSearch combineSearch;
 
-    public CombineSearch getCombineSearch() {
-        return combineSearch == null ? new CombineSearch() : combineSearch;
-    }
-
-    public List<FilterCondition> getFilters() {
-        if (CollectionUtils.isEmpty(filters)) {
-            return List.of();
-        }
-        return filters.stream()
-                .filter(FilterCondition::valid)
-                .toList();
-    }
-
     /**
      * 转义关键字中的特殊字符。
      *
@@ -60,6 +47,19 @@ public class BaseCondition {
             keyword = StringUtils.replace(keyword, "_", "\\_");
         }
         return keyword;
+    }
+
+    public CombineSearch getCombineSearch() {
+        return combineSearch == null ? new CombineSearch() : combineSearch;
+    }
+
+    public List<FilterCondition> getFilters() {
+        if (CollectionUtils.isEmpty(filters)) {
+            return List.of();
+        }
+        return filters.stream()
+                .filter(FilterCondition::valid)
+                .toList();
     }
 
     /**

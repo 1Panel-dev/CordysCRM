@@ -217,6 +217,17 @@ public interface BaseMapper<E> {
         return exist(criteria) ? updateById(criteria) : insert(criteria);
     }
 
+    interface Interceptor {
+        /**
+         * 类似 @PrePersist
+         **/
+        default void prePersist() {
+        }
+    }
+
+    interface WriteType {
+    }
+
     class InsertSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
         public String sql(Object criteria) {
@@ -423,17 +434,6 @@ public interface BaseMapper<E> {
 
             return sql.toString();
         }
-    }
-
-    interface Interceptor {
-        /**
-         * 类似 @PrePersist
-         **/
-        default void prePersist() {
-        }
-    }
-
-    interface WriteType {
     }
 
     class SQL extends AbstractSQL<SQL> {

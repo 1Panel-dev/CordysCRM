@@ -30,46 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataAccessLayer implements ApplicationContextAware {
 
     private static volatile ApplicationContext applicationContext;
-    private SqlSession sqlSession;
-    private Configuration configuration;
-
     // 使用 ConcurrentHashMap 替代同步 LinkedHashMap，提高并发性能
     private final Map<Class<?>, EntityTable> cachedTableInfo = new ConcurrentHashMap<>(128);
     private final Map<String, Object> msIdLocks = new ConcurrentHashMap<>();
-
     // 添加 MappedStatement 缓存计数监控
     private final AtomicInteger mappedStatementCount = new AtomicInteger(0);
+    private SqlSession sqlSession;
+    private Configuration configuration;
 
     private DataAccessLayer() {
         // 私有构造函数
-    }
-
-    /**
-     * 初始化 SqlSession，用于执行 DAL 操作
-     */
-    private DataAccessLayer initSession(SqlSession sqlSession) {
-        this.sqlSession = sqlSession;
-        this.configuration = sqlSession.getConfiguration();
-        return this;
-    }
-
-    @Override
-    public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
-        // 使用双重检查锁定模式
-        if (applicationContext == null) {
-            synchronized (DataAccessLayer.class) {
-                if (applicationContext == null) {
-                    applicationContext = context;
-                }
-            }
-        }
-    }
-
-    /**
-     * 单例持有者，确保 Dal 实例的唯一性
-     */
-    private static class Holder {
-        private static final DataAccessLayer INSTANCE = new DataAccessLayer();
     }
 
     /**
@@ -96,6 +66,83 @@ public class DataAccessLayer implements ApplicationContextAware {
         return instance.new Executor<>(entityTable);
     }
 
+    /**
+     * 初始化 SqlSession，用于执行 DAL 操作
+     */
+    private DataAccessLayer initSession(SqlSession sqlSession) {
+        this.sqlSession = sqlSession;
+        this.configuration = sqlSession.getConfiguration();
+        return this;
+    }
+
+    @Override
+    public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
+        // 使用双重检查锁定模式
+        if (applicationContext == null) {
+            synchronized (DataAccessLayer.class) {
+                if (applicationContext == null) {
+                    applicationContext = context;
+                }
+            }
+        }
+    }
+
+    /**
+     * 生成缓存键
+     */
+    private String generateCacheKey(String methodName, Class<?> parameterType, SqlCommandType sqlCommandType) {
+        return String.format("%s:%s:%s", sqlCommandType.name(), parameterType.getName(), methodName);
+    }
+
+    /**
+     * 执行 SQL，返回 MappedStatement ID
+     */
+    private String execute(String sql, String methodName, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+        var msId = generateCacheKey(methodName, parameterType, sqlCommandType);
+
+        if (!configuration.hasStatement(msId, false)) {
+            Object lock = msIdLocks.computeIfAbsent(msId, k -> new Object());
+            synchronized (lock) {
+                if (!configuration.hasStatement(msId, false)) {
+                    // 创建和注册 MappedStatement
+                    var sqlSource = configuration
+                            .getDefaultScriptingLanguageInstance()
+                            .createSqlSource(configuration, sql, parameterType);
+
+                    newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
+
+                    var count = mappedStatementCount.incrementAndGet();
+                    if (count % 500 == 0) {
+                        LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
+                    }
+                }
+            }
+            msIdLocks.remove(msId);
+        }
+
+        return msId;
+    }
+
+    /**
+     * 创建并注册新的 MappedStatement
+     */
+    private void newMappedStatement(String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
+        var resultMap = new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0))
+                .build();
+
+        var ms = new MappedStatement.Builder(configuration, msId, sqlSource, sqlCommandType)
+                .resultMaps(Collections.singletonList(resultMap))
+                .build();
+
+        configuration.addMappedStatement(ms);
+    }
+
+    /**
+     * 单例持有者，确保 Dal 实例的唯一性
+     */
+    private static class Holder {
+        private static final DataAccessLayer INSTANCE = new DataAccessLayer();
+    }
 
     /**
      * 数据访问执行器
@@ -239,55 +286,5 @@ public class DataAccessLayer implements ApplicationContextAware {
                 throw new RuntimeException("批量插入失败", e);
             }
         }
-    }
-
-    /**
-     * 生成缓存键
-     */
-    private String generateCacheKey(String methodName, Class<?> parameterType, SqlCommandType sqlCommandType) {
-        return String.format("%s:%s:%s", sqlCommandType.name(), parameterType.getName(), methodName);
-    }
-
-    /**
-     * 执行 SQL，返回 MappedStatement ID
-     */
-    private String execute(String sql, String methodName, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
-        var msId = generateCacheKey(methodName, parameterType, sqlCommandType);
-
-        if (!configuration.hasStatement(msId, false)) {
-            Object lock = msIdLocks.computeIfAbsent(msId, k -> new Object());
-            synchronized (lock) {
-                if (!configuration.hasStatement(msId, false)) {
-                    // 创建和注册 MappedStatement
-                    var sqlSource = configuration
-                            .getDefaultScriptingLanguageInstance()
-                            .createSqlSource(configuration, sql, parameterType);
-
-                    newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
-
-                    var count = mappedStatementCount.incrementAndGet();
-                    if (count % 500 == 0) {
-                        LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
-                    }
-                }
-            }
-            msIdLocks.remove(msId);
-        }
-
-        return msId;
-    }
-
-    /**
-     * 创建并注册新的 MappedStatement
-     */
-    private void newMappedStatement(String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
-        var resultMap = new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0))
-                .build();
-
-        var ms = new MappedStatement.Builder(configuration, msId, sqlSource, sqlCommandType)
-                .resultMaps(Collections.singletonList(resultMap))
-                .build();
-
-        configuration.addMappedStatement(ms);
     }
 }

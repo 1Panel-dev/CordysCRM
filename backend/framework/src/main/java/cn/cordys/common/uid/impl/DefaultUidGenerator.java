@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.impl;
 
 import cn.cordys.common.exception.GenericException;

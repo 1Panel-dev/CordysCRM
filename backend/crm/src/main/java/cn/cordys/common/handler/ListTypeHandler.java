@@ -25,43 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListTypeHandler extends BaseTypeHandler<List<String>> {
-    @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
-        String d = toJSONString(parameter);
-        ps.setString(i, d);
-    }
-
-    @Override
-    public List<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        String values = rs.getString(columnName);
-        return getResults(values);
-    }
-
-    @Override
-    public List<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        String values = rs.getString(columnIndex);
-        return getResults(values);
-    }
-
-    @Override
-    public List<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        String values = cs.getString(columnIndex);
-        return getResults(values);
-    }
-
-    private List<String> getResults(String values) {
-        if (StringUtils.isNotBlank(values)) {
-            return parseArray(values, String.class);
-        }
-        return new ArrayList<>();
-    }
-
+    public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
     private static final ObjectMapper objectMapper = JsonMapper.builder()
             .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)
             .build();
     private static final TypeFactory typeFactory = objectMapper.getTypeFactory();
-
-    public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
 
     static {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -95,5 +63,36 @@ public class ListTypeHandler extends BaseTypeHandler<List<String>> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
+        String d = toJSONString(parameter);
+        ps.setString(i, d);
+    }
+
+    @Override
+    public List<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        String values = rs.getString(columnName);
+        return getResults(values);
+    }
+
+    @Override
+    public List<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        String values = rs.getString(columnIndex);
+        return getResults(values);
+    }
+
+    @Override
+    public List<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        String values = cs.getString(columnIndex);
+        return getResults(values);
+    }
+
+    private List<String> getResults(String values) {
+        if (StringUtils.isNotBlank(values)) {
+            return parseArray(values, String.class);
+        }
+        return new ArrayList<>();
     }
 }

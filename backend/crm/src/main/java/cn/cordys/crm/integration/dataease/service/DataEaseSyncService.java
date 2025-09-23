@@ -40,6 +40,7 @@ import static java.util.Arrays.stream;
 
 @Service
 public class DataEaseSyncService {
+    public static final String NONE_DATA_SCOPE = "NONE";
     @Resource
     private ExtDepartmentMapper extDepartmentMapper;
     @Resource
@@ -54,9 +55,6 @@ public class DataEaseSyncService {
     private DataScopeService dataScopeService;
     @Resource
     private DataEaseService dataEaseService;
-
-    public static final String NONE_DATA_SCOPE = "NONE";
-
 
     @QuartzScheduled(cron = "0 0 0 * * ?")
     public void syncDataEase() {

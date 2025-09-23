@@ -28,17 +28,6 @@ public class CommonBeanFactory implements ApplicationContextAware {
     private static ApplicationContext context;
 
     /**
-     * 设置ApplicationContext，Spring容器会自动注入上下文。
-     *
-     * @param ctx 当前的Spring应用上下文
-     *
-     * @throws BeansException 如果出现错误
-     */
-    public void setApplicationContext(@NotNull ApplicationContext ctx) throws BeansException {
-        context = ctx;
-    }
-
-    /**
      * 根据Bean名称获取Bean实例
      *
      * @param beanName Bean的名称
@@ -155,6 +144,17 @@ public class CommonBeanFactory implements ApplicationContextAware {
 
         } catch (Exception ignored) {
         }
+    }
+
+    /**
+     * 设置ApplicationContext，Spring容器会自动注入上下文。
+     *
+     * @param ctx 当前的Spring应用上下文
+     *
+     * @throws BeansException 如果出现错误
+     */
+    public void setApplicationContext(@NotNull ApplicationContext ctx) throws BeansException {
+        context = ctx;
     }
 
 }

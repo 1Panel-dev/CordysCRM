@@ -81,6 +81,23 @@ public class ProductService {
     @Resource
     private BaseMapper<ProductFieldBlob> productFieldBlobMapper;
 
+    @NotNull
+    private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
+        List<LogDTO> logDTOList = new ArrayList<>();
+        //目前只记录批量上下架
+        for (Product oldProduct : products) {
+            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
+            Map<String, String> oldMap = new HashMap<>();
+            oldMap.put("status", oldProduct.getStatus());
+            Map<String, String> newMap = new HashMap<>();
+            newMap.put("status", request.getStatus());
+            logDTO.setOriginalValue(oldMap);
+            logDTO.setModifiedValue(newMap);
+            logDTOList.add(logDTO);
+        }
+        return logDTOList;
+    }
+
     public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
@@ -218,23 +235,6 @@ public class ProductService {
         // batchUpdateModuleField(request.getIds(),request.getModuleFields());
         List<LogDTO> logDTOList = getLogDTOList(request, userId, products);
         logService.batchAdd(logDTOList);
-    }
-
-    @NotNull
-    private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
-        List<LogDTO> logDTOList = new ArrayList<>();
-        //目前只记录批量上下架
-        for (Product oldProduct : products) {
-            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
-            Map<String, String> oldMap = new HashMap<>();
-            oldMap.put("status", oldProduct.getStatus());
-            Map<String, String> newMap = new HashMap<>();
-            newMap.put("status", request.getStatus());
-            logDTO.setOriginalValue(oldMap);
-            logDTO.setModifiedValue(newMap);
-            logDTOList.add(logDTO);
-        }
-        return logDTOList;
     }
 
     /**

@@ -18,22 +18,6 @@ public class OperationLogService {
     @Resource
     private OperationLogHandler operationLogHandler;
 
-    public void record(OperationLog operationLog) {
-        // 1. 补全通用字段
-        LogDTO reqDTO = new LogDTO();
-        // 补全模块信息
-        fillModuleFields(reqDTO, operationLog);
-        // 补全请求信息
-        fillRequestFields(reqDTO);
-
-        // todo： 组织或项目信息
-
-        // 2. 异步记录日志
-        assert operationLogHandler != null;
-        operationLogHandler.handleLog(reqDTO);
-    }
-
-
     public static void fillModuleFields(LogDTO reqDTO, OperationLog operationLog) {
         reqDTO.setCreateTime(System.currentTimeMillis());
         reqDTO.setType(operationLog.getType()); // 大模块类型，例如：CRM 客户
@@ -53,5 +37,20 @@ public class OperationLogService {
         // 补全请求信息
         reqDTO.setMethod(request.getMethod());
         reqDTO.setPath(request.getRequestURI());
+    }
+
+    public void record(OperationLog operationLog) {
+        // 1. 补全通用字段
+        LogDTO reqDTO = new LogDTO();
+        // 补全模块信息
+        fillModuleFields(reqDTO, operationLog);
+        // 补全请求信息
+        fillRequestFields(reqDTO);
+
+        // todo： 组织或项目信息
+
+        // 2. 异步记录日志
+        assert operationLogHandler != null;
+        operationLogHandler.handleLog(reqDTO);
     }
 }

@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.worker;
 
 import cn.cordys.common.uid.utils.ValuedEnum;

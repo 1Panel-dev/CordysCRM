@@ -48,6 +48,28 @@ public class AuthSourceService {
     @Resource
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
 
+    @NotNull
+    private static AuthSourceLogDTO getAuthSourceLogDTOAuthDTO(AuthSourceDTO authSourceOld) {
+        AuthSourceLogDTO dto = new AuthSourceLogDTO();
+        BeanUtils.copyBean(dto, authSourceOld);
+        dto.setConfiguration(JSON.parseObject(authSourceOld.getConfiguration(), WeComConfigurationDTO.class));
+        dto.setEnable(Boolean.TRUE.equals(authSourceOld.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
+        return dto;
+    }
+
+    @NotNull
+    private static AuthSourceLogDTO getAuthSourceLogDTOByRequest(AuthSourceEditRequest authSource) {
+        AuthSourceLogDTO dto = new AuthSourceLogDTO();
+        BeanUtils.copyBean(dto, authSource);
+        dto.setConfiguration(JSON.parseObject(authSource.getConfiguration(), WeComConfigurationDTO.class));
+        dto.setEnable(BooleanUtils.isTrue(authSource.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
+        return dto;
+    }
+
+    private static long now() {
+        return System.currentTimeMillis();
+    }
+
     public List<OrganizationConfigDetail> list(AuthSourceRequest request) {
         return extOrganizationConfigDetailMapper.getOrganizationConfigDetailList(request);
     }
@@ -132,24 +154,6 @@ public class AuthSourceService {
                 .build());
     }
 
-    @NotNull
-    private static AuthSourceLogDTO getAuthSourceLogDTOAuthDTO(AuthSourceDTO authSourceOld) {
-        AuthSourceLogDTO dto = new AuthSourceLogDTO();
-        BeanUtils.copyBean(dto, authSourceOld);
-        dto.setConfiguration(JSON.parseObject(authSourceOld.getConfiguration(), WeComConfigurationDTO.class));
-        dto.setEnable(Boolean.TRUE.equals(authSourceOld.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
-        return dto;
-    }
-
-    @NotNull
-    private static AuthSourceLogDTO getAuthSourceLogDTOByRequest(AuthSourceEditRequest authSource) {
-        AuthSourceLogDTO dto = new AuthSourceLogDTO();
-        BeanUtils.copyBean(dto, authSource);
-        dto.setConfiguration(JSON.parseObject(authSource.getConfiguration(), WeComConfigurationDTO.class));
-        dto.setEnable(BooleanUtils.isTrue(authSource.getEnable()) ? ENABLED_LABEL : DISABLED_LABEL);
-        return dto;
-    }
-
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_AUTH, type = LogType.UPDATE, resourceId = "{#id}", operator = "{#userId}")
     public void updateStatus(String id, Boolean status) {
         AuthSourceDTO old = getAuthSource(id);
@@ -218,6 +222,8 @@ public class AuthSourceService {
         return details.stream().map(OrganizationConfigDetail::getType).toList();
     }
 
+    // helpers
+
     public AuthSourceDTO getAuthSourceByType(String organizationId, String type) {
         OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
                 organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
@@ -234,12 +240,6 @@ public class AuthSourceService {
         BeanUtils.copyBean(dto, detail);
         dto.setConfiguration(new String(detail.getContent(), StandardCharsets.UTF_8));
         return dto;
-    }
-
-    // helpers
-
-    private static long now() {
-        return System.currentTimeMillis();
     }
 
     private OrganizationConfig createOrganizationConfig(String organizationId, String userId) {

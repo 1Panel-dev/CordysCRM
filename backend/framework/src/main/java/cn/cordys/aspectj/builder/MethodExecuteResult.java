@@ -7,18 +7,17 @@ import java.lang.reflect.Method;
 
 @Getter
 public class MethodExecuteResult {
+    private final Method method;
+    private final Object[] args;
+    private final Class<?> targetClass;
     @Setter
     private boolean success;
     @Setter
     private Throwable throwable;
     @Setter
     private String errorMsg;
-
     @Setter
     private Object result;
-    private final Method method;
-    private final Object[] args;
-    private final Class<?> targetClass;
 
     public MethodExecuteResult(Method method, Object[] args, Class<?> targetClass) {
         this.method = method;

@@ -27,27 +27,13 @@ import java.util.regex.Pattern;
 
 public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
-    private final Class<?> excelDataClass;
-    private Map<Integer, String> headMap;
-    private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
-
-    @Getter
-    protected final List<UserExcelData> list = new ArrayList<>();
-    @Getter
-    protected final List<ExcelErrData> errList = new ArrayList<>();
-
-    private static final String ERROR_MSG_SEPARATOR = ";";
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
-
+    private static final String ERROR_MSG_SEPARATOR = ";";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final String PHONE_REGEX = "^1[0-9]\\d{9}$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
     private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
-
-    private final List<BaseTreeNode> departmentTree;
-    private final OrganizationUserService organizationUserService;
-
     private static final Map<String, BiConsumer<UserExcelData, String>> FIELD_SETTERS = new HashMap<>();
 
     static {
@@ -62,6 +48,16 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         FIELD_SETTERS.put("workCity", UserExcelData::setWorkCity);
         FIELD_SETTERS.put("employeeType", UserExcelData::setEmployeeType);
     }
+
+    @Getter
+    protected final List<UserExcelData> list = new ArrayList<>();
+    @Getter
+    protected final List<ExcelErrData> errList = new ArrayList<>();
+    private final Class<?> excelDataClass;
+    private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
+    private final List<BaseTreeNode> departmentTree;
+    private final OrganizationUserService organizationUserService;
+    private Map<Integer, String> headMap;
 
     public UserCheckEventListener(Class<?> clazz, String orgId) {
         this.excelDataClass = clazz;

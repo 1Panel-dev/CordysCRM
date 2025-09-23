@@ -43,11 +43,6 @@ public class BaseTreeNode {
         this.parentId = parentId;
     }
 
-    public void addChild(BaseTreeNode node) {
-        node.setParentId(this.getId());
-        children.add(node);
-    }
-
     public static <T extends BaseTreeNode> List<T> buildTree(List<T> nodeList) {
         // 用于存储节点的 Map，key 是节点 ID
         Map<String, T> nodeMap = new HashMap<>();
@@ -76,6 +71,11 @@ public class BaseTreeNode {
 
         // 3. 返回根节点列表
         return rootNodes;
+    }
+
+    public void addChild(BaseTreeNode node) {
+        node.setParentId(this.getId());
+        children.add(node);
     }
 
 }

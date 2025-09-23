@@ -43,14 +43,6 @@ public class HomeStatisticSearchWrapperRequest {
         staticRequest.setPeriod(null);
     }
 
-    public void setStartTime(Long startTime) {
-        staticRequest.setStartTime(startTime);
-    }
-
-    public void setEndTime(Long endTime) {
-        staticRequest.setEndTime(endTime);
-    }
-
     public Long getStartTime() {
         String period = staticRequest.getPeriod();
         Long startTime = staticRequest.getStartTime();
@@ -79,6 +71,10 @@ public class HomeStatisticSearchWrapperRequest {
             }
         }
         return startTime;
+    }
+
+    public void setStartTime(Long startTime) {
+        staticRequest.setStartTime(startTime);
     }
 
     public Long getPeriodStartTime() {
@@ -168,5 +164,9 @@ public class HomeStatisticSearchWrapperRequest {
             };
         }
         return endTime;
+    }
+
+    public void setEndTime(Long endTime) {
+        staticRequest.setEndTime(endTime);
     }
 }

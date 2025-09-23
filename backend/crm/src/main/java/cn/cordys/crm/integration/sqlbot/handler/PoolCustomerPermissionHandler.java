@@ -23,10 +23,6 @@ import java.util.Set;
 @Component
 public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandler {
 
-    {
-        TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CUSTOMER, this);
-    }
-
     public static final String POOL_CUSTOMER_SCOPE_SQL_TEMPLATE = """
             select {0}
             from customer c
@@ -34,11 +30,14 @@ public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandl
             and in_shared_pool is true
             and pool_id in ({2})
             """;
-
     @Resource
     private BaseMapper<CustomerPool> poolMapper;
     @Resource
     private UserExtendService userExtendService;
+
+    {
+        TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CUSTOMER, this);
+    }
 
     @Override
     public void handleTable(TableDTO table, TableHandleParam tableHandleParam) {

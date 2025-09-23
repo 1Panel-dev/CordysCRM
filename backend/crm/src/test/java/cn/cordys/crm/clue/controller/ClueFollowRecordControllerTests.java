@@ -27,15 +27,14 @@ public class ClueFollowRecordControllerTests extends BaseTest {
     private static final String BASE_PATH = "/lead/follow/record/";
 
     private static final String POOL_PAGE = "pool/page";
+    private static FollowUpRecord addFollowUpRecord;
+    @Resource
+    private BaseMapper<FollowUpRecord> followUpRecordMapper;
 
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-    private static FollowUpRecord addFollowUpRecord;
-    @Resource
-    private BaseMapper<FollowUpRecord> followUpRecordMapper;
 
     @Test
     @Order(1)

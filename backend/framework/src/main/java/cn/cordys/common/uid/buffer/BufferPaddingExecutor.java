@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid.buffer;
 
 import cn.cordys.common.uid.utils.NamingThreadFactory;

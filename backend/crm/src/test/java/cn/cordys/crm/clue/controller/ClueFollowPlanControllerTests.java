@@ -31,16 +31,14 @@ public class ClueFollowPlanControllerTests extends BaseTest {
     private static final String CANCEL_PLAN = "cancel/{0}";
 
     private static final String STATUS_UPDATE = "status/update";
+    private static FollowUpPlan addFollowUpPlan;
+    @Resource
+    private BaseMapper<FollowUpPlan> followUpPlanMapper;
 
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-
-    private static FollowUpPlan addFollowUpPlan;
-    @Resource
-    private BaseMapper<FollowUpPlan> followUpPlanMapper;
 
     @Test
     @Order(1)

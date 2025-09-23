@@ -23,30 +23,6 @@ public class SortRequest {
     @Schema(description = "排序类型(asc/desc)")
     private String type;
 
-    public String getName() {
-        if (checkSqlInjection(name)) {
-            return "1";
-        }
-        return camelToUnderline(name);
-    }
-
-    public String getType() {
-        if (Strings.CI.equals(type, "asc")) {
-            return "asc";
-        } else {
-            return "desc";
-        }
-    }
-
-    /**
-     * mapper 中调用
-     *
-     * @return
-     */
-    public boolean valid() {
-        return StringUtils.isNotBlank(name) && !checkSqlInjection(name);
-    }
-
     public static String camelToUnderline(String camelCase) {
         if (camelCase == null || camelCase.isEmpty()) {
             return camelCase;
@@ -81,5 +57,29 @@ public class SortRequest {
 
         // 返回true表示存在注入风险
         return dangerousPattern.matcher(script).find();
+    }
+
+    public String getName() {
+        if (checkSqlInjection(name)) {
+            return "1";
+        }
+        return camelToUnderline(name);
+    }
+
+    public String getType() {
+        if (Strings.CI.equals(type, "asc")) {
+            return "asc";
+        } else {
+            return "desc";
+        }
+    }
+
+    /**
+     * mapper 中调用
+     *
+     * @return
+     */
+    public boolean valid() {
+        return StringUtils.isNotBlank(name) && !checkSqlInjection(name);
     }
 }

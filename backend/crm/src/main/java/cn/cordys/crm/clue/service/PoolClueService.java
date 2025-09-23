@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 @Service
 public class PoolClueService {
 
+    public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
     @Resource
     private BaseMapper<Clue> clueMapper;
     @Resource
@@ -74,8 +75,6 @@ public class PoolClueService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private CluePoolService cluePoolService;
-
-    public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
     /**
      * 获取当前用户线索池选项

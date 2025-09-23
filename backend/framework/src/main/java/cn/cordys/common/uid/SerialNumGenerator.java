@@ -13,9 +13,8 @@ import java.util.List;
 @Component
 public class SerialNumGenerator {
 
-    private final StringRedisTemplate stringRedisTemplate;
-
     private static final int MAX_RULES_SIZE = 5;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public SerialNumGenerator(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;

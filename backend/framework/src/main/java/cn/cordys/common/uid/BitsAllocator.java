@@ -1,4 +1,3 @@
-
 package cn.cordys.common.uid;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;

@@ -26,11 +26,15 @@ import java.util.stream.Collectors;
 
 public class CustomFieldCheckEventListener<T extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
 
-    @Getter
-    protected Integer success = 0;
-    @Getter
-    protected List<ExcelErrData> errList = new ArrayList<>();
-    private Map<Integer, String> headMap;
+    /**
+     * 除开特定的区号和格式校验, 还需兜底的其他手机格式
+     */
+    public static final String PHONE_REGEX =
+            "^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
+                    + "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
+                    + "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
+                    + "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
+    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
     private final Map<String, BaseField> fieldMap;
     /**
      * 源数据表
@@ -52,7 +56,6 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
      * 值缓存, 用来校验Excel字段值是否唯一
      */
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
-    private Map<String, BusinessModuleField> businessFieldMap;
     /**
      * 限制数据长度的字段
      */
@@ -61,15 +64,12 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
      * 正则校验
      */
     private final Map<String, Pattern> regexMap = new HashMap<>();
-    /**
-     * 除开特定的区号和格式校验, 还需兜底的其他手机格式
-     */
-    public static final String PHONE_REGEX =
-            "^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
-                    + "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
-                    + "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
-                    + "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
-    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+    @Getter
+    protected Integer success = 0;
+    @Getter
+    protected List<ExcelErrData> errList = new ArrayList<>();
+    private Map<Integer, String> headMap;
+    private Map<String, BusinessModuleField> businessFieldMap;
     private boolean atLeaseOne = false;
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {

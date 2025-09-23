@@ -43,6 +43,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     @Resource
     private CommonMapper commonMapper;
 
+    public static boolean isNullOrEmpty(Object obj) {
+        return obj == null || (obj instanceof String && ((String) obj).isEmpty());
+    }
+
     protected abstract String getFormKey();
 
     protected abstract BaseMapper<T> getResourceFieldMapper();
@@ -220,10 +224,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
             }
         });
-    }
-
-    public static boolean isNullOrEmpty(Object obj) {
-        return obj == null || (obj instanceof String && ((String) obj).isEmpty());
     }
 
     private <K> Object getResourceFieldValue(K resource, String fieldName) {

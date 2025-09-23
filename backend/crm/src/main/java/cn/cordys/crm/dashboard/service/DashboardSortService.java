@@ -14,14 +14,13 @@ import java.util.function.Function;
 
 public abstract class DashboardSortService {
 
-    public abstract void updatePos(String id, long pos);
-
-    public abstract void refreshPos(String testPlanId);
-
     private static final String MOVE_POS_OPERATOR_LESS = "lessThan";
     private static final String MOVE_POS_OPERATOR_MORE = "moreThan";
     private static final String DRAG_NODE_NOT_EXIST = "drag_node.not.exist";
 
+    public abstract void updatePos(String id, long pos);
+
+    public abstract void refreshPos(String testPlanId);
 
     /**
      * 构建节点移动的请求参数

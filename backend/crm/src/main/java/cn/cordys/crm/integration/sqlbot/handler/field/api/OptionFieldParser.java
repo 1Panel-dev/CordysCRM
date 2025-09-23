@@ -25,39 +25,6 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
             ) AS ''{3}''
             """;
 
-    protected String parseOptionFieldSql(String fieldValueTable, BaseField field, List<OptionProp> options) {
-        if (CollectionUtils.isEmpty(options)) {
-            return parseEmptyOptionSql(field);
-        }
-        return MessageFormat.format(SINGLE_OPTION_FIELD_SQL_TEMPLATE,
-                fieldValueTable,
-                parseOptionSql(options),
-                field.getId(),
-                field.getId()
-        );
-    }
-
-    public FieldDTO parse2SQLBotField(BaseField field, List<OptionProp> options) {
-        FieldDTO fieldDTO = new FieldDTO();
-        fieldDTO.setName(field.getId());
-        fieldDTO.setType("varchar(50)");
-        fieldDTO.setComment(field.getName() + getOptionLabelStr(options));
-        return fieldDTO;
-    }
-
-    protected String getOptionLabelStr(List<OptionProp> options) {
-        return "，可选值：(" +
-                options
-                        .stream()
-                        .map(OptionProp::getLabel)
-                        .collect(Collectors.joining(","))
-                + ")";
-    }
-
-    protected String parseEmptyOptionSql(BaseField field) {
-        return "'' as " + field.getId();
-    }
-
     /**
      * 将选项列表转换为SQL查询语句
      * 例如：
@@ -92,5 +59,38 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
         }
 
         return sqlBuffer.toString();
+    }
+
+    protected String parseOptionFieldSql(String fieldValueTable, BaseField field, List<OptionProp> options) {
+        if (CollectionUtils.isEmpty(options)) {
+            return parseEmptyOptionSql(field);
+        }
+        return MessageFormat.format(SINGLE_OPTION_FIELD_SQL_TEMPLATE,
+                fieldValueTable,
+                parseOptionSql(options),
+                field.getId(),
+                field.getId()
+        );
+    }
+
+    public FieldDTO parse2SQLBotField(BaseField field, List<OptionProp> options) {
+        FieldDTO fieldDTO = new FieldDTO();
+        fieldDTO.setName(field.getId());
+        fieldDTO.setType("varchar(50)");
+        fieldDTO.setComment(field.getName() + getOptionLabelStr(options));
+        return fieldDTO;
+    }
+
+    protected String getOptionLabelStr(List<OptionProp> options) {
+        return "，可选值：(" +
+                options
+                        .stream()
+                        .map(OptionProp::getLabel)
+                        .collect(Collectors.joining(","))
+                + ")";
+    }
+
+    protected String parseEmptyOptionSql(BaseField field) {
+        return "'' as " + field.getId();
     }
 }

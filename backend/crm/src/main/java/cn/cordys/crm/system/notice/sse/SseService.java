@@ -26,47 +26,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SseService {
 
-    @Resource
-    private ExtNotificationMapper extNotificationMapper;
-
-    @Resource
-    private SendModuleService sendModuleService;
-
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
-
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";
     private static final String ANNOUNCE_PREFIX = "announce_content:";
     private static final String USER_PREFIX = "msg_user:";
     private static final String MSG_PREFIX = "msg_content:";
     private static final String USER_READ_PREFIX = "user_read:";
-
     private final Map<String, Map<String, ClientSinkWrapper>> userClients = new ConcurrentHashMap<>();
-
-    /**
-     * 客户端包装，包含 Sink 与 Flux
-     */
-    private static class ClientSinkWrapper {
-        private final Sinks.Many<String> sink;
-        private final Flux<String> flux;
-
-        ClientSinkWrapper() {
-            this.sink = Sinks.many().multicast().onBackpressureBuffer();
-            this.flux = sink.asFlux()
-                    // 心跳自动推送每 15 秒一次
-                    .mergeWith(Flux.interval(Duration.ofSeconds(15))
-                            .map(tick -> "HEARTBEAT: " + System.currentTimeMillis()))
-                    .doOnCancel(this::complete);
-        }
-
-        void emit(String message) {
-            sink.tryEmitNext(message);
-        }
-
-        void complete() {
-            sink.tryEmitComplete();
-        }
-    }
+    @Resource
+    private ExtNotificationMapper extNotificationMapper;
+    @Resource
+    private SendModuleService sendModuleService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 添加或获取现有客户端流
@@ -191,5 +162,30 @@ public class SseService {
                 })
                 .sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed())
                 .toList();
+    }
+
+    /**
+     * 客户端包装，包含 Sink 与 Flux
+     */
+    private static class ClientSinkWrapper {
+        private final Sinks.Many<String> sink;
+        private final Flux<String> flux;
+
+        ClientSinkWrapper() {
+            this.sink = Sinks.many().multicast().onBackpressureBuffer();
+            this.flux = sink.asFlux()
+                    // 心跳自动推送每 15 秒一次
+                    .mergeWith(Flux.interval(Duration.ofSeconds(15))
+                            .map(tick -> "HEARTBEAT: " + System.currentTimeMillis()))
+                    .doOnCancel(this::complete);
+        }
+
+        void emit(String message) {
+            sink.tryEmitNext(message);
+        }
+
+        void complete() {
+            sink.tryEmitComplete();
+        }
     }
 }

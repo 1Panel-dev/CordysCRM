@@ -53,15 +53,15 @@ public class OperationLogContext {
     /**
      * 设置额外信息
      */
-    public static void setContext(LogContextInfo logContextInfo) {
-        putVariable(OPERATION_LOG_CONTEXT_KEY, logContextInfo);
+    public static LogContextInfo getContext() {
+        return (LogContextInfo) getVariable(OPERATION_LOG_CONTEXT_KEY);
     }
 
     /**
      * 设置额外信息
      */
-    public static LogContextInfo getContext() {
-        return (LogContextInfo) getVariable(OPERATION_LOG_CONTEXT_KEY);
+    public static void setContext(LogContextInfo logContextInfo) {
+        putVariable(OPERATION_LOG_CONTEXT_KEY, logContextInfo);
     }
 
     /**

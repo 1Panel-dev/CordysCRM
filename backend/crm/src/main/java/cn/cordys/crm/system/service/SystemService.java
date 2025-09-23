@@ -35,6 +35,50 @@ public class SystemService {
         this.licenseService = licenseService;
     }
 
+    private static String baseVersion(String v) {
+        if (StringUtils.isBlank(v)) return "";
+        String core = StringUtils.substringBefore(v.trim(), "-");
+        core = StringUtils.substringBefore(core, "+");
+        if (core.startsWith("v") || core.startsWith("V")) {
+            core = core.substring(1);
+        }
+        return core;
+    }
+
+    private static boolean isNumericSemver(String v) {
+        String core = baseVersion(v);
+        if (StringUtils.isBlank(core)) return false;
+        String[] parts = StringUtils.split(core, '.');
+        if (parts == null || parts.length == 0) return false;
+        for (String p : parts) {
+            if (!StringUtils.isNumeric(p)) return false;
+        }
+        return true;
+    }
+
+    private static int compareSemverCore(String v1, String v2) {
+        String[] a = StringUtils.split(v1, '.');
+        String[] b = StringUtils.split(v2, '.');
+        int al = a == null ? 0 : a.length;
+        int bl = b == null ? 0 : b.length;
+        int len = Math.max(al, bl);
+        for (int i = 0; i < len; i++) {
+            int ai = i < al ? safeParseInt(a[i]) : 0;
+            int bi = i < bl ? safeParseInt(b[i]) : 0;
+            int cmp = Integer.compare(ai, bi);
+            if (cmp != 0) return cmp;
+        }
+        return 0;
+    }
+
+    private static int safeParseInt(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     @Cacheable(value = CACHE_COPYRIGHT)
     public VersionInfoDTO getVersion() {
         // 支持系统属性覆盖，环境变量退化，最后为 unknown
@@ -103,50 +147,6 @@ public class SystemService {
             // 许可异常时默认为 CE
             LogUtils.info("获取许可状态失败，默认使用 CE：{}", e.getMessage());
             return EDITION_CE;
-        }
-    }
-
-    private static String baseVersion(String v) {
-        if (StringUtils.isBlank(v)) return "";
-        String core = StringUtils.substringBefore(v.trim(), "-");
-        core = StringUtils.substringBefore(core, "+");
-        if (core.startsWith("v") || core.startsWith("V")) {
-            core = core.substring(1);
-        }
-        return core;
-    }
-
-    private static boolean isNumericSemver(String v) {
-        String core = baseVersion(v);
-        if (StringUtils.isBlank(core)) return false;
-        String[] parts = StringUtils.split(core, '.');
-        if (parts == null || parts.length == 0) return false;
-        for (String p : parts) {
-            if (!StringUtils.isNumeric(p)) return false;
-        }
-        return true;
-    }
-
-    private static int compareSemverCore(String v1, String v2) {
-        String[] a = StringUtils.split(v1, '.');
-        String[] b = StringUtils.split(v2, '.');
-        int al = a == null ? 0 : a.length;
-        int bl = b == null ? 0 : b.length;
-        int len = Math.max(al, bl);
-        for (int i = 0; i < len; i++) {
-            int ai = i < al ? safeParseInt(a[i]) : 0;
-            int bi = i < bl ? safeParseInt(b[i]) : 0;
-            int cmp = Integer.compare(ai, bi);
-            if (cmp != 0) return cmp;
-        }
-        return 0;
-    }
-
-    private static int safeParseInt(String s) {
-        try {
-            return Integer.parseInt(s);
-        } catch (Exception e) {
-            return 0;
         }
     }
 }

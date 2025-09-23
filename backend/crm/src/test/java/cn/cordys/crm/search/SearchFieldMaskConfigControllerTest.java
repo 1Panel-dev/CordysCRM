@@ -22,14 +22,12 @@ import java.util.Map;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SearchFieldMaskConfigControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/mask/config/";
-
     protected static final String SAVE = "save";
     protected static final String GET = "get";
-
+    private static final String BASE_PATH = "/mask/config/";
+    public static String FIELD_ID = "wx_mask_field-test-id";
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
-    public static String FIELD_ID = "wx_mask_field-test-id";
 
     @Override
     protected String getBasePath() {

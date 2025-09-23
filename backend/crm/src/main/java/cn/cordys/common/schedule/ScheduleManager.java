@@ -26,6 +26,20 @@ public class ScheduleManager {
     private Scheduler scheduler;
 
     /**
+     * 启动调度器。
+     *
+     * @param schedule 调度器
+     */
+    public static void startJobs(Scheduler schedule) {
+        try {
+            schedule.start();
+        } catch (Exception e) {
+            LogUtils.error("启动调度器失败", e);
+            throw new RuntimeException("启动调度器失败", e);
+        }
+    }
+
+    /**
      * 添加一个简单的定时任务。
      *
      * @param jobKey             任务标识
@@ -140,20 +154,6 @@ public class ScheduleManager {
         } catch (Exception e) {
             LogUtils.error("删除任务失败", e);
             throw new RuntimeException("删除任务失败", e);
-        }
-    }
-
-    /**
-     * 启动调度器。
-     *
-     * @param schedule 调度器
-     */
-    public static void startJobs(Scheduler schedule) {
-        try {
-            schedule.start();
-        } catch (Exception e) {
-            LogUtils.error("启动调度器失败", e);
-            throw new RuntimeException("启动调度器失败", e);
         }
     }
 

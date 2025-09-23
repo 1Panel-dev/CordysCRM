@@ -22,6 +22,16 @@ public class CommonNoticeSendService {
     @Resource
     private BaseMapper<User> userBaseMapper;
 
+    private static void setLanguage(String language) {
+        Locale locale = Locale.SIMPLIFIED_CHINESE;
+        if (StringUtils.containsIgnoreCase(language, "US")) {
+            locale = Locale.US;
+        } else if (StringUtils.containsIgnoreCase(language, "TW")) {
+            locale = Locale.TAIWAN;
+        }
+        LocaleContextHolder.setLocale(locale);
+    }
+
     @Async
     public void sendNotice(String module, String event, List<Map> resources, String userId, String currentOrganizationId) {
         User operator = userBaseMapper.selectByPrimaryKey(userId);
@@ -114,17 +124,6 @@ public class CommonNoticeSendService {
             relatedUserList = Arrays.asList(relatedUser.split(";"));
         }
         return relatedUserList;
-    }
-
-
-    private static void setLanguage(String language) {
-        Locale locale = Locale.SIMPLIFIED_CHINESE;
-        if (StringUtils.containsIgnoreCase(language, "US")) {
-            locale = Locale.US;
-        } else if (StringUtils.containsIgnoreCase(language, "TW")) {
-            locale = Locale.TAIWAN;
-        }
-        LocaleContextHolder.setLocale(locale);
     }
 
     private String getContext(String event) {

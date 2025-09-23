@@ -54,6 +54,17 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class ModuleFormService {
 
+    public static final Map<String, String> TYPE_SOURCE_MAP;
+    private static final String DEFAULT_ORGANIZATION_ID = "100001";
+    private static final String CONTROL_RULES_KEY = "showControlRules";
+
+    static {
+        TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
+                FieldType.DEPARTMENT.name(), "sys_department", FieldSourceType.CUSTOMER.name(), "customer",
+                FieldSourceType.CLUE.name(), "clue", FieldSourceType.CONTACT.name(), "customer_contact",
+                FieldSourceType.OPPORTUNITY.name(), "opportunity", FieldSourceType.PRODUCT.name(), "product");
+    }
+
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
     @Value("classpath:form/field.json")
@@ -72,19 +83,6 @@ public class ModuleFormService {
     private UserExtendService userExtendService;
     @Resource
     private DepartmentService departmentService;
-
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
-
-    private static final String CONTROL_RULES_KEY = "showControlRules";
-
-    public static final Map<String, String> TYPE_SOURCE_MAP;
-
-    static {
-        TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
-                FieldType.DEPARTMENT.name(), "sys_department", FieldSourceType.CUSTOMER.name(), "customer",
-                FieldSourceType.CLUE.name(), "clue", FieldSourceType.CONTACT.name(), "customer_contact",
-                FieldSourceType.OPPORTUNITY.name(), "opportunity", FieldSourceType.PRODUCT.name(), "product");
-    }
 
     /**
      * 获取模块表单配置

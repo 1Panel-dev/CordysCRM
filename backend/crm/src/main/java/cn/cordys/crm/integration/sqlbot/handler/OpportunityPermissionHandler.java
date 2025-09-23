@@ -21,12 +21,12 @@ import java.util.Set;
 @Component
 public class OpportunityPermissionHandler extends DataScopeTablePermissionHandler {
 
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+
     {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.OPPORTUNITY, this);
     }
-
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
 
     @Override
     public void handleTable(TableDTO table, TableHandleParam tableHandleParam) {

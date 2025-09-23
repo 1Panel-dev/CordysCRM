@@ -38,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PersonalCenterControllerTests extends BaseTest {
 
+    private static String userId = "";
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -48,17 +49,12 @@ public class PersonalCenterControllerTests extends BaseTest {
     private BaseMapper<CustomerContact> customerContactBaseMapper;
     @Resource
     private BaseMapper<User> userBaseMapper;
-
     @Resource
     private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
-
     @Resource
     private BaseMapper<Opportunity> opportunityBaseMapper;
-
-    private static String userId = "";
-
 
     @Test
     @Order(1)

@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class ModuleService {
 
+    private static final String DEFAULT_ORGANIZATION_ID = "100001";
     @Resource
     private BaseMapper<Module> moduleMapper;
     @Resource
@@ -59,8 +60,6 @@ public class ModuleService {
     private BaseMapper<OrganizationConfig> organizationConfigMapper;
     @Resource
     private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
-
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
     /**
      * 获取系统模块配置列表

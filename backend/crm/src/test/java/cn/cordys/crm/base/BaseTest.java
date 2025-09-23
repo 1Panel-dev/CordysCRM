@@ -49,8 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public abstract class BaseTest {
-    protected static AuthInfo adminAuthInfo;
-    protected static AuthInfo permissionAuthInfo;
+    public static final String DEFAULT_ORGANIZATION_ID = "100001";
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
     protected static final String DEFAULT_PLATFORM = "mobile";
     protected static final String DEFAULT_PAGE = "page";
@@ -60,23 +59,42 @@ public abstract class BaseTest {
     protected static final String DEFAULT_UPDATE = "update";
     protected static final String DEFAULT_DELETE = "delete/{0}";
     protected static final String DEFAULT_BATCH_DELETE = "batch/delete";
-    public static final String DEFAULT_ORGANIZATION_ID = "100001";
     public static String PERMISSION_USER_NAME = "permission_test";
-
-
+    protected static AuthInfo adminAuthInfo;
+    protected static AuthInfo permissionAuthInfo;
     @Resource
     protected MockMvc mockMvc;
+    @Resource
+    protected PermissionCache permissionCache;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
     @Resource
     private BaseMapper<User> userMapper;
 
+    protected static Map<?, ?> parseResponse(MvcResult mvcResult) throws UnsupportedEncodingException {
+        return JSON.parseMap(mvcResult.getResponse().getContentAsString(Charset.defaultCharset()));
+    }
+
+    private static MockMultipartFile getMockMultipartFile(String key, Object value) throws IOException {
+        MockMultipartFile multipartFile;
+        if (value instanceof File file) {
+            multipartFile = new MockMultipartFile(key, file.getName(),
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE, Files.readAllBytes(file.toPath()));
+        } else if (value instanceof MockMultipartFile) {
+            multipartFile = (MockMultipartFile) value;
+            // 有些地方的参数 name 写的是文件名，这里统一处理成参数名 key
+            multipartFile = new MockMultipartFile(key, multipartFile.getOriginalFilename(),
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE, multipartFile.getBytes());
+        } else {
+            multipartFile = new MockMultipartFile(key, key,
+                    MediaType.APPLICATION_JSON_VALUE, value.toString().getBytes());
+        }
+        return multipartFile;
+    }
+
     protected String getBasePath() {
         return StringUtils.EMPTY;
     }
-
-    @Resource
-    protected PermissionCache permissionCache;
 
     @BeforeEach
     public void login() throws Exception {
@@ -157,10 +175,6 @@ public abstract class BaseTest {
 
     protected MvcResult requestGetWithOkAndReturn(String url, Object... uriVariables) throws Exception {
         return this.requestGetWithOk(url, uriVariables).andReturn();
-    }
-
-    protected static Map<?, ?> parseResponse(MvcResult mvcResult) throws UnsupportedEncodingException {
-        return JSON.parseMap(mvcResult.getResponse().getContentAsString(Charset.defaultCharset()));
     }
 
     protected <T> List<T> getResultDataArray(MvcResult mvcResult, Class<T> clazz) throws Exception {
@@ -346,18 +360,6 @@ public abstract class BaseTest {
         permissionCache.clearCache(PERMISSION_USER_NAME, DEFAULT_ORGANIZATION_ID);
     }
 
-    @Data
-    public static class AuthInfo {
-        private String sessionId;
-        private String csrfToken;
-
-        public AuthInfo(String sessionId, String csrfToken) {
-            this.sessionId = sessionId;
-            this.csrfToken = csrfToken;
-        }
-    }
-
-
     protected ResultActions requestMultipart(String url, MultiValueMap<String, Object> paramMap, Object... uriVariables) throws Exception {
         MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(url, paramMap, uriVariables);
         return mockMvc.perform(requestBuilder)
@@ -421,21 +423,14 @@ public abstract class BaseTest {
         return requestBuilder;
     }
 
+    @Data
+    public static class AuthInfo {
+        private String sessionId;
+        private String csrfToken;
 
-    private static MockMultipartFile getMockMultipartFile(String key, Object value) throws IOException {
-        MockMultipartFile multipartFile;
-        if (value instanceof File file) {
-            multipartFile = new MockMultipartFile(key, file.getName(),
-                    MediaType.APPLICATION_OCTET_STREAM_VALUE, Files.readAllBytes(file.toPath()));
-        } else if (value instanceof MockMultipartFile) {
-            multipartFile = (MockMultipartFile) value;
-            // 有些地方的参数 name 写的是文件名，这里统一处理成参数名 key
-            multipartFile = new MockMultipartFile(key, multipartFile.getOriginalFilename(),
-                    MediaType.APPLICATION_OCTET_STREAM_VALUE, multipartFile.getBytes());
-        } else {
-            multipartFile = new MockMultipartFile(key, key,
-                    MediaType.APPLICATION_JSON_VALUE, value.toString().getBytes());
+        public AuthInfo(String sessionId, String csrfToken) {
+            this.sessionId = sessionId;
+            this.csrfToken = csrfToken;
         }
-        return multipartFile;
     }
 }

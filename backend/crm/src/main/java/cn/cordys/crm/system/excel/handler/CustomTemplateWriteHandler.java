@@ -41,14 +41,14 @@ import java.util.Map;
  */
 public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler, CellWriteHandler {
 
-    private Sheet mainSheet;
-    private Drawing<?> drawingPatriarch;
     private final Map<BaseField, Integer> fieldIndexMap = new HashMap<>();
     private final List<String> requires = new ArrayList<>();
     private final List<String> uniques = new ArrayList<>();
     private final List<String> multiples = new ArrayList<>();
     private final Map<Integer, List<String>> validationOptionMap = new HashMap<>();
     private final int totalColumns;
+    private Sheet mainSheet;
+    private Drawing<?> drawingPatriarch;
 
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;

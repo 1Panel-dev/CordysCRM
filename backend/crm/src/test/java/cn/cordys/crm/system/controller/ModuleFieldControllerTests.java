@@ -22,11 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModuleFieldControllerTests extends BaseTest {
 
-    @Resource
-    private BaseMapper<ModuleField> moduleFieldMapper;
-
-    public static String FIELD_ID = "field-test-id";
-
     public static final String BASE_PATH = "/field";
     public static final String DEPT_TREE = "/dept/tree";
     public static final String USER_DEPT_TREE = "/user/dept/tree";
@@ -35,7 +30,9 @@ public class ModuleFieldControllerTests extends BaseTest {
     public static final String CONTACT_SOURCE_DATA = "/source/contact";
     public static final String OPPORTUNITY_SOURCE_DATA = "/source/opportunity";
     public static final String PRODUCT_SOURCE_DATA = "/source/product";
-
+    public static String FIELD_ID = "field-test-id";
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
 
     @Override
     protected String getBasePath() {

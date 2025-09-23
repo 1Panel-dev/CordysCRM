@@ -28,6 +28,33 @@ public class OperationLogSource {
     private static final Map<Method, Method> INTERFACE_METHOD_CACHE = new ConcurrentReferenceHashMap<>(256);
 
     /**
+     * 确定给定方法对应的接口方法（如果可能）。
+     *
+     * @param method 要处理的方法
+     *
+     * @return 对应的接口方法，如果不存在则返回原方法
+     */
+    public static Method getInterfaceMethodIfPossible(Method method) {
+        if (!Modifier.isPublic(method.getModifiers()) || method.getDeclaringClass().isInterface()) {
+            return method;
+        }
+        return INTERFACE_METHOD_CACHE.computeIfAbsent(method, key -> {
+            Class<?> current = key.getDeclaringClass();
+            while (current != null && current != Object.class) {
+                for (Class<?> ifc : current.getInterfaces()) {
+                    try {
+                        return ifc.getMethod(key.getName(), key.getParameterTypes());
+                    } catch (NoSuchMethodException ex) {
+                        // 忽略异常
+                    }
+                }
+                current = current.getSuperclass();
+            }
+            return key;
+        });
+    }
+
+    /**
      * 根据指定的方法和目标类计算日志记录操作。
      *
      * @param method      要分析的方法
@@ -54,33 +81,6 @@ public class OperationLogSource {
         result.addAll(logRecordsOps);
         result.addAll(abstractLogRecordsOps);
         return result;
-    }
-
-    /**
-     * 确定给定方法对应的接口方法（如果可能）。
-     *
-     * @param method 要处理的方法
-     *
-     * @return 对应的接口方法，如果不存在则返回原方法
-     */
-    public static Method getInterfaceMethodIfPossible(Method method) {
-        if (!Modifier.isPublic(method.getModifiers()) || method.getDeclaringClass().isInterface()) {
-            return method;
-        }
-        return INTERFACE_METHOD_CACHE.computeIfAbsent(method, key -> {
-            Class<?> current = key.getDeclaringClass();
-            while (current != null && current != Object.class) {
-                for (Class<?> ifc : current.getInterfaces()) {
-                    try {
-                        return ifc.getMethod(key.getName(), key.getParameterTypes());
-                    } catch (NoSuchMethodException ex) {
-                        // 忽略异常
-                    }
-                }
-                current = current.getSuperclass();
-            }
-            return key;
-        });
     }
 
     /**

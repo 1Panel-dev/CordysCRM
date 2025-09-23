@@ -31,14 +31,15 @@ import java.util.UUID;
 public class DataEaseClient {
 
     protected static RestTemplate restTemplate;
-    private String accessKey;
-    private String secretKey;
-    protected String endpoint;
-    protected String prefix = "/de2api/";
 
     static {
         restTemplate = new RestTemplate();
     }
+
+    protected String endpoint;
+    protected String prefix = "/de2api/";
+    private String accessKey;
+    private String secretKey;
 
     public DataEaseClient(ThirdConfigurationDTO thirdConfiguration) {
         this.accessKey = thirdConfiguration.getDeAccessKey();

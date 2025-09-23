@@ -18,14 +18,13 @@ import java.util.List;
 
 @Component
 public class NotifyOnJob {
+    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
     private AnnouncementService announcementService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
 
     @QuartzScheduled(cron = "0 0/5 * * * ?")
     public void onEvent() {

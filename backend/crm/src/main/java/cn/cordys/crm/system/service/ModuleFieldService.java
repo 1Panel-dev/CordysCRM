@@ -27,14 +27,6 @@ import java.util.Map;
 @Service
 public class ModuleFieldService {
 
-    @Resource
-    private BaseMapper<ModuleField> moduleFieldMapper;
-    @Resource
-    private DepartmentService departmentService;
-    @Resource
-    private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
-    @Resource
-    private CommonMapper commonMapper;
     /**
      * 表单表格映射
      */
@@ -49,6 +41,15 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.FOLLOW_RECORD.getKey(), "follow_up_record");
         FORM_TABLE.put(FormKey.FOLLOW_PLAN.getKey(), "follow_up_plan");
     }
+
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private DepartmentService departmentService;
+    @Resource
+    private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
+    @Resource
+    private CommonMapper commonMapper;
 
     /**
      * 获取不带用户的信息的部门树

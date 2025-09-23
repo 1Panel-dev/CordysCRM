@@ -22,12 +22,11 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class ProductLogService extends BaseModuleLogService {
 
+    private static final String PRODUCT_PICTURE = "productPic";
     @Resource
     private BaseMapper<ModuleField> moduleFieldBaseMapper;
     @Resource
     private BaseMapper<ModuleForm> moduleFormBaseMapper;
-
-    private static final String PRODUCT_PICTURE = "productPic";
 
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {

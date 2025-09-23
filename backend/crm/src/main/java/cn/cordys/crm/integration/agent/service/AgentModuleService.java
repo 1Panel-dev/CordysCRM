@@ -61,6 +61,15 @@ public class AgentModuleService extends MoveNodeService {
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
+    private static void buildIdNodeMap(List<BaseTreeNode> nodeList, Map<String, BaseTreeNode> idNodeMap) {
+        for (BaseTreeNode node : nodeList) {
+            idNodeMap.put(node.getId(), node);
+            if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                buildIdNodeMap(node.getChildren(), idNodeMap);
+            }
+        }
+    }
+
     public AgentModule checkAgentModule(String id) {
         AgentModule agentModule = agentModuleMapper.selectByPrimaryKey(id);
         if (agentModule == null) {
@@ -89,16 +98,6 @@ public class AgentModuleService extends MoveNodeService {
 
         return ids;
     }
-
-    private static void buildIdNodeMap(List<BaseTreeNode> nodeList, Map<String, BaseTreeNode> idNodeMap) {
-        for (BaseTreeNode node : nodeList) {
-            idNodeMap.put(node.getId(), node);
-            if (CollectionUtils.isNotEmpty(node.getChildren())) {
-                buildIdNodeMap(node.getChildren(), idNodeMap);
-            }
-        }
-    }
-
 
     /**
      * 添加文件夹

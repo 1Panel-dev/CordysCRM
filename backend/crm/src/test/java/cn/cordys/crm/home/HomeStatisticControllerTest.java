@@ -20,12 +20,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class HomeStatisticControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/home/statistic/";
-
     protected static final String OPPORTUNITY = "opportunity";
     protected static final String OPPORTUNITY_SUCCESS = "opportunity/success";
     protected static final String CLUE = "lead";
     protected static final String DEPARTMENT_TREE = "department/tree";
+    private static final String BASE_PATH = "/home/statistic/";
 
     @Override
     protected String getBasePath() {

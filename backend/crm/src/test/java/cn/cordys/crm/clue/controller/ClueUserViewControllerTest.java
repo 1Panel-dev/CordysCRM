@@ -23,20 +23,18 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClueUserViewControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/lead/view/";
-
     protected static final String DETAIL = "detail/{0}";
     protected static final String LIST = "list";
     protected static final String FIXED = "fixed/{0}";
     protected static final String POS = "edit/pos";
     protected static final String ENABLE = "enable/{0}";
+    private static final String BASE_PATH = "/lead/view/";
+    private static String viewId;
 
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-    private static String viewId;
 
     @Test
     @Order(1)

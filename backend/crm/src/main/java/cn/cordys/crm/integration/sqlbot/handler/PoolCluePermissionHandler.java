@@ -25,10 +25,6 @@ import java.util.Set;
 @Component
 public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
 
-    {
-        TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CLUE, this);
-    }
-
     public static final String POOL_CLUE_SCOPE_SQL_TEMPLATE = """
             select {0}
             from clue c
@@ -36,11 +32,14 @@ public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
             and in_shared_pool is true
             and pool_id in ({2})
             """;
-
     @Resource
     private BaseMapper<CluePool> poolMapper;
     @Resource
     private UserExtendService userExtendService;
+
+    {
+        TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CLUE, this);
+    }
 
     @Override
     public void handleTable(TableDTO table, TableHandleParam tableHandleParam) {

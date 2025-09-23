@@ -18,6 +18,10 @@ public abstract class AbstractSqlProviderSupport {
      * 用于缓存表信息结构，支持高效查询。
      */
     private static final Map<Class<?>, EntityTable> tableCache = new ConcurrentHashMap<>(256);
+    /**
+     * 当前表的元信息。
+     */
+    protected EntityTable table;
 
     /**
      * 生成 SQL 的抽象方法，由子类实现。
@@ -68,11 +72,6 @@ public abstract class AbstractSqlProviderSupport {
         }
         sql.append("</where>");
     }
-
-    /**
-     * 当前表的元信息。
-     */
-    protected EntityTable table;
 
     /**
      * 根据查询条件和上下文构建 SQL。

@@ -27,6 +27,11 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class NotificationService {
 
+    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
+    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
+    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
+    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
     @Resource
     private BaseMapper<Notification> notificationMapper;
     @Resource
@@ -40,13 +45,44 @@ public class NotificationService {
     @Resource
     private MessagePublisher messagePublisher;
 
+    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> optionDTOS) {
+        Map<String, Integer> countMap = new HashMap<>();
+        Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
+        resourceMap.forEach((k, v) -> {
+            if (k.contains(NotificationConstants.Module.CUSTOMER)) {
+                countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
+            } else if (k.contains(NotificationConstants.Module.CLUE)) {
+                countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
+            } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
+                countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
+            } else {
+                countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
+            }
+        });
+        countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
+        countMap.putIfAbsent(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
 
-    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+        countMap.forEach((k, v) -> {
+            OptionCountDTO optionDTO = new OptionCountDTO();
+            optionDTO.setKey(k);
+            optionDTO.setCount(v);
+            optionDTOS.add(optionDTO);
+        });
+    }
 
+    private static void buildParam(NotificationRequest notificationRequest, String userId) {
+        if (StringUtils.isNotBlank(notificationRequest.getSubject())) {
+            notificationRequest.setSubject("%" + notificationRequest.getSubject() + "%");
+        }
+        if (StringUtils.isNotBlank(notificationRequest.getResourceType())) {
+            notificationRequest.setResourceType("%" + notificationRequest.getResourceType() + "%");
+        }
+        if (StringUtils.isBlank(notificationRequest.getReceiver())) {
+            notificationRequest.setReceiver(userId);
+        }
+    }
 
     public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
         buildParam(notificationRequest, userId);
@@ -121,47 +157,6 @@ public class NotificationService {
         buildSourceCount(notifications, optionDTOS);
         return optionDTOS;
     }
-
-    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> optionDTOS) {
-        Map<String, Integer> countMap = new HashMap<>();
-        Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
-        resourceMap.forEach((k, v) -> {
-            if (k.contains(NotificationConstants.Module.CUSTOMER)) {
-                countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.CLUE)) {
-                countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
-                countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
-            } else {
-                countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
-            }
-        });
-        countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
-        countMap.putIfAbsent(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
-
-        countMap.forEach((k, v) -> {
-            OptionCountDTO optionDTO = new OptionCountDTO();
-            optionDTO.setKey(k);
-            optionDTO.setCount(v);
-            optionDTOS.add(optionDTO);
-        });
-    }
-
-
-    private static void buildParam(NotificationRequest notificationRequest, String userId) {
-        if (StringUtils.isNotBlank(notificationRequest.getSubject())) {
-            notificationRequest.setSubject("%" + notificationRequest.getSubject() + "%");
-        }
-        if (StringUtils.isNotBlank(notificationRequest.getResourceType())) {
-            notificationRequest.setResourceType("%" + notificationRequest.getResourceType() + "%");
-        }
-        if (StringUtils.isBlank(notificationRequest.getReceiver())) {
-            notificationRequest.setReceiver(userId);
-        }
-    }
-
 
     public Integer getUnRead(String organizationId, String userId) {
         if (StringUtils.isBlank(organizationId)) {

@@ -25,13 +25,20 @@ import java.util.Map;
  */
 public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler {
 
+    private final Map<String, Integer> fieldMap = new HashMap<>();
     private Sheet sheet;
     private Drawing<?> drawingPatriarch;
-    private final Map<String, Integer> fieldMap = new HashMap<>();
     private int totalColumns; // 记录总列数
 
     public UserTemplateWriteHandler(List<List<String>> headList) {
         initIndex(headList);
+    }
+
+    public static HorizontalCellStyleStrategy getHorizontalWrapStrategy() {
+        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+        // 设置自动换行
+        contentWriteCellStyle.setWrapped(true);
+        return new HorizontalCellStyleStrategy(null, contentWriteCellStyle);
     }
 
     private void initIndex(List<List<String>> headList) {
@@ -58,7 +65,6 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
                 2、上下级部门间用‘/’隔开，且从最上级部门开始，例如"XX公司/XX事业部/研发部\"""");
         sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, totalColumns - 1));
     }
-
 
     @Override
     public void afterRowDispose(RowWriteHandlerContext context) {
@@ -88,7 +94,6 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
 
     }
 
-
     private void setComment(Integer index, String text) {
         if (index == null) {
             return;
@@ -96,12 +101,5 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
         Comment comment = drawingPatriarch.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, index, 0, index + 3, 1));
         comment.setString(new XSSFRichTextString(text));
         sheet.getRow(0).getCell(0).setCellComment(comment);
-    }
-
-    public static HorizontalCellStyleStrategy getHorizontalWrapStrategy() {
-        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
-        // 设置自动换行
-        contentWriteCellStyle.setWrapped(true);
-        return new HorizontalCellStyleStrategy(null, contentWriteCellStyle);
     }
 }
