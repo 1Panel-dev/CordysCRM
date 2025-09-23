@@ -357,6 +357,7 @@
     (orgId) => {
       if (orgId) {
         appStore.initModuleConfig();
+        appStore.initNavTopConfig();
       }
     },
     { immediate: true }

@@ -3,18 +3,26 @@ import type { TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
-// 模块首页-导航模块列表
-export interface ModuleNavBaseInfoItem {
+export interface ModuleNavCommon {
   id?: string;
   createUser?: string;
   updateUser?: string;
   createTime?: number;
   updateTime?: number;
   organizationId?: string;
-  moduleKey: string; // 模块KEY
   enable: boolean;
-  pos?: number; // 自定义排序
-  disabled?: boolean; // 是否禁用
+  pos?: number;
+}
+
+// 模块首页-导航模块列表
+export interface ModuleNavBaseInfoItem extends ModuleNavCommon {
+  moduleKey: string;
+  disabled?: boolean;
+}
+
+// 顶部导航配置
+export interface ModuleNavTopItem extends ModuleNavCommon {
+  navigationKey: string;
 }
 
 export interface ModuleNavItem extends ModuleNavBaseInfoItem {

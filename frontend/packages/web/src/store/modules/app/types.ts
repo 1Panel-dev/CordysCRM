@@ -1,7 +1,7 @@
 import { UploadFileInfo } from 'naive-ui';
 
 import type { SystemVersion } from '@lib/shared/models/common';
-import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
+import type { ModuleNavBaseInfoItem, ModuleNavTopItem } from '@lib/shared/models/system/module';
 import type { MessageInfo } from '@lib/shared/models/user';
 
 import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -74,7 +74,7 @@ export interface AppState {
   menuIconStatus: Record<string, boolean>;
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
   versionInfo: SystemVersion; // 版本信息
-  navTopConfigList: ActionItem[];
+  navTopConfigList: ModuleNavTopItem[]; // 顶导配置
   winOrderConfig: Record<
     string,
     {

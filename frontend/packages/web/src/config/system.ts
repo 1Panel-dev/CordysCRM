@@ -71,13 +71,13 @@ export const defaultNavList: ActionItem[] = [
   },
   {
     label: t('settings.navbar.alerts'),
-    key: 'alerts',
+    key: 'notify',
     iconType: 'iconicon-alarmclock',
     slotName: 'alertsSlot',
   },
   {
     label: t('settings.help.versionInfo'),
-    key: 'versionInfo',
+    key: 'about',
     iconType: 'iconicon_info_circle',
     slotName: 'versionInfoSlot',
   },

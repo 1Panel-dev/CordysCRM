@@ -370,6 +370,8 @@ export const {
   resetSearchConfig,
   moduleSearchMaskConfig,
   getModuleSearchMaskConfig,
+  getModuleTopNavList,
+  setTopNavListSort,
 } = moduleApi;
 
 export const {

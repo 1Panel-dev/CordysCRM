@@ -14,6 +14,7 @@ import {
   getHomeMessageList,
   getKey,
   getModuleNavConfigList,
+  getModuleTopNavList,
   getPageConfig,
   getSystemVersion,
   getThirdConfigByType,
@@ -24,7 +25,7 @@ import useUserStore from '@/store/modules/user';
 import { watchStyle, watchTheme } from '@/utils/theme';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
-import type { ActionItem, AppState, PageConfig, PageConfigKeys, Style, Theme } from './types';
+import type { AppState, PageConfig, PageConfigKeys, Style, Theme } from './types';
 import type { RouteRecordRaw } from 'vue-router';
 
 const defaultThemeConfig = {
@@ -116,7 +117,7 @@ const useAppStore = defineStore('app', {
       copyright: '',
       hasNewVersion: false,
     },
-    navTopConfigList: cloneDeep(defaultNavList),
+    navTopConfigList: [],
     winOrderConfig: {},
   }),
   getters: {
@@ -150,33 +151,10 @@ const useAppStore = defineStore('app', {
       return state.restoreMenuTimeStamp;
     },
     getNavTopConfigList: (state: AppState) => {
-      const map = new Map(
-        defaultNavList
-          .filter((item) => {
-            if (item.key === 'agent') {
-              return state.moduleConfigList.some((module) => module.moduleKey === 'agent' && module.enable);
-            }
-            return true;
-          })
-          .map((item) => [item.key, item])
-      );
-      const result: ActionItem[] = [];
-      const navOrder = state.navTopConfigList.map((e) => e.key);
-
-      navOrder.forEach((key) => {
-        const item = map.get(key);
-        if (item) {
-          result.push(item);
-          map.delete(key);
-        }
+      const navMap = new Map(defaultNavList.map((n) => [n.key, n]));
+      return state.navTopConfigList.map((e) => {
+        return { ...navMap.get(e.navigationKey)! };
       });
-
-      defaultNavList.forEach((item) => {
-        if (map.has(item.key)) {
-          result.push(item);
-        }
-      });
-      return result;
     },
     getWinOrderStatus(state: AppState) {
       const userId = useUserStore().userInfo.id;
@@ -239,6 +217,15 @@ const useAppStore = defineStore('app', {
         // if (!useLicenseStore().hasLicense()) {
         //   this.moduleConfigList = this.moduleConfigList.filter((e) => e.moduleKey !== ModuleConfigEnum.DASHBOARD);
         // }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    },
+    // 初始化顶部导航栏
+    async initNavTopConfig() {
+      try {
+        this.navTopConfigList = await getModuleTopNavList();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -358,9 +345,6 @@ const useAppStore = defineStore('app', {
       // if (!licenseStore.hasLicense()) return;
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
       await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-    },
-    setNavTopOrder(navTopList: ActionItem[]) {
-      this.navTopConfigList = navTopList;
     },
 
     // 初始化页面配置

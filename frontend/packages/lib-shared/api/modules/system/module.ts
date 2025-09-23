@@ -28,6 +28,7 @@ import {
   GetFormDesignConfigUrl,
   GetModuleMaskSearchConfigUrl,
   getModuleNavConfigListUrl,
+  GetModuleTopNavListUrl,
   getOpportunityListUrl,
   GetReasonConfigUrl,
   GetReasonUrl,
@@ -44,6 +45,7 @@ import {
   ResetSearchConfigUrl,
   SaveFormDesignConfigUrl,
   SearchConfigUrl,
+  SetModuleTopNavSortUrl,
   SortReasonUrl,
   SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
@@ -74,6 +76,7 @@ import type {
   FormDesignConfigDetailParams,
   FormDesignDataSourceTableQueryParams,
   ModuleNavBaseInfoItem,
+  ModuleNavTopItem,
   ModuleSortParams,
   OpportunityItem,
   OpportunityParams,
@@ -101,6 +104,16 @@ export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块状态切换
   function toggleModuleNavStatus(id: string) {
     return CDR.get({ url: `${toggleModuleNavStatusUrl}/${id}` });
+  }
+
+  // 模块首页-顶导配置列表
+  function getModuleTopNavList() {
+    return CDR.get<ModuleNavTopItem[]>({ url: GetModuleTopNavListUrl });
+  }
+
+  // 模块首页-导航模块排序
+  function setTopNavListSort(data: ModuleSortParams) {
+    return CDR.post({ url: SetModuleTopNavSortUrl, data });
   }
 
   // 获取部门用户树
@@ -368,5 +381,7 @@ export default function useProductApi(CDR: CordysAxios) {
     resetSearchConfig,
     moduleSearchMaskConfig,
     getModuleSearchMaskConfig,
+    getModuleTopNavList,
+    setTopNavListSort,
   };
 }

@@ -74,3 +74,7 @@ export const ResetSearchConfigUrl = '/search/config/reset'; // 重置搜索字�
 // 搜索模糊设置
 export const ModuleMaskSearchConfigUrl = '/mask/config/save'; // 搜索设置脱敏设置
 export const GetModuleMaskSearchConfigUrl = '/mask/config/get'; // 获取搜索脱敏设置
+
+// 系统导航栏
+export const GetModuleTopNavListUrl = '/navigation/list'; // 获取顶导配置
+export const SetModuleTopNavSortUrl = '/navigation/sort'; // 顶导排序

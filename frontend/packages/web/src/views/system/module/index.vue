@@ -86,7 +86,7 @@
   import ConfigCard from './components/configCard.vue';
   import desensitizationModal from './components/desensitizationModal.vue';
 
-  import { moduleNavListSort } from '@/api/modules';
+  import { moduleNavListSort, setTopNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import { ActionItem } from '@/store/modules/app/types';
   import useLicenseStore from '@/store/modules/setting/license';
@@ -187,13 +187,38 @@
   }
 
   const navTopConfigList = ref<ActionItem[]>([]);
-  function onDragNavEnd() {
-    appStore.setNavTopOrder(navTopConfigList.value);
+  async function initNavTopList() {
+    try {
+      await appStore.initNavTopConfig();
+      navTopConfigList.value = appStore.getNavTopConfigList;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function onDragNavEnd(event: any) {
+    const { newIndex, oldIndex } = event;
+    const dragModuleKey = navTopConfigList.value[newIndex]?.key;
+    const dragModuleId = appStore.navTopConfigList.find((e) => e.navigationKey === dragModuleKey)?.id;
+    if (dragModuleId) {
+      try {
+        await setTopNavListSort({
+          dragModuleId,
+          end: newIndex + 1,
+          start: oldIndex + 1,
+        });
+        Message.success(t('common.operationSuccess'));
+        initNavTopList();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    }
   }
 
   onMounted(() => {
     enable.value = appStore.getMenuIconStatus;
-    navTopConfigList.value = appStore.getNavTopConfigList;
   });
 
   watch(
@@ -201,6 +226,7 @@
     (val) => {
       if (val) {
         initModuleNavList();
+        initNavTopList();
       }
     },
     {
