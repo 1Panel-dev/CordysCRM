@@ -90,6 +90,24 @@
                     </div>
                     <div class="flex items-center gap-[8px]">
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                        {{ t('system.license.productionVersion') }}
+                      </div>
+                      <div class="font-semibold">
+                        {{
+                          licenseVersionMap[licenseStore?.licenseInfo?.edition as keyof typeof licenseVersionMap] ?? '-'
+                        }}
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-[8px]">
+                      <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
+                        {{ t('system.license.LicenseAccountCount') }}
+                      </div>
+                      <div class="font-semibold">
+                        {{ licenseStore?.licenseInfo?.count ?? '-' }}
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-[8px]">
+                      <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.authorizationTime') }}
                       </div>
                       <div class="font-semibold">{{ licenseStore?.licenseInfo?.expired }}</div>
@@ -253,6 +271,12 @@
   function selectMoreActions() {
     window.open(appStore.pageConfig.helpDoc, '_blank');
   }
+
+  const licenseVersionMap: Record<string, string> = {
+    standard: t('system.license.LicenseStandard'),
+    enterprise: t('system.license.LicenseEnterprise'),
+    professional: t('system.license.LicenseProfessional'),
+  };
 
   onBeforeMount(() => {
     appStore.getVersion();

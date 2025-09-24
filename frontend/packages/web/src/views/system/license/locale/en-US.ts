@@ -24,4 +24,8 @@ export default {
     'System authorization has expired, if you need help, please contact the working staff',
   'system.license.LicenseExpirationError':
     'License Code check failed, please check!  If you need assistance, please contact the staff',
+  'system.license.LicenseStandard': 'Standard',
+  'system.license.LicenseEnterprise': 'Enterprise',
+  'system.license.LicenseProfessional': 'Professional',
+  'system.license.LicenseAccountCount': 'Account number',
 };
