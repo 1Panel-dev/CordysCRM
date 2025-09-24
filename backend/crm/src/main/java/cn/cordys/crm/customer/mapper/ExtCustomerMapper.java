@@ -85,4 +85,5 @@ public interface ExtCustomerMapper {
      */
     void updateIncludeNullById(@Param("customer") Customer customer);
 
+    void batchUpdate(@Param("ids") List<String> ids, @Param("customer") Customer customer);
 }

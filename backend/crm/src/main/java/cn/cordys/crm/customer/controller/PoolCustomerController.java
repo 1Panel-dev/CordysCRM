@@ -18,6 +18,7 @@ import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -105,6 +106,12 @@ public class PoolCustomerController {
         poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+	@PostMapping("/batch-update")
+	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
+	@Operation(summary = "批量更新客户")
+	public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+		poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
 
     @PostMapping("/export-all")
     @Operation(summary = "客户导出全部")

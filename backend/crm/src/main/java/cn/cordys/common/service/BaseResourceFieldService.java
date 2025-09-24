@@ -1,5 +1,7 @@
 package cn.cordys.common.service;
 
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
@@ -9,14 +11,14 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
-import cn.cordys.common.util.CaseFormatUtils;
-import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.PicService;
 import cn.cordys.mybatis.BaseMapper;
@@ -27,6 +29,7 @@ import org.apache.commons.collections.CollectionUtils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private SerialNumGenerator serialNumGenerator;
     @Resource
     private CommonMapper commonMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private LogService logService;
 
     public static boolean isNullOrEmpty(Object obj) {
         return obj == null || (obj instanceof String && ((String) obj).isEmpty());
@@ -123,7 +130,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         // 校验业务字段，字段值是否重复
-        businessFieldRepeatCheck(orgId, resource, update, allFields);
+        businessFieldRepeatCheck(orgId, resource, update ? List.of(resourceId) : List.of(), allFields);
 
         List<T> customerFields = new ArrayList<>();
         List<V> customerFieldBlobs = new ArrayList<>();
@@ -193,37 +200,199 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param orgId
      * @param resource
-     * @param update
+     * @param updateIds
      * @param allFields
      * @param <K>
      */
-    private <K> void businessFieldRepeatCheck(String orgId, K resource, boolean update, List<BaseField> allFields) {
+    private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, List<BaseField> allFields) {
         Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
 
         allFields.forEach(field -> {
-            if (businessModuleFieldMap.containsKey(field.getInternalKey()) && field.needRepeatCheck()) {
+            if (businessModuleFieldMap.containsKey(field.getInternalKey())) {
                 BusinessModuleField businessModuleField = businessModuleFieldMap.get(field.getInternalKey());
-                String fieldName = businessModuleField.getBusinessKey();
-                Class<?> clazz = resource.getClass();
-                String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
-
-                Object fieldValue = getResourceFieldValue(resource, fieldName);
-
-                if (!isNullOrEmpty(fieldValue)) {
-                    boolean repeat;
-                    if (update) {
-                        repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, resource);
-                    } else {
-                        repeat = commonMapper.checkAddExist(tableName, fieldName, fieldValue.toString(), orgId);
-                    }
-                    if (repeat) {
-                        throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-                    }
-                }
-
+                businessFieldRepeatCheck(orgId, resource, updateIds, field, businessModuleField);
             }
         });
+    }
+
+    private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, BusinessModuleField businessModuleField) {
+        if (!field.needRepeatCheck()) {
+            return;
+        }
+        String fieldName = businessModuleField.getBusinessKey();
+        Class<?> clazz = resource.getClass();
+        String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
+
+        Object fieldValue = getResourceFieldValue(resource, fieldName);
+
+        if (!isNullOrEmpty(fieldValue)) {
+            boolean repeat;
+            if (CollectionUtils.isNotEmpty(updateIds)) {
+                repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, updateIds);
+            } else {
+                repeat = commonMapper.checkAddExist(tableName, fieldName, fieldValue.toString(), orgId);
+            }
+            if (repeat) {
+                throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+            }
+        }
+    }
+
+    public <K> void batchUpdate(ResourceBatchEditRequest request,
+                             List<K> originResourceList,
+                             Class<K> clazz,
+                             String logModule,
+                             BiConsumer<List<String>, K> batchInsertFunc,
+                             String userId,
+                             String orgId) {
+        BusinessModuleField businessModuleField = getBusinessModuleField(request.getFieldId());
+
+        K resource = newInstance(clazz);
+
+        // 修改更新时间和用户
+        setResourceFieldValue(resource, "updateTime", System.currentTimeMillis());
+        setResourceFieldValue(resource, "updateUser", userId);
+
+        BaseField field;
+
+        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
+                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
+        if (businessModuleField != null) {
+           field = allFields.stream()
+                   .filter(f -> businessModuleField.getBusinessKey().equals(f.getBusinessKey()))
+                   .findFirst()
+                   .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
+        } else {
+            field = allFields.stream()
+                    .filter(f -> request.getFieldId().equals(f.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
+        }
+
+        if (field.needRepeatCheck() && request.getIds().size() > 1) {
+            // 如果字段唯一，则校验不能同时修改多条
+            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+        }
+
+        if (businessModuleField != null) {
+            setResourceFieldValue(resource, businessModuleField.getBusinessKey(), request.getFieldValue());
+            // 字段唯一性校验
+            businessFieldRepeatCheck(orgId, resource, request.getIds(), field, businessModuleField);
+            // 添加日志
+            addBusinessFieldBatchUpdateLog(originResourceList, request, logModule, userId, orgId);
+        } else {
+            if (field.needRepeatCheck()) {
+                // 字段唯一性校验
+                checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
+            }
+            // 获取字段解析器
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+            // 校验参数值
+            customFieldResolver.validate(field, request.getFieldValue());
+            // 将参数值转换成字符串入库
+            String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
+            request.setFieldValue(strValue);
+
+            // 查询修改前的字段，记录日志
+            List<? extends BaseResourceField> originFields;
+            if (field.isBlob()) {
+                originFields = getResourceFieldBlob(request.getIds(), request.getFieldId());
+            } else {
+                originFields = getResourceField(request.getIds(), request.getFieldId());
+            }
+
+            batchUpdate(request);
+
+            // 添加日志
+            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
+        }
+
+        // 批量修改业务字段和更新时间等
+        batchInsertFunc.accept(request.getIds(), resource);
+    }
+
+    private <K> K newInstance(Class<K> clazz) {
+        K resource;
+        try {
+            resource = clazz.getConstructor().newInstance();
+        } catch (Exception e) {
+            LogUtils.error(e);
+            throw new RuntimeException(e);
+        }
+        return resource;
+    }
+
+    /**
+     * 记录业务字段批量更新日志
+     * @param originResourceList
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param <K>
+     */
+    private <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
+                                                    ResourceBatchEditRequest request,
+                                                    String logModule,
+                                                    String userId,
+                                                    String orgId) {
+        // 记录日志
+        List<LogDTO> logs = originResourceList.stream()
+                .map(resource -> {
+                    Object originResource = newInstance(resource.getClass());
+                    setResourceFieldValue(originResource, request.getFieldId(), getResourceFieldValue(resource, request.getFieldId()));
+                    Object modifiedResource = newInstance(resource.getClass());
+                    setResourceFieldValue(modifiedResource, request.getFieldId(), request.getFieldValue());
+
+                    Object id = getResourceFieldValue(resource, "id");
+                    Object name = getResourceFieldValue(resource, "name");
+
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    logDTO.setOriginalValue(originResource);
+                    logDTO.setModifiedValue(modifiedResource);
+                    return logDTO;
+                }).toList();
+
+        logService.batchAdd(logs);
+    }
+
+    /**
+     * 记录自定义字段批量更新日志
+     * @param originResourceList
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param <K>
+     */
+    private <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
+                                                  List<? extends BaseResourceField> originFields,
+                                                  ResourceBatchEditRequest request,
+                                                  BaseField field,
+                                                  String logModule,
+                                                  String userId,
+                                                  String orgId) {
+        Map<String, ? extends BaseResourceField> fieldMap = originFields.stream()
+                .collect(Collectors.toMap(BaseResourceField::getResourceId, Function.identity()));
+        // 记录日志
+        List<LogDTO> logs = originResourceList.stream()
+                .map(resource -> {
+                    Object id = getResourceFieldValue(resource, "id");
+                    Object name = getResourceFieldValue(resource, "name");
+
+                    BaseResourceField baseResourceField = fieldMap.get(id);
+                    Map originResource = new HashMap();
+                    originResource.put(request.getFieldId(), baseResourceField == null ? null : baseResourceField.getFieldValue());
+
+                    Map modifiedResource = new HashMap();
+                    modifiedResource.put(request.getFieldId(), request.getFieldValue());
+
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    logDTO.setOriginalValue(originResource);
+                    logDTO.setModifiedValue(modifiedResource);
+                    return logDTO;
+                }).toList();
+
+        logService.batchAdd(logs);
     }
 
     private <K> Object getResourceFieldValue(K resource, String fieldName) {
@@ -233,6 +402,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         try {
             fieldValue = clazz.getMethod("get" + CaseFormatUtils.capitalizeFirstLetter(fieldName))
                     .invoke(resource);
+        } catch (Exception e) {
+            LogUtils.error(e);
+        }
+        return fieldValue;
+    }
+
+    private <K> Object setResourceFieldValue(K resource, String fieldName, Object value) {
+        Class<?> clazz = resource.getClass();
+        // 设置字段值
+        Object fieldValue = null;
+        try {
+            fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), value.getClass())
+                    .invoke(resource, value);
         } catch (Exception e) {
             LogUtils.error(e);
         }
@@ -335,9 +517,23 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return getResourceFieldMapper().selectListByLambda(wrapper);
     }
 
+    private List<T> getResourceField(List<String> resourceIds, String fieldId) {
+        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        wrapper.eq(BaseResourceField::getFieldId, fieldId);
+        return getResourceFieldMapper().selectListByLambda(wrapper);
+    }
+
     private List<V> getResourceFieldBlob(List<String> resourceIds) {
         LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        return getResourceFieldBlobMapper().selectListByLambda(wrapper);
+    }
+
+    private List<V> getResourceFieldBlob(List<String> resourceIds, String fieldId) {
+        LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        wrapper.eq(BaseResourceField::getFieldId, fieldId);
         return getResourceFieldBlobMapper().selectListByLambda(wrapper);
     }
 
@@ -490,5 +686,61 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         } catch (Exception e) {
             LogUtils.error("图片字段处理失败", e);
         }
+    }
+
+    /**
+     * 批量更新自定义字段
+     *
+     * @param request
+     */
+    public void batchUpdate(ResourceBatchEditRequest request) {
+        ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
+        if (moduleField == null) {
+            throw new GenericException(Translator.get("module.field.not_exist"));
+        }
+        if (BaseField.isBlob(moduleField.getType())) {
+            List<V> resourceFields = request.getIds().stream()
+                    .map(id -> {
+                        V resourceField = newResourceFieldBlob();
+                        resourceField.setId(IDGenerator.nextStr());
+                        resourceField.setResourceId(id);
+                        resourceField.setFieldId(request.getFieldId());
+                        resourceField.setFieldValue(request.getFieldValue());
+                        return resourceField;
+                    }).collect(Collectors.toList());
+            // 先删除
+            BaseMapper<V> resourceFieldMapper = getResourceFieldBlobMapper();
+            LambdaQueryWrapper<V> example = new LambdaQueryWrapper<>();
+            example.eq(BaseResourceField::getFieldId, request.getFieldId());
+            example.in(BaseResourceField::getResourceId, request.getIds());
+            resourceFieldMapper.deleteByLambda(example);
+            // 再添加
+            resourceFieldMapper.batchInsert(resourceFields);
+        } else {
+            List<T> resourceFields = request.getIds().stream()
+                    .map(id -> {
+                        T resourceField = newResourceField();
+                        resourceField.setId(IDGenerator.nextStr());
+                        resourceField.setResourceId(id);
+                        resourceField.setFieldId(request.getFieldId());
+                        resourceField.setFieldValue(request.getFieldValue());
+                        return resourceField;
+                    }).collect(Collectors.toList());
+            // 先删除
+            BaseMapper<T> resourceFieldMapper = getResourceFieldMapper();
+            LambdaQueryWrapper<T> example = new LambdaQueryWrapper<>();
+            example.eq(BaseResourceField::getFieldId, request.getFieldId());
+            example.in(BaseResourceField::getResourceId, request.getIds());
+            resourceFieldMapper.deleteByLambda(example);
+            // 再添加
+            resourceFieldMapper.batchInsert(resourceFields);
+        }
+    }
+
+    public BusinessModuleField getBusinessModuleField(String fieldId) {
+        return Arrays.stream(BusinessModuleField.values())
+                .filter(field -> field.getBusinessKey().equals(fieldId))
+                .findFirst()
+                .orElse(null);
     }
 }

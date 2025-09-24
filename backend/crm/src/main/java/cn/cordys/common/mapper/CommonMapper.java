@@ -14,7 +14,7 @@ public interface CommonMapper {
                              @Param("fieldName") String fieldName,
                              @Param("fieldValue") String fieldValue,
                              @Param("orgId") String orgId,
-                             @Param("resource") Object resource);
+                             @Param("excludeIds") List<String> excludeIds);
 
     /**
      * 获取表属性值集合

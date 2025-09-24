@@ -44,6 +44,7 @@ import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -716,5 +717,22 @@ public class CustomerService {
             LogUtils.error("customer import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
+    }
+
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BusinessModuleField businessModuleField = customerFieldService.getBusinessModuleField(request.getFieldId());
+
+        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+            // 修改负责人，走批量转移接口
+            CustomerBatchTransferRequest batchTransferRequest = new CustomerBatchTransferRequest();
+            batchTransferRequest.setIds(request.getIds());
+            batchTransferRequest.setOwner(request.getFieldValue().toString());
+            batchTransfer(batchTransferRequest, userId, organizationId);
+            return;
+        }
+
+        List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+
+        customerFieldService.batchUpdate(request, originCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId);
     }
 }

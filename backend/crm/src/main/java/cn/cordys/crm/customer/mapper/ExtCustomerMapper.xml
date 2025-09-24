@@ -567,4 +567,22 @@
                 collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}
         where id = #{customer.id}
     </update>
+
+    <update id="batchUpdate">
+        UPDATE customer
+        <set>
+            <if test="customer.owner != null">
+                owner = #{customer.owner},
+            </if>
+            <if test="customer.name != null">
+                name = #{customer.name},
+            </if>
+            update_time = #{customer.updateTime},
+            update_user = #{customer.updateUser}
+        </set>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

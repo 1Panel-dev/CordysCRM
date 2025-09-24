@@ -312,7 +312,10 @@
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
         select count(1)
         from `${tableName}`
-        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId} and id != #{resource.id}
+        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId} and id not in
+        <foreach collection="excludeIds" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
         <if test="tableName == 'clue'">
             and (transition_type != 'CUSTOMER' or transition_type is null)
         </if>
