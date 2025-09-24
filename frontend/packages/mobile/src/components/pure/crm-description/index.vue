@@ -10,14 +10,14 @@
               <slot :name="item.valueSlotName" :item="item">
                 <template v-if="item.isImage">
                   <div v-if="(item.value as string[])?.length === 0">-</div>
-                  <van-image
-                    v-for="img of item.value"
-                    v-else
-                    :key="img"
-                    width="40"
-                    height="40"
-                    :src="`${PreviewPictureUrl}/${img}`"
-                    @click="
+                  <template v-else>
+                    <van-image
+                      v-for="img of item.value"
+                      :key="img as string"
+                      width="40"
+                      height="40"
+                      :src="`${PreviewPictureUrl}/${img}`"
+                      @click="
                   () => {
                     showImagePreview({
                       images: (item.value as string[]).map((img) => `${PreviewPictureUrl}/${img}`),
@@ -26,10 +26,14 @@
                     });
                   }
                 "
-                  />
+                    />
+                  </template>
                 </template>
-                <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
-                <div v-else>{{ getDisplayValue(item.value) }}</div>
+                <div v-else-if="item.isAttachment" class="text-[var(--primary-8)]" @click="handleAttachmentClick(item)">
+                  {{ t('crm.description.attachment', { count: (item.value as any[])?.length }) }}
+                </div>
+                <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value as any || ''" />
+                <div v-else>{{ getDisplayValue(item.value as string) }}</div>
               </slot>
             </div>
           </template>
@@ -37,25 +41,31 @@
       </div>
     </div>
   </van-cell-group>
+  <CrmFileListPop v-model:show="showFileListPop" :file-list="activeFileList" />
 </template>
 
 <script setup lang="ts">
   import { showImagePreview } from 'vant';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmFileListPop from '@/components/business/crm-file-list-pop/index.vue';
 
   export interface CrmDescriptionItem {
     label: string;
-    value?: string | number | (string | number)[];
+    value?: string | number | (string | number)[] | Record<string, any>[];
     isTag?: boolean;
     isImage?: boolean;
     isTitle?: boolean;
     slotName?: string;
     valueSlotName?: string;
+    isAttachment?: boolean;
     [key: string]: any;
   }
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     description: CrmDescriptionItem[];
@@ -66,6 +76,13 @@
     if (typeof val === 'string' || Array.isArray(val)) return val.length > 0 ? val : '-';
     return '-';
   };
+
+  const showFileListPop = ref(true);
+  const activeFileList = ref<Record<string, any>[]>([]);
+  function handleAttachmentClick(item: CrmDescriptionItem) {
+    activeFileList.value = item.value as Record<string, any>[];
+    showFileListPop.value = true;
+  }
 </script>
 
 <style lang="less" scoped>

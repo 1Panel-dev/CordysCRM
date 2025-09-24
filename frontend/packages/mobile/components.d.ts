@@ -12,6 +12,7 @@ declare module 'vue' {
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];
     CrmDatasource: typeof import('./src/components/business/crm-datasource/index.vue')['default'];
     CrmDescription: typeof import('./src/components/pure/crm-description/index.vue')['default'];
+    CrmFileListPop: typeof import('./src/components/business/crm-file-list-pop/index.vue')['default'];
     CrmFormCreate: typeof import('./src/components/business/crm-form-create/index.vue')['default'];
     CrmHeaderList: typeof import('./src/components/business/crm-header-list/index.vue')['default'];
     CrmIconFont: typeof import('./src/components/pure/crm-icon-font/index.vue')['default'];
@@ -29,10 +30,12 @@ declare module 'vue' {
     DatePicker: typeof import('./src/components/business/crm-form-create/components/basic/datePicker.vue')['default'];
     Detail: typeof import('./src/components/business/crm-contact-list/detail.vue')['default'];
     Divider: typeof import('./src/components/business/crm-form-create/components/basic/divider.vue')['default'];
+    File: typeof import('./src/components/business/crm-form-create/components/advanced/file.vue')['default'];
     FollowDetail: typeof import('./src/components/business/crm-follow-list/followDetail.vue')['default'];
     FollowPlan: typeof import('./src/components/business/crm-follow-list/followPlan.vue')['default'];
     FollowRecord: typeof import('./src/components/business/crm-follow-list/followRecord.vue')['default'];
     InputNumber: typeof import('./src/components/business/crm-form-create/components/basic/inputNumber.vue')['default'];
+    Link: typeof import('./src/components/business/crm-form-create/components/advanced/link.vue')['default'];
     ListItem: typeof import('./src/components/business/crm-follow-list/components/listItem.vue')['default'];
     Location: typeof import('./src/components/business/crm-form-create/components/advanced/location.vue')['default'];
     MemberSelect: typeof import('./src/components/business/crm-form-create/components/basic/memberSelect.vue')['default'];

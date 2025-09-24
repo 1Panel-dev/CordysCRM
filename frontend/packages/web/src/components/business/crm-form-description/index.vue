@@ -182,25 +182,6 @@
     await initFormDetail(true);
     emit('init', collaborationType.value, sourceName.value, detail.value);
     isInit.value = true;
-    showFileListModal.value = true;
-    activeFileList.value = [
-      {
-        id: 'xxx',
-        name: 'ggb.zip',
-        type: '.zip',
-        url: 'https://sjdhsa.com/ggb.zip',
-        createText: 'xxx cdjhhs 2010-2-2 18:12:23',
-        size: '345KB',
-      },
-      {
-        id: 'xxxqw',
-        name: 'ggb.png',
-        type: '.png',
-        url: 'https://sjdhsa.com/ggb.png',
-        createText: 'xxx cdjhhs 2010-2-2 18:12:23',
-        size: '345KB',
-      },
-    ];
   });
 
   defineExpose({

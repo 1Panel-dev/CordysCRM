@@ -198,6 +198,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: field?.fieldValue || [],
               isImage: true,
             });
+          } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || [],
+              isAttachment: true,
+            });
           } else {
             let value = field?.fieldValue || '';
             if (field && options) {
