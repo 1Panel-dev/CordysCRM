@@ -52,6 +52,7 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -982,5 +983,22 @@ public class ClueService {
             LogUtils.error("clue import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
+    }
+
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BusinessModuleField businessModuleField = clueFieldService.getBusinessModuleField(request.getFieldId());
+
+        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+            // 修改负责人，走批量转移接口
+            ClueBatchTransferRequest batchTransferRequest = new ClueBatchTransferRequest();
+            batchTransferRequest.setIds(request.getIds());
+            batchTransferRequest.setOwner(request.getFieldValue().toString());
+            batchTransfer(batchTransferRequest, userId, organizationId);
+            return;
+        }
+
+        List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
+
+        clueFieldService.batchUpdate(request, originCustomers, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
     }
 }

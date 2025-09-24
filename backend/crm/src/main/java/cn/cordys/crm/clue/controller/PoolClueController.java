@@ -17,6 +17,7 @@ import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.clue.service.PoolClueService;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -96,6 +97,13 @@ public class PoolClueController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
         poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping("/batch-update")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE)
+    @Operation(summary = "批量更新线索")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+        poolClueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-delete")

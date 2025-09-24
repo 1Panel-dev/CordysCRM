@@ -22,6 +22,7 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -122,6 +123,14 @@ public class ClueController {
     public void batchTransfer(@RequestBody ClueBatchTransferRequest request) {
         clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量更新线索")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+        clueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 
     @PostMapping("/batch/delete")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)

@@ -172,6 +172,9 @@
             "id": "CUSTOMER_MANAGEMENT_POOL:READ"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT_POOL:UPDATE"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT_POOL:PICK",
             "name": "permission.customer_management.pool.pick"
           },
@@ -251,6 +254,9 @@
         "permissions": [
           {
             "id": "CLUE_MANAGEMENT_POOL:READ"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:UPDATE"
           },
           {
             "id": "CLUE_MANAGEMENT_POOL:PICK",

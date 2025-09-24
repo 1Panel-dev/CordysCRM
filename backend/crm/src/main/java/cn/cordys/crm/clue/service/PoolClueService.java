@@ -5,6 +5,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
@@ -20,12 +21,14 @@ import cn.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import cn.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
+import cn.cordys.crm.customer.service.CustomerFieldService;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.RuleConditionDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -75,6 +78,8 @@ public class PoolClueService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private CluePoolService cluePoolService;
+    @Resource
+    private CustomerFieldService customerFieldService;
 
     /**
      * 获取当前用户线索池选项
@@ -366,5 +371,22 @@ public class PoolClueService {
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_DISTRIBUTED,
                     clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
         }
+    }
+
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BusinessModuleField businessModuleField = customerFieldService.getBusinessModuleField(request.getFieldId());
+
+        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+            // 修改负责人，走批量分配的接口
+            PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
+            batchAssignRequest.setBatchIds(request.getIds());
+            batchAssignRequest.setAssignUserId(request.getFieldValue().toString());
+            batchAssign(batchAssignRequest, batchAssignRequest.getAssignUserId(), organizationId, userId);
+            return;
+        }
+
+        List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
+
+        customerFieldService.batchUpdate(request, originCustomers, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
     }
 }

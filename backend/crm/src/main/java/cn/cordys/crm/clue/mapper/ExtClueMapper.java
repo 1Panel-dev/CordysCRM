@@ -110,4 +110,6 @@ public interface ExtClueMapper {
      * @return bool
      */
     boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);
+
+    void batchUpdate(@Param("ids") List<String> ids, @Param("clue") Clue clue);
 }
