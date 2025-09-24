@@ -110,7 +110,10 @@
   });
 
   function updateValue() {
-    const fullNumber = !areaCode.value.length ? phoneNumber.value : `(${areaCode.value})${phoneNumber.value}`;
+    const fullNumber =
+      !areaCode.value.length || !phoneNumber.value.length
+        ? phoneNumber.value
+        : `(${areaCode.value})${phoneNumber.value}`;
     emit('change', fullNumber);
     value.value = fullNumber;
   }

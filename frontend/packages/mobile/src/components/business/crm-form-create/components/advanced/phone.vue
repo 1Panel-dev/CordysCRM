@@ -58,7 +58,7 @@
   const phoneNumber = ref('');
 
   function updateValue(area: string, phone: string) {
-    const fullNumber = !area.length ? phone : `(${area})${phone}`;
+    const fullNumber = !area.length || !phone.length ? phone : `(${area})${phone}`;
     emit('change', fullNumber);
     value.value = fullNumber;
   }
