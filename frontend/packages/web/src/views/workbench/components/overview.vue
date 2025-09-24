@@ -223,7 +223,7 @@
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
       status: 'SUCCESS',
       hasPermission: hasOptPermission.value,
-      unit: t('workbench.dataOverview.countUnit'),
+      unit: t('workbench.dataOverview.winUnit'),
     },
     successOpportunityAmount: {
       title: t('workbench.dataOverview.winAmount'),

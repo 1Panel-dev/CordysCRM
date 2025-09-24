@@ -17,6 +17,8 @@
       <n-form-item path="originPassword" :label="t('system.personal.currentPassword')">
         <n-input
           v-model:value="form.originPassword"
+          type="password"
+          show-password-on="click"
           :placeholder="t('login.form.password.placeholder')"
           @keydown.enter.prevent
         />
