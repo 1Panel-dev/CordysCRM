@@ -23,7 +23,7 @@
     "@vicons/ionicons5": "^0.13.0",
     "@wecom/jssdk": "^2.2.5",
     "jsencrypt": "^3.3.2",
-    "naive-ui": "^2.40.4",
+    "naive-ui": "^2.43.1",
     "nprogress": "^0.2.0",
     "seemly": "^0.3.9",
     "sortablejs": "^1.15.6",

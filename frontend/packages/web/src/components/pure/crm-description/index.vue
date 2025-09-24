@@ -64,7 +64,7 @@
     key?: string;
     slotName?: string;
     valueSlotName?: string;
-    value: string | string[];
+    value: string | string[] | Record<string, any>;
     class?: string;
     tooltipPosition?:
       | 'top-start'

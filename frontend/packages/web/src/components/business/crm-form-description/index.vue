@@ -57,19 +57,27 @@
           />
         </div>
       </template>
+      <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
+        <n-button type="primary" text @click="openFileListModal(item)">
+          {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
+        </n-button>
+      </template>
     </CrmDescription>
   </n-spin>
+  <CrmFileListModal v-model:show="showFileListModal" :files="activeFileList" />
 </template>
 
 <script setup lang="ts">
-  import { NImage, NImageGroup, NSpace, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NImage, NImageGroup, NSpace, NSpin, NTooltip } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
-  import CrmDescription from '@/components/pure/crm-description/index.vue';
+  import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import dateTime from '../crm-form-create/components/basic/dateTime.vue';
 
@@ -87,6 +95,8 @@
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
+
+  const { t } = useI18n();
 
   const needInitDetail = computed(() => props.formKey === FormDesignKeyEnum.BUSINESS); // TODO:商机需要编辑日期
   const {
@@ -152,6 +162,13 @@
     }
   }
 
+  const showFileListModal = ref(false);
+  const activeFileList = ref<Record<string, any>[]>([]);
+  function openFileListModal(item: Description) {
+    showFileListModal.value = true;
+    activeFileList.value = (item.value as Record<string, any>[]) || [];
+  }
+
   watch(
     () => props.refreshKey,
     async () => {
@@ -165,6 +182,25 @@
     await initFormDetail(true);
     emit('init', collaborationType.value, sourceName.value, detail.value);
     isInit.value = true;
+    showFileListModal.value = true;
+    activeFileList.value = [
+      {
+        id: 'xxx',
+        name: 'ggb.zip',
+        type: '.zip',
+        url: 'https://sjdhsa.com/ggb.zip',
+        createText: 'xxx cdjhhs 2010-2-2 18:12:23',
+        size: '345KB',
+      },
+      {
+        id: 'xxxqw',
+        name: 'ggb.png',
+        type: '.png',
+        url: 'https://sjdhsa.com/ggb.png',
+        createText: 'xxx cdjhhs 2010-2-2 18:12:23',
+        size: '345KB',
+      },
+    ];
   });
 
   defineExpose({

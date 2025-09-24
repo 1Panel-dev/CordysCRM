@@ -7,4 +7,6 @@ export default {
   'crmFormCreate.basic.tagInputRepeatTip': '已存在相同的标签，请检查',
   'crmFormCreate.repeatTip': '与 {name} 的重复',
   'crmFormCreate.repeatTipWithoutName': '系统中存在重复值',
+  'crmFormCreate.advanced.anyType': '任意格式',
+  'crmFormCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
 };

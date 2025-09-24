@@ -7,4 +7,6 @@ export default {
   'crmFormCreate.basic.tagInputRepeatTip': 'The same tag already exists, please check',
   'crmFormCreate.repeatTip': 'Duplicate with {name}',
   'crmFormCreate.repeatTipWithoutName': 'There are duplicate values in the system',
+  'crmFormCreate.advanced.anyType': 'any format',
+  'crmFormCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
 };

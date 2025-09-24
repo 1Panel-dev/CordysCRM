@@ -154,4 +154,12 @@ export default {
   'crmFormDesign.openMode': '打开方式',
   'crmFormDesign.openInCurrent': '当前窗口',
   'crmFormDesign.openInNew': '新窗口',
+  'crmFormDesign.fileUploadConfig': '附件配置',
+  'crmFormDesign.onlyOneFile': '仅允许上传单个文件',
+  'crmFormDesign.acceptFileType': '限制文件格式',
+  'crmFormDesign.limitSize': '限制单个文件大小',
+  'crmFormDesign.file': '附件',
+  'crmFormDesign.acceptFileTypePlaceholder': '输入文件后缀，英文逗号分隔',
+  'crmFormDesign.acceptFileTypeTip': '例如：.jpg,.png,.pdf',
+  'crmFormDesign.onlyFull': '仅支持整行宽度',
 };

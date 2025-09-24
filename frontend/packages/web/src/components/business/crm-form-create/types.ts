@@ -107,6 +107,10 @@ export interface FormCreateField {
   serialNumberRules?: (string | number)[]; // 流水号规则
   // 字段联动属性
   linkProp?: FieldLinkProp;
+  // 附件属性
+  onlyOne?: boolean; // 是否只允许上传一个文件
+  accept?: string; // 附件类型
+  limitSize?: string; // 附件大小限制
   // 前端渲染属性
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules

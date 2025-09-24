@@ -124,7 +124,7 @@
   });
 
   const emit = defineEmits<{
-    (e: 'confirm'): void;
+    (e: 'confirm', close: () => void): void;
     (e: 'cancel'): void;
   }>();
 
@@ -150,7 +150,9 @@
   }
 
   function handlePositiveClick() {
-    emit('confirm');
+    emit('confirm', () => {
+      show.value = false;
+    });
   }
 
   const okButtonProps = computed(() => {

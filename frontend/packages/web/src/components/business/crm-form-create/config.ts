@@ -352,6 +352,24 @@ export const pictureDefaultFieldConfig: FormCreateField = {
   uploadSizeLimitEnable: false,
 };
 
+export const fileDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.ATTACHMENT,
+  icon: 'iconicon_attach',
+  name: 'crmFormDesign.file',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  defaultValue: [],
+  readable: true,
+  editable: true,
+  mobile: true,
+  rules: [],
+  onlyOne: false,
+  accept: '',
+  limitSize: '',
+};
+
 export const locationDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.LOCATION,
@@ -485,6 +503,7 @@ export const advancedFields: FormCreateField[] = [
   dataSourceMultipleDefaultFieldConfig,
   serialNumberDefaultFieldConfig,
   linkDefaultFieldConfig,
+  fileDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -529,6 +548,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.SERIAL_NUMBER]: [],
   [FieldTypeEnum.LINK]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.ATTACHMENT]: [FieldRuleEnum.REQUIRED],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

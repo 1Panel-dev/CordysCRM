@@ -404,6 +404,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               fieldInfo: item,
               tooltipPosition: 'top-end',
             });
+          } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+              slotName: FieldTypeEnum.ATTACHMENT,
+              fieldInfo: item,
+              tooltipPosition: 'top-end',
+            });
           } else {
             descriptions.value.push({
               label: item.name,

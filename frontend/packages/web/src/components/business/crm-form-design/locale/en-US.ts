@@ -156,4 +156,12 @@ export default {
   'crmFormDesign.openMode': 'Open Mode',
   'crmFormDesign.openInCurrent': 'Current Window',
   'crmFormDesign.openInNew': 'New Window',
+  'crmFormDesign.fileUploadConfig': 'File Upload Configuration',
+  'crmFormDesign.onlyOneFile': 'Only one file is allowed to upload',
+  'crmFormDesign.acceptFileType': 'Limit file format',
+  'crmFormDesign.limitSize': 'Limit single file size',
+  'crmFormDesign.file': 'File',
+  'crmFormDesign.acceptFileTypePlaceholder': 'Enter file extensions, separated by commas',
+  'crmFormDesign.acceptFileTypeTip': 'For example: .jpg,.png,.pdf',
+  'crmFormDesign.onlyFull': 'Only full-width is supported',
 };

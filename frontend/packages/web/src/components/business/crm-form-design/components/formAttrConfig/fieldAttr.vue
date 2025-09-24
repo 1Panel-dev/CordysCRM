@@ -43,6 +43,7 @@
             FieldTypeEnum.PHONE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.ATTACHMENT,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -577,6 +578,7 @@
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.LINK,
+            FieldTypeEnum.ATTACHMENT,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -683,6 +685,82 @@
         />
       </div>
       <!-- 默认值 End -->
+      <!-- 附件 Start -->
+      <div v-if="fieldConfig.type === FieldTypeEnum.ATTACHMENT" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.fileUploadConfig') }}
+        </div>
+        <n-checkbox
+          v-model:checked="fieldConfig.onlyOne"
+          :disabled="fieldConfig.disabledProps?.includes('onlyOne')"
+          @update-checked="
+            ($event) => {
+              if ($event === false) {
+                fieldConfig.onlyOne = false;
+              }
+            }
+          "
+        >
+          {{ t('crmFormDesign.onlyOneFile') }}
+        </n-checkbox>
+        <n-checkbox
+          v-model:checked="currentFieldHasAccept"
+          :disabled="fieldConfig.disabledProps?.includes('accept')"
+          @update-checked="
+            ($event) => {
+              if (!$event) {
+                fieldConfig.accept = '';
+              }
+            }
+          "
+        >
+          {{ t('crmFormDesign.acceptFileType') }}
+        </n-checkbox>
+        <template v-if="currentFieldHasAccept">
+          <n-input
+            v-model:value="fieldConfig.accept"
+            type="textarea"
+            :placeholder="t('crmFormDesign.acceptFileTypePlaceholder')"
+            :autosize="{
+              minRows: 2,
+            }"
+            resizable
+            clearable
+          ></n-input>
+          <div class="text-[12px] text-[var(--text-n4)]">{{ t('crmFormDesign.acceptFileTypeTip') }}</div>
+        </template>
+        <n-checkbox
+          v-model:checked="currentFieldHasLimitSize"
+          :disabled="fieldConfig.disabledProps?.includes('limitSize')"
+          @update-checked="
+            ($event) => {
+              if ($event === false) {
+                fieldConfig.limitSize = '';
+              }
+            }
+          "
+        >
+          {{ t('crmFormDesign.limitSize') }}
+        </n-checkbox>
+        <n-input-group v-if="currentFieldHasLimitSize">
+          <n-input-number v-model:value="currentFieldLimitSize" :show-button="false" />
+          <n-select
+            v-model:value="currentFieldLimitSizeUnit"
+            :options="[
+              {
+                label: 'KB',
+                value: 'KB',
+              },
+              {
+                label: 'MB',
+                value: 'MB',
+              },
+            ]"
+            class="w-[70px]"
+          />
+        </n-input-group>
+      </div>
+      <!-- 附件 End -->
       <!-- 校验规则 -->
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
@@ -758,21 +836,28 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}
         </div>
-        <n-radio-group
-          v-model:value="fieldConfig.fieldWidth"
-          name="radiogroup"
-          class="flex"
-          :disabled="fieldConfig.disabledProps?.includes('fieldWidth')"
-        >
-          <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
-          <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
-          <n-radio-button :value="1 / 2" class="!px-[8px]"> 1/2 </n-radio-button>
-          <n-radio-button :value="2 / 3" class="!px-[8px]"> 2/3 </n-radio-button>
-          <n-radio-button :value="3 / 4" class="!px-[8px]"> 3/4 </n-radio-button>
-          <n-radio-button :value="1" class="!px-[8px]">
-            {{ t('crmFormDesign.wholeLine') }}
-          </n-radio-button>
-        </n-radio-group>
+        <n-tooltip :disabled="fieldConfig.type !== FieldTypeEnum.ATTACHMENT">
+          <template #trigger>
+            <n-radio-group
+              v-model:value="fieldConfig.fieldWidth"
+              name="radiogroup"
+              class="flex"
+              :disabled="
+                fieldConfig.disabledProps?.includes('fieldWidth') || fieldConfig.type === FieldTypeEnum.ATTACHMENT
+              "
+            >
+              <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
+              <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
+              <n-radio-button :value="1 / 2" class="!px-[8px]"> 1/2 </n-radio-button>
+              <n-radio-button :value="2 / 3" class="!px-[8px]"> 2/3 </n-radio-button>
+              <n-radio-button :value="3 / 4" class="!px-[8px]"> 3/4 </n-radio-button>
+              <n-radio-button :value="1" class="!px-[8px]">
+                {{ t('crmFormDesign.wholeLine') }}
+              </n-radio-button>
+            </n-radio-group>
+          </template>
+          {{ t('crmFormDesign.onlyFull') }}
+        </n-tooltip>
       </div>
     </div>
     <div v-else class="flex justify-center py-[44px] text-[var(--text-n4)]">
@@ -844,6 +929,7 @@
     NCheckboxGroup,
     NDatePicker,
     NInput,
+    NInputGroup,
     NInputNumber,
     NPopover,
     NRadioButton,
@@ -1148,6 +1234,32 @@
   const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'YYMM');
   const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '-');
   const serialNumberRules5 = ref(Number(fieldConfig.value?.serialNumberRules?.[4] || 6));
+
+  const currentFieldHasAccept = ref(!!fieldConfig.value?.accept);
+  const currentFieldHasLimitSize = ref(!!fieldConfig.value?.limitSize);
+  const currentFieldLimitSize = ref(parseInt(fieldConfig.value?.limitSize || '', 10) || null);
+  const currentFieldLimitSizeUnit = ref(fieldConfig.value?.limitSize?.slice(-2) || 'KB');
+
+  watch(
+    () => [currentFieldLimitSize.value, currentFieldLimitSizeUnit.value],
+    () => {
+      if (currentFieldHasLimitSize.value && currentFieldLimitSize.value) {
+        fieldConfig.value.limitSize = `${currentFieldLimitSize.value}${currentFieldLimitSizeUnit.value}`;
+      } else {
+        fieldConfig.value.limitSize = '';
+      }
+    }
+  );
+
+  watch(
+    () => fieldConfig.value?.id,
+    () => {
+      currentFieldHasAccept.value = !!fieldConfig.value?.accept;
+      currentFieldHasLimitSize.value = !!fieldConfig.value?.limitSize;
+      currentFieldLimitSize.value = parseInt(fieldConfig.value?.limitSize || '', 10) || null;
+      currentFieldLimitSizeUnit.value = fieldConfig.value?.limitSize?.slice(-2) || 'KB';
+    }
+  );
 </script>
 
 <style lang="less" scoped>

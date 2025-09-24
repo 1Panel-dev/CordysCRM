@@ -13,7 +13,7 @@
           <div
             v-if="item.show !== false && item.readable"
             class="crm-form-create-item"
-            :style="{ width: `${item.fieldWidth * 100}%` }"
+            :style="{ width: item.type === FieldTypeEnum.ATTACHMENT ? '100%' : `${item.fieldWidth * 100}%` }"
           >
             <component
               :is="getItemComponent(item.type)"
@@ -165,6 +165,9 @@
     }
     if (type === FieldTypeEnum.LINK) {
       return CrmFormCreateComponents.advancedComponents.link;
+    }
+    if (type === FieldTypeEnum.ATTACHMENT) {
+      return CrmFormCreateComponents.advancedComponents.file;
     }
   }
 

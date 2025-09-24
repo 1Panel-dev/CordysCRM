@@ -52,6 +52,7 @@ export enum FieldTypeEnum {
   DATA_SOURCE_MULTIPLE = 'DATA_SOURCE_MULTIPLE',
   SERIAL_NUMBER = 'SERIAL_NUMBER', // 流水号
   LINK = 'LINK', // 链接
+  ATTACHMENT = 'ATTACHMENT',
 }
 
 export enum FieldRuleEnum {
