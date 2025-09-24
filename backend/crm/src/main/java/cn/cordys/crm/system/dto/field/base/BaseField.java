@@ -35,7 +35,8 @@ import java.util.Set;
         @JsonSubTypes.Type(value = PhoneField.class, name = "PHONE"),
         @JsonSubTypes.Type(value = DatasourceField.class, name = "DATA_SOURCE"),
         @JsonSubTypes.Type(value = DatasourceMultipleField.class, name = "DATA_SOURCE_MULTIPLE"),
-        @JsonSubTypes.Type(value = SerialNumberField.class, name = "SERIAL_NUMBER")
+        @JsonSubTypes.Type(value = SerialNumberField.class, name = "SERIAL_NUMBER"),
+        @JsonSubTypes.Type(value = AttachmentField.class, name = "ATTACHMENT"),
 })
 public abstract class BaseField {
 
@@ -100,8 +101,8 @@ public abstract class BaseField {
 	}
 
     @JsonIgnore
-    public boolean isPic() {
-        return Strings.CS.equals(type, FieldType.PICTURE.name());
+    public boolean isAttachment() {
+        return Strings.CS.equalsAny(type, FieldType.PICTURE.name(), FieldType.ATTACHMENT.name());
     }
 
     @JsonIgnore

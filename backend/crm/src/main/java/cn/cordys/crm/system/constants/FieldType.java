@@ -84,4 +84,8 @@ public enum FieldType {
      * 流水号
      */
     SERIAL_NUMBER,
+    /**
+     * 附件
+     */
+    ATTACHMENT
 }

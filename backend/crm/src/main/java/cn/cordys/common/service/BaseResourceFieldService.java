@@ -18,9 +18,9 @@ import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.PicService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -153,8 +153,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         return;
                     }
 
-                    if (field.isPic()) {
-                        preProcessWithPic(orgId, resourceId, userId, fieldValue.getFieldValue());
+                    if (field.isAttachment()) {
+                        preProcessTempAttachment(orgId, resourceId, userId, fieldValue.getFieldValue());
                     }
 
                     if (field.needRepeatCheck()) {
@@ -667,24 +667,24 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * 图片类型字段的前置处理
+     * 处理临时附件
      */
-    private void preProcessWithPic(String orgId, String resourceId, String userId, Object processValue) {
+    @SuppressWarnings("unchecked")
+    private void preProcessTempAttachment(String orgId, String resourceId, String userId, Object processValue) {
         try {
-            // 图片类型前置处理
             List<String> tmpPicIds = new ArrayList<>();
             if (processValue instanceof String) {
                 tmpPicIds.add(processValue.toString());
             } else if (processValue instanceof List) {
                 tmpPicIds.addAll((List<String>) processValue);
             }
-            PicService picService = CommonBeanFactory.getBean(PicService.class);
+            AttachmentService attachmentService = CommonBeanFactory.getBean(AttachmentService.class);
             UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
-            if (picService != null) {
-                picService.processTemp(transferRequest);
+            if (attachmentService != null) {
+                attachmentService.processTemp(transferRequest);
             }
         } catch (Exception e) {
-            LogUtils.error("图片字段处理失败", e);
+            LogUtils.error("临时附件处理失败: {}", e.getMessage());
         }
     }
 

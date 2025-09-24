@@ -101,4 +101,28 @@ public final class DefaultRepositoryDir {
     public static Path getFullExportPath(String orgId) {
         return Paths.get(DEFAULT_DIR, orgId, EXPORT_DIR);
     }
+
+    /**
+     * 获取临时文件目录
+     *
+     * @param tempFileId 临时文件ID
+     *
+     * @return 临时文件目录
+     */
+    public static String getTempFileDir(String tempFileId) {
+        return DefaultRepositoryDir.getTmpDir() + "/" + tempFileId;
+    }
+
+    /**
+     * 获取转存文件目录
+     *
+     * @param organizationId 组织ID
+     * @param resourceId     资源ID
+     * @param fileId         文件ID
+     *
+     * @return 转存文件目录
+     */
+    public static String getTransferFileDir(String organizationId, String resourceId, String fileId) {
+        return "/" + organizationId + DefaultRepositoryDir.getPicDir() + "/" + resourceId + "/" + fileId;
+    }
 }
