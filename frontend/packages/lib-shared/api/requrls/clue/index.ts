@@ -52,6 +52,7 @@ export const ClueTransitionCustomerUrl = '/lead/transition/account'; // 转为�
 export const GetAdvancedCluePoolListUrl = '/advanced/search/lead-pool'; // 全局搜索分页查询线索池线索
 export const ExportCluePoolAllUrl = '/pool/lead/export-all'; // 导出全部线索池线索
 export const ExportCluePoolSelectedUrl = '/pool/lead/export-select'; // 导出选中线索池线索
+export const BatchUpdateCluePoolUrl = '/pool/lead/batch-update'; // 批量更新线索池线索
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/lead/follow/record/pool/page'; // 获取跟进记录列表

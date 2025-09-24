@@ -160,6 +160,7 @@ export const {
   getGlobalCluePoolList,
   getGlobalSearchClueList,
   transformClue,
+  batchUpdateCluePool,
 } = clueApi;
 
 export const {
@@ -260,6 +261,7 @@ export const {
   preCheckImportContact,
   downloadContactTemplate,
   importContact,
+  batchUpdateOpenSeaCustomer,
 } = customerApi;
 
 export const {

@@ -86,6 +86,7 @@ import {
   IsCustomerOpenSeaNoPickUrl,
   MoveToCustomerUrl,
   PickOpenSeaCustomerUrl,
+  PoolAccountBatchUpdateUrl,
   PreCheckAccountImportUrl,
   PreCheckContactImportUrl,
   SaveCustomerRelationUrl,
@@ -115,6 +116,7 @@ import type {
   BatchAssignOpenSeaCustomerParams,
   BatchMoveToPublicPoolParams,
   BatchOperationOpenSeaCustomerParams,
+  BatchUpdatePoolAccountParams,
   CollaborationItem,
   CustomerContractListItem,
   CustomerContractTableParams,
@@ -204,6 +206,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 批量移入公海
   function moveCustomerToPool(data: MoveToPublicPoolParams) {
     return CDR.post({ url: MoveToCustomerUrl, data });
+  }
+
+  // 批量更新公海客户
+  function batchUpdateOpenSeaCustomer(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: PoolAccountBatchUpdateUrl, data });
   }
 
   // 添加客户跟进记录
@@ -761,5 +768,6 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportContact,
     downloadContactTemplate,
     importContact,
+    batchUpdateOpenSeaCustomer,
   };
 }

@@ -11,6 +11,7 @@ import {
   BatchPickClueUrl,
   BatchToPoolClueUrl,
   BatchTransferClueUrl,
+  BatchUpdateCluePoolUrl,
   CancelClueFollowPlanUrl,
   ClueTransitionCustomerUrl,
   DeleteClueFollowPlanUrl,
@@ -82,6 +83,7 @@ import type {
 } from '@lib/shared/models/common';
 import type {
   BatchMoveToPublicPoolParams,
+  BatchUpdatePoolAccountParams,
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
@@ -265,6 +267,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 批量分配线索池线索
   function batchAssignClue(data: BatchAssignClueParams) {
     return CDR.post({ url: BatchAssignClueUrl, data });
+  }
+
+  // 批量更新线索池线索
+  function batchUpdateCluePool(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateCluePoolUrl, data });
   }
 
   // 分配线索池线索
@@ -451,5 +458,6 @@ export default function useProductApi(CDR: CordysAxios) {
     exportCluePoolAll,
     exportCluePoolSelected,
     transformClue,
+    batchUpdateCluePool,
   };
 }

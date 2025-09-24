@@ -348,3 +348,9 @@ export interface BatchMoveToPublicPoolParams {
 export interface PoolTableExportParams extends TableExportParams {
   poolId?: string;
 }
+
+export interface BatchUpdatePoolAccountParams {
+  ids: string[];
+  fieldId: string;
+  fieldValue: string;
+}
