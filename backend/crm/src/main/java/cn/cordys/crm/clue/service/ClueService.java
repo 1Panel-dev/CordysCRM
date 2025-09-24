@@ -46,6 +46,7 @@ import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -282,7 +283,6 @@ public class ClueService {
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, clueFields);
-
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(clueGetResponse,
                 ClueGetResponse::getOwner, ClueGetResponse::getOwnerName);
@@ -338,6 +338,9 @@ public class ClueService {
         if (StringUtils.isNotBlank(clueGetResponse.getReasonId())) {
             clueGetResponse.setReasonName(dictMap.get(clueGetResponse.getReasonId()));
         }
+
+        // 附件信息
+        clueGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerFormConfig, clueFields));
 
         return clueGetResponse;
     }

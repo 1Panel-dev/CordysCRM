@@ -217,6 +217,8 @@ public class CustomerContactService {
         customerContactGetResponse.setOptionMap(optionMap);
         customerContactGetResponse.setModuleFields(customerContactFields);
 
+        // 附件信息
+        customerContactGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerContactFormConfig, customerContactFields));
         return customerContactGetResponse;
     }
 

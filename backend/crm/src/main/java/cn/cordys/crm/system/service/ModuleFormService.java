@@ -20,10 +20,7 @@ import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
-import cn.cordys.crm.system.domain.ModuleField;
-import cn.cordys.crm.system.domain.ModuleFieldBlob;
-import cn.cordys.crm.system.domain.ModuleForm;
-import cn.cordys.crm.system.domain.ModuleFormBlob;
+import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.TransformSourceApplyDTO;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.*;
@@ -83,6 +80,8 @@ public class ModuleFormService {
     private UserExtendService userExtendService;
     @Resource
     private DepartmentService departmentService;
+    @Resource
+    private BaseMapper<Attachment> attachmentMapper;
 
     /**
      * 获取模块表单配置
@@ -336,6 +335,45 @@ public class ModuleFormService {
             }
         });
         return optionMap;
+    }
+
+    public Map<String, List<Attachment>> getAttachmentMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
+        List<String> attachmentFieldIds = formConfig.getFields().stream().filter(field -> Strings.CS.equalsAny(field.getType(), FieldType.ATTACHMENT.name())).map(BaseField::getId).toList();
+        if (CollectionUtils.isEmpty(attachmentFieldIds)) {
+            return null;
+        }
+        Map<String, List<String>> fieldAttachmentIds = new HashMap<>(attachmentFieldIds.size());
+        allDataFields.stream().filter(field -> attachmentFieldIds.contains(field.getFieldId()) && field.getFieldValue() != null).forEach(field -> {
+            Object fieldValue = field.getFieldValue();
+            List<String> attachmentIds = new ArrayList<>();
+            if (fieldValue instanceof List) {
+                attachmentIds.addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
+            } else {
+                attachmentIds.add(fieldValue.toString());
+            }
+            fieldAttachmentIds.put(field.getFieldId(), attachmentIds);
+        });
+
+        List<String> attachmentIds = fieldAttachmentIds.values().stream().flatMap(List::stream).distinct().toList();
+        if (CollectionUtils.isEmpty(attachmentIds)) {
+            return null;
+        }
+        List<Attachment> attachments = attachmentMapper.selectByIds(attachmentIds);
+        Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
+        Map<String, List<Attachment>> attachmentMapResult = new HashMap<>(fieldAttachmentIds.size());
+        for (Map.Entry<String, List<String>> entry : fieldAttachmentIds.entrySet()) {
+            if (CollectionUtils.isEmpty(entry.getValue())) {
+                continue;
+            }
+            List<Attachment> fieldAttachments = new ArrayList<>();
+            entry.getValue().forEach(attachmentId -> {
+                if (attachmentMap.containsKey(attachmentId)) {
+                    fieldAttachments.add(attachmentMap.get(attachmentId));
+                }
+            });
+            attachmentMapResult.put(entry.getKey(), fieldAttachments);
+        }
+        return attachmentMapResult;
     }
 
     public List<String> resolveSourceNames(String type, List<String> nameList) {

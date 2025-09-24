@@ -326,6 +326,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         response.setOptionMap(optionMap);
 
+        // 附件信息
+        response.setAttachmentMap(moduleFormService.getAttachmentMap(customerFormConfig, moduleFieldValues));
         return response;
     }
 

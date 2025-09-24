@@ -342,6 +342,9 @@ public class CustomerService {
             customerGetResponse.setReasonName(reasonName);
         }
 
+        // 附件信息
+        customerGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerFormConfig, customerFields));
+
         return customerGetResponse;
     }
 

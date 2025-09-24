@@ -137,6 +137,8 @@ public class ProductService {
         ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), product.getOrganizationId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(productFormConfig, productFields);
         productGetResponse.setOptionMap(optionMap);
+        // 附件信息
+        productGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(productFormConfig, productFields));
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 

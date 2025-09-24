@@ -488,6 +488,9 @@ public class OpportunityService {
 
         response.setOptionMap(optionMap);
 
+        // 附件信息
+        response.setAttachmentMap(moduleFormService.getAttachmentMap(customerFormConfig, fieldValueList));
+
         return response;
     }
 
