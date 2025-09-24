@@ -492,6 +492,8 @@ export const linkDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   mobile: true,
+  openMode: 'openInNew',
+  linkSource: 'userInput',
   rules: [],
 };
 

@@ -542,7 +542,6 @@
             v-model:value="fieldConfig.linkSource"
             :disabled="fieldConfig.disabledProps?.includes('linkSource')"
             :options="linkSourceOptions"
-            default-value="userInput"
           />
         </div>
         <div class="crm-form-design-config-item">
@@ -552,7 +551,6 @@
             :disabled="fieldConfig.disabledProps?.includes('openMode')"
             name="radiogroup"
             class="flex"
-            default-value="openInNew"
           >
             <n-radio-button value="openInNew" class="flex-1 text-center">
               {{ t('crmFormDesign.openInNew') }}

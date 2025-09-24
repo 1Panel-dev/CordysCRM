@@ -155,7 +155,7 @@
 
   // 打开链接
   function openLink(item: any) {
-    if (item.openMode === 'openInCurrent') {
+    if (item.fieldInfo.openMode === 'openInCurrent') {
       window.location.href = item.value;
     } else {
       window.open(item.value, '_blank');

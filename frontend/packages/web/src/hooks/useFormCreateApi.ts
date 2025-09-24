@@ -451,6 +451,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               fieldInfo: item,
               tooltipPosition: 'top-end',
             });
+          } else if (item.type === FieldTypeEnum.LINK) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || '',
+              slotName: FieldTypeEnum.LINK,
+              fieldInfo: item,
+              tooltipPosition: 'top-end',
+            });
           } else {
             let value = field?.fieldValue || '';
             if (field && options) {
