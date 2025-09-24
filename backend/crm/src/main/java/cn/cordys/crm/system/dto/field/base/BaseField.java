@@ -37,6 +37,7 @@ import java.util.Set;
         @JsonSubTypes.Type(value = DatasourceMultipleField.class, name = "DATA_SOURCE_MULTIPLE"),
         @JsonSubTypes.Type(value = SerialNumberField.class, name = "SERIAL_NUMBER"),
         @JsonSubTypes.Type(value = AttachmentField.class, name = "ATTACHMENT"),
+        @JsonSubTypes.Type(value = LinkField.class, name = "LINK"),
 })
 public abstract class BaseField {
 
