@@ -34,6 +34,11 @@ public class SSOController {
         return ssoService.exchangeDingTalkCode(code);
     }
 
+    @GetMapping("/oauth/ding-talk")
+    public SessionUser callbackDingTalkOauth(@RequestParam("code") String code) {
+        return ssoService.exchangeDingTalkOauth2(code);
+    }
+
     @GetMapping("/oauth/github")
     public ModelAndView callbackOauth(@RequestParam("code") String code) {
         SessionUser sessionUser = ssoService.exchangeGitOauth2(code);

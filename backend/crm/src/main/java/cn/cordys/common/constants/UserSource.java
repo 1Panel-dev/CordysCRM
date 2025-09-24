@@ -41,5 +41,10 @@ public enum UserSource {
     /**
      * 二维码用户来源，表示用户通过扫描二维码登录。
      */
-    QR_CODE
+    QR_CODE,
+
+    /**
+     * OAUTH2 用户来源，表示用户通过 钉钉OAUTH2 授权框架认证。
+     */
+    DING_TALK_OAUTH2
 }

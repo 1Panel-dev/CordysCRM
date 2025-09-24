@@ -177,8 +177,10 @@ public class SSOService {
         // 查找并验证用户
         UserDTO enableUser = getUserAndValidateEnable(dingTalkUser.getUnionId());
 
-        // 更新用户信息
-        updateDingTalkUserInfo(enableUser, dingTalkUser);
+        // 只有OAuth2登录时才更新用户信息
+        if (Strings.CI.equals(authenticateType, UserSource.DING_TALK_OAUTH2.toString())) {
+            updateDingTalkUserInfo(enableUser, dingTalkUser);
+        }
 
         // 创建登录请求并登录
         LoginRequest loginRequest = createThirdPartyLoginRequest(
@@ -364,5 +366,21 @@ public class SSOService {
         if (!config.getQrcodeEnable()) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_DISABLE));
         }
+    }
+
+    public SessionUser exchangeDingTalkOauth2(String code) {
+        validateCode(code);
+
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.DING_TALK_OAUTH2.toString());
+        String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
+        ThirdConfigurationDTO dingTalkConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
+
+        if (dingTalkConfig == null) {
+            throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
+        }
+
+        return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DING_TALK_OAUTH2.toString());
+
+
     }
 }
