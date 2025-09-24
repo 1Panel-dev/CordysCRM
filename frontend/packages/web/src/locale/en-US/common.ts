@@ -320,4 +320,5 @@ export default {
   'common.hasConvertToRecord': 'Have record',
   'common.notAllowForwardSlash': 'Not allowed to enter /',
   'common.conversionSuccessful': 'Conversion successful',
+  'common.updateField': 'Field',
 };

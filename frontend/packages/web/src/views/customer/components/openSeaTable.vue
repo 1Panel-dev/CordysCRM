@@ -82,6 +82,13 @@
     type="openSea"
     @create-success="handleExportCreateSuccess"
   />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -105,6 +112,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
@@ -198,6 +206,11 @@
         label: t('common.batchDistribute'),
         key: 'batchDistribute',
         permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
+      },
+      {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:UPDATE'],
       },
       {
         label: t('common.batchDelete'),
@@ -394,6 +407,11 @@
     checkedRowKeys.value = [];
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'batchClaim':
@@ -404,6 +422,9 @@
         break;
       case 'batchDelete':
         handleBatchDelete();
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'exportChecked':
         isExportAll.value = false;
@@ -443,7 +464,7 @@
     handleSearchData,
   });
 
-  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     containerClass: `.crm-open-sea-table-${props.formKey}`,
     operationColumn: props.readonly
@@ -563,6 +584,11 @@
 
   async function init() {
     await initOpenSeaOptions();
+    searchData();
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
     searchData();
   }
 

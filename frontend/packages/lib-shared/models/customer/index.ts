@@ -350,7 +350,7 @@ export interface PoolTableExportParams extends TableExportParams {
 }
 
 export interface BatchUpdatePoolAccountParams {
-  ids: string[];
-  fieldId: string;
-  fieldValue: string;
+  ids: (string | number)[];
+  fieldId: string | null;
+  fieldValue: any;
 }

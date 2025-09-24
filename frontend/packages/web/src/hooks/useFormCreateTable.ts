@@ -61,6 +61,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const loading = ref(false);
   const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];
+  const fieldList = ref<FormCreateField[]>([]);
   const columnsSorter = showPagination ? true : 'default';
   const tableKeyMap = {
     [FormDesignKeyEnum.CUSTOMER]: TableKeyEnum.CUSTOMER,
@@ -590,6 +591,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       const sorter = noPaginationKey.includes(props.formKey) ? 'default' : true;
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
+      fieldList.value = res.fields;
       columns = res.fields
         .filter(
           (e) =>
@@ -952,5 +954,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     useTableRes,
     customFieldsFilterConfig,
     reasonOptions,
+    fieldList,
   };
 }

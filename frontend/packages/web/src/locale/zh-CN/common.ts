@@ -320,4 +320,5 @@ export default {
   'common.hasConvertToRecord': '已转记录',
   'common.notAllowForwardSlash': '不允许输入/',
   'common.conversionSuccessful': '转换成功',
+  'common.updateField': '编辑字段',
 };

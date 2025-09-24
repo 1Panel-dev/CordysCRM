@@ -92,6 +92,13 @@
     type="cluePool"
     @create-success="handleExportCreateSuccess"
   />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CLUE_POOL"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -116,6 +123,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -219,6 +227,11 @@
         label: t('common.batchDistribute'),
         key: 'batchDistribute',
         permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
+      },
+      {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+        permission: ['CLUE_MANAGEMENT_POOL:UPDATE'],
       },
       {
         label: t('common.batchDelete'),
@@ -382,6 +395,11 @@
     checkedRowKeys.value = [];
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'batchClaim':
@@ -392,6 +410,9 @@
         break;
       case 'batchDelete':
         handleBatchDelete();
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'exportChecked':
         isExportAll.value = false;
@@ -427,7 +448,7 @@
     handleAdvanceFilter,
     handleSearchData,
   });
-  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     containerClass: `.crm-clue-pool-table-${props.formKey}`,
     operationColumn: props.readonly
