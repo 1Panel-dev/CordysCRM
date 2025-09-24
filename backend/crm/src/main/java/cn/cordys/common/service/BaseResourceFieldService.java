@@ -20,11 +20,13 @@ import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -49,6 +51,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     public static boolean isNullOrEmpty(Object obj) {
         return obj == null || (obj instanceof String && ((String) obj).isEmpty());
@@ -98,7 +102,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源和模块字段的 map
      *
      * @param resourceId
-     *
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
@@ -211,16 +214,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         allFields.forEach(field -> {
             if (businessModuleFieldMap.containsKey(field.getInternalKey())) {
                 BusinessModuleField businessModuleField = businessModuleFieldMap.get(field.getInternalKey());
-                businessFieldRepeatCheck(orgId, resource, updateIds, field, businessModuleField);
+                businessFieldRepeatCheck(orgId, resource, updateIds, field, businessModuleField.getBusinessKey());
             }
         });
     }
 
-    private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, BusinessModuleField businessModuleField) {
+    private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, String fieldName) {
         if (!field.needRepeatCheck()) {
             return;
         }
-        String fieldName = businessModuleField.getBusinessKey();
         Class<?> clazz = resource.getClass();
         String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
 
@@ -240,13 +242,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     public <K> void batchUpdate(ResourceBatchEditRequest request,
-                             List<K> originResourceList,
-                             Class<K> clazz,
-                             String logModule,
-                             BiConsumer<List<String>, K> batchInsertFunc,
-                             String userId,
-                             String orgId) {
-        BusinessModuleField businessModuleField = getBusinessModuleField(request.getFieldId());
+                                BaseField field,
+                                List<K> originResourceList,
+                                Class<K> clazz,
+                                String logModule,
+                                BiConsumer<List<String>, K> batchInsertFunc,
+                                String userId,
+                                String orgId) {
 
         K resource = newInstance(clazz);
 
@@ -254,34 +256,23 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         setResourceFieldValue(resource, "updateTime", System.currentTimeMillis());
         setResourceFieldValue(resource, "updateUser", userId);
 
-        BaseField field;
-
-        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
-                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
-        if (businessModuleField != null) {
-           field = allFields.stream()
-                   .filter(f -> businessModuleField.getBusinessKey().equals(f.getBusinessKey()))
-                   .findFirst()
-                   .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
-        } else {
-            field = allFields.stream()
-                    .filter(f -> request.getFieldId().equals(f.getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
-        }
-
         if (field.needRepeatCheck() && request.getIds().size() > 1) {
             // 如果字段唯一，则校验不能同时修改多条
             throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
         }
 
-        if (businessModuleField != null) {
-            setResourceFieldValue(resource, businessModuleField.getBusinessKey(), request.getFieldValue());
+        if (StringUtils.isNotBlank(field.getBusinessKey())) {
+            setResourceFieldValue(resource, field.getBusinessKey(), request.getFieldValue());
             // 字段唯一性校验
-            businessFieldRepeatCheck(orgId, resource, request.getIds(), field, businessModuleField);
+            businessFieldRepeatCheck(orgId, resource, request.getIds(), field, field.getBusinessKey());
             // 添加日志
-            addBusinessFieldBatchUpdateLog(originResourceList, request, logModule, userId, orgId);
+            addBusinessFieldBatchUpdateLog(originResourceList, field, request, logModule, userId, orgId);
         } else {
+            ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
+
+            // 先删除
+            batchDeleteFieldValues(request, moduleField);
+
             if (field.needRepeatCheck()) {
                 // 字段唯一性校验
                 checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
@@ -302,14 +293,24 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 originFields = getResourceField(request.getIds(), request.getFieldId());
             }
 
-            batchUpdate(request);
+            // 再插入
+            batchUpdateFieldValues(request, moduleField);
 
             // 添加日志
-            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
+            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, logModule, userId, orgId);
         }
 
         // 批量修改业务字段和更新时间等
         batchInsertFunc.accept(request.getIds(), resource);
+    }
+
+    public BaseField getAndCheckField(String fieldId, String organizationId) {
+        return moduleFormCacheService.getConfig(getFormKey(), organizationId)
+                .getFields()
+                .stream()
+                .filter(f -> fieldId.equals(f.getId()))
+                .findFirst()
+                .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
     }
 
     private <K> K newInstance(Class<K> clazz) {
@@ -325,6 +326,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 记录业务字段批量更新日志
+     *
      * @param originResourceList
      * @param request
      * @param userId
@@ -332,6 +334,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param <K>
      */
     private <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
+                                                    BaseField field,
                                                     ResourceBatchEditRequest request,
                                                     String logModule,
                                                     String userId,
@@ -340,9 +343,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<LogDTO> logs = originResourceList.stream()
                 .map(resource -> {
                     Object originResource = newInstance(resource.getClass());
-                    setResourceFieldValue(originResource, request.getFieldId(), getResourceFieldValue(resource, request.getFieldId()));
+                    setResourceFieldValue(originResource, field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
                     Object modifiedResource = newInstance(resource.getClass());
-                    setResourceFieldValue(modifiedResource, request.getFieldId(), request.getFieldValue());
+                    setResourceFieldValue(modifiedResource, field.getBusinessKey(), request.getFieldValue());
 
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
@@ -358,6 +361,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 记录自定义字段批量更新日志
+     *
      * @param originResourceList
      * @param request
      * @param userId
@@ -367,7 +371,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
                                                   List<? extends BaseResourceField> originFields,
                                                   ResourceBatchEditRequest request,
-                                                  BaseField field,
                                                   String logModule,
                                                   String userId,
                                                   String orgId) {
@@ -413,8 +416,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         // 设置字段值
         Object fieldValue = null;
         try {
-            fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), value.getClass())
-                    .invoke(resource, value);
+            if (value != null) {
+                fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), value.getClass())
+                        .invoke(resource, value);
+            }
         } catch (Exception e) {
             LogUtils.error(e);
         }
@@ -443,7 +448,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 查询指定资源的模块字段值
      *
      * @param resourceIds
-     *
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds) {
@@ -454,7 +458,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 查询指定资源的模块字段值
      *
      * @param resourceIds
-     *
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
@@ -689,12 +692,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * 批量更新自定义字段
+     * 批量更新自定义字段值
      *
      * @param request
      */
-    public void batchUpdate(ResourceBatchEditRequest request) {
-        ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
+    public void batchUpdateFieldValues(ResourceBatchEditRequest request, ModuleField moduleField) {
         if (moduleField == null) {
             throw new GenericException(Translator.get("module.field.not_exist"));
         }
@@ -708,14 +710,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setFieldValue(request.getFieldValue());
                         return resourceField;
                     }).collect(Collectors.toList());
-            // 先删除
-            BaseMapper<V> resourceFieldMapper = getResourceFieldBlobMapper();
-            LambdaQueryWrapper<V> example = new LambdaQueryWrapper<>();
-            example.eq(BaseResourceField::getFieldId, request.getFieldId());
-            example.in(BaseResourceField::getResourceId, request.getIds());
-            resourceFieldMapper.deleteByLambda(example);
-            // 再添加
-            resourceFieldMapper.batchInsert(resourceFields);
+            getResourceFieldBlobMapper().batchInsert(resourceFields);
         } else {
             List<T> resourceFields = request.getIds().stream()
                     .map(id -> {
@@ -726,21 +721,31 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setFieldValue(request.getFieldValue());
                         return resourceField;
                     }).collect(Collectors.toList());
-            // 先删除
-            BaseMapper<T> resourceFieldMapper = getResourceFieldMapper();
-            LambdaQueryWrapper<T> example = new LambdaQueryWrapper<>();
-            example.eq(BaseResourceField::getFieldId, request.getFieldId());
-            example.in(BaseResourceField::getResourceId, request.getIds());
-            resourceFieldMapper.deleteByLambda(example);
-            // 再添加
-            resourceFieldMapper.batchInsert(resourceFields);
+            getResourceFieldMapper().batchInsert(resourceFields);
         }
     }
 
-    public BusinessModuleField getBusinessModuleField(String fieldId) {
-        return Arrays.stream(BusinessModuleField.values())
-                .filter(field -> field.getBusinessKey().equals(fieldId))
-                .findFirst()
-                .orElse(null);
+    /**
+     * 批量删除自定义字段值
+     *
+     * @param request
+     */
+    public void batchDeleteFieldValues(ResourceBatchEditRequest request, ModuleField moduleField) {
+        if (moduleField == null) {
+            throw new GenericException(Translator.get("module.field.not_exist"));
+        }
+        if (BaseField.isBlob(moduleField.getType())) {
+            // 先删除
+            LambdaQueryWrapper<V> example = new LambdaQueryWrapper<>();
+            example.eq(BaseResourceField::getFieldId, request.getFieldId());
+            example.in(BaseResourceField::getResourceId, request.getIds());
+            getResourceFieldBlobMapper().deleteByLambda(example);
+        } else {
+            // 先删除
+            LambdaQueryWrapper<T> example = new LambdaQueryWrapper<>();
+            example.eq(BaseResourceField::getFieldId, request.getFieldId());
+            example.in(BaseResourceField::getResourceId, request.getIds());
+            getResourceFieldMapper().deleteByLambda(example);
+        }
     }
 }

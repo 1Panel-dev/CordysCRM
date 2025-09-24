@@ -21,7 +21,6 @@ import cn.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import cn.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
-import cn.cordys.crm.customer.service.CustomerFieldService;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.RuleConditionDTO;
@@ -79,7 +78,7 @@ public class PoolClueService {
     @Resource
     private CluePoolService cluePoolService;
     @Resource
-    private CustomerFieldService customerFieldService;
+    private ClueFieldService clueFieldService;
 
     /**
      * 获取当前用户线索池选项
@@ -374,9 +373,9 @@ public class PoolClueService {
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
-        BusinessModuleField businessModuleField = customerFieldService.getBusinessModuleField(request.getFieldId());
+        BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
 
-        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
             // 修改负责人，走批量分配的接口
             PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
             batchAssignRequest.setBatchIds(request.getIds());
@@ -387,6 +386,6 @@ public class PoolClueService {
 
         List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
 
-        customerFieldService.batchUpdate(request, originCustomers, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        clueFieldService.batchUpdate(request, field, originCustomers, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
     }
 }

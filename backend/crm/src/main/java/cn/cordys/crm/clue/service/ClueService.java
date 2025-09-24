@@ -989,9 +989,8 @@ public class ClueService {
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
-        BusinessModuleField businessModuleField = clueFieldService.getBusinessModuleField(request.getFieldId());
-
-        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+        BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
             // 修改负责人，走批量转移接口
             ClueBatchTransferRequest batchTransferRequest = new ClueBatchTransferRequest();
             batchTransferRequest.setIds(request.getIds());
@@ -1002,6 +1001,6 @@ public class ClueService {
 
         List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
 
-        clueFieldService.batchUpdate(request, originCustomers, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        clueFieldService.batchUpdate(request, field, originCustomers, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
     }
 }

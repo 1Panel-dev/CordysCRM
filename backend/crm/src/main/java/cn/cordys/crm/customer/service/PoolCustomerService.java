@@ -417,9 +417,9 @@ public class PoolCustomerService {
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
-        BusinessModuleField businessModuleField = customerFieldService.getBusinessModuleField(request.getFieldId());
+        BaseField field = customerFieldService.getAndCheckField(request.getFieldId(), organizationId);
 
-        if (businessModuleField == BusinessModuleField.CUSTOMER_OWNER) {
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
             // 修改负责人，走批量分配的接口
             PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
             batchAssignRequest.setBatchIds(request.getIds());
@@ -430,6 +430,6 @@ public class PoolCustomerService {
 
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
 
-        customerFieldService.batchUpdate(request, originCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
+        customerFieldService.batchUpdate(request, field, originCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
     }
 }
