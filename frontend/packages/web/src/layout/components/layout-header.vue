@@ -273,9 +273,9 @@
   }
 
   const licenseVersionMap: Record<string, string> = {
-    standard: t('system.license.LicenseStandard'),
-    enterprise: t('system.license.LicenseEnterprise'),
-    professional: t('system.license.LicenseProfessional'),
+    Standard: t('system.license.LicenseStandard'),
+    Enterprise: t('system.license.LicenseEnterprise'),
+    Professional: t('system.license.LicenseProfessional'),
   };
 
   onBeforeMount(() => {
