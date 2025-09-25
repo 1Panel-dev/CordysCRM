@@ -22,7 +22,7 @@
             {
               required: true,
               message: t('common.notNull', { value: t('agent.agentName') }),
-              trigger: 'blur',
+              trigger: 'input',
             },
           ],
           agentModuleId: [

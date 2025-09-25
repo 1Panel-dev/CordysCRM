@@ -252,11 +252,6 @@
             ...currentFormVal,
             name: t('common.batchUpdate'),
             description: '',
-            defaultValue:
-              typeof currentFormVal.defaultValue === 'string'
-                ? [currentFormVal.defaultValue]
-                : currentFormVal.defaultValue,
-            initialOptions: currentFormVal.initialOptions,
           };
 
           const fullRules: FormCreateFieldRule[] = [];
