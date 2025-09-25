@@ -605,7 +605,7 @@ export function abbreviateNumber(count: number | string, currency: string, decim
   const locale = localStorage.getItem('CRM-locale') || 'zh-CN';
   const truncateNumber = (num: number) => {
     const factor = 10 ** decimals;
-    return Math.floor(num * factor) / factor;
+    return Math.round(num * factor) / factor;
   };
 
   const full = `${count.toLocaleString('en-US', {
