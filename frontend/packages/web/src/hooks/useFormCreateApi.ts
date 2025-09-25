@@ -462,6 +462,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value: field?.fieldValue || '',
               slotName: FieldTypeEnum.LINK,
+              fieldInfo: item,
+              tooltipPosition: 'top-end',
             });
           } else if (item.type === FieldTypeEnum.ATTACHMENT) {
             descriptions.value.push({
