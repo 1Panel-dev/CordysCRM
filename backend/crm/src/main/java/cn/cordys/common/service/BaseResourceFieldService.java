@@ -413,10 +413,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
                     BaseResourceField baseResourceField = fieldMap.get(id);
                     Map originResource = new HashMap();
-                    originResource.put(request.getFieldId(), baseResourceField == null ? null : baseResourceField.getFieldValue());
+                    if (baseResourceField != null && !isBlankValue(baseResourceField.getFieldValue())) {
+                        originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
+                    }
 
                     Map modifiedResource = new HashMap();
-                    modifiedResource.put(request.getFieldId(), request.getFieldValue());
+                    if (!isBlankValue(request.getFieldValue())) {
+                        modifiedResource.put(request.getFieldId(), request.getFieldValue());
+                    }
 
                     LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
                     logDTO.setOriginalValue(originResource);
