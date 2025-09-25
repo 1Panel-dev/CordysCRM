@@ -55,60 +55,12 @@ public class PicService {
         return attachmentService.uploadTemp(pics);
     }
 
-
     /**
-     * 获取图片流
-     *
+     * 获取图片文件流
      * @param picId 图片ID
-     *
-     * @return 图片流
+     * @return 文件流
      */
-    public ResponseEntity<org.springframework.core.io.Resource> getPicResource(String picId) {
-        Attachment attachment = attachmentMapper.selectByPrimaryKey(picId);
-        FileRequest request;
-        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
-        try {
-            InputStream picStream;
-            if (attachment == null) {
-                // get pic from temp dir
-                request = new FileRequest(DefaultRepositoryDir.getTempFileDir(picId), StorageType.LOCAL.name(), null);
-                List<File> folderFiles = fileCommonService.getFolderFiles(request);
-                if (CollectionUtils.isEmpty(folderFiles)) {
-                    return null;
-                }
-                File picFile = folderFiles.getFirst();
-                picStream = new FileInputStream(picFile);
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + picFile.getName() + "\"")
-                        .contentLength(picFile.length())
-                        .contentType(isSvg(picFile.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
-            } else {
-                // get pic from transferred dir
-                request = new FileRequest(DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
-                picStream = fileCommonService.getFileInputStream(request);
-                if (picStream == null) {
-                    throw new GenericException("The picture does not exist or has been deleted");
-                }
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"")
-                        .contentLength(attachment.getSize())
-                        .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
-            }
-            return responseBuilder
-                    .body(new InputStreamResource(picStream));
-        } catch (Exception e) {
-            LogUtils.error(e.getMessage());
-            return null;
-        }
-    }
-
-
-    /**
-     * 判断是否svg文件
-     *
-     * @param fileName 文件名
-     *
-     * @return 是否svg
-     */
-    private boolean isSvg(String fileName) {
-        return fileName.endsWith(".svg") || fileName.endsWith(".SVG");
+    public ResponseEntity<org.springframework.core.io.Resource> getResource(String picId) {
+        return attachmentService.getResource(picId);
     }
 }

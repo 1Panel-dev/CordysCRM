@@ -1,8 +1,6 @@
 package cn.cordys.common.resolver.field;
 
-import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.field.AttachmentField;
-import cn.cordys.crm.system.dto.field.CheckBoxField;
 
 public class AttachmentFieldResolver extends AbstractModuleFieldResolver<AttachmentField>{
 

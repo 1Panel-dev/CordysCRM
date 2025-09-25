@@ -30,7 +30,7 @@ public class S3Repository implements FileRepository {
     }
 
     @Override
-    public void deleteFolder(FileRequest request) throws Exception {
+    public void deleteFolder(FileRequest request, boolean onlyDir) throws Exception {
 
     }
 

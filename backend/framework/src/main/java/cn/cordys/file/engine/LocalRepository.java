@@ -133,10 +133,12 @@ public class LocalRepository implements FileRepository {
      * @throws Exception 如果删除文件夹过程中发生错误，抛出异常。
      */
     @Override
-    public void deleteFolder(FileRequest request) throws Exception {
-        FileValidate.validateFileName(request.getFolder(), request.getFileName());
-        // 删除文件
-        this.delete(request);
+    public void deleteFolder(FileRequest request, boolean onlyDir) throws Exception {
+        if (!onlyDir) {
+            FileValidate.validateFileName(request.getFolder(), request.getFileName());
+            // 删除文件
+            this.delete(request);
+        }
         // 删除文件夹
         String folderPath = getFolderWithDefaultDir(request.getFolder());
         File folder = new File(folderPath);

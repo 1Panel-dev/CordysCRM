@@ -114,9 +114,9 @@ public class FileCommonService {
      *
      * @param request 文件请求参数
      */
-    public void deleteFolder(FileRequest request) {
+    public void deleteFolder(FileRequest request, boolean onlyDir) {
         try {
-            FileCenter.getRepository(request.getStorage()).deleteFolder(request);
+            FileCenter.getRepository(request.getStorage()).deleteFolder(request, onlyDir);
         } catch (Exception e) {
             LogUtils.error(e);
         }

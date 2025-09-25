@@ -106,7 +106,7 @@ public class ExportTaskCenterService {
             try {
                 //删除文件
                 FileRequest request = new FileRequest(getFilePath(exportTask), StorageType.LOCAL.name(), exportTask.getFileName() + ".xlsx");
-                fileCommonService.deleteFolder(request);
+                fileCommonService.deleteFolder(request, false);
             } catch (GenericException e) {
                 LogUtils.error("定时任务删除导出任务文件失败，任务ID: " + exportTask.getId(), e);
                 throw new RuntimeException(e);

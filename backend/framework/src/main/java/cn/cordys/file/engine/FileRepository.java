@@ -63,10 +63,11 @@ public interface FileRepository {
      * 删除指定文件夹及其所有内容。
      *
      * @param request 文件请求信息，包含待删除文件夹的标识符或路径。
+     * @param onlyDir 为true时跳过文件直接删除目录
      *
      * @throws Exception 如果删除文件夹过程中发生错误，抛出异常。
      */
-    void deleteFolder(FileRequest request) throws Exception;
+    void deleteFolder(FileRequest request, boolean onlyDir) throws Exception;
 
     /**
      * 获取指定文件的字节内容。对于大文件，不建议使用此方法。
