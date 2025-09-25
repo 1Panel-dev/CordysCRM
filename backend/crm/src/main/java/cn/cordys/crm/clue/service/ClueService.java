@@ -999,8 +999,8 @@ public class ClueService {
             return;
         }
 
-        List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
+        List<Clue> originClues = clueMapper.selectByIds(request.getIds());
 
-        clueFieldService.batchUpdate(request, field, originCustomers, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        clueFieldService.batchUpdate(request, field, originClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
     }
 }

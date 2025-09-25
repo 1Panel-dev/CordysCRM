@@ -571,17 +571,17 @@
     <update id="batchUpdate">
         UPDATE customer
         <set>
-            <if test="customer.owner != null">
-                owner = #{customer.owner},
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
             </if>
-            <if test="customer.name != null">
-                name = #{customer.name},
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
             </if>
-            update_time = #{customer.updateTime},
-            update_user = #{customer.updateUser}
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
         </set>
         WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </update>

@@ -5,6 +5,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -31,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -246,25 +247,30 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 List<K> originResourceList,
                                 Class<K> clazz,
                                 String logModule,
-                                BiConsumer<List<String>, K> batchInsertFunc,
+                                Consumer<BatchUpdateDbParam> batchInsertFunc,
                                 String userId,
                                 String orgId) {
 
         K resource = newInstance(clazz);
-
-        // 修改更新时间和用户
-        setResourceFieldValue(resource, "updateTime", System.currentTimeMillis());
-        setResourceFieldValue(resource, "updateUser", userId);
 
         if (field.needRepeatCheck() && request.getIds().size() > 1) {
             // 如果字段唯一，则校验不能同时修改多条
             throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
         }
 
+        BatchUpdateDbParam updateParam = new BatchUpdateDbParam();
+        updateParam.setIds(request.getIds());
+        // 修改更新时间和用户
+        updateParam.setUpdateTime(System.currentTimeMillis());
+        updateParam.setUpdateUser(userId);
+
         if (StringUtils.isNotBlank(field.getBusinessKey())) {
-            setResourceFieldValue(resource, field.getBusinessKey(), request.getFieldValue());
             // 字段唯一性校验
             businessFieldRepeatCheck(orgId, resource, request.getIds(), field, field.getBusinessKey());
+
+            updateParam.setFieldName(field.getBusinessKey());
+            updateParam.setFieldValue(request.getFieldValue());
+
             // 添加日志
             addBusinessFieldBatchUpdateLog(originResourceList, field, request, logModule, userId, orgId);
         } else {
@@ -301,7 +307,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         // 批量修改业务字段和更新时间等
-        batchInsertFunc.accept(request.getIds(), resource);
+        batchInsertFunc.accept(updateParam);
     }
 
     public BaseField getAndCheckField(String fieldId, String organizationId) {
@@ -417,7 +423,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         Object fieldValue = null;
         try {
             if (value != null) {
-                fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), value.getClass())
+                Class<?> valueClass = value.getClass();
+                if (value instanceof List<?>) {
+                    valueClass = List.class;
+                } else if (value instanceof Map<?,?>) {
+                    valueClass = Map.class;
+                }
+                fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), valueClass)
                         .invoke(resource, value);
             }
         } catch (Exception e) {

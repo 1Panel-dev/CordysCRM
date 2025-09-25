@@ -1,6 +1,7 @@
 package cn.cordys.crm.customer.mapper;
 
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.customer.domain.Customer;
@@ -85,5 +86,5 @@ public interface ExtCustomerMapper {
      */
     void updateIncludeNullById(@Param("customer") Customer customer);
 
-    void batchUpdate(@Param("ids") List<String> ids, @Param("customer") Customer customer);
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

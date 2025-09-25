@@ -2,6 +2,7 @@ package cn.cordys.crm.clue.mapper;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.clue.domain.Clue;
@@ -111,5 +112,5 @@ public interface ExtClueMapper {
      */
     boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);
 
-    void batchUpdate(@Param("ids") List<String> ids, @Param("clue") Clue clue);
+    void batchUpdate(@Param("request")BatchUpdateDbParam request);
 }
