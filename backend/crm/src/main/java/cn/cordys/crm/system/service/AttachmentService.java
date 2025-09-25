@@ -80,7 +80,7 @@ public class AttachmentService {
         FileRequest request;
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
         try {
-            InputStream picStream;
+            InputStream fileStream;
             if (attachment == null) {
                 // get pic from temp dir
                 request = new FileRequest(DefaultRepositoryDir.getTempFileDir(attachmentId), StorageType.LOCAL.name(), null);
@@ -88,16 +88,16 @@ public class AttachmentService {
                 if (CollectionUtils.isEmpty(folderFiles)) {
                     return null;
                 }
-                File picFile = folderFiles.getFirst();
-                picStream = new FileInputStream(picFile);
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + picFile.getName() + "\"")
-                        .contentLength(picFile.length())
-                        .contentType(isSvg(picFile.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
+                File file = folderFiles.getFirst();
+                fileStream = new FileInputStream(file);
+                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                        .contentLength(file.length())
+                        .contentType(isSvg(file.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
             } else {
-                // get pic from transferred dir
+                // get attachment from transferred dir
                 request = new FileRequest(DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
-                picStream = fileCommonService.getFileInputStream(request);
-                if (picStream == null) {
+                fileStream = fileCommonService.getFileInputStream(request);
+                if (fileStream == null) {
                     throw new GenericException("The file does not exist or has been deleted");
                 }
                 responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"")
@@ -105,7 +105,7 @@ public class AttachmentService {
                         .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
             }
             return responseBuilder
-                    .body(new InputStreamResource(picStream));
+                    .body(new InputStreamResource(fileStream));
         } catch (Exception e) {
             LogUtils.error(e.getMessage());
             return null;
@@ -130,15 +130,13 @@ public class AttachmentService {
      * @param transferRequest 转存参数
      */
     public void processTemp(UploadTransferRequest transferRequest) {
-        if (CollectionUtils.isEmpty(transferRequest.getTempFileIds())) {
-            return;
-        }
         List<Attachment> attachments = new ArrayList<>();
         LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Attachment::getId, transferRequest.getTempFileIds());
-        List<Attachment> transferredPics = attachmentMapper.selectListByLambda(queryWrapper);
-        List<String> transferredPicIds = transferredPics.stream().map(Attachment::getId).toList();
-        transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredPicIds.contains(tempFileId)).forEach(tempFileId -> {
+        queryWrapper.eq(Attachment::getResourceId, transferRequest.getResourceId());
+        List<Attachment> transferredAttachments = attachmentMapper.selectListByLambda(queryWrapper);
+        List<String> transferredIds = transferredAttachments.stream().map(Attachment::getId).toList();
+        // insert new attachment
+        transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredIds.contains(tempFileId)).forEach(tempFileId -> {
             // transfer new pic
             FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId, StorageType.LOCAL.name(), null);
             List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
@@ -163,15 +161,14 @@ public class AttachmentService {
                 attachments.add(attachment);
             }
         });
-        // insert pic info
         attachmentMapper.batchInsert(attachments);
-        // remove deleted pic
-        List<String> removePicIds = transferredPicIds.stream().filter(picId -> !transferRequest.getTempFileIds().contains(picId)).toList();
-        if (!CollectionUtils.isEmpty(removePicIds)) {
+        // remove deleted
+        List<String> removedIds = transferredIds.stream().filter(aId -> !transferRequest.getTempFileIds().contains(aId)).toList();
+        if (!CollectionUtils.isEmpty(removedIds)) {
             LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
-            duplicateQueryWrapper.in(Attachment::getId, removePicIds);
+            duplicateQueryWrapper.in(Attachment::getId, removedIds);
             attachmentMapper.deleteByLambda(duplicateQueryWrapper);
-            removePicIds.forEach(removeId -> {
+            removedIds.forEach(removeId -> {
                 FileRequest request = new FileRequest(DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), removeId), StorageType.LOCAL.name(), null);
                 fileCommonService.deleteFolder(request, true);
             });

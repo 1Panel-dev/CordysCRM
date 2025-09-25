@@ -28,12 +28,6 @@ public class AttachmentController {
         return attachmentService.uploadTemp(files);
     }
 
-    @GetMapping("/delete/{id}")
-    @Operation(summary = "删除附件")
-    public void delete(@PathVariable("id") @Validated String id) {
-        attachmentService.delete(id);
-    }
-
     @GetMapping("/preview/{id}")
     @Operation(summary = "预览附件")
     public ResponseEntity<org.springframework.core.io.Resource> preview(@PathVariable String id) {

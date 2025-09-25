@@ -157,10 +157,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         return;
                     }
 
-                    if (field.isAttachment()) {
-                        preProcessTempAttachment(orgId, resourceId, userId, fieldValue.getFieldValue());
-                    }
-
                     if (field.needRepeatCheck()) {
                         checkUnique(fieldValue, field);
                     }
@@ -189,6 +185,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
 
                 });
+
+        // Process all attachment field
+        List<BaseModuleFieldValue> attachmentFieldVals = allFields.stream()
+                .filter(field -> {
+                    BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
+                    return (fieldValue != null && fieldValue.valid()) && field.isAttachment();
+                }).map(field -> fieldValueMap.get(field.getId())).toList();
+        List processVal = attachmentFieldVals.stream().map(val -> (List) val.getFieldValue()).flatMap(List::stream).toList();
+        preProcessTempAttachment(orgId, resourceId, userId, processVal);
 
         if (CollectionUtils.isNotEmpty(customerFields)) {
             getResourceFieldMapper().batchInsert(customerFields);
