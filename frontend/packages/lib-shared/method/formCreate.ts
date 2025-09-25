@@ -36,3 +36,28 @@ export function getRuleType(item: FormCreateField) {
   }
   return 'string';
 }
+
+export function getNormalFieldValue(item: FormCreateField, value: any) {
+  if (item.type === FieldTypeEnum.DATA_SOURCE && !value) {
+    return '';
+  }
+  if (
+    [
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      FieldTypeEnum.INPUT_MULTIPLE,
+    ].includes(item.type) &&
+    !value
+  ) {
+    return [];
+  }
+  if (item.type === FieldTypeEnum.INPUT_MULTIPLE && !value) {
+    return [];
+  }
+  if (item.multiple && !value) {
+    return [];
+  }
+  return value;
+}

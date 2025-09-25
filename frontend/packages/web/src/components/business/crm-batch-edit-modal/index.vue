@@ -149,7 +149,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getRuleType } from '@lib/shared/method/formCreate';
+  import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
   import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -170,6 +170,7 @@
   import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
 
   import { batchUpdateCluePool, batchUpdateOpenSeaCustomer } from '@/api/modules';
+  import { useUserStore } from '@/store';
 
   import { rules } from '../crm-form-create/config';
   import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
@@ -187,6 +188,7 @@
   }>();
 
   const visible = defineModel<boolean>('visible', { required: true });
+  const userStore = useUserStore();
 
   const list = defineModel<FormCreateField[]>('fieldList', {
     required: true,
@@ -275,6 +277,32 @@
             });
             currentForm.value.rules = fullRules;
           }
+
+          if (
+            [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(currentFormVal.type) &&
+            currentFormVal.hasCurrentUser
+          ) {
+            currentForm.value.defaultValue = userStore.userInfo.id;
+            currentForm.value.initialOptions = [
+              ...(currentFormVal.initialOptions || []),
+              {
+                id: userStore.userInfo.id,
+                name: userStore.userInfo.name,
+              },
+            ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+          } else if (
+            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(currentFormVal.type) &&
+            currentFormVal.hasCurrentUserDept
+          ) {
+            currentForm.value.defaultValue = userStore.userInfo.departmentId;
+            currentForm.value.initialOptions = [
+              ...(currentFormVal.initialOptions || []),
+              {
+                id: userStore.userInfo.departmentId,
+                name: userStore.userInfo.departmentName,
+              },
+            ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+          }
         }
       }
     }
@@ -291,9 +319,23 @@
       if (!errors) {
         try {
           loading.value = true;
+
+          const result = { ...form.value };
+          if (currentForm.value.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result.fieldValue)) {
+            // 处理数据源字段，单选传单个值
+            result.fieldValue = result.fieldValue?.[0];
+          }
+          if (currentForm.value.type === FieldTypeEnum.PHONE) {
+            // 去空格
+            result.fieldValue = result.fieldValue.replace(/[\s\uFEFF\xA0]+/g, '');
+          }
+
           await saveApiMap[props.formKey]({
             ids: props.ids,
-            ...form.value,
+            ...result,
+            fieldValue: !currentForm.value.businessKey
+              ? getNormalFieldValue(currentForm.value, result.fieldValue)
+              : result.fieldValue,
           });
           Message.success(t('common.updateSuccess'));
           handleCancel();
