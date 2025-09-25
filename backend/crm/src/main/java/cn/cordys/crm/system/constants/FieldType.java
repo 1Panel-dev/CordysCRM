@@ -87,5 +87,9 @@ public enum FieldType {
     /**
      * 附件
      */
-    ATTACHMENT
+    ATTACHMENT,
+    /**
+     * 链接
+     */
+    LINK
 }
