@@ -329,9 +329,11 @@ public class ModuleFormService {
         }
 
         typeIdsMap.forEach((fieldId, ids) -> {
-            List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(idTypeMap.get(fieldId)), ids);
-            if (CollectionUtils.isNotEmpty(options)) {
-                optionMap.put(fieldId, options);
+            if (CollectionUtils.isNotEmpty(ids)) {
+                List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(idTypeMap.get(fieldId)), ids);
+                if (CollectionUtils.isNotEmpty(options)) {
+                    optionMap.put(fieldId, options);
+                }
             }
         });
         return optionMap;

@@ -281,21 +281,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         } else {
             ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
 
-            // 先删除
-            batchDeleteFieldValues(request, moduleField);
-
-            if (field.needRepeatCheck()) {
-                // 字段唯一性校验
-                checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
-            }
-            // 获取字段解析器
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-            // 校验参数值
-            customFieldResolver.validate(field, request.getFieldValue());
-            // 将参数值转换成字符串入库
-            String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
-            request.setFieldValue(strValue);
-
             // 查询修改前的字段，记录日志
             List<? extends BaseResourceField> originFields;
             if (field.isBlob()) {
@@ -304,8 +289,27 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 originFields = getResourceField(request.getIds(), request.getFieldId());
             }
 
-            // 再插入
-            batchUpdateFieldValues(request, moduleField);
+            // 先删除
+            batchDeleteFieldValues(request, moduleField);
+
+            if (field.needRepeatCheck()) {
+                // 字段唯一性校验
+                checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
+            }
+
+            if (!isBlankValue(request.getFieldValue())) {
+                // 字段值不为空，则插入
+                // 获取字段解析器
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                // 校验参数值
+                customFieldResolver.validate(field, request.getFieldValue());
+                // 将参数值转换成字符串入库
+                String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
+                request.setFieldValue(strValue);
+
+                // 再插入
+                batchUpdateFieldValues(request, moduleField);
+            }
 
             // 添加日志
             addCustomFieldBatchUpdateLog(originResourceList, originFields, request, logModule, userId, orgId);
@@ -313,6 +317,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         // 批量修改业务字段和更新时间等
         batchInsertFunc.accept(updateParam);
+    }
+
+    private boolean isBlankValue(Object value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof String str && StringUtils.isBlank(str)) {
+            return true;
+        }
+        if (value instanceof List list && list.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     public BaseField getAndCheckField(String fieldId, String organizationId) {
