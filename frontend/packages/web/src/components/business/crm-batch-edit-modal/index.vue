@@ -130,13 +130,7 @@
         :form-detail="form"
       />
       <n-form-item v-else path="fieldValue" :label="t('common.batchUpdate')">
-        <n-input
-          v-model:value="form.fieldValue"
-          disabled
-          type="text"
-          :placeholder="t('common.pleaseInput')"
-          :maxlength="255"
-        />
+        <n-input disabled type="text" :placeholder="t('common.pleaseInput')" :maxlength="255" />
       </n-form-item>
     </n-form>
   </CrmModal>
