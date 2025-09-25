@@ -815,7 +815,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         Map<String, BaseModuleFieldValue> moduleFieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, t -> t));
 
         // 校验业务字段，字段值是否重复
-        businessFieldRepeatCheck(orgId, resource, update, allFields);
+        businessFieldRepeatCheck(orgId, resource, List.of(resourceId), allFields);
         List<T> updateFields = new ArrayList<>();
         List<V> updateBlobFields = new ArrayList<>();
 
