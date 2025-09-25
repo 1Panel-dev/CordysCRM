@@ -1,8 +1,10 @@
 <template>
-  <CrmCard class="crm-header-table" hide-footer no-content-bottom-padding>
+  <CrmCard hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      class="crm-header-table"
+      :scroll-x="1000"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -60,12 +62,13 @@
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.ownerName });
       },
+      fixed: 'left',
       columnSelectorDisabled: true,
     },
     {
       title: t('opportunity.department'),
       key: 'departmentId',
-      width: 100,
+      width: 120,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.departmentName });
       },
