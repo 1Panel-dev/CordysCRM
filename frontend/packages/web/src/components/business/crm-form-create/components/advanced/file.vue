@@ -155,10 +155,11 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (arr) => {
-      fileList.value = arr?.map((e) => ({
-        ...e,
-        status: 'finished',
-      })) as UploadFileInfo[];
+      fileList.value =
+        (arr?.map((e) => ({
+          ...e,
+          status: 'finished',
+        })) as UploadFileInfo[]) || [];
       fileKeysMap.value = arr?.reduce((acc, cur) => {
         acc[cur.id] = cur.id;
         return acc;

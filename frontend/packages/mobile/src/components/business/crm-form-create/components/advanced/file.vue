@@ -115,13 +115,14 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (arr) => {
-      fileList.value = arr?.map((e) => ({
-        ...e,
-        status: 'finished',
-        url: `${PreviewAttachmentUrl}/${e.id}`,
-        content: `${PreviewAttachmentUrl}/${e.id}`,
-        isImage: /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(e.type),
-      })) as UploaderFileListItem[];
+      fileList.value =
+        (arr?.map((e) => ({
+          ...e,
+          status: 'finished',
+          url: `${PreviewAttachmentUrl}/${e.id}`,
+          content: `${PreviewAttachmentUrl}/${e.id}`,
+          isImage: /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(e.type),
+        })) as UploaderFileListItem[]) || [];
     },
     {
       immediate: true,

@@ -949,7 +949,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           typeof item.defaultValue === 'string'
             ? [defaultValue]
             : defaultValue || [];
-      } else if (item.type === FieldTypeEnum.PICTURE) {
+      } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(item.type)) {
         defaultValue = defaultValue || [];
       }
       if (!formDetail.value[item.id]) {
