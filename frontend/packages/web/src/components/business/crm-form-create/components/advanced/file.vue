@@ -149,7 +149,9 @@
   }
 
   function handleFileListChange(files: UploadFileInfo[]) {
-    fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
+    if (fileKeys.value.length > files.length) {
+      fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
+    }
   }
 
   watch(

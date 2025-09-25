@@ -20,7 +20,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { Result } from '@lib/shared/types/axios';
 
-  import { uploadTempFile } from '@/api/modules';
+  import { uploadTempAttachment } from '@/api/modules';
 
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
@@ -70,7 +70,7 @@
       const requestArr: Promise<Result<string[]>>[] = [];
       file.forEach((f) => {
         if (f.file) {
-          requestArr.push(uploadTempFile(f.file!));
+          requestArr.push(uploadTempAttachment(f.file!));
           f.status = 'uploading';
         }
       });
@@ -84,13 +84,18 @@
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
+        file.forEach((f) => {
+          if (f.file) {
+            f.status = 'failed';
+          }
+        });
       }
       emit('change', fileKeys.value, fileList.value);
     } else {
       try {
         if (file.file) {
           file.status = 'uploading';
-          const res = await uploadTempFile(file.file!);
+          const res = await uploadTempAttachment(file.file!);
           fileKeys.value.push(...res.data);
           file.status = 'done';
           file.content = `${PreviewAttachmentUrl}/${res.data[0]}`;

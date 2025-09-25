@@ -194,7 +194,8 @@
       item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
       item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
       [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type) ||
-      item.type === FieldTypeEnum.PICTURE
+      item.type === FieldTypeEnum.PICTURE ||
+      item.type === FieldTypeEnum.ATTACHMENT
     ) {
       return 'array';
     }

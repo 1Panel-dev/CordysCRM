@@ -17,12 +17,12 @@
           <div class="flex items-center justify-between">
             <div class="one-line-text flex-1">{{ file.name }}</div>
             <div class="flex items-center gap-[16px]">
-              <CrmTextButton
+              <!-- <CrmTextButton
                 icon="iconicon_delete"
                 color="var(--error-red)"
                 icon-size="16px"
                 @click="handleDelete(file)"
-              />
+              /> -->
               <CrmTextButton icon="iconicon_download" icon-size="16px" @click="handleDownloadAttachment(file)" />
             </div>
           </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-  import { showConfirmDialog, showImagePreview, showToast } from 'vant';
+  import { showImagePreview } from 'vant';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
@@ -53,16 +53,16 @@
   import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  import { deleteAttachment, downloadAttachment } from '@/api/modules';
+  import { downloadAttachment } from '@/api/modules';
 
   import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     fileList: AttachmentInfo[];
   }>();
-  const emit = defineEmits<{
-    (e: 'deleteFile', id: string): void;
-  }>();
+  // const emit = defineEmits<{
+  //   (e: 'deleteFile', id: string): void;
+  // }>();
 
   const { t } = useI18n();
 
@@ -70,16 +70,14 @@
     required: true,
   });
 
-  function handleDelete(file: AttachmentInfo) {
-    showConfirmDialog({
-      title: t('crm.fileListPop.deleteTipTitle'),
-      message: t('crm.fileListPop.deleteTipContent'),
-    }).then(async () => {
-      await deleteAttachment(file.id);
-      showToast(t('common.deleteSuccess'));
-      emit('deleteFile', file.id);
-    });
-  }
+  // function handleDelete(file: AttachmentInfo) {
+  //   showConfirmDialog({
+  //     title: t('crm.fileListPop.deleteTipTitle'),
+  //     message: t('crm.fileListPop.deleteTipContent'),
+  //   }).then(async () => {
+  //     emit('deleteFile', file.id);
+  //   });
+  // }
 
   async function handleDownloadAttachment(file: AttachmentInfo) {
     try {
