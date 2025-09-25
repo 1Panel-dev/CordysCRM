@@ -215,7 +215,7 @@
             FieldTypeEnum.LINK,
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.ATTACHMENT,
-          ].includes(e.type)
+          ].includes(e.type) && e.businessKey !== 'owner'
       ) as unknown as SelectMixedOption[]
   );
 
