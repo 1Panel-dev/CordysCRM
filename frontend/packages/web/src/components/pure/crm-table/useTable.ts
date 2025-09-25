@@ -162,7 +162,7 @@ export default function useTable<T>(
 
       if (!propsRes.value.showPagination && (Array.isArray(data.list) || Array.isArray(data))) {
         propsRes.value.data = (data.list || data).map((item: CrmTableDataItem<T>) =>
-          processRecordItem(item, data.list || data)
+          processRecordItem(item, data)
         ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
         setPagination(1, (data.list || data).length);
       } else {
