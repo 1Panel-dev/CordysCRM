@@ -79,7 +79,7 @@
                         </CrmTag>
                       </div>
                       <n-button v-permission="['LICENSE:EDIT']" text type="primary" @click="handleUpdate">
-                        {{ t('system.license.authorityUpdate') }}
+                        {{ t('common.update') }}
                       </n-button>
                     </div>
                     <div class="flex items-center gap-[8px]">

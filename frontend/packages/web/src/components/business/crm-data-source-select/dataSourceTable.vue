@@ -1,10 +1,17 @@
 <template>
-  <div class="crm-data-source-table">
+  <div
+    ref="fullscreenTargetRef"
+    class="crm-data-source-table relative bg-[var(--text-n10)]"
+    :style="{
+      height: isFullScreen ? '100%' : '60vh',
+      padding: isFullScreen ? '16px' : '0',
+    }"
+  >
     <CrmTable
       ref="crmTableRef"
       v-model:checked-row-keys="selectedKeys"
       v-bind="propsRes"
-      class="!min-h-[60vh]"
+      :fullscreen-target-ref="fullscreenTargetRef"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -131,11 +138,12 @@
       crmPagination: {
         showSizePicker: false,
       },
-      containerClass: '.crm-data-source-table',
+      containerClass: '.crm-data-source-select-modal',
     }
   );
 
   const keyword = ref('');
+  const fullscreenTargetRef = ref();
 
   function searchData(_keyword?: string) {
     if (props.filterParams) {
@@ -151,6 +159,8 @@
     selectedRows.value = _rows;
   }
 
+  const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
+
   onBeforeMount(() => {
     searchData();
   });
@@ -158,9 +168,6 @@
 
 <style lang="less">
   .crm-data-source-table {
-    .v-vl {
-      max-height: calc(60vh - 126px); // 126px是顶部搜索、表头、底部页码高度总和
-    }
     .n-checkbox--disabled {
       .check-icon {
         opacity: 1 !important;

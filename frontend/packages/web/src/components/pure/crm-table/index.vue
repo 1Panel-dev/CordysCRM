@@ -758,6 +758,7 @@
     scrollTo,
     setColumnSort,
     clearCheckedRowKeys: handleClear,
+    isFullScreen,
   });
 </script>
 
