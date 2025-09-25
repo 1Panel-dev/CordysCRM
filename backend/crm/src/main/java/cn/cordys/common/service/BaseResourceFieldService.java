@@ -256,8 +256,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 String userId,
                                 String orgId) {
 
-        K resource = newInstance(clazz);
-
         if (field.needRepeatCheck() && request.getIds().size() > 1) {
             // 如果字段唯一，则校验不能同时修改多条
             throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
@@ -270,6 +268,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         updateParam.setUpdateUser(userId);
 
         if (StringUtils.isNotBlank(field.getBusinessKey())) {
+            K resource = newInstance(clazz);
+            // 设置值用于唯一校验
+            setResourceFieldValue(resource, field.getBusinessKey(), request.getFieldValue());
             // 字段唯一性校验
             businessFieldRepeatCheck(orgId, resource, request.getIds(), field, field.getBusinessKey());
 
