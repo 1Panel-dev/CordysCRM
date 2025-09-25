@@ -787,4 +787,92 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             getResourceFieldMapper().deleteByLambda(example);
         }
     }
+
+
+    public <K> void updateModuleFieldByAgent(K customer, List<BaseModuleFieldValue> originCustomerFields, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+
+        if (CollectionUtils.isEmpty(originCustomerFields)) {
+            saveModuleField(customer, orgId, userId, moduleFields, false);
+        } else {
+            updateModuleField(customer, orgId, userId, moduleFields, true);
+
+        }
+    }
+
+    public <K> void updateModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
+        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
+                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
+        if (CollectionUtils.isEmpty(allFields)) {
+            return;
+        }
+        String resourceId = (String) getResourceFieldValue(resource, "id");
+        List<T> resourceFields = getResourceField(List.of(resourceId));
+
+        Map<String, BaseModuleFieldValue> moduleFieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, t -> t));
+
+        // 校验业务字段，字段值是否重复
+        businessFieldRepeatCheck(orgId, resource, update, allFields);
+        List<T> updateFields = new ArrayList<>();
+        List<V> updateBlobFields = new ArrayList<>();
+
+        resourceFields.stream().forEach(resourceField -> {
+            if (moduleFieldValueMap.containsKey(resourceField.getFieldId())) {
+                BaseModuleFieldValue fieldValue = moduleFieldValueMap.get(resourceField.getFieldId());
+
+                BaseField base = allFields.stream().filter(baseField -> baseField.getId().equals(resourceField.getFieldId())).findFirst().orElse(null);
+                if (base != null) {
+                    if (base.needRepeatCheck()) {
+                        checkUnique(fieldValue, base);
+                    }
+                    // 获取字段解析器
+                    AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(base.getType());
+                    // 校验参数值
+                    customFieldResolver.validate(base, fieldValue.getFieldValue());
+                    // 将参数值转换成字符串入库
+                    String strValue = customFieldResolver.parse2String(base, fieldValue.getFieldValue());
+                    if (base.isBlob()) {
+                        V fieldBlob = newResourceFieldBlob();
+                        fieldBlob.setId(resourceField.getId());
+                        fieldBlob.setResourceId(resourceField.getResourceId());
+                        fieldBlob.setFieldId(resourceField.getFieldId());
+                        fieldBlob.setFieldValue(strValue);
+                        updateBlobFields.add(fieldBlob);
+                    } else {
+                        T field = newResourceField();
+                        field.setId(resourceField.getId());
+                        field.setResourceId(resourceField.getResourceId());
+                        field.setFieldId(resourceField.getFieldId());
+                        field.setFieldValue(strValue);
+                        updateFields.add(field);
+                    }
+
+                }
+            }
+        });
+
+        Map<String, T> resourceMap = resourceFields.stream().collect(Collectors.toMap(BaseResourceField::getFieldId, Function.identity()));
+        Map<String, BaseField> allbaseFieldMap = allFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+        List<BaseModuleFieldValue> addlist = moduleFieldValues.stream().filter(moduleField ->
+                allbaseFieldMap.containsKey(moduleField.getFieldId()) && !resourceMap.containsKey(moduleField.getFieldId())
+        ).toList();
+
+
+        saveModuleField(resource, orgId, userId, addlist, false);
+
+        updateData(updateFields, updateBlobFields);
+    }
+
+    private void updateData(List<T> updateFields, List<V> updateBlobFields) {
+        for (T resourceField : updateFields) {
+            getResourceFieldMapper().update(resourceField);
+        }
+
+        for (V updateBlobField : updateBlobFields) {
+            getResourceFieldBlobMapper().update(updateBlobField);
+        }
+    }
 }

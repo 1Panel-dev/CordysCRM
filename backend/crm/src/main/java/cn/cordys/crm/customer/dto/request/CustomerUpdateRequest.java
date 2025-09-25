@@ -31,4 +31,7 @@ public class CustomerUpdateRequest {
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
+
+
+    private Boolean agentInvoke = false;
 }

@@ -12,4 +12,7 @@ public class OpportunityUpdateRequest extends OpportunityAddRequest {
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
     @Size(max = 32)
     private String id;
+
+
+    private Boolean agentInvoke = false;
 }

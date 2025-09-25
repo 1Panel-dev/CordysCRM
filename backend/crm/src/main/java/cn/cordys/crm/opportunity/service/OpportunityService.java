@@ -62,6 +62,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,8 +289,12 @@ public class OpportunityService {
             Opportunity updateOpportunity = newOpportunity(newOpportunity, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
-            //更新模块字段
-            updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
+            if (BooleanUtils.isTrue(request.getAgentInvoke())) {
+                opportunityFieldService.updateModuleFieldByAgent(updateOpportunity, originCustomerFields, request.getModuleFields(), orgId, userId);
+            } else {
+                // 更新模块字段
+                updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
+            }
             extOpportunityMapper.updateIncludeNullById(updateOpportunity);
             baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
         }, () -> {

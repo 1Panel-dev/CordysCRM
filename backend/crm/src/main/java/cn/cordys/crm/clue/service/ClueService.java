@@ -75,6 +75,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
@@ -395,8 +396,12 @@ public class ClueService {
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = clueFieldService.getModuleFieldValuesByResourceId(request.getId());
 
-        // 更新模块字段
-        updateModuleField(clue, request.getModuleFields(), orgId, userId);
+        if (BooleanUtils.isTrue(request.getAgentInvoke())) {
+            clueFieldService.updateModuleFieldByAgent(clue, originCustomerFields, request.getModuleFields(), orgId, userId);
+        } else {
+            // 更新模块字段
+            updateModuleField(clue, request.getModuleFields(), orgId, userId);
+        }
 
         clueMapper.update(clue);
         clue = clueMapper.selectByPrimaryKey(request.getId());

@@ -39,4 +39,6 @@ public class CustomerContactUpdateRequest {
 
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
+
+    private Boolean agentInvoke = false;
 }
