@@ -160,10 +160,11 @@
           ...e,
           status: 'finished',
         })) as UploadFileInfo[]) || [];
-      fileKeysMap.value = arr?.reduce((acc, cur) => {
-        acc[cur.id] = cur.id;
-        return acc;
-      }, {} as Record<string, string>);
+      fileKeysMap.value =
+        arr?.reduce((acc, cur) => {
+          acc[cur.id] = cur.id;
+          return acc;
+        }, {} as Record<string, string>) || {};
     },
     {
       immediate: true,

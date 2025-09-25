@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NImagePreview, useMessage } from 'naive-ui';
+  import { NButton, NDivider, NImagePreview } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
@@ -54,7 +54,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
-  import { deleteAttachment, downloadAttachment } from '@/api/modules';
+  import { downloadAttachment } from '@/api/modules';
 
   import { AttachmentInfo } from '../crm-form-create/types';
 
@@ -66,16 +66,13 @@
   }>();
 
   const { t } = useI18n();
-  const Message = useMessage();
 
   const show = defineModel<boolean>('show', {
     required: true,
   });
 
   async function handleDelete(file: AttachmentInfo, close: () => void) {
-    await deleteAttachment(file.id);
     close();
-    Message.success(t('common.deleteSuccess'));
     emit('deleteFile', file.id);
   }
 

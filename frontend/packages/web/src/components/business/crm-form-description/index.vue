@@ -104,7 +104,7 @@
 
   const { t } = useI18n();
 
-  const needInitDetail = computed(() => props.formKey === FormDesignKeyEnum.BUSINESS); // TODO:商机需要编辑日期
+  const needInitDetail = computed(() => true);
   const {
     fieldList,
     descriptions,
@@ -170,13 +170,24 @@
 
   const showFileListModal = ref(false);
   const activeFileList = ref<AttachmentInfo[]>([]);
+  const activeDescItem = ref<Description>();
   function openFileListModal(item: Description) {
     showFileListModal.value = true;
     activeFileList.value = (item.value as AttachmentInfo[]) || [];
+    activeDescItem.value = item;
   }
 
   function handleDeleteFile(id: string) {
     activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
+    if (activeDescItem.value) {
+      activeDescItem.value.value = (activeDescItem.value?.value as AttachmentInfo[])?.filter(
+        (file: AttachmentInfo) => file.id !== id
+      );
+    }
+    formDetail.value[activeDescItem.value?.fieldInfo.id] = formDetail.value[activeDescItem.value?.fieldInfo.id].filter(
+      (e: string) => e !== id
+    );
+    handleFormChange();
   }
 
   watch(
