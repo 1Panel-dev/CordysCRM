@@ -6,6 +6,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JsonDifferenceUtils;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.OperationLog;
 import cn.cordys.crm.system.domain.OperationLogBlob;
@@ -132,6 +133,7 @@ public class SysOperationLogService {
             }
             logResponse.setDiffs(differenceDTOS);
         } catch (Exception e) {
+            LogUtils.error(e);
             throw new GenericException(Translator.get("data_parsing_exception"));
         }
 

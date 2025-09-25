@@ -184,7 +184,7 @@ public abstract class BaseModuleLogService {
         if (differ.getOldValue() != null) {
             differ.setOldValueName(formatDataTime(differ.getOldValue().toString()));
         }
-        if (differ.getOldValue() != null) {
+        if (differ.getNewValue() != null) {
             differ.setNewValueName(formatDataTime(differ.getNewValue().toString()));
         }
     }
