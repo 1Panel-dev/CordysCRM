@@ -186,6 +186,8 @@
     OPPORTUNITY: FormDesignKeyEnum.BUSINESS,
     FOLLOW_UP_RECORD: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
     FOLLOW_UP_PLAN: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+    CUSTOMER_POOL: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+    CLUE_MANAGEMENT_POOL: FormDesignKeyEnum.CLUE_POOL,
   };
 
   async function getLogDetail(id: string) {
