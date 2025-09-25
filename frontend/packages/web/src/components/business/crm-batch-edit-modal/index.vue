@@ -213,17 +213,23 @@
     () =>
       list.value.filter(
         (e) =>
-          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.LINK, FieldTypeEnum.SERIAL_NUMBER].includes(
-            e.type
-          )
+          ![
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.PICTURE,
+            FieldTypeEnum.LINK,
+            FieldTypeEnum.SERIAL_NUMBER,
+            FieldTypeEnum.ATTACHMENT,
+          ].includes(e.type)
       ) as unknown as SelectMixedOption[]
   );
 
+  const formRef = ref<FormInst>();
   const currentForm = ref();
   watch(
     () => form.value.fieldId,
     (val) => {
       if (val) {
+        formRef.value?.restoreValidation();
         const currentFormVal = list.value.find((e) => e.id === val);
 
         if (currentFormVal) {
@@ -279,7 +285,6 @@
     form.value = { ...initForm };
   }
 
-  const formRef = ref<FormInst>();
   const loading = ref(false);
   function handleSave() {
     formRef.value?.validate(async (errors) => {
