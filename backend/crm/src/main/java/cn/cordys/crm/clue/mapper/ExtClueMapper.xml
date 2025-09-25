@@ -553,13 +553,13 @@
                 name = #{clue.name},
             </if>
             <if test="clue.contact != null">
-                name = #{clue.contact},
+                contact = #{clue.contact},
             </if>
             <if test="clue.phone != null">
-                name = #{clue.phone},
+                clue.phone = #{clue.phone},
             </if>
             <if test="clue.products != null">
-                name = #{clue.products},
+                products = #{clue.products},
             </if>
             update_time = #{clue.updateTime},
             update_user = #{clue.updateUser}
