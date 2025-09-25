@@ -645,3 +645,38 @@ export function abbreviateNumber(count: number | string, currency: string, decim
 
   return { value, unit, full };
 }
+
+export function getFileIconType(type: string) {
+  switch (type) {
+    case 'zip':
+      return 'icona-icon_file-compressed_colorful';
+    case 'ppt':
+      return 'iconicon_file-ppt_colorful';
+    case 'pdf':
+      return 'iconicon_file-pdf_colorful';
+    case 'word':
+      return 'iconicon_file-word_colorful';
+    case 'xlsx':
+      return 'iconicon_file-excel_colorful';
+    case 'mp4':
+      return 'iconicon_file-vedio_colorful';
+    case 'csv':
+      return 'iconicon_file-CSV_colorful';
+    case 'xmind':
+      return 'iconicon_file-xmind_colorful';
+    case 'sql':
+      return 'iconicon_file-sql_colorful';
+    case 'jar':
+      return 'icona-icon_file-jar_colorful';
+    case 'json':
+      return 'icona-icon_file-json';
+    case 'jmx':
+      return 'icona-icon_file-JMX';
+    case 'har':
+      return 'iconicon_file_har';
+    default:
+      return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(type)
+        ? 'iconicon_file-image_colorful'
+        : 'iconicon_file-unknow_colorful1';
+  }
+}

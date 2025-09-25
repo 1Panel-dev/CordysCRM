@@ -231,6 +231,10 @@ export const {
   downloadPicture,
   getReasonConfig,
   getSearchConfig,
+  uploadTempAttachment,
+  previewAttachment,
+  downloadAttachment,
+  deleteAttachment,
 } = moduleApi;
 
 export const {

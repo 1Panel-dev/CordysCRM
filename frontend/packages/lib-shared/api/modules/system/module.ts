@@ -7,12 +7,14 @@ import {
   addOpportunityRuleUrl,
   AddReasonUrl,
   CheckRepeatUrl,
+  DeleteAttachmentUrl,
   DeleteClueCapacityUrl,
   DeleteCluePoolUrl,
   DeleteCustomerCapacityUrl,
   DeleteCustomerPoolUrl,
   deleteOpportunityUrl,
   DeleteReasonUrl,
+  DownloadAttachmentUrl,
   DownloadPictureUrl,
   GetClueCapacityPageUrl,
   GetCluePoolPageUrl,
@@ -39,6 +41,7 @@ import {
   ModuleUserDeptTreeUrl,
   NoPickCluePoolUrl,
   NoPickCustomerPoolUrl,
+  PreviewAttachmentUrl,
   PreviewPictureUrl,
   QuickUpdateCluePoolUrl,
   QuickUpdateCustomerPoolUrl,
@@ -58,6 +61,7 @@ import {
   updateOpportunityRuleUrl,
   UpdateReasonEnableUrl,
   UpdateReasonUrl,
+  UploadTempAttachmentUrl,
   UploadTempFileUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -272,6 +276,22 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile<Result<string[]>>({ url: UploadTempFileUrl }, { fileList: [file] }, 'files', true);
   }
 
+  function uploadTempAttachment(file: File | null) {
+    return CDR.uploadFile<Result<string[]>>({ url: UploadTempAttachmentUrl }, { fileList: [file] }, 'files', true);
+  }
+
+  function previewAttachment(id: string) {
+    return CDR.get({ url: `${PreviewAttachmentUrl}/${id}` });
+  }
+
+  function downloadAttachment(id: string) {
+    return CDR.get({ url: `${DownloadAttachmentUrl}/${id}` });
+  }
+
+  function deleteAttachment(id: string) {
+    return CDR.get({ url: `${DeleteAttachmentUrl}/${id}` });
+  }
+
   function previewPicture(id: string) {
     return CDR.get({ url: `${PreviewPictureUrl}/${id}` });
   }
@@ -383,5 +403,9 @@ export default function useProductApi(CDR: CordysAxios) {
     getModuleSearchMaskConfig,
     getModuleTopNavList,
     setTopNavListSort,
+    uploadTempAttachment,
+    previewAttachment,
+    deleteAttachment,
+    downloadAttachment,
   };
 }

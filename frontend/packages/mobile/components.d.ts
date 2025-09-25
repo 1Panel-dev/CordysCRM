@@ -12,6 +12,7 @@ declare module 'vue' {
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];
     CrmDatasource: typeof import('./src/components/business/crm-datasource/index.vue')['default'];
     CrmDescription: typeof import('./src/components/pure/crm-description/index.vue')['default'];
+    CrmFileIcon: typeof import('./src/components/pure/crm-file-icon/index.vue')['default'];
     CrmFileListPop: typeof import('./src/components/business/crm-file-list-pop/index.vue')['default'];
     CrmFormCreate: typeof import('./src/components/business/crm-form-create/index.vue')['default'];
     CrmHeaderList: typeof import('./src/components/business/crm-header-list/index.vue')['default'];

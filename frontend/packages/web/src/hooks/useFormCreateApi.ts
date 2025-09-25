@@ -31,7 +31,12 @@ import {
   rules,
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
-import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
+import type {
+  AttachmentInfo,
+  FormCreateField,
+  FormCreateFieldRule,
+  FormDetail,
+} from '@/components/business/crm-form-create/types';
 
 import { checkRepeat } from '@/api/modules';
 import { lastOpportunitySteps } from '@/config/opportunity';
@@ -408,7 +413,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           } else if (item.type === FieldTypeEnum.ATTACHMENT) {
             descriptions.value.push({
               label: item.name,
-              value: name || form[item.businessKey],
+              value: form.attachmentMap?.[item.businessKey] || [],
               slotName: FieldTypeEnum.ATTACHMENT,
               fieldInfo: item,
               tooltipPosition: 'top-end',
@@ -457,6 +462,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value: field?.fieldValue || '',
               slotName: FieldTypeEnum.LINK,
+            });
+          } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+            descriptions.value.push({
+              label: item.name,
+              value: form.attachmentMap?.[item.id] || [],
+              slotName: FieldTypeEnum.ATTACHMENT,
               fieldInfo: item,
               tooltipPosition: 'top-end',
             });
@@ -714,6 +725,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (item.type === FieldTypeEnum.DATE_TIME) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : null;
+        } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+          item.initialOptions = res.attachmentMap?.[item.id];
         }
         if (needMakeLinkFormFields) {
           makeLinkFormFields(item);

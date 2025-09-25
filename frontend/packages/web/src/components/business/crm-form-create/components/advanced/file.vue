@@ -21,8 +21,7 @@
       multiple
       directory-dnd
       @before-upload="beforeUpload"
-      @update-file-list="() => emit('change', fileKeys, fileList)"
-      @remove="handleFileRemove"
+      @update-file-list="handleFileListChange"
     >
       <n-upload-dragger>
         <div class="flex flex-col items-center justify-center p-[24px]">
@@ -35,8 +34,8 @@
           <div class="text-[12px] text-[var(--text-n4)]">
             {{
               t('crmFormCreate.advanced.uploadFileTip', {
-                type: props.fieldConfig.accept,
-                size: props.fieldConfig.limitSize,
+                type: props.fieldConfig.accept || t('crmFormCreate.advanced.anyType'),
+                size: props.fieldConfig.limitSize || '20MB',
               })
             }}
           </div>
@@ -57,12 +56,11 @@
     useMessage,
   } from 'naive-ui';
 
-  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
 
-  import { uploadTempFile } from '@/api/modules';
+  import { uploadTempAttachment } from '@/api/modules';
 
   import { FormCreateField } from '../../types';
 
@@ -100,7 +98,11 @@
     const maxSize = parseInt(props.fieldConfig.limitSize || '', 10) || 20;
     const _maxSize = props.fieldConfig.limitSize?.includes('KB') ? maxSize * 1024 : maxSize * 1024 * 1024;
     if (file.file && file.file.size > _maxSize) {
-      Message.warning(t('crmFormCreate.advanced.overSize', { size: maxSize }));
+      Message.warning(
+        t('crmFormCreate.advanced.overSize', {
+          size: props.fieldConfig.limitSize || '20MB',
+        })
+      );
       return Promise.resolve(false);
     }
     if (props.fieldConfig.onlyOne) {
@@ -114,6 +116,7 @@
   async function customRequest({ file, onFinish, onError, onProgress }: UploadCustomRequestOptions) {
     let timer: NodeJS.Timeout | null = null;
     try {
+      file.status = 'uploading';
       // 模拟上传进度
       let upLoadProgress = 0;
       timer = setInterval(() => {
@@ -129,57 +132,37 @@
           onProgress({ percent: upLoadProgress });
         }
       }, 100); // 定时器间隔为 100 毫秒
-      const res = await uploadTempFile(file.file);
+      const res = await uploadTempAttachment(file.file);
       onProgress({ percent: 100 });
       clearInterval(timer as unknown as number);
       onFinish();
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
+      emit('change', fileKeys.value, fileList.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
-      // Message.error(t('crm.upload.uploadFail'));
       clearInterval(timer as unknown as number);
-      // clear error file
-      const index = fileList.value.findIndex((item) => item.id === file.id);
-      if (index !== -1) {
-        fileList.value.splice(index, 1);
-      }
+      file.status = 'error';
       onError();
     }
   }
 
-  function handleFileRemove({ file }: { file: UploadSettledFileInfo }) {
-    const index = fileList.value.findIndex((item) => item.id === file.id);
-    if (index !== -1) {
-      fileKeys.value = fileKeys.value.filter((key) => key !== fileKeysMap.value[file.id]);
-      delete fileKeysMap.value[file.id];
-    }
+  function handleFileListChange(files: UploadFileInfo[]) {
+    fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
   }
 
-  onBeforeMount(() => {
-    fileList.value = [];
-  });
-
   watch(
-    () => fileKeys.value,
-    (keys: string[]) => {
-      if (keys.length === 0) {
-        fileList.value = [];
-        fileKeysMap.value = {};
-      } else if (Object.keys(fileKeysMap.value).length === 0) {
-        keys.forEach((key) => {
-          fileKeysMap.value[key] = key;
-          fileList.value.push({
-            id: key,
-            thumbnailUrl: `${PreviewPictureUrl}/${key}`,
-            url: `${PreviewPictureUrl}/${key}`,
-            name: key,
-            status: 'finished',
-            type: '*/*', // TODO:
-          });
-        });
-      }
+    () => props.fieldConfig.initialOptions,
+    (arr) => {
+      fileList.value = arr?.map((e) => ({
+        ...e,
+        status: 'finished',
+      })) as UploadFileInfo[];
+      fileKeysMap.value = arr?.reduce((acc, cur) => {
+        acc[cur.id] = cur.id;
+        return acc;
+      }, {} as Record<string, string>);
     },
     {
       immediate: true,
@@ -196,5 +179,10 @@
   }
   :deep(.n-upload-file--image-type) {
     border: 1px solid var(--text-n8);
+  }
+  :deep(.n-upload-file-list) {
+    @apply flex flex-col;
+
+    gap: 8px;
   }
 </style>

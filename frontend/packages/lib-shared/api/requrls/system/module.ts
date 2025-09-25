@@ -57,6 +57,10 @@ export const CheckRepeatUrl = '/field/check/repeat'; // 查重
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
 export const PreviewPictureUrl = '/pic/preview'; // 预览图片
 export const DownloadPictureUrl = '/pic/download'; // 下载图片
+export const UploadTempAttachmentUrl = '/attachment/upload/temp'; // 上传临时附件
+export const PreviewAttachmentUrl = '/attachment/preview'; // 预览附件
+export const DownloadAttachmentUrl = '/attachment/download'; // 下载附件
+export const DeleteAttachmentUrl = '/attachment/delete'; // 删除附件
 
 // 模块设置-字典管理-原因配置
 export const GetReasonUrl = '/dict/get'; // 获取原因

@@ -58,13 +58,17 @@
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
-        <n-button type="primary" text @click="openFileListModal(item)">
-          {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
-        </n-button>
+        <div class="flex w-full items-center justify-between">
+          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+          <n-button v-if="item.value.length > 0" type="primary" text @click="openFileListModal(item)">
+            {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
+          </n-button>
+          <div v-else>-</div>
+        </div>
       </template>
     </CrmDescription>
   </n-spin>
-  <CrmFileListModal v-model:show="showFileListModal" :files="activeFileList" />
+  <CrmFileListModal v-model:show="showFileListModal" :files="activeFileList" @delete-file="handleDeleteFile" />
 </template>
 
 <script setup lang="ts">
@@ -83,6 +87,8 @@
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { AttachmentInfo } from '../crm-form-create/types';
 
   const props = defineProps<{
     sourceId: string;
@@ -163,10 +169,14 @@
   }
 
   const showFileListModal = ref(false);
-  const activeFileList = ref<Record<string, any>[]>([]);
+  const activeFileList = ref<AttachmentInfo[]>([]);
   function openFileListModal(item: Description) {
     showFileListModal.value = true;
-    activeFileList.value = (item.value as Record<string, any>[]) || [];
+    activeFileList.value = (item.value as AttachmentInfo[]) || [];
+  }
+
+  function handleDeleteFile(id: string) {
+    activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
   }
 
   watch(

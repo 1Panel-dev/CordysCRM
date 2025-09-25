@@ -100,7 +100,7 @@
     try {
       await formRef.value?.validate();
       loading.value = true;
-      logout();
+      await logout();
 
       await userStore.login({
         username: encrypted(userInfo.value.username) || '',

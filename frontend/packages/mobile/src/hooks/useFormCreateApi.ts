@@ -208,7 +208,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           } else if (item.type === FieldTypeEnum.ATTACHMENT) {
             descriptions.value.push({
               label: item.name,
-              value: field?.fieldValue || [],
+              value: form.attachmentMap?.[item.id] || [],
               isAttachment: true,
             });
           } else {
@@ -321,6 +321,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (item.type === FieldTypeEnum.DATE_TIME) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : '';
+        } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+          item.initialOptions = res.attachmentMap?.[item.id];
         }
         return item;
       });

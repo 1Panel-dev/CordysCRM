@@ -44,7 +44,7 @@
       </div>
     </div>
   </van-cell-group>
-  <CrmFileListPop v-model:show="showFileListPop" :file-list="activeFileList" />
+  <CrmFileListPop v-model:show="showFileListPop" :file-list="activeFileList" @delete-file="handleDeleteFile" />
 </template>
 
 <script setup lang="ts">
@@ -55,6 +55,8 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmFileListPop from '@/components/business/crm-file-list-pop/index.vue';
+
+  import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 
   export interface CrmDescriptionItem {
     label: string;
@@ -88,11 +90,15 @@
     }
   }
 
-  const showFileListPop = ref(true);
-  const activeFileList = ref<Record<string, any>[]>([]);
+  const showFileListPop = ref(false);
+  const activeFileList = ref<AttachmentInfo[]>([]);
   function handleAttachmentClick(item: CrmDescriptionItem) {
-    activeFileList.value = item.value as Record<string, any>[];
+    activeFileList.value = item.value as AttachmentInfo[];
     showFileListPop.value = true;
+  }
+
+  function handleDeleteFile(id: string) {
+    activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
   }
 </script>
 

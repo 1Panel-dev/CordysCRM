@@ -374,6 +374,10 @@ export const {
   getModuleSearchMaskConfig,
   getModuleTopNavList,
   setTopNavListSort,
+  uploadTempAttachment,
+  previewAttachment,
+  deleteAttachment,
+  downloadAttachment,
 } = moduleApi;
 
 export const {

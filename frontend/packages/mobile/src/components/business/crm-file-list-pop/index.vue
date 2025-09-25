@@ -12,7 +12,7 @@
     </div>
     <div class="flex flex-col gap-[8px] px-[16px] pb-[16px]">
       <div v-for="file in props.fileList" :key="file.id" class="crm-file-item">
-        <CrmIcon name="iconicon_file-image_colorful" width="40px" height="40px" />
+        <CrmFileIcon :type="file.type" width="40px" height="40px" @click="handlePreview(file)" />
         <div class="flex flex-1 flex-col gap-[2px]">
           <div class="flex items-center justify-between">
             <div class="one-line-text flex-1">{{ file.name }}</div>
@@ -23,13 +23,20 @@
                 icon-size="16px"
                 @click="handleDelete(file)"
               />
-              <a :href="file.url" :download="file.name">
-                <CrmTextButton icon="iconicon_download" icon-size="16px" />
-              </a>
+              <CrmTextButton icon="iconicon_download" icon-size="16px" @click="handleDownloadAttachment(file)" />
             </div>
           </div>
-          <div class="text-[12px] text-[var(--text-n4)]">{{ file.size }}</div>
-          <div class="text-[12px] text-[var(--text-n4)]">{{ file.createText }}</div>
+          <div class="text-[12px] text-[var(--text-n4)]">
+            {{ `${(file.size / 1024).toFixed(2)} KB` }}
+          </div>
+          <div class="text-[12px] text-[var(--text-n4)]">
+            {{
+              t('crm.fileListPop.uploadAt', {
+                name: file.createUser,
+                time: dayjs(file.createTime).format('YYYY-MM-DD HH:mm:ss'),
+              })
+            }}
+          </div>
         </div>
       </div>
     </div>
@@ -37,15 +44,24 @@
 </template>
 
 <script setup lang="ts">
-  import { showConfirmDialog } from 'vant';
+  import { showConfirmDialog, showImagePreview, showToast } from 'vant';
+  import dayjs from 'dayjs';
 
+  import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
+  import { deleteAttachment, downloadAttachment } from '@/api/modules';
+
+  import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
+
   const props = defineProps<{
-    fileList: Record<string, any>[];
+    fileList: AttachmentInfo[];
+  }>();
+  const emit = defineEmits<{
+    (e: 'deleteFile', id: string): void;
   }>();
 
   const { t } = useI18n();
@@ -54,17 +70,39 @@
     required: true,
   });
 
-  function handleDelete(file: Record<string, any>) {
+  function handleDelete(file: AttachmentInfo) {
     showConfirmDialog({
       title: t('crm.fileListPop.deleteTipTitle'),
       message: t('crm.fileListPop.deleteTipContent'),
-    })
-      .then(() => {
-        // on confirm
-      })
-      .catch(() => {
-        // on cancel
-      });
+    }).then(async () => {
+      await deleteAttachment(file.id);
+      showToast(t('common.deleteSuccess'));
+      emit('deleteFile', file.id);
+    });
+  }
+
+  async function handleDownloadAttachment(file: AttachmentInfo) {
+    try {
+      const blob = await downloadAttachment(file.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function handlePreview(file: AttachmentInfo) {
+    showImagePreview({
+      images: [`${PreviewAttachmentUrl}/${file.id}`],
+      closeable: true,
+    });
   }
 </script>
 

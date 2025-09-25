@@ -597,6 +597,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           (e) =>
             e.type !== FieldTypeEnum.DIVIDER &&
             e.type !== FieldTypeEnum.TEXTAREA &&
+            e.type !== FieldTypeEnum.ATTACHMENT &&
             !(
               e.businessKey === 'owner' &&
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)

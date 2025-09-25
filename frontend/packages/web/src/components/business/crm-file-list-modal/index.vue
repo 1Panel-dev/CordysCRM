@@ -3,12 +3,17 @@
     <div class="flex flex-col gap-[8px]">
       <div v-for="file in props.files" :key="file.id" class="crm-file-item">
         <div class="flex flex-1 items-center gap-[12px]">
-          <CrmIon type="iconicon_file-image_colorful" :size="32" />
+          <CrmFileIcon :type="file.type" :size="32" />
           <div class="flex flex-1 flex-col gap-[2px]">
             <span class="text-[var(--text-n2)]">{{ file.name }}</span>
             <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n4)]">
-              {{ file.size }}
-              {{ file.createText }}
+              {{ `${(file.size / 1024).toFixed(2)} KB` }}
+              {{
+                t('crm.fileListModal.uploadAt', {
+                  name: file.createUser,
+                  time: dayjs(file.createTime).format('YYYY-MM-DD HH:mm:ss'),
+                })
+              }}
             </div>
           </div>
         </div>
@@ -25,7 +30,7 @@
           >
             <n-button type="error" text>{{ t('common.delete') }}</n-button>
           </CrmPopConfirm>
-          <template v-if="file.type.includes('image')">
+          <template v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type)">
             <n-divider vertical />
             <n-button type="default" text @click="handlePreview(file)">{{ t('common.preview') }}</n-button>
           </template>
@@ -39,38 +44,63 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NImagePreview } from 'naive-ui';
+  import { NButton, NDivider, NImagePreview, useMessage } from 'naive-ui';
+  import dayjs from 'dayjs';
 
+  import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import CrmIon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
+  import { deleteAttachment, downloadAttachment } from '@/api/modules';
+
+  import { AttachmentInfo } from '../crm-form-create/types';
+
   const props = defineProps<{
-    files: Record<string, any>[];
+    files: AttachmentInfo[];
+  }>();
+  const emit = defineEmits<{
+    (e: 'deleteFile', id: string): void;
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const show = defineModel<boolean>('show', {
     required: true,
   });
 
-  function handleDelete(file: Record<string, any>, close: () => void) {
-    // Handle delete file
+  async function handleDelete(file: AttachmentInfo, close: () => void) {
+    await deleteAttachment(file.id);
     close();
+    Message.success(t('common.deleteSuccess'));
+    emit('deleteFile', file.id);
   }
 
   const showPreview = ref(false);
   const previewSrc = ref('');
-  function handlePreview(file: Record<string, any>) {
-    previewSrc.value = file.url;
+  function handlePreview(file: AttachmentInfo) {
+    previewSrc.value = `${PreviewAttachmentUrl}/${file.id}`;
     showPreview.value = true;
   }
 
-  function handleDownload(file: Record<string, any>) {
-    window.open(file.url, '_blank');
+  async function handleDownload(file: AttachmentInfo) {
+    try {
+      const blob = await downloadAttachment(file.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 </script>
 

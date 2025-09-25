@@ -120,9 +120,22 @@ export interface FormCreateField {
   openMode?: string;
 }
 
+export interface AttachmentInfo {
+  id: string;
+  name: string;
+  organizationId: string;
+  resourceId: string;
+  size: number;
+  storage: string;
+  type: string;
+  createUser: string;
+  createTime: number;
+}
+
 export interface FormDetail {
   moduleFields: ModuleField[];
   optionMap?: Record<string, any[]>;
   collaborationType?: CollaborationType; // 协作类型
+  attachmentMap?: Record<string, AttachmentInfo[]>; // 附件信息映射
   [key: string]: any;
 }

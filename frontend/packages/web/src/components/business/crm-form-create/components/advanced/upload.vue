@@ -91,7 +91,7 @@
     const maxSize = props.fieldConfig.uploadSizeLimit || 20;
     const _maxSize = maxSize * 1024 * 1024;
     if (file.file && file.file.size > _maxSize) {
-      Message.warning(t('crmFormCreate.advanced.overSize', { size: maxSize }));
+      Message.warning(t('crmFormCreate.advanced.overSize', { size: `${maxSize}MB` }));
       return Promise.resolve(false);
     }
     if (props.fieldConfig.uploadLimit === 1) {
