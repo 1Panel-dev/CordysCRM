@@ -1,5 +1,9 @@
 <template>
-  <van-field :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''" :required="required">
+  <van-field
+    :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
+    :required="required"
+    :rules="props.fieldConfig.rules as FieldRule[]"
+  >
     <template #input>
       <van-uploader
         v-model="fileList"
@@ -7,18 +11,35 @@
         :before-delete="handleBeforeDelete"
         :after-read="handleAfterRead"
         :accept="props.fieldConfig.accept || '*/*'"
+        :max-count="props.fieldConfig.onlyOne ? 1 : 10"
         multiple
-      />
+      >
+        <div class="flex items-center gap-[8px]">
+          <div class="flex h-[80px] w-[80px] items-center justify-center bg-[var(--text-n9)]">
+            <CrmIconFont name="iconicon_add" />
+          </div>
+          <div class="flex-1 text-[12px] text-[var(--text-n4)]">
+            {{
+              t('formCreate.advanced.uploadFileTip', {
+                type: props.fieldConfig.accept || t('formCreate.advanced.anyType'),
+                size: props.fieldConfig.limitSize || '20MB',
+              })
+            }}
+          </div>
+        </div>
+      </van-uploader>
     </template>
   </van-field>
 </template>
 
 <script setup lang="ts">
-  import { showToast, UploaderFileListItem } from 'vant';
+  import { FieldRule, showToast, UploaderFileListItem } from 'vant';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { Result } from '@lib/shared/types/axios';
+
+  import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
   import { uploadTempAttachment } from '@/api/modules';
 

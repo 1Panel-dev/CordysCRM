@@ -24,4 +24,6 @@ export default {
   'formCreate.advanced.overSize': '文件大小限制为 {size} MB，请重新选择文件',
   'formCreate.advanced.selectLocation': '请选择地址',
   'formCreate.advanced.inputLocationDetail': '请输入详细地址',
+  'crmFormCreate.advanced.anyType': '任意格式',
+  'formCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
 };

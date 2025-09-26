@@ -13,7 +13,7 @@
     <div class="flex flex-col gap-[8px] px-[16px] pb-[16px]">
       <div v-for="file in props.fileList" :key="file.id" class="crm-file-item">
         <CrmFileIcon :type="file.type" width="40px" height="40px" @click="handlePreview(file)" />
-        <div class="flex flex-1 flex-col gap-[2px]">
+        <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
           <div class="flex items-center justify-between">
             <div class="one-line-text flex-1">{{ file.name }}</div>
             <div class="flex items-center gap-[16px]">
@@ -106,7 +106,7 @@
 
 <style lang="less" scoped>
   .crm-file-item {
-    @apply flex w-full items-center;
+    @apply flex w-full items-center overflow-hidden;
 
     gap: 16px;
     padding: 8px;

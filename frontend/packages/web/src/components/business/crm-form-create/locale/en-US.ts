@@ -9,4 +9,5 @@ export default {
   'crmFormCreate.repeatTipWithoutName': 'There are duplicate values in the system',
   'crmFormCreate.advanced.anyType': 'any format',
   'crmFormCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
+  'crmFormCreate.advanced.typeNotValid': 'Invalid file type, please reselect',
 };

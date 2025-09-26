@@ -181,7 +181,7 @@
 <script setup lang="ts">
   import { NButton, NInput, NRadioButton, NRadioGroup, NSwitch, NTooltip } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormConfig, FormFieldLinkItem } from '@lib/shared/models/system/module';
 
@@ -206,7 +206,9 @@
 
   function handleLayoutChange(layout: number) {
     list.value.forEach((item) => {
-      item.fieldWidth = 1 / layout;
+      if (item.type !== FieldTypeEnum.ATTACHMENT) {
+        item.fieldWidth = 1 / layout;
+      }
     });
   }
 

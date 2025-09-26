@@ -9,4 +9,5 @@ export default {
   'crmFormCreate.repeatTipWithoutName': '系统中存在重复值',
   'crmFormCreate.advanced.anyType': '任意格式',
   'crmFormCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
+  'crmFormCreate.advanced.typeNotValid': '非法的文件类型，请重新选择',
 };

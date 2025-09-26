@@ -24,7 +24,8 @@ export function getRuleType(item: FormCreateField) {
     item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
     item.type === FieldTypeEnum.DATA_SOURCE ||
     item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
-    item.type === FieldTypeEnum.PICTURE
+    item.type === FieldTypeEnum.PICTURE ||
+    item.type === FieldTypeEnum.ATTACHMENT
   ) {
     return 'array';
   }

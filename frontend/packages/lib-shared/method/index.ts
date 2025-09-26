@@ -654,7 +654,7 @@ export function getFileIconType(type: string) {
       return 'iconicon_file-ppt_colorful';
     case 'pdf':
       return 'iconicon_file-pdf_colorful';
-    case 'word':
+    case 'docx':
       return 'iconicon_file-word_colorful';
     case 'xlsx':
       return 'iconicon_file-excel_colorful';

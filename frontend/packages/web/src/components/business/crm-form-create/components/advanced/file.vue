@@ -17,6 +17,7 @@
       :accept="props.fieldConfig.accept || '*/*'"
       :custom-request="customRequest"
       :disabled="props.fieldConfig.editable === false"
+      :create-thumbnail-url="createThumbnailUrl"
       list-type="image"
       multiple
       directory-dnd
@@ -57,6 +58,7 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getFileIconType } from '@lib/shared/method';
 
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
 
@@ -92,6 +94,13 @@
       const isRepeat = fileList.value.filter((item) => item.name === file.name).length >= 1;
       if (isRepeat) {
         Message.warning(t('crm.upload.repeatFileTip'));
+        return Promise.resolve(false);
+      }
+    }
+    if (props.fieldConfig.accept) {
+      const acceptedTypes = props.fieldConfig.accept.split(',').map((type) => type.trim());
+      if ((file.type && !acceptedTypes.includes(file.type)) || !file.type) {
+        Message.warning(t('crmFormCreate.advanced.typeNotValid'));
         return Promise.resolve(false);
       }
     }
@@ -152,6 +161,12 @@
     if (fileKeys.value.length > files.length) {
       fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
     }
+  }
+
+  function createThumbnailUrl(file: File | null) {
+    console.log('createThumbnailUrl', file);
+    if (!file) return '';
+    return getFileIconType(file?.type);
   }
 
   watch(
