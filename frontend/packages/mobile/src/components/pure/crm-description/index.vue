@@ -5,7 +5,7 @@
         <slot :name="item.slotName" :item="item">
           <div v-if="item.isTitle" class="crm-description-title">{{ item.label }}</div>
           <template v-else>
-            <div class="crm-description-label whitespace-nowrap">{{ item.label }}</div>
+            <div class="crm-description-label">{{ item.label }}</div>
             <div class="crm-description-value">
               <slot :name="item.valueSlotName" :item="item">
                 <template v-if="item.isImage">
@@ -32,7 +32,7 @@
                 <div v-else-if="item.isAttachment" class="text-[var(--primary-8)]" @click="handleAttachmentClick(item)">
                   {{ t('crm.description.attachment', { count: (item.value as any[])?.length }) }}
                 </div>
-                <div v-else-if="item.isLink" class="one-line-text text-[var(--primary-8)]" @click="openLink(item)">
+                <div v-else-if="item.isLink" class="text-[var(--primary-8)]" @click="openLink(item)">
                   {{ item.value }}
                 </div>
                 <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value as any || ''" />

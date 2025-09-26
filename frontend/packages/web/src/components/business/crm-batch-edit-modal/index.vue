@@ -10,135 +10,137 @@
     @confirm="handleSave"
     @cancel="handleCancel"
   >
-    <n-form
-      ref="formRef"
-      require-mark-placement="left"
-      :model="form"
-      label-placement="left"
-      label-align="right"
-      :label-width="100"
-    >
-      <n-form-item
-        path="fieldId"
-        :label="t('common.updateField')"
-        :rule="[{ required: true, message: t('common.notNull', { value: `${t('org.attributes')}` }) }]"
+    <n-scrollbar class="max-h-[60vh] pr-[8px]">
+      <n-form
+        ref="formRef"
+        require-mark-placement="left"
+        :model="form"
+        label-placement="left"
+        label-align="right"
+        :label-width="100"
       >
-        <n-select
-          v-model:value="form.fieldId"
-          :options="fieldOptions"
-          :placeholder="t('common.pleaseSelect')"
-          label-field="name"
-          filterable
-          value-field="id"
-          clearable
+        <n-form-item
+          path="fieldId"
+          :label="t('common.updateField')"
+          :rule="[{ required: true, message: t('common.notNull', { value: `${t('org.attributes')}` }) }]"
+        >
+          <n-select
+            v-model:value="form.fieldId"
+            :options="fieldOptions"
+            :placeholder="t('common.pleaseSelect')"
+            label-field="name"
+            filterable
+            value-field="id"
+            clearable
+          />
+        </n-form-item>
+        <Select
+          v-if="form.fieldId && [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
         />
-      </n-form-item>
-      <Select
-        v-if="form.fieldId && [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <InputNumber
-        v-else-if="form.fieldId && [FieldTypeEnum.INPUT_NUMBER].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <MemberSelect
-        v-else-if="
-          form.fieldId &&
-          [
-            FieldTypeEnum.MEMBER,
-            FieldTypeEnum.MEMBER_MULTIPLE,
-            FieldTypeEnum.DEPARTMENT,
-            FieldTypeEnum.DEPARTMENT_MULTIPLE,
-          ].includes(currentForm.type)
-        "
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :form-detail="form"
-        :field-config="currentForm"
-      />
-      <Radio
-        v-else-if="form.fieldId && [FieldTypeEnum.RADIO].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :form-detail="form"
-        :field-config="currentForm"
-      />
-      <Checkbox
-        v-else-if="form.fieldId && [FieldTypeEnum.CHECKBOX].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <Textarea
-        v-else-if="form.fieldId && [FieldTypeEnum.TEXTAREA].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <DateTime
-        v-else-if="form.fieldId && [FieldTypeEnum.DATE_TIME].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <SingleText
-        v-else-if="form.fieldId && [FieldTypeEnum.INPUT].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <TagInput
-        v-else-if="form.fieldId && [FieldTypeEnum.INPUT_MULTIPLE].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
+        <InputNumber
+          v-else-if="form.fieldId && [FieldTypeEnum.INPUT_NUMBER].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <MemberSelect
+          v-else-if="
+            form.fieldId &&
+            [
+              FieldTypeEnum.MEMBER,
+              FieldTypeEnum.MEMBER_MULTIPLE,
+              FieldTypeEnum.DEPARTMENT,
+              FieldTypeEnum.DEPARTMENT_MULTIPLE,
+            ].includes(currentForm.type)
+          "
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :form-detail="form"
+          :field-config="currentForm"
+        />
+        <Radio
+          v-else-if="form.fieldId && [FieldTypeEnum.RADIO].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :form-detail="form"
+          :field-config="currentForm"
+        />
+        <Checkbox
+          v-else-if="form.fieldId && [FieldTypeEnum.CHECKBOX].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <Textarea
+          v-else-if="form.fieldId && [FieldTypeEnum.TEXTAREA].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <DateTime
+          v-else-if="form.fieldId && [FieldTypeEnum.DATE_TIME].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <SingleText
+          v-else-if="form.fieldId && [FieldTypeEnum.INPUT].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <TagInput
+          v-else-if="form.fieldId && [FieldTypeEnum.INPUT_MULTIPLE].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
 
-      <dataSource
-        v-else-if="
-          form.fieldId && [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(currentForm.type)
-        "
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <Location
-        v-else-if="form.fieldId && [FieldTypeEnum.LOCATION].includes(currentForm.type)"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <Phone
-        v-else-if="form.fieldId && [FieldTypeEnum.PHONE].includes(currentForm.type)"
-        :id="currentForm.id"
-        v-model:value="form.fieldValue"
-        path="fieldValue"
-        :field-config="currentForm"
-        :form-detail="form"
-      />
-      <n-form-item v-else path="fieldValue" :label="t('common.batchUpdate')">
-        <n-input disabled type="text" :placeholder="t('common.pleaseInput')" :maxlength="255" />
-      </n-form-item>
-    </n-form>
+        <dataSource
+          v-else-if="
+            form.fieldId && [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(currentForm.type)
+          "
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <Location
+          v-else-if="form.fieldId && [FieldTypeEnum.LOCATION].includes(currentForm.type)"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <Phone
+          v-else-if="form.fieldId && [FieldTypeEnum.PHONE].includes(currentForm.type)"
+          :id="currentForm.id"
+          v-model:value="form.fieldValue"
+          path="fieldValue"
+          :field-config="currentForm"
+          :form-detail="form"
+        />
+        <n-form-item v-else path="fieldValue" :label="t('common.batchUpdate')">
+          <n-input disabled type="text" :placeholder="t('common.pleaseInput')" :maxlength="255" />
+        </n-form-item>
+      </n-form>
+    </n-scrollbar>
   </CrmModal>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui';
+  import { FormInst, NForm, NFormItem, NInput, NScrollbar, NSelect, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
