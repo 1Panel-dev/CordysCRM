@@ -102,10 +102,12 @@
   }
 
   function handlePreview(file: AttachmentInfo) {
-    showImagePreview({
-      images: [`${PreviewAttachmentUrl}/${file.id}`],
-      closeable: true,
-    });
+    if (/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type)) {
+      showImagePreview({
+        images: [`${PreviewAttachmentUrl}/${file.id}`],
+        closeable: true,
+      });
+    }
   }
 </script>
 
