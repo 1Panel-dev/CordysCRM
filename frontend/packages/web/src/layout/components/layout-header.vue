@@ -110,7 +110,7 @@
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.authorizationTime') }}
                       </div>
-                      <div class="font-semibold">{{ licenseStore?.licenseInfo?.expired }}</div>
+                      <div class="font-semibold">{{ licenseStore?.licenseInfo?.expired ?? '-' }}</div>
                     </div>
                   </div>
                 </div>
