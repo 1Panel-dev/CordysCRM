@@ -149,7 +149,12 @@ public class AttachmentService {
                 Attachment attachment = new Attachment();
                 attachment.setId(tempFileId);
                 attachment.setName(tempFile.getName());
-                attachment.setType(tempFile.getName().split("\\.")[1]);
+                String type = "";
+                int index = tempFile.getName().lastIndexOf('.');
+                if (index != -1 && index < tempFile.getName().length() - 1) {
+                    type = tempFile.getName().substring(index + 1);
+                }
+                attachment.setType(type);
                 attachment.setSize(tempFile.length());
                 attachment.setStorage(StorageType.LOCAL.name());
                 attachment.setOrganizationId(transferRequest.getOrganizationId());
