@@ -952,6 +952,21 @@ public class ModuleFormService {
         extModuleFieldMapper.batchUpdateMobile(fieldIds, true);
     }
 
+    @SuppressWarnings("unchecked")
+    public void modifyPhoneFieldFormat() {
+        LambdaQueryWrapper<ModuleField> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ModuleField::getType, FieldType.PHONE.name());
+        List<ModuleField> moduleFields = moduleFieldMapper.selectListByLambda(lambdaQueryWrapper);
+        List<String> fieldIds = moduleFields.stream().map(ModuleField::getId).toList();
+        List<ModuleFieldBlob> moduleFieldBlobs = moduleFieldBlobMapper.selectByIds(fieldIds);
+        for (ModuleFieldBlob fieldBlob : moduleFieldBlobs) {
+            Map<String, Object> propMap = JSON.parseMap(fieldBlob.getProp());
+            propMap.put("format", "255");
+            fieldBlob.setProp(JSON.toJSONString(propMap));
+            moduleFieldBlobMapper.updateById(fieldBlob);
+        }
+    }
+
     /**
      * 获取MCP表单需要的字段
      *

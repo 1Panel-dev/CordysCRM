@@ -43,6 +43,7 @@ public class DataInitService {
             initOneTime(moduleFormService::modifyFormLinkProp, "modify.form.link");
             initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
             initOneTime(moduleFormService::modifyFieldMobile, "modify.field.mobile");
+            initOneTime(moduleFormService::modifyPhoneFieldFormat, "modify.field.format");
         } finally {
             lock.unlock();
         }
