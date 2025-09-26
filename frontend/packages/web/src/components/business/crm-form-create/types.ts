@@ -118,6 +118,8 @@ export interface FormCreateField {
   // 链接
   linkSource?: string;
   openMode?: string;
+  // 手机号
+  format?: string;
 }
 
 export interface AttachmentInfo {

@@ -392,6 +392,7 @@ export const phoneDefaultFieldConfig: FormCreateField = {
   icon: 'iconicon_phone',
   name: 'crmFormDesign.phone',
   fieldWidth: 1,
+  format: '255',
   showLabel: true,
   description: '',
   defaultValue: null,

@@ -162,4 +162,5 @@ export default {
   'crmFormDesign.acceptFileTypePlaceholder': '输入文件后缀，英文逗号分隔',
   'crmFormDesign.acceptFileTypeTip': '例如：.jpg,.png,.pdf',
   'crmFormDesign.onlyFull': '仅支持整行宽度',
+  'crmFormDesign.none': '无',
 };

@@ -164,4 +164,5 @@ export default {
   'crmFormDesign.acceptFileTypePlaceholder': 'Enter file extensions, separated by commas',
   'crmFormDesign.acceptFileTypeTip': 'For example: .jpg,.png,.pdf',
   'crmFormDesign.onlyFull': 'Only full-width is supported',
+  'crmFormDesign.none': 'none',
 };

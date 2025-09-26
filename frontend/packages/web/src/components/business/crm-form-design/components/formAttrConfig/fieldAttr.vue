@@ -562,6 +562,20 @@
         </div>
       </template>
       <!-- 链接 End -->
+      <!-- 电话 -->
+      <template v-else-if="fieldConfig.type === FieldTypeEnum.PHONE">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.format') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.format"
+            :disabled="fieldConfig.disabledProps?.includes('format')"
+            :options="phoneFormatOptions"
+          />
+        </div>
+      </template>
+      <!-- 电话 End -->
       <!-- 默认值 -->
       <div
         v-if="
@@ -1117,6 +1131,17 @@
     {
       label: t('crmFormDesign.userInput'),
       value: 'userInput',
+    },
+  ];
+
+  const phoneFormatOptions = [
+    {
+      label: t('crmFormDesign.none'),
+      value: '255',
+    },
+    {
+      label: t('common.phoneNumber'),
+      value: '11',
     },
   ];
 
