@@ -216,12 +216,12 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         // 如果是PHONE类型的字段，使用精确查询
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
             StringUtils.deleteWhitespace(keyword);
-            List<String> phoneList = new ArrayList<>();
+            /*List<String> phoneList = new ArrayList<>();
             phoneList.add(keyword);
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
-            }
-            FilterCondition filterCondition = getFilterCondition(name, phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            }*/
+            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
             conditions.add(filterCondition);
             return;
         }
