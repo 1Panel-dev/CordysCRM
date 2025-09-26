@@ -75,7 +75,7 @@
 
   function parse(val: string) {
     const nums = val.replace(/,/g, '').trim();
-    if (!props.fieldConfig.showThousandsSeparator || /^\d+(\.(\d+)?)?$/.test(nums)) {
+    if ((!props.fieldConfig.showThousandsSeparator || /^\d+(\.(\d+)?)?$/.test(nums)) && nums !== '') {
       return Number(nums);
     }
     return nums === '' ? null : Number.NaN;
