@@ -409,6 +409,13 @@
       enable: true,
     },
     {
+      label: t('common.dashboard'),
+      key: ModuleConfigEnum.DASHBOARD,
+      icon: 'iconicon_dashboard1',
+      groupList: [],
+      enable: true,
+    },
+    {
       label: t('module.agent'),
       key: ModuleConfigEnum.AGENT,
       icon: 'iconicon_bot',
