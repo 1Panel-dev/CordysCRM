@@ -17,7 +17,6 @@
       :accept="props.fieldConfig.accept || '*/*'"
       :custom-request="customRequest"
       :disabled="props.fieldConfig.editable === false"
-      :create-thumbnail-url="createThumbnailUrl"
       list-type="image"
       multiple
       directory-dnd
@@ -58,7 +57,6 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getFileIconType } from '@lib/shared/method';
 
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
 
@@ -160,13 +158,8 @@
   function handleFileListChange(files: UploadFileInfo[]) {
     if (fileKeys.value.length > files.length) {
       fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
+      emit('change', fileKeys.value, fileList.value);
     }
-  }
-
-  function createThumbnailUrl(file: File | null) {
-    console.log('createThumbnailUrl', file);
-    if (!file) return '';
-    return getFileIconType(file?.type);
   }
 
   watch(

@@ -1,5 +1,9 @@
 <template>
-  <van-field :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''" :required="required">
+  <van-field
+    :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
+    :required="required"
+    :rules="props.fieldConfig.rules as FieldRule[]"
+  >
     <template #input>
       <van-uploader
         v-model="fileList"
@@ -13,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-  import { showToast, UploaderFileListItem } from 'vant';
+  import { FieldRule, showToast, UploaderFileListItem } from 'vant';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';

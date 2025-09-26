@@ -211,6 +211,9 @@
     if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
       applyFieldLink(item);
     }
+    if (item.type === FieldTypeEnum.ATTACHMENT) {
+      formRef.value?.validate();
+    }
     unsaved.value = true;
   }
 
