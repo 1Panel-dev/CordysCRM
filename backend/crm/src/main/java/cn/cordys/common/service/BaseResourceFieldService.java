@@ -299,21 +299,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             }
 
             if (!isBlankValue(request.getFieldValue())) {
-                // 字段值不为空，则插入
-                // 获取字段解析器
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-                // 校验参数值
-                customFieldResolver.validate(field, request.getFieldValue());
-                // 将参数值转换成字符串入库
-                String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
-                request.setFieldValue(strValue);
-
                 // 再插入
-                batchUpdateFieldValues(request, moduleField);
+                batchUpdateFieldValues(request, field, moduleField);
             }
 
             // 添加日志
-            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, logModule, userId, orgId);
+            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
         }
 
         // 批量修改业务字段和更新时间等
@@ -400,6 +391,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
                                                   List<? extends BaseResourceField> originFields,
                                                   ResourceBatchEditRequest request,
+                                                  BaseField field,
                                                   String logModule,
                                                   String userId,
                                                   String orgId) {
@@ -414,6 +406,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     BaseResourceField baseResourceField = fieldMap.get(id);
                     Map originResource = new HashMap();
                     if (baseResourceField != null && !isBlankValue(baseResourceField.getFieldValue())) {
+                        // 获取字段解析器
+                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                        // 将数据库中的字符串值,转换为对应的对象值
+                        Object objectValue = customFieldResolver.parse2Value(field, baseResourceField.getFieldValue().toString());
+                        baseResourceField.setFieldValue(objectValue);
                         originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
                     }
 
@@ -735,7 +732,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param request
      */
-    public void batchUpdateFieldValues(ResourceBatchEditRequest request, ModuleField moduleField) {
+    public void batchUpdateFieldValues(ResourceBatchEditRequest request, BaseField field, ModuleField moduleField) {
+        // 获取字段解析器
+        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+        // 校验参数值
+        customFieldResolver.validate(field, request.getFieldValue());
+        // 将参数值转换成字符串入库
+        String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
         if (moduleField == null) {
             throw new GenericException(Translator.get("module.field.not_exist"));
         }
@@ -746,7 +749,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(id);
                         resourceField.setFieldId(request.getFieldId());
-                        resourceField.setFieldValue(request.getFieldValue());
+                        resourceField.setFieldValue(strValue);
                         return resourceField;
                     }).collect(Collectors.toList());
             getResourceFieldBlobMapper().batchInsert(resourceFields);
@@ -757,7 +760,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(id);
                         resourceField.setFieldId(request.getFieldId());
-                        resourceField.setFieldValue(request.getFieldValue());
+                        resourceField.setFieldValue(strValue);
                         return resourceField;
                     }).collect(Collectors.toList());
             getResourceFieldMapper().batchInsert(resourceFields);
