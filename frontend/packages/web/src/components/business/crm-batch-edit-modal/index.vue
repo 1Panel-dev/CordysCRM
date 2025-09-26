@@ -15,6 +15,7 @@
         ref="formRef"
         require-mark-placement="left"
         :model="form"
+        class="crm-batch-edit-form"
         label-placement="left"
         label-align="right"
         :label-width="100"
@@ -67,6 +68,7 @@
           v-else-if="form.fieldId && [FieldTypeEnum.RADIO].includes(currentForm.type)"
           v-model:value="form.fieldValue"
           path="fieldValue"
+          class="crm-batch-edit-form-item"
           :form-detail="form"
           :field-config="currentForm"
         />
@@ -74,6 +76,7 @@
           v-else-if="form.fieldId && [FieldTypeEnum.CHECKBOX].includes(currentForm.type)"
           v-model:value="form.fieldValue"
           path="fieldValue"
+          class="crm-batch-edit-form-item"
           :field-config="currentForm"
           :form-detail="form"
         />
@@ -342,4 +345,13 @@
   }
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+  .crm-batch-edit-form {
+    :deep(.crm-batch-edit-form-item) {
+      .n-checkbox-group,
+      .n-radio-group {
+        margin-top: 4px !important;
+      }
+    }
+  }
+</style>
