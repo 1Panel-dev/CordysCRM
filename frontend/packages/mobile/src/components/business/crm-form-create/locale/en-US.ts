@@ -24,6 +24,6 @@ export default {
   'formCreate.advanced.overSize': 'File size limit is {size} MB, please re-select the file',
   'formCreate.advanced.selectLocation': 'Please select an address',
   'formCreate.advanced.inputLocationDetail': 'Please enter detailed address',
-  'crmFormCreate.advanced.anyType': 'any format',
+  'formCreate.advanced.anyType': 'any format',
   'formCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
 };

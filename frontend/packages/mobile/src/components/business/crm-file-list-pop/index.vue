@@ -44,11 +44,12 @@
 </template>
 
 <script setup lang="ts">
-  import { showImagePreview } from 'vant';
+  import { showImagePreview, showToast } from 'vant';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { isWeComBrowser } from '@lib/shared/method';
 
   import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
@@ -80,6 +81,10 @@
   // }
 
   async function handleDownloadAttachment(file: AttachmentInfo) {
+    if (isWeComBrowser()) {
+      showToast(t('crm.fileListPop.wxworkDownloadTip'));
+      return;
+    }
     try {
       const res = await downloadAttachment(file.id);
       const url = URL.createObjectURL(new Blob([res], { type: 'application/octet-stream' }));

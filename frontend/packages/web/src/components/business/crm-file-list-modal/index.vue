@@ -44,11 +44,12 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NImagePreview } from 'naive-ui';
+  import { NButton, NDivider, NImagePreview, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { isWeComBrowser } from '@lib/shared/method';
 
   import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -65,6 +66,7 @@
     (e: 'deleteFile', id: string): void;
   }>();
 
+  const Message = useMessage();
   const { t } = useI18n();
 
   const show = defineModel<boolean>('show', {
@@ -84,6 +86,10 @@
   }
 
   async function handleDownload(file: AttachmentInfo) {
+    if (isWeComBrowser()) {
+      Message.warning(t('crm.fileListModal.wxworkDownloadTip'));
+      return;
+    }
     try {
       const res = await downloadAttachment(file.id);
       const url = URL.createObjectURL(new Blob([res], { type: 'application/octet-stream' }));
