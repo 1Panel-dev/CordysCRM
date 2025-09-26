@@ -3,7 +3,7 @@
     :label="props.fieldConfig.name"
     :show-label="props.fieldConfig.showLabel"
     :path="props.path"
-    :rule="props.fieldConfig.rules"
+    :rule="mergedRules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
@@ -31,6 +31,8 @@
   import { watch } from 'vue';
   import { NFormItem, NInput } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { FormCreateField } from '../../types';
@@ -48,10 +50,27 @@
     default: '',
   });
 
+  const { t } = useI18n();
+
   function onlyAllowNumber(val: string) {
     if (!val) return true;
     return /^[0-9+\- ()（）]*$/.test(val);
   }
+
+  const mergedRules = computed(() => {
+    const rawRules = props.fieldConfig.rules || [];
+    const formatRule = {
+      key: 'phone-length-validator',
+      trigger: ['input', 'blur'],
+      validator: (_rule: any, val: string) => {
+        if (!val) return Promise.resolve();
+        if (props.fieldConfig.format === '11' && value.value.length !== 11) {
+          return Promise.reject(new Error(t('crmFormDesign.phone.lengthValidator', { count: 11 })));
+        }
+      },
+    };
+    return [...rawRules, formatRule];
+  });
 
   watch(
     () => props.fieldConfig.defaultValue,

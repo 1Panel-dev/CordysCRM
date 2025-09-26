@@ -4,7 +4,7 @@
     type="tel"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
-    :rules="props.fieldConfig.rules as FieldRule[]"
+    :rules="mergedRules"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
     :disabled="props.fieldConfig.editable === false"
     :maxlength="Number(props.fieldConfig.format) || 255"
@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-  import { FieldRule } from 'vant';
+  import { FieldRule, FieldRuleValidator } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -32,6 +32,20 @@
 
   const value = defineModel<string>('value', {
     default: '',
+  });
+
+  const mergedRules = computed<FieldRule[]>(() => {
+    const rawRules = (props.fieldConfig.rules as FieldRule[]) || [];
+    const formatRule: FieldRule = {
+      trigger: ['onBlur', 'onChange'],
+      validator: ((val: string) => {
+        if (!val) return Promise.resolve();
+        if (props.fieldConfig.format === '11' && value.value.length !== 11) {
+          return t('formCreate.phone.lengthValidator', { count: 11 });
+        }
+      }) as FieldRuleValidator,
+    };
+    return [...rawRules, formatRule];
   });
 
   watch(
