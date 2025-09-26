@@ -28,20 +28,10 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CustomFieldImportEventListener<T, F extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
 
-    /**
-     * 除开特定的区号和格式校验, 还需兜底的其他手机格式
-     */
-    public static final String PHONE_REGEX =
-            "^[(（]\\+86[)）]\\s?1[3-9]\\d{9}$"
-                    + "|^[(（]\\+(852|853)[)）]\\s?\\d{8}$"
-                    + "|^[(（]\\+886[)）]\\s?\\d{9,10}$"
-                    + "|^(?![(（]\\+(86|852|853|886)[)）])(?:[(（]\\+\\d{1,4}[)）])?\\s?[\\d\\-\\s]{4,20}$";
-    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
     /**
      * 主表数据
      */
@@ -90,10 +80,6 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
     private final CommonMapper commonMapper;
     private final BaseMapper<F> fieldMapper;
     /**
-     * 正则校验
-     */
-    private final Map<String, Pattern> regexMap = new HashMap<>();
-    /**
      * 后置处理函数
      */
     private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
@@ -133,9 +119,6 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
             }
             if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
                 fieldLenLimit.put(field.getName(), 1000);
-            }
-            if (Strings.CS.equals(field.getType(), FieldType.PHONE.name())) {
-                regexMap.put(field.getName(), PHONE_PATTERN);
             }
         });
         this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
@@ -335,12 +318,6 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
             if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
                     rowData.get(k).length() > fieldLenLimit.get(v)) {
                 errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
-            }
-            if (regexMap.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k))) {
-                Pattern pattern = regexMap.get(v);
-                if (!pattern.matcher(rowData.get(k)).matches()) {
-                    errText.append(v).append(Translator.get("phone.wrong.format")).append(";");
-                }
             }
         });
         if (StringUtils.isNotEmpty(errText)) {
