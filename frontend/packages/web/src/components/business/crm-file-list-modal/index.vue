@@ -85,8 +85,8 @@
 
   async function handleDownload(file: AttachmentInfo) {
     try {
-      const blob = await downloadAttachment(file.id);
-      const url = URL.createObjectURL(blob);
+      const res = await downloadAttachment(file.id);
+      const url = URL.createObjectURL(new Blob([res], { type: 'application/octet-stream' }));
       const a = document.createElement('a');
       a.href = url;
       a.download = file.name;

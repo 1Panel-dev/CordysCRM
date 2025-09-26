@@ -285,7 +285,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function downloadAttachment(id: string) {
-    return CDR.get({ url: `${DownloadAttachmentUrl}/${id}` });
+    return CDR.get({ url: `${DownloadAttachmentUrl}/${id}`, responseType: 'blob' }, { isTransformResponse: false });
   }
 
   function deleteAttachment(id: string) {
