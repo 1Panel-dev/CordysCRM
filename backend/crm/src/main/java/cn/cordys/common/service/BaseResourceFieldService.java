@@ -234,7 +234,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         Object fieldValue = getResourceFieldValue(resource, fieldName);
 
-        if (!isNullOrEmpty(fieldValue)) {
+        if (!isBlankValue(fieldValue)) {
             boolean repeat;
             if (CollectionUtils.isNotEmpty(updateIds)) {
                 repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, updateIds);
@@ -293,7 +293,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             // 先删除
             batchDeleteFieldValues(request, moduleField);
 
-            if (field.needRepeatCheck()) {
+            if (field.needRepeatCheck() && !isBlankValue(request.getFieldValue())) {
                 // 字段唯一性校验
                 checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
             }
