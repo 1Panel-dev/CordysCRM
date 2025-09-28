@@ -4,6 +4,7 @@ import {
   AddClueFollowRecordUrl,
   AddClueUrl,
   AddClueViewUrl,
+  AddPoolLeadViewUrl,
   AssignClueUrl,
   BatchAssignClueUrl,
   BatchDeleteCluePoolUrl,
@@ -19,14 +20,18 @@ import {
   DeleteCluePoolUrl,
   DeleteClueUrl,
   DeleteClueViewUrl,
+  DeletePoolLeadViewUrl,
   DownloadTemplateUrl,
   DragClueViewUrl,
+  DragPoolLeadViewUrl,
   EnableClueViewUrl,
+  EnablePoolLeadViewUrl,
   ExportClueAllUrl,
   ExportCluePoolAllUrl,
   ExportCluePoolSelectedUrl,
   ExportClueSelectedUrl,
   FixedClueViewUrl,
+  FixedPoolLeadViewUrl,
   GetAdvancedCluePoolListUrl,
   GetAdvancedSearchClueDetailUrl,
   GetAdvancedSearchClueListUrl,
@@ -47,6 +52,8 @@ import {
   GetGlobalCluePoolListUrl,
   GetGlobalSearchClueListUrl,
   GetPoolClueUrl,
+  GetPoolLeadViewDetailUrl,
+  GetPoolLeadViewListUrl,
   GetPoolOptionsUrl,
   ImportLeadUrl,
   MoveToPoolLeadUrl,
@@ -60,6 +67,7 @@ import {
   UpdateClueStatusUrl,
   UpdateClueUrl,
   UpdateClueViewUrl,
+  UpdatePoolLeadViewUrl,
 } from '@lib/shared/api/requrls/clue';
 import type {
   AssignClueParams,
@@ -398,6 +406,39 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<CluePoolListItem>>({ url: GetGlobalCluePoolListUrl, data }, { ignoreCancelToken: true });
   }
 
+  // 线索池视图
+  function addLeadPoolView(data: ViewParams) {
+    return CDR.post({ url: AddPoolLeadViewUrl, data });
+  }
+
+  function updateLeadPoolView(data: ViewParams) {
+    return CDR.post({ url: UpdatePoolLeadViewUrl, data });
+  }
+
+  function getLeadPoolViewList() {
+    return CDR.get<ViewItem[]>({ url: GetPoolLeadViewListUrl });
+  }
+
+  function getLeadPoolViewDetail(id: string) {
+    return CDR.get({ url: `${GetPoolLeadViewDetailUrl}/${id}` });
+  }
+
+  function fixedLeadPoolView(id: string) {
+    return CDR.get({ url: `${FixedPoolLeadViewUrl}/${id}` });
+  }
+
+  function enableLeadPoolView(id: string) {
+    return CDR.get({ url: `${EnablePoolLeadViewUrl}/${id}` });
+  }
+
+  function deleteLeadPoolView(id: string) {
+    return CDR.get({ url: `${DeletePoolLeadViewUrl}/${id}` });
+  }
+
+  function dragLeadPoolView(data: TableDraggedParams) {
+    return CDR.post({ url: DragPoolLeadViewUrl, data });
+  }
+
   return {
     addClue,
     updateClue,
@@ -459,5 +500,13 @@ export default function useProductApi(CDR: CordysAxios) {
     exportCluePoolSelected,
     transformClue,
     batchUpdateCluePool,
+    addLeadPoolView,
+    deleteLeadPoolView,
+    fixedLeadPoolView,
+    getLeadPoolViewDetail,
+    getLeadPoolViewList,
+    updateLeadPoolView,
+    enableLeadPoolView,
+    dragLeadPoolView,
   };
 }

@@ -62,6 +62,16 @@
         />
       </div>
     </template>
+    <template #view>
+      <CrmViewSelect
+        v-if="!props.hiddenAdvanceFilter"
+        v-model:active-tab="activeTab"
+        :type="FormDesignKeyEnum.CLUE_POOL"
+        :custom-fields-config-list="filterConfigList"
+        :filter-config-list="customFieldsFilterConfig"
+        @refresh-table-data="searchData"
+      />
+    </template>
   </CrmTable>
   <TransferModal
     v-model:show="showDistributeModal"
@@ -129,6 +139,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import CluePoolOverviewDrawer from './cluePoolOverviewDrawer.vue';
   import addOrEditPoolDrawer from '@/views/system/module/components/addOrEditPoolDrawer.vue';
 
@@ -440,7 +451,7 @@
   }
 
   const activeClue = ref<Partial<CluePoolListItem>>();
-
+  const activeTab = ref();
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
   const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
@@ -561,7 +572,7 @@
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
   function searchData(_keyword?: string, id?: string) {
-    setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });
+    setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value, viewId: activeTab.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
@@ -589,6 +600,20 @@
     () => {
       crmTableRef.value?.clearCheckedRowKeys();
       searchData();
+    }
+  );
+
+  watch(
+    () => activeTab.value,
+    (val) => {
+      if (val) {
+        checkedRowKeys.value = [];
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+        });
+        crmTableRef.value?.setColumnSort(val);
+      }
     }
   );
 

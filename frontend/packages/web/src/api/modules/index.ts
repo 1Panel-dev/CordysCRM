@@ -161,6 +161,14 @@ export const {
   getGlobalSearchClueList,
   transformClue,
   batchUpdateCluePool,
+  addLeadPoolView,
+  deleteLeadPoolView,
+  fixedLeadPoolView,
+  getLeadPoolViewDetail,
+  getLeadPoolViewList,
+  updateLeadPoolView,
+  enableLeadPoolView,
+  dragLeadPoolView,
 } = clueApi;
 
 export const {
@@ -262,6 +270,14 @@ export const {
   downloadContactTemplate,
   importContact,
   batchUpdateOpenSeaCustomer,
+  addAccountPoolView,
+  deleteAccountPoolView,
+  fixedAccountPoolView,
+  getAccountPoolViewDetail,
+  getAccountPoolViewList,
+  updateAccountPoolView,
+  enableAccountPoolView,
+  dragAccountPoolView,
 } = customerApi;
 
 export const {

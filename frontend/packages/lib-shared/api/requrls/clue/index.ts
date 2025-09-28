@@ -73,3 +73,13 @@ export const DragClueViewUrl = '/lead/view/edit/pos';
 export const PreCheckImportUrl = '/lead/import/pre-check';
 export const DownloadTemplateUrl = '/lead/template/download';
 export const ImportLeadUrl = '/lead/import';
+
+// 线索池视图
+export const GetPoolLeadViewDetailUrl = 'pool/lead/view/detail';
+export const GetPoolLeadViewListUrl = 'pool/lead/view/list';
+export const AddPoolLeadViewUrl = 'pool/lead/view/add';
+export const UpdatePoolLeadViewUrl = 'pool/lead/view/update';
+export const DeletePoolLeadViewUrl = 'pool/lead/view/delete';
+export const FixedPoolLeadViewUrl = 'pool/lead/view/fixed';
+export const EnablePoolLeadViewUrl = 'pool/lead/view/enable';
+export const DragPoolLeadViewUrl = 'pool/lead/view/edit/pos';

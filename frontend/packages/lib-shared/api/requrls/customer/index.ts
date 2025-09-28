@@ -108,3 +108,13 @@ export const ImportAccountUrl = '/account/import';
 export const PreCheckContactImportUrl = '/account/contact/import/pre-check';
 export const DownloadContactTemplateUrl = '/account/contact/template/download';
 export const ImportContactUrl = '/account/contact/import';
+
+// 公海视图
+export const GetAccountPoolViewDetailUrl = 'pool/account/view/detail';
+export const GetAccountPoolViewListUrl = 'pool/account/view/list';
+export const AddAccountPoolViewUrl = 'pool/account/view/add';
+export const UpdateAccountPoolViewUrl = 'pool/account/view/update';
+export const DeleteAccountPoolViewUrl = 'pool/account/view/delete';
+export const FixedAccountPoolViewUrl = 'pool/account/view/fixed';
+export const EnableAccountPoolViewUrl = 'pool/account/view/enable';
+export const DragAccountPoolViewUrl = 'pool/account/view/edit/pos';

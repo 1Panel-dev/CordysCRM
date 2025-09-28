@@ -12,11 +12,16 @@ export type TabType =
   | FormDesignKeyEnum.CUSTOMER
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CLUE
+  | FormDesignKeyEnum.CLUE_POOL
+  | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | FormDesignKeyEnum.CONTACT;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
 
-  const tabApiMap: Record<TabType, () => Promise<CustomerTabHidden>> = {
+  const tabApiMap: Record<
+    Exclude<TabType, FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.CUSTOMER_OPEN_SEA>,
+    () => Promise<CustomerTabHidden>
+  > = {
     [FormDesignKeyEnum.CUSTOMER]: getCustomerTab,
     [FormDesignKeyEnum.CONTACT]: getCustomerContactTab,
     [FormDesignKeyEnum.BUSINESS]: getOptTab,
@@ -91,11 +96,27 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allLeadPoolTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('clue.allClues'),
+    },
+  ];
+
+  const allAccountPoolTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('customer.all'),
+    },
+  ];
+
   const tabListMap: Record<TabType, TabPaneProps[]> = {
     [FormDesignKeyEnum.CUSTOMER]: allCustomerTabList,
     [FormDesignKeyEnum.CONTACT]: allContactTabList,
     [FormDesignKeyEnum.BUSINESS]: allOpportunityTabList,
     [FormDesignKeyEnum.CLUE]: allClueTabList,
+    [FormDesignKeyEnum.CLUE_POOL]: allLeadPoolTabList,
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: allAccountPoolTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);
@@ -103,13 +124,20 @@ export default function useHiddenTab(type?: TabType) {
   async function initTab() {
     try {
       if (!type) return;
-      const result = await tabApiMap[type]();
-      const { all, dept } = result;
-      tabList.value = tabListMap[type].filter((e) => {
-        if (e.name === 'ALL') return !!all;
-        if (e.name === 'DEPARTMENT') return !!dept;
-        return true;
-      });
+
+      const typeValue = type as keyof typeof tabApiMap;
+      const tabApi = tabApiMap[typeValue];
+      if (tabApi) {
+        const result = await tabApi();
+        const { all, dept } = result;
+        tabList.value = tabListMap[typeValue].filter((e) => {
+          if (e.name === 'ALL') return !!all;
+          if (e.name === 'DEPARTMENT') return !!dept;
+          return true;
+        });
+      } else {
+        tabList.value = tabListMap[type];
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

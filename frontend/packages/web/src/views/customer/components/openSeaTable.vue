@@ -52,6 +52,16 @@
         @keyword-search="searchData"
       />
     </template>
+    <template #view>
+      <CrmViewSelect
+        v-if="!props.hiddenAdvanceFilter"
+        v-model:active-tab="activeTab"
+        :type="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+        :custom-fields-config-list="filterConfigList"
+        :filter-config-list="customFieldsFilterConfig"
+        @refresh-table-data="searchData"
+      />
+    </template>
   </CrmTable>
   <addOrEditPoolDrawer
     v-model:visible="drawerVisible"
@@ -117,6 +127,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import openSeaOverviewDrawer from './openSeaOverviewDrawer.vue';
   import addOrEditPoolDrawer from '@/views/system/module/components/addOrEditPoolDrawer.vue';
 
@@ -169,6 +180,7 @@
   const activeCustomerId = ref('');
   const showOverviewDrawer = ref(false);
   const batchTableQueryParams = ref<TableQueryParams>({});
+  const activeTab = ref();
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
     if (option.editable) {
@@ -545,6 +557,7 @@
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       poolId: props.hiddenPoolSelect ? undefined : poolId || openSea.value,
+      viewId: activeTab.value,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -557,6 +570,20 @@
     () => {
       crmTableRef.value?.clearCheckedRowKeys();
       searchData();
+    }
+  );
+
+  watch(
+    () => activeTab.value,
+    (val) => {
+      if (val) {
+        checkedRowKeys.value = [];
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+        });
+        crmTableRef.value?.setColumnSort(val);
+      }
     }
   );
 

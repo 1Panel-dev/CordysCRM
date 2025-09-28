@@ -1,5 +1,6 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddAccountPoolViewUrl,
   AddContactViewUrl,
   AddCustomerCollaborationUrl,
   AddCustomerContactUrl,
@@ -20,6 +21,7 @@ import {
   CancelCustomerFollowPlanUrl,
   CheckOpportunityContactUrl,
   ContactListUnderCustomerUrl,
+  DeleteAccountPoolViewUrl,
   DeleteContactViewUrl,
   DeleteCustomerCollaborationUrl,
   DeleteCustomerContactUrl,
@@ -33,8 +35,10 @@ import {
   DisableCustomerContactUrl,
   DownloadAccountTemplateUrl,
   DownloadContactTemplateUrl,
+  DragAccountPoolViewUrl,
   DragContactViewUrl,
   DragCustomerViewUrl,
+  EnableAccountPoolViewUrl,
   EnableContactViewUrl,
   EnableCustomerContactUrl,
   EnableCustomerViewUrl,
@@ -44,8 +48,11 @@ import {
   ExportCustomerSelectedUrl,
   ExportOpenSeaCustomerAllUrl,
   ExportOpenSeaCustomerSelectedUrl,
+  FixedAccountPoolViewUrl,
   FixedContactViewUrl,
   FixedCustomerViewUrl,
+  GetAccountPoolViewDetailUrl,
+  GetAccountPoolViewListUrl,
   GetAdvancedCustomerContactListUrl,
   GetAdvancedCustomerListUrl,
   GetAdvancedOpenSeaCustomerListUrl,
@@ -91,6 +98,7 @@ import {
   PreCheckContactImportUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
+  UpdateAccountPoolViewUrl,
   UpdateContactViewUrl,
   UpdateCustomerCollaborationUrl,
   UpdateCustomerContactUrl,
@@ -667,6 +675,39 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportContactUrl }, { fileList: [file] }, 'file');
   }
 
+  // 公海视图
+  function addAccountPoolView(data: ViewParams) {
+    return CDR.post({ url: AddAccountPoolViewUrl, data });
+  }
+
+  function updateAccountPoolView(data: ViewParams) {
+    return CDR.post({ url: UpdateAccountPoolViewUrl, data });
+  }
+
+  function getAccountPoolViewList() {
+    return CDR.get<ViewItem[]>({ url: GetAccountPoolViewListUrl });
+  }
+
+  function getAccountPoolViewDetail(id: string) {
+    return CDR.get({ url: `${GetAccountPoolViewDetailUrl}/${id}` });
+  }
+
+  function fixedAccountPoolView(id: string) {
+    return CDR.get({ url: `${FixedAccountPoolViewUrl}/${id}` });
+  }
+
+  function enableAccountPoolView(id: string) {
+    return CDR.get({ url: `${EnableAccountPoolViewUrl}/${id}` });
+  }
+
+  function deleteAccountPoolView(id: string) {
+    return CDR.get({ url: `${DeleteAccountPoolViewUrl}/${id}` });
+  }
+
+  function dragAccountPoolView(data: TableDraggedParams) {
+    return CDR.post({ url: DragAccountPoolViewUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -748,6 +789,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getCustomerViewList,
     updateCustomerView,
     enableCustomerView,
+    dragCustomerView,
     addContactView,
     deleteContactView,
     fixedContactView,
@@ -755,7 +797,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getContactViewList,
     updateContactView,
     enableContactView,
-    dragCustomerView,
     dragContactView,
     geAdvancedCustomerList,
     getAdvancedOpenSeaCustomerList,
@@ -769,5 +810,13 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadContactTemplate,
     importContact,
     batchUpdateOpenSeaCustomer,
+    addAccountPoolView,
+    deleteAccountPoolView,
+    fixedAccountPoolView,
+    getAccountPoolViewDetail,
+    getAccountPoolViewList,
+    updateAccountPoolView,
+    enableAccountPoolView,
+    dragAccountPoolView,
   };
 }
