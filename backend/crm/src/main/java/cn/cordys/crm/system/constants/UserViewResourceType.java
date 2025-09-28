@@ -4,5 +4,7 @@ public enum UserViewResourceType {
     OPPORTUNITY,
     CUSTOMER,
     CUSTOMER_CONTACT,
-    CLUE
+    CLUE,
+    CUSTOMER_POOL,
+    CLUE_POOL
 }
