@@ -55,6 +55,8 @@ public class WeComDepartmentService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private IntegrationConfigService integrationConfigService;
 
     /**
      * 企业微信同步组织架构
@@ -84,13 +86,11 @@ public class WeComDepartmentService {
      * 执行同步操作
      */
     private void performSync(String operatorId, String orgId) {
-        IntegrationConfigService configService = CommonBeanFactory.getBean(IntegrationConfigService.class);
         LogService logService = CommonBeanFactory.getBean(LogService.class);
 
         // 获取企业微信配置信息
-        assert configService != null;
-        ThirdConfigurationDTO weComConfig = getWeComConfig(orgId, configService);
-        boolean syncStatus = configService.getSyncStatus(orgId,
+        ThirdConfigurationDTO weComConfig = getWeComConfig(orgId);
+        boolean syncStatus = integrationConfigService.getSyncStatus(orgId,
                 OrganizationConfigConstants.ConfigType.THIRD.name(),
                 DepartmentConstants.WECOM.name());
 
@@ -116,8 +116,8 @@ public class WeComDepartmentService {
     /**
      * 获取企业微信配置
      */
-    private ThirdConfigurationDTO getWeComConfig(String orgId, IntegrationConfigService configService) {
-        List<ThirdConfigurationDTO> configs = configService.getThirdConfig(orgId);
+    private ThirdConfigurationDTO getWeComConfig(String orgId) {
+        List<ThirdConfigurationDTO> configs = integrationConfigService.getThirdConfig(orgId);
         if (CollectionUtils.isEmpty(configs)) {
             throw new GenericException("未配置企业信息");
         }
