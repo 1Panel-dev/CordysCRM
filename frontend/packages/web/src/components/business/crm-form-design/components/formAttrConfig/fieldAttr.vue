@@ -702,19 +702,27 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fileUploadConfig') }}
         </div>
-        <n-checkbox
-          v-model:checked="fieldConfig.onlyOne"
-          :disabled="fieldConfig.disabledProps?.includes('onlyOne')"
-          @update-checked="
-            ($event) => {
-              if ($event === false) {
-                fieldConfig.onlyOne = false;
+        <div class="flex items-center">
+          <n-checkbox
+            v-model:checked="fieldConfig.onlyOne"
+            :disabled="fieldConfig.disabledProps?.includes('onlyOne')"
+            @update-checked="
+              ($event) => {
+                if ($event === false) {
+                  fieldConfig.onlyOne = false;
+                }
               }
-            }
-          "
-        >
-          {{ t('crmFormDesign.onlyOneFile') }}
-        </n-checkbox>
+            "
+          >
+            {{ t('crmFormDesign.onlyOneFile') }}
+          </n-checkbox>
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <CrmIcon type="iconicon_help_circle" :size="16" class="cursor-pointer hover:text-[var(--primary-1)]" />
+            </template>
+            {{ t('crmFormDesign.onlyOneFileTip') }}
+          </n-tooltip>
+        </div>
         <n-checkbox
           v-model:checked="currentFieldHasAccept"
           :disabled="fieldConfig.disabledProps?.includes('accept')"

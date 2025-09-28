@@ -26,4 +26,5 @@ export default {
   'formCreate.advanced.inputLocationDetail': 'Please enter detailed address',
   'formCreate.advanced.anyType': 'any format',
   'formCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
+  'formCreate.advanced.limitCount': ', maximum limit is {count}',
 };

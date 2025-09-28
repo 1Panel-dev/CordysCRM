@@ -163,4 +163,5 @@ export default {
   'crmFormDesign.acceptFileTypeTip': '例如：.jpg,.png,.pdf',
   'crmFormDesign.onlyFull': '仅支持整行宽度',
   'crmFormDesign.none': '无',
+  'crmFormDesign.onlyOneFileTip': '不勾选则最大限制 10 个附件',
 };

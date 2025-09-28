@@ -165,4 +165,5 @@ export default {
   'crmFormDesign.acceptFileTypeTip': 'For example: .jpg,.png,.pdf',
   'crmFormDesign.onlyFull': 'Only full-width is supported',
   'crmFormDesign.none': 'none',
+  'crmFormDesign.onlyOneFileTip': 'If not checked, the maximum limit is 10 attachments',
 };

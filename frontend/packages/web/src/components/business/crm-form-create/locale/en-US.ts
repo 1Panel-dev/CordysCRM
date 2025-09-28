@@ -10,4 +10,5 @@ export default {
   'crmFormCreate.advanced.anyType': 'any format',
   'crmFormCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
   'crmFormCreate.advanced.typeNotValid': 'Invalid file type, please reselect',
+  'crmFormCreate.advanced.limitCount': ', maximum limit is {count}',
 };

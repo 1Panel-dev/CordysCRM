@@ -33,10 +33,10 @@
           </div>
           <div class="text-[12px] text-[var(--text-n4)]">
             {{
-              t('crmFormCreate.advanced.uploadFileTip', {
+              `${t('crmFormCreate.advanced.uploadFileTip', {
                 type: props.fieldConfig.accept || t('crmFormCreate.advanced.anyType'),
                 size: props.fieldConfig.limitSize || '20MB',
-              })
+              })}${t('crmFormCreate.advanced.limitCount', { count: props.fieldConfig.onlyOne ? 1 : 10 })}`
             }}
           </div>
         </div>

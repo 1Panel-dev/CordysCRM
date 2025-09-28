@@ -20,10 +20,10 @@
           </div>
           <div class="flex-1 text-[12px] text-[var(--text-n4)]">
             {{
-              t('formCreate.advanced.uploadFileTip', {
+              `${t('formCreate.advanced.uploadFileTip', {
                 type: props.fieldConfig.accept || t('formCreate.advanced.anyType'),
                 size: props.fieldConfig.limitSize || '20MB',
-              })
+              })}${t('formCreate.advanced.limitCount', { count: props.fieldConfig.onlyOne ? 1 : 10 })}`
             }}
           </div>
         </div>
