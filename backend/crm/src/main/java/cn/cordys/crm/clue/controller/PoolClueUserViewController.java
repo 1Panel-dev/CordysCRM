@@ -66,7 +66,7 @@ public class PoolClueUserViewController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "线索池视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CUSTOMER_POOL.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CLUE_POOL.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
