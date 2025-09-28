@@ -507,7 +507,7 @@
         </include>
     </select>
     <select id="globalPoolSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCustomerPoolResponse">
-        select c.id, c.`name`, c.pool_id, cp.name as poolName
+        select c.id, c.`name`, c.pool_id, cp.name as poolName, c.follow_time
         from customer c inner join customer_pool cp on c.pool_id = cp.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
@@ -536,7 +536,7 @@
     </select>
 
     <select id="globalSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCustomerResponse">
-        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time
+        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.follow_time
         from customer c
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>

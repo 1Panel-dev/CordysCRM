@@ -25,4 +25,7 @@ public class GlobalCustomerPoolResponse {
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "最新跟进日期")
+    private Long followTime;
 }

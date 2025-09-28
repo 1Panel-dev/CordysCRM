@@ -469,7 +469,7 @@
     </select>
 
     <select id="globalSearchList" resultType="cn.cordys.crm.search.response.global.GlobalClueResponse">
-        select c.id, c.`name`, c.owner, c.create_time, c.products, c.phone
+        select c.id, c.`name`, c.owner, c.create_time, c.products, c.phone, c.follow_time
         from `clue` c
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
@@ -499,7 +499,7 @@
     </select>
 
     <select id="globalPoolSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCluePoolResponse">
-        select c.id, c.`name`, c.products, c.pool_id, cp.name as poolName, c.phone
+        select c.id, c.`name`, c.products, c.pool_id, cp.name as poolName, c.phone, c.follow_time
         from `clue` c inner join clue_pool cp on c.pool_id = cp.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>

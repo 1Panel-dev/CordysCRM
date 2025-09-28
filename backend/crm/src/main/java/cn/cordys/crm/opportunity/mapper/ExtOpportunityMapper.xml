@@ -692,7 +692,8 @@
         o.create_time,
         o.owner,
         o.products,
-        o.stage
+        o.stage,
+        o.follow_time
         FROM
         opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
