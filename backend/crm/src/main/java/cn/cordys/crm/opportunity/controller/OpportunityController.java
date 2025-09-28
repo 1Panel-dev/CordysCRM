@@ -17,6 +17,7 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.opportunity.service.OpportunityExportService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -130,6 +131,13 @@ public class OpportunityController {
     @Operation(summary = "更新商机阶段")
     public void updateStage(@RequestBody OpportunityStageRequest request) {
         opportunityService.updateStage(request);
+    }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量更新商机")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+        opportunityService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")

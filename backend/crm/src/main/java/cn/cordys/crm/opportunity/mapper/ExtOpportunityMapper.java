@@ -2,6 +2,7 @@ package cn.cordys.crm.opportunity.mapper;
 
 
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
@@ -65,4 +66,6 @@ public interface ExtOpportunityMapper {
      * @param opportunity 商机
      */
     void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);
+
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

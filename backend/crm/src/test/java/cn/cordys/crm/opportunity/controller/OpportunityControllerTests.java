@@ -1,5 +1,7 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportHeadDTO;
@@ -9,8 +11,12 @@ import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.*;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -35,8 +42,10 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
     protected static final String STATISTIC = "statistic";
+    protected static final String BATCH_UPDATE = "batch/update";
     private static final String BASE_PATH = "/opportunity/";
     private static Opportunity addOpportunity;
+    private static ModuleFormConfigDTO moduleFormConfig;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
 
@@ -49,7 +58,8 @@ public class OpportunityControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testModuleField() throws Exception {
-        this.requestGetWithOkAndReturn(MODULE_FORM);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
+        moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, MODULE_FORM);
@@ -123,6 +133,23 @@ public class OpportunityControllerTests extends BaseTest {
         request.setIds(List.of("1234"));
         request.setOwner("12345");
         this.requestPostWithOk(BATCH_TRANSFER, request);
+    }
+
+    @Test
+    @Order(4)
+    void testBatchUpdate() throws Exception {
+        for (BaseField field : moduleFormConfig.getFields()) {
+            ResourceBatchEditRequest request = new ResourceBatchEditRequest();
+            request.setIds(List.of(addOpportunity.getId()));
+            request.setFieldId(field.getId());
+            if (Strings.CS.equals(field.getName(), BusinessModuleField.OPPORTUNITY_OWNER.name())) {
+                request.setFieldId(InternalUser.ADMIN.getValue());
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            } else if (Strings.CS.equals(field.getName(), BusinessModuleField.OPPORTUNITY_NAME.name())) {
+                request.setFieldId(UUID.randomUUID().toString());
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            }
+        }
     }
 
     @Test

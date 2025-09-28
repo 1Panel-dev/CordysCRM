@@ -43,6 +43,7 @@ import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -654,5 +655,21 @@ public class OpportunityService {
             LogUtils.error("opportunity import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
+    }
+
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BaseField field = opportunityFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
+            // 修改负责人，走批量转移接口
+            OpportunityTransferRequest batchTransferRequest = new OpportunityTransferRequest();
+            batchTransferRequest.setIds(request.getIds());
+            batchTransferRequest.setOwner(request.getFieldValue().toString());
+            transfer(batchTransferRequest, userId, organizationId);
+            return;
+        }
+
+        List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
+
+        opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY, extOpportunityMapper::batchUpdate, userId, organizationId);
     }
 }

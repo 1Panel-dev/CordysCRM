@@ -751,4 +751,36 @@
                owner = #{opportunity.owner}, expected_end_time = #{opportunity.expectedEndTime}, failure_reason = #{opportunity.failureReason}
         where id = #{opportunity.id}
     </update>
+    <update id="batchUpdate">
+        UPDATE customer
+        <set>
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'customerId'">
+                customer_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'amount'">
+                amount = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'possible'">
+                possible = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'products'">
+                products = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'contactId'">
+                contact_id = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        WHERE id IN
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>
