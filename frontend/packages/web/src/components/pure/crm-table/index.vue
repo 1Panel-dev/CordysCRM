@@ -533,11 +533,16 @@
    * 这里使用 ResizeObserver 来监听 col 元素的宽度变化
    */
   function listenColWidthChange() {
+    let isFirstResize = true;
     // 监听表格 col 元素的宽度变化
     const colElements = tableFullRef.value?.querySelectorAll('table col');
     const handleResize = debounce(async () => {
       const tableColumnsMap = await getItem<TableStorageConfigItem>(attrs.tableKey as TableKeyEnum);
       if (attrs.tableKey && tableColumnsMap) {
+        if (isFirstResize) {
+          isFirstResize = false; // 第一次触发，跳过
+          return;
+        }
         // 遍历缓存列配置，更新列宽
         colElements?.forEach((e, i) => {
           if (tableColumnsMap.column[i]) {
@@ -553,7 +558,6 @@
         handleResize();
       });
     });
-
     // 批量注册
     colElements?.forEach((col) => observer.observe(col));
   }
