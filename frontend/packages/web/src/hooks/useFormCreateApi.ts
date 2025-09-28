@@ -31,12 +31,7 @@ import {
   rules,
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
-import type {
-  AttachmentInfo,
-  FormCreateField,
-  FormCreateFieldRule,
-  FormDetail,
-} from '@/components/business/crm-form-create/types';
+import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
 
 import { checkRepeat } from '@/api/modules';
 import { lastOpportunitySteps } from '@/config/opportunity';
@@ -750,6 +745,21 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
    * 处理业务表单的特殊字段在特定场景下的初始化默认值
    */
   function specialFormFieldInit(field: FormCreateField) {
+    if (props.formKey.value === FormDesignKeyEnum.BUSINESS && props.sourceId?.value) {
+      // 客户详情下创建商机，自动带入客户信息
+      if (field.businessKey === 'customerId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value || props.initialSourceName?.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(
         props.formKey.value

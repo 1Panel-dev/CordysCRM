@@ -71,6 +71,7 @@
         <CrmCard v-else-if="activeTab === 'opportunityInfo'" no-content-bottom-padding hide-footer>
           <opportunityTable
             :source-id="props.sourceId"
+            :customer-name="sourceName"
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
             :readonly="collaborationType === 'READ_ONLY' || props.readonly"

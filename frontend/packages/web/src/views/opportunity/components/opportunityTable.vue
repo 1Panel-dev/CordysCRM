@@ -180,6 +180,7 @@
   const props = defineProps<{
     isCustomerTab?: boolean;
     sourceId?: string; // 客户详情下时传入客户 ID
+    customerName?: string; // 客户名称
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
     openseaHiddenColumns?: string[];
@@ -774,7 +775,8 @@
     try {
       createLoading.value = true;
       realFormKey.value = FormDesignKeyEnum.BUSINESS;
-      activeSourceId.value = '';
+      activeSourceId.value = props.isCustomerTab ? props.sourceId || '' : '';
+      initialSourceName.value = props.isCustomerTab ? props.customerName || '' : '';
       needInitDetail.value = false;
       await initFormDetail(false, true);
       linkFormInfo.value = linkFormFieldMap.value;
