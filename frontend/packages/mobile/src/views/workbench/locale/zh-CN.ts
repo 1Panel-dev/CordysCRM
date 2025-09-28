@@ -23,4 +23,5 @@ export default {
   'workbench.duplicateCheck.opportunityStage': '商机阶段',
   'workbench.duplicateCheck.openSeaName': '公海名称',
   'workbench.duplicateCheck.leadPoolName': '线索池名称',
+  'workbench.duplicateCheck.lastFollowUpDate': '最新跟进日期',
 };

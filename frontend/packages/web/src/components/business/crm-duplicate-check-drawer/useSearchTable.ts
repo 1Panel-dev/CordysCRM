@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CommonList } from '@lib/shared/models/common';
@@ -152,6 +154,18 @@ export default async function useSearchTable(props: SearchTableProps) {
     },
   };
 
+  const lastFollowTime: CrmDataTableColumn = {
+    title: t('customer.lastFollowUpDate'),
+    width: 160,
+    key: 'followTime',
+    ellipsis: {
+      tooltip: true,
+    },
+    sortOrder: false,
+    sorter: true,
+    render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
+  };
+
   const columns = computed<CrmDataTableColumn[]>(() => {
     const resultColumns: CrmDataTableColumn[] = displayedColumnList.value.map((field) => {
       // 名称
@@ -262,14 +276,18 @@ export default async function useSearchTable(props: SearchTableProps) {
     });
 
     // 除了线索池和公海，其他的有创建时间
-    if (
-      ![FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC].includes(
-        props.searchTableKey.value
-      )
-    ) {
-      return [...resultColumns, createTimeColumn];
-    }
-    return resultColumns;
+    const hasCreateTimeColumn = [
+      FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
+      FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC,
+    ].includes(props.searchTableKey.value)
+      ? []
+      : [createTimeColumn];
+
+    const hasLastFollowTime = [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT].includes(props.searchTableKey.value)
+      ? []
+      : [lastFollowTime];
+
+    return [...resultColumns, ...hasLastFollowTime, ...hasCreateTimeColumn];
   });
 
   const api = computed(() => {

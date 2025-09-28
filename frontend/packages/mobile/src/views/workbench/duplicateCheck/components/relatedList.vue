@@ -14,10 +14,10 @@
   >
     <template #item="{ item: listItem }">
       <div
-        class="rounded-[var(--border-radius-small)] !bg-[var(--text-n9)] p-[16px]"
+        class="rounded-[var(--border-radius-small)] !bg-[var(--text-n9)] py-[16px]"
         @click="goDetail(listItem, props.searchTableKey === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT)"
       >
-        <CrmDescription :description="getDescriptions(listItem)" class="!m-0 !bg-[var(--text-n9)] !p-0">
+        <CrmDescription :description="getDescriptions(listItem)">
           <template #createTime="{ item }">
             {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
           </template>
@@ -184,7 +184,9 @@
 
 <style lang="less" scoped>
   :deep(.crm-description) {
+    margin: 0;
     padding: 0;
+    background: var(--text-n9);
     gap: 4px;
   }
   :deep(.crm-description-item) {

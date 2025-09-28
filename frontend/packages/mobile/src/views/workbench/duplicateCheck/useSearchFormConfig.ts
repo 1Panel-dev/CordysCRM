@@ -257,6 +257,15 @@ export default function useSearchFormConfig() {
     },
   };
 
+  const lastFollowTimeDesc = {
+    label: t('workbench.duplicateCheck.lastFollowUpDate'),
+    key: 'followTime',
+    valueSlotName: 'render',
+    render: (row: any) => {
+      return dayjs(row.followTime).format('YYYY-MM-DD');
+    },
+  };
+
   function initSearchListConfig() {
     configList.value.forEach((e) => {
       const resultDesc = displayedDescList.value(e.value as SearchTableKey).map((field) => {
@@ -320,11 +329,23 @@ export default function useSearchFormConfig() {
           key: field.key,
         };
       });
-      if (![FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC].includes(e.value)) {
-        searchResultMap.value[e.value as SearchTableKey].describe = [...resultDesc, createTimeDesc];
-      } else {
-        searchResultMap.value[e.value as SearchTableKey].describe = resultDesc;
-      }
+
+      const hasCreateTimeDesc = [
+        FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
+        FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC,
+      ].includes(e.value)
+        ? []
+        : [createTimeDesc];
+
+      const hasLastFollowDesc = [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT].includes(e.value)
+        ? []
+        : [lastFollowTimeDesc];
+
+      searchResultMap.value[e.value as SearchTableKey].describe = [
+        ...resultDesc,
+        ...hasLastFollowDesc,
+        ...hasCreateTimeDesc,
+      ];
     });
   }
 

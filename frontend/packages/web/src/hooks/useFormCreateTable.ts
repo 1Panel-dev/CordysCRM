@@ -441,6 +441,28 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filter: true,
         render: (row: any) => row.reasonName || '-',
       },
+      {
+        title: t('customer.lastFollowUps'),
+        width: 120,
+        key: 'follower',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.followerName || '-',
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        width: 120,
+        key: 'followTime',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
+      },
     ],
     [FormDesignKeyEnum.CLUE_POOL]: [
       {
@@ -456,10 +478,31 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filter: true,
         render: (row: any) => row.reasonName || '-',
       },
+      {
+        title: t('customer.lastFollowUps'),
+        width: 120,
+        key: 'follower',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.followerName || '-',
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        width: 120,
+        key: 'followTime',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
+      },
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
-    // TODO  xinxinwu
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: [],
     [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: [
       {
