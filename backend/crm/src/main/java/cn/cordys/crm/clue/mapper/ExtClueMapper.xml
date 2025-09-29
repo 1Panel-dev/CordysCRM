@@ -574,4 +574,8 @@
         select count(1) > 0 from clue_field cf join clue c on cf.resource_id = c.id
         where cf.field_id = #{field.fieldId} and cf.field_value = #{field.fieldValue} and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
     </select>
+
+    <select id="getTransitionClueIds" resultType="java.lang.String">
+        select id from clue where clue.transition_type = 'CUSTOMER' and clue.transition_id = #{customerId}
+    </select>
 </mapper>

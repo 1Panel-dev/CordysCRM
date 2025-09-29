@@ -113,4 +113,11 @@ public interface ExtClueMapper {
     boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);
 
     void batchUpdate(@Param("request")BatchUpdateDbParam request);
+
+    /**
+     * 查询客户的转移线索ID集合
+     * @param customerId 客户ID
+     * @return 线索ID集合
+     */
+    List<String> getTransitionClueIds(@Param("customerId") String customerId);
 }

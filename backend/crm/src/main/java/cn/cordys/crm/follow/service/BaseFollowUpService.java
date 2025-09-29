@@ -109,4 +109,22 @@ public class BaseFollowUpService {
 
         return customerDataDTO;
     }
+
+    public CustomerDataDTO getOpportunityPermission(String userId, String sourceId, String permission) {
+        CustomerDataDTO customerDataDTO = new CustomerDataDTO();
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), permission);
+
+        //全部数据
+        if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
+            customerDataDTO.setAll(true);
+            return customerDataDTO;
+        }
+
+        if (deptDataPermission.getSelf()) {
+            customerDataDTO.setSelf(true);
+        }
+        return customerDataDTO;
+    }
+
 }
