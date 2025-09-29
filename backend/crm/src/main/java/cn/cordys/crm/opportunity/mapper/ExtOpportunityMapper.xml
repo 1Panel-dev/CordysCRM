@@ -752,7 +752,7 @@
         where id = #{opportunity.id}
     </update>
     <update id="batchUpdate">
-        UPDATE customer
+        UPDATE opportunity
         <set>
             <if test="request.fieldName == 'owner'">
                 owner = #{request.fieldValue},

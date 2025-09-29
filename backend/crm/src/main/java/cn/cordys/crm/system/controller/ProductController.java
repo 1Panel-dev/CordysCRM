@@ -79,13 +79,6 @@ public class ProductController {
         return productService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-//    @PostMapping("/batch/update")
-//    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
-//    @Operation(summary = "批量更新产品")
-//    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request) {
-//        productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-//    }
-
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新产品")

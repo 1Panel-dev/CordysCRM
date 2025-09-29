@@ -5,21 +5,20 @@
     <update id="batchUpdate">
         UPDATE product
         <set>
-            <if test="request.price != null">
-                price = #{request.price},
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
             </if>
-            <if test="request.status != null">
-                status = #{request.status},
+            <if test="request.fieldName == 'price'">
+                price = #{request.fieldValue},
             </if>
-            <if test="request.updateTime != null">
-                update_time = #{request.updateTime},
+            <if test="request.fieldName == 'status'">
+                status = #{request.fieldValue},
             </if>
-            <if test="request.updateUser != null">
-                update_user = #{request.updateUser},
+            <if test="request.fieldName == 'pos'">
+                pos = #{request.fieldValue},
             </if>
-            <if test="request.pos != null">
-                pos = #{request.pos},
-            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser},
         </set>
         WHERE id IN
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
