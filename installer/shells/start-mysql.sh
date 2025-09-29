@@ -25,6 +25,9 @@ else
   MYSQL_USER=${MYSQL_USER:-""}
   MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
 
+  mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';"
+  mysql -u root -e "ALTER USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';"
+
   tfile=`mktemp`
   if [ ! -f "$tfile" ]; then
       return 1
@@ -51,5 +54,6 @@ EOF
   rm -f $tfile
 fi
 
+mysql -u root -e "FLUSH PRIVILEGES;"
 
 exec /usr/bin/mysqld --user=root --console
