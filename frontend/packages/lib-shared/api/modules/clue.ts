@@ -13,6 +13,7 @@ import {
   BatchToPoolClueUrl,
   BatchTransferClueUrl,
   BatchUpdateCluePoolUrl,
+  BatchUpdateLeadUrl,
   CancelClueFollowPlanUrl,
   ClueTransitionCustomerUrl,
   DeleteClueFollowPlanUrl,
@@ -439,6 +440,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragPoolLeadViewUrl, data });
   }
 
+  // 批量更新线索
+  function batchUpdateLead(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateLeadUrl, data });
+  }
+
   return {
     addClue,
     updateClue,
@@ -508,5 +514,6 @@ export default function useProductApi(CDR: CordysAxios) {
     updateLeadPoolView,
     enableLeadPoolView,
     dragLeadPoolView,
+    batchUpdateLead,
   };
 }

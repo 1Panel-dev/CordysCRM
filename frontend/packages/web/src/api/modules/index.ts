@@ -98,6 +98,7 @@ export const {
   downloadOptTemplate,
   importOpportunity,
   getOptStatistic,
+  batchUpdateOpportunity,
 } = opportunityApi;
 
 export const {
@@ -169,6 +170,7 @@ export const {
   updateLeadPoolView,
   enableLeadPoolView,
   dragLeadPoolView,
+  batchUpdateLead,
 } = clueApi;
 
 export const {
@@ -278,6 +280,7 @@ export const {
   updateAccountPoolView,
   enableAccountPoolView,
   dragAccountPoolView,
+  batchUpdateAccount,
 } = customerApi;
 
 export const {

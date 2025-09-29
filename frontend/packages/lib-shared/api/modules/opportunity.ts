@@ -5,6 +5,7 @@ import {
   AddOptFollowRecordUrl,
   AdvancedSearchOptDetailUrl,
   AdvancedSearchOptPageUrl,
+  BatchUpdateOpportunityUrl,
   CancelOptFollowPlanUrl,
   DeleteBusinessViewUrl,
   DeleteOptFollowPlanUrl,
@@ -49,6 +50,7 @@ import type {
   TableQueryParams,
 } from '@lib/shared/models/common';
 import type {
+  BatchUpdatePoolAccountParams,
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
@@ -265,6 +267,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportOpportunityUrl }, { fileList: [file] }, 'file');
   }
 
+  // 批量更新商机
+  function batchUpdateOpportunity(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateOpportunityUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -306,5 +313,6 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadOptTemplate,
     importOpportunity,
     getOptStatistic,
+    batchUpdateOpportunity,
   };
 }

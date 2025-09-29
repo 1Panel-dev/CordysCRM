@@ -107,6 +107,14 @@
     type="warning"
     @refresh="() => (tableRefreshId += 1)"
   />
+
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CUSTOMER"
+    @refresh="() => (tableRefreshId += 1)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -129,6 +137,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
@@ -205,6 +214,11 @@
         permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
       },
       {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
         label: t('common.batchDelete'),
         key: 'batchDelete',
         permission: ['CUSTOMER_MANAGEMENT:DELETE'],
@@ -244,6 +258,11 @@
     showMoveModal.value = true;
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
   // 批量转移
   const showTransferModal = ref<boolean>(false);
   const showExportModal = ref<boolean>(false);
@@ -253,6 +272,9 @@
     switch (item.key) {
       case 'batchTransfer':
         showTransferModal.value = true;
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'batchDelete':
         handleBatchDelete();
@@ -399,7 +421,7 @@
     handleAdvanceFilter,
     handleSearchData,
   });
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';

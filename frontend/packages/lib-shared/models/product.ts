@@ -22,10 +22,3 @@ export interface SaveProductParams {
 export interface UpdateProductParams extends SaveProductParams {
   id: string;
 }
-
-export interface BatchUpdateProductParams {
-  ids: (string | number)[];
-  status: string;
-  price: number | null;
-  moduleFields: ModuleField[];
-}

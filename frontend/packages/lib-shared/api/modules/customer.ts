@@ -18,6 +18,7 @@ import {
   BatchMoveCustomerUrl,
   BatchPickOpenSeaCustomerUrl,
   BatchTransferCustomerUrl,
+  BatchUpdateAccountUrl,
   CancelCustomerFollowPlanUrl,
   CheckOpportunityContactUrl,
   ContactListUnderCustomerUrl,
@@ -219,6 +220,10 @@ export default function useProductApi(CDR: CordysAxios) {
   // 批量更新公海客户
   function batchUpdateOpenSeaCustomer(data: BatchUpdatePoolAccountParams) {
     return CDR.post({ url: PoolAccountBatchUpdateUrl, data });
+  }
+  // 批量更新客户
+  function batchUpdateAccount(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateAccountUrl, data });
   }
 
   // 添加客户跟进记录
@@ -818,5 +823,6 @@ export default function useProductApi(CDR: CordysAxios) {
     updateAccountPoolView,
     enableAccountPoolView,
     dragAccountPoolView,
+    batchUpdateAccount,
   };
 }

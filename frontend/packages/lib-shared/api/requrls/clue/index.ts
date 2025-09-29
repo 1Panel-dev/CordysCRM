@@ -19,6 +19,7 @@ export const GetAdvancedSearchClueListUrl = '/advanced/search/lead'; // 全局�
 export const GetAdvancedSearchClueDetailUrl = '/advanced/search/lead/detail'; // 全局搜索线索详情
 export const GetGlobalSearchClueListUrl = '/global/search/lead';
 export const GetGlobalCluePoolListUrl = '/global/search/clue_pool';
+export const BatchUpdateLeadUrl = '/lead/batch/update'; // 批量更新线索
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/lead/follow/record/update'; // 更新跟进记录

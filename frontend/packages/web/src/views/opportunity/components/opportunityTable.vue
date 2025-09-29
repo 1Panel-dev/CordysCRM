@@ -133,6 +133,14 @@
     :hidden-columns="props.openseaHiddenColumns || []"
     @change="searchData"
   />
+
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.BUSINESS"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -155,6 +163,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -241,6 +250,11 @@
                 permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
               },
               {
+                label: t('common.batchEdit'),
+                key: 'batchEdit',
+                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+              },
+              {
                 label: t('common.batchDelete'),
                 key: 'batchDelete',
                 permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
@@ -283,6 +297,11 @@
     });
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
   const showExportModal = ref<boolean>(false);
   const isExportAll = ref(false);
 
@@ -293,6 +312,9 @@
         break;
       case 'batchDelete':
         handleBatchDelete();
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'exportChecked':
         isExportAll.value = false;
@@ -512,7 +534,7 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['customerId'],
     containerClass: `.crm-opportunity-table-${props.formKey}`,

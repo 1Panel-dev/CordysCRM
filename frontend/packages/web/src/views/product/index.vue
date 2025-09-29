@@ -51,6 +51,13 @@
       :need-init-detail="!!activeProductId"
       @saved="() => searchData()"
     />
+    <CrmBatchEditModal
+      v-model:visible="showEditModal"
+      v-model:field-list="fieldList"
+      :ids="checkedRowKeys"
+      :form-key="FormDesignKeyEnum.PRODUCT"
+      @refresh="handleRefresh"
+    />
   </CrmCard>
 </template>
 
@@ -69,11 +76,12 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { batchDeleteProduct, batchUpdateProduct, deleteProduct, dragSortProduct } from '@/api/modules';
+  import { batchDeleteProduct, deleteProduct, dragSortProduct } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -94,13 +102,8 @@
   const actionConfig: BatchActionConfig = {
     baseAction: [
       {
-        label: t('product.batchUp'),
-        key: 'batchUp',
-        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('product.batchDown'),
-        key: 'batchDown',
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
         permission: ['PRODUCT_MANAGEMENT:UPDATE'],
       },
       {
@@ -133,32 +136,15 @@
     });
   }
 
-  // 批量上架 | 下架
-  async function handleBatchUpOrDown(status: boolean) {
-    try {
-      const params = {
-        ids: checkedRowKeys.value,
-        status: status ? '1' : '2',
-        moduleFields: [],
-        price: null,
-      };
-      await batchUpdateProduct(params);
-      Message.success(t(status ? 'product.batchUpSuccess' : 'product.batchDownSuccess'));
-      checkedRowKeys.value = [];
-      tableRefreshId.value += 1;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
   }
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
-      case 'batchUp':
-        handleBatchUpOrDown(true);
-        break;
-      case 'batchDown':
-        handleBatchUpOrDown(false);
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'batchDelete':
         handleBatchDelete();
@@ -234,7 +220,7 @@
     },
   ];
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.PRODUCT,
     containerClass: '.crm-product-table',
     operationColumn: {
@@ -261,6 +247,11 @@
     setLoadListParams({ keyword: val ?? keyword.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
   }
 
   watch(

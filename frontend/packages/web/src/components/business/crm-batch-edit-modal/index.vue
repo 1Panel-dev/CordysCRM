@@ -168,7 +168,14 @@
   import Textarea from '@/components/business/crm-form-create/components/basic/textarea.vue';
   import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
 
-  import { batchUpdateCluePool, batchUpdateOpenSeaCustomer } from '@/api/modules';
+  import {
+    batchUpdateAccount,
+    batchUpdateCluePool,
+    batchUpdateLead,
+    batchUpdateOpenSeaCustomer,
+    batchUpdateOpportunity,
+    batchUpdateProduct,
+  } from '@/api/modules';
   import { useUserStore } from '@/store';
 
   import { rules } from '../crm-form-create/config';
@@ -179,7 +186,13 @@
 
   const props = defineProps<{
     ids: (number | string)[];
-    formKey: FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
+    formKey:
+      | FormDesignKeyEnum.CLUE_POOL
+      | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
+      | FormDesignKeyEnum.BUSINESS
+      | FormDesignKeyEnum.CLUE
+      | FormDesignKeyEnum.CUSTOMER
+      | FormDesignKeyEnum.PRODUCT;
   }>();
 
   const emit = defineEmits<{
@@ -196,6 +209,10 @@
   const saveApiMap: Record<string, (params: BatchUpdatePoolAccountParams) => Promise<any>> = {
     [FormDesignKeyEnum.CLUE_POOL]: batchUpdateCluePool,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: batchUpdateOpenSeaCustomer,
+    [FormDesignKeyEnum.BUSINESS]: batchUpdateOpportunity,
+    [FormDesignKeyEnum.CLUE]: batchUpdateLead,
+    [FormDesignKeyEnum.PRODUCT]: batchUpdateProduct,
+    [FormDesignKeyEnum.CUSTOMER]: batchUpdateAccount,
   };
 
   const initForm = {
@@ -323,7 +340,6 @@
             // 去空格
             result.fieldValue = result.fieldValue.replace(/[\s\uFEFF\xA0]+/g, '');
           }
-
           await saveApiMap[props.formKey]({
             ids: props.ids,
             ...result,

@@ -14,12 +14,8 @@ import {
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
 import type { CommonList, TableDraggedParams, TableQueryParams } from '@lib/shared/models/common';
-import type {
-  BatchUpdateProductParams,
-  ProductListItem,
-  SaveProductParams,
-  UpdateProductParams,
-} from '@lib/shared/models/product';
+import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
+import type { ProductListItem, SaveProductParams, UpdateProductParams } from '@lib/shared/models/product';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 
@@ -60,7 +56,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 批量更新产品
-  function batchUpdateProduct(data: BatchUpdateProductParams) {
+  function batchUpdateProduct(data: BatchUpdatePoolAccountParams) {
     return CDR.post({ url: BatchUpdateProductUrl, data });
   }
   // 拖拽排序产品
