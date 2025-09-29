@@ -6,9 +6,9 @@ import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.Product;
-import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
@@ -79,10 +79,17 @@ public class ProductController {
         return productService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+//    @PostMapping("/batch/update")
+//    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
+//    @Operation(summary = "批量更新产品")
+//    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request) {
+//        productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+//    }
+
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新产品")
-    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request) {
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
         productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

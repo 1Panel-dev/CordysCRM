@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.mapper;
 
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
@@ -20,7 +21,7 @@ public interface ExtProductMapper {
 
     List<Product> listByIds(@Param("ids") List<String> ids);
 
-    void updateProduct(@Param("ids") List<String> ids, @Param("product") Product product);
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     List<OptionDTO> getOptions(@Param("orgId") String orgId);
 

@@ -24,9 +24,9 @@ import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.domain.ProductField;
 import cn.cordys.crm.system.domain.ProductFieldBlob;
 import cn.cordys.crm.system.dto.field.base.BaseField;
-import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
@@ -47,7 +47,6 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -80,23 +79,6 @@ public class ProductService {
     private BaseMapper<ProductField> productFieldMapper;
     @Resource
     private BaseMapper<ProductFieldBlob> productFieldBlobMapper;
-
-    @NotNull
-    private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
-        List<LogDTO> logDTOList = new ArrayList<>();
-        //目前只记录批量上下架
-        for (Product oldProduct : products) {
-            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
-            Map<String, String> oldMap = new HashMap<>();
-            oldMap.put("status", oldProduct.getStatus());
-            Map<String, String> newMap = new HashMap<>();
-            newMap.put("status", request.getStatus());
-            logDTO.setOriginalValue(oldMap);
-            logDTO.setModifiedValue(newMap);
-            logDTOList.add(logDTO);
-        }
-        return logDTOList;
-    }
 
     public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -223,20 +205,10 @@ public class ProductService {
         OperationLogContext.setResourceName(product.getName());
     }
 
-    public void batchUpdate(ProductBatchEditRequest request, String userId, String orgId) {
-        if (CollectionUtils.isEmpty(request.getIds())) {
-            return;
-        }
-        // 批量更新产品
-        List<Product> products = extProductMapper.listByIds(request.getIds());
-        Product product = BeanUtils.copyBean(new Product(), request);
-        product.setUpdateTime(System.currentTimeMillis());
-        product.setUpdateUser(userId);
-        product.setOrganizationId(orgId);
-        extProductMapper.updateProduct(request.getIds(), product);
-        // batchUpdateModuleField(request.getIds(),request.getModuleFields());
-        List<LogDTO> logDTOList = getLogDTOList(request, userId, products);
-        logService.batchAdd(logDTOList);
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BaseField field = productFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        List<Product> products = productBaseMapper.selectByIds(request.getIds());
+        productFieldService.batchUpdate(request, field, products, Product.class, LogModule.PRODUCT_MANAGEMENT, extProductMapper::batchUpdate, userId, organizationId);
     }
 
     /**

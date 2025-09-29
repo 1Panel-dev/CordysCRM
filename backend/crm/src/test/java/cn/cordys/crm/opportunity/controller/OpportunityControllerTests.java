@@ -138,8 +138,8 @@ public class OpportunityControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testBatchUpdate() throws Exception {
+        ResourceBatchEditRequest request = new ResourceBatchEditRequest();
         for (BaseField field : moduleFormConfig.getFields()) {
-            ResourceBatchEditRequest request = new ResourceBatchEditRequest();
             request.setIds(List.of(addOpportunity.getId()));
             request.setFieldId(field.getId());
             if (Strings.CS.equals(field.getName(), BusinessModuleField.OPPORTUNITY_OWNER.name())) {
@@ -150,6 +150,8 @@ public class OpportunityControllerTests extends BaseTest {
                 this.requestPostWithOk(BATCH_UPDATE, request);
             }
         }
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, BATCH_UPDATE, request);
     }
 
     @Test

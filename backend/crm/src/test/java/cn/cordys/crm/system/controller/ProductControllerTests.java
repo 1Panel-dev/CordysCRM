@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.controller;
 
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -11,9 +12,11 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.domain.ProductField;
-import cn.cordys.crm.system.dto.request.ProductBatchEditRequest;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ProductEditRequest;
 import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
 import cn.cordys.crm.system.dto.response.product.ProductListResponse;
 import cn.cordys.mybatis.BaseMapper;
@@ -29,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,11 +43,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
+    protected static final String BATCH_UPDATE = "batch/update";
     private static final String BASE_PATH = "/product/";
     private static final List<String> batchIds = new ArrayList<>();
     private static Product addProduct;
     private static String moduleFieldPriceId = "";
     private static String moduleFieldStatusId = "";
+    private static ModuleFormConfigDTO moduleFormConfig;
 
     @Resource
     private BaseMapper<Product> productBaseMapper;
@@ -64,7 +70,8 @@ class ProductControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testModuleField() throws Exception {
-        this.requestGetWithOkAndReturn(MODULE_FORM);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
+        moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, MODULE_FORM);
@@ -229,29 +236,23 @@ class ProductControllerTests extends BaseTest {
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
     }
 
-
     @Test
     @Order(6)
     void testBatchUpdate() throws Exception {
-        // 请求成功
-        ProductBatchEditRequest request = new ProductBatchEditRequest();
-        request.setIds(batchIds);
-        request.setPrice(BigDecimal.valueOf(3.00d));
-        List<BaseModuleFieldValue> baseModuleFieldValues = List.of(new BaseModuleFieldValue(moduleFieldPriceId, 15), new BaseModuleFieldValue(moduleFieldStatusId, "2"));
-        request.setModuleFields(baseModuleFieldValues);
-        this.requestPostWithOk("batch/update", request);
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
-        ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
-        Assertions.assertEquals(BigDecimal.valueOf(30000, 4), getResponse.getPrice());
-        for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
-            if (Strings.CI.equalsAny(moduleField.getFieldId(), moduleFieldStatusId)) {
-                Assertions.assertEquals("1", moduleField.getFieldValue());
+        ResourceBatchEditRequest request = new ResourceBatchEditRequest();
+        for (BaseField field : moduleFormConfig.getFields()) {
+            request.setIds(List.of(addProduct.getId()));
+            request.setFieldId(field.getId());
+            if (Strings.CS.equals(field.getName(), BusinessModuleField.PRODUCT_PRICE.name())) {
+                request.setFieldValue(3.00d);
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            } else if (Strings.CS.equals(field.getName(), BusinessModuleField.PRODUCT_NAME.name())) {
+                request.setFieldValue(UUID.randomUUID().toString());
+                this.requestPostWithOk(BATCH_UPDATE, request);
             }
         }
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
-
-
+        requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, BATCH_UPDATE, request);
     }
 
     @Test
