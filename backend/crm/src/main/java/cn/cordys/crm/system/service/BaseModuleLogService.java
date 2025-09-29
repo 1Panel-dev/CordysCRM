@@ -11,6 +11,7 @@ import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.Product;
 import cn.cordys.crm.system.dto.field.*;
@@ -164,6 +165,9 @@ public abstract class BaseModuleLogService {
                 String dataSourceType = moduleField instanceof DatasourceMultipleField ?
                         ((DatasourceMultipleField) moduleField).getDataSourceType() :
                         ((DatasourceField) moduleField).getDataSourceType();
+                if (Strings.CS.equals(dataSourceType, FieldSourceType.CONTACT.name())) {
+                    dataSourceType = "customer_contact";
+                }
                 setResourceValueName(differ, dataSourceType);
             } else if (moduleField instanceof MemberMultipleField || moduleField instanceof MemberField) {
                 setResourceValueName(differ, "sys_user");
