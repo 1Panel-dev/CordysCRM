@@ -169,7 +169,7 @@
         }
         if (item.type === FieldTypeEnum.PHONE) {
           // 去空格
-          result[item.id] = result[item.id].replace(/[\s\uFEFF\xA0]+/g, '');
+          result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
         }
       });
       saveForm(result, () => router.back());
