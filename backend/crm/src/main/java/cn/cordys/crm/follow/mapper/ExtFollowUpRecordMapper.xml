@@ -82,7 +82,7 @@
             </if>
             <if test="resourceType == 'OPPORTUNITY'">
                 AND (
-                    <!-- 商机跟进记录来源: 1. 商机手动创建。 2. 关联客户。 3. 线索转换。 -->
+                    <!-- 商机跟进记录来源: 1. 商机手动创建。 2. 线索转换。 -->
                     (opportunity_id = #{request.sourceId} AND type = #{type})
                     <if test="request.refClueIds != null and request.refClueIds.size > 0">
                         <!-- 线索转换 -->
@@ -91,10 +91,6 @@
                             #{id}
                         </foreach>
                         )
-                    </if>
-                    <if test="request.refCustomerId != null and request.refCustomerId != ''">
-                        <!-- 取客户跟进记录中属于当前商机的 -->
-                        OR (customer_id = #{request.refCustomerId} AND type = #{type})
                     </if>
                 )
             </if>
