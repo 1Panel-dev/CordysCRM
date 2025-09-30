@@ -122,17 +122,18 @@
   import overview from './overview.vue';
 
   import { getHomeDepartmentTree } from '@/api/modules';
-  import { useAppStore, useUserStore } from '@/store';
+  import { useUserStore } from '@/store';
+  import useOverviewStore from '@/store/modules/overview';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
-  const appStore = useAppStore();
+  const overviewStore = useOverviewStore();
   const params = ref<GetHomeStatisticParams>({
     deptIds: [],
     searchType: '', // ALL/SELF/DEPARTMENT
-    timeField: appStore.getWinOrderStatus.dimType,
-    userField: appStore.getWinOrderStatus.userField,
-    priorPeriodEnable: appStore.getWinOrderStatus.status,
+    timeField: 'CREATE_TIME',
+    userField: 'CREATE_USER_ID',
+    priorPeriodEnable: true,
   });
 
   const activeDeptId = ref('');
@@ -270,6 +271,15 @@
   ];
 
   async function initDimType() {
+    const config = await overviewStore.loadWinOrderConfig();
+    const { timeField, priorPeriodEnable, userField } = config;
+    params.value = {
+      ...params.value,
+      timeField,
+      priorPeriodEnable,
+      userField,
+    };
+
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) {
       dimTypeOptions.value = [
         {
@@ -278,12 +288,6 @@
         },
       ];
       params.value.timeField = 'CREATE_TIME';
-      const { timeField, priorPeriodEnable, userField } = params.value;
-      appStore.setWinOrderStatus({
-        dimType: timeField,
-        userField: userField ?? 'OWNER',
-        status: priorPeriodEnable ?? false,
-      });
       return;
     }
     try {
@@ -300,10 +304,6 @@
           label: endTimeItem?.name ?? '',
         },
       ];
-      const { status, dimType, userField } = appStore.getWinOrderStatus;
-      params.value.priorPeriodEnable = status;
-      params.value.timeField = dimType;
-      params.value.userField = userField;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -316,18 +316,22 @@
     if (!show) {
       if (hasChange.value) {
         const { timeField, priorPeriodEnable, userField } = params.value;
-        appStore.setWinOrderStatus({
-          dimType: timeField ?? 'CREATE_TIME',
-          status: priorPeriodEnable ?? false,
+        overviewStore.setWinOrderConfig({
+          timeField: timeField ?? 'CREATE_TIME',
+          priorPeriodEnable: priorPeriodEnable ?? false,
           userField: userField ?? 'OWNER',
         });
         refresh();
       }
     } else {
-      const { status, dimType, userField } = appStore.getWinOrderStatus;
-      params.value.priorPeriodEnable = status;
-      params.value.timeField = dimType;
-      params.value.userField = userField;
+      const config = await overviewStore.loadWinOrderConfig();
+      const { timeField, priorPeriodEnable, userField } = config;
+      params.value = {
+        ...params.value,
+        timeField,
+        priorPeriodEnable,
+        userField,
+      };
     }
   }
 

@@ -88,7 +88,10 @@
                 <span class="unit">{{ abbreviateNumber(item.value, item.unit).unit }}</span>
               </div>
             </countPopover>
-            <div v-if="appStore.getWinOrderStatus.status" class="analytics-last-time">
+            <div
+              v-if="overviewStore.homeOverviewConfig[userStore.userInfo.id]?.priorPeriodEnable"
+              class="analytics-last-time"
+            >
               <div class="one-line-text text-[var(--text-n2)]">
                 {{ dateKeyPriorPeriodTitleMap[dim] }}
               </div>
@@ -132,13 +135,14 @@
 
   import { getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
-  import { useAppStore } from '@/store';
+  import { useUserStore } from '@/store';
+  import useOverviewStore from '@/store/modules/overview';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
-  const appStore = useAppStore();
-
+  const overviewStore = useOverviewStore();
+  const userStore = useUserStore();
   const { openNewPage } = useOpenNewPage();
 
   const { t } = useI18n();
