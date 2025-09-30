@@ -50,7 +50,7 @@
           </div>
         </div>
         <div
-          class="flex w-full items-center justify-between gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[24px]"
+          class="grid w-full grid-cols-3 gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[24px]"
         >
           <div class="flex">
             <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.phone') }}</n-p>
@@ -60,7 +60,7 @@
             <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.email') }}</n-p>
             <n-p class="mx-[8px] my-[0] text-[var(--text-n1)]">{{ personalInfo.email }}</n-p>
           </div>
-          <div class="flex">
+          <div v-if="!userStore.isAdmin" class="flex">
             <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.department') }}</n-p>
             <n-p class="mx-[8px] my-[0] text-[var(--text-n1)]">{{ personalInfo.departmentName }}</n-p>
           </div>
@@ -116,9 +116,11 @@
 
   import { getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
+  import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const visible = defineModel<boolean>('visible', {
     required: true,

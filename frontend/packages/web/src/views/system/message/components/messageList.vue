@@ -5,6 +5,7 @@
       :columns="columns"
       :data="data"
       :paging="false"
+      class="message-table"
       :pagination="false"
       :loading="loading"
       :max-height="licenseStore.expiredDuring ? 'calc(100vh - 306px)' : 'calc(100vh - 242px)'"
@@ -137,6 +138,7 @@
       ellipsis: {
         tooltip: true,
       },
+      className: 'message-table-module-name',
       rowSpan: (rowData: { messageTaskDetailDTOList?: MessageConfigItem[] }) => {
         return rowData?.messageTaskDetailDTOList?.length ?? 0;
       },
@@ -279,4 +281,19 @@
   });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  :deep(.message-table) {
+    .n-data-table-thead {
+      .n-data-table-tr {
+        th {
+          background: var(--text-n9);
+        }
+      }
+    }
+    .message-table-module-name {
+      &.n-data-table-td {
+        background: var(--text-n9);
+      }
+    }
+  }
+</style>
