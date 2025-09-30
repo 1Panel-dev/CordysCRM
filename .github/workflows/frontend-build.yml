@@ -1,5 +1,9 @@
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
 
 name: Frontend Code Checking
 
