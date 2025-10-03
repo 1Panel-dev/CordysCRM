@@ -68,4 +68,12 @@ public interface ExtOpportunityMapper {
     void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
+
+    void moveUpOpportunity(@Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
+
+    void moveDownOpportunity(@Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
+
+    Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
+
+    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime, @Param("nextPos") long nextPos);
 }

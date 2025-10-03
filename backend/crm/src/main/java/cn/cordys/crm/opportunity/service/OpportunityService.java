@@ -66,6 +66,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,6 +120,8 @@ public class OpportunityService {
     private BaseMapper<OpportunityField> opportunityFieldMapper;
     @Resource
     private BaseMapper<OpportunityFieldBlob> opportunityFieldBlobMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission) {
@@ -236,12 +242,12 @@ public class OpportunityService {
      * @param request
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         productService.checkProductList(request.getProducts());
+        Long nextPos = getNextPos(orgId, StageType.CREATE.name());
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
         opportunity.setId(id);
@@ -252,6 +258,7 @@ public class OpportunityService {
         opportunity.setProducts(request.getProducts());
         opportunity.setOrganizationId(orgId);
         opportunity.setStage(StageType.CREATE.name());
+        opportunity.setPos(nextPos);
         opportunity.setContactId(request.getContactId());
         opportunity.setOwner(request.getOwner());
         opportunity.setCreateTime(System.currentTimeMillis());
@@ -270,6 +277,11 @@ public class OpportunityService {
         baseService.handleAddLog(opportunity, request.getModuleFields());
 
         return opportunity;
+    }
+
+    private Long getNextPos(String orgId, String stage) {
+        Long pos = extOpportunityMapper.selectNextPos(orgId, stage);
+        return pos == null ? 1 : pos + 1;
     }
 
 
@@ -367,8 +379,16 @@ public class OpportunityService {
             return;
         }
         List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
-        request.setIds(ids);
-        extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
+
+        Long nextPos = getNextPos(orgId, StageType.CREATE.name());
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
+        for (int i = 0; i < ids.size(); i++) {
+            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis(), nextPos + i);
+        }
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
@@ -435,7 +455,6 @@ public class OpportunityService {
      *
      * @param id
      * @param orgId
-     *
      * @return
      */
     public OpportunityDetailResponse get(String id, String orgId) {
@@ -526,9 +545,11 @@ public class OpportunityService {
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
             newOpportunity.setFailureReason(request.getFailureReason());
         }
+        Long nextPos = getNextPos(oldOpportunity.getOrganizationId(), request.getStage());
 
         newOpportunity.setId(request.getId());
         newOpportunity.setStage(request.getStage());
+        newOpportunity.setPos(nextPos);
         opportunityMapper.update(newOpportunity);
         OperationLogContext.setContext(
                 LogContextInfo.builder()
@@ -591,7 +612,6 @@ public class OpportunityService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -607,18 +627,20 @@ public class OpportunityService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            Long nextPos = getNextPos(currentOrg, StageType.CREATE.name());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
-                opportunities.forEach(opportunity -> {
+                for (int i = 0; i < opportunities.size(); i++) {
+                    Opportunity opportunity = opportunities.get(i);
                     opportunity.setStage(StageType.CREATE.name());
+                    opportunity.setPos(nextPos + i);
                     logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY, opportunity.getName()));
-                });
+                }
                 opportunityMapper.batchInsert(opportunities);
                 opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
                 opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
@@ -641,7 +663,6 @@ public class OpportunityService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -671,5 +692,34 @@ public class OpportunityService {
         List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
 
         opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY, extOpportunityMapper::batchUpdate, userId, organizationId);
+    }
+
+
+    /**
+     * 阶段看板拖拽排序
+     *
+     * @param request
+     * @param userId
+     */
+    public void sort(OpportunitySortRequest request, String userId) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragModuleId());
+        if (opportunity == null) {
+            throw new GenericException(Translator.get("opportunity_not_found"));
+        }
+
+        if (request.getStart() < request.getEnd()) {
+            // start < end, 区间模块上移, pos - 1
+            extOpportunityMapper.moveUpOpportunity(request.getStart(), request.getEnd(), request.getStage());
+        } else {
+            // start > end, 区间模块下移, pos + 1
+            extOpportunityMapper.moveDownOpportunity(request.getEnd(), request.getStart(), request.getStage());
+        }
+
+        Opportunity dragOpportunity = new Opportunity();
+        dragOpportunity.setId(request.getDragModuleId());
+        dragOpportunity.setPos(request.getEnd());
+        dragOpportunity.setUpdateUser(userId);
+        dragOpportunity.setUpdateTime(System.currentTimeMillis());
+        opportunityMapper.updateById(dragOpportunity);
     }
 }

@@ -84,9 +84,14 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
 
-        <include refid="sort">
-            <property name="sort" value="request.sort"/>
-        </include>
+        <if test="request.board">
+            order by o.pos desc
+        </if>
+        <if test="!request.board">
+            <include refid="sort">
+                <property name="sort" value="request.sort"/>
+            </include>
+        </if>
     </select>
 
     <select id="searchStatistic" resultType="cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse">
@@ -467,6 +472,13 @@
         </foreach>
     </update>
 
+    <update id="transfer">
+        update opportunity
+        set owner = #{owner}, stage = 'CREATE', last_stage = Null, update_user = #{userId},
+            update_time = #{updateTime}, pos = #{nextPos}
+        where id = #{id}
+    </update>
+
     <select id="getDetail" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse">
         SELECT
             o.id,
@@ -783,4 +795,18 @@
             #{id}
         </foreach>
     </update>
+
+
+    <update id="moveUpOpportunity">
+        update opportunity set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end} and stage = #{stage}
+    </update>
+
+    <update id="moveDownOpportunity">
+        update opportunity set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end} and stage = #{stage}
+    </update>
+
+    <select id="selectNextPos" resultType="java.lang.Long">
+        select pos from opportunity where stage = #{stage} and organization_id = #{orgId}
+        order by pos desc limit 1
+    </select>
 </mapper>

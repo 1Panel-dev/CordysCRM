@@ -62,4 +62,6 @@ public class Opportunity extends BaseModel {
     @Schema(description = "失败原因")
     private String failureReason;
 
+    @Schema(description = "自定义排序")
+    private Long pos;
 }

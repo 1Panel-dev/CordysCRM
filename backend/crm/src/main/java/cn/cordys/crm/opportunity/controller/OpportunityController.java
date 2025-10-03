@@ -136,7 +136,7 @@ public class OpportunityController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新商机")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         opportunityService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -192,5 +192,12 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return opportunityService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+
+    @PostMapping("/sort")
+    @Operation(summary = "商机阶段看板拖拽排序")
+    public void sortModule(@Validated @RequestBody OpportunitySortRequest request) {
+        opportunityService.sort(request, SessionUtils.getUserId());
     }
 }
