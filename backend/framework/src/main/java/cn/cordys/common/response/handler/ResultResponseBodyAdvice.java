@@ -1,7 +1,6 @@
 package cn.cordys.common.response.handler;
 
 import cn.cordys.common.util.JSON;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -31,8 +30,8 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      * @return 如果支持则返回 true，否则返回 false
      */
     @Override
-    public boolean supports(@NotNull MethodParameter methodParameter,
-                            @NotNull Class<? extends HttpMessageConverter<?>> converterType) {
+    public boolean supports(MethodParameter methodParameter,
+                            Class<? extends HttpMessageConverter<?>> converterType) {
         return MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
                 StringHttpMessageConverter.class.isAssignableFrom(converterType);
     }
@@ -51,11 +50,11 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      */
     @Override
     public Object beforeBodyWrite(Object body,
-                                  @NotNull MethodParameter methodParameter,
-                                  @NotNull MediaType mediaType,
-                                  @NotNull Class<? extends HttpMessageConverter<?>> converterType,
-                                  @NotNull ServerHttpRequest serverHttpRequest,
-                                  @NotNull ServerHttpResponse serverHttpResponse) {
+                                  MethodParameter methodParameter,
+                                  MediaType mediaType,
+                                  Class<? extends HttpMessageConverter<?>> converterType,
+                                  ServerHttpRequest serverHttpRequest,
+                                  ServerHttpResponse serverHttpResponse) {
         // 处理空值响应，转换为 JSON 格式的成功响应
         if (body == null && StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
             serverHttpResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);

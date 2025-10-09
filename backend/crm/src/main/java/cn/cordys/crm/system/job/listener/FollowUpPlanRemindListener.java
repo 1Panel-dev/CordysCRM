@@ -12,7 +12,6 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +52,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
      * @param event 执行事件对象
      */
     @Override
-    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+    public void onApplicationEvent(ExecuteEvent event) {
         try {
             this.followUpPlanRemind();
         } catch (Exception e) {

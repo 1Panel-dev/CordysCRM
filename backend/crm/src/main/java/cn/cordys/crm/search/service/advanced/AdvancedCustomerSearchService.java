@@ -42,7 +42,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -104,8 +103,6 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-
-    @NotNull
     private List<AdvancedCustomerResponse> buildCustomerList(String organizationId, String userId, boolean isAdmin, List<AdvancedCustomerResponse> customers, List<String> enabledModules) {
         // 查询用户权限
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);

@@ -39,7 +39,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -488,7 +487,6 @@ public class IntegrationConfigService {
     /**
      * 根据配置类型获取详情类型列表
      */
-    @NotNull
     private List<String> getDetailTypes(ThirdConfigurationDTO configDTO) {
         String type = configDTO.getType();
 
@@ -661,7 +659,6 @@ public class IntegrationConfigService {
         }
     }
 
-    @NotNull
     private DeConfigDetailLogDTO getDeConfigDetailLogDTO(ThirdConfigurationDTO config) {
         DeConfigDetailLogDTO dto = new DeConfigDetailLogDTO();
         dto.setDeAppId(config.getAgentId());
@@ -895,7 +892,6 @@ public class IntegrationConfigService {
     /**
      * 配置详情转换为选项
      */
-    @NotNull
     private OptionDTO getOptionDTO(OrganizationConfigDetail detail) {
         OptionDTO option = new OptionDTO();
         String type = detail.getType();

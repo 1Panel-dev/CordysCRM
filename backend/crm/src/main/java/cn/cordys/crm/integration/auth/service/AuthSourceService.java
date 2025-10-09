@@ -25,7 +25,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +47,6 @@ public class AuthSourceService {
     @Resource
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
 
-    @NotNull
     private static AuthSourceLogDTO getAuthSourceLogDTOAuthDTO(AuthSourceDTO authSourceOld) {
         AuthSourceLogDTO dto = new AuthSourceLogDTO();
         BeanUtils.copyBean(dto, authSourceOld);
@@ -57,7 +55,6 @@ public class AuthSourceService {
         return dto;
     }
 
-    @NotNull
     private static AuthSourceLogDTO getAuthSourceLogDTOByRequest(AuthSourceEditRequest authSource) {
         AuthSourceLogDTO dto = new AuthSourceLogDTO();
         BeanUtils.copyBean(dto, authSource);

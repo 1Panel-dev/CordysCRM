@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +60,7 @@ public class NamingThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(@NotNull Runnable r) {
+    public Thread newThread(Runnable r) {
         Thread thread = new Thread(r);
         thread.setDaemon(this.daemon);
 

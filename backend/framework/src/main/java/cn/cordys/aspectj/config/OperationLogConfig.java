@@ -3,7 +3,6 @@ package cn.cordys.aspectj.config;
 import cn.cordys.aspectj.aop.OperationLogAopAdvisor;
 import cn.cordys.aspectj.aop.OperationLogSource;
 import cn.cordys.aspectj.aop.OperationOperationLogInterceptor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
 import org.springframework.core.type.AnnotationMetadata;
@@ -60,7 +59,7 @@ public class OperationLogConfig implements ImportAware {
      * @param importMetadata 导入的元数据
      */
     @Override
-    public void setImportMetadata(@NotNull AnnotationMetadata importMetadata) {
+    public void setImportMetadata(AnnotationMetadata importMetadata) {
         // 如果需要在导入时读取其他的配置信息，可以在这里处理
         // LogUtils.info("Log record configuration is enabled by default");
     }

@@ -77,7 +77,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -164,7 +163,6 @@ public class ClueService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    @NotNull
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ClueListResponse> list, List<ClueListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);

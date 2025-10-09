@@ -2,7 +2,6 @@ package cn.cordys.common.redis;
 
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.consumer.TopicConsumer;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
@@ -37,7 +36,7 @@ public class MessageSubscriber implements MessageListener {
      * @param pattern 订阅的模式
      */
     @Override
-    public void onMessage(@NotNull Message message, byte[] pattern) {
+    public void onMessage(Message message, byte[] pattern) {
         try {
             String channel = new String(pattern);
             String messageBody = new String(message.getBody());

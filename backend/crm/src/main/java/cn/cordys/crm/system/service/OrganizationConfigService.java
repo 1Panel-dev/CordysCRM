@@ -22,7 +22,6 @@ import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -100,7 +99,6 @@ public class OrganizationConfigService {
 
     }
 
-    @NotNull
     private OrganizationConfigDetail getOrganizationConfigDetail(String userId, OrganizationConfig organizationConfig, String jsonString) {
         OrganizationConfigDetail organizationConfigDetail;
         organizationConfigDetail = new OrganizationConfigDetail();

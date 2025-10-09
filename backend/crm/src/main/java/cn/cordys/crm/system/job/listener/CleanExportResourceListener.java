@@ -2,7 +2,6 @@ package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.crm.system.service.ExportTaskCenterService;
 import jakarta.annotation.Resource;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,7 @@ public class CleanExportResourceListener implements ApplicationListener<ExecuteE
 
 
     @Override
-    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+    public void onApplicationEvent(ExecuteEvent event) {
         exportResourceService.clean();
     }
 }

@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 /**
@@ -22,7 +20,6 @@ public class ClueExportRequest extends CluePageRequest {
     @Schema(description = "文件名", requiredMode = Schema.RequiredMode.REQUIRED)
     private String fileName;
 
-    @NotNull
     @Schema(description = "表头信息", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<ExportHeadDTO> headList;
 }

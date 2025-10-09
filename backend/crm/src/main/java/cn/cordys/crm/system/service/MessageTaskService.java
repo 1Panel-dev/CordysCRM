@@ -18,7 +18,6 @@ import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +44,6 @@ public class MessageTaskService {
     @Resource
     private LogService logService;
 
-    @NotNull
     private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Boolean weComEnable, Map<String, String> eventMap) {
         MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
         newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));

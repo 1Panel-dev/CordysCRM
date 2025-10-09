@@ -2,7 +2,6 @@ package cn.cordys.common.util;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -153,7 +152,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
      *
      * @throws BeansException 如果出现错误
      */
-    public void setApplicationContext(@NotNull ApplicationContext ctx) throws BeansException {
+    public void setApplicationContext(ApplicationContext ctx) throws BeansException {
         context = ctx;
     }
 

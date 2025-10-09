@@ -34,7 +34,6 @@ import cn.cordys.crm.system.notice.sse.SseService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,7 +109,6 @@ public class AnnouncementService {
         );
     }
 
-    @NotNull
     private AnnouncementLogDTO buildNewLogDTO(AnnouncementRequest request, Announcement announcement, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         AnnouncementLogDTO announcementLogDTO = new AnnouncementLogDTO();
         BeanUtils.copyBean(announcementLogDTO, announcement);
@@ -126,7 +124,6 @@ public class AnnouncementService {
         return announcementLogDTO;
     }
 
-    @NotNull
     private AnnouncementLogDTO getOldLogDTO(Announcement originalAnnouncement) {
         AnnouncementReceiveTypeDTO oldReceiveTypeDTO = JSON.parseObject(new String(originalAnnouncement.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         AnnouncementLogDTO oldLogDTO = new AnnouncementLogDTO();

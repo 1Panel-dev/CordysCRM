@@ -37,7 +37,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -205,8 +204,6 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         return hasPool && hasPermission;
     }
 
-
-    @NotNull
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCluePoolResponse> list, List<AdvancedCluePoolResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);

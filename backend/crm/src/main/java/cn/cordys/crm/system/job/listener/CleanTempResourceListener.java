@@ -6,7 +6,6 @@ import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.file.engine.FileRequest;
 import cn.cordys.file.engine.StorageType;
 import jakarta.annotation.Resource;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,7 @@ public class CleanTempResourceListener implements ApplicationListener<ExecuteEve
     private FileCommonService fileCommonService;
 
     @Override
-    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+    public void onApplicationEvent(ExecuteEvent event) {
         clean();
     }
 

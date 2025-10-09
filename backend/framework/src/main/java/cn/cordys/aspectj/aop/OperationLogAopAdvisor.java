@@ -1,7 +1,6 @@
 package cn.cordys.aspectj.aop;
 
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractBeanFactoryPointcutAdvisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcut;
@@ -33,7 +32,7 @@ public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor i
      * @return 返回定义的切点对象
      */
     @Override
-    public @NotNull Pointcut getPointcut() {
+    public Pointcut getPointcut() {
         return new LogRecordPointcut(operationLogSource);
     }
 
@@ -49,7 +48,7 @@ public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor i
         }
 
         @Override
-        public boolean matches(@NotNull Method method, Class<?> targetClass) {
+        public boolean matches(Method method, Class<?> targetClass) {
             // 定义支持通配符的包名模式
             // todo: 后续需要修改
             String packagePattern = "cn.cordys\\..*\\.service";

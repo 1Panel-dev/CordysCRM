@@ -14,7 +14,6 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.customer.domain.CustomerPool;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
-import cn.cordys.crm.search.constants.SearchPhoneEnum;
 import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
 import cn.cordys.crm.system.constants.FieldType;
@@ -31,7 +30,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -367,7 +365,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         return fieldValue;
     }
 
-    @NotNull
     public Object getPhoneFieldValue(Object fieldValue, int length) {
         if (length > 6) {
             fieldValue = ((String) fieldValue).substring(0, length - 6) + "******";
@@ -377,7 +374,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         return fieldValue;
     }
 
-    @NotNull
     public Object getInputFieldValue(Object fieldValue, int length) {
         //fieldValue保留第一位字符，后面全部用*代替
         if (length > 1) {

@@ -9,7 +9,6 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +44,7 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
      * @param event 执行事件
      */
     @Override
-    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+    public void onApplicationEvent(ExecuteEvent event) {
         try {
             execute();
         } catch (Exception e) {

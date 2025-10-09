@@ -11,7 +11,6 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -76,7 +75,7 @@ public class DataAccessLayer implements ApplicationContextAware {
     }
 
     @Override
-    public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
         // 使用双重检查锁定模式
         if (applicationContext == null) {
             synchronized (DataAccessLayer.class) {
