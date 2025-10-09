@@ -4,13 +4,16 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * 加密解密工具类，提供 MD5、BASE64 和 AES 加密解密操作。
@@ -152,7 +155,13 @@ public class CodingUtils {
         }
 
         try {
-            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "AES");
+            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length != 16) {
+                // 密钥不足16字节，填充或截断到16字节
+                keyBytes = Arrays.copyOf(keyBytes, 16);
+            }
+
+            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
