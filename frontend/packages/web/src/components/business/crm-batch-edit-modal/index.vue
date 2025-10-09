@@ -229,16 +229,20 @@
 
   const fieldOptions = computed(
     () =>
-      list.value.filter(
-        (e) =>
-          ![
-            FieldTypeEnum.DIVIDER,
-            FieldTypeEnum.PICTURE,
-            FieldTypeEnum.LINK,
-            FieldTypeEnum.SERIAL_NUMBER,
-            FieldTypeEnum.ATTACHMENT,
-          ].includes(e.type) && e.businessKey !== 'owner'
-      ) as unknown as SelectMixedOption[]
+      list.value.filter((e) => {
+        const baseCondition = ![
+          FieldTypeEnum.DIVIDER,
+          FieldTypeEnum.PICTURE,
+          FieldTypeEnum.LINK,
+          FieldTypeEnum.SERIAL_NUMBER,
+          FieldTypeEnum.ATTACHMENT,
+        ].includes(e.type);
+
+        if (props.formKey === FormDesignKeyEnum.CLUE_POOL || props.formKey === FormDesignKeyEnum.CUSTOMER_OPEN_SEA) {
+          return baseCondition && e.businessKey !== 'owner';
+        }
+        return baseCondition;
+      }) as unknown as SelectMixedOption[]
   );
 
   const formRef = ref<FormInst>();
