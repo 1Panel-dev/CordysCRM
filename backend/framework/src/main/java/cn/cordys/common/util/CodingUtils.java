@@ -176,7 +176,7 @@ public class CodingUtils {
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(128);
             SecretKey secretKey = keyGen.generateKey();
-            return Base64.encodeBase64String(secretKey.getEncoded());
+            return Base64.encodeBase64URLSafeString(secretKey.getEncoded());
         } catch (Exception e) {
             throw new RuntimeException("Generate AES secret key error:", e);
         }
