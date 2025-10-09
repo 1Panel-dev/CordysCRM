@@ -12,4 +12,11 @@
             #{id}
         </foreach>
     </insert>
+
+    <select id="getRecentOwner" resultType="java.lang.String">
+        select owner from customer_owner
+        where customer_id = #{customerId}
+        order by collection_time desc
+        limit 1
+    </select>
 </mapper>

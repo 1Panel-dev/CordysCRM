@@ -491,13 +491,24 @@ public class CustomerContactService {
     /**
      * 更新责任人
      *
-     * @param customerId
-     * @param newOwner
-     * @param oldOwner
-     * @param orgId
+     * @param customerId 客户ID
+     * @param newOwner 新的负责人
+     * @param oldOwner 旧的负责人
+     * @param orgId 组织ID
      */
     public void updateContactOwner(String customerId, String newOwner, String oldOwner, String orgId) {
         extCustomerContactMapper.updateContactOwner(customerId, newOwner, oldOwner, orgId);
+    }
+
+    /**
+     * 更新公海客户联系人
+     * @param customerId 客户ID
+     * @param newOwner 新的负责人
+     * @param oldOwner 旧的负责人
+     * @param orgId 组织ID
+     */
+    public void updatePoolContactOwner(String customerId, String newOwner, String oldOwner, String orgId) {
+        extCustomerContactMapper.updatePoolContactOwner(customerId, newOwner, oldOwner, orgId);
     }
 
     public List<CustomerContact> getContactListByNames(List<String> names) {

@@ -321,6 +321,15 @@
         and organization_id = #{orgId}
     </update>
 
+    <update id="updatePoolContactOwner">
+        update customer_contact cc
+        left join sys_user su on cc.owner = su.id
+        set cc.owner = #{newOwner}
+        where (cc.owner = #{oldOwner} or cc.owner = '' or su.id is null)
+          and customer_id = #{customerId}
+          and organization_id = #{orgId}
+    </update>
+
     <update id="updateContactById">
         update customer_contact
         set owner = #{owner}

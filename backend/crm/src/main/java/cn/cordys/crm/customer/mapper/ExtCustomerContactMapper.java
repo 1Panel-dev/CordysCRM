@@ -47,6 +47,15 @@ public interface ExtCustomerContactMapper {
 
     void updateContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
 
+    /**
+     * 更新公海联系人负责人
+     * @param customerId 客户ID
+     * @param newOwner 新负责人
+     * @param oldOwner 旧负责人
+     * @param orgId 组织ID
+     */
+    void updatePoolContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
+
     void updateContactById(@Param("id") String id, @Param("owner") String owner);
 
     List<CustomerContactListResponse> getListByIds(@Param("ids") List<String> ids);

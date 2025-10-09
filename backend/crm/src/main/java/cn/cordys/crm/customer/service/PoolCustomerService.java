@@ -17,6 +17,7 @@ import cn.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import cn.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
+import cn.cordys.crm.customer.mapper.ExtCustomerOwnerMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.FilterConditionDTO;
@@ -79,6 +80,8 @@ public class PoolCustomerService {
     private CustomerContactService customerContactService;
     @Resource
     private CustomerFieldService customerFieldService;
+    @Resource
+    private ExtCustomerOwnerMapper extCustomerOwnerMapper;
 
     /**
      * 获取当前用户公海选项
@@ -402,8 +405,11 @@ public class PoolCustomerService {
         customer.setUpdateTime(System.currentTimeMillis());
         extCustomerMapper.updateIncludeNullById(customer);
 
-        //更新联系人
-        customerContactService.updateContactOwner(customerId, ownerId, InternalUser.ADMIN.getValue(), currentOrgId);
+        /*
+         * 只更新最近一次销售负责人的联系人(联系人为空的)
+         */
+        String recentOwner = extCustomerOwnerMapper.getRecentOwner(customerId);
+        customerContactService.updatePoolContactOwner(customerId, ownerId, recentOwner, currentOrgId);
 
         // 日志
         LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());
