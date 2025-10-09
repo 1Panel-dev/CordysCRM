@@ -13,7 +13,7 @@
     ></div>
     <n-input
       v-model:value="value"
-      :maxlength="Number(props.fieldConfig.format) || 255"
+      :maxlength="255"
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false"
       :allow-input="onlyAllowNumber"
@@ -64,7 +64,7 @@
       trigger: ['input', 'blur'],
       validator: (_rule: any, val: string) => {
         if (!val) return Promise.resolve();
-        if (props.fieldConfig.format === '11' && value.value.length !== 11) {
+        if (props.fieldConfig.format === '11' && val.replace(/[\s\uFEFF\xA0]+/g, '').length !== 11) {
           return Promise.reject(new Error(t('crmFormDesign.phone.lengthValidator', { count: 11 })));
         }
       },

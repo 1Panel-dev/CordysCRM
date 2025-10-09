@@ -7,7 +7,7 @@
     :rules="mergedRules"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
     :disabled="props.fieldConfig.editable === false"
-    :maxlength="Number(props.fieldConfig.format) || 255"
+    :maxlength="255"
     clearable
     @update:model-value="($event) => emit('change', $event)"
   >
@@ -40,7 +40,7 @@
       trigger: ['onBlur', 'onChange'],
       validator: ((val: string) => {
         if (!val) return Promise.resolve();
-        if (props.fieldConfig.format === '11' && value.value.length !== 11) {
+        if (props.fieldConfig.format === '11' && val.replace(/[\s\uFEFF\xA0]+/g, '').length !== 11) {
           return t('formCreate.phone.lengthValidator', { count: 11 });
         }
       }) as FieldRuleValidator,
