@@ -18,6 +18,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -99,13 +100,18 @@ public class ModuleFieldService {
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal.unique.check"));
         }
+        String value = request.getValue();
+        if (Strings.CI.equals(field.getType(), FieldType.PHONE.toString())) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+
         BusinessModuleField businessField = BusinessModuleField.ofKey(field.getInternalKey());
         String repeatName;
         if (businessField != null) {
             // 业务字段
-            repeatName = commonMapper.checkInternalRepeatName(tableName, businessField.getBusinessKey(), request.getValue(), currentOrg);
+            repeatName = commonMapper.checkInternalRepeatName(tableName, businessField.getBusinessKey(), value, currentOrg);
         } else {
-            repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), request.getValue(), currentOrg);
+            repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), value, currentOrg);
         }
         return FieldRepeatCheckResponse.builder().name(repeatName).repeat(StringUtils.isNotBlank(repeatName)).build();
     }
