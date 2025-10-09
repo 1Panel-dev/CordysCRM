@@ -611,6 +611,7 @@
         setLoadListParams({
           keyword: keyword.value,
           viewId: activeTab.value,
+          poolId: poolId.value,
         });
         crmTableRef.value?.setColumnSort(val);
       }

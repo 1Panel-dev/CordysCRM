@@ -581,6 +581,7 @@
         setLoadListParams({
           keyword: keyword.value,
           viewId: activeTab.value,
+          poolId: props.hiddenPoolSelect ? undefined : openSea.value,
         });
         crmTableRef.value?.setColumnSort(val);
       }
