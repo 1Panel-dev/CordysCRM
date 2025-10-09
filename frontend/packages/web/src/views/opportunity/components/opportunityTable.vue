@@ -242,16 +242,19 @@
           key: 'exportChecked',
           permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
         },
+        {
+          label: t('common.batchEdit'),
+          key: 'batchEdit',
+          permission:
+            activeTab.value !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+              ? ['OPPORTUNITY_MANAGEMENT:UPDATE']
+              : ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'],
+        },
         ...(activeTab.value !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
           ? [
               {
                 label: t('common.batchTransfer'),
                 key: 'batchTransfer',
-                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-              },
-              {
-                label: t('common.batchEdit'),
-                key: 'batchEdit',
                 permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
               },
               {
