@@ -28,6 +28,7 @@ export const AdvancedSearchOptPageUrl = '/advanced/search/opportunity'; // 全�
 export const AdvancedSearchOptDetailUrl = '/advanced/search/opportunity/detail'; // 全局搜索商机详情
 export const GlobalSearchOptPageUrl = '/global/search/opportunity'; // 全局搜索商机列表
 export const BatchUpdateOpportunityUrl = '/opportunity/batch/update'; // 批量更新商机
+export const SortOpportunityUrl = '/opportunity/sort'; // 商机看板拖拽排序
 
 // 视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';

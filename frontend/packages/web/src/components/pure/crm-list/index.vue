@@ -1,19 +1,19 @@
 <template>
-  <n-virtual-list
-    v-bind="props"
-    ref="listRef"
-    :class="['crm-list', containerStatusClass, props.class]"
-    :item-size="props.itemHeight"
-    :items="listData"
-    :style="{
-      height: props.virtualScrollHeight,
-    }"
-    item-resizable
-    @scroll="handleScroll"
-    @wheel="handleWheel"
-  >
-    <template #default="{ item }">
-      <div :key="item.key">
+  <n-spin :show="props.loading" content-class="h-full">
+    <n-virtual-list
+      v-bind="props"
+      ref="listRef"
+      :class="['crm-list', containerStatusClass, props.class]"
+      :item-size="props.itemHeight"
+      :items="listData"
+      :style="{
+        height: props.virtualScrollHeight,
+      }"
+      item-resizable
+      @scroll="handleScroll"
+      @wheel="handleWheel"
+    >
+      <template #default="{ item }">
         <slot name="item" :item="item">
           <div
             :key="item[props.keyField]"
@@ -54,14 +54,13 @@
             </div>
           </div>
         </slot>
-      </div>
-    </template>
-  </n-virtual-list>
+      </template>
+    </n-virtual-list>
+  </n-spin>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { NVirtualList } from 'naive-ui';
+  import { NSpin, NVirtualList } from 'naive-ui';
   import { useDraggable } from 'vue-draggable-plus';
 
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
@@ -88,6 +87,7 @@
       itemClass?: string;
       activeItemClass?: string;
       virtualScrollHeight: string;
+      loading?: boolean;
     }>(),
     {
       mode: 'static',

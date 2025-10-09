@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "45699122",
+      "name": "icon_waterfalls",
+      "font_class": "icon_waterfalls",
+      "unicode": "e7e5",
+      "unicode_decimal": 59365
+    },
+    {
+      "icon_id": "45699123",
+      "name": "icon_list",
+      "font_class": "icon_list",
+      "unicode": "e7e6",
+      "unicode_decimal": 59366
+    },
+    {
       "icon_id": "34134721",
       "name": "icon_file-unknow_colorful",
       "font_class": "icon_file-unknow_colorful1",

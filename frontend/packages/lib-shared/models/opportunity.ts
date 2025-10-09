@@ -1,3 +1,4 @@
+import type { TableQueryParams } from './common';
 import { ModuleField } from '@lib/shared/models/customer';
 
 export interface OpportunityItem {
@@ -58,4 +59,15 @@ export interface UpdateStageParams {
   stage: string;
   // expectedEndTime?: number; // 预计结束时间
   failureReason?: string | null; // 失败原因
+}
+
+export interface OpportunityPageQueryParams extends TableQueryParams {
+  board?: boolean; // 是否是看板模式
+}
+
+export interface OpportunityBillboardDraggedParams {
+  start: number;
+  end: number;
+  dragModuleId: string;
+  stage: string;
 }

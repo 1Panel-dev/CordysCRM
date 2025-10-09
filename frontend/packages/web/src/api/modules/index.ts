@@ -99,6 +99,7 @@ export const {
   importOpportunity,
   getOptStatistic,
   batchUpdateOpportunity,
+  sortOpportunity,
 } = opportunityApi;
 
 export const {

@@ -37,6 +37,7 @@ import {
   OptUpdateStageUrl,
   OptUpdateUrl,
   PreCheckOptImportUrl,
+  SortOpportunityUrl,
   UpdateBusinessViewUrl,
   UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
@@ -64,8 +65,10 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type {
+  OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
+  OpportunityPageQueryParams,
   SaveOpportunityParams,
   UpdateOpportunityParams,
 } from '@lib/shared/models/opportunity';
@@ -75,8 +78,8 @@ import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 商机列表
-  function getOpportunityList(data: TableQueryParams) {
-    return CDR.post<CommonList<OpportunityItem>>({ url: OptPageUrl, data });
+  function getOpportunityList(data: OpportunityPageQueryParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: OptPageUrl, data }, { ignoreCancelToken: true });
   }
 
   // 添加商机
@@ -92,6 +95,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 商机详情
   function getOpportunityDetail(id: string) {
     return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}` });
+  }
+
+  // 商机看板拖拽排序
+  function sortOpportunity(data: OpportunityBillboardDraggedParams) {
+    return CDR.post({ url: SortOpportunityUrl, data });
   }
 
   // 获取商机表单配置
@@ -201,7 +209,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 商机列表的金额数据
   function getOptStatistic(data: TableQueryParams) {
-    return CDR.post({ url: GetOptStatisticUrl, data });
+    return CDR.post({ url: GetOptStatisticUrl, data }, { ignoreCancelToken: true });
   }
 
   // 视图
@@ -314,5 +322,6 @@ export default function useProductApi(CDR: CordysAxios) {
     importOpportunity,
     getOptStatistic,
     batchUpdateOpportunity,
+    sortOpportunity,
   };
 }

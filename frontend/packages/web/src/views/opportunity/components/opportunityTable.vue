@@ -62,6 +62,20 @@
         @adv-search="handleAdvSearch"
         @keyword-search="searchByKeyword"
       />
+      <n-tabs
+        v-if="!props.isCustomerTab || !props.hiddenAdvanceFilter"
+        v-model:value="activeShowType"
+        type="segment"
+        size="large"
+        class="show-type-tabs"
+      >
+        <n-tab-pane name="table" class="hidden">
+          <template #tab><CrmIcon type="iconicon_list" /></template>
+        </n-tab-pane>
+        <n-tab-pane name="billboard" class="hidden">
+          <template #tab><CrmIcon type="iconicon_waterfalls" /></template>
+        </n-tab-pane>
+      </n-tabs>
     </template>
     <template #view>
       <CrmViewSelect
@@ -145,7 +159,7 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -158,6 +172,7 @@
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -217,6 +232,9 @@
   const { currentLocale } = useLocale(Message.loading);
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const activeShowType = defineModel<'billboard' | 'table'>('activeShowType', {
+    default: 'table',
+  });
 
   const keyword = ref('');
   const tableRefreshId = ref(0);
@@ -857,4 +875,10 @@
   });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .show-type-tabs {
+    :deep(.n-tabs-tab) {
+      padding: 6px;
+    }
+  }
+</style>
