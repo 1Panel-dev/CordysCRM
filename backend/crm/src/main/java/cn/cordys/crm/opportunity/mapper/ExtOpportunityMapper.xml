@@ -128,6 +128,10 @@
             and o.owner = #{userId}
         </if>
 
+        <if test="request.customerId != null and request.customerId != ''">
+            and o.customer_id = #{request.customerId}
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and (
             o.name like concat('%', #{request.keyword},'%')
