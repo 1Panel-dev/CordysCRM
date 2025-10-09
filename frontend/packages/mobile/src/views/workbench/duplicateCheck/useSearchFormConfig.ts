@@ -157,8 +157,7 @@ export default function useSearchFormConfig() {
     try {
       showLoadingToast(t('common.loading'));
       loading.value = true;
-      const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
-      const res = await getGlobalModuleCount(searchTerm);
+      const res = await getGlobalModuleCount(val);
       moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
         acc[item.key] = item.count;
         return acc;

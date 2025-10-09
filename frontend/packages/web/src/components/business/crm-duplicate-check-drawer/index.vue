@@ -137,8 +137,7 @@
     if (!val) return;
     try {
       loading.value = true;
-      const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
-      const res = await getGlobalModuleCount(searchTerm);
+      const res = await getGlobalModuleCount(val);
       moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
         acc[item.key] = item.count;
         return acc;
@@ -323,8 +322,7 @@
 
   const searchData = async (val: string) => {
     if (!val) return;
-    const searchTerm = val.replace(/[\s\uFEFF\xA0]+/g, '');
-    useTableRes.setLoadListParams({ keyword: searchTerm });
+    useTableRes.setLoadListParams({ keyword: val });
     await useTableRes.loadList();
   };
 

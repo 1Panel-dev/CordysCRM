@@ -216,10 +216,7 @@
       // 唯一性校验
       staticRule.trigger = 'onBlur';
       staticRule.validator = async (value: string) => {
-        if (
-          !value.length ||
-          formDetail.value[item.id].replace(/[\s\uFEFF\xA0]+/g, '') === originFormDetail.value[item.id]
-        ) {
+        if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
           return true;
         }
 
