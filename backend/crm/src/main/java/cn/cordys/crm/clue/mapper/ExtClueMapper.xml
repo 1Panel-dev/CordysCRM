@@ -481,6 +481,9 @@
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 
     <select id="globalSearchListCount" resultType="java.lang.Long">
@@ -510,6 +513,9 @@
           and c.in_shared_pool is true and c.pool_id is not null
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
         </include>
     </select>
     <select id="globalPoolSearchListCount" resultType="java.lang.Long">

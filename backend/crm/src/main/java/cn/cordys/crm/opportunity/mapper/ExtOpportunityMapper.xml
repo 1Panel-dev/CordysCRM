@@ -722,6 +722,9 @@
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 
     <select id="getOpportunityOptions" resultType="cn.cordys.common.dto.OptionDTO">
