@@ -5,7 +5,7 @@ import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath } from '@lib/shared/method';
+import { formatNumberValue, formatTimeValue, getCityPath } from '@lib/shared/method';
 import type { ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -618,16 +618,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       sorter: columnsSorter,
     },
   ];
-
-  function formatNumberValue(value: string | number, field: FormCreateField) {
-    if (field.numberFormat === 'percent') {
-      return value ? `${value}%` : '-';
-    }
-    if (field.showThousandsSeparator) {
-      return value ? Number(value).toLocaleString('en-us') : '-';
-    }
-    return value;
-  }
 
   async function initFormConfig() {
     try {

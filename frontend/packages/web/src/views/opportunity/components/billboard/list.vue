@@ -18,14 +18,14 @@
         v-model="list"
         :animation="150"
         ghost-class="opportunity-billboard-item-ghost"
-        group="opportunity-billboard"
+        :group="{ name: 'opportunity', pull: 'clone', put: true }"
         target=".n-scrollbar-content"
-        :class="[props.stage, 'h-full']"
+        class="h-full"
         @add="handleAddItem"
         @move="handleMove"
         @update="handleUpdate"
       >
-        <n-scrollbar @scroll="handleReachBottom">
+        <n-scrollbar :content-class="props.stage[0]" @scroll="handleReachBottom">
           <div v-for="item in list" :key="item.id" class="opportunity-billboard-item">
             <div class="flex items-center justify-between">
               <CrmTableButton @click="jumpToDetail('opportunity', item.id)">
@@ -42,7 +42,14 @@
                 </template>
                 {{ fieldLabelMap.amount }}
               </n-tooltip>
-              <div class="opportunity-billboard-item-desc-value">{{ item.amount }}</div>
+              <div class="opportunity-billboard-item-desc-value">
+                {{
+                  formatNumberValue(
+                    item.amount,
+                    fieldList.find((field) => field.businessKey === 'amount') as FormCreateField
+                  )
+                }}
+              </div>
             </div>
             <div class="opportunity-billboard-item-desc">
               <n-tooltip trigger="hover" :delay="300">
@@ -97,11 +104,11 @@
                 class="opportunity-billboard-item-desc-value"
                 :class="{ 'text-[var(--error-red)]': dayjs(item.expectedEndTime).isSame(dayjs(), 'M') }"
               >
-                {{ dayjs(item.expectedEndTime).format('YYYY-MM-DD') }}
+                {{ item.expectedEndTime ? dayjs(item.expectedEndTime).format('YYYY-MM-DD') : '-' }}
               </div>
             </div>
           </div>
-          <div v-if="list.length === 0 && !loading" class="flex h-full flex-1 items-center justify-center">
+          <div v-if="list.length === 0 && !loading" class="flex h-[300px] flex-1 items-center justify-center">
             <n-empty :description="t('common.noData')"> </n-empty>
           </div>
         </n-scrollbar>
@@ -117,7 +124,7 @@
 
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { abbreviateNumber } from '@lib/shared/method';
+  import { abbreviateNumber, formatNumberValue } from '@lib/shared/method';
   import { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -189,7 +196,7 @@
       return `${t('opportunity.end')}/${t('common.fail')}`;
     }
     if (props.stage[0] === OpportunityStatusEnum.CREATE) {
-      return t('common.create');
+      return t('common.newCreate');
     }
     if (props.stage[0] === OpportunityStatusEnum.CLEAR_REQUIREMENTS) {
       return t('opportunity.clearRequirements');
@@ -331,7 +338,7 @@
       });
       refreshList();
       if (item.to.className !== item.from.className) {
-        emit('change', item.from.className);
+        emit('change', item.from.className.split(' ')[1]);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -364,7 +371,7 @@
       });
       refreshList();
       if (item.to.className !== item.from.className) {
-        emit('change', item.from.className);
+        emit('change', item.from.className.split(' ')[1]);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -377,14 +384,16 @@
   async function sortItem(item: any) {
     try {
       loading.value = true;
+      const lastItem = list.value[item.newIndex - 1];
+      const nextItem = list.value[item.newIndex + 1];
       await sortOpportunity({
-        dropNodeId: item.to.id,
+        dropNodeId: nextItem?.id || lastItem?.id || '',
         dragNodeId: item.data.id,
-        dropPosition: -1,
+        dropPosition: nextItem ? -1 : 1,
         stage: props.stage[0] || '',
       });
       refreshList();
-      emit('change', item.from.className);
+      emit('change', item.from.className.split(' ')[1]);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

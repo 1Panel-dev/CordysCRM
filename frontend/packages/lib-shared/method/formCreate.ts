@@ -62,3 +62,13 @@ export function getNormalFieldValue(item: FormCreateField, value: any) {
   }
   return value;
 }
+
+export function formatNumberValue(value: string | number, field: FormCreateField) {
+  if (field.numberFormat === 'percent') {
+    return value ? `${value}%` : '-';
+  }
+  if (field.showThousandsSeparator) {
+    return value ? Number(value).toLocaleString('en-us') : '-';
+  }
+  return value;
+}
