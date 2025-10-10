@@ -10,6 +10,7 @@
             v-model:value="formDetail[item.id]"
             :field-config="item"
             :origin-form-detail="originFormDetail"
+            :form-detail="formDetail"
             :need-init-detail="route.query.needInitDetail === 'Y'"
             @change="($event: any) => handleFieldChange($event, item)"
           />

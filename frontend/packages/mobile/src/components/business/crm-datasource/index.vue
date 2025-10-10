@@ -53,6 +53,7 @@
             v-model:selected-rows="pickerSelectedRows"
             :multiple="props.multiple"
             :keyword="keyword"
+            :list-params="props.listParams"
             :load-list-api="sourceApi[props.dataSourceType]"
             :transform="selectListTransform"
             :no-page-nation="props.noPageNation"
@@ -115,6 +116,7 @@
     noPageNation?: boolean;
     disabledSelection?: (item: Record<string, any>) => boolean;
     class?: string;
+    listParams?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | string[]): void;
