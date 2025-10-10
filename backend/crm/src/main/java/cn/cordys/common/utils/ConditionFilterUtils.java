@@ -9,6 +9,8 @@ import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.security.SessionUtils;
@@ -81,6 +83,14 @@ public class ConditionFilterUtils {
                     FilterCondition.CombineConditionOperator.NOT_EQUALS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(JSON.toJSONString(item.getCombineValue()));
+            }
+
+            if (item.getValue() != null && Strings.CS.equals(item.getType(), FieldType.ATTACHMENT.name())) {
+                // 附件类型转义名称
+                List<String> attachmentNames = List.of(item.getCombineValue().toString().split(StringUtils.SPACE));
+                ExtAttachmentMapper attachmentMapper = CommonBeanFactory.getBean(ExtAttachmentMapper.class);
+                List<String> attachmentIds = attachmentMapper.getAttachmentIdsByNames(attachmentNames);
+                item.setValue(CollectionUtils.isEmpty(attachmentIds) ? attachmentNames : attachmentIds);
             }
         });
         replaceCurrentUser(validConditions);

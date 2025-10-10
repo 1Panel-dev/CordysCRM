@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtAttachmentMapper">
+    <select id="getAttachmentIdsByNames" resultType="java.lang.String">
+        select sa.id from sys_attachment sa where
+        <foreach item="name" collection="names" open="(" separator="or" close=")">
+            sa.name like concat('%', #{name}, '%')
+        </foreach>
+    </select>
+</mapper>
