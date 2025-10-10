@@ -824,6 +824,10 @@
     </select>
 
     <update id="moveDownStageOpportunity">
-        update opportunity set pos = pos + 1 where pos &gt;= #{end} and stage = #{stage}
+        update opportunity set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
+    </update>
+
+    <update id="moveUpStageOpportunity">
+        update opportunity set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
     </update>
 </mapper>

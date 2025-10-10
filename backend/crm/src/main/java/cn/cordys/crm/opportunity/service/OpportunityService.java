@@ -86,6 +86,7 @@ import java.util.stream.Stream;
 public class OpportunityService {
 
     public static final String SUCCESS = "SUCCESS";
+    public static final Long DEFAULT_POS = 1L;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
     @Resource
@@ -707,16 +708,18 @@ public class OpportunityService {
         if (opportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
-        //放入节点
-        Opportunity dropNode = opportunityMapper.selectByPrimaryKey(request.getDropNodeId());
-        Long pos = dropNode.getPos();
+        Long pos = DEFAULT_POS;
+        if (StringUtils.isNotBlank(request.getDropNodeId())) {
+            //放入节点
+            Opportunity dropNode = opportunityMapper.selectByPrimaryKey(request.getDropNodeId());
+            pos = dropNode.getPos();
+            if (request.getDropPosition() == -1) {
 
-        if (request.getDropPosition() == 1) {
-            //节点后
-            extOpportunityMapper.moveDownStageOpportunity(dropNode.getPos(), request.getStage());
-
-        } else {
-            pos = pos + 1;
+                extOpportunityMapper.moveUpStageOpportunity(pos, request.getStage(), DEFAULT_POS);
+                pos = pos + 1;
+            } else {
+                extOpportunityMapper.moveDownStageOpportunity(pos, request.getStage(),DEFAULT_POS);
+            }
         }
         Opportunity dragOpportunity = new Opportunity();
         dragOpportunity.setId(request.getDragNodeId());
