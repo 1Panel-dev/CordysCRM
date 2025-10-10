@@ -79,6 +79,7 @@ export const multipleValueTypeList = [
   FieldTypeEnum.CHECKBOX,
   FieldTypeEnum.SELECT_MULTIPLE,
   FieldTypeEnum.INPUT_MULTIPLE,
+  FieldTypeEnum.ATTACHMENT,
 ];
 
 export const inputDefaultFieldConfig: FormCreateField = {
