@@ -794,6 +794,12 @@
             <if test="request.fieldName == 'contactId'">
                 contact_id = #{request.fieldValue},
             </if>
+            <if test="request.fieldName == 'expectedEndTime'">
+                expected_end_time = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'actualEndTime'">
+                actual_end_time = #{request.fieldValue},
+            </if>
             update_time = #{request.updateTime},
             update_user = #{request.updateUser}
         </set>
