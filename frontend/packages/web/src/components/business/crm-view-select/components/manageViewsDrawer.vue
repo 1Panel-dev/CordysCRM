@@ -42,7 +42,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit } from '@lib/shared/method';
+  import { characterLimit, getCopiedName } from '@lib/shared/method';
   import type { TableDraggedParams } from '@lib/shared/models/common';
   import type { ViewItem } from '@lib/shared/models/view';
 
@@ -130,7 +130,7 @@
         break;
       case 'copy':
         readonly.value = false;
-        detail.value = { ...res, name: `${res?.name}copy` };
+        detail.value = { ...res, name: getCopiedName(res?.name as string) };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'delete':

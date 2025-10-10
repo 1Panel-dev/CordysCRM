@@ -680,3 +680,17 @@ export function getFileIconType(type: string) {
         : 'iconicon_file-unknow_colorful1';
   }
 }
+
+/**
+ * 限制字符串长度并添加后缀（如 copy），保证总长度不超过 maxLen
+ * @param name 原名称
+ * @param suffix 后缀（默认 "copy"）
+ * @param maxLen 最大长度（默认 255）
+ */
+export function getCopiedName(name: string, suffix = 'copy', maxLen = 255): string {
+  const baseName = name || '';
+  if (baseName.length + suffix.length > maxLen) {
+    return baseName.slice(0, maxLen - suffix.length) + suffix;
+  }
+  return baseName + suffix;
+}

@@ -106,6 +106,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getCopiedName } from '@lib/shared/method';
   import type { TableDraggedParams } from '@lib/shared/models/common';
   import { ViewItem } from '@lib/shared/models/view';
 
@@ -209,7 +210,7 @@
 
   async function handleCopy(option: ViewItem) {
     const res = await viewStore.getViewDetail(props.type, option);
-    detail.value = { ...res, name: `${res.name}copy` };
+    detail.value = { ...res, name: getCopiedName(res.name as string) };
     addOrEditViewsDrawerVisible.value = true;
   }
 
