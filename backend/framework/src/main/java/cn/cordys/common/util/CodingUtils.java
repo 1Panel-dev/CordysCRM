@@ -13,7 +13,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * 加密解密工具类，提供 MD5、BASE64 和 AES 加密解密操作。
@@ -70,26 +69,6 @@ public class CodingUtils {
             return new String(str);
         } catch (Exception e) {
             throw new RuntimeException("MD5 encrypt error:", e);
-        }
-    }
-
-    /**
-     * BASE64解密
-     *
-     * @param src 待解密的字符串
-     *
-     * @return 解密后的字符串
-     */
-    public static String base64Decoding(String src) {
-        if (StringUtils.isBlank(src)) {
-            throw new IllegalArgumentException("Input for BASE64 decoding cannot be null or empty");
-        }
-
-        try {
-            byte[] decodedBytes = Base64.decodeBase64(src);
-            return new String(decodedBytes, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            throw new RuntimeException("BASE64 decoding error:", e);
         }
     }
 
@@ -155,13 +134,7 @@ public class CodingUtils {
         }
 
         try {
-            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-            if (keyBytes.length != 16) {
-                // 密钥不足16字节，填充或截断到16字节
-                keyBytes = Arrays.copyOf(keyBytes, 16);
-            }
-
-            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -185,10 +158,18 @@ public class CodingUtils {
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(128);
             SecretKey secretKey = keyGen.generateKey();
-            return Base64.encodeBase64URLSafeString(secretKey.getEncoded());
+            return bytesToHex(secretKey.getEncoded());
         } catch (Exception e) {
             throw new RuntimeException("Generate AES secret key error:", e);
         }
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     public static String generateAK() {
