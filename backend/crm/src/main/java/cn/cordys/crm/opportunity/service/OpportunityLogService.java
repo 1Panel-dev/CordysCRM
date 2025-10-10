@@ -43,14 +43,22 @@ public class OpportunityLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.stage"))) {
-                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
-                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                }
+                if (differ.getNewValue() != null) {
+                    differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                }
             }
 
             if (Strings.CS.equals(differ.getColumn(), "status")) {
                 differ.setColumnName(Translator.get("log.opportunity." + differ.getColumn()));
-                differ.setOldValueName(Boolean.parseBoolean(differ.getOldValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
-                differ.setNewValueName(Boolean.parseBoolean(differ.getNewValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Boolean.parseBoolean(differ.getOldValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
+                }
+                if (differ.getNewValue() != null) {
+                    differ.setNewValueName(Boolean.parseBoolean(differ.getNewValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
+                }
             }
 
             if (Strings.CS.equals(differ.getColumn(), "expectedEndTime")) {
@@ -62,8 +70,12 @@ public class OpportunityLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumn(), "failureReason")) {
-                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
-                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                }
+                if (differ.getNewValue() != null) {
+                    differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                }
             }
         }
     }
