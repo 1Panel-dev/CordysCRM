@@ -14,6 +14,7 @@
     </div>
     <n-progress type="line" color="var(--primary-8)" rail-color="var(--text-n8)" :percentage="getStagePercentage" />
     <CrmList
+      v-show="list.length > 0 || loading"
       v-model:data="list"
       virtual-scroll-height="100%"
       key-field="id"
@@ -26,14 +27,16 @@
     >
       <template #item="{ item }">
         <VueDraggable
+          :id="item.id"
           v-model="list"
           :animation="150"
           ghost-class="opportunity-billboard-item-ghost"
           group="opportunity-billboard"
           handle=".handle"
+          :class="`${props.stage}-draggable`"
           @update="onUpdate"
           @add="onAdd"
-          @remove="remove"
+          @move="handleMove"
         >
           <div class="opportunity-billboard-item handle">
             <div class="flex items-center justify-between">
@@ -113,11 +116,14 @@
         </VueDraggable>
       </template>
     </CrmList>
+    <div v-if="list.length === 0 && !loading" class="flex h-full flex-1 items-center justify-center">
+      <n-empty :description="t('common.noData')"> </n-empty>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { NProgress, NTooltip } from 'naive-ui';
+  import { NEmpty, NProgress, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
   import { VueDraggable } from 'vue-draggable-plus';
 
@@ -134,6 +140,7 @@
 
   import { getOpportunityList, getOptStatistic, sortOpportunity } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -236,7 +243,6 @@
       if (refresh) {
         finished.value = false;
         pageNation.value.current = 1;
-        list.value = [];
       }
       const res = await getOpportunityList({
         current: pageNation.value.current || 1,
@@ -255,6 +261,7 @@
         viewId: 'ALL',
       });
       if (res) {
+        list.value = [];
         list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
         optionMap.value = res.optionMap || {};
@@ -305,8 +312,6 @@
   }
 
   function refreshList() {
-    pageNation.value.current = 1;
-    finished.value = false;
     loadOpportunityList();
     getStatistic();
   }
@@ -322,9 +327,9 @@
     try {
       loading.value = true;
       await sortOpportunity({
-        start: item.data.start,
-        end: item.data.end,
-        dragModuleId: item.data.id,
+        dropNodeId: item.to.id,
+        dragNodeId: item.data.id,
+        dropPosition: -1,
         stage: props.stage[0] || '',
       });
       refreshList();
@@ -341,9 +346,9 @@
     try {
       loading.value = true;
       await sortOpportunity({
-        start: item.data.start,
-        end: item.data.end,
-        dragModuleId: item.data.id,
+        dropNodeId: item.to.id,
+        dragNodeId: item.data.id,
+        dropPosition: -1,
         stage: props.stage[0] || '',
       });
       refreshList();
@@ -356,9 +361,15 @@
     }
   }
 
-  function remove() {
-    refreshList();
-    emit('change');
+  function handleMove(evt: any) {
+    // 禁止拖拽到不可放置的位置
+    if (evt.to.className.includes(props.stage[0]) && evt.from.className.includes(props.stage[0])) {
+      return true;
+    }
+    if (evt.data.stage === StageResultEnum.SUCCESS || evt.data.stage === StageResultEnum.FAIL) {
+      return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']);
+    }
+    return true;
   }
 
   function jumpToDetail(type: 'customer' | 'opportunity', id: string) {

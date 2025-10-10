@@ -48,42 +48,49 @@
     </div>
     <n-scrollbar content-class="grid [grid-template-columns:repeat(7,300px)] gap-[16px] h-full" x-scrollable>
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[OpportunityStatusEnum.CREATE]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[OpportunityStatusEnum.CLEAR_REQUIREMENTS]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[OpportunityStatusEnum.SCHEME_VALIDATION]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[OpportunityStatusEnum.BUSINESS_PROCUREMENT]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[StageResultEnum.SUCCESS]"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
       />
       <list
+        :keyword="keyword"
         :field-list="fieldList"
         :stage="[StageResultEnum.FAIL]"
         :refresh-time-stamp="refreshTimeStamp"

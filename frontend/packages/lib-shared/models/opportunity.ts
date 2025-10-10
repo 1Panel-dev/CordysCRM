@@ -66,8 +66,8 @@ export interface OpportunityPageQueryParams extends TableQueryParams {
 }
 
 export interface OpportunityBillboardDraggedParams {
-  start: number;
-  end: number;
-  dragModuleId: string;
+  dragNodeId: string;
+  dropNodeId: string;
+  dropPosition: number;
   stage: string;
 }
