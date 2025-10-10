@@ -66,6 +66,7 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.DATE_TIME]: [DYNAMICS, BETWEEN, GT, LT, EMPTY, NOT_EMPTY],
   [FieldTypeEnum.TIME_RANGE_PICKER]: [DYNAMICS, BETWEEN, GT, LT, EMPTY, NOT_EMPTY],
   [FieldTypeEnum.SERIAL_NUMBER]: COMMON_TEXT_OPERATORS,
+  [FieldTypeEnum.ATTACHMENT]: [CONTAINS, NO_CONTAINS, EMPTY, NOT_EMPTY],
 };
 
 export const scopeOptions = [
