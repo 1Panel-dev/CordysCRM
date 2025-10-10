@@ -363,10 +363,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         // 记录日志
         List<LogDTO> logs = originResourceList.stream()
                 .map(resource -> {
-                    Object originResource = newInstance(resource.getClass());
-                    setResourceFieldValue(originResource, field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
-                    Object modifiedResource = newInstance(resource.getClass());
-                    setResourceFieldValue(modifiedResource, field.getBusinessKey(), request.getFieldValue());
+                    Map originResource = new HashMap();
+                    if (!isBlankValue(getResourceFieldValue(resource, field.getBusinessKey()))) {
+                        originResource.put(field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
+                    }
+
+                    Map modifiedResource = new HashMap();
+                    if (!isBlankValue(request.getFieldValue())) {
+                        modifiedResource.put(field.getBusinessKey(), request.getFieldValue());
+                    }
 
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
