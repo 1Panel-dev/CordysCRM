@@ -702,22 +702,27 @@ public class OpportunityService {
      * @param userId
      */
     public void sort(OpportunitySortRequest request, String userId) {
-        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragModuleId());
+        //拖拽节点
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragNodeId());
         if (opportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
+        //放入节点
+        Opportunity dropNode = opportunityMapper.selectByPrimaryKey(request.getDropNodeId());
+        Long pos = dropNode.getPos();
 
-        if (request.getStart() < request.getEnd()) {
-            // start < end, 区间模块上移, pos - 1
-            extOpportunityMapper.moveUpOpportunity(request.getStart(), request.getEnd(), request.getStage());
+        if (request.getDropPosition() == 1) {
+            //节点后
+            extOpportunityMapper.moveDownStageOpportunity(dropNode.getPos(), request.getStage());
+
         } else {
-            // start > end, 区间模块下移, pos + 1
-            extOpportunityMapper.moveDownOpportunity(request.getEnd(), request.getStart(), request.getStage());
+            pos = pos + 1;
         }
-
         Opportunity dragOpportunity = new Opportunity();
-        dragOpportunity.setId(request.getDragModuleId());
-        dragOpportunity.setPos(request.getEnd());
+        dragOpportunity.setId(request.getDragNodeId());
+        dragOpportunity.setPos(pos);
+        dragOpportunity.setStage(request.getStage());
+        dragOpportunity.setLastStage(opportunity.getStage());
         dragOpportunity.setUpdateUser(userId);
         dragOpportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.updateById(dragOpportunity);

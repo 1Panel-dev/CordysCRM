@@ -76,4 +76,6 @@ public interface ExtOpportunityMapper {
     Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
     void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime, @Param("nextPos") long nextPos);
+
+    void moveDownStageOpportunity(@Param("end")Long end, @Param("stage")String stage);
 }

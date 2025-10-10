@@ -822,4 +822,8 @@
         select pos from opportunity where stage = #{stage} and organization_id = #{orgId}
         order by pos desc limit 1
     </select>
+
+    <update id="moveDownStageOpportunity">
+        update opportunity set pos = pos + 1 where pos &gt;= #{end} and stage = #{stage}
+    </update>
 </mapper>
