@@ -178,7 +178,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新商机阶段
-  function updateOptStage(data: { id: string; stage: string }) {
+  function updateOptStage(data: { id: string; stage: string; failureReason?: string | null }) {
     return CDR.post({ url: OptUpdateStageUrl, data });
   }
 

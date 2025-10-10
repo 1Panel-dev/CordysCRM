@@ -13,32 +13,20 @@
       </div>
     </div>
     <n-progress type="line" color="var(--primary-8)" rail-color="var(--text-n8)" :percentage="getStagePercentage" />
-    <CrmList
-      v-show="list.length > 0 || loading"
-      v-model:data="list"
-      virtual-scroll-height="100%"
-      key-field="id"
-      :item-height="268"
-      :loading="loading"
-      mode="remote"
-      ignore-item-resize
-      class="mb-[24px] !flex-1"
-      @reach-bottom="handleReachBottom"
-    >
-      <template #item="{ item }">
-        <VueDraggable
-          :id="item.id"
-          v-model="list"
-          :animation="150"
-          ghost-class="opportunity-billboard-item-ghost"
-          group="opportunity-billboard"
-          handle=".handle"
-          :class="`${props.stage}-draggable`"
-          @update="onUpdate"
-          @add="onAdd"
-          @move="handleMove"
-        >
-          <div class="opportunity-billboard-item handle">
+    <n-spin :show="loading" content-class="h-full">
+      <VueDraggable
+        v-model="list"
+        :animation="150"
+        ghost-class="opportunity-billboard-item-ghost"
+        group="opportunity-billboard"
+        target=".n-scrollbar-content"
+        :class="[props.stage, 'h-full']"
+        @add="handleAddItem"
+        @move="handleMove"
+        @update="handleUpdate"
+      >
+        <n-scrollbar @scroll="handleReachBottom">
+          <div v-for="item in list" :key="item.id" class="opportunity-billboard-item">
             <div class="flex items-center justify-between">
               <CrmTableButton @click="jumpToDetail('opportunity', item.id)">
                 <template #trigger>{{ item.name }}</template>
@@ -113,26 +101,26 @@
               </div>
             </div>
           </div>
-        </VueDraggable>
-      </template>
-    </CrmList>
-    <div v-if="list.length === 0 && !loading" class="flex h-full flex-1 items-center justify-center">
-      <n-empty :description="t('common.noData')"> </n-empty>
-    </div>
+          <div v-if="list.length === 0 && !loading" class="flex h-full flex-1 items-center justify-center">
+            <n-empty :description="t('common.noData')"> </n-empty>
+          </div>
+        </n-scrollbar>
+      </VueDraggable>
+    </n-spin>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { NEmpty, NProgress, NTooltip } from 'naive-ui';
+  import { NEmpty, NProgress, NScrollbar, NSpin, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { abbreviateNumber } from '@lib/shared/method';
+  import { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
-  import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
@@ -150,9 +138,11 @@
     advanceFilter?: FilterResult;
     stage: string[];
     fieldList: FormCreateField[];
+    enableReason?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'change'): void;
+    (e: 'fail', item: OpportunityItem): void;
+    (e: 'change', stage: string): void;
   }>();
 
   const { t } = useI18n();
@@ -261,7 +251,9 @@
         viewId: 'ALL',
       });
       if (res) {
-        list.value = [];
+        if (refresh) {
+          list.value = [];
+        }
         list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
         optionMap.value = res.optionMap || {};
@@ -303,12 +295,15 @@
     return products.filter((product: any) => ids.includes(product.id)).map((product: any) => product.name);
   }
 
-  function handleReachBottom() {
-    pageNation.value.current += 1;
-    if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
-      return;
+  function handleReachBottom(e: Event) {
+    const el = e.target as HTMLElement;
+    if (el.scrollHeight - el.scrollTop <= el.clientHeight) {
+      pageNation.value.current += 1;
+      if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
+        return;
+      }
+      loadOpportunityList(false);
     }
-    loadOpportunityList(false);
   }
 
   function refreshList() {
@@ -323,17 +318,21 @@
     }
   );
 
-  async function onUpdate(item: any) {
+  async function handleUpdate(item: any) {
     try {
       loading.value = true;
+      const lastItem = list.value[item.newIndex - 1];
+      const nextItem = list.value[item.newIndex + 1];
       await sortOpportunity({
-        dropNodeId: item.to.id,
+        dropNodeId: nextItem?.id || lastItem?.id || '',
         dragNodeId: item.data.id,
-        dropPosition: -1,
+        dropPosition: nextItem ? -1 : 1,
         stage: props.stage[0] || '',
       });
       refreshList();
-      emit('change');
+      if (item.to.className !== item.from.className) {
+        emit('change', item.from.className);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -342,7 +341,40 @@
     }
   }
 
-  async function onAdd(item: any) {
+  async function handleAddItem(item: any) {
+    // 开启失败原因需要填写失败原因
+    if (
+      item.data.stage !== StageResultEnum.FAIL &&
+      item.to.className.includes(StageResultEnum.FAIL) &&
+      props.enableReason
+    ) {
+      emit('fail', item);
+      list.value = list.value.filter((i) => i.id !== item.data.id);
+      return;
+    }
+    try {
+      loading.value = true;
+      const lastItem = list.value[item.newIndex - 1];
+      const nextItem = list.value[item.newIndex + 1];
+      await sortOpportunity({
+        dropNodeId: nextItem?.id || lastItem?.id || '',
+        dragNodeId: item.data.id,
+        dropPosition: nextItem ? -1 : 1,
+        stage: props.stage[0] || '',
+      });
+      refreshList();
+      if (item.to.className !== item.from.className) {
+        emit('change', item.from.className);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function sortItem(item: any) {
     try {
       loading.value = true;
       await sortOpportunity({
@@ -352,7 +384,7 @@
         stage: props.stage[0] || '',
       });
       refreshList();
-      emit('change');
+      emit('change', item.from.className);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -362,10 +394,11 @@
   }
 
   function handleMove(evt: any) {
-    // 禁止拖拽到不可放置的位置
+    // 同一列表随意拖拽
     if (evt.to.className.includes(props.stage[0]) && evt.from.className.includes(props.stage[0])) {
       return true;
     }
+    // 完结状态更改需要返签权限
     if (evt.data.stage === StageResultEnum.SUCCESS || evt.data.stage === StageResultEnum.FAIL) {
       return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']);
     }
@@ -387,6 +420,11 @@
   onBeforeMount(() => {
     getStatistic();
     loadOpportunityList();
+  });
+
+  defineExpose({
+    refreshList,
+    sortItem,
   });
 </script>
 
