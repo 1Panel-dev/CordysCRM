@@ -249,6 +249,9 @@
         display: none;
       }
     }
+    &.n-data-table-th--fixed-right {
+      z-index: 3;
+    }
   }
   .n-data-table-td {
     padding-top: 0;
@@ -261,6 +264,9 @@
       cursor: move;
 
       @apply flex items-center justify-center;
+    }
+    &.n-data-table-td--fixed-right {
+      z-index: 3;
     }
   }
   &.crm-data-table-compact {
