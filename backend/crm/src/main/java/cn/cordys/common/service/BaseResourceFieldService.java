@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -452,6 +453,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     valueClass = List.class;
                 } else if (value instanceof Map<?,?>) {
                     valueClass = Map.class;
+                } else if (value instanceof Integer) {
+                    Class<?> type = clazz.getDeclaredField(fieldName).getType();
+                    if (type.equals(BigDecimal.class)) {
+                        value = BigDecimal.valueOf((Integer) value);
+                    } else  if (type.equals(Long.class)) {
+                        value = Long.valueOf((Integer) value);
+                    }
+                    valueClass = value.getClass();
                 }
                 fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), valueClass)
                         .invoke(resource, value);
