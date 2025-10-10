@@ -44,10 +44,10 @@ public class OpportunityLogService extends BaseModuleLogService {
 
             if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.stage"))) {
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                    differ.setOldValueName(Translator.get(differ.getOldValueName().toString(), differ.getOldValueName().toString()));
                 }
                 if (differ.getNewValue() != null) {
-                    differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                    differ.setNewValueName(Translator.get(differ.getNewValueName().toString(), differ.getNewValueName().toString()));
                 }
             }
 
