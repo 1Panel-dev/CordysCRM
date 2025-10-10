@@ -13,7 +13,7 @@
     ></div>
     <n-input
       v-model:value="value"
-      :maxlength="255"
+      :maxlength="30"
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false"
       :allow-input="onlyAllowNumber"
