@@ -77,6 +77,8 @@ export default {
   'crmFormDesign.pictureSizeLimitTip': '仅支持上传 0MB-20MB 之间的任意整数',
   'crmFormDesign.card': '卡片',
   'crmFormDesign.list': '列表',
+  'crmFormDesign.C': '国家',
+  'crmFormDesign.P': '国家-省',
   'crmFormDesign.PC': '国家-省-市',
   'crmFormDesign.PCD': '国家-省-市-区',
   'crmFormDesign.PCDDetail': '国家-省-市-区-详细地址',

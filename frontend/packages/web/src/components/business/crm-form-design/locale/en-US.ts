@@ -78,6 +78,8 @@ export default {
   'crmFormDesign.pictureSizeLimitTip': 'Only supports integers between 0MB and 20MB',
   'crmFormDesign.card': 'Card',
   'crmFormDesign.list': 'List',
+  'crmFormDesign.C': 'Country',
+  'crmFormDesign.P': 'Country-Province',
   'crmFormDesign.PC': 'Country-Province-City',
   'crmFormDesign.PCD': 'Country-Province-City-District',
   'crmFormDesign.PCDDetail': 'Country-Province-City-District-Detailed Address',

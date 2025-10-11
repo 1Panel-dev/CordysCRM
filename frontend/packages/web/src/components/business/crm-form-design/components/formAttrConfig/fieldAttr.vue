@@ -488,6 +488,14 @@
           v-model:value="fieldConfig.locationType"
           :options="[
             {
+              label: t('crmFormDesign.C'),
+              value: 'C',
+            },
+            {
+              label: t('crmFormDesign.P'),
+              value: 'P',
+            },
+            {
               label: t('crmFormDesign.PC'),
               value: 'PC',
             },
