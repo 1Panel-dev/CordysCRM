@@ -29,6 +29,10 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
+        <include refid="viewFieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
@@ -87,6 +91,9 @@
 
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
 
         <include refid="sort">
@@ -199,6 +206,28 @@
         </if>
     </sql>
 
+    <sql id="viewFieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name not in
+                {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser', 'departmentId'}">
+                    <if test="condition.multipleValue">
+                        left join customer_field_blob ${tablePrefix}_${i}
+                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.multipleValue">
+                        left join customer_field ${tablePrefix}_${i}
+                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user ${tablePrefix}_${i}
+                    on ${tablePrefix}_${i}.user_id = c.owner
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid()">
             <bind name="sortName" value="${sort}.name"/>
@@ -238,6 +267,25 @@
                             <property name="condition" value="condition"/>
                             <property name="fieldTable" value="combine_${i}.field_value"/>
                             <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="viewCombine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="viewCombine_${i}.field_value"/>
+                            <property name="table" value="viewCombine_${i}"/>
                         </include>
                         <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
                             <property name="searchMode" value="${combineSearch}.searchMode"/>
@@ -341,6 +389,10 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
+        <include refid="viewFieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
@@ -359,6 +411,9 @@
 
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
 
         <include refid="sort">
@@ -483,6 +538,10 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
+        <include refid="viewFieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
@@ -500,6 +559,9 @@
 
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
 
         <include refid="sort">

@@ -48,6 +48,9 @@ public class ConditionFilterUtils {
             if (baseCondition.getCombineSearch() == null) {
                 baseCondition.setCombineSearch(new CombineSearch());
             }
+            if (baseCondition.getViewCombineSearch() == null) {
+                baseCondition.setViewCombineSearch(new CombineSearch());
+            }
             List<FilterCondition> newConditions = baseCondition.getCombineSearch()
                     .getConditions();
 
@@ -55,8 +58,10 @@ public class ConditionFilterUtils {
             List<BaseTreeNode> tree = CommonBeanFactory.getBean(DepartmentService.class).getTree(OrganizationContext.getOrganizationId());
             buildConditions(conditions, tree);
 
-            newConditions.addAll(conditions);
-            baseCondition.getCombineSearch().setConditions(newConditions);
+            baseCondition.getViewCombineSearch().setConditions(newConditions);
+            baseCondition.getViewCombineSearch().setSearchMode(baseCondition.getCombineSearch()
+                    .getSearchMode());
+            baseCondition.getCombineSearch().setConditions(conditions);
             baseCondition.getCombineSearch().setSearchMode(searchMode);
         }
 

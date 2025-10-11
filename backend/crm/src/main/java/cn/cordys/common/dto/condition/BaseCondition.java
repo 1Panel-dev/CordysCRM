@@ -28,6 +28,8 @@ public class BaseCondition {
     @Valid
     private CombineSearch combineSearch;
 
+    private CombineSearch viewCombineSearch;
+
     /**
      * 转义关键字中的特殊字符。
      *
