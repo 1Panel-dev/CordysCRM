@@ -383,13 +383,13 @@
   async function handleConfirm() {
     try {
       updateStageLoading.value = true;
+      await failListRef.value?.sortItem(updateOptItem.value);
       await updateOptStage({
         id: updateOptItem.value.data.id,
         stage: StageResultEnum.FAIL,
         failureReason: form.value.failureReason || '',
       });
       updateStatusModal.value = false;
-      failListRef.value?.sortItem(updateOptItem.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
