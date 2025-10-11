@@ -535,7 +535,9 @@ public class OpportunityService {
                 Strings.CI.equals(oldOpportunity.getStage(), StageType.SUCCESS.name())) {
             newOpportunity.setLastStage(StageType.BUSINESS_PROCUREMENT.name());
         } else {
-            newOpportunity.setLastStage(oldOpportunity.getStage());
+            if (!Strings.CI.equals(oldOpportunity.getStage(), StageType.FAIL.name())) {
+                newOpportunity.setLastStage(oldOpportunity.getStage());
+            }
         }
 
         if (Strings.CI.equals(request.getStage(), StageType.SUCCESS.name())) {
