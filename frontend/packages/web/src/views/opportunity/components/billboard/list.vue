@@ -76,10 +76,16 @@
                 {{ fieldLabelMap.customerId }}
               </n-tooltip>
               <div class="opportunity-billboard-item-desc-value">
-                <CrmTableButton size="small" class="text-[14px]" @click="jumpToDetail('customer', item.customerId)">
+                <CrmTableButton
+                  v-if="item.customerName"
+                  size="small"
+                  class="text-[14px]"
+                  @click="jumpToDetail('customer', item.customerId)"
+                >
                   <template #trigger>{{ item.customerName }}</template>
                   {{ item.customerName }}
                 </CrmTableButton>
+                <div v-else>-</div>
               </div>
             </div>
             <div class="opportunity-billboard-item-desc">
