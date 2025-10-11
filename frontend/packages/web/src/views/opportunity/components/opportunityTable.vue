@@ -275,13 +275,13 @@
                 key: 'batchTransfer',
                 permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
               },
-              {
-                label: t('common.batchDelete'),
-                key: 'batchDelete',
-                permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-              },
             ]
           : []),
+        {
+          label: t('common.batchDelete'),
+          key: 'batchDelete',
+          permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+        },
       ],
     };
   });
@@ -494,6 +494,7 @@
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
     ];
+
     const editAction: ActionsItem[] = [
       {
         label: t('common.edit'),
@@ -502,12 +503,20 @@
       },
     ];
 
+    const deleteAction: ActionsItem[] = [
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+      },
+    ];
+
     if (row.stage === StageResultEnum.FAIL) {
-      return transferAction;
+      return [...transferAction, ...deleteAction];
     }
 
     if (row.stage === StageResultEnum.SUCCESS) {
-      return hasBackStagePermission.value ? editAction : [];
+      return hasBackStagePermission.value ? [...editAction, ...deleteAction] : [...deleteAction];
     }
 
     return [
@@ -518,11 +527,7 @@
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
       ...transferAction,
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-      },
+      ...deleteAction,
     ];
   }
 

@@ -157,17 +157,7 @@
       },
     ];
 
-    if (currentStatus.value === StageResultEnum.FAIL) {
-      return transferAction;
-    }
-
-    if (currentStatus.value === StageResultEnum.SUCCESS) {
-      return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']) ? editAction : [];
-    }
-
-    return [
-      ...editAction,
-      ...transferAction,
+    const deleteAction: ActionsItem[] = [
       {
         label: t('common.delete'),
         key: 'delete',
@@ -178,6 +168,18 @@
         permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
       },
     ];
+
+    if (currentStatus.value === StageResultEnum.FAIL) {
+      return [...transferAction, ...deleteAction];
+    }
+
+    if (currentStatus.value === StageResultEnum.SUCCESS) {
+      return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
+        ? [...editAction, ...deleteAction]
+        : [...deleteAction];
+    }
+
+    return [...editAction, ...transferAction, ...deleteAction];
   });
 
   const baseStepList = computed(() => [
