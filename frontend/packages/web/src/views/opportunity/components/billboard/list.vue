@@ -25,13 +25,14 @@
         @move="handleMove"
         @update="handleUpdate"
       >
-        <n-scrollbar :content-class="props.stage[0]" @scroll="handleReachBottom">
+        <n-scrollbar :content-class="`${props.stage[0]} h-full`" @scroll="handleReachBottom">
           <div v-for="item in list" :key="item.id" class="opportunity-billboard-item">
             <div class="flex items-center justify-between">
-              <CrmTableButton @click="jumpToDetail('opportunity', item.id)">
+              <CrmTableButton v-if="item.name" @click="jumpToDetail('opportunity', item.id)">
                 <template #trigger>{{ item.name }}</template>
                 {{ item.name }}
               </CrmTableButton>
+              <div v-else>-</div>
             </div>
             <div class="opportunity-billboard-item-desc">
               <n-tooltip trigger="hover" :delay="300">
@@ -61,7 +62,8 @@
                 {{ fieldLabelMap.products }}
               </n-tooltip>
               <div class="opportunity-billboard-item-desc-value">
-                <CrmTagGroup :tags="getProductNames(item.products)" />
+                <CrmTagGroup v-if="item.products.length > 0" :tags="getProductNames(item.products)" />
+                <div v-else>-</div>
               </div>
             </div>
             <div class="opportunity-billboard-item-desc">
@@ -102,7 +104,7 @@
               </n-tooltip>
               <div
                 class="opportunity-billboard-item-desc-value"
-                :class="{ 'text-[var(--error-red)]': dayjs(item.expectedEndTime).isSame(dayjs(), 'M') }"
+                :class="{ '!text-[var(--error-red)]': dayjs(item.expectedEndTime).isSame(dayjs(), 'M') }"
               >
                 {{ item.expectedEndTime ? dayjs(item.expectedEndTime).format('YYYY-MM-DD') : '-' }}
               </div>
@@ -408,8 +410,11 @@
       return true;
     }
     // 完结状态更改需要返签权限
-    if (evt.data.stage === StageResultEnum.SUCCESS || evt.data.stage === StageResultEnum.FAIL) {
-      return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']);
+    if (evt.data.stage === StageResultEnum.SUCCESS) {
+      return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']) && evt.to.className.includes(StageResultEnum.FAIL);
+    }
+    if (evt.data.stage === StageResultEnum.FAIL) {
+      return false;
     }
     return true;
   }
