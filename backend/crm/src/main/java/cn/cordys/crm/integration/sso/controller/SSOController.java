@@ -39,6 +39,17 @@ public class SSOController {
         return ssoService.exchangeDingTalkOauth2(code);
     }
 
+    @GetMapping(value = "/lark")
+    @Operation(summary = "获取飞书扫码登陆验证")
+    public SessionUser callbackLark(@RequestParam("code") String code) {
+        return ssoService.exchangeLarkCode(code);
+    }
+
+    @GetMapping("/oauth/lark")
+    public SessionUser callbackLarkOauth(@RequestParam("code") String code) {
+        return ssoService.exchangeLarkOauth2(code);
+    }
+
     @GetMapping("/oauth/github")
     public ModelAndView callbackOauth(@RequestParam("code") String code) {
         SessionUser sessionUser = ssoService.exchangeGitOauth2(code);

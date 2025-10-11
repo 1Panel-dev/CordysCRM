@@ -262,7 +262,7 @@
       const res = await getConfigSynchronization();
       if (res) {
         const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-        isEnableWeComConfig.value = !!weChatConfig && !!weChatConfig.weComEnable;
+        isEnableWeComConfig.value = !!weChatConfig && !!weChatConfig.noticeEnable;
       }
     } catch (error) {
       // eslint-disable-next-line no-console

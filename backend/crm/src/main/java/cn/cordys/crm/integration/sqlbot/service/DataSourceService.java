@@ -14,7 +14,7 @@ import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.*;
 import cn.cordys.crm.integration.sqlbot.handler.TablePermissionHandler;

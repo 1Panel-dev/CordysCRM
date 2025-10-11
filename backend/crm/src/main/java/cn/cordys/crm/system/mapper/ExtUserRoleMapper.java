@@ -25,6 +25,8 @@ public interface ExtUserRoleMapper {
 
     void deleteUserRoleByUserId(@Param("userId") String userId);
 
+    void deleteUserRoleByUserIds(@Param("userIds")List<String> userIds);
+
     List<String> getUserIdsByRoleIds(@Param("roleIds") List<String> roleIds);
 
     void deleteByIds(@Param("ids") List<String> ids);
@@ -34,4 +36,6 @@ public interface ExtUserRoleMapper {
     List<String> selectUserRole(@Param("userId") String userId, @Param("orgId") String orgId);
 
     List<String> selectPermissionsByUserId(@Param("userId") String userId);
+
+
 }

@@ -44,15 +44,19 @@
     </select>
 
     <update id="updateStatus" parameterType="cn.cordys.crm.system.domain.OrganizationConfigDetail">
-        UPDATE sys_organization_config_detail SET enable = #{enable} WHERE type = #{type} AND id != #{id}
+        UPDATE sys_organization_config_detail SET enable = #{enable} WHERE type = #{type}
         AND config_id = #{configId}
     </update>
 
     <select id="getEnableOrganizationConfigDetails" parameterType="cn.cordys.crm.system.domain.OrganizationConfigDetail" resultType="cn.cordys.crm.system.domain.OrganizationConfigDetail">
         SELECT * FROM sys_organization_config_detail WHERE config_id = #{configId} and enable = true
-        <if test="type != null">
-            and type = #{type}
+        <if test="types != null and types.size() > 0">
+            and type in
+            <foreach collection="types" item="type" open="(" close=")" separator=",">
+                #{type}
+            </foreach>
         </if>
+
     </select>
     <select id="getOrganizationConfigDetailList"
             parameterType="cn.cordys.crm.system.dto.request.AuthSourceRequest"

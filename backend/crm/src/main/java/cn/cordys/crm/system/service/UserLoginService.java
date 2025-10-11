@@ -342,7 +342,7 @@ public class UserLoginService {
      */
     private OrganizationConfig getOrganizationAuthConfig(String organizationId) {
         return extOrganizationConfigMapper.getOrganizationConfig(
-                organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+                organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
 
     /**
@@ -350,7 +350,7 @@ public class UserLoginService {
      */
     private List<OrganizationConfigDetail> getEnabledWeComOauthConfigs(String configId) {
         return extOrganizationConfigDetailMapper
-                .getEnableOrganizationConfigDetails(configId, UserSource.WE_COM_OAUTH2.toString());
+                .getEnableOrganizationConfigDetails(configId, List.of(UserSource.WECOM_OAUTH2.toString(), UserSource.DINGTALK_OAUTH2.toString(), UserSource.LARK_OAUTH2.toString()));
     }
 
     /**

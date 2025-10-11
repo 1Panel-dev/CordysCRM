@@ -22,8 +22,8 @@ public interface ExtOrganizationConfigDetailMapper {
 
     int getRepeatDetails(@Param("id") String id, @Param("name") String name);
 
-    int updateStatus(@Param("id") String id, @Param("enable") Boolean enable, @Param("type") String type, @Param("configId") String configId);
+    int updateStatus(@Param("enable") Boolean enable, @Param("type") String type, @Param("configId") String configId);
 
-    List<OrganizationConfigDetail> getEnableOrganizationConfigDetails(@Param("configId") String configId, @Param("type") String type);
+    List<OrganizationConfigDetail> getEnableOrganizationConfigDetails(@Param("configId") String configId, @Param("types") List<String> types);
 
 }

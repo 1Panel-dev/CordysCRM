@@ -8,8 +8,8 @@ import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
-import cn.cordys.crm.integration.auth.service.OAuthUserService;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.service.OAuthUserService;
 import cn.cordys.crm.integration.dingtalk.response.DingTalkUserResponse;
 import cn.cordys.crm.integration.wecom.response.WeComUserResponse;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
@@ -105,7 +105,7 @@ public class SSOService {
     public SessionUser exchangeWeComOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.WE_COM_OAUTH2.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.WECOM_OAUTH2.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigurationDTO weComConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
 
@@ -113,7 +113,7 @@ public class SSOService {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
 
-        return getWeComSessionUser(code, weComConfig, UserSource.WE_COM_OAUTH2.toString());
+        return getWeComSessionUser(code, weComConfig, UserSource.WECOM_OAUTH2.toString());
     }
 
     public SessionUser exchangeWeComCode(String code) {
@@ -149,7 +149,7 @@ public class SSOService {
         UserDTO enableUser = getUserAndValidateEnable(weComUser.getUserId());
 
         // 只有OAuth2登录时才更新用户信息
-        if (Strings.CI.equals(authenticateType, UserSource.WE_COM_OAUTH2.toString())) {
+        if (Strings.CI.equals(authenticateType, UserSource.WECOM_OAUTH2.toString())) {
             updateWeComUserInfo(enableUser, weComUser, email);
         }
 
@@ -166,20 +166,20 @@ public class SSOService {
 
     private SessionUser getDingTalkSessionUser(String code, ThirdConfigurationDTO dingTalkConfig, String authenticateType) {
         // 获取用户assess_token
-        String assessToken = tokenService.getDingTalkUserToken(dingTalkConfig.getCorpId(), dingTalkConfig.getAppSecret(), code);
+        String assessToken = tokenService.getDingTalkUserToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret(), code);
         if (StringUtils.isBlank(assessToken)) {
             throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
         }
 
         // 读取用户信息
-        DingTalkUserResponse dingTalkUser = oauthUserService.getDingTalkUser(assessToken);
+        DingTalkUserResponse dingTalkUserResponse = oauthUserService.getDingTalkUser(assessToken);
 
         // 查找并验证用户
-        UserDTO enableUser = getUserAndValidateEnable(dingTalkUser.getUnionId());
+        UserDTO enableUser = getUserAndValidateEnable(dingTalkUserResponse.getUnionId());
 
         // 只有OAuth2登录时才更新用户信息
-        if (Strings.CI.equals(authenticateType, UserSource.DING_TALK_OAUTH2.toString())) {
-            updateDingTalkUserInfo(enableUser, dingTalkUser);
+        if (Strings.CI.equals(authenticateType, UserSource.DINGTALK_OAUTH2.toString())) {
+            updateDingTalkUserInfo(enableUser, dingTalkUserResponse);
         }
 
         // 创建登录请求并登录
@@ -204,7 +204,7 @@ public class SSOService {
         // 获取组织配置
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
                 DEFAULT_ORGANIZATION_ID,
-                OrganizationConfigConstants.ConfigType.AUTH.name()
+                OrganizationConfigConstants.ConfigType.THIRD.name()
         );
         if (organizationConfig == null) {
             throw new GenericException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
@@ -214,7 +214,7 @@ public class SSOService {
         List<OrganizationConfigDetail> enableOrganizationConfigDetails =
                 extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(
                         organizationConfig.getId(),
-                        source
+                        List.of(source)
                 );
         if (CollectionUtils.isEmpty(enableOrganizationConfigDetails)) {
             throw new GenericException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
@@ -290,21 +290,21 @@ public class SSOService {
         }
     }
 
-    private void updateDingTalkUserInfo(UserDTO user, DingTalkUserResponse dingTalkUser) {
+    private void updateDingTalkUserInfo(UserDTO user, DingTalkUserResponse dingTalkUserResponse) {
         User userUpdate = new User();
         userUpdate.setId(user.getId());
         if (StringUtils.isBlank(user.getEmail())) {
-            userUpdate.setEmail(dingTalkUser.getEmail());
+            userUpdate.setEmail(dingTalkUserResponse.getEmail());
         }
-        if (StringUtils.isNotBlank(dingTalkUser.getMobile())) {
-            userUpdate.setPhone(dingTalkUser.getMobile());
+        if (StringUtils.isNotBlank(dingTalkUserResponse.getMobile())) {
+            userUpdate.setPhone(dingTalkUserResponse.getMobile());
         }
         userUpdate.setUpdateTime(System.currentTimeMillis());
         userBaseMapper.updateById(userUpdate);
 
         UserExtend userExtend = new UserExtend();
         userExtend.setId(user.getId());
-        userExtend.setAvatar(dingTalkUser.getAvatarUrl());
+        userExtend.setAvatar(dingTalkUserResponse.getAvatarUrl());
         userExtendBaseMapper.update(userExtend);
     }
 
@@ -363,7 +363,7 @@ public class SSOService {
     }
 
     private void validateQrCodeEnabled(ThirdConfigurationDTO config) {
-        if (!config.getQrcodeEnable()) {
+        if (!config.getStartEnable()) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_DISABLE));
         }
     }
@@ -371,7 +371,7 @@ public class SSOService {
     public SessionUser exchangeDingTalkOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.DING_TALK_OAUTH2.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.DINGTALK_OAUTH2.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigurationDTO dingTalkConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
 
@@ -379,8 +379,51 @@ public class SSOService {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
 
-        return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DING_TALK_OAUTH2.toString());
+        return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DINGTALK_OAUTH2.toString());
 
 
+    }
+
+    public SessionUser exchangeLarkCode(String code) {
+        validateCode(code);
+
+        ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
+        validateQrCodeEnabled(larkConfig);
+
+        return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString());
+    }
+
+    private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String string) {
+        // 获取用户assess_token
+        String assessToken = tokenService.getLarkUserToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), code);
+        if (StringUtils.isBlank(assessToken)) {
+            throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
+        }
+
+        // 读取用户信息
+        Map<String, Object> larkUser = oauthUserService.getLarkUser(assessToken);
+        String userId = (String) larkUser.get("userId");
+
+        // 查找并验证用户
+        UserDTO enableUser = getUserAndValidateEnable(userId);
+
+        // 创建登录请求并登录
+        LoginRequest loginRequest = createThirdPartyLoginRequest(
+                enableUser,
+                DepartmentConstants.LARK.name(),
+                string
+        );
+
+        SecurityUtils.getSubject().getSession().setAttribute("authenticate", string);
+        return userLoginService.login(loginRequest);
+    }
+
+    public SessionUser exchangeLarkOauth2(String code) {
+        validateCode(code);
+
+        ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
+        validateQrCodeEnabled(larkConfig);
+
+        return getLarkSessionUser(code, larkConfig, UserSource.LARK_OAUTH2.toString());
     }
 }

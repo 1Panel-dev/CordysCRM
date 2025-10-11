@@ -148,9 +148,9 @@
             <n-switch
               size="small"
               :rubber-band="false"
-              :value="item.response.weComEnable"
+              :value="item.response.noticeEnable"
               :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
-              @update:value="handleChangeEnable(item, 'weComEnable')"
+              @update:value="handleChangeEnable(item, 'noticeEnable')"
             />
             <div class="text-[12px]">{{ t('system.message.enterpriseWeChatNotice') }}</div>
           </div>
@@ -269,7 +269,7 @@
             response: {
               qrcodeEnable: config?.qrcodeEnable ?? false,
               syncEnable: config?.syncEnable ?? false,
-              weComEnable: config?.weComEnable ?? false,
+              noticeEnable: config?.noticeEnable ?? false,
               sqlBotBoardEnable: config?.sqlBotBoardEnable ?? false,
               sqlBotChatEnable: config?.sqlBotChatEnable ?? false,
               type: item.type,
@@ -311,7 +311,7 @@
 
   async function handleChangeEnable(
     item: IntegrationItem,
-    key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'weComEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable'
+    key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'noticeEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable'
   ) {
     try {
       loading.value = true;
@@ -330,7 +330,7 @@
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
           item.response.deBoardEnable = true;
-          item.response.weComEnable = true;
+          item.response.noticeEnable = true;
         })
         .finally(() => {
           loading.value = false;
@@ -358,7 +358,7 @@
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
           item.response.deBoardEnable = true;
-          item.response.weComEnable = true;
+          item.response.noticeEnable = true;
         });
     } catch (error) {
       // eslint-disable-next-line no-console

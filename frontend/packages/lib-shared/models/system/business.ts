@@ -27,7 +27,7 @@ export interface ConfigSynchronization {
   verify?: boolean; // 是否验证通过
   redirectUrl?: string; // DE URL
   deAccount?: string; // DE 账号
-  weComEnable?: boolean; // 开启企业微信通知
+  noticeEnable?: boolean; // 开启通知
   deBoardEnable?: boolean; // DE看板是否开启
   deModuleEmbedding?: boolean; // DE模块嵌入
   deLinkIntegration?: boolean; // DE链接集成

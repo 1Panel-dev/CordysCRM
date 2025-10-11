@@ -2,6 +2,8 @@ package cn.cordys.crm.system.notice;
 
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.LogUtils;
+import cn.cordys.crm.integration.dingtalk.service.DingTalkNoticeSender;
+import cn.cordys.crm.integration.lark.service.LarkNoticeSender;
 import cn.cordys.crm.integration.wecom.service.WeComNoticeSender;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.notice.common.NoticeModel;
@@ -70,6 +72,22 @@ public class NoticeSendService {
                     weComNoticeSender.sendWeCom(clonedMessageDetail, clonedNoticeModel);
                 } else {
                     LogUtils.warn("WeComNoticeSender bean not found, skipping WeCom notification.");
+                }
+            }
+            if (clonedMessageDetail.isDingTalkEnable()) {
+                DingTalkNoticeSender dingTalkNoticeSender = CommonBeanFactory.getBean(DingTalkNoticeSender.class);
+                if (dingTalkNoticeSender != null) {
+                    dingTalkNoticeSender.sendDingTalk(clonedMessageDetail, clonedNoticeModel);
+                } else {
+                    LogUtils.warn("DingTalkNoticeSender bean not found, skipping DingTalk notification.");
+                }
+            }
+            if (clonedMessageDetail.isLarkEnable()) {
+                LarkNoticeSender larkNoticeSender = CommonBeanFactory.getBean(LarkNoticeSender.class);
+                if (larkNoticeSender != null) {
+                    larkNoticeSender.sendLark(clonedMessageDetail, clonedNoticeModel);
+                } else {
+                    LogUtils.warn("LarkNoticeSender bean not found, skipping Lark notification.");
                 }
             }
         } catch (Exception e) {

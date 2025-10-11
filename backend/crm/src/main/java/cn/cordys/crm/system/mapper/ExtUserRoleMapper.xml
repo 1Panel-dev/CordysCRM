@@ -17,6 +17,14 @@
             #{id}
         </foreach>
     </delete>
+    <delete id="deleteUserRoleByUserIds">
+        DELETE
+        FROM sys_user_role
+        WHERE user_id in
+        <foreach collection="userIds" item="userId" index="index" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </delete>
 
     <select id="list" resultType="cn.cordys.crm.system.dto.response.RoleUserListResponse">
         select sur.id, su.id as userId, su.name as userName, sou.enable, sou.position, sou.department_id, sur.create_time, sur.update_time

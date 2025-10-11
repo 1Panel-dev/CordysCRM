@@ -30,4 +30,10 @@ public class MessageTaskRequest {
     @Schema(description = "企业微信启用")
     private boolean weComEnable;
 
+    @Schema(description = "钉钉启用")
+    private boolean dingTalkEnable;
+
+    @Schema(description = "飞书启用")
+    private boolean larkEnable;
+
 }

@@ -5,6 +5,8 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
@@ -157,10 +159,26 @@ public class OrganizationConfigService {
     /**
      * 当前组织的用户数据是否是第三方同步的
      *
-     * @param organizationId
+     * @param organizationId 组织ID
+     * @return true 是第三方同步的 false 不是第三方同步的
      */
     public boolean syncCheck(String organizationId) {
-        return extOrganizationConfigMapper.getSyncFlag(organizationId) > 0;
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
+        String type;
+        if (organizationConfig == null || StringUtils.isBlank(organizationConfig.getSyncResource())) {
+            return false;
+        }
+        if (organizationConfig.getSyncResource().equals(DepartmentConstants.WECOM.name())) {
+            type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
+        } else if (organizationConfig.getSyncResource().equals(DepartmentConstants.DINGTALK.name())) {
+            type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
+        } else if (organizationConfig.getSyncResource().equals(DepartmentConstants.LARK.name())) {
+            type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
+        } else {
+            return false;
+        }
+        return extOrganizationConfigMapper.getSyncFlag(organizationId, type) > 0;
     }
 
 
@@ -170,8 +188,8 @@ public class OrganizationConfigService {
      * @param orgId
      * @param syncResource
      */
-    public void updateSyncFlag(String orgId, String syncResource) {
-        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name());
+    public void updateSyncFlag(String orgId, String syncResource, Boolean syncStatus) {
+        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name(), syncStatus);
     }
 }
 

@@ -31,7 +31,7 @@ public enum UserSource {
     /**
      * OAUTH2 用户来源，表示用户通过 企业微信OAUTH2 授权框架认证。
      */
-    WE_COM_OAUTH2,
+    WECOM_OAUTH2,
 
     /**
      * OAUTH2 用户来源，表示用户通过 GitHub OAUTH2 授权框架认证。
@@ -46,5 +46,10 @@ public enum UserSource {
     /**
      * OAUTH2 用户来源，表示用户通过 钉钉OAUTH2 授权框架认证。
      */
-    DING_TALK_OAUTH2
+    DINGTALK_OAUTH2,
+
+    /**
+     * OAUTH2 用户来源，表示用户通过 飞书OAUTH2 授权框架认证。
+     */
+    LARK_OAUTH2
 }

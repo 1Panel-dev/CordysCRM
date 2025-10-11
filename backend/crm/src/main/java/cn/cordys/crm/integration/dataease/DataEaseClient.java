@@ -4,7 +4,7 @@ package cn.cordys.crm.integration.dataease;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.dto.*;
 import cn.cordys.crm.integration.dataease.dto.request.*;
 import cn.cordys.crm.integration.dataease.dto.response.*;

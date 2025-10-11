@@ -14,6 +14,12 @@ public class LarkToken extends LarkResponseEntity {
     private String tenantAccessToken;
 
     /**
+     * 获取 user_access_token
+     */
+    @JsonProperty("access_token")
+    private String accessToken;
+
+    /**
      * accessToken的过期时间，单位秒。
      */
     @JsonProperty("expire")

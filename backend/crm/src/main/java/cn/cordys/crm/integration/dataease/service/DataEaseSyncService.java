@@ -5,7 +5,7 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.constanst.DataScopeDeptVariable;
 import cn.cordys.crm.integration.dataease.constanst.DataScopeVariable;

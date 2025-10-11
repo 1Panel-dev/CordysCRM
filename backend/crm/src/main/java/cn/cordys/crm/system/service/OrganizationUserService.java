@@ -525,6 +525,9 @@ public class OrganizationUserService {
         if (CollectionUtils.isNotEmpty(ids)) {
             extUserMapper.deleteByIds(ids);
             extUserExtendMapper.deleteUser(ids);
+            // 删除用户角色关联
+            extUserRoleMapper.deleteUserRoleByUserIds(ids);
+            //TODO: 删除用户搜索配置，视图等信息
             ids.forEach(id -> {
                 // 踢出用户
                 SessionUtils.kickOutUser(operatorId, id);

@@ -2,7 +2,7 @@ package cn.cordys.crm.integration.dataease.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;

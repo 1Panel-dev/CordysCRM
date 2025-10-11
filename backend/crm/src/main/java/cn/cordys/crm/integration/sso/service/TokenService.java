@@ -4,18 +4,20 @@ import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.auth.client.QrCodeClient;
+import cn.cordys.crm.integration.common.client.QrCodeClient;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkBaseParamDTO;
+import cn.cordys.crm.integration.dingtalk.dto.DingTalkSendDTO;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkToken;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkTokenParamDTO;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
 import cn.cordys.crm.integration.lark.dto.LarkBaseParamDTO;
 import cn.cordys.crm.integration.lark.dto.LarkToken;
+import cn.cordys.crm.integration.lark.dto.LarkTokenParamDTO;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComSendDTO;
 import cn.cordys.crm.integration.wecom.dto.WeComToken;
-import cn.cordys.crm.integration.wecom.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.MapUtils;
@@ -99,10 +101,6 @@ public class TokenService {
             LogUtils.error(Translator.get("auth.get.token.error"), e);
         }
 
-        if (StringUtils.isNotBlank(dingTalkToken.getCode())) {
-            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + dingTalkToken.getMessage());
-        }
-
         return dingTalkToken.getAccessToken();
     }
 
@@ -129,10 +127,6 @@ public class TokenService {
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
         } catch (Exception e) {
             LogUtils.error(Translator.get("auth.get.token.error"), e);
-        }
-
-        if (StringUtils.isNotBlank(dingTalkToken.getCode())) {
-            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + dingTalkToken.getMessage());
         }
 
         return dingTalkToken.getAccessToken();
@@ -271,5 +265,39 @@ public class TokenService {
         String assessToken = getAssessToken(corpId, appSecret);
         String detailUrl = HttpRequestUtil.urlTransfer(WeComApiPaths.SEND_INFO, assessToken);
         qrCodeClient.postExchange(detailUrl, null, null, weComSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+    }
+
+    public void sendDingNoticeByToken(DingTalkSendDTO dingTalkSendDTO, String agentId, String appSecret) {
+        String assessToken = getAssessToken(agentId, appSecret);
+        String detailUrl = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_NOTICE_URL, assessToken);
+        qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+    }
+
+
+
+    public String getLarkUserToken(String agentId, String appSecret, String code) {
+        LarkTokenParamDTO larkTokenParamDTO = new LarkTokenParamDTO();
+        larkTokenParamDTO.setClient_id(agentId);
+        larkTokenParamDTO.setClient_secret(appSecret);
+        larkTokenParamDTO.setCode(code);
+        larkTokenParamDTO.setGrantType("authorization_code");
+
+        LarkToken larkToken = new LarkToken();
+
+        try {
+            String response = qrCodeClient.postExchange(
+                    LarkApiPaths.LARK_USER_TOKEN_URL, null, null, larkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
+            );
+            larkToken = JSON.parseObject(response, LarkToken.class);
+
+        } catch (Exception e) {
+            LogUtils.error(Translator.get("auth.get.token.error"), e);
+        }
+
+        if (larkToken.getCode() != 0) {
+            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
+        }
+
+        return larkToken.getTenantAccessToken();
     }
 }

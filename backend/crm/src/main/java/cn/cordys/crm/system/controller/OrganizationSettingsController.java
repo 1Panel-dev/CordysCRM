@@ -3,7 +3,7 @@ package cn.cordys.crm.system.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.service.DataEaseService;
 import cn.cordys.crm.integration.dataease.service.DataEaseSyncService;

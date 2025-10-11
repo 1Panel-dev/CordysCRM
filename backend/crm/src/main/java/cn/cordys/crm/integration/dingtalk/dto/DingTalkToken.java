@@ -1,11 +1,10 @@
 package cn.cordys.crm.integration.dingtalk.dto;
 
-import cn.cordys.crm.integration.dingtalk.response.DingTalkResponseEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class DingTalkToken extends DingTalkResponseEntity {
+public class DingTalkToken {
     /**
      * 生成的accessToken。
      */

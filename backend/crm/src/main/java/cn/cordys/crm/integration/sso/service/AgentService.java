@@ -4,7 +4,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComAgentDetail;
-import cn.cordys.crm.integration.wecom.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

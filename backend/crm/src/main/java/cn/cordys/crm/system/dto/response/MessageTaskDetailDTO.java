@@ -29,5 +29,11 @@ public class MessageTaskDetailDTO implements Serializable {
     @Schema(description = "企业微信启用")
     private Boolean weComEnable;
 
+    @Schema(description = "钉钉启用")
+    private Boolean dingTalkEnable;
+
+    @Schema(description = "飞书启用")
+    private Boolean larkEnable;
+
 
 }

@@ -2,7 +2,7 @@ package cn.cordys.crm.system.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
+import cn.cordys.crm.integration.sync.service.ThirdDepartmentService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserSyncController {
 
     @Resource
-    private WeComDepartmentService weComDepartmentService;
+    private ThirdDepartmentService thirdDepartmentService;
 
     @GetMapping("/{type}")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
     @Operation(summary = "用户(员工)-同步组织架构")
     public void syncUser(@PathVariable String type) {
-        weComDepartmentService.syncUser(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        thirdDepartmentService.syncUser(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), type);
     }
 }

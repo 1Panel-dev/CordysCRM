@@ -9,13 +9,13 @@ public class DingTalkResponseEntity {
     /**
      * 错误码
      */
-    @JsonProperty("code")
-    private String code;
+    @JsonProperty("errcode")
+    private Integer errCode;
 
     /**
      * 错误消息
      */
-    @JsonProperty("message")
-    private String message;
+    @JsonProperty("errmsg")
+    private String errMsg;
 
 }

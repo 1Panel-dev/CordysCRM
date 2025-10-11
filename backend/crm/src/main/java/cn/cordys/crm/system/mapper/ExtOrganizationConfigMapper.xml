@@ -6,9 +6,9 @@
         SELECT * FROM sys_organization_config WHERE organization_id = #{organizationId} AND type = #{type} limit 1;
     </select>
 
-    <update id="updateSyncFlag">
+     <update id="updateSyncFlag">
         update sys_organization_config
-        set sync = true,
+        set sync = #{syncStatus},
             sync_resource = #{syncResource}
         where organization_id = #{orgId} and type = #{type}
     </update>
@@ -18,7 +18,7 @@
         select count(socd.id)
         from sys_organization_config soc
         INNER JOIN sys_organization_config_detail socd on socd.config_id = soc.id
-        where soc.organization_id = #{organizationId} and socd.enable = 1 and socd.type = 'WECOM_SYNC'
+            where soc.organization_id = #{organizationId} and socd.enable = 1 and socd.type = #{type}
     </select>
 
     <select id="getSyncStatus" resultType="cn.cordys.crm.system.domain.OrganizationConfig">

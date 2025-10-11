@@ -15,8 +15,8 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.auth.dto.ThirdConfigurationDTO;
-import cn.cordys.crm.integration.auth.dto.ThirdEnableDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdEnableDTO;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
@@ -26,8 +26,8 @@ import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
-import cn.cordys.crm.integration.wecom.dto.WeComConfigDetailDTO;
-import cn.cordys.crm.integration.wecom.dto.WeComConfigDetailLogDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigDetailDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigDetailLogDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -105,7 +105,6 @@ public class IntegrationConfigService {
             deEmbeddedConfig.setType(DepartmentConstants.DE.name());
             configDTOs.add(deEmbeddedConfig);
         }
-
         // 添加SQL机器人配置
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.SQLBOT.name()));
 
@@ -126,7 +125,6 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
-     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
@@ -145,12 +143,10 @@ public class IntegrationConfigService {
             String detailType = detail.getType();
             Boolean isEnabled = detail.getEnable();
 
-            if (detailType.contains("SYNC")) {
-                enableDTO.setSyncEnable(isEnabled);
-            } else if (detailType.contains("CODE")) {
-                enableDTO.setCodeEnable(isEnabled);
-            } else if (detailType.contains("NOTICE")) {
-                enableDTO.setNoticeEnable(isEnabled);
+            if (detailType.contains("SYNC") || detailType.contains("CODE") || detailType.contains("NOTICE")) {
+                enableDTO.setStartEnable(isEnabled);
+            } else if (detailType.contains("OAUTH2")) {
+                enableDTO.setOAuth2Enable(isEnabled);
             } else if (detailType.contains("BOARD")) {
                 enableDTO.setBoardEnable(isEnabled);
             } else if (detailType.contains("CHAT")) {
@@ -170,9 +166,8 @@ public class IntegrationConfigService {
         );
 
         configDTO.setType(type);
-        configDTO.setQrcodeEnable(thirdEnableDTO.isCodeEnable());
-        configDTO.setSyncEnable(thirdEnableDTO.isSyncEnable());
-        configDTO.setWeComEnable(thirdEnableDTO.isNoticeEnable());
+        configDTO.setStartEnable(thirdEnableDTO.isStartEnable());
+        configDTO.setOAuth2Enable(thirdEnableDTO.isOAuth2Enable());
         configDTO.setDeBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
@@ -189,7 +184,7 @@ public class IntegrationConfigService {
         OrganizationConfig organizationConfig = getOrCreateOrganizationConfig(organizationId, userId);
 
         // 获取当前平台对应类型和启用状态
-        List<String> types = getDetailTypes(configDTO);
+        List<String> types = getDetailTypes(configDTO.getType());
         Map<String, Boolean> typeEnableMap = getTypeEnableMap(configDTO);
 
         // 获取当前类型下的配置详情
@@ -199,12 +194,33 @@ public class IntegrationConfigService {
         // 获取验证所需的token
         String token = getToken(configDTO);
 
+        //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
+        String lastSyncType = getLastSyncType(organizationConfig.getId());
+        if (!Strings.CI.equals(lastSyncType, configDTO.getType()) && configDTO.getStartEnable()) {
+            // 关闭其他平台按钮
+            List<String> detailTypes = getDetailTypes(lastSyncType);
+            detailTypes.forEach(detailType -> {
+                extOrganizationConfigDetailMapper.updateStatus(
+                        false, detailType, organizationConfig.getId()
+                );
+            });
+        }
+
         if (CollectionUtils.isEmpty(existingDetails)) {
             // 没有配置详情，创建新的
             handleNewConfigDetails(configDTO, userId, token, types, organizationConfig, typeEnableMap);
         } else {
             // 更新已有配置
             handleExistingConfigDetails(configDTO, userId, token, types, organizationConfig, existingDetails, typeEnableMap);
+        }
+    }
+
+    private String getLastSyncType(String id) {
+        OrganizationConfig organizationConfig = organizationConfigBaseMapper.selectByPrimaryKey(id);
+        if (organizationConfig != null && organizationConfig.isSync() && StringUtils.isNotBlank(organizationConfig.getSyncResource())) {
+            return organizationConfig.getSyncResource();
+        } else {
+            return null;
         }
     }
 
@@ -233,16 +249,74 @@ public class IntegrationConfigService {
             OrganizationConfig organizationConfig,
             Map<String, Boolean> typeEnableMap) {
 
+        addIntegrationDetail(configDTO, userId, token, types, organizationConfig, typeEnableMap);
+    }
+
+    /**
+     * 封装了各种 `add...Detail` 方法的统一入口
+     */
+    private void addIntegrationDetail(ThirdConfigurationDTO configDTO, String userId, String token, List<String> types, OrganizationConfig organizationConfig, Map<String, Boolean> typeEnableMap) {
         String type = configDTO.getType();
+        String jsonContent;
+        Boolean verify;
 
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            addWeComDetail(configDTO, userId, token, types, organizationConfig, typeEnableMap);
+            ThirdConfigDetailDTO weComConfig = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(weComConfig, configDTO);
+            if (configDTO.getStartEnable()) {
+                verifyWeCom(configDTO, token, weComConfig);
+            } else {
+                weComConfig.setVerify(configDTO.getVerify());
+            }
+            jsonContent = JSON.toJSONString(weComConfig);
+            verify = weComConfig.getVerify();
+        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
+            ThirdConfigDetailDTO dingTalkConfigDetailDTO = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(dingTalkConfigDetailDTO, configDTO);
+            if (configDTO.getStartEnable()) {
+                verifyDingTalk(token, dingTalkConfigDetailDTO);
+            } else {
+                dingTalkConfigDetailDTO.setVerify(configDTO.getVerify());
+            }
+            jsonContent = JSON.toJSONString(dingTalkConfigDetailDTO);
+            verify = dingTalkConfigDetailDTO.getVerify();
+        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
+            ThirdConfigDetailDTO larkConfigDetailDTO = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(larkConfigDetailDTO, configDTO);
+            if (configDTO.getStartEnable()) {
+                verifyLark(token, larkConfigDetailDTO);
+            } else {
+                larkConfigDetailDTO.setVerify(configDTO.getVerify());
+            }
+            jsonContent = JSON.toJSONString(larkConfigDetailDTO);
+            verify = larkConfigDetailDTO.getVerify();
         } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            addDeDetail(configDTO, userId, token, organizationConfig, types, typeEnableMap);
+            DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
+            BeanUtils.copyBean(deConfig, configDTO);
+            if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
+                verifyDe(token, deConfig);
+            } else {
+                deConfig.setVerify(configDTO.getVerify());
+            }
+            jsonContent = JSON.toJSONString(deConfig);
+            verify = deConfig.getVerify();
         } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            addSqlBotDetail(configDTO, userId, token, types, organizationConfig, typeEnableMap);
+            SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
+            BeanUtils.copyBean(sqlBotConfig, configDTO);
+            if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
+                verifySqlBot(token, sqlBotConfig);
+            } else {
+                sqlBotConfig.setVerify(configDTO.getVerify());
+            }
+            jsonContent = JSON.toJSONString(sqlBotConfig);
+            verify = sqlBotConfig.getVerify();
+        }  else {
+            return;
         }
+
+        saveDetail(userId, organizationConfig, types, typeEnableMap, jsonContent, verify);
     }
+
 
     /**
      * 处理已存在的配置详情
@@ -270,13 +344,7 @@ public class IntegrationConfigService {
         for (String type : types) {
             if (!existDetailTypeMap.containsKey(type)) {
                 // 不存在的类型，需要新建
-                if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.WECOM.name())) {
-                    addWeComDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
-                } else if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.DE.name())) {
-                    addDeDetail(configDTO, userId, token, organizationConfig, List.of(type), typeEnableMap);
-                } else if (Strings.CI.equals(configDTO.getType(), DepartmentConstants.SQLBOT.name())) {
-                    addSqlBotDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
-                }
+                addIntegrationDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
             } else {
                 // 存在的类型，需要更新
                 OrganizationConfigDetail detail = existDetailTypeMap.get(type);
@@ -299,109 +367,130 @@ public class IntegrationConfigService {
             OrganizationConfigDetail detail,
             Boolean enable) {
 
+        updateIntegrationDetail(configDTO, userId, token, oldConfig, detail, enable);
+    }
+
+    /**
+     * 封装了各种 `update...` 方法的统一入口
+     */
+    private void updateIntegrationDetail(
+            ThirdConfigurationDTO configDTO,
+            String userId,
+            String token,
+            ThirdConfigurationDTO oldConfig,
+            OrganizationConfigDetail detail,
+            Boolean enable) {
+
         String type = configDTO.getType();
+        String jsonContent;
+        boolean isVerified;
+        String detailType = detail.getType();
+        boolean openEnable;
 
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            updateWeCom(configDTO, userId, token, oldConfig, detail, enable);
+            ThirdConfigDetailDTO weComConfig = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(weComConfig, configDTO);
+
+            if (configDTO.getStartEnable()) {
+                verifyWeCom(configDTO, token, weComConfig);
+                configDTO.setVerify(weComConfig.getVerify());
+            } else {
+                weComConfig.setVerify(configDTO.getVerify());
+            }
+
+            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
+
+            isVerified = weComConfig.getVerify() != null && weComConfig.getVerify();
+            jsonContent = JSON.toJSONString(weComConfig);
+            openEnable = isVerified && enable;
+
         } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            updateDe(configDTO, userId, token, oldConfig, detail, enable);
+            DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
+            BeanUtils.copyBean(deConfig, configDTO);
+
+            if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
+                verifyDe(token, deConfig);
+                configDTO.setVerify(deConfig.getVerify());
+            } else {
+                deConfig.setVerify(configDTO.getVerify());
+            }
+
+            oldConfig.setDeBoardEnable(detail.getEnable());
+
+            jsonContent = JSON.toJSONString(deConfig);
+            openEnable = enable;
+
         } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            updateSqlBot(configDTO, userId, token, oldConfig, detail, enable);
+            SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
+            BeanUtils.copyBean(sqlBotConfig, configDTO);
+
+            if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
+                verifySqlBot(token, sqlBotConfig);
+                configDTO.setVerify(sqlBotConfig.getVerify());
+            } else {
+                sqlBotConfig.setVerify(configDTO.getVerify());
+            }
+
+            if (detailType.contains("CHAT")) {
+                oldConfig.setSqlBotChatEnable(detail.getEnable());
+            }
+            if (detailType.contains("BOARD")) {
+                oldConfig.setSqlBotBoardEnable(detail.getEnable());
+            }
+
+            isVerified = sqlBotConfig.getVerify() != null && sqlBotConfig.getVerify();
+            jsonContent = JSON.toJSONString(sqlBotConfig);
+            openEnable = isVerified && enable;
+        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
+            ThirdConfigDetailDTO dingTalkConfigDetailDTO = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(dingTalkConfigDetailDTO, configDTO);
+
+            if (configDTO.getStartEnable()) {
+                verifyDingTalk(token, dingTalkConfigDetailDTO);
+                configDTO.setVerify(dingTalkConfigDetailDTO.getVerify());
+            } else {
+                dingTalkConfigDetailDTO.setVerify(configDTO.getVerify());
+            }
+
+            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
+
+            isVerified = dingTalkConfigDetailDTO.getVerify() != null && dingTalkConfigDetailDTO.getVerify();
+            jsonContent = JSON.toJSONString(dingTalkConfigDetailDTO);
+
+            openEnable = isVerified && enable;
+
+        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
+            ThirdConfigDetailDTO larkConfigDetailDTO = new ThirdConfigDetailDTO();
+            BeanUtils.copyBean(larkConfigDetailDTO, configDTO);
+
+            if (configDTO.getStartEnable()) {
+                verifyLark(token, larkConfigDetailDTO);
+                configDTO.setVerify(larkConfigDetailDTO.getVerify());
+            } else {
+                larkConfigDetailDTO.setVerify(configDTO.getVerify());
+            }
+
+            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
+
+            isVerified = larkConfigDetailDTO.getVerify() != null && larkConfigDetailDTO.getVerify();
+            jsonContent = JSON.toJSONString(larkConfigDetailDTO);
+
+            openEnable = isVerified && enable;
+        } else {
+            return;
         }
+
+        updateOrganizationConfigDetail(jsonContent, userId, detail, openEnable);
+
     }
 
-    private void updateDe(ThirdConfigurationDTO configDTO, String userId, String token, ThirdConfigurationDTO oldConfig, OrganizationConfigDetail detail, Boolean enable) {
-        DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
-        BeanUtils.copyBean(deConfig, configDTO);
-
-        if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
-            verifyDe(token, deConfig);
-            configDTO.setVerify(deConfig.getVerify());
-        } else {
-            deConfig.setVerify(configDTO.getVerify());
+    private void updateOldConfigEnableState(ThirdConfigurationDTO oldConfig, String detailType, Boolean enable) {
+        if (detailType.contains("SYNC") || detailType.contains("CODE") || detailType.contains("NOTICE")) {
+            oldConfig.setStartEnable(enable);
         }
-
-        // 记录原有配置状态
-        DeConfigDetailDTO old = new DeConfigDetailDTO();
-        BeanUtils.copyBean(old, oldConfig);
-        oldConfig.setDeBoardEnable(detail.getEnable());
-
-        // 更新配置
-        updateOrganizationConfigDetail(JSON.toJSONString(deConfig), userId, detail, enable);
-    }
-
-    private void updateSqlBot(ThirdConfigurationDTO configDTO, String userId, String token, ThirdConfigurationDTO oldConfig, OrganizationConfigDetail detail, Boolean enable) {
-        SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
-        BeanUtils.copyBean(sqlBotConfig, configDTO);
-
-        // 验证配置
-        if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
-            verifySqlBot(token, sqlBotConfig);
-            configDTO.setVerify(sqlBotConfig.getVerify());
-        } else {
-            sqlBotConfig.setVerify(configDTO.getVerify());
+        if (detailType.contains("OAUTH2")) {
+            oldConfig.setOAuth2Enable(enable);
         }
-
-        // 记录原有配置状态
-        SqlBotConfigDetailDTO old = new SqlBotConfigDetailDTO();
-        BeanUtils.copyBean(old, oldConfig);
-
-        if (detail.getType().contains("CHAT")) {
-            oldConfig.setSqlBotChatEnable(detail.getEnable());
-        }
-        if (detail.getType().contains("BOARD")) {
-            oldConfig.setSqlBotBoardEnable(detail.getEnable());
-        }
-
-        // 更新配置
-        boolean isVerified = sqlBotConfig.getVerify() != null ? sqlBotConfig.getVerify() : false;
-        updateOrganizationConfigDetail(JSON.toJSONString(sqlBotConfig), userId, detail, isVerified && enable);
-    }
-
-    private void updateWeCom(ThirdConfigurationDTO configDTO, String userId, String token, ThirdConfigurationDTO oldConfig, OrganizationConfigDetail detail, Boolean enable) {
-        WeComConfigDetailDTO weComConfig = new WeComConfigDetailDTO();
-        BeanUtils.copyBean(weComConfig, configDTO);
-
-        // 验证配置
-        if (configDTO.getSyncEnable() || configDTO.getQrcodeEnable() || configDTO.getWeComEnable()) {
-            verifyWeCom(configDTO, token, weComConfig);
-            configDTO.setVerify(weComConfig.getVerify());
-        } else {
-            weComConfig.setVerify(configDTO.getVerify());
-        }
-
-        // 记录原有配置状态
-        WeComConfigDetailDTO old = new WeComConfigDetailDTO();
-        BeanUtils.copyBean(old, oldConfig);
-
-        // 根据详情类型设置原配置的启用状态
-        String detailType = detail.getType();
-        if (detailType.contains("SYNC")) {
-            oldConfig.setSyncEnable(detail.getEnable());
-        } else if (detailType.contains("CODE")) {
-            oldConfig.setQrcodeEnable(detail.getEnable());
-        } else if (detailType.contains("NOTICE")) {
-            oldConfig.setWeComEnable(detail.getEnable());
-        }
-
-        // 更新配置
-        boolean isVerified = weComConfig.getVerify() != null ? weComConfig.getVerify() : false;
-        updateOrganizationConfigDetail(JSON.toJSONString(weComConfig), userId, detail, isVerified && enable);
-    }
-
-    private void addDeDetail(ThirdConfigurationDTO configDTO, String userId, String token, OrganizationConfig organizationConfig, List<String> types, Map<String, Boolean> typeEnableMap) {
-        DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
-        BeanUtils.copyBean(deConfig, configDTO);
-
-        // 验证配置
-        if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
-            verifyDe(token, deConfig);
-        } else {
-            deConfig.setVerify(configDTO.getVerify());
-        }
-
-        // 保存配置
-        saveDetail(userId, organizationConfig, types, typeEnableMap, JSON.toJSONString(deConfig), deConfig.getVerify());
     }
 
     private void verifyDe(String token, DeConfigDetailDTO deConfig) {
@@ -440,22 +529,7 @@ public class IntegrationConfigService {
         return detail;
     }
 
-    private void addWeComDetail(ThirdConfigurationDTO configDTO, String userId, String token, List<String> types, OrganizationConfig organizationConfig, Map<String, Boolean> typeEnableMap) {
-        WeComConfigDetailDTO weComConfig = new WeComConfigDetailDTO();
-        BeanUtils.copyBean(weComConfig, configDTO);
-
-        // 验证配置
-        if (configDTO.getSyncEnable() || configDTO.getQrcodeEnable() || configDTO.getWeComEnable()) {
-            verifyWeCom(configDTO, token, weComConfig);
-        } else {
-            weComConfig.setVerify(configDTO.getVerify());
-        }
-
-        // 保存配置
-        saveDetail(userId, organizationConfig, types, typeEnableMap, JSON.toJSONString(weComConfig), weComConfig.getVerify());
-    }
-
-    private void verifyWeCom(ThirdConfigurationDTO configDTO, String token, WeComConfigDetailDTO weComConfig) {
+    private void verifyWeCom(ThirdConfigurationDTO configDTO, String token, ThirdConfigDetailDTO weComConfig) {
         if (StringUtils.isNotBlank(token)) {
             // 验证应用ID
             Boolean weComAgent = agentService.getWeComAgent(token, configDTO.getAgentId());
@@ -465,19 +539,12 @@ public class IntegrationConfigService {
         }
     }
 
-    private void addSqlBotDetail(ThirdConfigurationDTO configDTO, String userId, String token, List<String> types, OrganizationConfig organizationConfig, Map<String, Boolean> typeEnableMap) {
-        SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
-        BeanUtils.copyBean(sqlBotConfig, configDTO);
+    private void verifyDingTalk(String token, ThirdConfigDetailDTO dingTalkConfigDetailDTO) {
+        dingTalkConfigDetailDTO.setVerify(StringUtils.isNotBlank(token));
+    }
 
-        // 验证配置
-        if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
-            verifySqlBot(token, sqlBotConfig);
-        } else {
-            sqlBotConfig.setVerify(configDTO.getVerify());
-        }
-
-        // 保存配置
-        saveDetail(userId, organizationConfig, types, typeEnableMap, JSON.toJSONString(sqlBotConfig), sqlBotConfig.getVerify());
+    private void verifyLark(String token, ThirdConfigDetailDTO larkConfigDetailDTO) {
+        larkConfigDetailDTO.setVerify(StringUtils.isNotBlank(token));
     }
 
     private void verifySqlBot(String token, SqlBotConfigDetailDTO sqlBotConfig) {
@@ -487,28 +554,31 @@ public class IntegrationConfigService {
     /**
      * 根据配置类型获取详情类型列表
      */
-    private List<String> getDetailTypes(ThirdConfigurationDTO configDTO) {
-        String type = configDTO.getType();
-
+    private List<String> getDetailTypes(String type) {
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(),
                     ThirdConstants.ThirdDetailType.WECOM_CODE.toString(),
-                    ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString()
+                    ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(),
+                    UserSource.WECOM_OAUTH2.toString()
             );
         }
 
         if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(),
-                    ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString()
+                    ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(),
+                    ThirdConstants.ThirdDetailType.DINGTALK_NOTICE.toString(),
+                    UserSource.DINGTALK_OAUTH2.toString()
             );
         }
 
         if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             return List.of(
                     ThirdConstants.ThirdDetailType.LARK_SYNC.toString(),
-                    ThirdConstants.ThirdDetailType.LARK_CODE.toString()
+                    ThirdConstants.ThirdDetailType.LARK_CODE.toString(),
+                    ThirdConstants.ThirdDetailType.LARK_NOTICE.toString(),
+                    UserSource.LARK_OAUTH2.toString()
             );
         }
 
@@ -534,15 +604,20 @@ public class IntegrationConfigService {
         String type = configDTO.getType();
 
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getSyncEnable());
-            map.put(ThirdConstants.ThirdDetailType.WECOM_CODE.toString(), configDTO.getQrcodeEnable());
-            map.put(ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(), configDTO.getWeComEnable());
+            map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.WECOM_CODE.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(), configDTO.getStartEnable());
+            map.put(UserSource.WECOM_OAUTH2.toString(), configDTO.getOAuth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getSyncEnable());
-            map.put(ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(), configDTO.getQrcodeEnable());
+            map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.DINGTALK_NOTICE.toString(), configDTO.getStartEnable());
+            map.put(UserSource.DINGTALK_OAUTH2.toString(), configDTO.getOAuth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getSyncEnable());
-            map.put(ThirdConstants.ThirdDetailType.LARK_CODE.toString(), configDTO.getQrcodeEnable());
+            map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.LARK_CODE.toString(), configDTO.getStartEnable());
+            map.put(ThirdConstants.ThirdDetailType.LARK_NOTICE.toString(), configDTO.getStartEnable());
+            map.put(UserSource.LARK_OAUTH2.toString(), configDTO.getOAuth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(),
                     configDTO.getDeBoardEnable() != null && configDTO.getDeBoardEnable());
@@ -563,7 +638,7 @@ public class IntegrationConfigService {
         if (DepartmentConstants.WECOM.name().equals(type)) {
             return tokenService.getAssessToken(configDTO.getCorpId(), configDTO.getAppSecret());
         } else if (DepartmentConstants.DINGTALK.name().equals(type)) {
-            return tokenService.getDingTalkToken(configDTO.getAppKey(), configDTO.getAppSecret());
+            return tokenService.getDingTalkToken(configDTO.getAgentId(), configDTO.getAppSecret());
         } else if (DepartmentConstants.LARK.name().equals(type)) {
             return tokenService.getLarkToken(configDTO.getAgentId(), configDTO.getAppSecret());
         } else if (DepartmentConstants.DE.name().equals(type)) {
@@ -630,14 +705,16 @@ public class IntegrationConfigService {
 
         String type = newConfig.getType();
 
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            WeComConfigDetailLogDTO oldDTO = new WeComConfigDetailLogDTO();
-            WeComConfigDetailLogDTO newDTO = new WeComConfigDetailLogDTO();
+        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name()) ||
+                Strings.CI.equals(type, DepartmentConstants.DINGTALK.name()) ||
+                Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
+            ThirdConfigDetailLogDTO oldDTO = new ThirdConfigDetailLogDTO();
+            ThirdConfigDetailLogDTO newDTO = new ThirdConfigDetailLogDTO();
             BeanUtils.copyBean(oldDTO, oldConfig);
             BeanUtils.copyBean(newDTO, newConfig);
             oldLog = oldDTO;
             newLog = newDTO;
-        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
+        }else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             DeConfigDetailLogDTO oldDTO = getDeConfigDetailLogDTO(oldConfig);
             DeConfigDetailLogDTO newDTO = getDeConfigDetailLogDTO(newConfig);
             oldLog = oldDTO;
@@ -694,7 +771,7 @@ public class IntegrationConfigService {
 
         String type = configDTO.getType();
         String token = getToken(configDTO);
-        List<String> types = getDetailTypes(configDTO);
+        List<String> types = getDetailTypes(type);
 
         // 验证token
         if (DepartmentConstants.WECOM.name().equals(type) && StringUtils.isNotBlank(token)) {
@@ -759,9 +836,7 @@ public class IntegrationConfigService {
      */
     public ThirdConfigurationDTO getThirdConfigForPublic(String type, String orgId) {
         // 确定配置类型和组织ID
-        String configType = Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())
-                ? OrganizationConfigConstants.ConfigType.AUTH.name()
-                : OrganizationConfigConstants.ConfigType.THIRD.name();
+        String configType = OrganizationConfigConstants.ConfigType.THIRD.name();
 
         // 获取组织配置
         OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
@@ -781,7 +856,7 @@ public class IntegrationConfigService {
         }
 
         // 获取指定类型的配置
-        ThirdConfigurationDTO configDTO = getConfigurationByType(type, config, details);
+        ThirdConfigurationDTO configDTO = getConfigurationByType(type, details);
 
         // 隐藏敏感信息
         if (!Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
@@ -796,36 +871,8 @@ public class IntegrationConfigService {
     /**
      * 根据类型获取配置
      */
-    private ThirdConfigurationDTO getConfigurationByType(String type, OrganizationConfig config, List<OrganizationConfigDetail> details) {
-        if (Strings.CI.equals(type, UserSource.WE_COM_OAUTH2.toString())) {
-            return getOAuth2Configuration(type, config.getId());
-        } else {
-            return getNormalConfiguration(type, details);
-        }
-    }
-
-    /**
-     * 获取OAuth2配置
-     */
-    private ThirdConfigurationDTO getOAuth2Configuration(String type, String configId) {
-        List<OrganizationConfigDetail> enableDetails = extOrganizationConfigDetailMapper
-                .getEnableOrganizationConfigDetails(configId, type);
-
-        if (CollectionUtils.isEmpty(enableDetails)) {
-            throw new GenericException(Translator.get("third.config.un.enable"));
-        }
-
-        OrganizationConfigDetail detail = enableDetails.getFirst();
-        if (detail == null) {
-            throw new GenericException(Translator.get("third.config.not.exist"));
-        }
-
-        ThirdConfigurationDTO configDTO = JSON.parseObject(
-                new String(detail.getContent()), ThirdConfigurationDTO.class
-        );
-        configDTO.setType(type);
-
-        return configDTO;
+    private ThirdConfigurationDTO getConfigurationByType(String type, List<OrganizationConfigDetail> details) {
+        return getNormalConfiguration(type, details);
     }
 
     /**
@@ -847,7 +894,7 @@ public class IntegrationConfigService {
             if (configDTO.getRedirectUrl() == null) {
                 throw new GenericException(Translator.get("third.config.un.enable"));
             }
-        } else if (!configDTO.getQrcodeEnable()) {
+        } else if (!configDTO.getStartEnable()) {
             throw new GenericException(Translator.get("third.config.un.enable"));
         }
 
