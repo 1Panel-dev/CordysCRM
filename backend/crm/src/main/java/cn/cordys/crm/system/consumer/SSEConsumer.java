@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.consumer;
 
 import cn.cordys.common.constants.TopicConstants;
+import cn.cordys.common.redis.TopicConsumer;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import cn.cordys.crm.system.notice.sse.SseService;

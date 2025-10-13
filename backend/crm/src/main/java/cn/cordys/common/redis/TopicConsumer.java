@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.consumer;
+package cn.cordys.common.redis;
 
 /**
  * redis 各种topic消费者的公共接口

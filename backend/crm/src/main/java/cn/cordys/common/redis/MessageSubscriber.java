@@ -1,7 +1,6 @@
 package cn.cordys.common.redis;
 
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.system.consumer.TopicConsumer;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
