@@ -3,4 +3,11 @@
 
 <mapper namespace="cn.cordys.crm.search.mapper.ExtUserSearchConfigMapper">
 
+    <delete id="deleteByUserIds">
+        delete from ext_user_search_config where user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+        and organization_id = #{orgId}
+    </delete>
 </mapper>

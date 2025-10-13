@@ -17,6 +17,7 @@ import cn.cordys.common.util.*;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
 import cn.cordys.crm.system.dto.request.*;
@@ -98,6 +99,12 @@ public class OrganizationUserService {
     private ExtCustomerMapper extCustomerMapper;
     @Resource
     private ExtClueMapper extClueMapper;
+    @Resource
+    private ExtUserViewMapper extUserViewMapper;
+    @Resource
+    private ExtUserViewConditionMapper extUserViewConditionMapper;
+    @Resource
+    private ExtUserSearchConfigMapper extUserSearchConfigMapper;
     @Resource
     private PermissionCache permissionCache;
 
@@ -527,7 +534,9 @@ public class OrganizationUserService {
             extUserExtendMapper.deleteUser(ids);
             // 删除用户角色关联
             extUserRoleMapper.deleteUserRoleByUserIds(ids);
-            //TODO: 删除用户搜索配置，视图等信息
+            extUserViewConditionMapper.deleteByUserIds(ids, orgId);
+            extUserViewMapper.deleteUserViewByUserIds(ids, orgId);
+            extUserSearchConfigMapper.deleteByUserIds(ids, orgId);
             ids.forEach(id -> {
                 // 踢出用户
                 SessionUtils.kickOutUser(operatorId, id);

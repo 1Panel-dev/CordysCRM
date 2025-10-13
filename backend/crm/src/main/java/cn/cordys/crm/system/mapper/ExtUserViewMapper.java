@@ -15,4 +15,7 @@ public interface ExtUserViewMapper {
     Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
 
     Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+
+    //根据userIds删除视图
+    void deleteUserViewByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 }

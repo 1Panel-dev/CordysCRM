@@ -65,6 +65,22 @@ public class OrganizationSettingsController {
         return integrationConfigService.getThirdConfig(OrganizationContext.getOrganizationId());
     }
 
+
+    @PostMapping("/switch-third-party")
+    @Operation(summary = "切换三方设置")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
+    public void switchThirdPartySetting(@RequestParam String type) {
+        integrationConfigService.switchThirdPartySetting(type, OrganizationContext.getOrganizationId());
+    }
+
+    //获取最新的三方同步标识
+    @GetMapping("/third-party/sync/resource")
+    @Operation(summary = "获取最新的三方同步来源")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
+    public String getLatestSyncResource() {
+        return integrationConfigService.getLatestSyncResource(OrganizationContext.getOrganizationId());
+    }
+
     @PostMapping("/third-party/edit")
     @Operation(summary = "编辑三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
@@ -113,4 +129,5 @@ public class OrganizationSettingsController {
         String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
         return integrationConfigService.getThirdTypeList(organizationId);
     }
+
 }

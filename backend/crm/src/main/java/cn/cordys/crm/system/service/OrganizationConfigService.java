@@ -185,8 +185,8 @@ public class OrganizationConfigService {
     /**
      * 更新三方同步标识
      *
-     * @param orgId
-     * @param syncResource
+     * @param orgId          组织ID
+     * @param syncResource 同步来源
      */
     public void updateSyncFlag(String orgId, String syncResource, Boolean syncStatus) {
         extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name(), syncStatus);

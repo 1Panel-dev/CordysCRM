@@ -196,7 +196,7 @@ public class IntegrationConfigService {
 
         //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
         String lastSyncType = getLastSyncType(organizationConfig.getId());
-        if (!Strings.CI.equals(lastSyncType, configDTO.getType()) && configDTO.getStartEnable()) {
+        if (lastSyncType != null && !Strings.CI.equals(lastSyncType, configDTO.getType()) && configDTO.getStartEnable()) {
             // 关闭其他平台按钮
             List<String> detailTypes = getDetailTypes(lastSyncType);
             detailTypes.forEach(detailType -> {
@@ -953,5 +953,24 @@ public class IntegrationConfigService {
 
         option.setName(detail.getEnable().toString());
         return option;
+    }
+
+    public void switchThirdPartySetting(String type, String organizationId) {
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
+        if (organizationConfig == null) {
+            return;
+        }
+        if (type.equals(organizationConfig.getSyncResource())) {
+            return;
+        }
+        extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
+    }
+
+    public String getLatestSyncResource(String organizationId) {
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
+        if (organizationConfig == null) {
+            return null;
+        }
+        return organizationConfig.getSyncResource();
     }
 }

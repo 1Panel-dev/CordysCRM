@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.system.mapper.ExtUserViewMapper">
+    <delete id="deleteUserViewByUserIds">
+        delete from sys_user_view where organization_id = #{orgId}
+        and user_id in
+        <foreach collection="userIds" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
 
     <select id="getNextPos" resultType="java.lang.Long">
         SELECT max(pos)
