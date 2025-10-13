@@ -77,7 +77,6 @@ public class OrganizationSettingsController {
     //获取最新的三方同步标识
     @GetMapping("/third-party/sync/resource")
     @Operation(summary = "获取最新的三方同步来源")
-    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public OrganizationConfig getLatestSyncResource() {
         return integrationConfigService.getLatestSyncResource(OrganizationContext.getOrganizationId());
     }
