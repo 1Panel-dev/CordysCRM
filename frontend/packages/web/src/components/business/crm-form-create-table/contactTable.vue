@@ -133,6 +133,14 @@
       type="contact"
       @create-success="handleExportCreateSuccess"
     />
+
+    <CrmBatchEditModal
+      v-model:visible="showEditModal"
+      v-model:field-list="fieldList"
+      :ids="checkedRowKeys"
+      :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
+      @refresh="handleRefresh"
+    />
   </CrmCard>
 </template>
 
@@ -166,6 +174,7 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -239,6 +248,11 @@
             label: t('common.exportChecked'),
             key: 'exportChecked',
             permission: ['CUSTOMER_MANAGEMENT_CONTACT:EXPORT'],
+          },
+          {
+            label: t('common.batchEdit'),
+            key: 'batchEdit',
+            permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
           },
         ]
       : [],
@@ -381,7 +395,7 @@
     handleAdvanceFilter,
     handleSearchData,
   });
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     showPagination: !props.sourceId,
     readonly: props.readonly,
@@ -467,11 +481,19 @@
     checkedRowKeys.value = [];
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'exportChecked':
         isExportAll.value = false;
         showExportModal.value = true;
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       default:
         break;
@@ -497,6 +519,11 @@
       backupData.value = cloneDeep(propsRes.value.data);
     }
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    searchData();
   }
 
   handleSearchData.value = searchData;

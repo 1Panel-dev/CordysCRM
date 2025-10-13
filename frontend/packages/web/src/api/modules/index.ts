@@ -282,6 +282,7 @@ export const {
   enableAccountPoolView,
   dragAccountPoolView,
   batchUpdateAccount,
+  batchUpdateContact,
 } = customerApi;
 
 export const {

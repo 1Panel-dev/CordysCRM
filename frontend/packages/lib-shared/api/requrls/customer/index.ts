@@ -49,6 +49,7 @@ export const ExportOpenSeaCustomerAllUrl = '/pool/account/export-all'; // 导出
 export const ExportOpenSeaCustomerSelectedUrl = '/pool/account/export-select'; // 导出选中公海客户
 export const PoolAccountBatchUpdateUrl = '/pool/account/batch-update'; // 批量编辑公海列表
 export const BatchUpdateAccountUrl = '/account/batch/update'; // 批量编辑客户列表
+export const BatchUpdateContactUrl = '/account/contact/batch/update'; // 批量编辑联系人
 
 export const CancelCustomerFollowPlanUrl = '/account/follow/plan/cancel'; // 取消客户跟进计划
 export const GetCustomerHeaderListUrl = '/account/owner/history/list'; // 客户负责人记录列表

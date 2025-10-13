@@ -171,6 +171,7 @@
   import {
     batchUpdateAccount,
     batchUpdateCluePool,
+    batchUpdateContact,
     batchUpdateLead,
     batchUpdateOpenSeaCustomer,
     batchUpdateOpportunity,
@@ -192,7 +193,8 @@
       | FormDesignKeyEnum.BUSINESS
       | FormDesignKeyEnum.CLUE
       | FormDesignKeyEnum.CUSTOMER
-      | FormDesignKeyEnum.PRODUCT;
+      | FormDesignKeyEnum.PRODUCT
+      | FormDesignKeyEnum.CUSTOMER_CONTACT;
   }>();
 
   const emit = defineEmits<{
@@ -213,6 +215,7 @@
     [FormDesignKeyEnum.CLUE]: batchUpdateLead,
     [FormDesignKeyEnum.PRODUCT]: batchUpdateProduct,
     [FormDesignKeyEnum.CUSTOMER]: batchUpdateAccount,
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: batchUpdateContact,
   };
 
   const initForm = {
