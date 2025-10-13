@@ -67,7 +67,7 @@ public class OrganizationSettingsController {
     }
 
 
-    @PostMapping("/switch-third-party")
+    @GetMapping("/switch-third-party")
     @Operation(summary = "切换三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void switchThirdPartySetting(@RequestParam String type) {
