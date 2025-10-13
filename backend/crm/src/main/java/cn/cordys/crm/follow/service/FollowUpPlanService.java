@@ -6,11 +6,16 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -62,6 +67,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private PermissionCache permissionCache;
 
     /**
      * 新建跟进计划
@@ -398,5 +405,19 @@ public class FollowUpPlanService extends BaseFollowUpService {
                 .map(FollowUpPlan::getId)
                 .toList();
         deleteByIds(ids);
+    }
+
+    /**
+     * 获取跟进计划对应数据权限配置
+     * @param currentUser 当前用户ID
+     * @param organizationId 组织ID
+     * @return 数据权限配置
+     */
+    public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(currentUser, organizationId);
+        // 由于统一的记录/计划页面会展示多个业务模块的数据，因此需要合并多个数据权限, 展示范围更大的数据权限配置
+        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
+        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
+        return clueTabConfig.or(customerTabConfig);
     }
 }
