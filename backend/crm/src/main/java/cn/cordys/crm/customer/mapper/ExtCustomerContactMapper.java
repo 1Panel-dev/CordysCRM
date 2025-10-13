@@ -1,6 +1,7 @@
 package cn.cordys.crm.customer.mapper;
 
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.customer.dto.request.ContactUniqueRequest;
@@ -66,4 +67,5 @@ public interface ExtCustomerContactMapper {
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

@@ -36,6 +36,7 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -609,5 +610,13 @@ public class CustomerContactService {
             return String.join(",", names);
         }
         return StringUtils.EMPTY;
+    }
+
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BaseField field = customerContactFieldService.getAndCheckField(request.getFieldId(), organizationId);
+
+        List<CustomerContact> originCustomerContacts = customerContactMapper.selectByIds(request.getIds());
+
+        customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class, LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId);
     }
 }

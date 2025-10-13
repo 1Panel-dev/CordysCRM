@@ -1,5 +1,6 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
@@ -12,8 +13,12 @@ import cn.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +38,10 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String OPPORTUNITY_CHECK = "opportunity/check/{0}";
     protected static final String TAB = "tab";
     private static final String BASE_PATH = "/account/contact/";
+    protected static final String BATCH_UPDATE = "batch/update";
     private static CustomerContact addCustomerContact;
     private static String customerId;
+    private static ModuleFormConfigDTO moduleFormConfig;
 
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
@@ -51,7 +58,8 @@ class CustomerContactControllerTests extends BaseTest {
     void testModuleField() throws Exception {
         addCustomer();
 
-        this.requestGetWithOkAndReturn(MODULE_FORM);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
+        moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, MODULE_FORM);
@@ -123,6 +131,25 @@ class CustomerContactControllerTests extends BaseTest {
         // 校验权限
         requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
                 DEFAULT_UPDATE, request);
+    }
+
+    @Test
+    @Order(2)
+    void testBatchUpdate() throws Exception {
+        ResourceBatchEditRequest request = new ResourceBatchEditRequest();
+        for (BaseField field : moduleFormConfig.getFields()) {
+            request.setIds(List.of(addCustomerContact.getId()));
+            request.setFieldId(field.getId());
+            if (Strings.CS.equals(field.getName(), BusinessModuleField.CUSTOMER_CONTACT_OWNER.name())) {
+                request.setFieldValue(InternalUser.ADMIN.getValue());
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            } else if (Strings.CS.equals(field.getName(), BusinessModuleField.CUSTOMER_CONTACT_PHONE.name())) {
+                request.setFieldValue("16116161611");
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            }
+        }
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, BATCH_UPDATE, request);
     }
 
     @Test

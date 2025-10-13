@@ -16,6 +16,7 @@ import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.customer.service.CustomerContactExportService;
 import cn.cordys.crm.customer.service.CustomerContactService;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -181,4 +182,10 @@ public class CustomerContactController {
         return customerContactService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE)
+    @Operation(summary = "批量更新客户联系人")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+        customerContactService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }
