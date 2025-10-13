@@ -107,6 +107,9 @@ public class OrganizationUserService {
     private ExtUserSearchConfigMapper extUserSearchConfigMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private ExtNotificationMapper extNotificationMapper;
+
 
     /**
      * 员工列表查询
@@ -537,6 +540,8 @@ public class OrganizationUserService {
             extUserViewConditionMapper.deleteByUserIds(ids, orgId);
             extUserViewMapper.deleteUserViewByUserIds(ids, orgId);
             extUserSearchConfigMapper.deleteByUserIds(ids, orgId);
+            //删除用户收到的公告和通知
+            extNotificationMapper.deleteByReceivers(ids, orgId);
             ids.forEach(id -> {
                 // 踢出用户
                 SessionUtils.kickOutUser(operatorId, id);

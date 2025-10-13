@@ -41,6 +41,15 @@
         FROM sys_notification
         WHERE resource_id = #{resourceId}
     </delete>
+    <delete id="deleteByReceivers">
+        DELETE
+        FROM sys_notification
+        WHERE receiver IN
+        <foreach collection="receivers" item="receiver" open="(" separator="," close=")">
+            #{receiver}
+        </foreach>
+        and organization_id = #{organizationId}
+    </delete>
 
     <update id="updateByReceiver" parameterType="cn.cordys.crm.system.domain.Notification">
         UPDATE sys_notification SET status = #{request.status} WHERE sys_notification.receiver = #{request.receiver}

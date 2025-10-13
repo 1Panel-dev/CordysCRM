@@ -963,6 +963,17 @@ public class IntegrationConfigService {
         if (type.equals(organizationConfig.getSyncResource())) {
             return;
         }
+        //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
+        String lastSyncType = getLastSyncType(organizationConfig.getId());
+        if (lastSyncType != null) {
+            // 关闭其他平台按钮
+            List<String> detailTypes = getDetailTypes(lastSyncType);
+            detailTypes.forEach(detailType -> {
+                extOrganizationConfigDetailMapper.updateStatus(
+                        false, detailType, organizationConfig.getId()
+                );
+            });
+        }
         extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
     }
 

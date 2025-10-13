@@ -199,7 +199,7 @@ public class ThirdDepartmentService {
             dataHandleUtils.handleUpdateData(departments, operatorId);
         } else {
             // 首次同步 新增
-            dataHandleUtils.handleAddData(departments, operatorId);
+            dataHandleUtils.handleAddData(departments, operatorId, orgId, type);
         }
     }
 

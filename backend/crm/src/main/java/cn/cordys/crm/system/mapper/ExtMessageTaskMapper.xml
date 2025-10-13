@@ -13,12 +13,18 @@
             <if test="request.weComEnable != null">
                 we_com_enable = #{request.weComEnable},
             </if>
+            <if test="request.dingTalkEnable != null">
+                ding_talk_enable = #{request.dingTalkEnable},
+            </if>
+            <if test="request.larkEnable != null">
+                lark_enable = #{request.larkEnable},
+            </if>
         </set>
         where organization_id = #{organizationId}
     </update>
 
     <select id="getEnableMessageTaskByReceiveTypeAndTaskType" resultType="cn.cordys.crm.system.domain.MessageTask">
-    select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and (sys_enable = 1 or email_enable=1 or we_com_enable=1)
+    select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and (sys_enable = 1 or email_enable=1 or we_com_enable=1 or ding_talk_enable=1 or lark_enable=1);
  </select>
 
     <select id="getMessageTaskList" resultType="cn.cordys.crm.system.domain.MessageTask">
