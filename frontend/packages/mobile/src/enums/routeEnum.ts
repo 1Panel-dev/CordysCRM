@@ -9,6 +9,7 @@ export enum ClueRouteEnum {
   CLUE_INDEX = 'leadIndex',
   CLUE_DETAIL = 'leadDetail',
   CLUE_POOL_DETAIL = 'leadPoolDetail',
+  CONVERT = 'convert',
 }
 
 export enum CustomerRouteEnum {

@@ -111,6 +111,7 @@ export const {
   getAdvancedSearchClueList,
   getGlobalSearchClueList,
   getGlobalCluePoolList,
+  transformClue,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;

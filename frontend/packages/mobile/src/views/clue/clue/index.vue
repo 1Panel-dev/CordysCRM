@@ -123,16 +123,12 @@
     });
   }
 
-  function convertTo(id: string, formKey: FormDesignKeyEnum) {
+  function convertTo(item: ClueListItem) {
     router.push({
-      name: CommonRouteEnum.FORM_CREATE,
+      name: ClueRouteEnum.CONVERT,
       query: {
-        id: '',
-        formKey,
-        initialSourceName: activeClue.value?.name,
-      },
-      state: {
-        params: JSON.stringify({ clueId: id }),
+        clueId: item.id,
+        clueName: item.name,
       },
     });
   }
@@ -197,12 +193,12 @@
         //     ]
         //   : []),
         {
-          label: t('common.convertToCustomer'),
+          label: t('clue.convert'),
           icon: 'iconicon_edit1',
           permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
           allPermission: true,
           action: (item: ClueListItem) => {
-            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+            convertTo(item);
           },
         },
         {
