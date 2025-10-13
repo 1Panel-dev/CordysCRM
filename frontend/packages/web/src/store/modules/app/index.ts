@@ -18,6 +18,7 @@ import {
   getPageConfig,
   getSystemVersion,
   getThirdConfigByType,
+  getThirdPartyResource,
   getUnReadAnnouncement,
 } from '@/api/modules';
 import { defaultNavList } from '@/config/system';
@@ -44,6 +45,19 @@ const defaultLoginConfig = {
 const defaultPlatformConfig = {
   logoPlatform: [],
   helpDoc: 'https://cordys.cn/docs/',
+};
+
+const defaultPlatformResource = {
+  id: '',
+  createUser: '',
+  updateUser: '',
+  createTime: 0,
+  updateTime: 0,
+  type: '',
+  organizationId: '',
+  sync: false,
+  syncResource: CompanyTypeEnum.WECOM,
+  enable: false,
 };
 
 const defaultModuleConfig = [
@@ -118,6 +132,7 @@ const useAppStore = defineStore('app', {
       hasNewVersion: false,
     },
     navTopConfigList: [],
+    activePlatformResource: cloneDeep(defaultPlatformResource),
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -405,6 +420,16 @@ const useAppStore = defineStore('app', {
     resetPageConfig() {
       const { t } = useI18n();
       this.pageConfig = { ...this.getDefaultPageConfig, slogan: t(this.defaultLoginConfig.slogan) };
+    },
+
+    async initThirdPartyResource() {
+      try {
+        const result = await getThirdPartyResource();
+        this.activePlatformResource = { ...result };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     },
   },
   persist: {

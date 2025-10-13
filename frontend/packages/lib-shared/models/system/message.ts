@@ -49,6 +49,8 @@ export interface MessageTaskDetailDTOItem {
   sysEnable: boolean;
   emailEnable: boolean;
   weComEnable: boolean;
+  dingTalkEnable: boolean;
+  larkEnable: boolean;
 }
 
 export interface MessageConfigItem extends MessageTaskDetailDTOItem {

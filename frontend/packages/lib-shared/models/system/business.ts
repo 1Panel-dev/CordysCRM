@@ -20,14 +20,11 @@ export interface ConfigSynchronization {
   corpId?: string; // 企业ID
   agentId?: string; // 应用ID
   appSecret?: string; // 应用密钥
-  syncEnable?: boolean; // 同步组织架构是否开启
-  qrcodeEnable?: boolean; // 扫码登录是否开启
   sqlBotChatEnable?: boolean; // 智能问数是否开启
   sqlBotBoardEnable?: boolean; // 智能问数仪表板是否开启
   verify?: boolean; // 是否验证通过
   redirectUrl?: string; // DE URL
   deAccount?: string; // DE 账号
-  noticeEnable?: boolean; // 开启通知
   deBoardEnable?: boolean; // DE看板是否开启
   deModuleEmbedding?: boolean; // DE模块嵌入
   deLinkIntegration?: boolean; // DE链接集成
@@ -37,6 +34,8 @@ export interface ConfigSynchronization {
   deOrgID?: string; // DE组织ID
   // 前端渲染参数
   deEmbedType?: string[]; // DE嵌入方式
+  oauth2Enable?: boolean; // OAuth2
+  startEnable?: boolean; // 同步用户
 }
 
 // 同步组织和扫码登录数据类型
@@ -47,6 +46,19 @@ export interface SyncAndScanItem {
   logo: string;
   hasConfig: boolean;
   response: ConfigSynchronization;
+}
+
+export interface ThirdPartyResource {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  type: string;
+  organizationId: string;
+  sync: boolean;
+  syncResource: CompanyTypeEnum;
+  enable: boolean;
 }
 
 export interface DEOrgItem {

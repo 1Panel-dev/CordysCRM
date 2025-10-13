@@ -49,7 +49,6 @@
             key-field="id"
             filterable
             clearable
-            :disabled="props.isSyncFromThirdChecked && xPack"
             children-field="children"
           >
             <template #empty>
@@ -120,7 +119,6 @@
               type="text"
               :placeholder="t('common.pleaseInput')"
               :maxlength="255"
-              :disabled="props.isSyncFromThirdChecked && xPack"
             />
           </n-form-item>
           <n-form-item
@@ -232,7 +230,6 @@
   const props = defineProps<{
     userId: string;
     activeDepId: string; // 激活部门id
-    isSyncFromThirdChecked: boolean;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {

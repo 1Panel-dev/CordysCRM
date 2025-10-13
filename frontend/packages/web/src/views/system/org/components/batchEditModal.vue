@@ -126,7 +126,6 @@
 
   const props = defineProps<{
     userIds: DataTableRowKey[];
-    isSyncFromThirdChecked: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -155,14 +154,10 @@
 
   const attributesOptions = computed<SelectOption[]>(() => {
     return [
-      ...(props.isSyncFromThirdChecked && xPack.value
-        ? []
-        : [
-            {
-              value: 'departmentId',
-              label: t('org.department'),
-            },
-          ]),
+      {
+        value: 'departmentId',
+        label: t('org.department'),
+      },
       {
         value: 'supervisorId',
         label: t('org.directSuperior'),

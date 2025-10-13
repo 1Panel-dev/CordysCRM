@@ -1,5 +1,6 @@
 import { FormItemRule, InputProps } from 'naive-ui';
 
+import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
 
@@ -424,3 +425,11 @@ export const defaultLoginImage = `${import.meta.env.BASE_URL}images/login-banner
 export const defaultLoginLogo = `${import.meta.env.BASE_URL}images/login-logo.svg`;
 // 默认左上角平台logo
 export const defaultPlatformLogo = `${import.meta.env.BASE_URL}images/logo_CORDYS.svg`;
+
+export const platformType = [CompanyTypeEnum.WECOM, CompanyTypeEnum.DINGTALK, CompanyTypeEnum.LARK];
+
+export const platFormNameMap: Record<string, string> = {
+  [CompanyTypeEnum.DINGTALK]: t('login.form.DINGTALK'),
+  [CompanyTypeEnum.LARK]: t('login.form.LARK'),
+  [CompanyTypeEnum.WECOM]: t('login.form.WECOM'),
+};

@@ -294,6 +294,8 @@ export const {
   updateConfigSynchronization,
   getThirdConfigByType,
   getThirdTypeList,
+  switchThirdParty,
+  getThirdPartyResource,
   getAuthList,
   getAuthDetail,
   updateAuth,

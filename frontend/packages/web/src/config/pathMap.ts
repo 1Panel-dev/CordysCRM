@@ -167,14 +167,6 @@ export const pathMap: PathMapItem[] = [
               tab: 'mailSettings',
             },
           },
-          {
-            key: 'SYSTEM_BUSINESS_AUTH',
-            route: AppRouteEnum.SYSTEM_BUSINESS,
-            locale: 'system.business.tab.authenticationSettings',
-            routeQuery: {
-              tab: 'authenticationSettings',
-            },
-          },
         ],
       },
       {

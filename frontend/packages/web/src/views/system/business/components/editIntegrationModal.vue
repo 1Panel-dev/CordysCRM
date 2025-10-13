@@ -11,7 +11,7 @@
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
-      :label-width="form.type === CompanyTypeEnum.DATA_EASE ? 120 : 80"
+      :label-width="getLabelWidth"
     >
       <!-- 应用 key 第一版没有 -->
       <!-- <n-form-item v-if="['DINGTALK'].includes(form?.type)" path="appKey" :label="t('system.business.appKey')">
@@ -25,7 +25,7 @@
       </n-form-item> -->
 
       <!-- 企业 ID -->
-      <template v-if="[CompanyTypeEnum.WECOM].includes(form?.type)">
+      <template v-if="platformType.includes(form?.type)">
         <n-form-item path="corpId" :label="t('system.business.corpId')">
           <n-input v-model:value="form.corpId" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
@@ -79,6 +79,7 @@
           "
         />
       </n-form-item>
+
       <n-form-item v-else path="appSecret" :label="t('system.business.SQLBot.embeddedScript')">
         <n-input
           v-model:value="form.appSecret"
@@ -93,6 +94,34 @@
           }}
         </div>
       </n-form-item>
+
+      <template v-if="platformType.includes(form?.type)">
+        <n-form-item path="oauth2Enable" :label="t('system.business.authenticationSettings.oAuth2')">
+          <n-switch v-model:value="form.oauth2Enable" size="small" :rubber-band="false" />
+        </n-form-item>
+        <n-form-item
+          v-if="form.oauth2Enable"
+          :rule="[
+            {
+              required: true,
+              message: t('common.notNull', { value: t('system.business.authenticationSettings.callbackUrl') }),
+            },
+          ]"
+          :label="t('system.business.authenticationSettings.callbackUrl')"
+          path="redirectUrl"
+        >
+          <n-input
+            v-model:value="form.redirectUrl"
+            allow-clear
+            :maxlength="255"
+            :placeholder="
+              t('system.business.authenticationSettings.commonUrlPlaceholder', {
+                url: 'http://<cordys-endpoint>/sso/callback or http://<cordys-endpoint>/sso/callback/authld',
+              })
+            "
+          />
+        </n-form-item>
+      </template>
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">
@@ -162,22 +191,52 @@
       </template>
     </n-form>
     <template #footer>
-      <div class="flex w-full items-center justify-end">
-        <n-button :disabled="loading" secondary @click="cancel">
-          {{ t('common.cancel') }}
-        </n-button>
-        <n-button
-          :loading="linkLoading"
-          type="primary"
-          ghost
-          class="n-btn-outline-primary mx-[12px]"
-          @click="continueLink"
-        >
-          {{ t('system.business.mailSettings.testLink') }}
-        </n-button>
-        <n-button :loading="loading" type="primary" @click="confirmHandler">
-          {{ t('common.confirm') }}
-        </n-button>
+      <div class="flex w-full items-center justify-between">
+        <div v-if="platformType.includes(form.type)" class="ml-[4px] flex items-center gap-[8px]">
+          <n-tooltip :disabled="form.verify">
+            <template #trigger>
+              <n-switch v-model:value="form.startEnable" :rubber-band="false" :disabled="!form.verify" />
+            </template>
+            {{ t('system.business.notConfiguredTip') }}
+          </n-tooltip>
+
+          <div class="text-[12px] text-[var(--text-n1)]">
+            {{ t('system.business.authenticationSettings.syncUser') }}
+          </div>
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <CrmIcon
+                type="iconicon_help_circle"
+                :size="16"
+                class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+              />
+            </template>
+            <template #default>
+              <div>
+                <div>{{ t('system.business.authenticationSettings.syncUsersToolTitle', { type: props.title }) }}</div>
+                <div>{{ t('system.business.authenticationSettings.syncUsersOpenTip', { type: props.title }) }}</div>
+                <div>{{ t('system.business.authenticationSettings.syncUsersTipContent', { type: props.title }) }}</div>
+              </div>
+            </template>
+          </n-tooltip>
+        </div>
+        <div class="flex flex-1 items-center justify-end">
+          <n-button :disabled="loading" secondary @click="cancel">
+            {{ t('common.cancel') }}
+          </n-button>
+          <n-button
+            :loading="linkLoading"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary mx-[12px]"
+            @click="continueLink"
+          >
+            {{ t('system.business.mailSettings.testLink') }}
+          </n-button>
+          <n-button :loading="loading" type="primary" @click="confirmHandler">
+            {{ t('common.confirm') }}
+          </n-button>
+        </div>
       </div>
     </template>
   </CrmModal>
@@ -207,6 +266,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   import { getDEOrgList, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
+  import { platformType } from '@/config/business';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -229,8 +289,6 @@
     corpId: '',
     agentId: '',
     appSecret: '',
-    syncEnable: true,
-    qrcodeEnable: true,
     type: CompanyTypeEnum.WECOM,
     redirectUrl: '',
     deAccount: '',
@@ -362,6 +420,12 @@
       }
     });
   }
+
+  const getLabelWidth = computed(() => {
+    if (form.value.type === CompanyTypeEnum.DATA_EASE) return 120;
+    if (platformType.includes(form.value.type)) return 100;
+    return 80;
+  });
 </script>
 
 <style lang="less">

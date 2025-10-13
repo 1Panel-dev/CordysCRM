@@ -85,6 +85,16 @@ export default {
   'system.business.authenticationSettings.LDAPPropertyMapTip': '左侧键为 Cordys 用户属性，右侧值为认证平台用户属性',
   'system.business.authenticationSettings.propertyMap': '属性映射',
   'system.business.authenticationSettings.testLogin': '测试登录',
+  'system.business.authenticationSettings.openSourceDataTools': '开源数据工具',
+  'system.business.authenticationSettings.collaborativeSoftware': '企业协同软件',
+  'system.business.authenticationSettings.syncUser': '同步用户',
+  'system.business.authenticationSettings.confirmTogglePlatform': '确定切换平台吗？',
+  'system.business.authenticationSettings.oAuth2': 'OAuth2 认证',
+  'system.business.authenticationSettings.syncUsersToolTitle': '同步用户开关开启：',
+  'system.business.authenticationSettings.syncUsersOpenTip': '1.同步开启{type}扫码登录和{type}消息通知功能',
+  'system.business.authenticationSettings.syncUsersTipContent': '2.组织架构模块可进行从{type}同步用户',
+  'system.business.authenticationSettings.togglePlatformTip':
+    '注意：扫码登录及消息通知会调用切换后平台（{type}）的配置，可能导致登录失败或消息接收异常，建议您谨慎操作！',
 
   'system.business.page.platformStyle': '主题色',
   'system.business.page.background': '背景色',

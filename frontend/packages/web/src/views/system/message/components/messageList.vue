@@ -18,18 +18,14 @@
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { MessageConfigItem } from '@lib/shared/models/system/message';
+  import type { MessageConfigItem, MessageTaskDetailDTOItem } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import SwitchPopConfirm from './switchPopConfirm.vue';
 
-  import {
-    batchSaveMessageTask,
-    checkSyncUserFromThird,
-    getConfigSynchronization,
-    getMessageTask,
-    saveMessageTask,
-  } from '@/api/modules';
+  import { batchSaveMessageTask, getConfigSynchronization, getMessageTask, saveMessageTask } from '@/api/modules';
+  import { platFormNameMap, platformType } from '@/config/business';
+  import { useAppStore } from '@/store';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -37,12 +33,22 @@
 
   const { t } = useI18n();
   const licenseStore = useLicenseStore();
+  const appStore = useAppStore();
 
   const enableSystemMessage = ref(false);
   const enableEmailMessage = ref(false);
-  const enableWeChatMessage = ref(false);
+  const enableThirdPartyMessage = ref(false);
   const enableSystemLoading = ref(false);
+  const noticeEnableMapKey: Record<string, keyof MessageTaskDetailDTOItem> = {
+    [CompanyTypeEnum.WECOM]: 'weComEnable',
+    [CompanyTypeEnum.DINGTALK]: 'dingTalkEnable',
+    [CompanyTypeEnum.LARK]: 'larkEnable',
+  };
 
+  const thirdPartyEnableKey = computed<keyof MessageTaskDetailDTOItem>(() => {
+    const syncPlatformType = appStore.activePlatformResource.syncResource;
+    return noticeEnableMapKey[syncPlatformType];
+  });
   const data = ref<MessageConfigItem[]>([]);
   const loading = ref(false);
 
@@ -53,7 +59,9 @@
 
       enableSystemMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.sysEnable));
       enableEmailMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.emailEnable));
-      enableWeChatMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.weComEnable));
+      enableThirdPartyMessage.value = result.every((e) => {
+        return e.messageTaskDetailDTOList.every((c) => c[thirdPartyEnableKey.value]);
+      });
 
       data.value = result
         .map((item) =>
@@ -81,7 +89,8 @@
         event: row.event,
         emailEnable: type === 'email' ? !row.emailEnable : row.emailEnable,
         sysEnable: type === 'system' ? !row.sysEnable : row.sysEnable,
-        weComEnable: type === 'weChat' ? !row.weComEnable : row.weComEnable,
+        [thirdPartyEnableKey.value]:
+          type === 'weChat' ? !row[thirdPartyEnableKey.value] : row[thirdPartyEnableKey.value],
       });
       Message.success(t('common.saveSuccess'));
       cancel?.();
@@ -102,10 +111,14 @@
         sysEnable: boolean | undefined;
         emailEnable: boolean | undefined;
         weComEnable: boolean | undefined;
+        dingTalkEnable: boolean | undefined;
+        larkEnable: boolean | undefined;
       } = {
         sysEnable: undefined,
         emailEnable: undefined,
         weComEnable: undefined,
+        dingTalkEnable: undefined,
+        larkEnable: undefined,
       };
 
       if (type === 'system') {
@@ -113,7 +126,7 @@
       } else if (type === 'email') {
         params.emailEnable = !enableEmailMessage.value;
       } else if (type === 'weChat') {
-        params.weComEnable = !enableWeChatMessage.value;
+        params[thirdPartyEnableKey.value as keyof typeof params] = !enableThirdPartyMessage.value;
       }
 
       await batchSaveMessageTask(params);
@@ -128,8 +141,10 @@
     }
   }
 
-  const isSyncFromThirdChecked = ref(false);
-  const isEnableWeComConfig = ref<boolean>(false);
+  const isEnableNoticeConfig = ref<boolean>(false);
+  const platformName = computed(() => platFormNameMap[appStore.activePlatformResource.syncResource]);
+  const isSyncFromThirdChecked = computed(() => appStore.activePlatformResource.sync);
+
   const columns = computed<DataTableColumn[]>(() => [
     {
       title: t('system.message.Feature'),
@@ -205,25 +220,27 @@
         });
       },
     },
-    ...(isEnableWeComConfig.value
+    ...(isEnableNoticeConfig.value
       ? [
           {
             title: () => {
               return h(SwitchPopConfirm, {
                 title: t('system.message.confirmCloseWeChatNotice'),
-                titleColumnText: t('system.message.enterpriseWeChatNotice'),
-                value: enableWeChatMessage.value,
+                titleColumnText: t('system.message.platformNotice', { type: platformName.value }),
+                value: enableThirdPartyMessage.value,
                 loading: enableSystemLoading.value,
                 content: t('system.message.confirmCloseSystemNotifyContent'),
                 disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
-                toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+                toolTipContent: !isSyncFromThirdChecked.value
+                  ? t('system.message.weComSwitchTip', { type: platformName.value })
+                  : '',
                 onChange: (cancel?: () => void) => {
                   if (!isSyncFromThirdChecked.value) return;
                   toggleGlobalMessage('weChat', cancel);
                 },
               });
             },
-            key: 'weComEnable',
+            key: thirdPartyEnableKey.value,
             width: 200,
             ellipsis: {
               tooltip: true,
@@ -231,11 +248,13 @@
             render: (row: any) => {
               return h(SwitchPopConfirm, {
                 title: t('system.message.confirmCloseWeChatNotice'),
-                value: row.weComEnable as boolean,
+                value: row[thirdPartyEnableKey.value] as boolean,
                 loading: enableSystemLoading.value,
                 content: t('system.message.confirmCloseSystemNotifyContent'),
                 disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
-                toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+                toolTipContent: !isSyncFromThirdChecked.value
+                  ? t('system.message.weComSwitchTip', { type: platformName.value })
+                  : '',
                 onChange: (cancel?: () => void) => {
                   if (!isSyncFromThirdChecked.value) return;
                   handleToggleSystemMessage(row as unknown as MessageConfigItem, 'weChat', cancel);
@@ -247,22 +266,14 @@
       : []),
   ]);
 
-  async function initCheckSyncType() {
-    try {
-      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  // 企业微信配置
   async function initIntegration() {
     try {
       const res = await getConfigSynchronization();
       if (res) {
-        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-        isEnableWeComConfig.value = !!weChatConfig && !!weChatConfig.noticeEnable;
+        const platFormConfig = res.find(
+          (item) => platformType.includes(item.type) && item.type === appStore.activePlatformResource.syncResource
+        );
+        isEnableNoticeConfig.value = !!platFormConfig && !!platFormConfig.startEnable;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -271,7 +282,6 @@
   }
 
   onBeforeMount(() => {
-    initCheckSyncType();
     // TODO license 先放开
     // if (licenseStore.hasLicense()) {
     //   initIntegration();

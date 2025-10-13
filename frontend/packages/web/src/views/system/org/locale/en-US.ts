@@ -8,7 +8,7 @@ export default {
   'org.selectHeadPlaceholder': 'Please select a department head',
   'org.setupSuccess': 'Set up successfully',
   'org.addStaff': 'Add staff',
-  'org.enterpriseWhatSync': 'WeCom synchronization',
+  'org.formPlatformSync': '{type} synchronization',
   'org.userName': 'Name',
   'org.gender': 'Gender',
   'org.userEmail': 'Email',
@@ -68,10 +68,9 @@ export default {
   'org.batchDeleteUserTip': 'Confirm delete {number} employees?',
   'org.checkSyncUserHoverTip':
     'The organization structure is WeCom synchronization data, please add members through "Synchronize organization structure"!',
-  'org.syncUserTipTitle': 'Synchronize from WeCom?',
-  'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful!',
-  'org.firstSyncUserTipContent':
-    'Synchronize organizational structure will delete existing members and their resource data. This operation is irreversible. Continue?',
+  'org.syncUserTipTitle': 'Synchronize from {type}?',
+  'org.syncUserTipContent': 'Manually added members will be disabled after sync',
+  'org.firstSyncUserTipContent': 'Syncing will delete all current members. This action cannot be undone',
   'org.searchByNameAndPhone': 'Search by name/mobile number',
   'org.setDirectSuperiors': 'Set up direct superiors',
 };

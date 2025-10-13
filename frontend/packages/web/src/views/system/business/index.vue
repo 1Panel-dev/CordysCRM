@@ -7,8 +7,6 @@
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
     </CrmCard>
     <PageSettings v-if="activeTab === 'pageSettings'" />
-    <!-- TODO license 先放开 <AuthenticationSettings v-if="activeTab === 'authenticationSettings' && xPack" /> -->
-    <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
     <MailSettings v-if="activeTab === 'mailSettings'" />
     <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
     <IntegrationList v-if="activeTab === 'syncOrganization'" />
@@ -26,7 +24,6 @@
 
   import useLicenseStore from '@/store/modules/setting/license';
 
-  const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
@@ -43,7 +40,6 @@
     { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'syncOrganization', tab: t('system.business.tab.third') },
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
-    { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
   ];
 
   const tabList = ref([...initTabList]);

@@ -21,9 +21,11 @@ import {
   GetPersonalUrl,
   GetThirdConfigByTypeUrl,
   GetThirdPartyConfigUrl,
+  GetThirdPartyResourceUrl,
   GetThirdTypeListUrl,
   SavePageConfigUrl,
   SendEmailCodeUrl,
+  SwitchThirdPartyUrl,
   SyncDEUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
@@ -50,6 +52,7 @@ import type {
   DEOrgItem,
   PageConfigReturns,
   SavePageConfigParams,
+  ThirdPartyResource,
   UpdateApiKeyParams,
 } from '@lib/shared/models/system/business';
 import {
@@ -107,6 +110,21 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取三方应用扫码类型集合
   function getThirdTypeList() {
     return CDR.get<OptionDTO[]>({ url: GetThirdTypeListUrl });
+  }
+
+  // 切换三方平台
+  function switchThirdParty(type: CompanyTypeEnum) {
+    return CDR.get({ url: SwitchThirdPartyUrl, params: { type } });
+  }
+
+  // 获取最新的三方同步来源
+  function getThirdPartyResource() {
+    return CDR.get<ThirdPartyResource>(
+      { url: GetThirdPartyResourceUrl },
+      {
+        ignoreCancelToken: true,
+      }
+    );
   }
 
   // 获取认证设置列表
@@ -261,6 +279,8 @@ export default function useProductApi(CDR: CordysAxios) {
     updateAuthStatus,
     updateAuthName,
     deleteAuth,
+    switchThirdParty,
+    getThirdPartyResource,
     getPersonalInfo,
     updatePersonalInfo,
     sendEmailCode,

@@ -5,7 +5,6 @@
         <div class="org-tree-wrapper h-full">
           <OrgModuleTree
             ref="orgModuleTreeRef"
-            :is-sync-from-third-checked="isSyncFromThirdChecked"
             @select-node="selectNode"
             @load-list="() => orgTableRef?.initOrgList()"
           />
@@ -14,7 +13,6 @@
       <template #2>
         <OrgTable
           ref="orgTableRef"
-          :is-sync-from-third-checked="isSyncFromThirdChecked"
           :active-node="activeNodeId"
           :offspring-ids="offspringIds"
           @add-success="addSuccess"
@@ -30,7 +28,6 @@
   import OrgModuleTree from './components/moduleTree.vue';
   import OrgTable from '@/views/system/org/components/orgTable.vue';
 
-  import { checkSyncUserFromThird } from '@/api/modules';
   import useLicenseStore from '@/store/modules/setting/license';
 
   const activeNodeId = ref<string | number>('');
@@ -48,21 +45,7 @@
     orgModuleTreeRef.value?.initTree();
   }
 
-  const isSyncFromThirdChecked = ref(false);
-  async function initCheckSyncType() {
-    try {
-      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   const orgTableRef = ref<InstanceType<typeof OrgTable>>();
-
-  onBeforeMount(() => {
-    initCheckSyncType();
-  });
 </script>
 
 <style lang="less" scoped>

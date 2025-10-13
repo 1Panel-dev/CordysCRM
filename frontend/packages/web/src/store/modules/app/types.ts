@@ -1,6 +1,7 @@
 import { UploadFileInfo } from 'naive-ui';
 
 import type { SystemVersion } from '@lib/shared/models/common';
+import { ThirdPartyResource } from '@lib/shared/models/system/business';
 import type { ModuleNavBaseInfoItem, ModuleNavTopItem } from '@lib/shared/models/system/module';
 import type { MessageInfo } from '@lib/shared/models/user';
 
@@ -75,4 +76,5 @@ export interface AppState {
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
   versionInfo: SystemVersion; // 版本信息
   navTopConfigList: ModuleNavTopItem[]; // 顶导配置
+  activePlatformResource: ThirdPartyResource; // 当前激活的平台资源
 }

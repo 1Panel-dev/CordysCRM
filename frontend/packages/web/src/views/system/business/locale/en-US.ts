@@ -90,6 +90,17 @@ export default {
     'Left key is Cordys user property, right value is authentication platform user property.',
   'system.business.authenticationSettings.propertyMap': 'Property Mapping',
   'system.business.authenticationSettings.testLogin': 'Test Login',
+  'system.business.authenticationSettings.openSourceDataTools': 'Open source data tools',
+  'system.business.authenticationSettings.collaborativeSoftware': 'Collaborative software',
+  'system.business.authenticationSettings.syncUser': 'Sync users',
+  'system.business.authenticationSettings.confirmTogglePlatform': 'Are you sure to switch platforms?',
+  'system.business.authenticationSettings.oAuth2': 'OAuth2',
+  'system.business.authenticationSettings.syncUsersToolTitle': 'Sync user switch enabled:',
+  'system.business.authenticationSettings.syncUsersOpenTip':
+    '1. Synchronize {type} QR code login and {type} message notifications',
+  'system.business.authenticationSettings.syncUsersTipContent': '2. Sync users from  {type} in organization module',
+  'system.business.authenticationSettings.togglePlatformTip':
+    'Note: Scanning code login and message notifications will invoke the configuration of the switched platform ({type}), which may result in login failure or abnormal message reception. We suggest you operate with caution!',
 
   'system.business.page.platformStyle': 'Theme Color',
   'system.business.page.background': 'Background Color',

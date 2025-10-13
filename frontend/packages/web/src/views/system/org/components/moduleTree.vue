@@ -7,22 +7,18 @@
         </n-icon>
       </template>
     </n-input>
-    <n-tooltip v-if="hasAnyPermission(['SYS_ORGANIZATION:ADD'])" trigger="hover" :delay="300">
-      <template #trigger>
-        <n-button
-          type="primary"
-          :disabled="props.isSyncFromThirdChecked && xPack"
-          ghost
-          class="n-btn-outline-primary px-[7px]"
-          @click="addDepart"
-        >
-          <template #icon>
-            <n-icon><Add /></n-icon>
-          </template>
-        </n-button>
+
+    <n-button
+      v-permission="['SYS_ORGANIZATION:ADD']"
+      type="primary"
+      ghost
+      class="n-btn-outline-primary px-[7px]"
+      @click="addDepart"
+    >
+      <template #icon>
+        <n-icon><Add /></n-icon>
       </template>
-      {{ props.isSyncFromThirdChecked && xPack ? t('org.checkSyncUserHoverTip') : t('org.addDepartment') }}
-    </n-tooltip>
+    </n-button>
   </div>
   <CrmTree
     ref="deptTreeRef"
@@ -31,7 +27,7 @@
     v-model:checked-keys="checkedKeys"
     v-model:expanded-keys="expandedKeys"
     v-model:default-expand-all="expandAll"
-    :draggable="(hasAnyPermission(['SYS_ORGANIZATION:UPDATE']) && !props.isSyncFromThirdChecked) || !xPack"
+    :draggable="hasAnyPermission(['SYS_ORGANIZATION:UPDATE'])"
     :keyword="keyword"
     :render-prefix="renderPrefixDom"
     :node-more-actions="nodeMoreOptions"
@@ -97,10 +93,6 @@
   const Message = useMessage();
 
   const { t } = useI18n();
-
-  const props = defineProps<{
-    isSyncFromThirdChecked: boolean;
-  }>();
 
   const emit = defineEmits<{
     (e: 'selectNode', _selectedKeys: Array<string | number>, offspringIds: string[]): void;
@@ -171,9 +163,6 @@
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
     return items.filter((e) => {
-      if (props.isSyncFromThirdChecked && xPack.value) {
-        return e.key !== 'delete' && e.key !== 'rename';
-      }
       if (node.parentId === 'NONE') {
         return e.key !== 'delete';
       }
@@ -282,25 +271,23 @@
     if (hasAnyPermission(['SYS_ORGANIZATION:ADD'])) {
       const { option } = infoProps;
       // 额外的节点
-      return props.isSyncFromThirdChecked && xPack.value
-        ? null
-        : h(
-            NButton,
-            {
-              type: 'primary',
-              size: 'small',
-              bordered: false,
-              class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
-              onClick: () => handleAdd(option),
-            },
-            () => {
-              return h(CrmIcon, {
-                size: 18,
-                type: 'iconicon_add',
-                class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
-              });
-            }
-          );
+      return h(
+        NButton,
+        {
+          type: 'primary',
+          size: 'small',
+          bordered: false,
+          class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
+          onClick: () => handleAdd(option),
+        },
+        () => {
+          return h(CrmIcon, {
+            size: 18,
+            type: 'iconicon_add',
+            class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
+          });
+        }
+      );
     }
     return null;
   }

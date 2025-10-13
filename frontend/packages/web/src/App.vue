@@ -132,6 +132,7 @@
   onBeforeMount(() => {
     try {
       licenseStore.getValidateLicense();
+      appStore.initThirdPartyResource();
       const { isLoginPage } = useUser();
       if (licenseStore.hasLicense() && !isLoginPage()) {
         appStore.initPageConfig();

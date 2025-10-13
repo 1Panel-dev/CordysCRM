@@ -15,20 +15,14 @@
     >
       <template #actionLeft>
         <div class="flex">
-          <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked || !xPack">
-            <template #trigger>
-              <n-button
-                v-permission="['SYS_ORGANIZATION:ADD']"
-                :disabled="props.isSyncFromThirdChecked && xPack"
-                class="mr-[12px]"
-                type="primary"
-                @click="() => addOrEditMember()"
-              >
-                {{ t('org.addMember') }}
-              </n-button>
-            </template>
-            {{ t('org.checkSyncUserHoverTip') }}
-          </n-tooltip>
+          <n-button
+            v-permission="['SYS_ORGANIZATION:ADD']"
+            class="mr-[12px]"
+            type="primary"
+            @click="() => addOrEditMember()"
+          >
+            {{ t('org.addMember') }}
+          </n-button>
           <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
             <n-button type="default" class="outline--secondary">
               {{ t('common.more') }}
@@ -51,13 +45,12 @@
       v-model:show="showDrawer"
       :user-id="currentUserId"
       :active-dep-id="activeNode as string"
-      :is-sync-from-third-checked="props.isSyncFromThirdChecked"
       @brash="brashHandler"
       @close="cancelHandler"
     />
     <EditIntegrationModal
       v-model:show="showSyncWeChatModal"
-      :title="t('system.business.WE_COM')"
+      :title="platFormName"
       :integration="currentIntegration"
       @init-sync="initIntegration()"
     />
@@ -68,12 +61,7 @@
       @edit="addOrEditMember"
       @cancel="cancelHandler"
     />
-    <batchEditModal
-      v-model:show="showEditModal"
-      :is-sync-from-third-checked="props.isSyncFromThirdChecked"
-      :user-ids="checkedRowKeys"
-      @load-list="handleLoadList"
-    />
+    <batchEditModal v-model:show="showEditModal" :user-ids="checkedRowKeys" @load-list="handleLoadList" />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
     <ImportModal
@@ -150,12 +138,15 @@
     syncOrg,
     updateOrgUserName,
   } from '@/api/modules';
+  import { platFormNameMap, platformType } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
+  import { useAppStore } from '@/store';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const userStore = useUserStore();
+  const appStore = useAppStore();
   // TODO license 先放开
   // const xPack = computed(() => licenseStore.hasLicense());
   const xPack = ref(true);
@@ -170,7 +161,6 @@
   const props = defineProps<{
     activeNode: string | number;
     offspringIds: string[];
-    isSyncFromThirdChecked: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -186,11 +176,11 @@
     corpId: '',
     agentId: '',
     appSecret: '',
-    syncEnable: true,
-    qrcodeEnable: true,
+    startEnable: false,
+    oauth2Enable: false,
   });
 
-  async function settingWeChat(e: MouseEvent) {
+  async function settingPlatForm(e: MouseEvent) {
     e.stopPropagation();
     showSyncWeChatModal.value = true;
   }
@@ -743,10 +733,7 @@
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
           groupList,
-          moreList:
-            (props.isSyncFromThirdChecked && xPack.value) || row.userId === userStore.userInfo.id
-              ? undefined
-              : moreOperationList,
+          moreList: row.userId === userStore.userInfo.id ? undefined : moreOperationList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -789,7 +776,8 @@
 
   async function handleSyncFromThird() {
     try {
-      await syncOrg(CompanyTypeEnum.WECOM);
+      // TODO 联调 xinxinwu 先不能同步 防止登录不上
+      // await syncOrg(currentIntegration.value.type);
       Message.success(t('org.syncSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -797,12 +785,17 @@
     }
   }
 
+  const platFormName = computed(() => platFormNameMap[appStore.activePlatformResource.syncResource]);
+
   // 同步二次确认
   function handleSyncConfirm() {
-    const content = props.isSyncFromThirdChecked ? t('org.firstSyncUserTipContent') : t('org.syncUserTipContent');
+    const content = appStore.activePlatformResource.sync
+      ? t('org.syncUserTipContent')
+      : t('org.firstSyncUserTipContent');
+
     openModal({
       type: 'warning',
-      title: t('org.syncUserTipTitle'),
+      title: t('org.syncUserTipTitle', { type: platFormName.value }),
       content,
       positiveText: t('common.confirm'),
       negativeText: t('common.cancel'),
@@ -823,38 +816,11 @@
   const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
   const moreActions = computed(() => {
-    // TODO license 先放开
-    // if (licenseStore.hasLicense()) {
-    //   return [
-    //     ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
-    //       ? [
-    //           {
-    //             label: t('org.enterpriseWhatSync'),
-    //             key: 'sync',
-    //             render: renderSyncResult.value,
-    //             disabled: !isHasConfig.value,
-    //           },
-    //         ]
-    //       : []),
-    //     {
-    //       label: t('common.import'),
-    //       key: 'import',
-    //       tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
-    //       disabled: props.isSyncFromThirdChecked && xPack.value,
-    //       permission: ['SYS_ORGANIZATION:IMPORT'],
-    //     },
-    //     // TOTO  不上
-    //     // {
-    //     //   label: t('common.export'),
-    //     //   key: 'export',
-    //     // },
-    //   ];
-    // }
     return [
       ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
         ? [
             {
-              label: t('org.enterpriseWhatSync'),
+              label: t('org.formPlatformSync', { type: platFormName.value }),
               key: 'sync',
               render: renderSyncResult.value,
               disabled: !isHasConfig.value,
@@ -864,17 +830,8 @@
       {
         label: t('common.import'),
         key: 'import',
-        tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
-        disabled: props.isSyncFromThirdChecked && xPack.value,
         permission: ['SYS_ORGANIZATION:IMPORT'],
       },
-      // {
-      //   label: t('common.import'),
-      //   key: 'import',
-      //   tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
-      //   disabled: props.isSyncFromThirdChecked && xPack.value,
-      //   permission: ['SYS_ORGANIZATION:IMPORT'],
-      // },
       // TOTO  不上
       // {
       //   label: t('common.export'),
@@ -1032,32 +989,38 @@
           },
           {
             trigger: () => {
-              return t('org.enterpriseWhatSync');
+              return t('org.formPlatformSync', { type: platFormName.value });
             },
             default: () => t('org.checkIsOpenConfig'),
           }
         ),
-        // 有同步微信配置权限则都展示
+        // 有同步配置权限则都展示
         isHasConfigPermission.value
           ? h(CrmIcon, {
               type: 'iconicon_set_up',
               size: 16,
               class: 'ml-2 text-[var(--primary-8)]',
-              onClick: (e: MouseEvent) => settingWeChat(e),
+              onClick: (e: MouseEvent) => settingPlatForm(e),
             })
           : null,
       ]
     );
   }
 
-  // 初始化企业微信配置
+  // 初始化三方平台配置
   async function initIntegration() {
     try {
       const res = await getConfigSynchronization();
       if (res) {
-        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-        currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
-        isHasConfig.value = !!weChatConfig && !!weChatConfig.syncEnable && !!weChatConfig.verify;
+        const platFormConfig = res.find(
+          (item) => platformType.includes(item.type) && item.type === appStore.activePlatformResource.syncResource
+        );
+        currentIntegration.value = {
+          ...currentIntegration.value,
+          ...platFormConfig,
+          type: appStore.activePlatformResource.syncResource,
+        };
+        isHasConfig.value = !!platFormConfig && !!platFormConfig.startEnable && !!platFormConfig.verify;
         renderSyncResult.value = renderSync();
       }
     } catch (error) {

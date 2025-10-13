@@ -6,6 +6,7 @@
     :class="`${props.noContent ? 'no-content' : ''}`"
     :bar-width="props.barWidth"
     @update:value="handleChange"
+    @before-leave="handleBeforeLeave"
   >
     <n-tab-pane v-for="item of showTabs" :key="item.name" :name="item.name as string" :tab="item.tab">
       <slot :name="item.name" />
@@ -29,6 +30,7 @@
       size?: 'small' | 'medium' | 'large';
       noContent?: boolean;
       barWidth?: number;
+      beforeLeave?: (newVal: string | number, oldVal: string | number | null) => boolean | Promise<boolean>;
     }>(),
     {
       size: 'medium',
@@ -54,6 +56,10 @@
 
   function handleChange(value: string | number) {
     emit('change', value);
+  }
+
+  function handleBeforeLeave(name: string | number, oldName: string | number | null) {
+    return props?.beforeLeave ? props?.beforeLeave(name, oldName) : true;
   }
 </script>
 
