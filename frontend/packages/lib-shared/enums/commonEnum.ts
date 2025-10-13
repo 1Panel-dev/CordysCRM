@@ -5,7 +5,9 @@ export enum CompanyTypeEnum {
   INTERNAL = 'INTERNAL', // 国际飞书
   DATA_EASE = 'DE', // DE
   SQLBot = 'SQLBOT', // SQLBot
-  WE_COM_OAUTH2 = 'WE_COM_OAUTH2', // OAUTH2认证
+  WE_COM_OAUTH2 = 'WECOM_OAUTH2', // OAUTH2认证
+  DINGTALK_OAUTH2 = 'DINGTALK_OAUTH2', // 钉钉OAUTH2认证
+  LARK_OAUTH2 = 'LARK_OAUTH2', // 飞书OAUTH2认证
 }
 
 // 操作符号

@@ -24,7 +24,7 @@
 
   import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
 
-  import { getWeComOauthCallback } from '@/api/modules';
+  import { getThirdOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
@@ -54,15 +54,15 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthLogin() {
+  async function handleOauthLogin(type: string, loginType: CompanyTypeEnum) {
     try {
       const code = getQueryVariable('code');
       if (code) {
-        const res = await getWeComOauthCallback(code);
+        const res = await getThirdOauthCallback(code, type);
         const boolean = userStore.qrCodeLogin(res.data.data);
         if (boolean) {
           setLoginExpires();
-          setLoginType(CompanyTypeEnum.WE_COM_OAUTH2);
+          setLoginType(loginType);
 
           goUserHasPermissionPage();
           setLoading(false);
@@ -94,12 +94,17 @@
 
   onBeforeMount(async () => {
     const isWXWork = navigator.userAgent.includes('wxwork');
-    if (!hasToken() && isWXWork) {
-      await handleOauthLogin();
+    const isDingTalk = navigator.userAgent.includes('dingtalk') || navigator.userAgent.includes('aliapp(dingtalk');
+    if (!hasToken()) {
+      if (isWXWork) {
+        await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2);
+      } else if (isDingTalk) {
+        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
+      }
     }
 
     if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
-      await userStore.checkIsLogin(isWXWork);
+      await userStore.checkIsLogin(isWXWork || isDingTalk);
       appStore.setLoginLoading(false);
     }
   });

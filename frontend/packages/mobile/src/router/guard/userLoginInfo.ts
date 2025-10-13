@@ -1,4 +1,4 @@
-import { isWeComBrowser } from '@lib/shared/method';
+import {isDingTalBrowserk, isWeComBrowser} from '@lib/shared/method';
 import { clearToken, hasToken, isLoginExpires } from '@lib/shared/method/auth';
 
 import useUser from '@/hooks/useUser';
@@ -30,7 +30,7 @@ export default function setupUserLoginInfoGuard(router: Router) {
         return;
       }
       // 企业微信进入，未登录则进去loading页面
-      if (isWeComBrowser()) {
+      if (isWeComBrowser() || isDingTalBrowserk()) {
         if (to.name !== LOGIN_LOADING) {
           next({ name: LOGIN_LOADING });
           NProgress.done();

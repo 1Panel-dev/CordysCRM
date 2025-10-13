@@ -591,6 +591,11 @@ export function isWeComBrowser() {
   return ua.includes('wxwork'); // 企业微信 UA 一定包含 wxwork
 }
 
+export function isDingTalBrowserk() {
+    const ua = window.navigator.userAgent.toLowerCase();
+    return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk');
+}
+
 /**
  * 国际单位数字缩写
  * @param amount 金额数字

@@ -249,6 +249,6 @@ export const {
   getConfigSynchronization,
 } = businessApi;
 
-export const { isLogin, signout, getKey, login, getWeComOauthCallback, getWeComCallback } = loginApi;
+export const { isLogin, signout, getKey, login, getThirdOauthCallback, getThirdCallback } = loginApi;
 
 export const { getLicense, addLicense } = licenseApi;

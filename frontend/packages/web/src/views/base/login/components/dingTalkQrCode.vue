@@ -3,30 +3,30 @@
 </template>
 
 <script lang="ts" setup>
-  import { useRouter } from 'vue-router';
   import { useScriptTag } from '@vueuse/core';
   import { useMessage } from 'naive-ui';
 
-  // import { getDingCallback, getDingInfo } from '@/api/modules/user';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
-  // import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
+  import {getThirdCallback, getThirdConfigByType} from "@/api/modules";
+  import useUser from "@/hooks/useUser";
+  import useLoading from "@/hooks/useLoading";
 
   const { t } = useI18n();
 
   const userStore = useUserStore();
-  // const appStore = useAppStore();
-  const router = useRouter();
+  const { goUserHasPermissionPage } = useUser();
+  const { setLoading } = useLoading();
+
   const Message = useMessage();
 
   const { load } = useScriptTag('https://g.alicdn.com/dingding/h5-dingtalk-login/0.21.0/ddlogin.js');
 
   const initActive = async () => {
-    // const data = await getDingInfo();
-    const data = {} as any; // TODO: getDingInfo
+    const data = await getThirdConfigByType('DINGTALK');
+
     await load(true);
     const url = encodeURIComponent(window.location.origin);
     window.DTFrameLogin(
@@ -37,7 +37,7 @@
       },
       {
         redirect_uri: url,
-        client_id: data.appKey ? data.appKey : '',
+        client_id: data.agentId ? data.agentId : '',
         scope: 'openid',
         response_type: 'code',
         state: 'fit2cloud-ding-qr',
@@ -45,22 +45,16 @@
       },
       async (loginResult) => {
         const { authCode } = loginResult;
-        // const dingCallback = getDingCallback(authCode);
-        const dingCallback = new Promise((resolve) => {
-          resolve(authCode);
-        });
-        // TODO: userStore.qrCodeLogin(await dingCallback);
-        setLoginType('DING_TALK');
-        Message.success(t('login.form.login.success'));
-        const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        const redirectHasPermission = redirect && ![NO_RESOURCE_ROUTE_NAME].includes(redirect as string);
-        setLoginExpires();
-        router.push({
-          name: redirectHasPermission ? (redirect as string) : '/', // TODO: redirect
-          query: {
-            ...othersQuery,
-          },
-        });
+        const dingCallback = getThirdCallback(authCode, 'ding-talk');
+        const boolean = await userStore.qrCodeLogin(await dingCallback);
+        if (boolean) {
+          setLoginExpires();
+          setLoginType('DINGTALK');
+          Message.success(t('login.form.login.success'));
+          goUserHasPermissionPage();
+        }
+        setLoading(false);
+        userStore.getAuthentication();
         // 也可以在不跳转页面的情况下，使用code进行授权
       },
       (errorMsg) => {

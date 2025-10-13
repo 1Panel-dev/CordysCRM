@@ -8,7 +8,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { getThirdConfigByType, getWeComCallback } from '@/api/modules';
+  import { getThirdConfigByType, getThirdCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useUserStore from '@/store/modules/user';
@@ -45,7 +45,7 @@
       },
       onCheckWeComLogin: obj.value,
       async onLoginSuccess({ code }: any) {
-        const weComCallback = getWeComCallback(code);
+        const weComCallback = getThirdCallback(code, 'wecom');
         const boolean = userStore.qrCodeLogin(await weComCallback);
         if (boolean) {
           setLoginExpires();

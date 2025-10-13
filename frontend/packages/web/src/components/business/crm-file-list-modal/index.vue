@@ -49,7 +49,7 @@
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { isWeComBrowser } from '@lib/shared/method';
+  import {isDingTalBrowserk, isWeComBrowser} from '@lib/shared/method';
 
   import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -86,7 +86,7 @@
   }
 
   async function handleDownload(file: AttachmentInfo) {
-    if (isWeComBrowser()) {
+    if (isWeComBrowser() || isDingTalBrowserk()) {
       Message.warning(t('crm.fileListModal.wxworkDownloadTip'));
       return;
     }

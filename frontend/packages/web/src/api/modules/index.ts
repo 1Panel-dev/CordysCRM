@@ -446,7 +446,7 @@ export const {
   getUsers,
 } = roleApi;
 
-export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthCallback } = loginApi;
+export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback } = loginApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;
 
