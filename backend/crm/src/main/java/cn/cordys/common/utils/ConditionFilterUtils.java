@@ -38,34 +38,15 @@ public class ConditionFilterUtils {
 
     public static void parseCondition(BaseCondition baseCondition) {
         // 处理视图查询条件
-        String viewId = baseCondition.getViewId();
+        baseCondition.setViewCombineSearch(getViewCondition(baseCondition.getViewId()));
 
-        if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
-            // 查询视图
-            UserViewService userViewService = CommonBeanFactory.getBean(UserViewService.class);
-            String searchMode = userViewService.getSearchMode(viewId);
-            List<FilterCondition> conditions = userViewService.getFilterConditions(viewId);
-            if (baseCondition.getCombineSearch() == null) {
-                baseCondition.setCombineSearch(new CombineSearch());
-            }
-            if (baseCondition.getViewCombineSearch() == null) {
-                baseCondition.setViewCombineSearch(new CombineSearch());
-            }
-            List<FilterCondition> newConditions = baseCondition.getCombineSearch()
-                    .getConditions();
+        // 处理高级搜索条件
+        parseCondition(baseCondition.getCombineSearch());
+        // 处理视图筛选条件
+        parseCondition(baseCondition.getViewCombineSearch());
+    }
 
-            //新增子节点数据
-            List<BaseTreeNode> tree = CommonBeanFactory.getBean(DepartmentService.class).getTree(OrganizationContext.getOrganizationId());
-            buildConditions(conditions, tree);
-
-            baseCondition.getViewCombineSearch().setConditions(newConditions);
-            baseCondition.getViewCombineSearch().setSearchMode(baseCondition.getCombineSearch()
-                    .getSearchMode());
-            baseCondition.getCombineSearch().setConditions(conditions);
-            baseCondition.getCombineSearch().setSearchMode(searchMode);
-        }
-
-        CombineSearch combineSearch = baseCondition.getCombineSearch();
+    private static void parseCondition(CombineSearch combineSearch) {
         if (combineSearch == null) {
             return;
         }
@@ -99,6 +80,25 @@ public class ConditionFilterUtils {
             }
         });
         replaceCurrentUser(validConditions);
+    }
+
+    private static CombineSearch getViewCondition(String viewId) {
+        if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
+            // 查询视图
+            UserViewService userViewService = CommonBeanFactory.getBean(UserViewService.class);
+            String viewSearchMode = userViewService.getSearchMode(viewId);
+            List<FilterCondition> viewConditions = userViewService.getFilterConditions(viewId);
+
+            //新增子节点数据
+            List<BaseTreeNode> tree = CommonBeanFactory.getBean(DepartmentService.class).getTree(OrganizationContext.getOrganizationId());
+            buildConditions(viewConditions, tree);
+
+            CombineSearch viewCondition = new CombineSearch();
+            viewCondition.setSearchMode(viewSearchMode);
+            viewCondition.setConditions(viewConditions);
+            return viewCondition;
+        }
+        return null;
     }
 
 

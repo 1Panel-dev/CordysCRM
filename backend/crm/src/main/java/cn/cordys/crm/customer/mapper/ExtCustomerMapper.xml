@@ -29,7 +29,7 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
-        <include refid="viewFieldConditionJoin">
+        <include refid="fieldConditionJoin">
             <property name="conditions" value="request.viewCombineSearch.conditions"/>
             <property name="tablePrefix" value="viewCombine"/>
         </include>
@@ -185,28 +185,6 @@
     </sql>
 
     <sql id="fieldConditionJoin">
-        <if test="${conditions} != null and ${conditions}.size() > 0">
-            <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name not in
-                {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser', 'departmentId'}">
-                    <if test="condition.multipleValue">
-                        left join customer_field_blob ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="!condition.multipleValue">
-                        left join customer_field ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                </if>
-                <if test="condition.name == 'departmentId'">
-                    left join sys_organization_user ${tablePrefix}_${i}
-                    on ${tablePrefix}_${i}.user_id = c.owner
-                </if>
-            </foreach>
-        </if>
-    </sql>
-
-    <sql id="viewFieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
@@ -389,7 +367,7 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
-        <include refid="viewFieldConditionJoin">
+        <include refid="fieldConditionJoin">
             <property name="conditions" value="request.viewCombineSearch.conditions"/>
             <property name="tablePrefix" value="viewCombine"/>
         </include>
@@ -538,7 +516,7 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
-        <include refid="viewFieldConditionJoin">
+        <include refid="fieldConditionJoin">
             <property name="conditions" value="request.viewCombineSearch.conditions"/>
             <property name="tablePrefix" value="viewCombine"/>
         </include>
