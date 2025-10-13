@@ -167,7 +167,7 @@ public class IntegrationConfigService {
 
         configDTO.setType(type);
         configDTO.setStartEnable(thirdEnableDTO.isStartEnable());
-        configDTO.setOAuth2Enable(thirdEnableDTO.isOAuth2Enable());
+        configDTO.setOauth2Enable(thirdEnableDTO.isOAuth2Enable());
         configDTO.setDeBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
@@ -489,7 +489,7 @@ public class IntegrationConfigService {
             oldConfig.setStartEnable(enable);
         }
         if (detailType.contains("OAUTH2")) {
-            oldConfig.setOAuth2Enable(enable);
+            oldConfig.setOauth2Enable(enable);
         }
     }
 
@@ -607,17 +607,17 @@ public class IntegrationConfigService {
             map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.WECOM_CODE.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.WECOM_OAUTH2.toString(), configDTO.getOAuth2Enable());
+            map.put(UserSource.WECOM_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.DINGTALK_OAUTH2.toString(), configDTO.getOAuth2Enable());
+            map.put(UserSource.DINGTALK_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.LARK_CODE.toString(), configDTO.getStartEnable());
             map.put(ThirdConstants.ThirdDetailType.LARK_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.LARK_OAUTH2.toString(), configDTO.getOAuth2Enable());
+            map.put(UserSource.LARK_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(),
                     configDTO.getDeBoardEnable() != null && configDTO.getDeBoardEnable());

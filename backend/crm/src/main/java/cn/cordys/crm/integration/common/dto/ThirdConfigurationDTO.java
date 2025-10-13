@@ -18,7 +18,7 @@ public class ThirdConfigurationDTO {
     @Schema(description = "回调地址")
     private String redirectUrl;
     @Schema(description = "oAuth2开启")
-    private Boolean oAuth2Enable;
+    private Boolean oauth2Enable;
     @Schema(description = "是否验证通过")
     private Boolean verify;
     @Schema(description = "DE仪表板开启")
