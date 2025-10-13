@@ -1,22 +1,22 @@
 package cn.cordys.crm.integration.dingtalk.service;
 
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.LogUtils;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkDepartment;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkUser;
-import cn.cordys.crm.integration.dingtalk.response.*;
+import cn.cordys.crm.integration.dingtalk.response.DepartmentDetailsResponse;
+import cn.cordys.crm.integration.dingtalk.response.DingTalkOrgDataResponse;
+import cn.cordys.crm.integration.dingtalk.response.SubDeptIdListResponse;
+import cn.cordys.crm.integration.dingtalk.response.UserListResponse;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 
 @Service
@@ -76,30 +76,33 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
+     *
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
         List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken, 1L); // 从根部门(ID=1)开始
-
-        ExecutorService executor = Executors.newFixedThreadPool(Math.min(allDepartmentIds.size(), 10));
-        ConcurrentLinkedQueue<DingTalkDepartment> departments = new ConcurrentLinkedQueue<>();
-        ConcurrentHashMap<Long, List<DingTalkUser>> usersByDept = new ConcurrentHashMap<>();
-
-        List<CompletableFuture<Void>> futures = allDepartmentIds.stream()
-                .map(deptId -> CompletableFuture.runAsync(() -> {
-                    // 获取部门详情
-                    getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
-                    // 获取部门用户
-                    usersByDept.put(deptId, getUsersByDepartment(accessToken, deptId));
-                }, executor))
-                .toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executor.shutdown();
-
         DingTalkOrgDataResponse response = new DingTalkOrgDataResponse();
-        response.setDepartments(new ArrayList<>(departments));
-        response.setUsers(usersByDept);
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(Math.min(allDepartmentIds.size(), 10))) {
+            ConcurrentLinkedQueue<DingTalkDepartment> departments = new ConcurrentLinkedQueue<>();
+            ConcurrentHashMap<Long, List<DingTalkUser>> usersByDept = new ConcurrentHashMap<>();
+
+            List<CompletableFuture<Void>> futures = allDepartmentIds.stream()
+                    .map(deptId -> CompletableFuture.runAsync(() -> {
+                        // 获取部门详情
+                        getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
+                        // 获取部门用户
+                        usersByDept.put(deptId, getUsersByDepartment(accessToken, deptId));
+                    }, executor))
+                    .toList();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            executor.shutdown();
+            response.setDepartments(new ArrayList<>(departments));
+            response.setUsers(usersByDept);
+        } catch (Exception e) {
+            LogUtils.error(e);
+        }
         return response;
     }
 
@@ -109,6 +112,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 部门ID列表
      */
     private List<Long> getAllSubDepartmentIds(String accessToken, Long deptId) {
@@ -135,12 +139,12 @@ public class DingTalkDepartmentService {
     }
 
 
-
     /**
      * 获取单个部门详情
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
@@ -161,12 +165,12 @@ public class DingTalkDepartmentService {
     }
 
 
-
     /**
      * 获取单个部门下的用户列表（处理分页）
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {
