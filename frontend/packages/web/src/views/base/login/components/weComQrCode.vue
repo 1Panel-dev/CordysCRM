@@ -8,7 +8,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { getThirdConfigByType, getThirdCallback } from '@/api/modules';
+  import { getThirdCallback, getThirdConfigByType } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useUserStore from '@/store/modules/user';
