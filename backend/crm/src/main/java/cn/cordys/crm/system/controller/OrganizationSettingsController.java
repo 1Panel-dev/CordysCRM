@@ -7,6 +7,7 @@ import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.service.DataEaseService;
 import cn.cordys.crm.integration.dataease.service.DataEaseSyncService;
+import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.dto.response.EmailDTO;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.OrganizationConfigService;
@@ -77,7 +78,7 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party/sync/resource")
     @Operation(summary = "获取最新的三方同步来源")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public String getLatestSyncResource() {
+    public OrganizationConfig getLatestSyncResource() {
         return integrationConfigService.getLatestSyncResource(OrganizationContext.getOrganizationId());
     }
 

@@ -966,11 +966,7 @@ public class IntegrationConfigService {
         extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
     }
 
-    public String getLatestSyncResource(String organizationId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
-        if (organizationConfig == null) {
-            return null;
-        }
-        return organizationConfig.getSyncResource();
+    public OrganizationConfig getLatestSyncResource(String organizationId) {
+        return extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
 }
