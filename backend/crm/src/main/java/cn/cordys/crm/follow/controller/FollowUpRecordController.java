@@ -68,4 +68,11 @@ public class FollowUpRecordController {
         return followUpRecordService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), List.of(cluePermission, customerPermission));
     }
 
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除跟进记录")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
+    public void delete(@PathVariable String id) {
+        followUpRecordService.delete(id);
+    }
+
 }

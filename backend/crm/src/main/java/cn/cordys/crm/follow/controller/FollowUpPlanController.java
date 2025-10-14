@@ -10,6 +10,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.follow.dto.request.PlanHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
@@ -66,5 +67,19 @@ public class FollowUpPlanController {
         BusinessDataPermission customerPermission = BeanUtils.copyBean(new BusinessDataPermission(), customerDataPermission);
         customerPermission.setSourceTable("customer");
         return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), List.of(cluePermission, customerPermission));
+    }
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除跟进计划")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
+    public void delete(@PathVariable String id) {
+        followUpPlanService.delete(id);
+    }
+
+    @PostMapping("/status/update")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
+    @Operation(summary = "更新跟进计划状态")
+    public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 }
