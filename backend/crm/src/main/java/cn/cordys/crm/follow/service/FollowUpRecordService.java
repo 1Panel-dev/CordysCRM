@@ -8,6 +8,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.BusinessDataPermission;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
@@ -29,6 +30,7 @@ import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
@@ -373,24 +375,49 @@ public class FollowUpRecordService extends BaseFollowUpService {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
         buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list);
+        return PageUtils.setPageInfoWithOption(page, list, optionMap);
+    }
 
+    /**
+     * 跟进记录的汇总列表
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     * @param dataPermissions 数据权限
+     * @return 记录的汇总列表
+     */
+    public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId, List<BusinessDataPermission> dataPermissions) {
+        // 解析当前用户数据权限
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId, dataPermissions);
+        buildListData(recordList, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, recordList);
+        return PageUtils.setPageInfoWithOption(page, recordList, optionMap);
+    }
+
+    /**
+     * 处理选项数据
+     * @param orgId 组织ID
+     * @param recordList 记录列表
+     * @return 选项集合
+     */
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpRecordListResponse> recordList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpRecordListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(recordList, FollowUpRecordListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
-
         // 补充负责人选项
-        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(recordList,
                 FollowUpRecordListResponse::getOwner, FollowUpRecordListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
-
         // 联系人
-        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(list,
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(recordList,
                 FollowUpRecordListResponse::getContactId, FollowUpRecordListResponse::getContactName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
-        return PageUtils.setPageInfoWithOption(page, list, optionMap);
+        return optionMap;
     }
 
 

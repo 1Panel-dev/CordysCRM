@@ -8,6 +8,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.BusinessDataPermission;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
@@ -24,10 +25,7 @@ import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
+import cn.cordys.crm.follow.dto.request.*;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
@@ -170,6 +168,22 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData, null);
+        List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    /**
+     * 跟进计划汇总查询
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     * @param dataPermissions 数据权限集合
+     * @return 跟进计划汇总列表
+     */
+    public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId, List<BusinessDataPermission> dataPermissions) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, dataPermissions);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
