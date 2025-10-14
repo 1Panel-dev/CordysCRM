@@ -257,7 +257,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
       typeof value === 'string'
     ) {
-      return [value];
+      return value ? [value] : [];
     }
     return value;
   }
@@ -616,7 +616,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
-          params[item.businessKey] = form[item.id];
+          params[item.businessKey] = form[item.id] ?? '';
         } else {
           params.moduleFields.push({
             fieldId: item.id,

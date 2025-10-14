@@ -352,7 +352,7 @@
             ...result,
             fieldValue: !currentForm.value.businessKey
               ? getNormalFieldValue(currentForm.value, result.fieldValue)
-              : result.fieldValue,
+              : result.fieldValue ?? '',
           });
           Message.success(t('common.updateSuccess'));
           handleCancel();
