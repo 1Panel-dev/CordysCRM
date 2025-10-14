@@ -83,22 +83,18 @@ public class DingTalkDepartmentService {
         List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken, 1L); // 从根部门(ID=1)开始
         DingTalkOrgDataResponse response = new DingTalkOrgDataResponse();
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(Math.min(allDepartmentIds.size(), 10))) {
-            ConcurrentLinkedQueue<DingTalkDepartment> departments = new ConcurrentLinkedQueue<>();
-            ConcurrentHashMap<Long, List<DingTalkUser>> usersByDept = new ConcurrentHashMap<>();
+        try {
+            List<DingTalkDepartment> departments = new ArrayList<>();
+            Map<Long, List<DingTalkUser>> usersByDept = new HashMap<>();
 
-            List<CompletableFuture<Void>> futures = allDepartmentIds.stream()
-                    .map(deptId -> CompletableFuture.runAsync(() -> {
-                        // 获取部门详情
-                        getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
-                        // 获取部门用户
-                        usersByDept.put(deptId, getUsersByDepartment(accessToken, deptId));
-                    }, executor))
-                    .toList();
+            for (Long deptId : allDepartmentIds) {
+                // 获取部门详情
+                getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
+                // 获取部门用户
+                usersByDept.put(deptId, getUsersByDepartment(accessToken, deptId));
+            }
 
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            executor.shutdown();
-            response.setDepartments(new ArrayList<>(departments));
+            response.setDepartments(departments);
             response.setUsers(usersByDept);
         } catch (Exception e) {
             LogUtils.error(e);
@@ -132,6 +128,7 @@ public class DingTalkDepartmentService {
                 }
             }
         } catch (IOException | InterruptedException e) {
+            LogUtils.error("获取子部门ID失败",e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -158,6 +155,7 @@ public class DingTalkDepartmentService {
                 return Optional.of(response.getResult());
             }
         } catch (IOException | InterruptedException e) {
+            LogUtils.error("获取部门详情失败",e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -200,6 +198,7 @@ public class DingTalkDepartmentService {
                     hasMore = false;
                 }
             } catch (IOException | InterruptedException e) {
+                LogUtils.error("获取部门用户失败",e);
                 Thread.currentThread().interrupt();
                 hasMore = false;
             }

@@ -777,7 +777,7 @@
   async function handleSyncFromThird() {
     try {
       // TODO 联调 xinxinwu 先不能同步 防止登录不上
-      // await syncOrg(currentIntegration.value.type);
+      await syncOrg(currentIntegration.value.type);
       Message.success(t('org.syncSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
