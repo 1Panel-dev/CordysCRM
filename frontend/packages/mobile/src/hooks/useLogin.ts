@@ -105,10 +105,11 @@ export default function useLogin() {
       if (!isWeComBrowser() && !isDingTalBrowserk()) {
         return router.replace({ name: 'login' });
       }
-      const code = getQueryVariable('code');
       if (isWeComBrowser()) {
+          const code = getQueryVariable('code');
           await weComAuthLoginAndReplace(code || '');
       } else if (isDingTalBrowserk()) {
+          const code = getQueryVariable('authCode');
           await dingAuthLoginAndReplace(code || '');
       }
     } catch (error) {
