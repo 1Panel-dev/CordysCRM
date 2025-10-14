@@ -7,14 +7,12 @@ import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.FieldDTO;
 import cn.cordys.crm.integration.sqlbot.dto.TableDTO;
 import cn.cordys.crm.integration.sqlbot.dto.TableHandleParam;
-import cn.cordys.crm.opportunity.constants.StageType;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +31,10 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
         List<FieldDTO> filterFields = filterSystemFields(table.getFields(),
                 Set.of("organization_id", "last_stage", "status", "failure_reason"));
+
+        filterFields.add(new FieldDTO("varchar(255)", "customer_name", "客户名称"));
+        filterFields.add(new FieldDTO("varchar(255)", "contact_name", "联系人名称"));
+
         table.setFields(filterFields);
 
         super.handleTable(table, tableHandleParam, formConfig);
@@ -42,27 +44,11 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
     protected String getSelectSystemFileSql(FieldDTO sqlBotField) {
         String fieldName = sqlBotField.getName();
         if (Strings.CS.equals(fieldName, "stage")) {
-            return getSystemOptionFileSql(Arrays.stream(StageType.values()),
-                    StageType::name,
-                    (stageType) ->
-                            switch (stageType) {
-                                case CREATE -> "新建";
-                                case CLEAR_REQUIREMENTS -> "需求明确";
-                                case SCHEME_VALIDATION -> "方案验证";
-                                case PROJECT_PROPOSAL_REPORT -> "项目汇报";
-                                case BUSINESS_PROCUREMENT -> "商务采购";
-                                case SUCCESS -> "成功";
-                                case FAIL -> "失败";
-                            },
-                    fieldName);
-        } else if (Strings.CS.equals(fieldName, "customer_id")) {
-            sqlBotField.setName("customer_name");
-            sqlBotField.setComment("客户名称");
-            return getCustomerFieldSql();
-        } else if (Strings.CS.equals(fieldName, "contact_id")) {
-            sqlBotField.setName("contact_name");
-            sqlBotField.setComment("联系人名称");
-            return getContactFieldSql();
+            return getStageFieldSql();
+        } else if (Strings.CS.equals(fieldName, "customer_name")) {
+            return getCustomerNameFieldSql();
+        } else if (Strings.CS.equals(fieldName, "contact_name")) {
+            return getContactNameFieldSql();
         } else if (Strings.CS.equals(fieldName, "products")) {
             return getProductsFieldSql();
         } else {
@@ -70,11 +56,15 @@ public class OpportunityPermissionHandler extends DataScopeTablePermissionHandle
         }
     }
 
-    protected String getCustomerFieldSql() {
+    protected String getStageFieldSql() {
+        return "(select osc.name from opportunity_stage_config osc where c.stage = osc.id limit 1) as stage";
+    }
+
+    protected String getCustomerNameFieldSql() {
         return "(select customer.name from customer where c.customer_id = customer.id limit 1) as customer_name";
     }
 
-    protected String getContactFieldSql() {
+    protected String getContactNameFieldSql() {
         return "(select customer_contact.name from customer_contact where c.contact_id = customer_contact.id limit 1) as contact_name";
     }
 }

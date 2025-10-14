@@ -32,6 +32,9 @@ public class ContactPermissionHandler extends DataScopeTablePermissionHandler {
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());
         List<FieldDTO> filterFields = filterSystemFields(table.getFields(),
                 Set.of("organization_id", "disable_reason"));
+
+        filterFields.add(new FieldDTO("varchar(255)", "customer_name", "客户名称"));
+
         table.setFields(filterFields);
 
         super.handleTable(table, tableHandleParam, formConfig);
@@ -46,8 +49,14 @@ public class ContactPermissionHandler extends DataScopeTablePermissionHandler {
                     OptionDTO::getId,
                     OptionDTO::getName,
                     fieldName);
+        } else if (Strings.CS.equals(fieldName, "customer_name")) {
+            return getCustomerNameFieldSql();
         } else {
             return getDefaultFieldSql(sqlBotField);
         }
+    }
+
+    protected String getCustomerNameFieldSql() {
+        return "(select customer.name from customer where c.customer_id = customer.id limit 1) as customer_name";
     }
 }
