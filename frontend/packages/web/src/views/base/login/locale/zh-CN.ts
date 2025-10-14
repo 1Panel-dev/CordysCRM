@@ -21,5 +21,7 @@ export default {
   'login.form.loading': '登录中',
   'login.form.WECOM': '企业微信',
   'login.form.DINGTALK': '钉钉',
+  'login.form.DINGTALKScanLogin': '钉钉登录',
   'login.form.LARK': '飞书',
+  'login.form.LARKScanLogin': '飞书登录',
 };

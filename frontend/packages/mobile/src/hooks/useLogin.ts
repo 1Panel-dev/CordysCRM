@@ -2,7 +2,7 @@ import { useRouter } from 'vue-router';
 import { AxiosResponse } from 'axios';
 
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-import {getQueryVariable, getUrlParameterWidthRegExp, isDingTalBrowserk, isWeComBrowser} from '@lib/shared/method';
+import { getQueryVariable, getUrlParameterWidthRegExp, isDingTalkBrowser, isWeComBrowser } from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 import { ConfigSynchronization } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
@@ -41,76 +41,75 @@ export default function useLogin() {
     }
   }
 
-    async function weComAuthLoginAndReplace(code: string) {
-      if (code) {
-          await thirdAuthLogin(code, 'wecom', CompanyTypeEnum.WE_COM_OAUTH2);
-          const currentUrl = window.location.href;
-          const url = new URL(currentUrl);
-          getUrlParameterWidthRegExp('code');
-          getUrlParameterWidthRegExp('state');
-          url.searchParams.delete('code');
-          url.searchParams.delete('state');
-          const newUrl = url.toString();
-          // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-          window.history.replaceState({}, document.title, newUrl);
-      } else {
-          const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-              CompanyTypeEnum.WE_COM_OAUTH2
-          );
-          if (res) {
-              const { data } = res.data;
-              const redirectUrl = `${window.location.origin}/mobile`;
-              const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
-                  data.corpId
-              }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
-                  data.agentId
-              }#wechat_redirect`;
-              window.location.replace(url);
-          }
+  async function weComAuthLoginAndReplace(code: string) {
+    if (code) {
+      await thirdAuthLogin(code, 'wecom', CompanyTypeEnum.WE_COM_OAUTH2);
+      const currentUrl = window.location.href;
+      const url = new URL(currentUrl);
+      getUrlParameterWidthRegExp('code');
+      getUrlParameterWidthRegExp('state');
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      const newUrl = url.toString();
+      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
+      window.history.replaceState({}, document.title, newUrl);
+    } else {
+      const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
+        CompanyTypeEnum.WE_COM_OAUTH2
+      );
+      if (res) {
+        const { data } = res.data;
+        const redirectUrl = `${window.location.origin}/mobile`;
+        const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
+          data.corpId
+        }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
+          data.agentId
+        }#wechat_redirect`;
+        window.location.replace(url);
       }
+    }
   }
 
-    async function dingAuthLoginAndReplace(code: string) {
-        if (code) {
-            await thirdAuthLogin(code, 'ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
-            const currentUrl = window.location.href;
-            const url = new URL(currentUrl);
-            getUrlParameterWidthRegExp('code');
-            getUrlParameterWidthRegExp('state');
-            url.searchParams.delete('code');
-            url.searchParams.delete('state');
-            const newUrl = url.toString();
-            // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-            window.history.replaceState({}, document.title, newUrl);
-        } else {
-            const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-                CompanyTypeEnum.DINGTALK_OAUTH2
-            );
-            if (res) {
-                const { data } = res.data;
-                const redirectUrl = `${window.location.origin}/mobile`;
-                const url = `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&client_id=${
-                    data.agentId
-                }&scope=openid corpid&state=dddd&prompt=consent&corpid=${
-                    data.corpId
-                }`;
-                window.location.replace(url);
-            }
-        }
+  async function dingAuthLoginAndReplace(code: string) {
+    if (code) {
+      await thirdAuthLogin(code, 'ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
+      const currentUrl = window.location.href;
+      const url = new URL(currentUrl);
+      getUrlParameterWidthRegExp('code');
+      getUrlParameterWidthRegExp('state');
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      const newUrl = url.toString();
+      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
+      window.history.replaceState({}, document.title, newUrl);
+    } else {
+      const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
+        CompanyTypeEnum.DINGTALK_OAUTH2
+      );
+      if (res) {
+        const { data } = res.data;
+        const redirectUrl = `${window.location.origin}/mobile`;
+        const url = `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
+          redirectUrl
+        )}&response_type=code&client_id=${data.agentId}&scope=openid corpid&state=dddd&prompt=consent&corpid=${
+          data.corpId
+        }`;
+        window.location.replace(url);
+      }
     }
-
+  }
 
   async function oAuthLogin() {
     try {
-      if (!isWeComBrowser() && !isDingTalBrowserk()) {
+      if (!isWeComBrowser() && !isDingTalkBrowser()) {
         return router.replace({ name: 'login' });
       }
       if (isWeComBrowser()) {
-          const code = getQueryVariable('code');
-          await weComAuthLoginAndReplace(code || '');
-      } else if (isDingTalBrowserk()) {
-          const code = getQueryVariable('authCode');
-          await dingAuthLoginAndReplace(code || '');
+        const code = getQueryVariable('code');
+        await weComAuthLoginAndReplace(code || '');
+      } else if (isDingTalkBrowser()) {
+        const code = getQueryVariable('authCode');
+        await dingAuthLoginAndReplace(code || '');
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -124,8 +123,6 @@ export default function useLogin() {
       }
     }
   }
-
-
 
   return {
     oAuthLogin,

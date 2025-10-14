@@ -80,18 +80,14 @@
         </div>
       </n-form>
       <div v-if="showQrCodeTab">
-        <tab-qr-code :tab-name="activeName ? activeName : orgOptions[0].value"></tab-qr-code>
+        <tab-qr-code />
       </div>
       <template v-if="hasMoreLoginWay">
         <n-divider orientation="center" dashed class="!m-0 !mb-2">
           <span class="text-[12px] font-normal text-[var(--text-n4)]">{{ t('login.form.modeLoginMethods') }}</span>
         </n-divider>
         <div class="mt-4 flex items-center justify-center">
-          <div
-            v-if="isShowQRCode && !showQrCodeTab && orgOptions.length > 0"
-            class="loginType"
-            @click="switchLoginType('QR_CODE')"
-          >
+          <div v-if="isShowQRCode && !showQrCodeTab" class="loginType" @click="switchLoginType('QR_CODE')">
             <CrmIcon type="iconicon_scan" class="text-[var(--primary-8)]" :size="20" />
           </div>
           <div v-if="userInfo.authenticate !== 'LDAP' && isShowLDAP" class="loginType" @click="switchLoginType('LDAP')">
@@ -133,7 +129,7 @@
 
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
   // import { getPlatformParamUrl } from '@/api/modules/user';
-  import { getThirdTypeList } from '@/api/modules';
+  import { getThirdPartyConfig } from '@/api/modules';
   import { defaultLoginLogo } from '@/config/business';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
@@ -141,8 +137,6 @@
   import useLicenseStore from '@/store/modules/setting/license';
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
-
-  import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
 
   const { goUserHasPermissionPage } = useUser();
   const { t } = useI18n();
@@ -153,7 +147,6 @@
   // const { openModal } = useModal();
 
   const formRef = ref<FormInst | null>(null);
-  const orgOptions = ref<Option[]>([]);
 
   const preheat = ref(true);
 
@@ -249,27 +242,19 @@
 
   const isShowQRCode = ref(true);
   const hasMoreLoginWay = computed(
-    () =>
-      isShowLDAP.value ||
-      isShowOIDC.value ||
-      isShowOAUTH.value ||
-      isShowCAS.value ||
-      (isShowQRCode.value && orgOptions.value.length > 0)
+    () => isShowLDAP.value || isShowOIDC.value || isShowOAUTH.value || isShowCAS.value || isShowQRCode.value
   );
+
+  const activePlatformType = computed<string>(() => appStore.activePlatformResource.syncResource);
 
   async function initPlatformInfo() {
     try {
-      const res = await getThirdTypeList();
+      const res = await getThirdPartyConfig(activePlatformType.value);
       if (getLoginType() && getLoginType() !== 'LOCAL' && getLoginType() !== 'LDAP') {
         showQrCodeTab.value = true;
-        activeName.value = getLoginType() || 'WE_COM';
+        activeName.value = getLoginType() || activePlatformType.value;
       }
-      orgOptions.value = res
-        .filter((e) => e.name === 'true')
-        .map((e) => ({
-          label: e.name,
-          value: e.id,
-        }));
+      isShowQRCode.value = res.startEnable ?? false;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

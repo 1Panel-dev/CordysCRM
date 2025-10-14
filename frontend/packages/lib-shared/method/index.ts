@@ -591,7 +591,7 @@ export function isWeComBrowser() {
   return ua.includes('wxwork'); // 企业微信 UA 一定包含 wxwork
 }
 
-export function isDingTalBrowserk() {
+export function isDingTalkBrowser() {
     const ua = window.navigator.userAgent.toLowerCase();
     return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
 }

@@ -1,124 +1,58 @@
 <template>
-  <n-radio-group
-    v-if="activeName != '' && orgOptions.length > 1"
-    v-model="activeName"
-    type="button"
-    class="tabPlatform"
-    @change="handleClick"
-  >
-    <n-radio-button
-      v-for="item of orgOptions"
-      :key="item.value"
-      :value="item.value"
-      :v-show="item.label"
-      class="radioOneButton"
-    >
-      {{ t('login.form.' + item.value) }}
-    </n-radio-button>
-    <!--    <a-tab-pane key="lark" :title="t('project.messageManagement.LARK')"></a-tab-pane>
-    <a-tab-pane key="larksuite" :title="t('project.messageManagement.LARK_SUITE')"></a-tab-pane>-->
-  </n-radio-group>
-  <div v-if="activeName === 'WECOM'" class="login-qrcode">
+  <div v-if="activeQrCodeName === 'WECOM'" class="login-qrcode">
     <div class="qrcode">
-      <wecom-qr v-if="activeName === 'WECOM'" />
+      <wecom-qr v-if="activeQrCodeName === 'WECOM'" />
     </div>
   </div>
-  <div v-if="activeName === 'DINGTALK'" class="login-qrcode">
+  <div v-if="activeQrCodeName === 'DINGTALK'" class="login-qrcode">
     <div class="qrcode">
       <div class="title">
-        <CrmIcon type="icon-logo_dingtalk" :size="24"></CrmIcon>
-        钉钉登录
+        <CrmIcon class="mr-[8px]" type="iconlogo_dingtalk" :size="24" />
+        {{ t('login.form.DINGTALKScanLogin') }}
       </div>
-      <ding-talk-qr v-if="activeName === 'DINGTALK'" />
+      <ding-talk-qr v-if="activeQrCodeName === 'DINGTALK'" />
     </div>
   </div>
-  <div v-if="activeName === 'LARK'" class="login-qrcode">
+  <div v-if="activeQrCodeName === 'LARK'" class="login-qrcode">
     <div class="qrcode">
       <div class="title">
         <CrmIcon type="icon-logo_lark" :size="24"></CrmIcon>
-        飞书登录
+        {{ t('login.form.LARKScanLogin') }}
       </div>
-      <lark-qr-code v-if="activeName === 'LARK'" />
+      <lark-qr-code v-if="activeQrCodeName === 'LARK'" />
     </div>
   </div>
-  <div v-if="activeName === 'LARK_SUITE'" class="login-qrcode">
+  <!-- TODO 先不上 -->
+  <!-- <div v-if="activeQrCodeName === 'LARK_SUITE'" class="login-qrcode">
     <div class="qrcode">
       <div class="title">
         <CrmIcon type="icon-logo_lark" :size="24"></CrmIcon>
         国际飞书登录
       </div>
-      <lark-suite-qr-code v-if="activeName === 'LARK_SUITE'" />
+      <lark-suite-qr-code v-if="activeQrCodeName === 'LARK_SUITE'" />
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import { NRadioButton, NRadioGroup } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import dingTalkQr from './dingTalkQrCode.vue';
   import LarkQrCode from './larkQrCode.vue';
-  import LarkSuiteQrCode from './larkSuiteQrCode.vue';
+  // import LarkSuiteQrCode from './larkSuiteQrCode.vue';
   import WecomQr from './weComQrCode.vue';
 
-  import { getThirdTypeList } from '@/api/modules';
-
-  // import { getPlatformParamUrl } from '@/api/modules/user';
+  import { useAppStore } from '@/store';
 
   const { t } = useI18n();
 
-  const activeName = ref('');
+  const appStore = useAppStore();
 
-  interface qrOption {
-    value: string;
-    label: string;
-  }
-
-  const orgOptions = ref<qrOption[]>([]);
-  const props = defineProps<{
-    tabName: string | number | boolean | Record<string, unknown> | undefined;
-  }>();
-  function handleClick(val: string | number | boolean) {
-    if (typeof val === 'string') {
-      activeName.value = val;
-    }
-  }
-  const initActive = () => {
-    for (let i = 0; i < orgOptions.value.length; i++) {
-      const key = orgOptions.value[i].value;
-      if (props.tabName === key) {
-        nextTick(() => {
-          handleClick(key);
-        });
-        break;
-      }
-    }
-  };
-  async function initPlatformInfo() {
-    try {
-      const res = await getThirdTypeList();
-      orgOptions.value = res.map((e) => ({
-        label: e.name,
-        value: e.id,
-      }));
-      initActive();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-  onMounted(() => {
-    initPlatformInfo();
-  });
+  const activeQrCodeName = computed(() => appStore.activePlatformResource.syncResource);
 </script>
 
 <style lang="less" scoped>
-  .tabPlatform {
-    min-width: 480px;
-    height: 40px;
-  }
   .login-qrcode {
     display: flex;
     align-items: center;
@@ -136,28 +70,14 @@
     }
     .title {
       z-index: 100000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
       margin-bottom: -24px;
       font-size: 18px;
-      font-weight: 500;
-      font-style: normal;
-      line-height: 26px;
+      color: var(--text-n1);
+      @apply flex w-full items-center justify-center overflow-hidden font-medium;
       .ed-icon {
         margin-right: 8px;
         font-size: 24px;
       }
     }
-  }
-  .radioOneButton {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    font-size: 16px;
-    flex-direction: row;
-    flex-wrap: nowrap;
   }
 </style>

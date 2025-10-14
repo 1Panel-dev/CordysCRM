@@ -21,5 +21,7 @@ export default {
   'login.form.loading': 'Logging in',
   'login.form.WECOM': 'WECOM',
   'login.form.DINGTALK': 'DINGTALK',
+  'login.form.DINGTALKScanLogin': 'Dingtalk scan code login',
   'login.form.LARK': 'LARK',
+  'login.form.LARKScanLogin': 'Lark scan code login',
 };
