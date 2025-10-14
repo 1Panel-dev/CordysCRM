@@ -95,12 +95,46 @@ public class OAuthUserService {
         );
     }
 
+    /**
+     * 根据unionid获取钉钉用户id
+     *
+     * @param accessToken access_token
+     * @param unionid     unionid
+     * @return userId
+     */
+    public String getUserIdByUnionId(String accessToken, String unionid) {
+        String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_USERID_BY_UNIONID, accessToken);
+        Map<String, String> body = new HashMap<>();
+        body.put("unionid", unionid);
+        String response = post(url, body);
+        Map<String, Object> result = JSON.parseObject(response, new TypeReference<>() {});
+        if (result.get("errcode") != null && (Integer) result.get("errcode") == 0) {
+            Map<String, Object> user = (Map<String, Object>) result.get("result");
+            return (String) user.get("userid");
+        } else {
+            throw new GenericException("Error getting user id from unionid: " + result.get("errmsg"));
+        }
+    }
+
     // -------------------- private helpers --------------------
 
     private <T> T getWithWrap(String url, Class<T> clazz) {
         try {
             String response = HttpRequestUtil.sendGetRequest(url, null);
             return JSON.parseObject(response, clazz);
+        } catch (Exception e) {
+            throw new GenericException(Translator.get("auth.get.user.error"));
+        }
+    }
+
+    private String post(String url, Object body) {
+        try {
+            return qrCodeClient.postExchange(
+                    url, null, null,
+                    body,
+                    MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_JSON
+            );
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
         }

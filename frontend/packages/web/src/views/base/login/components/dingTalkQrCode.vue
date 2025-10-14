@@ -39,7 +39,7 @@
       {
         redirect_uri: url,
         client_id: data.agentId ? data.agentId : '',
-        scope: 'openid',
+        scope: 'openid corpid',
         response_type: 'code',
         state: 'fit2cloud-ding-qr',
         prompt: 'consent',

@@ -8,6 +8,13 @@ public interface DingTalkApiPaths {
 
     String DING_USER_TOKEN_URL = "https://api.dingtalk.com/v1.0/oauth2/userAccessToken";
 
+    /**
+     * 根据unionid获取userid
+     * POST
+     * https://oapi.dingtalk.com/topapi/user/getbyunionid?access_token=ACCESS_TOKEN
+     */
+    String DING_USERID_BY_UNIONID = "https://oapi.dingtalk.com/topapi/user/getbyunionid?access_token={0}";
+
 
     /**
      * 调用本接口，获取企业部门下的所有直属子部门列表。调用本接口获取根部门的子部门ID列表，获取的结果是[部门1Id,部门2Id]，部门1和部门2下的子部门是获取不到的。

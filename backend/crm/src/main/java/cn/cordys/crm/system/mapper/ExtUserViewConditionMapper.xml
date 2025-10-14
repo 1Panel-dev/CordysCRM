@@ -21,7 +21,7 @@
         DELETE FROM sys_user_view_condition WHERE sys_user_view_id = #{viewId}
     </delete>
     <delete id="deleteByUserIds">
-        delete from sys_user_view_condition where user_view_id in (
+        delete from sys_user_view_condition where sys_user_view_id in (
         select id from sys_user_view where organization_id = #{orgId}
         and user_id in
         <foreach collection="userIds" item="item" open="(" close=")" separator=",">

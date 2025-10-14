@@ -193,7 +193,9 @@ public class DingTalkDepartmentService {
                 if (response != null && response.getErrcode() == 0 && response.getResult() != null) {
                     users.addAll(response.getResult().getList());
                     hasMore = response.getResult().getHasMore();
-                    cursor = response.getResult().getNextCursor();
+                    if (hasMore && response.getResult().getNextCursor()!= null) {
+                        cursor = response.getResult().getNextCursor();
+                    }
                 } else {
                     hasMore = false;
                 }
