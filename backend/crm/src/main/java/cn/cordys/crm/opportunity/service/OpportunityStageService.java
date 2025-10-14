@@ -1,0 +1,202 @@
+package cn.cordys.crm.opportunity.service;
+
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.Translator;
+import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
+import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
+import cn.cordys.crm.opportunity.dto.request.StageMoveRequest;
+import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
+import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
+import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
+import cn.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class OpportunityStageService {
+
+    public static final Long DEFAULT_POS = 1L;
+    @Resource
+    private BaseMapper<OpportunityStageConfig> opportunityStageConfigMapper;
+    @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
+    @Resource
+    private ExtOpportunityMapper extOpportunityMapper;
+
+    /**
+     * 商机阶段配置列表
+     *
+     * @param orgId
+     * @return
+     */
+    public StageConfigListResponse getStageConfigList(String orgId) {
+        StageConfigListResponse stageConfigListResponse = new StageConfigListResponse();
+        List<OpportunityStageConfig> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        buildList(stageConfigList, stageConfigListResponse);
+        return stageConfigListResponse;
+    }
+
+    private void buildList(List<OpportunityStageConfig> stageConfigList, StageConfigListResponse response) {
+        if (CollectionUtils.isNotEmpty(stageConfigList)) {
+            response.setStageConfigList(stageConfigList);
+            response.setEndRollBack(stageConfigList.stream().findFirst().get().getEndRollBack());
+            response.setAfootRollBack(stageConfigList.stream().findFirst().get().getAfootRollBack());
+            stageConfigList.stream().forEach(stageConfig -> {
+                if (extOpportunityMapper.countByStage(stageConfig.getId()) > 0) {
+                    response.setStageHasData(true);
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 添加商机配置
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
+    public void addStageConfig(OpportunityStageAddRequest request, String userId, String orgId) {
+        checkConfigCount(orgId);
+        Long pos = DEFAULT_POS;
+        Boolean afootRollBack = true;
+        Boolean endRollBack = false;
+        //源节点
+        OpportunityStageConfig target = opportunityStageConfigMapper.selectByPrimaryKey(request.getTargetId());
+        if (target != null) {
+            //target正常不会为空
+            if (request.getDropPosition() == -1) {
+                pos = target.getPos();
+                extOpportunityStageConfigMapper.moveUpStageConfig(pos, orgId, DEFAULT_POS);
+            } else {
+                extOpportunityStageConfigMapper.moveDownStageConfig(pos, orgId, DEFAULT_POS);
+                pos = pos + 1;
+            }
+            afootRollBack = target.getAfootRollBack();
+            endRollBack = target.getEndRollBack();
+        }
+
+        OpportunityStageConfig stageConfig = new OpportunityStageConfig();
+        stageConfig.setId(IDGenerator.nextStr());
+        stageConfig.setName(request.getName());
+        stageConfig.setType(request.getType());
+        stageConfig.setRate(request.getRate());
+        stageConfig.setAfootRollBack(afootRollBack);
+        stageConfig.setEndRollBack(endRollBack);
+        stageConfig.setPos(pos);
+        stageConfig.setOrganizationId(orgId);
+        stageConfig.setCreateUser(userId);
+        stageConfig.setUpdateUser(userId);
+        stageConfig.setCreateTime(System.currentTimeMillis());
+        stageConfig.setUpdateTime(System.currentTimeMillis());
+        opportunityStageConfigMapper.insert(stageConfig);
+
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .modifiedValue(stageConfig)
+                .resourceId(stageConfig.getId())
+                .resourceName(Translator.get("opportunity_stage_setting").concat(":").concat(request.getName()))
+                .build());
+
+    }
+
+
+    /**
+     * 商机阶段配置校验
+     *
+     * @param orgId
+     */
+    private void checkConfigCount(String orgId) {
+        if (extOpportunityStageConfigMapper.countStageConfig(orgId) >= 10) {
+            throw new GenericException(Translator.get("opportunity_stage_config_list"));
+        }
+    }
+
+
+    /**
+     * 删除
+     *
+     * @param id
+     */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
+        deletePreCheck(id);
+        opportunityStageConfigMapper.deleteByPrimaryKey(id);
+        // 设置操作对象
+        OperationLogContext.setResourceName(Translator.get("opportunity_stage_setting"));
+    }
+
+    private void deletePreCheck(String id) {
+        if (extOpportunityMapper.countByStage(id) > 0) {
+            throw new GenericException(Translator.get("opportunity_stage_delete"));
+        }
+    }
+
+
+    /**
+     * 更新商机阶段回退设置
+     *
+     * @param request
+     * @param orgId
+     */
+    public void updateRollBack(StageRollBackRequest request, String orgId) {
+        extOpportunityStageConfigMapper.updateRollBack(request, orgId);
+    }
+
+
+    /**
+     * 更新配置
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
+    public void update(StageUpdateRequest request, String userId) {
+        OpportunityStageConfig oldStageConfig = opportunityStageConfigMapper.selectByPrimaryKey(request.getId());
+        if (oldStageConfig == null) {
+            throw new GenericException(Translator.get("opportunity_stage_not_exist"));
+        }
+        extOpportunityStageConfigMapper.updateStageConfig(request, userId);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(request.getId())
+                        .resourceName(Translator.get("opportunity_stage_setting"))
+                        .originalValue(oldStageConfig)
+                        .modifiedValue(opportunityStageConfigMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
+    }
+
+
+    /**
+     * 排序
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public void sort(StageMoveRequest request, String userId, String orgId) {
+        OpportunityStageConfig stageConfig = opportunityStageConfigMapper.selectByPrimaryKey(request.getDragId());
+        if (stageConfig == null) {
+            throw new GenericException(Translator.get("opportunity_stage_not_exist"));
+        }
+        extOpportunityStageConfigMapper.moveUpStageConfig(request.getPos(), orgId, DEFAULT_POS);
+
+        stageConfig.setPos(request.getPos());
+        opportunityStageConfigMapper.update(stageConfig);
+    }
+}

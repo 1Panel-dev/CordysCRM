@@ -27,10 +27,12 @@
             o.contact_id,
             o.expected_end_time,
             o.actual_end_time,
-            o.failure_reason
+            o.failure_reason,
+            osc.name AS stageName
         FROM
             opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -863,4 +865,9 @@
     <update id="moveUpStageOpportunity">
         update opportunity set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
     </update>
+
+    <select id="countByStage" resultType="java.lang.Integer">
+        select count(id) from opportunity
+        where stage = #{stageId}
+    </select>
 </mapper>

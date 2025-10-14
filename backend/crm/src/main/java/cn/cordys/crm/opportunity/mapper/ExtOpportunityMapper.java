@@ -80,4 +80,6 @@ public interface ExtOpportunityMapper {
     void moveDownStageOpportunity(@Param("end")Long end, @Param("stage")String stage,@Param("pos")Long pos);
 
     void moveUpStageOpportunity(@Param("end")Long end, @Param("stage")String stage,@Param("pos")Long pos);
+
+    int countByStage(@Param("stageId") String stageId);
 }

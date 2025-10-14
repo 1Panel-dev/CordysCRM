@@ -55,6 +55,9 @@ public class OpportunityListResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
+    @Schema(description = "商机阶段")
+    private String stageName;
+
     @Schema(description = "创建人")
     private String createUser;
 
