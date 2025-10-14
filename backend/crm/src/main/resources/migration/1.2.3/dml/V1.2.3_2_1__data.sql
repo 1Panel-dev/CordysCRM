@@ -13,4 +13,9 @@ VALUES
     (UUID_SHORT(), '成功', 'END', '100', b'1', b'0', 6, '100001', 1760175899000, 1760175899000, 'admin', 'admin'),
     (UUID_SHORT(), '失败', 'END', '0', b'1', b'0', 7, '100001', 1760175899000, 1760175899000, 'admin', 'admin');
 
+-- 加入记录/计划顶部导航栏
+update sys_navigation set pos = pos + 1 where organization_id = '100001' and pos >= 2;
+insert into sys_navigation value (UUID_SHORT(), '100001', 'event', true, 2,
+                                  'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
+
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
