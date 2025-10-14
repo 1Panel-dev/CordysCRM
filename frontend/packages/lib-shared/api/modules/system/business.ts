@@ -101,8 +101,15 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<T>(
       { url: `${GetThirdConfigByTypeUrl}/${type}` },
       {
-        noErrorTip: [CompanyTypeEnum.SQLBot, CompanyTypeEnum.WE_COM_OAUTH2].includes(type as CompanyTypeEnum),
-        isReturnNativeResponse: type === CompanyTypeEnum.WE_COM_OAUTH2,
+        noErrorTip: [
+          CompanyTypeEnum.SQLBot,
+          CompanyTypeEnum.WE_COM_OAUTH2,
+          CompanyTypeEnum.DINGTALK,
+          CompanyTypeEnum.DINGTALK_OAUTH2,
+        ].includes(type as CompanyTypeEnum),
+        isReturnNativeResponse: [CompanyTypeEnum.WE_COM_OAUTH2, CompanyTypeEnum.DINGTALK_OAUTH2].includes(
+          type as CompanyTypeEnum
+        ),
       }
     );
   }

@@ -5,6 +5,7 @@
 <script lang="ts" setup>
   import { useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
@@ -31,7 +32,7 @@
   });
 
   const init = async () => {
-    const data = await getThirdConfigByType('WECOM');
+    const data = await getThirdConfigByType(CompanyTypeEnum.WECOM);
     wwLogin.value = ww.createWWLoginPanel({
       el: '#wecom-qr',
       params: {

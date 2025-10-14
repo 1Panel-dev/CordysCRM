@@ -129,7 +129,7 @@
 
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
   // import { getPlatformParamUrl } from '@/api/modules/user';
-  import { getThirdPartyConfig } from '@/api/modules';
+  import { getThirdConfigByType } from '@/api/modules';
   import { defaultLoginLogo } from '@/config/business';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
@@ -249,13 +249,14 @@
 
   async function initPlatformInfo() {
     try {
-      const res = await getThirdPartyConfig(activePlatformType.value);
+      const res = await getThirdConfigByType(activePlatformType.value);
       if (getLoginType() && getLoginType() !== 'LOCAL' && getLoginType() !== 'LDAP') {
         showQrCodeTab.value = true;
         activeName.value = getLoginType() || activePlatformType.value;
       }
       isShowQRCode.value = res.startEnable ?? false;
     } catch (error) {
+      isShowQRCode.value = false;
       // eslint-disable-next-line no-console
       console.log(error);
     }
