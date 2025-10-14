@@ -593,7 +593,7 @@ export function isWeComBrowser() {
 
 export function isDingTalBrowserk() {
     const ua = window.navigator.userAgent.toLowerCase();
-    return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('code') !== '';
+    return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
 }
 
 /**

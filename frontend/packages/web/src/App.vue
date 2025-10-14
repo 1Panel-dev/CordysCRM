@@ -54,9 +54,9 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthLogin(type: string, loginType: CompanyTypeEnum) {
+  async function handleOauthLogin(type: string, loginType: CompanyTypeEnum, isDingBrowser: boolean) {
     try {
-      const code = getQueryVariable('code');
+      const code = isDingBrowser ? getQueryVariable('code') : getQueryVariable('authCode');
       if (code) {
         const res = await getThirdOauthCallback(code, type);
         const boolean = userStore.qrCodeLogin(res.data.data);
@@ -94,12 +94,12 @@
 
   onBeforeMount(async () => {
     const isWXWork = navigator.userAgent.includes('wxwork');
-    const isDingTalk = navigator.userAgent.includes('dingtalk') || navigator.userAgent.includes('aliapp(dingtalk') || getQueryVariable('code') !== '';
+    const isDingTalk = navigator.userAgent.includes('dingtalk') || navigator.userAgent.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
     if (!hasToken()) {
       if (isWXWork) {
-        await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2);
+        await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);
       } else if (isDingTalk) {
-        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
+        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, isDingTalk);
       }
     }
 
