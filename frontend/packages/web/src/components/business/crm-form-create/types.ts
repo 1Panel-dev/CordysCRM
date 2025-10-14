@@ -89,7 +89,7 @@ export interface FormCreateField {
   uploadSizeLimit?: number | null;
   uploadSizeLimitEnable?: boolean;
   // 地址属性
-  locationType?: 'PCD' | 'PC' | 'detail'; // PC: 省市, PCD: 省市区, detail: 省市区+详细地址
+  locationType?: 'PCD' | 'PC' | 'detail' | 'C' | 'P'; // C:国家, P:国家-省,PC: 省市, PCD: 省市区, detail: 省市区+详细地址
   // 选择器属性
   multiple?: boolean;
   options?: FormCreateFieldOption[];

@@ -18,7 +18,7 @@
 <script setup lang="ts">
   import { CascaderOption, NCascader } from 'naive-ui';
 
-  import { CHINA_PC, CHINA_PCD, COUNTRIES_TREE } from './config';
+  import { getCountriesByLevel } from './config';
 
   export type DataItem<T = Record<string, any>> = CascaderOption & T;
 
@@ -26,7 +26,7 @@
     defineProps<{
       placeholder?: string;
       checkStrategy?: 'all' | 'child' | 'parent';
-      range?: 'PCD' | 'PC' | 'detail';
+      range?: 'PCD' | 'PC' | 'detail' | 'C' | 'P';
     }>(),
     {
       range: 'PCD',
@@ -48,10 +48,7 @@
   });
 
   const workingCityOptions = computed<DataItem[]>(() => {
-    if (props.range === 'PC') {
-      return [CHINA_PC, ...COUNTRIES_TREE] as DataItem[];
-    }
-    return [CHINA_PCD, ...COUNTRIES_TREE] as DataItem[];
+    return getCountriesByLevel(props.range) as DataItem[];
   });
 
   function handleChange(

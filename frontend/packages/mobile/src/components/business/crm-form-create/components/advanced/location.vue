@@ -41,7 +41,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath } from '@lib/shared/method';
 
-  import { CHINA_PC, CHINA_PCD, COUNTRIES_TREE } from '@cordys/web/src/components/business/crm-city-select/config';
+  import { getCountriesByLevel } from '@cordys/web/src/components/business/crm-city-select/config';
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
   import type { CascaderOption } from 'vant';
 
@@ -67,7 +67,7 @@
   const fieldLabel = computed(() => getCityPath(city.value));
 
   const options = computed<CascaderOption[]>(() => {
-    return props.fieldConfig.locationType === 'PC' ? [CHINA_PC, ...COUNTRIES_TREE] : [CHINA_PCD, ...COUNTRIES_TREE];
+    return getCountriesByLevel(props.fieldConfig.locationType);
   });
 
   function handleCityAndDetailChange() {

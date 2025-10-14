@@ -510,6 +510,12 @@ export const CHINA_PCD = {
   children: [...regionData, ...GAT],
 };
 
+export const CHINA_P = {
+  label: '中国',
+  value: 'CHN',
+  children: [...regionData, ...GAT].map(({ label, value }) => ({ label, value })),
+};
+
 export const COUNTRIES_TREE: CascaderOption[] = [
   {
     label: '阿鲁巴',
@@ -9106,3 +9112,24 @@ export const COUNTRIES_TREE: CascaderOption[] = [
     value: 'ZIM',
   },
 ];
+
+export function getCountriesByLevel(level?: 'C' | 'P' | 'PC' | 'PCD' | 'detail') {
+  switch (level) {
+    case 'C':
+      // 仅国家层级：去掉所有 children
+      return [CHINA_P, ...COUNTRIES_TREE].map(({ label, value }) => ({ label, value }));
+
+    case 'P':
+      // 国家 - 省：中国用 CHINA_P，其他国家保留自身结构
+      return [CHINA_P, ...COUNTRIES_TREE];
+
+    case 'PC':
+      // 国家 - 省 - 市
+      return [CHINA_PC, ...COUNTRIES_TREE];
+
+    case 'PCD':
+    default:
+      // 国家 - 省 - 市 - 区
+      return [CHINA_PCD, ...COUNTRIES_TREE];
+  }
+}
