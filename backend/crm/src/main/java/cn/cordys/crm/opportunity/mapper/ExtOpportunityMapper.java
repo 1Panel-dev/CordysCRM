@@ -33,7 +33,7 @@ public interface ExtOpportunityMapper {
 
     List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
 
-    void batchTransfer(@Param("request") OpportunityTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime);
+    void batchTransfer(@Param("request") OpportunityTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime, @Param("stage") String stage);
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
 
@@ -75,11 +75,11 @@ public interface ExtOpportunityMapper {
 
     Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
-    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime, @Param("nextPos") long nextPos);
+    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime, @Param("nextPos") long nextPos, @Param("stage") String stage);
 
-    void moveDownStageOpportunity(@Param("end")Long end, @Param("stage")String stage,@Param("pos")Long pos);
+    void moveDownStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
-    void moveUpStageOpportunity(@Param("end")Long end, @Param("stage")String stage,@Param("pos")Long pos);
+    void moveUpStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
     int countByStage(@Param("stageId") String stageId);
 }

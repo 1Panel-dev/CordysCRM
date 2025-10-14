@@ -53,4 +53,8 @@
             update_time = unix_timestamp() * 1000
         where id = #{request.id}
     </update>
+
+    <select id="getAllStageConfigList" resultType="cn.cordys.crm.opportunity.domain.OpportunityStageConfig">
+        select id, name, organization_id, type, rate from opportunity_stage_config
+    </select>
 </mapper>

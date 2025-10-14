@@ -22,4 +22,6 @@ public interface ExtOpportunityStageConfigMapper {
     void updateRollBack(@Param("request") StageRollBackRequest request, @Param("orgId") String orgId);
 
     void updateStageConfig(@Param("request") StageUpdateRequest request, @Param("userId") String userId);
+
+    List<OpportunityStageConfig> getAllStageConfigList();
 }

@@ -14,11 +14,13 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
-import cn.cordys.crm.opportunity.constants.StageType;
+import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
+import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.opportunity.service.OpportunityFieldService;
 import cn.cordys.crm.opportunity.service.OpportunityRuleService;
 import cn.cordys.crm.search.response.advanced.AdvancedOpportunityResponse;
@@ -44,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +71,8 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
     private ModuleFormService moduleFormService;
     @Resource
     private ExtProductMapper extProductMapper;
+    @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
     /**
      * 全局搜索商机
@@ -75,7 +80,6 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
      * @param request
      * @param orgId
      * @param userId
-     *
      * @return
      */
     @Override
@@ -139,6 +143,11 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
         Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
+        List<OpportunityStageConfig> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        Map<String, OpportunityStageConfig> endConfigMaps = stageConfigList.stream().filter(config ->
+                Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
+        ).collect(Collectors.toMap(OpportunityStageConfig::getId, Function.identity()));
+
         // 失败原因
         DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
         List<Dict> dictList = dictConf.getDictList();
@@ -149,7 +158,7 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
             boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            opportunityListResponse.setReservedDays(Strings.CS.equalsAny(opportunityListResponse.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name()) ?
+            opportunityListResponse.setReservedDays(endConfigMaps.containsKey(opportunityListResponse.getStage()) ?
                     null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
             if (!hasPermission) {
                 opportunityListResponse.setModuleFields(new ArrayList<>());

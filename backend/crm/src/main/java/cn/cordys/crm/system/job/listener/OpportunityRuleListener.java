@@ -1,19 +1,24 @@
 package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.common.util.LogUtils;
+import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.constants.StageType;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
+import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.opportunity.service.OpportunityRuleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 商机规则监听器
@@ -34,6 +39,8 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
 
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
     /**
      * 处理应用事件
@@ -88,13 +95,26 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
             return;
         }
 
+        List<OpportunityStageConfig> stageConfigList = extOpportunityStageConfigMapper.getAllStageConfigList();
+
+        Map<String, String> orgFailStageConfigMap = stageConfigList.stream()
+                .filter(config ->
+                        Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0"))
+                .collect(Collectors.toMap(
+                        OpportunityStageConfig::getOrganizationId,
+                        OpportunityStageConfig::getId));
+
+        OpportunityStageConfig failConfig = stageConfigList.stream().filter(config ->
+                Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0")
+        ).findFirst().get();
+
         // 根据规则处理每个商机
         opportunities.forEach(opportunity -> ownersBestMatchRuleMap.forEach((ownerIds, rule) -> {
             if (ownerIds.contains(opportunity.getOwner())) {
                 boolean closed = opportunityRuleService.checkClosed(opportunity, rule);
                 if (closed) {
                     opportunity.setLastStage(opportunity.getStage());
-                    opportunity.setStage(StageType.FAIL.name());
+                    opportunity.setStage(orgFailStageConfigMap.get(opportunity.getOrganizationId()));
                     opportunity.setFailureReason("system");
                     opportunityMapper.updateById(opportunity);
                 }

@@ -42,7 +42,7 @@ UPDATE opportunity o
     UNION ALL
     SELECT 'PROJECT_PROPOSAL_REPORT', c.id
     FROM opportunity_stage_config c
-    WHERE c.name = '项目汇报'
+    WHERE c.name = '立项汇报'
     UNION ALL
     SELECT 'BUSINESS_PROCUREMENT', c.id
     FROM opportunity_stage_config c
@@ -75,7 +75,7 @@ UPDATE opportunity o
     UNION ALL
     SELECT 'PROJECT_PROPOSAL_REPORT', c.id
     FROM opportunity_stage_config c
-    WHERE c.name = '项目汇报'
+    WHERE c.name = '立项汇报'
     UNION ALL
     SELECT 'BUSINESS_PROCUREMENT', c.id
     FROM opportunity_stage_config c
