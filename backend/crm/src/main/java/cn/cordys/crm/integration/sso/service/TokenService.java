@@ -89,8 +89,8 @@ public class TokenService {
     public String getDingTalkToken(String appKey, String appSecret) {
 
         DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
-        dingTalkTokenParamDTO.setClientId(appKey);
-        dingTalkTokenParamDTO.setClientSecret(appSecret);
+        dingTalkTokenParamDTO.setAppKey(appKey);
+        dingTalkTokenParamDTO.setAppSecret(appSecret);
         DingTalkToken dingTalkToken = new DingTalkToken();
         try {
             String response = qrCodeClient.postExchange(
