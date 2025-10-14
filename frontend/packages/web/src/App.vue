@@ -94,7 +94,10 @@
 
   onBeforeMount(async () => {
     const isWXWork = navigator.userAgent.includes('wxwork');
-    const isDingTalk = navigator.userAgent.includes('dingtalk') || navigator.userAgent.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
+    const isDingTalk =
+      navigator.userAgent.includes('dingtalk') ||
+      navigator.userAgent.includes('aliapp(dingtalk') ||
+      getQueryVariable('authCode') !== '';
     if (!hasToken()) {
       if (isWXWork) {
         await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);

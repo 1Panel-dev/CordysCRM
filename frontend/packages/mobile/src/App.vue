@@ -9,6 +9,7 @@
   import { showLoadingToast } from 'vant';
 
   import useLocale from '@lib/shared/locale/useLocale';
+  import { getQueryVariable } from '@lib/shared/method';
   import { hasToken } from '@lib/shared/method/auth';
   import { LocaleType } from '@lib/shared/types/global';
 
@@ -30,7 +31,12 @@
     const loginStatus = await userStore.isLogin(true);
     const isWXWork = navigator.userAgent.includes('wxwork');
 
-    if (!loginStatus && !hasToken() && isWXWork) {
+    const isDingTalk =
+      navigator.userAgent.includes('dingtalk') ||
+      navigator.userAgent.includes('aliapp(dingtalk') ||
+      getQueryVariable('authCode') !== '';
+
+    if (!loginStatus && !hasToken() && (isWXWork || isDingTalk)) {
       await oAuthLogin();
       return;
     }
