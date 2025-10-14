@@ -6,6 +6,7 @@
   import { useScriptTag } from '@vueuse/core';
   import { useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
@@ -25,7 +26,7 @@
   const { load } = useScriptTag('https://g.alicdn.com/dingding/h5-dingtalk-login/0.21.0/ddlogin.js');
 
   const initActive = async () => {
-    const data = await getThirdConfigByType('DINGTALK');
+    const data = await getThirdConfigByType(CompanyTypeEnum.DINGTALK);
 
     await load(true);
     const url = encodeURIComponent(window.location.origin);
@@ -42,6 +43,7 @@
         response_type: 'code',
         state: 'fit2cloud-ding-qr',
         prompt: 'consent',
+        corpId: data.corpId ? data.corpId : '',
       },
       async (loginResult) => {
         const { authCode } = loginResult;
