@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 0">
+  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 64">
     <n-data-table
       :single-line="false"
       :columns="columns"

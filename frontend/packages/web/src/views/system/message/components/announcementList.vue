@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-bottom-padding :special-height="licenseStore.expiredDuring ? 128 : 0">
+  <CrmCard hide-footer no-content-bottom-padding :special-height="licenseStore.expiredDuring ? 128 : 64">
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
