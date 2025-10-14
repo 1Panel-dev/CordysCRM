@@ -17,7 +17,6 @@ import java.util.List;
 public class CustomerContactAddRequest {
 
     @Size(max = 32)
-    @NotBlank
     @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 

@@ -7,6 +7,8 @@ alter table sys_message_task
 alter table sys_message_task
     add lark_enable bit default b'0' null comment '飞书启用' after ding_talk_enable;
 
+-- customer_id 字段允许为空
+ALTER TABLE customer_contact MODIFY COLUMN customer_id varchar(32) NULL COMMENT '客户id';
 
 CREATE TABLE opportunity_stage_config
 (
