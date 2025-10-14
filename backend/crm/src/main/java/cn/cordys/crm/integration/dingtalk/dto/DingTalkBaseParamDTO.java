@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class DingTalkBaseParamDTO {
     @Schema(description = "应用key", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String appKey;
+    private String clientId;
     @Schema(description = "应用密钥", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String appSecret;
+    private String clientSecret;
 }
