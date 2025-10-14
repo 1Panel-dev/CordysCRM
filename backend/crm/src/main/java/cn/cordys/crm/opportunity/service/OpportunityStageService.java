@@ -14,6 +14,7 @@ import cn.cordys.crm.opportunity.dto.request.StageMoveRequest;
 import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
 import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
+import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -44,19 +45,19 @@ public class OpportunityStageService {
      */
     public StageConfigListResponse getStageConfigList(String orgId) {
         StageConfigListResponse stageConfigListResponse = new StageConfigListResponse();
-        List<OpportunityStageConfig> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
         buildList(stageConfigList, stageConfigListResponse);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<OpportunityStageConfig> stageConfigList, StageConfigListResponse response) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigListResponse response) {
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             response.setStageConfigList(stageConfigList);
             response.setEndRollBack(stageConfigList.stream().findFirst().get().getEndRollBack());
             response.setAfootRollBack(stageConfigList.stream().findFirst().get().getAfootRollBack());
             stageConfigList.stream().forEach(stageConfig -> {
                 if (extOpportunityMapper.countByStage(stageConfig.getId()) > 0) {
-                    response.setStageHasData(true);
+                    stageConfig.setStageHasData(true);
                 }
             });
         }
@@ -79,9 +80,9 @@ public class OpportunityStageService {
         //源节点
         OpportunityStageConfig target = opportunityStageConfigMapper.selectByPrimaryKey(request.getTargetId());
         if (target != null) {
+            pos = target.getPos();
             //target正常不会为空
             if (request.getDropPosition() == -1) {
-                pos = target.getPos();
                 extOpportunityStageConfigMapper.moveUpStageConfig(pos, orgId, DEFAULT_POS);
             } else {
                 extOpportunityStageConfigMapper.moveDownStageConfig(pos, orgId, DEFAULT_POS);
@@ -194,9 +195,13 @@ public class OpportunityStageService {
         if (stageConfig == null) {
             throw new GenericException(Translator.get("opportunity_stage_not_exist"));
         }
-        extOpportunityStageConfigMapper.moveUpStageConfig(request.getPos(), orgId, DEFAULT_POS);
+        if (request.getStart() < request.getEnd()) {
+            extOpportunityStageConfigMapper.moveUp(request.getStart(), request.getEnd(), orgId, DEFAULT_POS);
+        } else {
+            extOpportunityStageConfigMapper.moveDown(request.getStart(), request.getEnd(), orgId, DEFAULT_POS);
+        }
 
-        stageConfig.setPos(request.getPos());
+        stageConfig.setPos(request.getEnd());
         opportunityStageConfigMapper.update(stageConfig);
     }
 }

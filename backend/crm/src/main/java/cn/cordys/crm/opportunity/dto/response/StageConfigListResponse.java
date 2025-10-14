@@ -10,7 +10,7 @@ import java.util.List;
 public class StageConfigListResponse {
 
     @Schema(description = "商机阶段配置列表")
-    List<OpportunityStageConfig> stageConfigList;
+    List<StageConfigResponse> stageConfigList;
 
     @Schema(description = "进行中回退设置")
     private Boolean afootRollBack = true;
@@ -18,6 +18,5 @@ public class StageConfigListResponse {
     @Schema(description = "完结回退设置")
     private Boolean endRollBack = false;
 
-    @Schema(description = "当前阶段是否存在数据")
-    private Boolean stageHasData = false;
+
 }

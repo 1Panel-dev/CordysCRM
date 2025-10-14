@@ -3,7 +3,7 @@
 
 <mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper">
 
-    <select id="getStageConfigList" resultType="cn.cordys.crm.opportunity.domain.OpportunityStageConfig">
+    <select id="getStageConfigList" resultType="cn.cordys.crm.opportunity.dto.response.StageConfigResponse">
         select id, name, type, rate, afoot_roll_back, end_roll_back, pos
         from opportunity_stage_config
         where organization_id = #{orgId}
@@ -57,4 +57,13 @@
     <select id="getAllStageConfigList" resultType="cn.cordys.crm.opportunity.domain.OpportunityStageConfig">
         select id, name, organization_id, type, rate from opportunity_stage_config
     </select>
+
+
+    <update id="moveUp">
+        update opportunity_stage_config set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end}
+    </update>
+
+    <update id="moveDown">
+        update opportunity_stage_config set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
+    </update>
 </mapper>
