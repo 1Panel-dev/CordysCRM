@@ -345,6 +345,11 @@ public class IntegrationConfigService {
             } else {
                 // 存在的类型，需要更新
                 OrganizationConfigDetail detail = existDetailTypeMap.get(type);
+                //如果更改的企业id和之前不一致，则如果之前的同步状态未true，则改为false
+                if (BooleanUtils.isTrue(organizationConfig.isSync()) && organizationConfig.getSyncResource() != null && Strings.CI.equals(organizationConfig.getSyncResource(),configDTO.getType())
+                        && !Strings.CI.equals(oldConfig.getCorpId(), configDTO.getCorpId())) {
+                   extOrganizationConfigMapper.updateSyncFlag(organizationConfig.getOrganizationId(), organizationConfig.getSyncResource(), organizationConfig.getType(), false);
+                }
                 updateExistingDetail(configDTO, userId, token, oldConfig, detail, typeEnableMap.get(type));
             }
         }
@@ -937,21 +942,18 @@ public class IntegrationConfigService {
         if (organizationConfig == null) {
             return;
         }
-        if (type.equals(organizationConfig.getSyncResource())) {
+        String oldLog = organizationConfig.getSyncResource();
+        if (type.equals(oldLog)) {
             return;
         }
-        String oldLog = organizationConfig.getSyncResource();
-        //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
-        String lastSyncType = getLastSyncType(organizationConfig.getId());
-        if (lastSyncType != null) {
-            // 关闭其他平台按钮
-            List<String> detailTypes = getDetailTypes(lastSyncType);
-            detailTypes.forEach(detailType -> {
-                extOrganizationConfigDetailMapper.updateStatus(
-                        false, detailType, organizationConfig.getId()
-                );
-            });
-        }
+        //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，则关闭其他平台按钮
+        // 关闭其他平台按钮
+        List<String> detailTypes = getDetailTypes(oldLog);
+        detailTypes.forEach(detailType -> {
+            extOrganizationConfigDetailMapper.updateStatus(
+                    false, detailType, organizationConfig.getId()
+            );
+        });
         extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .resourceName(Translator.get("third.setting"))
