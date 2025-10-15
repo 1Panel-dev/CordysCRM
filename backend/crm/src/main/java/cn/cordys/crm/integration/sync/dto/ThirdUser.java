@@ -3,8 +3,6 @@ package cn.cordys.crm.integration.sync.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-
 @Builder
 @Data
 public class ThirdUser {

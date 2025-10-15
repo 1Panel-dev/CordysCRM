@@ -2,7 +2,6 @@ package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.opportunity.constants.OpportunityStageType;
-import cn.cordys.crm.opportunity.constants.StageType;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;

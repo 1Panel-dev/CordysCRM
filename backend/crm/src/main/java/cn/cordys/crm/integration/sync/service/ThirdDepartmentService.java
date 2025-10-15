@@ -8,13 +8,13 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.utils.DataHandleUtils;
 import cn.cordys.crm.integration.dingtalk.service.DingTalkDepartmentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
+import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
-import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
-import cn.cordys.crm.integration.common.utils.DataHandleUtils;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
@@ -30,7 +30,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = Exception.class)

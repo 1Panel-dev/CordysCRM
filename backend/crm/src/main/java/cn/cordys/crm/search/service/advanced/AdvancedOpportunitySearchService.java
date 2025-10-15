@@ -16,7 +16,6 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
-import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;

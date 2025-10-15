@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
 
 @Service
 public class DingTalkDepartmentService {
@@ -128,7 +127,7 @@ public class DingTalkDepartmentService {
                 }
             }
         } catch (IOException | InterruptedException e) {
-            LogUtils.error("获取子部门ID失败",e);
+            LogUtils.error("获取子部门ID失败", e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -155,7 +154,7 @@ public class DingTalkDepartmentService {
                 return Optional.of(response.getResult());
             }
         } catch (IOException | InterruptedException e) {
-            LogUtils.error("获取部门详情失败",e);
+            LogUtils.error("获取部门详情失败", e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -193,14 +192,14 @@ public class DingTalkDepartmentService {
                 if (response != null && response.getErrcode() == 0 && response.getResult() != null) {
                     users.addAll(response.getResult().getList());
                     hasMore = response.getResult().getHasMore();
-                    if (hasMore && response.getResult().getNextCursor()!= null) {
+                    if (hasMore && response.getResult().getNextCursor() != null) {
                         cursor = response.getResult().getNextCursor();
                     }
                 } else {
                     hasMore = false;
                 }
             } catch (IOException | InterruptedException e) {
-                LogUtils.error("获取部门用户失败",e);
+                LogUtils.error("获取部门用户失败", e);
                 Thread.currentThread().interrupt();
                 hasMore = false;
             }

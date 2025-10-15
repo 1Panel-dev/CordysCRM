@@ -66,10 +66,9 @@ public class DataEaseService {
         OrganizationConfigDetail configDetail = configDetails.getFirst();
 
         // 解析配置
-        ThirdConfigurationDTO thirdConfig = JSON.parseObject(
+        return JSON.parseObject(
                 new String(configDetail.getContent()), ThirdConfigurationDTO.class
         );
-        return thirdConfig;
     }
 
     /**
