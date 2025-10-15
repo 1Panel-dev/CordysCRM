@@ -44,7 +44,7 @@ public class WeComDepartmentService {
             thirdDept.setName(dept.getName());
             thirdDept.setParentId(dept.getParentId());
             thirdDept.setOrder(dept.getOrder());
-            thirdDept.setIsRoot(dept.getId() == 0);
+            thirdDept.setIsRoot(dept.getId() == 1);
             return thirdDept;
         }).toList();
     }
