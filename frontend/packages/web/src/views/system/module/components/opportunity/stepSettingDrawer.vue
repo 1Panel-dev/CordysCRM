@@ -9,6 +9,7 @@
       draggable
       @save-row="handleSave"
       @drag="dragEnd"
+      @cancel-row="handleCancelRow"
     >
       <template #extra="{ element }">
         <CrmMoreAction
@@ -183,7 +184,7 @@
   }
 
   async function handleMoreSelect(action: ActionsItem, element: Record<string, any>) {
-    const index = form.value.list.findIndex((item: any) => item._key === element._key);
+    const index = form.value.list.findIndex((item: any) => item.id === element.id);
     const id = getGenerateId();
     if (action.key === 'before') {
       batchFormRef.value?.formValidate(() => {
@@ -205,33 +206,6 @@
     }
   }
 
-  async function handleSave(element: Record<string, any>, done: () => void, index: number) {
-    try {
-      const params = {
-        id: element?.id,
-        name: element.name,
-        rate: element.rate,
-      };
-      if (element.id) {
-        await updateOpportunityStage(params);
-        done();
-      } else {
-        const id = await addOpportunityStage({
-          ...params,
-          type: element.type,
-          dropPosition: form.value.list[index - 1] ? 1 : -1,
-          targetId: form.value.list[index - 1]?.id || form.value.list[index + 1]?.id,
-        });
-        element.id = id;
-        done();
-      }
-      Message.success(t('common.operationSuccess'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   async function dragEnd(event: any) {
     if (form.value.list.length === 1) return;
     try {
@@ -247,6 +221,10 @@
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  function handleCancelRow(index: number) {
+    form.value.list.splice(index, 1);
   }
 
   async function handleSwitchChange() {
@@ -276,6 +254,33 @@
           draggable: item.type !== 'END',
         })),
       };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleSave(element: Record<string, any>, done: () => void, index: number) {
+    try {
+      const params = {
+        id: element?.id,
+        name: element.name,
+        rate: element.rate,
+      };
+      if (element.id) {
+        await updateOpportunityStage(params);
+        done();
+      } else {
+        await addOpportunityStage({
+          ...params,
+          type: element.type,
+          dropPosition: form.value.list[index - 1] ? 1 : -1,
+          targetId: form.value.list[index - 1]?.id || form.value.list[index + 1]?.id,
+        });
+        done();
+      }
+      init();
+      Message.success(t('common.operationSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

@@ -19,7 +19,6 @@
             ghost-class="ghost"
             drag-class="drag-item-class"
             :disabled="disabledDraggable"
-            :force-fallback="true"
             :animation="150"
             handle=".handle"
             @move="handleMove"
@@ -261,6 +260,7 @@
     (e: 'deleteRow', index: number, id: string, done: () => void): void;
     (e: 'saveRow', element: Record<string, any>, done: () => void, index: number): void;
     (e: 'drag', event: any): void;
+    (e: 'cancelRow', index: number): void;
   }>();
 
   const formRef = ref<FormInst | null>(null);
@@ -473,6 +473,7 @@
       delete rowBackups.value[index];
     } else {
       form.value.list.splice(index, 1);
+      emit('cancelRow', index);
     }
   }
 
