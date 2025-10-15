@@ -55,7 +55,7 @@ public class DingTalkDepartmentService {
                 .isLeaderInDept(dingTalkUser.getLeader())
                 .avatar(dingTalkUser.getAvatar())
                 .position(dingTalkUser.getTitle())
-                .gender(0)
+                .gender(1)
                 .build();
     }
 
