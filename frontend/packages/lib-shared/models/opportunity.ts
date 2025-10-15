@@ -84,12 +84,6 @@ export interface UpdateOpportunityStageRollbackParams {
   endRollBack: boolean;
 }
 
-export interface SortOpportunityStageParams {
-  end: number;
-  start: number;
-  dragId: string;
-}
-
 export interface AddOpportunityStageParams {
   name: string;
   type: 'AFOOT' | 'END';

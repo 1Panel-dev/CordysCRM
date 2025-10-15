@@ -206,23 +206,6 @@
     }
   }
 
-  async function dragEnd(event: any) {
-    if (form.value.list.length === 1) return;
-    try {
-      const { newIndex, oldIndex, data } = event;
-      if (newIndex === oldIndex) return;
-      await sortOpportunityStage({
-        dragId: data.id,
-        end: newIndex + 1,
-        start: data.pos,
-      });
-      Message.success(t('common.operationSuccess'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   function handleCancelRow(index: number) {
     form.value.list.splice(index, 1);
   }
@@ -254,6 +237,20 @@
           draggable: item.type !== 'END',
         })),
       };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function dragEnd(event: any) {
+    if (form.value.list.length === 1) return;
+    try {
+      const { newIndex, oldIndex } = event;
+      if (newIndex === oldIndex) return;
+      await sortOpportunityStage(form.value.list.map((e: StageConfigItem) => e.id));
+      init();
+      Message.success(t('common.operationSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

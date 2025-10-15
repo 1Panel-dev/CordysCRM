@@ -78,7 +78,6 @@ import type {
   OpportunityPageQueryParams,
   OpportunityStageConfig,
   SaveOpportunityParams,
-  SortOpportunityStageParams,
   UpdateOpportunityParams,
   UpdateOpportunityStageParams,
   UpdateOpportunityStageRollbackParams,
@@ -234,7 +233,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 商机阶段排序
-  function sortOpportunityStage(data: SortOpportunityStageParams) {
+  function sortOpportunityStage(data: string[]) {
     return CDR.post({ url: SortOpportunityStageUrl, data });
   }
 
