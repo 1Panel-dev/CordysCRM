@@ -376,7 +376,7 @@ public class SSOService {
     public SessionUser exchangeDingTalkOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.DINGTALK_OAUTH2.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigurationDTO dingTalkConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
 
