@@ -372,7 +372,6 @@
               sqlBotBoardEnable: config?.sqlBotBoardEnable ?? false,
               sqlBotChatEnable: config?.sqlBotChatEnable ?? false,
               startEnable: config?.startEnable ?? false,
-              oauth2Enable: config?.oauth2Enable ?? false,
               type: item.type,
               ...config,
             },
@@ -435,7 +434,6 @@
           item.response.verify = false;
           item.response.deBoardEnable = true;
           item.response.startEnable = false;
-          item.response.oauth2Enable = false;
         })
         .finally(() => {
           loading.value = false;
@@ -461,7 +459,6 @@
         .catch(() => {
           item.response.verify = false;
           item.response.deBoardEnable = true;
-          item.response.oauth2Enable = false;
           item.response.startEnable = false;
         });
     } catch (error) {

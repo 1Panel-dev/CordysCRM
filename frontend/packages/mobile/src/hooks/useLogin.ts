@@ -75,10 +75,13 @@ export default function useLogin() {
       await thirdAuthLogin(code, 'ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
       const currentUrl = window.location.href;
       const url = new URL(currentUrl);
-      getUrlParameterWidthRegExp('code');
-      getUrlParameterWidthRegExp('state');
-      url.searchParams.delete('code');
-      url.searchParams.delete('state');
+      const authParams = ['code', 'authCode', 'state'];
+      authParams.forEach((param) => {
+        getUrlParameterWidthRegExp(param);
+      });
+      authParams.forEach((param) => {
+        url.searchParams.delete(param);
+      });
       const newUrl = url.toString();
       // 或者在不刷新页面的情况下更新URL（比如使用 History API）
       window.history.replaceState({}, document.title, newUrl);
@@ -104,12 +107,13 @@ export default function useLogin() {
       if (!isWeComBrowser() && !isDingTalkBrowser()) {
         return router.replace({ name: 'login' });
       }
+
+      const codeKey = isDingTalkBrowser() ? 'authCode' : 'code';
+      const code = getQueryVariable(codeKey) ?? '';
       if (isWeComBrowser()) {
-        const code = getQueryVariable('code');
-        await weComAuthLoginAndReplace(code || '');
+        await weComAuthLoginAndReplace(code);
       } else if (isDingTalkBrowser()) {
-        const code = getQueryVariable('authCode');
-        await dingAuthLoginAndReplace(code || '');
+        await dingAuthLoginAndReplace(code);
       }
     } catch (error) {
       // eslint-disable-next-line no-console

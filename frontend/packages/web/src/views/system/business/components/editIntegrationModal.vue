@@ -94,34 +94,6 @@
           }}
         </div>
       </n-form-item>
-
-      <template v-if="platformType.includes(form?.type)">
-        <n-form-item path="oauth2Enable" :label="t('system.business.authenticationSettings.oAuth2')">
-          <n-switch v-model:value="form.oauth2Enable" size="small" :rubber-band="false" />
-        </n-form-item>
-        <n-form-item
-          v-if="form.oauth2Enable"
-          :rule="[
-            {
-              required: true,
-              message: t('common.notNull', { value: t('system.business.authenticationSettings.callbackUrl') }),
-            },
-          ]"
-          :label="t('system.business.authenticationSettings.callbackUrl')"
-          path="redirectUrl"
-        >
-          <n-input
-            v-model:value="form.redirectUrl"
-            allow-clear
-            :maxlength="255"
-            :placeholder="
-              t('system.business.authenticationSettings.commonUrlPlaceholder', {
-                url: 'http://<cordys-endpoint>/sso/callback or http://<cordys-endpoint>/sso/callback/authld',
-              })
-            "
-          />
-        </n-form-item>
-      </template>
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">

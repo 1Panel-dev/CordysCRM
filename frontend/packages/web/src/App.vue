@@ -56,7 +56,9 @@
 
   async function handleOauthLogin(type: string, loginType: CompanyTypeEnum, isDingBrowser: boolean) {
     try {
-      const code = isDingBrowser ? getQueryVariable('code') : getQueryVariable('authCode');
+      const codeKey = isDingBrowser ? 'authCode' : 'code';
+      const authParams = isDingBrowser ? ['code', 'authCode', 'state'] : ['code', 'state'];
+      const code = getQueryVariable(codeKey);
       if (code) {
         const res = await getThirdOauthCallback(code, type);
         const boolean = userStore.qrCodeLogin(res.data.data);
@@ -71,10 +73,12 @@
         if (code) {
           const currentUrl = window.location.href;
           const url = new URL(currentUrl);
-          getUrlParameterWidthRegExp('code');
-          getUrlParameterWidthRegExp('state');
-          url.searchParams.delete('code');
-          url.searchParams.delete('state');
+          authParams.forEach((param) => {
+            getUrlParameterWidthRegExp(param);
+          });
+          authParams.forEach((param) => {
+            url.searchParams.delete(param);
+          });
           const newUrl = url.toString();
           // 或者在不刷新页面的情况下更新URL（比如使用 History API）
           window.history.replaceState({}, document.title, newUrl);

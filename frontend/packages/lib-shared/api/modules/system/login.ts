@@ -11,7 +11,6 @@ import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 import type { Result } from '@lib/shared/types/axios';
 import type { AxiosResponse } from 'axios';
-import {DeleteAuthUrl} from "../../requrls/system/business";
 
 export default function useProductApi(CDR: CordysAxios) {
   // 登录
@@ -35,18 +34,16 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 三方二维码登录
-  function getThirdCallback(code: string, type:string) {
+  function getThirdCallback(code: string, type: string) {
     return CDR.get<UserInfo>({ url: `${thirdCallbackUrl}/${type}`, params: { code } });
   }
 
-
   // 三方oauth2登录
-  function getThirdOauthCallback(code: string, type:string) {
+  function getThirdOauthCallback(code: string, type: string) {
     return CDR.get<AxiosResponse<Result<UserInfo>>>(
       { url: `${thirdOauthCallbackUrl}/${type}`, params: { code } },
       { ignoreCancelToken: true, isReturnNativeResponse: true, noErrorTip: true }
     );
-
   }
 
   return {

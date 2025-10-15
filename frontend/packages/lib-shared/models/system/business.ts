@@ -34,7 +34,6 @@ export interface ConfigSynchronization {
   deOrgID?: string; // DE组织ID
   // 前端渲染参数
   deEmbedType?: string[]; // DE嵌入方式
-  oauth2Enable?: boolean; // OAuth2
   startEnable?: boolean; // 同步用户
 }
 

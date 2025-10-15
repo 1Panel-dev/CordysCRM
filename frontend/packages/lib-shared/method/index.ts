@@ -592,8 +592,8 @@ export function isWeComBrowser() {
 }
 
 export function isDingTalkBrowser() {
-    const ua = window.navigator.userAgent.toLowerCase();
-    return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
+  const ua = window.navigator.userAgent.toLowerCase();
+  return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode') !== '';
 }
 
 /**
