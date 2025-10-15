@@ -95,6 +95,8 @@ export default {
   'system.business.authenticationSettings.syncUsersTipContent': '2.组织架构模块可进行从{type}同步用户',
   'system.business.authenticationSettings.togglePlatformTip':
     '注意：扫码登录及消息通知会调用切换后平台（{type}）的配置，可能导致登录失败或消息接收异常，建议您谨慎操作！',
+  'system.business.authenticationSettings.changeCorpIdTip':
+    '当前企业 ID 与系统存档不匹配！对接新企业会直接清空历史企业用户数据，清谨慎操作！',
 
   'system.business.page.platformStyle': '主题色',
   'system.business.page.background': '背景色',

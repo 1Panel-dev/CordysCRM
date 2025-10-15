@@ -239,6 +239,7 @@
 
   import { getDEOrgList, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
   import { platformType } from '@/config/business';
+  import useModal from '@/hooks/useModal';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -252,7 +253,7 @@
     required: true,
     default: false,
   });
-
+  const { openModal } = useModal();
   const emit = defineEmits<{
     (e: 'initSync'): void;
   }>();
@@ -340,24 +341,57 @@
    * 保存
    */
   const loading = ref(false);
+  async function handleSave() {
+    try {
+      loading.value = true;
+      await updateConfigSynchronization({
+        ...form.value,
+        deModuleEmbedding: form.value.deEmbedType?.includes('module'),
+        deLinkIntegration: form.value.deEmbedType?.includes('link'),
+      });
+      Message.success(t('common.updateSuccess'));
+      showModal.value = false;
+      emit('initSync');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  const isChangeCorpId = computed(() => props.integration?.corpId && props.integration?.corpId !== form.value.corpId);
+
+  function handleThirdConfig() {
+    if (isChangeCorpId.value) {
+      openModal({
+        type: 'error',
+        title: t('common.updateConfirmTitle'),
+        content: t('system.business.authenticationSettings.changeCorpIdTip'),
+        positiveText: t('common.confirm'),
+        negativeText: t('common.cancel'),
+
+        onPositiveClick: async () => {
+          try {
+            await handleSave();
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
+        },
+      });
+    } else {
+      handleSave();
+    }
+  }
+
   function confirmHandler() {
-    formRef.value?.validate(async (error) => {
+    formRef.value?.validate((error) => {
       if (!error) {
-        try {
-          loading.value = true;
-          await updateConfigSynchronization({
-            ...form.value,
-            deModuleEmbedding: form.value.deEmbedType?.includes('module'),
-            deLinkIntegration: form.value.deEmbedType?.includes('link'),
-          });
-          Message.success(t('common.updateSuccess'));
-          showModal.value = false;
-          emit('initSync');
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-        } finally {
-          loading.value = false;
+        if (platformType.includes(form.value.type)) {
+          handleThirdConfig();
+        } else {
+          handleSave();
         }
       }
     });

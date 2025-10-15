@@ -101,6 +101,8 @@ export default {
   'system.business.authenticationSettings.syncUsersTipContent': '2. Sync users from  {type} in organization module',
   'system.business.authenticationSettings.togglePlatformTip':
     'Note: Scanning code login and message notifications will invoke the configuration of the switched platform ({type}), which may result in login failure or abnormal message reception. We suggest you operate with caution!',
+  'system.business.authenticationSettings.changeCorpIdTip':
+    'The current enterprise ID does not match the system archive!Docking new enterprises will directly clear the historical enterprise user data, clear careful operation!',
 
   'system.business.page.platformStyle': 'Theme Color',
   'system.business.page.background': 'Background Color',
