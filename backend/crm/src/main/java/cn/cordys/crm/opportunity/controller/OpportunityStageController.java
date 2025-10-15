@@ -35,8 +35,8 @@ public class OpportunityStageController {
     @PostMapping("/add")
     @Operation(summary = "添加商机阶段")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void addDict(@RequestBody OpportunityStageAddRequest request) {
-        opportunityStageService.addStageConfig(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public String add(@RequestBody OpportunityStageAddRequest request) {
+        return opportunityStageService.addStageConfig(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

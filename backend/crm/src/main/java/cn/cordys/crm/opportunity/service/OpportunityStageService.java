@@ -72,7 +72,7 @@ public class OpportunityStageService {
      * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
-    public void addStageConfig(OpportunityStageAddRequest request, String userId, String orgId) {
+    public String addStageConfig(OpportunityStageAddRequest request, String userId, String orgId) {
         checkConfigCount(orgId);
         Long pos = DEFAULT_POS;
         Boolean afootRollBack = true;
@@ -113,6 +113,7 @@ public class OpportunityStageService {
                 .resourceName(Translator.get("opportunity_stage_setting").concat(":").concat(request.getName()))
                 .build());
 
+        return stageConfig.getId();
     }
 
 
