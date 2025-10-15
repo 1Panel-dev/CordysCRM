@@ -237,7 +237,8 @@
       if (newIndex === oldIndex) return;
       await sortOpportunityStage({
         dragId: data.id,
-        pos: newIndex + 1,
+        end: newIndex + 1,
+        start: data.pos,
       });
       Message.success(t('common.operationSuccess'));
     } catch (error) {
