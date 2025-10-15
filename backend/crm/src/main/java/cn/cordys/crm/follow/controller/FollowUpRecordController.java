@@ -11,6 +11,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
+import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -53,7 +54,7 @@ public class FollowUpRecordController {
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     @Operation(summary = "跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody RecordHomePageRequest request) {
         ConditionFilterUtils.parseCondition(request);
@@ -72,7 +73,15 @@ public class FollowUpRecordController {
     @Operation(summary = "删除跟进记录")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public void delete(@PathVariable String id) {
+        followUpRecordService.checkRecordPermission(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         followUpRecordService.delete(id);
+    }
+
+    @GetMapping("/get/{id}")
+    @Operation(summary = "跟进记录详情")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    public FollowUpRecordDetailResponse get(@PathVariable String id) {
+        return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 
 }

@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -28,6 +29,7 @@ import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.*;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
+import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
@@ -40,6 +42,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +70,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private ModuleFormService moduleFormService;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private DataScopeService dataScopeService;
 
     /**
      * 新建跟进计划
@@ -433,5 +438,17 @@ public class FollowUpPlanService extends BaseFollowUpService {
         ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
         ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
         return clueTabConfig.or(customerTabConfig);
+    }
+
+    /**
+     * 拦截跟进记录的操作权限
+     * @param id 记录ID
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    public void checkPlanPermission(String id, String userId, String orgId) {
+        FollowUpPlanDetailResponse planDetail = get(id, orgId);
+        dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(),
+                Strings.CS.equals(planDetail.getType(), "CLUE") ? PermissionConstants.CLUE_MANAGEMENT_READ : PermissionConstants.CUSTOMER_MANAGEMENT_READ);
     }
 }

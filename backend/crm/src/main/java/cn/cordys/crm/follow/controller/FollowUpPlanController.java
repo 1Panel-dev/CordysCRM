@@ -12,7 +12,9 @@ import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.follow.dto.request.PlanHomePageRequest;
+import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
+import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -73,6 +75,7 @@ public class FollowUpPlanController {
     @Operation(summary = "删除跟进计划")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public void delete(@PathVariable String id) {
+        followUpPlanService.checkPlanPermission(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         followUpPlanService.delete(id);
     }
 
@@ -80,6 +83,14 @@ public class FollowUpPlanController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     @Operation(summary = "更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        followUpPlanService.checkPlanPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         followUpPlanService.updateStatus(request, SessionUtils.getUserId());
+    }
+
+    @GetMapping("/get/{id}")
+    @Operation(summary = "跟进计划详情")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    public FollowUpPlanDetailResponse get(@PathVariable String id) {
+        return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 }

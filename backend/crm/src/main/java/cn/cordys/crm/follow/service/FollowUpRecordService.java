@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -81,6 +82,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
     private ExtClueMapper extClueMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private DataScopeService dataScopeService;
 
     /**
      * 添加跟进记录
@@ -563,5 +566,19 @@ public class FollowUpRecordService extends BaseFollowUpService {
         ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
         ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
         return clueTabConfig.or(customerTabConfig);
+    }
+
+
+
+    /**
+     * 拦截跟进记录的操作权限
+     * @param id 记录ID
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    public void checkRecordPermission(String id, String userId, String orgId) {
+        FollowUpRecordDetailResponse recordDetail = get(id, orgId);
+        dataScopeService.checkDataPermission(userId, orgId, recordDetail.getOwner(),
+                Strings.CS.equals(recordDetail.getType(), "CLUE") ? PermissionConstants.CLUE_MANAGEMENT_READ : PermissionConstants.CUSTOMER_MANAGEMENT_READ);
     }
 }
