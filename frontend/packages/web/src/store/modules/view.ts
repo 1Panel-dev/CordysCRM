@@ -1,14 +1,18 @@
 import { defineStore } from 'pinia';
 import { TabPaneProps } from 'naive-ui';
 
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
 import type { SortParams, TableDraggedParams } from '@lib/shared/models/common';
+import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
 import { internalConditionsMap, viewApiMap } from '@/components/business/crm-view-select/config';
 
+import { getOpportunityStageConfig } from '@/api/modules';
 import { TabType } from '@/hooks/useHiddenTab';
 import useLocalForage from '@/hooks/useLocalForage';
 import useUserStore from '@/store/modules/user';
@@ -60,14 +64,29 @@ const useViewStore = defineStore('view', {
       const userStore = useUserStore();
 
       const stored = await this.getInternalViews(this.getInternalKey(type));
-
+      const stageConfig = ref<OpportunityStageConfig>();
+      async function initStageConfig() {
+        try {
+          stageConfig.value = await getOpportunityStageConfig();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      }
+      await initStageConfig();
+      const successStage = stageConfig.value?.stageConfigList?.find((i) => i.type === 'END' && i.rate === '100');
       const listMap = internalList.reduce<Record<string, TabPaneProps>>((map, item) => {
         map[item.name as string] = item;
         return map;
       }, {});
 
       const storedIds = new Set(stored.map((i) => i.id));
-
+      const optItem = computed(() => ({
+        dataIndex: 'stage',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        operator: OperatorEnum.IN,
+        value: [successStage?.id],
+      }));
       const merged = [
         // 优先使用 stored 的顺序和设置
         ...stored
@@ -77,7 +96,10 @@ const useViewStore = defineStore('view', {
             return {
               ...item,
               name: def.tab as string,
-              list: internalConditionsMap[def.name as string],
+              list:
+                def.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+                  ? optItem.value
+                  : internalConditionsMap[def.name as string],
               type: 'internal',
               searchMode: item.searchMode ?? 'AND',
             };
@@ -93,7 +115,10 @@ const useViewStore = defineStore('view', {
             fixed: true,
             type: 'internal',
             searchMode: 'AND',
-            list: internalConditionsMap[item.name as string],
+            list:
+              item.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+                ? optItem.value
+                : internalConditionsMap[item.name as string],
           })),
       ];
       // admin 不显示部门视图

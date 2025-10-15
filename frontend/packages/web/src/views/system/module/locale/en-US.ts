@@ -61,6 +61,18 @@ export default {
   'module.clue.followUpDays': 'Number of days not followed up',
   'module.clue.deleteRulesTitle': 'There are unallocated leads in the lead pool, deletion is prohibited!',
   'module.businessManage.businessCloseRule': 'Opportunity close rules',
+  'module.businessManage.businessStepSet': 'Opportunity stage settings',
+  'module.businessManage.businessStepConfig': 'Stage configuration',
+  'module.businessManage.businessStepRollbackConfig': 'Opportunity stage rollback settings',
+  'module.businessManage.runningStageRollback': 'Ongoing stage rollback',
+  'module.businessManage.runningStageRollbackTip':
+    'Ongoing opportunities can be advanced in both directions and across stages',
+  'module.businessManage.completedStageRollback': 'Completed stage rollback',
+  'module.businessManage.completedStageRollbackTip':
+    'Completed opportunities can be rolled back to any stage (does not conflict with "anti-signing" permissions)',
+  'module.businessManage.insetBefore': 'Insert stage before',
+  'module.businessManage.insetAfter': 'Insert stage after',
+  'module.businessManage.stageHasData': 'Current opportunity stage contains opportunity data, deletion is prohibited!',
   'module.businessManage.addRules': 'Add Rules',
   'module.businessManage.mainNavConfig': 'Nav setting',
   'module.capacitySet.departmentOrMember': 'Department or member',

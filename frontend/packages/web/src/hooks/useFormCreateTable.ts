@@ -7,6 +7,7 @@ import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValue, formatTimeValue, getCityPath } from '@lib/shared/method';
 import type { ModuleField } from '@lib/shared/models/customer';
+import type { StageConfigItem } from '@lib/shared/models/opportunity';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
@@ -17,7 +18,6 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
 
@@ -52,6 +52,7 @@ export interface FormCreateTableProps {
   radio?: boolean; // 是否单选
   containerClass: string; // 容器元素类名
   hiddenTotal?: boolean;
+  opportunityStage?: StageConfigItem[]; // 商机阶段筛选项
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -114,7 +115,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       filter: true,
       sortOrder: false,
       sorter: true,
-      filterOptions: lastOpportunitySteps,
+      filterOptions:
+        props.opportunityStage?.map((e) => ({
+          label: e.name,
+          value: e.id,
+        })) || [],
       render: props.specialRender?.stage,
     },
     {

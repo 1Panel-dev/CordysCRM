@@ -1,7 +1,6 @@
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 
@@ -154,14 +153,6 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
       operator: OperatorEnum.IN,
       value: [userStore.userInfo.id],
       selectedUserList: [{ id: userStore.userInfo.id, name: userStore.userInfo.name }],
-    },
-  ],
-  [OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS]: [
-    {
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operator: OperatorEnum.IN,
-      value: [StageResultEnum.SUCCESS],
     },
   ],
 };

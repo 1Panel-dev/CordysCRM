@@ -48,73 +48,18 @@
     </div>
     <n-scrollbar content-class="grid [grid-template-columns:repeat(7,300px)] gap-[16px] h-full" x-scrollable>
       <list
-        ref="createListRef"
+        v-for="(item, index) in stageConfig?.stageConfigList"
+        ref="listRef"
+        :key="item.id"
+        :index="index"
+        :stage-ids="stageConfig?.stageConfigList.map((i) => i.id) || []"
         :keyword="keyword"
         :field-list="fieldList"
-        :stage="[OpportunityStatusEnum.CREATE]"
+        :stage-config="item"
         :refresh-time-stamp="refreshTimeStamp"
         :advance-filter="advanceFilter"
         :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="clearRequirementsListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[OpportunityStatusEnum.CLEAR_REQUIREMENTS]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="schemeValidationListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[OpportunityStatusEnum.SCHEME_VALIDATION]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="projectProposalReportListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="businessProcurementListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[OpportunityStatusEnum.BUSINESS_PROCUREMENT]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="successListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[StageResultEnum.SUCCESS]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
-        @change="refreshList"
-      />
-      <list
-        ref="failListRef"
-        :keyword="keyword"
-        :field-list="fieldList"
-        :stage="[StageResultEnum.FAIL]"
-        :refresh-time-stamp="refreshTimeStamp"
-        :advance-filter="advanceFilter"
-        :enable-reason="enableReason"
+        :fail-id="stageConfig?.stageConfigList.slice(-1)[0].id"
         @fail="handleFailItem"
         @change="refreshList"
       />
@@ -158,8 +103,8 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -169,9 +114,8 @@
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import list from './list.vue';
 
-  import { getReasonConfig, updateOptStage } from '@/api/modules';
+  import { getOpportunityStageConfig, getReasonConfig, updateOptStage } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useFullScreen from '@/hooks/useFullScreen';
@@ -238,6 +182,16 @@
     }
   }
 
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['customerId'],
@@ -254,7 +208,7 @@
         dataIndex: 'stage',
         type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
-          options: lastOpportunitySteps,
+          options: stageConfig.value?.stageConfigList.map((item) => ({ label: item.name, value: item.id })),
         },
       },
       {
@@ -318,40 +272,10 @@
     refreshTimeStamp.value += 1;
   }
 
-  const failListRef = ref<InstanceType<typeof list>>();
-  const createListRef = ref<InstanceType<typeof list>>();
-  const clearRequirementsListRef = ref<InstanceType<typeof list>>();
-  const schemeValidationListRef = ref<InstanceType<typeof list>>();
-  const projectProposalReportListRef = ref<InstanceType<typeof list>>();
-  const businessProcurementListRef = ref<InstanceType<typeof list>>();
-  const successListRef = ref<InstanceType<typeof list>>();
-
+  const listRef = ref<InstanceType<typeof list>[]>();
   function refreshList(stage: string) {
-    switch (stage) {
-      case StageResultEnum.FAIL:
-        failListRef.value?.refreshList();
-        break;
-      case OpportunityStatusEnum.CREATE:
-        createListRef.value?.refreshList();
-        break;
-      case OpportunityStatusEnum.CLEAR_REQUIREMENTS:
-        clearRequirementsListRef.value?.refreshList();
-        break;
-      case OpportunityStatusEnum.SCHEME_VALIDATION:
-        schemeValidationListRef.value?.refreshList();
-        break;
-      case OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT:
-        projectProposalReportListRef.value?.refreshList();
-        break;
-      case OpportunityStatusEnum.BUSINESS_PROCUREMENT:
-        businessProcurementListRef.value?.refreshList();
-        break;
-      case StageResultEnum.SUCCESS:
-        successListRef.value?.refreshList();
-        break;
-      default:
-        break;
-    }
+    const index = stageConfig.value?.stageConfigList.findIndex((item) => item.id === stage) || 0;
+    listRef.value?.[index].refreshList();
   }
 
   const form = ref({
@@ -383,10 +307,10 @@
   async function handleConfirm() {
     try {
       updateStageLoading.value = true;
-      await failListRef.value?.sortItem(updateOptItem.value);
+      await listRef.value?.[(stageConfig.value?.stageConfigList.length || 1) - 1].sortItem(updateOptItem.value);
       await updateOptStage({
         id: updateOptItem.value.data.id,
-        stage: StageResultEnum.FAIL,
+        stage: stageConfig.value?.stageConfigList.slice(-1)[0].id || '',
         failureReason: form.value.failureReason || '',
       });
       updateStatusModal.value = false;
@@ -405,6 +329,7 @@
   }
 
   onBeforeMount(async () => {
+    await initStageConfig();
     initOptFormConfig();
     initReason();
     if (props.isCustomerTab) {

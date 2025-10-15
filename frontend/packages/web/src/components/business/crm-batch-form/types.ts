@@ -24,7 +24,11 @@ export interface FormItemModel {
   labelTooltip?: string;
   defaultValue?: string | string[] | number | number[] | boolean; // 默认值
   inputProps?: Partial<InputProps>;
-  numberProps?: Partial<InputNumberProps>;
+  numberProps?: Partial<
+    InputNumberProps & {
+      disabledFunction?: (row: any) => boolean;
+    }
+  >;
   selectProps?: Partial<SelectProps & customSelectedProps>;
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
 }

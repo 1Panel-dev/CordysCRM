@@ -162,13 +162,13 @@
   import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
-  import type { OpportunityItem } from '@lib/shared/models/opportunity';
+  import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -189,7 +189,7 @@
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, getOptStatistic, transferOpt } from '@/api/modules';
+  import { batchDeleteOpt, deleteOpt, getOpportunityStageConfig, getOptStatistic, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, getOptHomeConditions, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -240,6 +240,22 @@
   const tableRefreshId = ref(0);
 
   const activeTab = ref();
+
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  const successStage = computed(() =>
+    stageConfig.value?.stageConfigList.find((item) => item.type === 'END' && item.rate === '100')
+  );
+  const failureStage = computed(() =>
+    stageConfig.value?.stageConfigList.find((item) => item.type === 'END' && item.rate === '0')
+  );
 
   const actionConfig = computed<BatchActionConfig>(() => {
     if (props.readonly) {
@@ -511,11 +527,11 @@
       },
     ];
 
-    if (row.stage === StageResultEnum.FAIL) {
+    if (row.stage === failureStage.value?.id) {
       return [...transferAction, ...deleteAction];
     }
 
-    if (row.stage === StageResultEnum.SUCCESS) {
+    if (row.stage === successStage.value?.id) {
       return hasBackStagePermission.value ? [...editAction, ...deleteAction] : [...deleteAction];
     }
 
@@ -560,6 +576,7 @@
     }
   }
 
+  await initStageConfig();
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['customerId'],
@@ -571,7 +588,7 @@
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: OpportunityItem) =>
-            row.stage === StageResultEnum.SUCCESS && !hasBackStagePermission.value
+            row.stage === successStage.value?.id && !hasBackStagePermission.value
               ? '-'
               : h(
                   CrmOperationButton,
@@ -634,13 +651,13 @@
             );
       },
       stage: (row: OpportunityItem) => {
-        const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
-        return step ? step.label : '-';
+        return row.stageName || '-';
       },
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
     hiddenTotal: !!props.hiddenTotal,
     readonly: props.readonly,
+    opportunityStage: stageConfig.value?.stageConfigList || [],
   });
   const {
     propsRes,
@@ -775,10 +792,10 @@
 
   const homeDetailKey = computed(() => route.query.key as string);
   const isInitQuery = ref(true);
-  function setHomePageParams() {
+  async function setHomePageParams() {
     const { dim, status, timeField } = route.query;
     if (dim && status && timeField && homeDetailKey.value && isInitQuery.value) {
-      const conditionParams = getOptHomeConditions(
+      const conditionParams = await getOptHomeConditions(
         dim as string,
         status as string,
         timeField as string,
@@ -793,7 +810,7 @@
 
   watch(
     () => activeTab.value,
-    (val) => {
+    async (val) => {
       if (val) {
         checkedRowKeys.value = [];
         const valueScoped = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
@@ -803,7 +820,7 @@
           viewId: dim && status && timeField && isInitQuery.value ? valueScoped : activeTab.value,
           customerId: props.sourceId,
         });
-        setHomePageParams();
+        await setHomePageParams();
         crmTableRef.value?.setColumnSort(val);
         getStatistic();
       }

@@ -16,6 +16,7 @@ export interface OpportunityItem {
   updateUserName: string; // 更新人名称
   reservedDays: number; // 归属天数
   stage: string;
+  stageName: string;
   lastStage: string;
   inCustomerPool: boolean;
   poolId?: string;
@@ -70,4 +71,50 @@ export interface OpportunityBillboardDraggedParams {
   dropNodeId: string;
   dropPosition: number;
   stage: string;
+}
+
+export interface UpdateOpportunityStageParams {
+  id: string;
+  name: string;
+  rate: string;
+}
+
+export interface UpdateOpportunityStageRollbackParams {
+  afootRollBack: boolean;
+  endRollBack: boolean;
+}
+
+export interface SortOpportunityStageParams {
+  pos: number;
+  dragId: string;
+}
+
+export interface AddOpportunityStageParams {
+  name: string;
+  type: 'AFOOT' | 'END';
+  rate: string;
+  dropPosition: number;
+  targetId: string;
+}
+
+export interface StageConfigItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  name: string;
+  type: 'AFOOT' | 'END';
+  rate: string;
+  afootRollBack: boolean;
+  endRollBack: boolean;
+  pos: number;
+  organizationId: string;
+}
+
+export interface OpportunityStageConfig {
+  stageConfigList: StageConfigItem[];
+  afootRollBack: boolean;
+  endRollBack: boolean;
+  stageHasData: boolean;
 }

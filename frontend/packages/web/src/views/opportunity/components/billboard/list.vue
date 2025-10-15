@@ -3,7 +3,7 @@
     class="flex h-full flex-col gap-[8px] overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
   >
     <div class="flex items-center justify-between">
-      <CrmTag :type="getStageColor" theme="dark">{{ getStageText }}</CrmTag>
+      <CrmTag :type="getStageColor" theme="dark">{{ props.stageConfig.name }}</CrmTag>
       <div class="font-semibold">
         {{
           `${abbreviateNumber(statisticInfo?.amount, '').value} ${abbreviateNumber(statisticInfo?.amount, '').unit} / ${
@@ -12,7 +12,12 @@
         }}
       </div>
     </div>
-    <n-progress type="line" color="var(--primary-8)" rail-color="var(--text-n8)" :percentage="getStagePercentage" />
+    <n-progress
+      type="line"
+      color="var(--primary-8)"
+      rail-color="var(--text-n8)"
+      :percentage="Number(props.stageConfig.rate)"
+    />
     <n-spin :show="loading" content-class="h-full">
       <VueDraggable
         v-model="list"
@@ -24,8 +29,9 @@
         @add="handleAddItem"
         @move="handleMove"
         @update="handleUpdate"
+        @remove="handleRemove"
       >
-        <n-scrollbar :content-class="`${props.stage[0]} h-full`" @scroll="handleReachBottom">
+        <n-scrollbar :content-class="`${props.stageConfig.id} h-full`" @scroll="handleReachBottom">
           <div v-for="item in list" :key="item.id" class="opportunity-billboard-item">
             <div class="flex items-center justify-between">
               <CrmTableButton v-if="item.name" @click="jumpToDetail('opportunity', item.id)">
@@ -47,7 +53,7 @@
                 {{
                   formatNumberValue(
                     item.amount,
-                    fieldList.find((field) => field.businessKey === 'amount') as FormCreateField
+                    (fieldList.find((field) => field.businessKey === 'amount') as FormCreateField) || {}
                   )
                 }}
               </div>
@@ -130,10 +136,9 @@
   import dayjs from 'dayjs';
   import { VueDraggable } from 'vue-draggable-plus';
 
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { abbreviateNumber, formatNumberValue } from '@lib/shared/method';
-  import { OpportunityItem } from '@lib/shared/models/opportunity';
+  import { OpportunityItem, StageConfigItem } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -151,9 +156,12 @@
     keyword?: string;
     refreshTimeStamp?: number;
     advanceFilter?: FilterResult;
-    stage: string[];
+    stageConfig: StageConfigItem;
+    index: number;
     fieldList: FormCreateField[];
     enableReason?: boolean;
+    failId?: string;
+    stageIds: string[];
   }>();
   const emit = defineEmits<{
     (e: 'fail', item: OpportunityItem): void;
@@ -172,62 +180,16 @@
     });
     return map;
   });
-  const getStagePercentage = computed(() => {
-    if (props.stage.length === 0 || props.stage[0] === StageResultEnum.FAIL) {
-      return 0;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.CREATE) {
-      return 10;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.CLEAR_REQUIREMENTS) {
-      return 30;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.SCHEME_VALIDATION) {
-      return 50;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT) {
-      return 70;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.BUSINESS_PROCUREMENT) {
-      return 90;
-    }
-    if (props.stage[0] === StageResultEnum.SUCCESS) {
-      return 100;
-    }
-    return 0;
-  });
-  const getStageText = computed(() => {
-    if (props.stage[0] === StageResultEnum.SUCCESS) {
-      return `${t('opportunity.end')}/${t('common.success')}`;
-    }
-    if (props.stage[0] === StageResultEnum.FAIL) {
-      return `${t('opportunity.end')}/${t('common.fail')}`;
-    }
-    if (props.stage[0] === OpportunityStatusEnum.CREATE) {
-      return t('common.newCreate');
-    }
-    if (props.stage[0] === OpportunityStatusEnum.CLEAR_REQUIREMENTS) {
-      return t('opportunity.clearRequirements');
-    }
-    if (props.stage[0] === OpportunityStatusEnum.SCHEME_VALIDATION) {
-      return t('opportunity.schemeValidation');
-    }
-    if (props.stage[0] === OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT) {
-      return t('opportunity.projectProposalReport');
-    }
-    if (props.stage[0] === OpportunityStatusEnum.BUSINESS_PROCUREMENT) {
-      return t('opportunity.businessProcurement');
-    }
-    return '';
-  });
+  const isSuccess = computed(() => props.stageConfig?.type === 'END' && props.stageConfig?.rate === '100');
+  const isFail = computed(() => props.stageConfig?.type === 'END' && props.stageConfig?.rate === '0');
   const getStageColor = computed(() => {
-    if (props.stage[0] === StageResultEnum.SUCCESS) {
+    if (isSuccess.value) {
       return 'success';
     }
-    if (props.stage[0] === StageResultEnum.FAIL) {
+    if (isFail.value) {
       return 'error';
     }
-    if (props.stage[0] === OpportunityStatusEnum.CREATE) {
+    if (props.index === 0) {
       return 'info';
     }
     return 'primary';
@@ -257,9 +219,9 @@
         filters: [
           {
             name: 'stage',
-            value: props.stage,
+            value: props.stageConfig.id,
             multipleValue: false,
-            operator: 'IN',
+            operator: 'EQUALS',
           },
         ],
         board: true,
@@ -291,9 +253,9 @@
         filters: [
           {
             name: 'stage',
-            value: props.stage,
+            value: props.stageConfig.id,
             multipleValue: false,
-            operator: 'IN',
+            operator: 'EQUALS',
           },
         ],
         viewId: 'ALL',
@@ -342,7 +304,7 @@
         dropNodeId: nextItem?.id || lastItem?.id || '',
         dragNodeId: item.data.id,
         dropPosition: nextItem ? -1 : 1,
-        stage: props.stage[0] || '',
+        stage: props.stageConfig.id || '',
       });
       refreshList();
       if (item.to.className !== item.from.className) {
@@ -356,13 +318,15 @@
     }
   }
 
+  function handleRemove(item: any) {
+    // 从当前列表移除
+    list.value = list.value.filter((i) => i.id !== item.data.id);
+    emit('change', item.from.className.split(' ')[1]);
+  }
+
   async function handleAddItem(item: any) {
     // 开启失败原因需要填写失败原因
-    if (
-      item.data.stage !== StageResultEnum.FAIL &&
-      item.to.className.includes(StageResultEnum.FAIL) &&
-      props.enableReason
-    ) {
+    if (item.data.stage !== props.stageConfig.id && isFail.value && props.enableReason) {
       emit('fail', item);
       list.value = list.value.filter((i) => i.id !== item.data.id);
       return;
@@ -375,7 +339,7 @@
         dropNodeId: nextItem?.id || lastItem?.id || '',
         dragNodeId: item.data.id,
         dropPosition: nextItem ? -1 : 1,
-        stage: props.stage[0] || '',
+        stage: props.stageConfig.id || '',
       });
       refreshList();
       if (item.to.className !== item.from.className) {
@@ -398,7 +362,7 @@
         dropNodeId: nextItem?.id || lastItem?.id || '',
         dragNodeId: item.data.id,
         dropPosition: nextItem ? -1 : 1,
-        stage: props.stage[0] || '',
+        stage: props.stageConfig.id || '',
       });
       refreshList();
       emit('change', item.from.className.split(' ')[1]);
@@ -412,15 +376,23 @@
 
   function handleMove(evt: any) {
     // 同一列表随意拖拽
-    if (evt.to.className.includes(props.stage[0]) && evt.from.className.includes(props.stage[0])) {
+    if (evt.to.className.includes(props.stageConfig.id) && evt.from.className.includes(props.stageConfig.id)) {
       return true;
     }
-    // 完结状态更改需要返签权限
-    if (evt.data.stage === StageResultEnum.SUCCESS) {
-      return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']) && evt.to.className.includes(StageResultEnum.FAIL);
+    // 完结状态更改需要返签权限，或者开启回退才能回退
+    if (isSuccess.value) {
+      return (
+        (props.stageConfig.endRollBack && !evt.to.className.includes(props.failId)) ||
+        (hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']) && evt.to.className.includes(props.failId))
+      );
     }
-    if (evt.data.stage === StageResultEnum.FAIL) {
-      return false;
+    // 失败状态更改需要开启回退权限
+    if (isFail.value) {
+      return props.stageConfig.endRollBack;
+    }
+    // 非完结状态只能向后拖拽，开启回退权限可以向前拖拽
+    if (props.stageIds.findIndex((id) => id === evt.to.className.split(' ')[1]) < props.index) {
+      return props.stageConfig.afootRollBack;
     }
     return true;
   }

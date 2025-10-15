@@ -100,6 +100,12 @@ export const {
   getOptStatistic,
   batchUpdateOpportunity,
   sortOpportunity,
+  updateOpportunityStage,
+  updateOpportunityStageRollback,
+  sortOpportunityStage,
+  addOpportunityStage,
+  getOpportunityStageConfig,
+  deleteOpportunityStage,
 } = opportunityApi;
 
 export const {

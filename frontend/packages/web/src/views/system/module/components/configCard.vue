@@ -88,6 +88,7 @@
     v-model:enable="enableOptMoveReason"
     @load-config="() => getGlobalReasonConfig()"
   />
+  <stepSettingDrawer v-model:visible="businessManagementStepSetVisible" />
 </template>
 
 <script setup lang="ts">
@@ -116,6 +117,7 @@
   import OpportunityReasonDrawer from './opportunity/failReasonDrawer.vue';
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
+  import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
 
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
@@ -383,6 +385,10 @@
           key: 'businessParamsSet',
         },
         {
+          label: t('module.businessManage.businessStepSet'),
+          key: 'businessStepSet',
+        },
+        {
           label: t('common.more'),
           slotName: 'more',
         },
@@ -483,6 +489,7 @@
 
   const businessManagementFormVisible = ref(false);
   const businessManagementBusinessParamsSetVisible = ref(false);
+  const businessManagementStepSetVisible = ref(false);
 
   const productManagementFormVisible = ref(false);
 
@@ -514,6 +521,8 @@
           businessManagementFormVisible.value = true;
         } else if (key === 'businessParamsSet') {
           businessManagementBusinessParamsSetVisible.value = true;
+        } else if (key === 'businessStepSet') {
+          businessManagementStepSetVisible.value = true;
         }
         break;
       case ModuleConfigEnum.PRODUCT_MANAGEMENT:

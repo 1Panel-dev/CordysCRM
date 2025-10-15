@@ -1,60 +1,65 @@
 <template>
-  <div class="crm-workflow-step">
-    <div class="flex flex-1 gap-[16px]">
-      <div
-        v-for="(item, index) of workflowData"
-        :key="item.value"
-        :class="`crm-workflow-item ${index === workflowData.length - 1 ? '' : 'flex-1'}`"
-        @click="changeStage(item.value as string)"
-      >
-        <div class="crm-workflow-item-status" :class="statusClass(index, item)">
-          <CrmIcon
-            v-if="index < currentStatusIndex || item.value === StageResultEnum.FAIL"
-            :type="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
-            :size="16"
-          />
-          <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
-        </div>
-        <div class="crm-workflow-item-name" :class="statusClass(index, item)">
-          {{
-            item.value === StageResultEnum.FAIL && props.failureReason
-              ? `${item.label}（${props.failureReason}）`
-              : item.label
-          }}
-        </div>
+  <n-scrollbar x-scrollable>
+    <div class="crm-workflow-step">
+      <div class="flex flex-1 gap-[16px]">
         <div
-          v-if="index !== workflowData.length - 1"
-          class="crm-workflow-item-line"
-          :class="{
-            'in-progress': index < currentStatusIndex,
-          }"
+          v-for="(item, index) of workflowData"
+          :key="item.value"
+          :class="`crm-workflow-item`"
+          @click="changeStage(item.value as string)"
         >
+          <div class="crm-workflow-item-status" :class="statusClass(index, item)">
+            <CrmIcon
+              v-if="index < currentStatusIndex || item.value === failureStage"
+              :type="item.value === failureStage ? 'iconicon_close' : 'iconicon_check'"
+              :size="16"
+            />
+            <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
+          </div>
+          <div class="crm-workflow-item-name" :class="statusClass(index, item)">
+            {{
+              item.value === failureStage && props.failureReason
+                ? `${item.label}（${props.failureReason}）`
+                : item.label
+            }}
+          </div>
+          <div
+            v-if="index !== workflowData.length - 1"
+            class="crm-workflow-item-line"
+            :class="{
+              'in-progress': index < currentStatusIndex,
+            }"
+          >
+          </div>
         </div>
       </div>
+      <slot
+        v-if="currentStatusIndex !== workflowData.length - 1"
+        name="action"
+        :current-status-index="currentStatusIndex"
+      >
+      </slot>
     </div>
-    <slot
-      v-if="currentStatusIndex !== workflowData.length - 1"
-      name="action"
-      :current-status-index="currentStatusIndex"
-    >
-    </slot>
-  </div>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
-  import { SelectOption } from 'naive-ui';
+  import { NScrollbar, SelectOption } from 'naive-ui';
 
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { StageConfigItem } from '@lib/shared/models/opportunity';
 
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     workflowList: SelectOption[];
+    stageConfigList: StageConfigItem[]; // 阶段列表
     operationPermission?: string[];
     readonly?: boolean;
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
     failureReason?: string;
+    afootRollBack?: boolean; // 是否允许从跟进中回退
+    endRollBack?: boolean; // 是否允许从成功或失败回退
   }>();
 
   const emit = defineEmits<{
@@ -66,45 +71,39 @@
   });
 
   const workflowData = computed(() => props.workflowList || []);
-
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
-
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
+  const successStage = computed(
+    () => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
+  );
+  const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
 
   const isDisabledStage = (stage: string) => {
-    const isLastStage =
-      currentStatusIndex.value === workflowData.value.length - 1 &&
-      stage === workflowData.value[workflowData.value.length - 1].value;
-
     const isSameStage = currentStatus.value === stage;
-
-    const isSuccessOrFail = [StageResultEnum.SUCCESS, StageResultEnum.FAIL].includes(
-      currentStatus.value as StageResultEnum
-    );
-    const isSuccessStage = [StageResultEnum.SUCCESS].includes(stage as StageResultEnum);
+    const isFailureStage = stage === failureStage.value;
+    const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
     // 限制回退状态
     if (props.isLimitBack) {
-      // 当前状态为成功和失败判断是否有高阶权限且不能操作非成功失败阶段的状态
-      if (isSuccessOrFail) {
-        const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
-        if (!hasPermission) return true;
-        if (hasPermission && !isSuccessStage) return true;
-        // 非当前状态和仅读状态
-      } else {
-        return isSameStage || readonly.value;
+      // 当前为成功状态，且目标为失败状态，需要返签权限
+      if (currentStatus.value === successStage.value && isFailureStage) {
+        return isSameStage || readonly.value || !hasPermission;
       }
-      // 不限制回退状态
+      // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
+      if (currentStatus.value === successStage.value || currentStatus.value === failureStage.value) {
+        return isSameStage || readonly.value || !props.endRollBack;
+      }
     } else {
-      return isSameStage || readonly.value || isLastStage;
+      // 不限制回退状态
+      return isSameStage || readonly.value;
     }
     return false;
   };
 
   function statusClass(index: number, item: SelectOption) {
     return {
-      'done': index < currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
-      'current': index === currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
-      'error': item.value === StageResultEnum.FAIL,
+      'done': index < currentStatusIndex.value && item.value !== failureStage.value,
+      'current': index === currentStatusIndex.value && item.value !== failureStage.value,
+      'error': currentStatus.value === failureStage.value && item.value === failureStage.value,
       'cursor-pointer': !isDisabledStage(item.value as string),
     };
   }
@@ -151,7 +150,7 @@
       .crm-workflow-item-name {
         font-size: 16px;
         color: var(--text-n4);
-        @apply font-medium;
+        @apply break-keep font-medium;
         &.current {
           color: var(--primary-8);
           @apply font-medium;
@@ -168,12 +167,18 @@
       }
       .crm-workflow-item-line {
         width: auto;
+        min-width: 18px;
         height: 2px;
         background: var(--text-n7);
 
         @apply flex-1;
         &.in-progress {
           background: var(--primary-8);
+        }
+      }
+      &:first-child {
+        .crm-workflow-item-line {
+          width: 50px;
         }
       }
     }

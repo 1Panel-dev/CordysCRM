@@ -28,16 +28,17 @@
     <template #rightTop>
       <CrmWorkflowCard
         v-model:stage="currentStatus"
-        v-model:last-stage="lastOptStage"
         :show-confirm-status="true"
         class="mb-[16px]"
-        :base-steps="baseStepList"
+        :stage-config-list="stageConfig?.stageConfigList || []"
         is-limit-back
         :failure-reason="lastFailureReason"
         :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
+        :afoot-roll-back="stageConfig?.afootRollBack"
+        :end-roll-back="stageConfig?.endRollBack"
         @load-detail="refreshList"
       />
     </template>
@@ -53,7 +54,7 @@
         :source-id="sourceId"
         :initial-source-name="initialSourceName"
         :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-        :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+        :show-action="isNotFail && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
 
       <ContactTable
@@ -75,11 +76,10 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
-  import type { OpportunityItem } from '@lib/shared/models/opportunity';
+  import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -90,8 +90,8 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOpt, transferOpt, updateOptStage } from '@/api/modules';
-  import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
+  import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
+  import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
@@ -118,11 +118,28 @@
     ids: [],
   });
 
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const sourceId = computed(() => props.detail?.id ?? '');
   const refreshKey = ref(0);
   const lastFailureReason = ref('');
-  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
-  const showAction = computed(() => currentStatus.value !== StageResultEnum.FAIL);
+  const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
+  const isNotFail = computed(() => currentStatus.value !== stageConfig.value?.stageConfigList.slice(-1)[0]?.id);
+  const isSuccess = computed(
+    () =>
+      currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id
+  );
+  const isFail = computed(
+    () => currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id
+  );
 
   const transferLoading = ref(false);
 
@@ -169,11 +186,11 @@
       },
     ];
 
-    if (currentStatus.value === StageResultEnum.FAIL) {
+    if (isFail.value) {
       return [...transferAction, ...deleteAction];
     }
 
-    if (currentStatus.value === StageResultEnum.SUCCESS) {
+    if (isSuccess.value) {
       return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
         ? [...editAction, ...deleteAction]
         : [...deleteAction];
@@ -181,14 +198,6 @@
 
     return [...editAction, ...transferAction, ...deleteAction];
   });
-
-  const baseStepList = computed(() => [
-    ...opportunityBaseSteps,
-    {
-      value: OpportunityStatusEnum.END,
-      label: t('opportunity.end'),
-    },
-  ]);
 
   const activeTab = ref('followRecord');
   const cachedList = ref([]);
@@ -260,8 +269,6 @@
     });
   }
 
-  const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
-
   function handleSelect(key: string, done?: () => void) {
     switch (key) {
       case 'pop-transfer':
@@ -290,10 +297,9 @@
     detail?: Record<string, any>
   ) {
     if (detail) {
-      const { customerName, customerId, name, lastStage, stage, failureReason } = detail;
+      const { customerName, customerId, name, stage, failureReason } = detail;
       // 商机阶段
       currentStatus.value = stage;
-      lastOptStage.value = lastStage;
       // 用于回显跟进类型、商机、商机对应客户
       titleName.value = _sourceName || '';
       subTitleName.value = customerName;
@@ -306,4 +312,13 @@
         }) || '';
     }
   }
+
+  watch(
+    () => showOptOverviewDrawer.value,
+    (val) => {
+      if (val) {
+        initStageConfig();
+      }
+    }
+  );
 </script>

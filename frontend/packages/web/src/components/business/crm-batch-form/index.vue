@@ -22,20 +22,23 @@
             :force-fallback="true"
             :animation="150"
             handle=".handle"
+            @move="handleMove"
             @end="(e) => emit('drag', e)"
           >
             <div
               v-for="(element, index) in form.list"
               :key="element.id ?? element._key"
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
+              :draggable="props.draggable && element.draggable !== false"
             >
               <CrmIcon
-                v-if="props.draggable"
+                v-if="props.draggable && element.draggable !== false"
                 type="iconicon_move"
                 :size="12"
                 :class="`handle text-[var(--text-n4)] ${disabledDraggable ? 'cursor-not-allowed' : 'cursor-move'}`"
                 :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
               />
+              <div v-if="element.draggable === false" class="w-[42px]"></div>
               <n-form-item
                 v-for="model of props.models"
                 :key="`${model.path}${index}`"
@@ -91,10 +94,12 @@
                   v-model:value="element[model.path]"
                   class="w-full"
                   clearable
-                  :disabled="!element.editing"
+                  :disabled="!element.editing || model.numberProps?.disabledFunction?.(element)"
                   :placeholder="model.numberProps?.placeholder ?? t('common.pleaseInput')"
                   v-bind="{
                     min: model.numberProps?.min,
+                    max: model.numberProps?.max,
+                    precision: model.numberProps?.precision,
                   }"
                 />
                 <n-tooltip
@@ -170,6 +175,7 @@
                     </n-button>
                     <span v-else></span>
                   </CrmPopConfirm>
+                  <slot v-else-if="$slots.extra" name="extra" :element="element"></slot>
                   <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
                     <template #icon>
                       <CrmIcon type="iconicon_delete" :size="16" />
@@ -182,6 +188,7 @@
         </n-scrollbar>
       </n-form>
       <n-button
+        v-if="props.addText"
         type="primary"
         :disabled="props.disabledAdd"
         text
@@ -220,6 +227,7 @@
   import { scrollIntoView } from '@lib/shared/method/dom';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmPopConfirm, { CrmPopConfirmProps } from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -232,7 +240,7 @@
   const props = withDefaults(
     defineProps<{
       models: FormItemModel[];
-      addText: string;
+      addText?: string;
       maxHeight?: string;
       defaultList?: any[]; // 当外层是编辑状态时，可传入已填充的数据
       disabledAdd?: boolean; // 是否禁用添加按钮
@@ -251,7 +259,7 @@
 
   const emit = defineEmits<{
     (e: 'deleteRow', index: number, id: string, done: () => void): void;
-    (e: 'saveRow', element: Record<string, any>, done: () => void): void;
+    (e: 'saveRow', element: Record<string, any>, done: () => void, index: number): void;
     (e: 'drag', event: any): void;
   }>();
 
@@ -289,8 +297,8 @@
     });
     form.value.list = props.defaultList?.length
       ? cloneDeep(props.defaultList).map((item) => ({
-          ...item,
           editing: false,
+          ...item,
         }))
       : [{ ...formItem, editing: true }];
   }
@@ -449,16 +457,23 @@
     await Promise.allSettled(fieldRefs.map((ref) => ref?.restoreValidation?.()));
   }
 
+  function handleMove(evt: any) {
+    if (evt.related.draggable === false) {
+      return false;
+    }
+    return true;
+  }
+
   // 取消编辑
   function handleCancelEdit(index: number) {
     if (rowBackups.value[index]) {
       form.value.list[index] = cloneDeep(rowBackups.value[index]);
+      restoreValidationRowFields(index);
+      form.value.list[index].editing = false;
+      delete rowBackups.value[index];
     } else {
-      form.value.list[index] = { ...formItem };
+      form.value.list.splice(index, 1);
     }
-    restoreValidationRowFields(index);
-    form.value.list[index].editing = false;
-    delete rowBackups.value[index];
   }
 
   // 保存编辑
@@ -466,10 +481,15 @@
     const isValid = await validateRowFields(index);
     formValidate(() => {
       if (!isValid) return;
-      emit('saveRow', element, () => {
-        form.value.list[index].editing = false;
-        delete rowBackups.value[index];
-      });
+      emit(
+        'saveRow',
+        element,
+        () => {
+          form.value.list[index].editing = false;
+          delete rowBackups.value[index];
+        },
+        index
+      );
     }, false);
   }
 
@@ -507,6 +527,10 @@
     },
     { immediate: true }
   );
+
+  defineExpose({
+    formValidate,
+  });
 </script>
 
 <style lang="less" scoped>

@@ -29,6 +29,12 @@ export const AdvancedSearchOptDetailUrl = '/advanced/search/opportunity/detail';
 export const GlobalSearchOptPageUrl = '/global/search/opportunity'; // 全局搜索商机列表
 export const BatchUpdateOpportunityUrl = '/opportunity/batch/update'; // 批量更新商机
 export const SortOpportunityUrl = '/opportunity/sort'; // 商机看板拖拽排序
+export const UpdateOpportunityStageUrl = '/opportunity/stage/update'; // 更新商机阶段配置
+export const UpdateOpportunityStageRollbackUrl = '/opportunity/stage/update-rollback'; // 商机阶段回退配置
+export const SortOpportunityStageUrl = '/opportunity/stage/sort'; // 商机阶段排序
+export const AddOpportunityStageUrl = '/opportunity/stage/add'; // 商机阶段添加
+export const GetOpportunityStageConfigUrl = '/opportunity/stage/get'; // 获取商机阶段配置
+export const DeleteOpportunityStageUrl = '/opportunity/stage/delete'; // 删除商机阶段
 
 // 视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';

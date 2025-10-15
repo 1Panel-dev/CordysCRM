@@ -1,6 +1,7 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddBusinessViewUrl,
+  AddOpportunityStageUrl,
   AddOptFollowPlanUrl,
   AddOptFollowRecordUrl,
   AdvancedSearchOptDetailUrl,
@@ -8,6 +9,7 @@ import {
   BatchUpdateOpportunityUrl,
   CancelOptFollowPlanUrl,
   DeleteBusinessViewUrl,
+  DeleteOpportunityStageUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
   DownloadOptTemplateUrl,
@@ -19,6 +21,7 @@ import {
   GetBusinessViewDetailUrl,
   GetBusinessViewListUrl,
   GetOpportunityContactListUrl,
+  GetOpportunityStageConfigUrl,
   GetOptDetailUrl,
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
@@ -37,8 +40,11 @@ import {
   OptUpdateStageUrl,
   OptUpdateUrl,
   PreCheckOptImportUrl,
+  SortOpportunityStageUrl,
   SortOpportunityUrl,
   UpdateBusinessViewUrl,
+  UpdateOpportunityStageRollbackUrl,
+  UpdateOpportunityStageUrl,
   UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
@@ -65,12 +71,17 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type {
+  AddOpportunityStageParams,
   OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
   OpportunityPageQueryParams,
+  OpportunityStageConfig,
   SaveOpportunityParams,
+  SortOpportunityStageParams,
   UpdateOpportunityParams,
+  UpdateOpportunityStageParams,
+  UpdateOpportunityStageRollbackParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
@@ -212,6 +223,36 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: GetOptStatisticUrl, data }, { ignoreCancelToken: true });
   }
 
+  // 更新商机阶段配置
+  function updateOpportunityStage(data: UpdateOpportunityStageParams) {
+    return CDR.post({ url: UpdateOpportunityStageUrl, data });
+  }
+
+  // 商机阶段回退配置
+  function updateOpportunityStageRollback(data: UpdateOpportunityStageRollbackParams) {
+    return CDR.post({ url: UpdateOpportunityStageRollbackUrl, data });
+  }
+
+  // 商机阶段排序
+  function sortOpportunityStage(data: SortOpportunityStageParams) {
+    return CDR.post({ url: SortOpportunityStageUrl, data });
+  }
+
+  // 添加商机阶段
+  function addOpportunityStage(data: AddOpportunityStageParams) {
+    return CDR.post({ url: AddOpportunityStageUrl, data });
+  }
+
+  // 获取商机阶段配置
+  function getOpportunityStageConfig() {
+    return CDR.get<OpportunityStageConfig>({ url: GetOpportunityStageConfigUrl });
+  }
+
+  // 删除商机阶段
+  function deleteOpportunityStage(id: string) {
+    return CDR.get({ url: `${DeleteOpportunityStageUrl}/${id}` });
+  }
+
   // 视图
   function addBusinessView(data: ViewParams) {
     return CDR.post({ url: AddBusinessViewUrl, data });
@@ -323,5 +364,11 @@ export default function useProductApi(CDR: CordysAxios) {
     getOptStatistic,
     batchUpdateOpportunity,
     sortOpportunity,
+    updateOpportunityStage,
+    updateOpportunityStageRollback,
+    sortOpportunityStage,
+    addOpportunityStage,
+    getOpportunityStageConfig,
+    deleteOpportunityStage,
   };
 }
