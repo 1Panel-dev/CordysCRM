@@ -70,7 +70,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.LARK_NOTICE.toString());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.LARK_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             LogUtils.warn("没有配置飞书通知信息，无法发送消息");
             return;

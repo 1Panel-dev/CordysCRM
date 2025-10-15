@@ -143,10 +143,8 @@ public class IntegrationConfigService {
             String detailType = detail.getType();
             Boolean isEnabled = detail.getEnable();
 
-            if (detailType.contains("SYNC") || detailType.contains("CODE") || detailType.contains("NOTICE")) {
+            if (detailType.contains("SYNC")) {
                 enableDTO.setStartEnable(isEnabled);
-            } else if (detailType.contains("OAUTH2")) {
-                enableDTO.setOAuth2Enable(isEnabled);
             } else if (detailType.contains("BOARD")) {
                 enableDTO.setBoardEnable(isEnabled);
             } else if (detailType.contains("CHAT")) {
@@ -167,7 +165,6 @@ public class IntegrationConfigService {
 
         configDTO.setType(type);
         configDTO.setStartEnable(thirdEnableDTO.isStartEnable());
-        configDTO.setOauth2Enable(thirdEnableDTO.isOAuth2Enable());
         configDTO.setDeBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
@@ -485,11 +482,8 @@ public class IntegrationConfigService {
     }
 
     private void updateOldConfigEnableState(ThirdConfigurationDTO oldConfig, String detailType, Boolean enable) {
-        if (detailType.contains("SYNC") || detailType.contains("CODE") || detailType.contains("NOTICE")) {
+        if (detailType.contains("SYNC")) {
             oldConfig.setStartEnable(enable);
-        }
-        if (detailType.contains("OAUTH2")) {
-            oldConfig.setOauth2Enable(enable);
         }
     }
 
@@ -557,28 +551,19 @@ public class IntegrationConfigService {
     private List<String> getDetailTypes(String type) {
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             return List.of(
-                    ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(),
-                    ThirdConstants.ThirdDetailType.WECOM_CODE.toString(),
-                    ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(),
-                    UserSource.WECOM_OAUTH2.toString()
+                    ThirdConstants.ThirdDetailType.WECOM_SYNC.toString()
             );
         }
 
         if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             return List.of(
-                    ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(),
-                    ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(),
-                    ThirdConstants.ThirdDetailType.DINGTALK_NOTICE.toString(),
-                    UserSource.DINGTALK_OAUTH2.toString()
+                    ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString()
             );
         }
 
         if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             return List.of(
-                    ThirdConstants.ThirdDetailType.LARK_SYNC.toString(),
-                    ThirdConstants.ThirdDetailType.LARK_CODE.toString(),
-                    ThirdConstants.ThirdDetailType.LARK_NOTICE.toString(),
-                    UserSource.LARK_OAUTH2.toString()
+                    ThirdConstants.ThirdDetailType.LARK_SYNC.toString()
             );
         }
 
@@ -605,19 +590,10 @@ public class IntegrationConfigService {
 
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.WECOM_CODE.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.WECOM_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.DINGTALK_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.DINGTALK_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.LARK_CODE.toString(), configDTO.getStartEnable());
-            map.put(ThirdConstants.ThirdDetailType.LARK_NOTICE.toString(), configDTO.getStartEnable());
-            map.put(UserSource.LARK_OAUTH2.toString(), configDTO.getOauth2Enable());
         } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(),
                     configDTO.getDeBoardEnable() != null && configDTO.getDeBoardEnable());
@@ -916,9 +892,9 @@ public class IntegrationConfigService {
 
         // 获取CODE类型的配置详情
         List<String> codeTypes = List.of(
-                ThirdConstants.ThirdDetailType.WECOM_CODE.toString(),
-                ThirdConstants.ThirdDetailType.DINGTALK_CODE.toString(),
-                ThirdConstants.ThirdDetailType.LARK_CODE.toString()
+                ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(),
+                ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(),
+                ThirdConstants.ThirdDetailType.LARK_SYNC.toString()
         );
 
         List<OrganizationConfigDetail> details = extOrganizationConfigDetailMapper
@@ -955,6 +931,7 @@ public class IntegrationConfigService {
         return option;
     }
 
+    @OperationLog(module = LogModule.SYSTEM_BUSINESS_THIRD, type = LogType.UPDATE, operator = "{#userId}")
     public void switchThirdPartySetting(String type, String organizationId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
@@ -963,6 +940,7 @@ public class IntegrationConfigService {
         if (type.equals(organizationConfig.getSyncResource())) {
             return;
         }
+        String oldLog = organizationConfig.getSyncResource();
         //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
         String lastSyncType = getLastSyncType(organizationConfig.getId());
         if (lastSyncType != null) {
@@ -975,6 +953,12 @@ public class IntegrationConfigService {
             });
         }
         extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .resourceName(Translator.get("third.setting"))
+                .resourceId(organizationConfig.getId())
+                .originalValue(oldLog)
+                .modifiedValue(type)
+                .build());
     }
 
     public OrganizationConfig getLatestSyncResource(String organizationId) {

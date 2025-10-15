@@ -72,7 +72,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取企业微信通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.WECOM_NOTICE.toString());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             LogUtils.warn("没有配置企业微信通知信息，无法发送消息");
             return;

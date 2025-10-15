@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class ThirdEnableDTO {
     private boolean startEnable;
-    private boolean oAuth2Enable;
     private boolean boardEnable;
     private boolean chatEnable;
 }

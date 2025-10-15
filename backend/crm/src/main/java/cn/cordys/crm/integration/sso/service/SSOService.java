@@ -1,6 +1,7 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.request.LoginRequest;
@@ -105,7 +106,7 @@ public class SSOService {
     public SessionUser exchangeWeComOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(UserSource.WECOM_OAUTH2.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigurationDTO weComConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
 

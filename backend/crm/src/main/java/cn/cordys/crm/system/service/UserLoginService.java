@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.dto.RoleDataScopeDTO;
 import cn.cordys.common.exception.GenericException;
@@ -350,7 +351,7 @@ public class UserLoginService {
      */
     private List<OrganizationConfigDetail> getEnabledWeComOauthConfigs(String configId) {
         return extOrganizationConfigDetailMapper
-                .getEnableOrganizationConfigDetails(configId, List.of(UserSource.WECOM_OAUTH2.toString(), UserSource.DINGTALK_OAUTH2.toString(), UserSource.LARK_OAUTH2.toString()));
+                .getEnableOrganizationConfigDetails(configId, List.of(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), ThirdConstants.ThirdDetailType.LARK_SYNC.toString()));
     }
 
     /**
