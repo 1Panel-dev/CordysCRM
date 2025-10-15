@@ -258,7 +258,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       placeholder: 'openid profile email',
     },
   ],
-  WE_COM_OAUTH2: [
+  WECOM_OAUTH2: [
     {
       label: t('system.business.corpId'),
       key: 'corpId',
@@ -388,7 +388,7 @@ export const defaultAuthForm = {
   enable: false,
   description: '',
   name: '',
-  type: 'WE_COM_OAUTH2',
+  type: 'WECOM_OAUTH2',
   configuration: {},
 };
 

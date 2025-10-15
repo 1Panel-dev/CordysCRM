@@ -55,7 +55,7 @@ export default function useLogin() {
       window.history.replaceState({}, document.title, newUrl);
     } else {
       const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-        CompanyTypeEnum.WE_COM_OAUTH2
+        CompanyTypeEnum.WECOM
       );
       if (res) {
         const { data } = res.data;
@@ -87,7 +87,7 @@ export default function useLogin() {
       window.history.replaceState({}, document.title, newUrl);
     } else {
       const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-        CompanyTypeEnum.DINGTALK_OAUTH2
+        CompanyTypeEnum.DINGTALK
       );
       if (res) {
         const { data } = res.data;

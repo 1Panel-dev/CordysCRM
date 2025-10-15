@@ -837,6 +837,15 @@ public class IntegrationConfigService {
         }
 
         // 获取指定类型的配置
+        if (type.contains(DepartmentConstants.WECOM.name())) {
+            type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
+        }
+        if (type.contains(DepartmentConstants.DINGTALK.name())) {
+            type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
+        }
+        if (type.contains(DepartmentConstants.LARK.name())) {
+            type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
+        }
         ThirdConfigurationDTO configDTO = getConfigurationByType(type, details);
 
         // 隐藏敏感信息
