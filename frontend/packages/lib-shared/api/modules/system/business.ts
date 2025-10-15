@@ -105,6 +105,7 @@ export default function useProductApi(CDR: CordysAxios) {
           CompanyTypeEnum.SQLBot,
           CompanyTypeEnum.WE_COM_OAUTH2,
           CompanyTypeEnum.DINGTALK,
+          CompanyTypeEnum.WECOM,
           CompanyTypeEnum.DINGTALK_OAUTH2,
         ].includes(type as CompanyTypeEnum),
         isReturnNativeResponse: [CompanyTypeEnum.WE_COM_OAUTH2, CompanyTypeEnum.DINGTALK_OAUTH2].includes(

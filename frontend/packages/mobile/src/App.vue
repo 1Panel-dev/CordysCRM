@@ -34,7 +34,7 @@
     const isDingTalk =
       navigator.userAgent.includes('dingtalk') ||
       navigator.userAgent.includes('aliapp(dingtalk') ||
-      getQueryVariable('authCode') !== '';
+      getQueryVariable('authCode');
 
     if (!loginStatus && !hasToken() && (isWXWork || isDingTalk)) {
       await oAuthLogin();
