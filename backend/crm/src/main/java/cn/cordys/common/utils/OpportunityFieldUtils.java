@@ -3,7 +3,6 @@ package cn.cordys.common.utils;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.util.TimeUtils;
-import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 public class OpportunityFieldUtils {
 
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap) {
         LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("customerId", data.getCustomerName());
@@ -30,7 +29,7 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("contactId", data.getContactName());
         systemFiledMap.put("owner", data.getOwnerName());
 
-        systemFiledMap.put("stage", Translator.get(data.getStage()));
+        systemFiledMap.put("stage", stageConfigMap.get(data.getStage()));
         systemFiledMap.put("followerName", data.getFollowerName());
         systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());

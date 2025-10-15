@@ -15,6 +15,8 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
     public static final String PCD = "PCD";
     public static final String PC = "PC";
+    public static final String P = "P";
+    public static final String C = "C";
     private static final String SPILT_STR = "-";
     private static SoftReference<List<RegionCode>> regionCodeRef;
 

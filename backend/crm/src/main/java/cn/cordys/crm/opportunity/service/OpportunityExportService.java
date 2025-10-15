@@ -15,7 +15,9 @@ import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.utils.OpportunityFieldUtils;
 import cn.cordys.crm.opportunity.dto.request.OpportunityExportRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -46,6 +48,8 @@ public class OpportunityExportService extends BaseExportService {
     private ExportTaskService exportTaskService;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
 
     public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
@@ -106,7 +110,6 @@ public class OpportunityExportService extends BaseExportService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, OpportunityExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
@@ -116,23 +119,26 @@ public class OpportunityExportService extends BaseExportService {
         List<OpportunityListResponse> dataList = opportunityService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(orgId, allList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);
+        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        Map<String, String> stageConfigMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
         for (OpportunityListResponse response : dataList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
+            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap, stageConfigMap);
             data.add(value);
         }
 
         return data;
     }
 
-    private List<Object> buildData(List<ExportHeadDTO> headList, OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
+    private List<Object> buildData(List<ExportHeadDTO> headList, OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap, Map<String, String> stageConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = OpportunityFieldUtils.getSystemFieldMap(data, optionMap);
+        LinkedHashMap<String, Object> systemFiledMap = OpportunityFieldUtils.getSystemFieldMap(data, optionMap, stageConfigMap);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
@@ -150,7 +156,6 @@ public class OpportunityExportService extends BaseExportService {
      * @param userId
      * @param request
      * @param orgId
-     *
      * @return
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
@@ -215,9 +220,7 @@ public class OpportunityExportService extends BaseExportService {
      * @param ids
      * @param orgId
      * @param taskId
-     *
      * @return
-     *
      * @throws InterruptedException
      */
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
@@ -226,13 +229,15 @@ public class OpportunityExportService extends BaseExportService {
         List<OpportunityListResponse> dataList = opportunityService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(orgId, allList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);
+        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        Map<String, String> stageConfigMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
         for (OpportunityListResponse response : dataList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
+            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap, stageConfigMap);
             data.add(value);
         }
 

@@ -182,7 +182,11 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     private String getLocationComment(BaseField field) {
         StringBuilder sb = new StringBuilder();
         LocationField locationField = (LocationField) field;
-        if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PC)) {
+        if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.C)) {
+            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.c"));
+        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.P)) {
+            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.p"));
+        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PC)) {
             sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pc"));
         } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD)) {
             sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd"));
