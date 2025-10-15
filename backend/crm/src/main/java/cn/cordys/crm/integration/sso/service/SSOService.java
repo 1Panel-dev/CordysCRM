@@ -174,8 +174,9 @@ public class SSOService {
         // 读取用户信息
         DingTalkUserResponse dingTalkUserResponse = oauthUserService.getDingTalkUser(assessToken);
 
+        String dingTalkToken = tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
         //根据unionid查询用户信息
-        String userIdByUnionId = oauthUserService.getUserIdByUnionId(assessToken, dingTalkUserResponse.getUnionId());
+        String userIdByUnionId = oauthUserService.getUserIdByUnionId(dingTalkToken, dingTalkUserResponse.getUnionId());
 
         // 查找并验证用户
         UserDTO enableUser = getUserAndValidateEnable(userIdByUnionId);
