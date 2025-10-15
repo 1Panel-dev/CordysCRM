@@ -184,14 +184,16 @@
 
   async function handleMoreSelect(action: ActionsItem, element: Record<string, any>) {
     const index = form.value.list.findIndex((item: any) => item._key === element._key);
+    const id = getGenerateId();
     if (action.key === 'before') {
       batchFormRef.value?.formValidate(() => {
-        form.value.list.splice(index, 0, { _key: getGenerateId(), name: '', rate: null, type: 'AFOOT', editing: true });
+        form.value.list.splice(index, 0, { id, _key: id, name: '', rate: null, type: 'AFOOT', editing: true });
       });
     } else if (action.key === 'after') {
       batchFormRef.value?.formValidate(() => {
         form.value.list.splice(index + 1, 0, {
-          _key: getGenerateId(),
+          id,
+          _key: id,
           name: '',
           rate: null,
           type: 'AFOOT',
@@ -215,12 +217,13 @@
         await updateOpportunityStage(params);
         done();
       } else {
-        await addOpportunityStage({
+        const id = await addOpportunityStage({
           ...params,
           type: element.type,
           dropPosition: form.value.list[index - 1] ? 1 : -1,
           targetId: form.value.list[index - 1]?.id || form.value.list[index + 1]?.id,
         });
+        element.id = id;
         done();
       }
       Message.success(t('common.operationSuccess'));
