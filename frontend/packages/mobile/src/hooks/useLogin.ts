@@ -13,6 +13,43 @@ import useUserStore from '@/store/modules/user';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
 
+const platformConfig = {
+  // 企业微信
+  'wecom': {
+    detect: isWeComBrowser,
+    platformConfigType: CompanyTypeEnum.WECOM,
+    authLoginType: CompanyTypeEnum.WE_COM_OAUTH2,
+    type: 'wecom',
+    codeKey: 'code',
+    codeKeysParams: ['code', 'state'],
+    authUrl: (config: ConfigSynchronization) => {
+      const redirectUrl = `${window.location.origin}/mobile`;
+      return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
+        config.corpId
+      }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
+        config.agentId
+      }#wechat_redirect`;
+    },
+  },
+  // 钉钉
+  'ding-talk': {
+    detect: isDingTalkBrowser,
+    platformConfigType: CompanyTypeEnum.DINGTALK,
+    authLoginType: CompanyTypeEnum.DINGTALK_OAUTH2,
+    type: 'ding-talk',
+    codeKey: 'authCode',
+    codeKeysParams: ['code', 'authCode', 'state'],
+    authUrl: (config: ConfigSynchronization) => {
+      const redirectUrl = `${window.location.origin}/mobile`;
+      return `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
+        redirectUrl
+      )}&response_type=code&client_id=${config.agentId}&scope=openid corpid&state=ding&prompt=consent&corpid=${
+        config.corpId
+      }`;
+    },
+  },
+} as const;
+
 export default function useLogin() {
   const userStore = useUserStore();
   const router = useRouter();
@@ -41,88 +78,52 @@ export default function useLogin() {
     }
   }
 
-  async function weComAuthLoginAndReplace(code: string) {
+  async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
+    const platform = platformConfig[platformKey];
+    const code = getQueryVariable(platform.codeKey) ?? '';
     if (code) {
-      await thirdAuthLogin(code, 'wecom', CompanyTypeEnum.WE_COM_OAUTH2);
-      const currentUrl = window.location.href;
-      const url = new URL(currentUrl);
-      getUrlParameterWidthRegExp('code');
-      getUrlParameterWidthRegExp('state');
-      url.searchParams.delete('code');
-      url.searchParams.delete('state');
-      const newUrl = url.toString();
-      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-      window.history.replaceState({}, document.title, newUrl);
-    } else {
-      const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-        CompanyTypeEnum.WECOM
-      );
-      if (res) {
-        const { data } = res.data;
-        const redirectUrl = `${window.location.origin}/mobile`;
-        const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
-          data.corpId
-        }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
-          data.agentId
-        }#wechat_redirect`;
-        window.location.replace(url);
-      }
-    }
-  }
+      await thirdAuthLogin(code, platform.type, platform.authLoginType);
 
-  async function dingAuthLoginAndReplace(code: string) {
-    if (code) {
-      await thirdAuthLogin(code, 'ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2);
-      const currentUrl = window.location.href;
-      const url = new URL(currentUrl);
-      const authParams = ['code', 'authCode', 'state'];
-      authParams.forEach((param) => {
+      // 清理参数
+      const url = new URL(window.location.href);
+      platform.codeKeysParams.forEach((param) => {
         getUrlParameterWidthRegExp(param);
-      });
-      authParams.forEach((param) => {
         url.searchParams.delete(param);
       });
-      const newUrl = url.toString();
       // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-      window.history.replaceState({}, document.title, newUrl);
-    } else {
-      const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
-        CompanyTypeEnum.DINGTALK
-      );
-      if (res) {
-        const { data } = res.data;
-        const redirectUrl = `${window.location.origin}/mobile`;
-        const url = `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
-          redirectUrl
-        )}&response_type=code&client_id=${data.agentId}&scope=openid corpid&state=dddd&prompt=consent&corpid=${
-          data.corpId
-        }`;
-        window.location.replace(url);
-      }
+      window.history.replaceState({}, document.title, url.toString());
+      return;
+    }
+
+    const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
+      platform.platformConfigType,
+      true
+    );
+    if (res) {
+      const { data } = res.data;
+      const redirectUrl = platform.authUrl(data);
+      window.location.replace(redirectUrl);
     }
   }
 
   async function oAuthLogin() {
     try {
-      if (!isWeComBrowser() && !isDingTalkBrowser()) {
+      const platformKey = Object.keys(platformConfig).find((key) =>
+        platformConfig[key as keyof typeof platformConfig].detect()
+      ) as keyof typeof platformConfig | undefined;
+      // 没有检测到三方平台企业微信、钉钉浏览器直接跳转到登录
+      if (!platformKey) {
         return router.replace({ name: 'login' });
       }
-
-      const codeKey = isDingTalkBrowser() ? 'authCode' : 'code';
-      const code = getQueryVariable(codeKey) ?? '';
-      if (isWeComBrowser()) {
-        await weComAuthLoginAndReplace(code);
-      } else if (isDingTalkBrowser()) {
-        await dingAuthLoginAndReplace(code);
-      }
+      // 检测到任一平台走第三方认证登录
+      await handleThirdAuthLogin(platformKey);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-      if ((error as Result).code === 100500) {
+      const err = error as Result;
+      if (err.code === 100500) {
         router.replace({ name: 'login' });
-      }
-
-      if ((error as Result).code === 401) {
+      } else if (err.code === 401) {
         router.replace(AUTH_DISABLED_ROUTE_NAME);
       }
     }

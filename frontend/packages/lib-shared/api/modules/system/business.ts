@@ -97,20 +97,17 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 根据类型获取开启的三方扫码设置
-  function getThirdConfigByType<T = ConfigSynchronization>(type: string) {
+  function getThirdConfigByType<T = ConfigSynchronization>(type: string, isReturnNativeResponse = false) {
     return CDR.get<T>(
       { url: `${GetThirdConfigByTypeUrl}/${type}` },
       {
         noErrorTip: [
           CompanyTypeEnum.SQLBot,
-          CompanyTypeEnum.WE_COM_OAUTH2,
           CompanyTypeEnum.DINGTALK,
           CompanyTypeEnum.WECOM,
-          CompanyTypeEnum.DINGTALK_OAUTH2,
+          CompanyTypeEnum.LARK,
         ].includes(type as CompanyTypeEnum),
-        isReturnNativeResponse: [CompanyTypeEnum.WE_COM_OAUTH2, CompanyTypeEnum.DINGTALK_OAUTH2].includes(
-          type as CompanyTypeEnum
-        ),
+        isReturnNativeResponse,
       }
     );
   }
