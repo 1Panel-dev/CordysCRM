@@ -74,7 +74,7 @@ public class WeComDepartmentService {
         Map<String, List<ThirdUser>> thirdUserMap = new HashMap<>();
 
         for (Long departmentId : departmentIds) {
-            String url = urlTransfer(accessToken, departmentId);
+            String url = urlTransfer(WeComApiPaths.USER_LIST, accessToken, departmentId);
             WeComUserListResponse response = fetchUserList(url);
 
             if (response.getErrCode() != 0) {
