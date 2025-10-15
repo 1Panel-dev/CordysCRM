@@ -2,12 +2,10 @@ package cn.cordys.crm.follow.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.BusinessDataPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
-import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
@@ -62,11 +60,7 @@ public class FollowUpRecordController {
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        BusinessDataPermission cluePermission = BeanUtils.copyBean(new BusinessDataPermission(), clueDataPermission);
-        cluePermission.setSourceTable("clue");
-        BusinessDataPermission customerPermission = BeanUtils.copyBean(new BusinessDataPermission(), customerDataPermission);
-        customerPermission.setSourceTable("customer");
-        return followUpRecordService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), List.of(cluePermission, customerPermission));
+        return followUpRecordService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
     }
 
     @GetMapping("/delete/{id}")

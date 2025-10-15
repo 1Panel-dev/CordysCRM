@@ -1,6 +1,7 @@
 package cn.cordys.crm.follow.mapper;
 
 import cn.cordys.common.dto.BusinessDataPermission;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
@@ -24,11 +25,12 @@ public interface ExtFollowUpRecordMapper {
      * @param request 请求参数
      * @param userId 用户ID
      * @param orgId 组织ID
-     * @param dataPermissions 业务数据权限
+     * @param clueDataPermission 线索业务数据权限
+     * @param customerDataPermission 客户业务数据权限
      * @return 记录列表
      */
     List<FollowUpRecordListResponse>  selectTotalList(@Param("request") RecordHomePageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                                                      @Param("dataPermissions") List<BusinessDataPermission> dataPermissions);
+                                                      @Param("clueDataPermission") DeptDataPermissionDTO clueDataPermission, @Param("customerDataPermission") DeptDataPermissionDTO customerDataPermission);
 
     FollowUpRecord selectRecord(@Param("customerId") String customerId, @Param("opportunityId") String opportunityId, @Param("clueId") String clueId, @Param("orgId") String orgId, @Param("type") String type);
 

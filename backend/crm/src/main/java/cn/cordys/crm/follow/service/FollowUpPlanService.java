@@ -8,10 +8,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.BusinessDataPermission;
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.common.dto.RolePermissionDTO;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -183,14 +180,16 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param request 请求参数
      * @param userId 用户ID
      * @param orgId 组织ID
-     * @param dataPermissions 数据权限集合
+     * @param clueDataPermission 线索数据权限
+     * @param customerDataPermission 客户数据权限
      * @return 跟进计划汇总列表
      */
-    public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId, List<BusinessDataPermission> dataPermissions) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, dataPermissions);
+    public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId,
+                                                                     DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 

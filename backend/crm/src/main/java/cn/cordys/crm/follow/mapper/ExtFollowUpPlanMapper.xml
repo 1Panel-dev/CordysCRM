@@ -137,49 +137,28 @@
     </select>
 
     <select id="selectTotalList" resultType="cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse">
-        select * from (
-        <foreach collection="dataPermissions" item="dataPermission" separator="union">
-            select
-            fup.id,
-            fup.customer_id,
-            fup.opportunity_id,
-            fup.type,
-            fup.clue_id,
-            fup.content,
-            fup.owner,
-            fup.contact_id,
-            fup.estimated_time,
-            fup.create_time,
-            fup.update_time,
-            fup.create_user,
-            fup.update_user,
-            fup.method,
-            fup.converted,
-            fup.status,
-            fup.organization_id
-            from follow_up_plan fup
-            join ${dataPermission.sourceTable} c on c.id = fup.${dataPermission.sourceTable}_id
-            <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-                join sys_organization_user sou on fup.owner = sou.user_id
-                and (
-                sou.department_id in
-                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                    #{deptId}
-                </foreach>
-                <if test="dataPermission.viewId == 'ALL'">
-                    or fup.owner = #{userId}
-                </if>
-                )
-            </if>
-            where fup.organization_id = #{orgId}
-            <if test="request.keyword != null and request.keyword != ''">
-                and c.name like concat('%', #{request.keyword},'%')
-            </if>
-            <if test="dataPermission != null and dataPermission.self">
-                and fup.owner = #{userId}
-            </if>
-        </foreach>
-        ) fup
+        SELECT
+        fup.id,
+        fup.customer_id,
+        fup.opportunity_id,
+        fup.type,
+        fup.clue_id,
+        fup.content,
+        fup.owner,
+        fup.contact_id,
+        fup.estimated_time,
+        fup.create_time,
+        fup.update_time,
+        fup.create_user,
+        fup.update_user,
+        fup.method,
+        fup.converted,
+        fup.status,
+        fup.organization_id
+        FROM follow_up_plan fup
+        LEFT JOIN clue c ON c.id = fup.clue_id
+        LEFT JOIN customer cu ON cu.id = fup.customer_id
+        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -195,11 +174,49 @@
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
+        WHERE fup.organization_id = #{orgId}
+        <!-- 业务数据权限条件 -->
+        AND (
+            <!-- 线索数据 -->
+            (
+                c.id IS NOT NULL AND fup.type = 'CLUE'
+                <if test="clueDataPermission != null and clueDataPermission.self">
+                    AND fup.owner = #{userId}
+                </if>
+                <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0 and !clueDataPermission.self">
+                    AND sou.department_id IN (
+                    <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                        #{deptId}
+                    </foreach>
+                    <if test="clueDataPermission.viewId == 'ALL'">
+                        OR fup.owner = #{userId}
+                    </if>
+                    )
+                </if>
+            )
+            OR
+            <!-- 客户数据 -->
+            (
+                cu.id IS NOT NULL AND fup.type = 'CUSTOMER'
+                <!-- 如果 customer 权限要求 only self -->
+                <if test="customerDataPermission != null and customerDataPermission.self">
+                    AND fup.owner = #{userId}
+                </if>
 
-        where fup.organization_id = #{orgId}
-        <if test="request.status != null and request.status != '' and request.status != 'ALL'">
-            AND status = #{request.status}
-        </if>
+                <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0 and !customerDataPermission.self">
+                    AND (sou.department_id IN
+                    <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                        #{deptId}
+                    </foreach>
+                    <if test="customerDataPermission.viewId == 'ALL'">
+                        OR fup.owner = #{userId}
+                    </if>
+                    )
+                </if>
+            )
+        )
+
+        <!-- 高级搜索/过滤, 排序条件 -->
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
@@ -212,6 +229,8 @@
         <include refid="sort">
             <property name="sort" value="request.sort"/>
         </include>
+
+        limit ${request.current}, ${request.pageSize}
     </select>
 
     <sql id="fieldConditionJoin">

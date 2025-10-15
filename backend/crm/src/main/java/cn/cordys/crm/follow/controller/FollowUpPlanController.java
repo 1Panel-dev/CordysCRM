@@ -64,11 +64,7 @@ public class FollowUpPlanController {
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        BusinessDataPermission cluePermission = BeanUtils.copyBean(new BusinessDataPermission(), clueDataPermission);
-        cluePermission.setSourceTable("clue");
-        BusinessDataPermission customerPermission = BeanUtils.copyBean(new BusinessDataPermission(), customerDataPermission);
-        customerPermission.setSourceTable("customer");
-        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), List.of(cluePermission, customerPermission));
+        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
     }
 
     @GetMapping("/delete/{id}")

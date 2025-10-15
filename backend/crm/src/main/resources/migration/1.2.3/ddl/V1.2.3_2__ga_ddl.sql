@@ -31,6 +31,12 @@ DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
 
+-- 添加跟进记录默认排序索引
+create index idx_follow_create
+    on follow_up_record (follow_time desc, create_time desc);
+create index idx_estimated_create
+    on follow_up_plan (estimated_time desc, create_time desc);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

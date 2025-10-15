@@ -8,7 +8,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.BusinessDataPermission;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
@@ -387,15 +387,17 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param request 请求参数
      * @param userId 用户ID
      * @param orgId 组织ID
-     * @param dataPermissions 数据权限
+     * @param clueDataPermission 线索业务数据权限
+     * @param customerDataPermission 客户业务数据权限
      * @return 记录的汇总列表
      */
-    public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId, List<BusinessDataPermission> dataPermissions) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId,
+                                                                       DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
         // 解析当前用户数据权限
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId, dataPermissions);
+        List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
         buildListData(recordList, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, recordList);
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfoWithOption(page, recordList, optionMap);
     }
 
