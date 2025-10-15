@@ -33,6 +33,8 @@ export type FormKey =
   | FormDesignKeyEnum.BUSINESS_CONTACT
   | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
   | FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER
+  | FormDesignKeyEnum.FOLLOW_RECORD
+  | FormDesignKeyEnum.FOLLOW_PLAN
   | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE
   | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER
   | FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT
@@ -53,6 +55,8 @@ export interface FormCreateTableProps {
   containerClass: string; // 容器元素类名
   hiddenTotal?: boolean;
   opportunityStage?: StageConfigItem[]; // 商机阶段筛选项
+  hiddenAllScreen?: boolean;
+  hiddenRefresh?: boolean;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -76,6 +80,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: undefined,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: TableKeyEnum.FOLLOW_PLAN,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: TableKeyEnum.FOLLOW_RECORD,
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: TableKeyEnum.SEARCH_ADVANCED_CLUE,
     [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: TableKeyEnum.SEARCH_ADVANCED_CUSTOMER,
     [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: TableKeyEnum.SEARCH_ADVANCED_CONTACT,
@@ -295,6 +301,62 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
   ];
 
+  const recordInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+    {
+      key: 'phone',
+      title: t('common.phoneNumber'),
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+  ];
+
+  const planInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+    {
+      key: 'phone',
+      title: t('common.phoneNumber'),
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.status'),
+      width: 120,
+      key: 'status',
+      render: props.specialRender?.status,
+    },
+    {
+      title: t('eventDrawer.record.converted'),
+      width: 120,
+      key: 'converted',
+      render: (row: any) => (row.converted ? t('common.yes') : t('common.no')),
+    },
+  ];
+
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: customerInternalColumns,
     [FormDesignKeyEnum.CONTACT]: contactInternalColumns,
@@ -508,6 +570,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: recordInternalColumns,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: planInternalColumns,
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: [],
     [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: [
       {
@@ -624,6 +688,26 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
   ];
 
+  function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
+    if ([FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)) {
+      const customerField = fields.find((item) => item.businessKey === 'customerId');
+      const clueField = fields.find((item) => item.businessKey === 'clueId');
+      return [
+        {
+          title: `${customerField?.name}/${clueField?.name}`,
+          width: 200,
+          key: 'name',
+          render: props.specialRender?.name,
+          fixed: 'left',
+          fieldId: (customerField ?? clueField)?.id,
+          filedType: (customerField ?? clueField)?.type,
+          columnSelectorDisabled: true,
+        },
+      ];
+    }
+    return [];
+  }
+
   async function initFormConfig() {
     try {
       const sorter = noPaginationKey.includes(props.formKey) ? 'default' : true;
@@ -640,7 +724,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               e.businessKey === 'owner' &&
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
             ) &&
-            e.readable
+            e.readable &&
+            !(
+              [FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey) &&
+              ['clueId', 'customerId'].includes(e.businessKey as string)
+            )
         )
         .map((field) => {
           const noSorterType = [
@@ -841,7 +929,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             filedType: field.type,
           };
         });
-      columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];
+
+      columns = [
+        ...getFollowColumn(res.fields),
+        ...columns,
+        ...(internalColumnMap[props.formKey] || []),
+        ...staticColumns,
+      ];
       if (!props.readonly) {
         columns.unshift({
           type: 'selection',
@@ -897,6 +991,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       // virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // TODO:横向滚动有问题
       containerClass: props.containerClass,
       hiddenTotal: props.hiddenTotal,
+      hiddenAllScreen: props.hiddenAllScreen,
+      hiddenRefresh: props.hiddenRefresh,
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

@@ -3,6 +3,7 @@ import useAgentApi from '@lib/shared/api/modules/agent';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useDashboard from '@lib/shared/api/modules/dashboard';
+import useFollowApi from '@lib/shared/api/modules/follow';
 import useHomeApi from '@lib/shared/api/modules/home';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
@@ -41,6 +42,19 @@ const licenseApi = useLicenseApi(CDR);
 const dashboardApi = useDashboard(CDR);
 const homeApi = useHomeApi(CDR);
 const agentApi = useAgentApi(CDR);
+const followApi = useFollowApi(CDR);
+
+export const {
+  getFollowPlanDetail,
+  getFollowPLanPage,
+  getFollowRecordDetail,
+  getFollowRecordPage,
+  deleteFollowRecord,
+  getFollowRecordTab,
+  getFollowPlanTab,
+  deleteFollowPlan,
+  updateFollowPlanStatus,
+} = followApi;
 
 export const {
   addProduct,

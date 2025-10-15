@@ -15,6 +15,13 @@
             </n-button>
             <span v-else></span>
           </template>
+          <template #eventSlot>
+            <n-button class="p-[8px]" quaternary @click="showFollowDrawer = true">
+              <template #icon>
+                <CrmIcon type="iconicon_data_plan" :size="16" />
+              </template>
+            </n-button>
+          </template>
           <template #languageSlot>
             <n-popselect
               v-model:value="currentLocale"
@@ -151,6 +158,7 @@
     </Suspense>
   </n-layout-header>
   <agentDrawer v-model:visible="showAgentDrawer" />
+  <CrmFollowDrawer v-model:visible="showFollowDrawer" />
 </template>
 
 <script setup lang="ts">
@@ -186,6 +194,7 @@
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const agentDrawer = defineAsyncComponent(() => import('@/components/business/crm-agent-drawer/index.vue'));
+  const CrmFollowDrawer = defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/index.vue'));
 
   const route = useRoute();
 
@@ -249,6 +258,8 @@
 
   const showSearch = computed(() => lastScopedOptions.value.length);
   const showDuplicateCheckDrawer = ref(false);
+
+  const showFollowDrawer = ref(false);
 
   const { copy, isSupported } = useClipboard({ legacy: true });
   function copyVersion(version: string) {

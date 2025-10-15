@@ -16,6 +16,8 @@ export enum FormDesignKeyEnum {
   PRODUCT = 'product', // 产品
   BUSINESS_CONTACT = 'opportunityContact', // 商机联系人
   CUSTOMER_OPPORTUNITY = 'customerOpportunity', // 客户商机
+  FOLLOW_PLAN = 'followPlan',
+  FOLLOW_RECORD = 'followRecord',
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

@@ -93,4 +93,10 @@ export const defaultNavList: ActionItem[] = [
     iconType: 'iconicon_help_circle',
     slotName: 'helpSlot',
   },
+  {
+    label: t('settings.navbar.event'),
+    key: 'event',
+    iconType: 'iconicon_data_plan',
+    slotName: 'eventSlot',
+  },
 ];

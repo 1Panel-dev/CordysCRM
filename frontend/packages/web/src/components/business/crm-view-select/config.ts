@@ -69,6 +69,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: getBusinessViewList,
     [FormDesignKeyEnum.CLUE_POOL]: getLeadPoolViewList,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getAccountPoolViewList,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   add: {
     [FormDesignKeyEnum.CLUE]: addClueView,
@@ -77,6 +79,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: addBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: addLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: addAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   update: {
     [FormDesignKeyEnum.CLUE]: updateClueView,
@@ -85,6 +89,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: updateBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: updateLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: updateAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   delete: {
     [FormDesignKeyEnum.CLUE]: deleteClueView,
@@ -93,6 +99,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: deleteBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: deleteLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: deleteAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   detail: {
     [FormDesignKeyEnum.CLUE]: getClueViewDetail,
@@ -101,6 +109,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: getBusinessViewDetail,
     [FormDesignKeyEnum.CLUE_POOL]: getLeadPoolViewDetail,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getAccountPoolViewDetail,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   fixed: {
     [FormDesignKeyEnum.CLUE]: fixedClueView,
@@ -109,6 +119,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: fixedBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: fixedLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: fixedAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   enable: {
     [FormDesignKeyEnum.CLUE]: enableClueView,
@@ -117,6 +129,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: enableBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: enableLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: enableAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
   drag: {
     [FormDesignKeyEnum.CLUE]: dragClueView,
@@ -125,6 +139,8 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.BUSINESS]: dragBusinessView,
     [FormDesignKeyEnum.CLUE_POOL]: dragLeadPoolView,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: dragAccountPoolView,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: async () => ({}),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: async () => ({}),
   },
 };
 

@@ -99,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NSpin, TabPaneProps } from 'naive-ui';
+  import { NButton, NSpin } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
@@ -116,6 +116,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
+  import { statusTabList } from './config';
   import useFollowApi, { type followEnumType } from './useFollowApi';
 
   const { t } = useI18n();
@@ -173,30 +174,6 @@
     needInitDetail: computed(() => needInitDetail.value),
     otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
   });
-
-  // 跟进计划状态
-  const statusTabList = ref<TabPaneProps[]>([
-    {
-      name: CustomerFollowPlanStatusEnum.ALL,
-      tab: t('common.all'),
-    },
-    {
-      name: CustomerFollowPlanStatusEnum.PREPARED,
-      tab: t('common.notStarted'),
-    },
-    {
-      name: CustomerFollowPlanStatusEnum.UNDERWAY,
-      tab: t('common.inProgress'),
-    },
-    {
-      name: CustomerFollowPlanStatusEnum.COMPLETED,
-      tab: t('common.completed'),
-    },
-    {
-      name: CustomerFollowPlanStatusEnum.CANCELLED,
-      tab: t('common.canceled'),
-    },
-  ]);
 
   const descriptionList: Description[] = [
     {

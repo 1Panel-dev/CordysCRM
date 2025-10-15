@@ -22,6 +22,8 @@ export enum TableKeyEnum {
   BUSINESS = 'business',
   LOG = 'log',
   LOGIN_LOG = 'loginLog',
+  FOLLOW_PLAN = 'followPlan',
+  FOLLOW_RECORD = 'followRecord',
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

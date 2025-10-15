@@ -1,6 +1,12 @@
 <template>
   <n-spin :show="loading" class="h-full">
-    <CrmDescription :descriptions="realDescriptions" value-align="end" :class="props.class">
+    <CrmDescription
+      :descriptions="realDescriptions"
+      :value-align="props.valueAlign ?? 'end'"
+      :class="[`value-align-${props.valueAlign ?? 'end'}`, props.class]"
+      :column="props.column"
+      :label-width="props.labelWidth"
+    >
       <template #divider="{ item }">
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
@@ -12,15 +18,25 @@
         </n-image-group>
       </template>
       <template #[FieldTypeEnum.TEXTAREA]="{ item }">
-        <div class="flex w-full items-center justify-between">
-          <div class="mr-[4px] whitespace-nowrap text-[var(--text-n2)]">{{ item.label }}</div>
+        <div class="field-line flex w-full items-center">
+          <div
+            class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
+            :style="{ width: props.labelWidth || '120px' }"
+          >
+            {{ item.label }}
+          </div>
           <div v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
         </div>
       </template>
       <!-- 链接字段 -->
       <template #[FieldTypeEnum.LINK]="{ item }">
-        <div class="flex w-full items-center justify-between">
-          <div class="mr-[4px] whitespace-nowrap text-[var(--text-n2)]">{{ item.label }}</div>
+        <div class="field-line flex w-full items-center">
+          <div
+            class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
+            :style="{ width: props.labelWidth || '120px' }"
+          >
+            {{ item.label }}
+          </div>
           <n-tooltip :delay="300">
             <template #trigger>
               <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
@@ -32,8 +48,10 @@
         </div>
       </template>
       <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
-        <div class="flex w-full items-center justify-between">
-          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
           <CrmTableButton @click="openCustomerDetail(formDetail[item.fieldInfo.id])">
             <template #trigger>
               {{ item.value }}
@@ -43,8 +61,10 @@
         </div>
       </template>
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
-        <div class="flex w-full items-center justify-between">
-          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
           <dateTime
             v-model:value="formDetail[item.fieldInfo.id]"
             :field-config="{
@@ -58,8 +78,10 @@
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
-        <div class="flex w-full items-center justify-between">
-          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
           <n-button v-if="item.value.length > 0" type="primary" text @click="openFileListModal(item)">
             {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
           </n-button>
@@ -96,6 +118,9 @@
     refreshKey?: number;
     class?: string;
     hiddenFields?: string[];
+    column?: number;
+    valueAlign?: 'center' | 'start' | 'end';
+    labelWidth?: string;
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
@@ -213,5 +238,14 @@
 <style lang="less" scoped>
   :deep(.n-form-item-feedback-wrapper) {
     display: none;
+  }
+  .value-align-start .field-line {
+    justify-content: flex-start;
+  }
+  .value-align-center .field-line {
+    justify-content: center;
+  }
+  .value-align-end .field-line {
+    justify-content: space-between;
   }
 </style>

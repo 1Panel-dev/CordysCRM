@@ -12,6 +12,7 @@ export default {
   'settings.navbar.search': 'Search',
   'settings.navbar.task': 'Task center',
   'settings.navbar.help': 'Help center',
+  'settings.navbar.event': 'Record/Plan',
   'settings.help.guide': 'Use Guide',
   'settings.help.doc': 'Help docs',
   'settings.help.forumHelp': 'Forum Help',

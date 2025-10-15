@@ -6,7 +6,14 @@ import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 
-import { getClueTab, getCustomerContactTab, getCustomerTab, getOptTab } from '@/api/modules';
+import {
+  getClueTab,
+  getCustomerContactTab,
+  getCustomerTab,
+  getFollowPlanTab,
+  getFollowRecordTab,
+  getOptTab,
+} from '@/api/modules';
 
 export type TabType =
   | FormDesignKeyEnum.CUSTOMER
@@ -14,7 +21,9 @@ export type TabType =
   | FormDesignKeyEnum.CLUE
   | FormDesignKeyEnum.CLUE_POOL
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
-  | FormDesignKeyEnum.CONTACT;
+  | FormDesignKeyEnum.CONTACT
+  | FormDesignKeyEnum.FOLLOW_PLAN
+  | FormDesignKeyEnum.FOLLOW_RECORD;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
 
@@ -26,6 +35,8 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CONTACT]: getCustomerContactTab,
     [FormDesignKeyEnum.BUSINESS]: getOptTab,
     [FormDesignKeyEnum.CLUE]: getClueTab,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanTab,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordTab,
   };
 
   const allClueTabList: TabPaneProps[] = [
@@ -110,6 +121,36 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allPlanTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('eventDrawer.plan.all'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('system.personal.plan'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('eventDrawer.plan.depart'),
+    },
+  ];
+
+  const allRecordTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('eventDrawer.record.all'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('eventDrawer.record.my'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('eventDrawer.record.depart'),
+    },
+  ];
+
   const tabListMap: Record<TabType, TabPaneProps[]> = {
     [FormDesignKeyEnum.CUSTOMER]: allCustomerTabList,
     [FormDesignKeyEnum.CONTACT]: allContactTabList,
@@ -117,6 +158,8 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CLUE]: allClueTabList,
     [FormDesignKeyEnum.CLUE_POOL]: allLeadPoolTabList,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: allAccountPoolTabList,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: allPlanTabList,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: allRecordTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);

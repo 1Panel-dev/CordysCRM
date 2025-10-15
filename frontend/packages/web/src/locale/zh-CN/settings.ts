@@ -12,6 +12,7 @@ export default {
   'settings.navbar.search': '搜索',
   'settings.navbar.task': '任务中心',
   'settings.navbar.help': '帮助中心',
+  'settings.navbar.event': '记录/计划',
   'settings.help.guide': '新手指引',
   'settings.help.doc': '帮助文档',
   'settings.help.forumHelp': '论坛帮助',
