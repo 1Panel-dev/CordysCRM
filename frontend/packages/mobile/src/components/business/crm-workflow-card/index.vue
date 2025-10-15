@@ -10,13 +10,7 @@
         "
         class="flex items-center gap-[8px]"
       >
-        <van-button
-          v-if="props.showErrorBtn"
-          plain
-          type="danger"
-          size="small"
-          @click="handleUpdateStage(StageResultEnum.FAIL)"
-        >
+        <van-button v-if="props.showErrorBtn" plain type="danger" size="small" @click="handleUpdateStage(failureStage)">
           {{ t('common.followFailed') }}
         </van-button>
       </div>
@@ -45,11 +39,13 @@
             @click="handleUpdateStage(item.value)"
           >
             <CrmIcon
-              v-if="index < currentStageIndex || item.value === StageResultEnum.FAIL"
-              :name="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
+              v-if="index < currentStageIndex || item.value === failureStage"
+              :name="item.value === failureStage ? 'iconicon_close' : 'iconicon_check'"
               width="16px"
               height="16px"
-              :color="item.value === StageResultEnum.FAIL ? 'var(--error-red)' : 'var(--primary-8)'"
+              :color="
+                item.value === failureStage && currentStage === failureStage ? 'var(--error-red)' : 'var(--primary-8)'
+              "
             />
             <div v-else class="flex items-center justify-center">
               {{ index + 1 }}
@@ -67,9 +63,7 @@
         </div>
         <div class="crm-workflow-item-name one-line-text relative -left-[16px]" :class="statusClass(index, item)">
           {{
-            item.value === StageResultEnum.FAIL && props.failureReason
-              ? `${item.label}（${props.failureReason}）`
-              : item.label
+            item.value === failureStage && props.failureReason ? `${item.label}（${props.failureReason}）` : item.label
           }}
         </div>
       </div>
@@ -82,8 +76,8 @@
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { StageConfigItem } from '@lib/shared/models/opportunity';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -103,7 +97,7 @@
 
   const props = defineProps<{
     title: string;
-    baseSteps: Options[]; // 基础步骤
+    stageConfigList: StageConfigItem[]; // 阶段列表
     sourceId: string; // 资源id
     showConfirmStatus?: boolean; // 是否二次确认更新成功 | 成败
     formStageKey: WorkStageTypeKey;
@@ -113,6 +107,8 @@
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
     failureReason?: string; // 失败原因
+    afootRollBack?: boolean; // 是否允许从跟进中回退
+    endRollBack?: boolean; // 是否允许从成功或失败回退
   }>();
 
   const emit = defineEmits<{
@@ -121,55 +117,29 @@
 
   const currentStage = defineModel<string>('stage');
 
-  const lastStage = defineModel<string>('lastStage');
-
   const updateStageApi = {
     [FormDesignKeyEnum.BUSINESS]: updateOptStage,
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
 
-  const endStage = computed<Options[]>(() => {
-    if (currentStage.value === StageResultEnum.SUCCESS) {
-      return [
-        {
-          value: StageResultEnum.SUCCESS,
-          label: t('common.success'),
-        },
-      ];
-    }
-
-    if (currentStage.value === StageResultEnum.FAIL) {
-      return [
-        {
-          value: StageResultEnum.FAIL,
-          label: t('common.fail'),
-        },
-      ];
-    }
-    return [];
-  });
-
   const workflowList = computed<Options[]>(() => {
-    // 失败返回基础阶段截止当前 + 失败阶段
-    if (currentStage.value === StageResultEnum.FAIL) {
-      const lastStageIndex = props.baseSteps.findIndex((e) => e.value === lastStage.value);
-      return [...props.baseSteps.slice(0, lastStageIndex + 1), ...endStage.value];
-    }
-    // 成功返回全部阶段
-    if (currentStage.value === StageResultEnum.SUCCESS) {
-      return [...props.baseSteps.slice(0, props.baseSteps.length - 1), ...endStage.value];
-    }
-    // 其他返回基础阶段
-    return [...props.baseSteps];
+    return props.stageConfigList.map((item) => ({
+      label: item.name,
+      value: item.id,
+    }));
   });
 
   const currentStageIndex = computed(() => workflowList.value.findIndex((e) => e.value === currentStage.value));
+  const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
+  const successStage = computed(
+    () => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
+  );
 
   function statusClass(index: number, item: Options) {
     return {
-      done: index < currentStageIndex.value && item.value !== StageResultEnum.FAIL,
-      current: index === currentStageIndex.value && item.value !== StageResultEnum.FAIL,
-      error: item.value === StageResultEnum.FAIL,
+      done: index < currentStageIndex.value && item.value !== failureStage.value,
+      current: index === currentStageIndex.value && item.value !== failureStage.value,
+      error: currentStage.value === failureStage.value && item.value === failureStage.value,
     };
   }
 
@@ -177,7 +147,7 @@
     () =>
       props.backStagePermission &&
       hasAllPermission(props.backStagePermission) &&
-      currentStage.value === StageResultEnum.SUCCESS
+      currentStage.value === successStage.value
   );
 
   async function handleSave(stage: string) {
@@ -200,30 +170,22 @@
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
 
   const isDisabledStage = (stage: string) => {
-    const isLastStage =
-      currentStageIndex.value === workflowList.value.length - 1 &&
-      stage === workflowList.value[workflowList.value.length - 1].value;
-
     const isSameStage = currentStage.value === stage;
-
-    const isSuccessOrFail = [StageResultEnum.SUCCESS, StageResultEnum.FAIL].includes(
-      currentStage.value as StageResultEnum
-    );
-    const isSuccessStage = [StageResultEnum.SUCCESS].includes(stage as StageResultEnum);
+    const isFailureStage = stage === failureStage.value;
+    const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
     // 限制回退状态
     if (props.isLimitBack) {
-      // 当前状态为成功和失败判断是否有高阶权限且不能操作非成功失败阶段的状态
-      if (isSuccessOrFail) {
-        const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
-        if (!hasPermission) return true;
-        if (hasPermission && !isSuccessStage) return true;
-        // 非当前状态和仅读状态
-      } else {
-        return isSameStage || readonly.value;
+      // 当前为成功状态，且目标为失败状态，需要返签权限
+      if (currentStage.value === successStage.value && isFailureStage) {
+        return isSameStage || readonly.value || !hasPermission;
       }
-      // 不限制回退状态
+      // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
+      if (currentStage.value === successStage.value || currentStage.value === failureStage.value) {
+        return isSameStage || readonly.value || !props.endRollBack;
+      }
     } else {
-      return isSameStage || readonly.value || isLastStage;
+      // 不限制回退状态
+      return isSameStage || readonly.value;
     }
     return false;
   };

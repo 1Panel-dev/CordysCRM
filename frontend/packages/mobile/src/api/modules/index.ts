@@ -68,6 +68,7 @@ export const {
   updateOptFollowPlanStatus,
   advancedSearchOptPage,
   globalSearchOptPage,
+  getOpportunityStageConfig,
 } = opportunityApi;
 
 export const {

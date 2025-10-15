@@ -62,14 +62,14 @@
   import { closeToast, showConfirmDialog, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { OpportunityItem } from '@lib/shared/models/opportunity';
+  import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
-  import { deleteOpt, getOpportunityList } from '@/api/modules';
+  import { deleteOpt, getOpportunityList, getOpportunityStageConfig } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import { hasAllPermission } from '@/utils/permission';
@@ -84,6 +84,21 @@
 
   const keyword = ref('');
   const crmListRef = ref<InstanceType<typeof CrmList>>();
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  const failureStage = computed(() =>
+    stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')
+  );
+  const successStage = computed(() =>
+    stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')
+  );
 
   const filterButtons = [
     {
@@ -157,11 +172,11 @@
         },
       ];
 
-      if (row.stage === StageResultEnum.FAIL) {
+      if (row.stage === failureStage.value?.id) {
         return transferAction;
       }
 
-      if (row.stage === StageResultEnum.SUCCESS) {
+      if (row.stage === successStage.value?.id) {
         return hasBackStagePermission.value ? editAction : [];
       }
 
@@ -266,6 +281,7 @@
   );
 
   onActivated(() => {
+    initStageConfig();
     crmListRef.value?.loadList(true);
   });
 </script>

@@ -187,12 +187,11 @@
     const id = getGenerateId();
     if (action.key === 'before') {
       batchFormRef.value?.formValidate(() => {
-        form.value.list.splice(index, 0, { id, _key: id, name: '', rate: null, type: 'AFOOT', editing: true });
+        form.value.list.splice(index, 0, { _key: id, name: '', rate: null, type: 'AFOOT', editing: true });
       });
     } else if (action.key === 'after') {
       batchFormRef.value?.formValidate(() => {
         form.value.list.splice(index + 1, 0, {
-          id,
           _key: id,
           name: '',
           rate: null,

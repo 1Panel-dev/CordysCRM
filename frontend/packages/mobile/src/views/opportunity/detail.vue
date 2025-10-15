@@ -11,7 +11,7 @@
           <div class="bg-[var(--text-n9)] p-[16px]">
             <CrmWorkflowCard
               v-model:stage="currentStatus"
-              v-model:last-stage="lastOptStage"
+              :stage-config-list="stageConfig?.stageConfigList || []"
               :form-stage-key="FormDesignKeyEnum.BUSINESS"
               :show-confirm-status="true"
               :title="t('opportunity.progress')"
@@ -21,6 +21,8 @@
               :source-id="sourceId"
               :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
               :failure-reason="lastFailureReason"
+              :afoot-roll-back="stageConfig?.afootRollBack"
+              :end-roll-back="stageConfig?.endRollBack"
               @load-detail="() => initStage(true)"
             />
           </div>
@@ -58,8 +60,8 @@
   import { useRoute } from 'vue-router';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
@@ -68,6 +70,7 @@
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
+  import { getOpportunityStageConfig } from '@/api/modules';
   import { baseStepList } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAllPermission } from '@/utils/permission';
@@ -101,7 +104,15 @@
   ];
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
-
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
   const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
     sourceId: sourceId.value,
@@ -118,9 +129,7 @@
     });
   });
 
-  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
-
-  const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
+  const currentStatus = ref<string>(stageConfig.value?.stageConfigList?.[0].id || '');
 
   const lastFailureReason = ref('');
   async function initStage(isInit = false) {
@@ -128,14 +137,16 @@
       initFormDescription();
     }
 
-    const { stage, lastStage, failureReason } = detail.value;
+    const { stage, failureReason } = detail.value;
     currentStatus.value = stage;
-    lastOptStage.value = lastStage;
     lastFailureReason.value = failureReason;
   }
 
   const readonly = computed(
-    () => currentStatus.value === StageResultEnum.SUCCESS || !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
+    () =>
+      currentStatus.value ===
+        stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id ||
+      !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
   );
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
@@ -152,6 +163,7 @@
   });
 
   onBeforeMount(async () => {
+    initStageConfig();
     await initFormConfig();
     initFormDescription();
   });

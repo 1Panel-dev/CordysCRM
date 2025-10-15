@@ -2,16 +2,6 @@
   <CrmPageWrapper :title="route.query.lastName?.toString() || ''">
     <van-form ref="formRef" required>
       <van-cell-group inset>
-        <van-field name="radio" :label="t('common.result')">
-          <template #input>
-            <van-radio-group v-model="form.stage" direction="horizontal">
-              <van-radio :name="StageResultEnum.SUCCESS" :disabled="isHasBackPermission">
-                {{ t('common.success') }}
-              </van-radio>
-              <van-radio :name="StageResultEnum.FAIL"> {{ t('common.fail') }}</van-radio>
-            </van-radio-group>
-          </template>
-        </van-field>
         <!-- <van-field
           v-model="form.expectedEndTime"
           is-link
@@ -25,7 +15,6 @@
           <van-date-picker v-model="currentDate" @confirm="onSelectDateConfirm" @cancel="showEndTimePicker = false" />
         </van-popup> -->
         <van-field
-          v-if="form.stage === StageResultEnum.FAIL && enableReason"
           v-model="form.failureReason"
           is-link
           name="picker"
@@ -76,13 +65,12 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { UpdateStageParams } from '@lib/shared/models/opportunity';
+  import type { OpportunityStageConfig, UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
 
-  import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
+  import { getOpportunityStageConfig, getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
 
   import type { WorkStageTypeKey } from './index.vue';
 
@@ -95,16 +83,27 @@
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
 
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOpportunityStageConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  const failureStage = computed(() =>
+    stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')
+  );
   const enableReason = ref(false);
   const reasonList = ref<PickerOption[]>([]);
 
-  const isHasBackPermission = computed(() => route.query.isHasBack?.toString() === 'Y');
   const form = ref<{
     stage: string;
     failureReason?: string;
     // expectedEndTime?: string;
   }>({
-    stage: isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
+    stage: failureStage.value?.id || '',
     failureReason: '',
     // expectedEndTime: '',
   });
@@ -147,12 +146,12 @@
       const stageType = route.query.type as WorkStageTypeKey;
       await updateStageApi[stageType]({
         id: route.query.id as string,
-        stage: form.value.stage,
+        stage: form.value.stage || failureStage.value?.id || '',
         // TODO 先不要了
         // expectedEndTime: form.value.expectedEndTime
         //   ? (dayjs(form.value.expectedEndTime).valueOf() as number)
         //   : undefined,
-        failureReason: form.value.stage === StageResultEnum.FAIL ? currentReason.value[0] : undefined,
+        failureReason: form.value.stage === failureStage.value?.id ? currentReason.value[0] : undefined,
       });
       showSuccessToast(t('common.operationSuccess'));
       router.back();
@@ -177,6 +176,7 @@
 
   onBeforeMount(() => {
     initReason();
+    initStageConfig();
   });
 </script>
 
