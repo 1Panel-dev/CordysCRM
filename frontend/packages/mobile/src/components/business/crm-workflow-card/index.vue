@@ -172,7 +172,13 @@
   const isDisabledStage = (stage: string) => {
     const isSameStage = currentStage.value === stage;
     const isFailureStage = stage === failureStage.value;
+    const isCurrentEndStage = currentStage.value === successStage.value || currentStage.value === failureStage.value;
+
     const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
+
+    // 获取当前阶段和目标阶段在流程中的索引
+    const currentIndex = workflowList.value.findIndex((item) => item.value === currentStage.value);
+    const targetIndex = workflowList.value.findIndex((item) => item.value === stage);
     // 限制回退状态
     if (props.isLimitBack) {
       // 当前为成功状态，且目标为失败状态，需要返签权限
@@ -182,6 +188,15 @@
       // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
       if (currentStage.value === successStage.value || currentStage.value === failureStage.value) {
         return isSameStage || readonly.value || !props.endRollBack;
+      }
+      // 当前处于进行中阶段时的处理逻辑
+      if (!isCurrentEndStage) {
+        // 开启则不限制
+        if (props.afootRollBack) {
+          return isSameStage || readonly.value;
+        }
+        // 允许前进到当前阶段的后边的任意阶段 无论是进行中、成功或失败）
+        return isSameStage || readonly.value || targetIndex < currentIndex;
       }
     } else {
       // 不限制回退状态
