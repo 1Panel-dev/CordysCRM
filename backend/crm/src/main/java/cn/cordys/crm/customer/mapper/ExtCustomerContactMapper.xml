@@ -422,6 +422,9 @@
             <if test="request.fieldName == 'name'">
                 name = #{request.fieldValue},
             </if>
+            <if test="request.fieldName == 'phone'">
+                phone = #{request.fieldValue},
+            </if>
             <if test="request.fieldName == 'customerId'">
                 customer_id = #{request.fieldValue},
             </if>
