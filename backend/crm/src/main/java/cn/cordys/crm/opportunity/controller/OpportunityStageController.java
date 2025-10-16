@@ -28,7 +28,6 @@ public class OpportunityStageController {
 
     @GetMapping("/get")
     @Operation(summary = "商机阶段配置列表")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public StageConfigListResponse getStageConfigList() {
         return opportunityStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
