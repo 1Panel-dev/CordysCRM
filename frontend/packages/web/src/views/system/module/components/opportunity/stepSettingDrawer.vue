@@ -248,6 +248,10 @@
     try {
       const { newIndex, oldIndex } = event;
       if (newIndex === oldIndex) return;
+
+      const movedItem = form.value.list.splice(oldIndex, 1)[0];
+      form.value.list.splice(newIndex, 0, movedItem);
+
       await sortOpportunityStage(form.value.list.map((e: StageConfigItem) => e.id));
       init();
       Message.success(t('common.operationSuccess'));
