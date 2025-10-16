@@ -143,16 +143,18 @@ public class OpportunityStageService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
-        deletePreCheck(id);
+        OpportunityStageConfig stageConfig = deletePreCheck(id);
         opportunityStageConfigMapper.deleteByPrimaryKey(id);
         // 设置操作对象
-        OperationLogContext.setResourceName(Translator.get("opportunity_stage_setting"));
+        OperationLogContext.setResourceName(Translator.get("opportunity_stage_setting").concat(":").concat(stageConfig.getName()));
     }
 
-    private void deletePreCheck(String id) {
-        if (extOpportunityMapper.countByStage(id) > 0) {
+    private OpportunityStageConfig deletePreCheck(String id) {
+        OpportunityStageConfig stageConfig = opportunityStageConfigMapper.selectByPrimaryKey(id);
+        if (stageConfig == null) {
             throw new GenericException(Translator.get("opportunity_stage_delete"));
         }
+        return stageConfig;
     }
 
 
