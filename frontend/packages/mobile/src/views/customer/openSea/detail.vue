@@ -64,7 +64,7 @@
 
   const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: true,
   });
 

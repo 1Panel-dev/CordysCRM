@@ -76,7 +76,7 @@
   const sourceId = computed(() => route.query.id?.toString() ?? '');
   const { sourceName, descriptions, collaborationType, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: true,
   });
 

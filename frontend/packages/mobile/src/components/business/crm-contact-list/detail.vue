@@ -42,7 +42,7 @@
 
   const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_CONTACT,
-    sourceId: route.query.id?.toString() || '',
+    sourceId: ref(route.query.id?.toString() || ''),
     needInitDetail: true,
   });
   const loading = ref(false);

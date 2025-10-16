@@ -28,7 +28,7 @@ import {
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export interface FormCreateApiProps {
-  sourceId?: string;
+  sourceId?: Ref<string | undefined>;
   formKey: FormDesignKeyEnum;
   needInitDetail?: boolean;
   initialSourceName?: string; // 特殊字段初始化需要的资源名称
@@ -136,8 +136,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormDescription() {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey];
-      if (!asyncApi || !props.sourceId) return;
-      const form = await asyncApi(props.sourceId);
+      if (!asyncApi || !props.sourceId?.value) return;
+      const form = await asyncApi(props.sourceId?.value);
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
@@ -266,8 +266,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormDetail() {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey];
-      if (!asyncApi || !props.sourceId) return;
-      const res = await asyncApi(props.sourceId);
+      if (!asyncApi || !props.sourceId?.value) return;
+      const res = await asyncApi(props.sourceId?.value);
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
       fieldList.value = fieldList.value.map((item) => {
@@ -345,7 +345,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function specialFormFieldInit(field: FormCreateField) {
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey) &&
-      props.sourceId
+      props.sourceId?.value
     ) {
       // 客户跟进计划和记录，需要赋予类型字段默认为客户，客户字段默认值为当前客户
       if (field.businessKey === 'type') {
@@ -357,19 +357,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId,
+            id: props.sourceId?.value,
             name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId || ''),
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
     }
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey) &&
-      props.sourceId
+      props.sourceId?.value
     ) {
       // 线索跟进计划和记录，需要赋予类型字段默认为客户，线索字段默认值为当前线索
       if (field.businessKey === 'type') {
@@ -381,12 +381,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'clueId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId,
+            id: props.sourceId?.value,
             name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId || ''),
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
@@ -394,7 +394,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS, FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS].includes(props.formKey) &&
-      props.sourceId
+      props.sourceId?.value
     ) {
       // 商机跟进计划和记录，需要赋予默认跟进类型、商机、商机对应客户
       if (field.businessKey === 'type') {
@@ -409,12 +409,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (field.businessKey === 'opportunityId') {
           specialInitialOptions.value = [
             {
-              id: props.sourceId,
+              id: props.sourceId?.value,
               name: defaultParsedSource?.name ?? '',
             },
           ];
           return {
-            defaultValue: initFieldValue(field, props.sourceId || ''),
+            defaultValue: initFieldValue(field, props.sourceId?.value || ''),
             initialOptions: specialInitialOptions.value,
           };
         }
@@ -435,17 +435,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
       }
     }
-    if (props.formKey === FormDesignKeyEnum.CUSTOMER_CONTACT && props.sourceId) {
+    if (props.formKey === FormDesignKeyEnum.CUSTOMER_CONTACT && props.sourceId?.value) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId,
+            id: props.sourceId?.value,
             name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId || ''),
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
@@ -612,7 +612,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const params: Record<string, any> = {
         ...props.otherSaveParams,
         moduleFields: [],
-        id: props.sourceId,
+        id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
@@ -625,7 +625,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
-      if (props.sourceId && props.needInitDetail) {
+      if (props.sourceId?.value && props.needInitDetail) {
         await updateFormApi[props.formKey](params);
         showSuccessToast(t('common.updateSuccess'));
       } else {
@@ -652,7 +652,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
       return t('common.convertToCustomer');
     }
-    const prefix = props.sourceId && props.needInitDetail ? t('common.edit') : t('common.create');
+    const prefix = props.sourceId?.value && props.needInitDetail ? t('common.edit') : t('common.create');
     return `${prefix}${t(`common.${props.formKey}`)}`;
   });
 

@@ -64,7 +64,7 @@
 
   const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: formKey.value,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: route.query.needInitDetail === 'Y',
   });
 

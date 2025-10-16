@@ -113,7 +113,7 @@
   }
   const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: true,
   });
 

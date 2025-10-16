@@ -64,7 +64,7 @@
 
   const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE_POOL,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: true,
   });
   onBeforeMount(async () => {

@@ -80,7 +80,7 @@
 
   const { sourceName, descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE,
-    sourceId: sourceId.value,
+    sourceId,
     needInitDetail: true,
   });
   onBeforeMount(async () => {

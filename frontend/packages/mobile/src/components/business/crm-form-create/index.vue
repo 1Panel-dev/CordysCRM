@@ -81,7 +81,7 @@
     initFormShowControl,
   } = useFormCreateApi({
     formKey: route.query.formKey as FormDesignKeyEnum,
-    sourceId: route.query.id as string,
+    sourceId: ref(route.query.id as string),
     needInitDetail: route.query.needInitDetail === 'Y',
     initialSourceName: route.query.initialSourceName as string,
     otherSaveParams: lastPageParams,
