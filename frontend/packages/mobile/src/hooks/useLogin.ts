@@ -72,9 +72,12 @@ export default function useLogin() {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-      if ((error as Result).code === 401) {
-        router.replace('login');
-      }
+        const err = error as Result;
+        if (err.code === 100500) {
+            router.replace({ name: 'login' });
+        } else if (err.code === 401) {
+            router.replace(AUTH_DISABLED_ROUTE_NAME);
+        }
     }
   }
 
