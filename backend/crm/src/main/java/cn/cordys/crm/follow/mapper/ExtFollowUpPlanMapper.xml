@@ -154,7 +154,8 @@
         fup.method,
         fup.converted,
         fup.status,
-        fup.organization_id
+        fup.organization_id,
+        if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM follow_up_plan fup
         LEFT JOIN clue c ON c.id = fup.clue_id
         LEFT JOIN customer cu ON cu.id = fup.customer_id
@@ -244,7 +245,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content'
+                <if test="condition.name != 'content' and condition.name != 'departmentId'
                     and condition.name != 'owner' and condition.name != 'type'
                     and condition.name != 'customerId' and condition.name != 'opportunityId'
                     and condition.name != 'clueId' and condition.name != 'contactId'
@@ -253,12 +254,15 @@
                     and condition.name != 'createTime' and condition.name != 'createUser'
                     and condition.name != 'updateUser' and condition.name != 'updateTime'">
                     <if test="condition.multipleValue">
-                        left join follow_up_plan_field_blob ${tablePrefix}_${i}
-                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
+                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        left join follow_up_plan_field ${tablePrefix}_${i}
-                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
+                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="condition.name == 'phone'">
+                        LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
                     </if>
                 </if>
             </foreach>
@@ -268,7 +272,7 @@
     <sql id="viewFieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content'
+                <if test="condition.name != 'content' and condition.name != 'departmentId'
                     and condition.name != 'owner' and condition.name != 'type'
                     and condition.name != 'customerId' and condition.name != 'opportunityId'
                     and condition.name != 'clueId' and condition.name != 'contactId'
@@ -277,12 +281,15 @@
                     and condition.name != 'createTime' and condition.name != 'createUser'
                     and condition.name != 'updateUser' and condition.name != 'updateTime'">
                     <if test="condition.multipleValue">
-                        left join follow_up_plan_field_blob ${tablePrefix}_${i}
-                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
+                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        left join follow_up_plan_field ${tablePrefix}_${i}
-                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
+                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="condition.name == 'phone'">
+                        LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
                     </if>
                 </if>
             </foreach>
@@ -292,11 +299,10 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'content', 'owner', 'type', 'customerId', 'opportunityId', 'clueId', 'contactId', 'estimatedTime', 'method', 'status', 'converted',
-                'create_user', 'update_user', 'create_time', 'update_time'}">
+                'create_user', 'update_user', 'create_time', 'update_time', 'departmentId'}">
             <bind name="sortName" value="${sort}.name"/>
-            left join follow_up_plan_field sort_table
-            on fup.id = sort_table.resource_id and sort_table.field_id = #{sortName}
-            left join sys_module_field module_table on sort_table.field_id = module_table.id
+            LEFT JOIN follow_up_plan_field sort_table ON fup.id = sort_table.resource_id AND sort_table.field_id = #{sortName}
+            LEFT JOIN sys_module_field module_table ON sort_table.field_id = module_table.id
         </if>
     </sql>
 
@@ -443,6 +449,18 @@
                     <property name="column" value="fup.update_time"/>
                 </include>
             </when>
+            <when test="condition.name == 'departmentId'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="sou.department_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'phone'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.phone"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>
@@ -499,6 +517,9 @@
                     </when>
                     <when test="${sort}.name == 'update_user'">
                         fup.`update_user` ${sortType}, fup.id ASC
+                    </when>
+                    <when test="${sort}.name == 'department_id'">
+                        sou.`id` ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE

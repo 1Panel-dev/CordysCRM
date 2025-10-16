@@ -90,6 +90,9 @@ public class FollowUpPlanListResponse {
     @Schema(description = "是否转为跟进记录")
     private Boolean converted;
 
+    @Schema(description = "属于公海或者线索池")
+    private String poolId;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }
