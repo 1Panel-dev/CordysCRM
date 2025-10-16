@@ -267,11 +267,12 @@ public class SSOService {
         user.setEmail(email);
         user.setUpdateTime(System.currentTimeMillis());
         userBaseMapper.updateById(user);
-
-        UserExtend userExtend = new UserExtend();
-        userExtend.setId(userId);
-        userExtend.setAvatar(avatar);
-        userExtendBaseMapper.update(userExtend);
+        if (StringUtils.isNotBlank(avatar)) {
+            UserExtend userExtend = new UserExtend();
+            userExtend.setId(userId);
+            userExtend.setAvatar(avatar);
+            userExtendBaseMapper.update(userExtend);
+        }
     }
 
     private void updateWeComUserInfo(UserDTO user, WeComUserResponse weComUser, String email) {
@@ -307,10 +308,12 @@ public class SSOService {
         userUpdate.setUpdateTime(System.currentTimeMillis());
         userBaseMapper.updateById(userUpdate);
 
-        UserExtend userExtend = new UserExtend();
-        userExtend.setId(user.getId());
-        userExtend.setAvatar(dingTalkUserResponse.getAvatarUrl());
-        userExtendBaseMapper.update(userExtend);
+        if (StringUtils.isNotBlank(dingTalkUserResponse.getAvatarUrl())) {
+            UserExtend userExtend = new UserExtend();
+            userExtend.setId(user.getId());
+            userExtend.setAvatar(dingTalkUserResponse.getAvatarUrl());
+            userExtendBaseMapper.update(userExtend);
+        }
     }
 
     private LoginRequest createLoginRequest(String username, String password, String platform) {
