@@ -20,8 +20,6 @@ import 'virtual:svg-icons-register';
 import router from './router';
 import store from './store';
 
-import { initDingH5RemoteDebug } from 'dingtalk-h5-remote-debug';
-
 async function setupApp() {
   const app = createApp(App);
 
@@ -37,8 +35,6 @@ async function setupApp() {
     const { changeLocale } = useLocale(showLoadingToast);
     changeLocale('zh-CN');
   }
-  // TODO 调试工具
-  initDingH5RemoteDebug();
   app.use(router);
   app.use(directive);
   app.mount('#app');
