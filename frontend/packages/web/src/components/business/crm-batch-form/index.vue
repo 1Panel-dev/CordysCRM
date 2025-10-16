@@ -28,6 +28,7 @@
               v-for="(element, index) in form.list"
               :key="element.id ?? element._key"
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
+              :draggable="props.draggable && element.draggable !== false"
             >
               <CrmIcon
                 v-if="props.draggable && element.draggable !== false"
