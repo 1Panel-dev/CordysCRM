@@ -117,8 +117,9 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addOpportunityRule, updateOpportunityRule } from '@/api/modules';
-  import { lastOpportunitySteps } from '@/config/opportunity';
+  import { useAppStore } from '@/store';
 
+  const appStore = useAppStore();
   const { t } = useI18n();
   const Message = useMessage();
 
@@ -173,7 +174,7 @@
         type: FieldTypeEnum.SELECT_MULTIPLE,
         operatorOption: [IN, NOT_IN],
         selectProps: {
-          options: lastOpportunitySteps,
+          options: appStore.stageConfigList,
         },
       },
     ];
@@ -278,8 +279,9 @@
 
   watch(
     () => props.rows,
-    (val?: OpportunityItem) => {
+    async (val?: OpportunityItem) => {
       if (val) {
+        await appStore.initStageConfig();
         const conditions = JSON.parse(val.condition).map((e: any) => {
           return {
             ...e,
@@ -306,7 +308,7 @@
               ...(item.column === 'opportunityStage'
                 ? {
                     selectProps: {
-                      options: lastOpportunitySteps,
+                      options: appStore.stageConfigList,
                     },
                   }
                 : {}),

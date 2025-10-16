@@ -13,6 +13,7 @@ import {
   getHomeMessageList,
   getKey,
   getModuleNavConfigList,
+  getOpportunityStageConfig,
   getThirdConfigByType,
   getUnReadAnnouncement,
 } from '@/api/modules';
@@ -63,6 +64,7 @@ const useAppStore = defineStore('app', {
     eventSource: null,
     cacheRoutes: new Set([]),
     isManualBack: false,
+    stageConfigList: [], // 商机阶段配置
   }),
   getters: {
     getOrgId(state: AppState) {
@@ -179,6 +181,18 @@ const useAppStore = defineStore('app', {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
+      }
+    },
+    async initStageConfig() {
+      try {
+        const stageConfig = await getOpportunityStageConfig();
+        this.stageConfigList = stageConfig.stageConfigList.map((e) => ({
+          value: e.id,
+          label: e.name,
+        }));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
       }
     },
   },

@@ -11,4 +11,5 @@ export interface AppState {
   eventSource: null | EventSource; // 事件流资源
   cacheRoutes: Set<string>; // 缓存路由列表
   isManualBack: boolean; // 是否手动触发的返回
+  stageConfigList: { value: string; label: string }[]; // 商机阶段配置
 }

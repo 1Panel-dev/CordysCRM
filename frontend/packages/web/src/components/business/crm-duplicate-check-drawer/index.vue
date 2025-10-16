@@ -114,7 +114,6 @@
   import searchSettingButton from './searchConfig/index.vue';
 
   import { advancedSearchOptDetail, getAdvancedSearchClueDetail, getGlobalModuleCount } from '@/api/modules';
-  import { lastOpportunitySteps } from '@/config/opportunity';
   import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -180,7 +179,6 @@
   function clickTag(config: ScopedOptions) {
     activeConfigValue.value = config.value as SearchTableKey;
   }
-
   const { useTableRes, columns, openNewPageOpportunity, openNewPageClue } = await useSearchTable({
     searchTableKey: activeConfigValue,
     fieldList: computed(() => allFieldMap.value[activeConfigValue.value] ?? []),
@@ -234,7 +232,7 @@
       width: 100,
       key: 'stage',
       render: (row) => {
-        const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
+        const step = appStore.stageConfigList.find((e: any) => e.value === row.stage);
         return step ? step.label : '-';
       },
     },

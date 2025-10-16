@@ -15,6 +15,7 @@ import {
   getKey,
   getModuleNavConfigList,
   getModuleTopNavList,
+  getOpportunityStageConfig,
   getPageConfig,
   getSystemVersion,
   getThirdConfigByType,
@@ -133,6 +134,7 @@ const useAppStore = defineStore('app', {
     },
     navTopConfigList: [],
     activePlatformResource: cloneDeep(defaultPlatformResource),
+    stageConfigList: [],
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -426,6 +428,18 @@ const useAppStore = defineStore('app', {
       try {
         const result = await getThirdPartyResource();
         this.activePlatformResource = { ...result };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    },
+    async initStageConfig() {
+      try {
+        const stageConfig = await getOpportunityStageConfig();
+        this.stageConfigList = stageConfig.stageConfigList.map((e) => ({
+          value: e.id,
+          label: e.name,
+        }));
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

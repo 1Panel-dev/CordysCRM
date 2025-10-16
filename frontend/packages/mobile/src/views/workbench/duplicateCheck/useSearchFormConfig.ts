@@ -17,7 +17,7 @@ import {
   getSearchConfig,
   globalSearchOptPage,
 } from '@/api/modules';
-import { lastOpportunitySteps } from '@/config/opportunity';
+import useAppStore from '@/store/modules/app';
 import { hasAnyPermission } from '@/utils/permission';
 
 import { defaultSearchSetFormModel, lastScopedOptions, ScopedOptions, scopedOptions, SearchTableKey } from './config';
@@ -44,6 +44,7 @@ export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
 
 export default function useSearchFormConfig() {
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   // 客户公海共用表单
   const customerConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC];
@@ -261,7 +262,7 @@ export default function useSearchFormConfig() {
     key: 'followTime',
     valueSlotName: 'render',
     render: (row: any) => {
-      return dayjs(row.followTime).format('YYYY-MM-DD');
+      return row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-';
     },
   };
 
@@ -306,7 +307,7 @@ export default function useSearchFormConfig() {
             key: field.key,
             valueSlotName: 'render',
             render: (row: any) => {
-              const step = lastOpportunitySteps.find((item: any) => item.value === row.stage);
+              const step = appStore.stageConfigList.find((item: any) => item.value === row.stage);
               return step ? step.label : '-';
             },
           };

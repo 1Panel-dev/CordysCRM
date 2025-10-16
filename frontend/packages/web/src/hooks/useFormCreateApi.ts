@@ -34,7 +34,6 @@ import {
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
 
 import { checkRepeat } from '@/api/modules';
-import { lastOpportunitySteps } from '@/config/opportunity';
 import useUserStore from '@/store/modules/user';
 
 export interface FormCreateApiProps {
@@ -94,7 +93,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     },
     {
       title: t('opportunity.stage'),
-      key: 'stage',
+      key: 'stageName',
     },
     {
       title: t('customer.lastFollowUps'),
@@ -319,10 +318,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
     if (key === 'enable') {
       return value ? t('common.open') : t('common.close');
-    }
-    if (key === 'stage') {
-      const step = lastOpportunitySteps.find((e: any) => e.value === value);
-      return step ? step.label : '-';
     }
     return value || '-';
   }

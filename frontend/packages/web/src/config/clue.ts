@@ -33,21 +33,6 @@ export const baseFilterConfigList: FilterFormItem[] = [
   },
 ];
 
-export const clueBaseSteps = [
-  {
-    value: ClueStatusEnum.NEW,
-    label: t('common.newCreate'),
-  },
-  {
-    value: ClueStatusEnum.FOLLOWING,
-    label: t('clue.followingUp'),
-  },
-  {
-    value: ClueStatusEnum.INTERESTED,
-    label: t('clue.interested'),
-  },
-];
-
 export const getLeadHomeConditions = (dim: string, homeDetailKey: string): FilterResult => {
   let start;
   let end;

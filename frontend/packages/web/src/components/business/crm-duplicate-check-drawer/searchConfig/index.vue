@@ -28,10 +28,13 @@
   import searchSettingModal from './searchSettingModal.vue';
 
   import { getSearchConfig } from '@/api/modules';
+  import { useAppStore } from '@/store';
 
   import type { ScopedOptions } from '../config';
   import { defaultSearchSetFormModel, lastScopedOptions, scopedOptions } from '../config';
   import useSearchFormConfig from '../useSearchFormConfig';
+
+  const appStore = useAppStore();
 
   const emit = defineEmits<{
     (e: 'init', val: Record<string, any>, formModel: DefaultSearchSetFormModel): void;
@@ -76,6 +79,7 @@
   }
 
   onMounted(async () => {
+    await appStore.initStageConfig();
     await initSearchFormConfig();
     await initSearchDetail(true);
     emit('initConfigList');

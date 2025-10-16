@@ -61,7 +61,6 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
 
@@ -178,20 +177,6 @@
             handleTransfer(item.id);
           },
         },
-        // TODO 先不要了
-        // ...(row.stage !== StageResultEnum.FAIL
-        //   ? [
-        //       {
-        //         label: t('common.convertToCustomer'),
-        //         icon: 'iconicon_edit1',
-        //         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-        //         allPermission: true,
-        //         action: (item: ClueListItem) => {
-        //           convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
-        //         },
-        //       },
-        //     ]
-        //   : []),
         {
           label: t('clue.convert'),
           icon: 'iconicon_edit1',

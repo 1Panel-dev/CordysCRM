@@ -8,20 +8,6 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)]">
-          <!-- <div class="bg-[var(--text-n9)] p-[16px]">
-            <CrmWorkflowCard
-              v-model:stage="currentStatus"
-              v-model:last-stage="lastOptStage"
-              :form-stage-key="FormDesignKeyEnum.CLUE"
-              :title="t('clue.clueProgress')"
-              show-error-btn
-              :base-steps="workflowList"
-              :source-id="sourceId"
-              :readonly="isConverted"
-              :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
-              @load-detail="() => initStage(true)"
-            />
-          </div> -->
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList
@@ -49,9 +35,7 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
 
-  // import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
@@ -60,9 +44,7 @@
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
 
-  // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import { getClueHeaderList } from '@/api/modules';
-  // import { clueBaseSteps } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -106,42 +88,7 @@
     initFormDescription();
   });
 
-  // const currentStatus = ref<string>(ClueStatusEnum.NEW);
-  // const lastOptStage = ref<string>(ClueStatusEnum.NEW);
-  const readonly = computed(
-    () =>
-      // ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
-      !hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
-  );
-
-  // TODO 先不要了
-  // const workflowList = [
-  //   ...clueBaseSteps,
-  //   {
-  //     value: StageResultEnum.SUCCESS,
-  //     label: t('common.success'),
-  //   },
-  // ];
-
-  // async function initStage(isInit = false) {
-  //   if (isInit) {
-  //     initFormDescription();
-  //   }
-
-  //   const { stage, lastStage } = detail.value;
-  //   currentStatus.value = stage;
-  //   lastOptStage.value = lastStage;
-  // }
-
-  // watch([() => detail.value.stage, () => detail.value.lastStage], () => {
-  //   initStage(false);
-  // });
-
-  // const isConverted = computed<boolean>(
-  //   () =>
-  //     !!route.query?.transitionType?.toString().length &&
-  //     ['CUSTOMER', 'OPPORTUNITY'].includes(route.query?.transitionType?.toString())
-  // );
+  const readonly = computed(() => !hasAnyPermission(['CLUE_MANAGEMENT:UPDATE']));
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();

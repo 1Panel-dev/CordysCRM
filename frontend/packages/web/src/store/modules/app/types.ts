@@ -8,6 +8,7 @@ import type { MessageInfo } from '@lib/shared/models/user';
 import { ActionsItem } from '@/components/pure/crm-more-action/type';
 
 import type { GlobalThemeOverrides } from 'naive-ui';
+import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
 import type { RouteRecordRaw } from 'vue-router';
 
 // 平台风格
@@ -77,4 +78,5 @@ export interface AppState {
   versionInfo: SystemVersion; // 版本信息
   navTopConfigList: ModuleNavTopItem[]; // 顶导配置
   activePlatformResource: ThirdPartyResource; // 当前激活的平台资源
+  stageConfigList: Option[]; // 商机阶段配置
 }

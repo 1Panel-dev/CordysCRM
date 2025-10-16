@@ -17,7 +17,6 @@
               :title="t('opportunity.progress')"
               is-limit-back
               :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
-              :base-steps="baseStepList"
               :source-id="sourceId"
               :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
               :failure-reason="lastFailureReason"
@@ -71,7 +70,6 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
   import { getOpportunityStageConfig } from '@/api/modules';
-  import { baseStepList } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAllPermission } from '@/utils/permission';
 

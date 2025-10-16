@@ -18,8 +18,8 @@ import {
   getGlobalSearchClueList,
   globalSearchOptPage,
 } from '@/api/modules';
-import { lastOpportunitySteps } from '@/config/opportunity';
 import useOpenNewPage from '@/hooks/useOpenNewPage';
+import { useAppStore } from '@/store';
 
 import { ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -59,6 +59,7 @@ export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
 export default async function useSearchTable(props: SearchTableProps) {
   const { openNewPage } = useOpenNewPage();
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   function openNewPageClue(row: any) {
     openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
@@ -249,7 +250,7 @@ export default async function useSearchTable(props: SearchTableProps) {
           width: 100,
           key: field.dataIndex,
           render: (row: any) => {
-            const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
+            const step = appStore.stageConfigList.find((e: any) => e.value === row.stage);
             return step ? step.label : '-';
           },
         };

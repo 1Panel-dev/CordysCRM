@@ -191,7 +191,7 @@
 
   import { batchDeleteOpt, deleteOpt, getOpportunityStageConfig, getOptStatistic, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { defaultTransferForm, getOptHomeConditions, lastOpportunitySteps } from '@/config/opportunity';
+  import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -718,7 +718,11 @@
         dataIndex: 'stage',
         type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
-          options: lastOpportunitySteps,
+          options:
+            stageConfig.value?.stageConfigList.map((e) => ({
+              label: e.name,
+              value: e.id,
+            })) || [],
         },
       },
       {

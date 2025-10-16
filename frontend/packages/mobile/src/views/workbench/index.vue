@@ -175,6 +175,7 @@
   onBeforeMount(() => {
     appStore.initMessage();
     appStore.connectSystemMessageSSE();
+    appStore.initStageConfig();
   });
 </script>
 

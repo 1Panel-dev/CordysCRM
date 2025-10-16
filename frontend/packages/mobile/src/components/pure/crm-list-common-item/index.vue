@@ -39,9 +39,10 @@
 
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  // import { clueBaseSteps } from '@/config/clue';
-  import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
+  import useAppStore from '@/store/modules/app';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+
+  const appStore = useAppStore();
 
   export interface CrmListCommonItemActionsItem {
     label: string;
@@ -55,6 +56,7 @@
     hiddenStage?: boolean;
     actions?: CrmListCommonItemActionsItem[];
   }>();
+
   const emit = defineEmits<{
     (e: 'click', item: Record<string, any>): void;
   }>();
@@ -62,11 +64,7 @@
   const { t } = useI18n();
 
   function getStage(stage: string): Record<string, any> {
-    return [
-      // ...clueBaseSteps,
-      ...lastOpportunitySteps,
-      ...opportunityResultSteps,
-    ].find((item) => item.value === stage) as Record<string, any>;
+    return appStore.stageConfigList.find((item) => item.value === stage) as Record<string, any>;
   }
 
   const actionList = computed(() => {

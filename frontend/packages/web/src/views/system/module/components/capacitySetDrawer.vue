@@ -32,11 +32,12 @@
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
 
   import { addCapacity, deleteCapacity, getCapacityPage, updateCapacity } from '@/api/modules';
-  import { opportunityBaseSteps, opportunityResultSteps } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
+  import { useAppStore } from '@/store';
 
   const { t } = useI18n();
   const { openModal } = useModal();
+  const appStore = useAppStore();
 
   const props = defineProps<{
     title: string;
@@ -146,7 +147,7 @@
                 },
               ],
               selectProps: {
-                options: [...opportunityBaseSteps, ...opportunityResultSteps],
+                options: appStore.stageConfigList,
                 disabledFunction: (row: any) => {
                   if (!row.column || !row.operator) {
                     row.value = null;
@@ -234,8 +235,9 @@
 
   watch(
     () => visible.value,
-    (newVal) => {
+    async (newVal) => {
       if (newVal) {
+        await appStore.initStageConfig();
         getCapacity();
       } else {
         form.value.list = [];
