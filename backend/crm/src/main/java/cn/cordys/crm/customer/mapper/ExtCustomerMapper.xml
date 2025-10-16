@@ -630,4 +630,14 @@
             #{id}
         </foreach>
     </update>
+
+
+    <select id="getCustomerPoolId" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, pool_id as name
+        from customer
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

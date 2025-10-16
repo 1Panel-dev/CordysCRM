@@ -235,6 +235,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
         List<String> customerIds = list.stream().map(FollowUpPlanListResponse::getCustomerId).toList();
         Map<String, String> customerMap = baseService.getCustomerMap(customerIds);
+        Map<String, String> customerPoolIdMap = baseService.getCustomerPoolId(customerIds);
 
         List<String> opportunityIds = list.stream().map(FollowUpPlanListResponse::getOpportunityId).toList();
         Map<String, String> opportunityMap = baseService.getOpportunityMap(opportunityIds);
@@ -254,6 +255,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
             planResponse.setOpportunityName(opportunityMap.get(planResponse.getOpportunityId()));
             planResponse.setClueName(clueMap.get(planResponse.getClueId()));
             planResponse.setPhone(contactPhoneMap.get(planResponse.getContactId()));
+            planResponse.setPoolId(customerPoolIdMap.get(planResponse.getCustomerId()));
 
             UserResponse userResponse = userDeptMap.get(planResponse.getOwner());
             if (userResponse != null) {
