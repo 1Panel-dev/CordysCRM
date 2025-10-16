@@ -66,4 +66,9 @@
     <update id="moveDown">
         update opportunity_stage_config set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
     </update>
+
+
+    <update id="updatePos">
+        update opportunity_stage_config set pos = #{pos} where id = #{id}
+    </update>
 </mapper>

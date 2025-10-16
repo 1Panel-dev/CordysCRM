@@ -103,10 +103,6 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
                         OpportunityStageConfig::getOrganizationId,
                         OpportunityStageConfig::getId));
 
-        OpportunityStageConfig failConfig = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0")
-        ).findFirst().get();
-
         // 根据规则处理每个商机
         opportunities.forEach(opportunity -> ownersBestMatchRuleMap.forEach((ownerIds, rule) -> {
             if (ownerIds.contains(opportunity.getOwner())) {

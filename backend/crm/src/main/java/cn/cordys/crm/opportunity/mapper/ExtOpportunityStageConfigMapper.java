@@ -26,7 +26,9 @@ public interface ExtOpportunityStageConfigMapper {
 
     List<OpportunityStageConfig> getAllStageConfigList();
 
-    void moveUp(@Param("start")Long start, @Param("end")Long end, @Param("orgId")String orgId, @Param("defaultPos")Long defaultPos);
+    void moveUp(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId, @Param("defaultPos") Long defaultPos);
 
-    void moveDown(@Param("start")Long start, @Param("end")Long end, @Param("orgId")String orgId, @Param("defaultPos")Long defaultPos);
+    void moveDown(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId, @Param("defaultPos") Long defaultPos);
+
+    void updatePos(@Param("id") String id, @Param("pos") Long pos);
 }

@@ -10,7 +10,6 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
-import cn.cordys.crm.opportunity.dto.request.StageMoveRequest;
 import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
 import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
@@ -20,6 +19,10 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,8 @@ public class OpportunityStageService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     /**
      * 商机阶段配置列表
@@ -187,22 +192,15 @@ public class OpportunityStageService {
     /**
      * 排序
      *
-     * @param request
-     * @param userId
-     * @param orgId
+     * @param ids
      */
-    public void sort(StageMoveRequest request, String userId, String orgId) {
-        OpportunityStageConfig stageConfig = opportunityStageConfigMapper.selectByPrimaryKey(request.getDragId());
-        if (stageConfig == null) {
-            throw new GenericException(Translator.get("opportunity_stage_not_exist"));
+    public void sort(List<String> ids) {
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtOpportunityStageConfigMapper configMapper = sqlSession.getMapper(ExtOpportunityStageConfigMapper.class);
+        for (int i = 0; i < ids.size(); i++) {
+            configMapper.updatePos(ids.get(i), Long.valueOf(i + 1));
         }
-        if (request.getStart() < request.getEnd()) {
-            extOpportunityStageConfigMapper.moveUp(request.getStart(), request.getEnd(), orgId, DEFAULT_POS);
-        } else {
-            extOpportunityStageConfigMapper.moveDown(request.getStart(), request.getEnd(), orgId, DEFAULT_POS);
-        }
-
-        stageConfig.setPos(request.getEnd());
-        opportunityStageConfigMapper.update(stageConfig);
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
 }

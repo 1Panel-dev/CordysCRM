@@ -3,7 +3,6 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
-import cn.cordys.crm.opportunity.dto.request.StageMoveRequest;
 import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
 import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
@@ -16,6 +15,8 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "商机阶段设置")
 @RestController
@@ -68,8 +69,8 @@ public class OpportunityStageController {
     @PostMapping("/sort")
     @Operation(summary = "商机阶段排序")
     @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-    public void sort(@Validated @RequestBody StageMoveRequest request) {
-        opportunityStageService.sort(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void sort(@RequestBody List<String> ids) {
+        opportunityStageService.sort(ids);
     }
 
 }
