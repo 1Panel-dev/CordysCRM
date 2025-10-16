@@ -46,6 +46,9 @@ public class OpportunityDetailResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
+    @Schema(description = "商机阶段名称")
+    private String stageName;
+
     @Schema(description = "负责人")
     private String owner;
 

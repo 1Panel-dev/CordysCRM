@@ -534,10 +534,12 @@
             o.update_user,
             o.expected_end_time,
             o.actual_end_time,
-            o.failure_reason
+            o.failure_reason,
+            osc.name AS stageName
         FROM
             opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
         where o.id = #{id}
     </select>
     <select id="getRepeatList" resultType="cn.cordys.crm.search.response.advanced.OpportunityRepeatResponse">
@@ -685,10 +687,12 @@
         o.contact_id,
         o.expected_end_time,
         o.actual_end_time,
-        o.failure_reason
+        o.failure_reason,
+        osc.name AS stageName
         FROM
         opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
