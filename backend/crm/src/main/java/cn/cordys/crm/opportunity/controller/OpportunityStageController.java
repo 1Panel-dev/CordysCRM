@@ -12,6 +12,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class OpportunityStageController {
 
     @GetMapping("/get")
     @Operation(summary = "商机阶段配置列表")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ})
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public StageConfigListResponse getStageConfigList() {
         return opportunityStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
