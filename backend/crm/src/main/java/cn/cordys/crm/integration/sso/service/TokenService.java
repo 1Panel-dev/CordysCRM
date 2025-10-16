@@ -268,7 +268,7 @@ public class TokenService {
     }
 
     public void sendDingNoticeByToken(DingTalkSendDTO dingTalkSendDTO, String agentId, String appSecret) {
-        String assessToken = getAssessToken(agentId, appSecret);
+        String assessToken = getDingTalkToken(agentId, appSecret);
         String detailUrl = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_NOTICE_URL, assessToken);
         qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
