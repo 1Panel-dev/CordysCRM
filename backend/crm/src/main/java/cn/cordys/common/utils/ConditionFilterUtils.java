@@ -3,13 +3,18 @@ package cn.cordys.common.utils;
 
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
+import cn.cordys.common.dto.ChartAnalysisRequest;
+import cn.cordys.common.dto.chart.ChartCategoryAxisDbParam;
+import cn.cordys.common.dto.chart.ChartValueAxisDbParam;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
-import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.JSON;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.UserViewService;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: jianxing
@@ -35,6 +41,52 @@ import java.util.List;
 @Aspect
 @Component
 public class ConditionFilterUtils {
+
+    public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, String orgId, Map<String, BaseField> fieldMap) {
+        ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
+        chartAnalysisDbRequest.setCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
+        if (request.getChartConfig().getSubCategoryAxis() != null) {
+            chartAnalysisDbRequest.setSubCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getSubCategoryAxis()));
+        }
+        chartAnalysisDbRequest.setValueAxisParam(BeanUtils.copyBean(new ChartValueAxisDbParam(), request.getChartConfig().getValueAxis()));
+
+        // 处理视图查询条件
+        chartAnalysisDbRequest.setViewCombineSearch(getViewCondition(chartAnalysisDbRequest.getViewId()));
+
+        // 处理高级搜索条件
+        parseCondition(chartAnalysisDbRequest.getFilterCondition());
+        // 处理视图筛选条件
+        parseCondition(chartAnalysisDbRequest.getViewCombineSearch());
+
+        ChartCategoryAxisDbParam xAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
+        ChartCategoryAxisDbParam subXAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
+        ChartValueAxisDbParam yAxisParam = chartAnalysisDbRequest.getValueAxisParam();
+        BaseField xBaseField = fieldMap.get(xAxisParam.getFieldId());
+        BaseField yBaseField = fieldMap.get(yAxisParam.getFieldId());
+        if (xBaseField == null ||
+                yBaseField == null ||
+                (subXAxisParam != null && fieldMap.get(subXAxisParam.getFieldId()) == null)
+        ) {
+            throw new GenericException(Translator.get("module.field.not_exist"));
+        }
+
+        xAxisParam.setBlob(xBaseField.isBlob());
+        xAxisParam.setBusinessField(StringUtils.isNotBlank(xBaseField.getBusinessKey()));
+        xAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(xBaseField.getBusinessKey()));
+
+        yAxisParam.setBlob(yBaseField.isBlob());
+        yAxisParam.setBusinessField(StringUtils.isNotBlank(yBaseField.getBusinessKey()));
+        yAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(yBaseField.getBusinessKey()));
+
+        if (subXAxisParam != null) {
+            BaseField subXBaseField = fieldMap.get(subXAxisParam.getFieldId());
+            subXAxisParam.setBlob(subXBaseField.isBlob());
+            subXAxisParam.setBusinessField(StringUtils.isNotBlank(subXBaseField.getBusinessKey()));
+            subXAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(subXBaseField.getBusinessKey()));
+        }
+
+        return chartAnalysisDbRequest;
+    }
 
     public static void parseCondition(BaseCondition baseCondition) {
         // 处理视图查询条件

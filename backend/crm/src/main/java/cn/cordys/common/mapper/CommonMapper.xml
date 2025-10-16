@@ -348,4 +348,57 @@
         </if>
         limit 1
     </select>
+
+    <sql id="chartSelect">
+        <if test="request.categoryAxisParam.businessField">
+            ${mainTable}.${request.categoryAxisParam.businessFieldName}
+        </if>
+        <if test="!request.categoryAxisParam.businessField">
+            categoryAxis.field_value
+        </if>
+        as categoryAxis,
+
+        <if test="request.subCategoryAxisParam != null">
+            <if test="request.subCategoryAxisParam.businessField">
+                ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+            </if>
+            <if test="!request.subCategoryAxisParam.businessField">
+                subCategoryAxis.field_value
+            </if>
+            as subCategoryAxis,
+        </if>
+
+        ${request.valueAxisParam.aggregateMethod}(
+            <if test="request.valueAxisParam.aggregateMethod == 'COUNT'">
+             1
+            </if>
+            <if test="request.valueAxisParam.aggregateMethod != 'COUNT'">
+                <if test="request.valueAxisParam.businessField">
+                    ${mainTable}.${request.valueAxisParam.businessFieldName}
+                </if>
+                <if test="!request.valueAxisParam.businessField">
+                    valueAxis.field_value
+                </if>
+            </if>
+        ) as valueAxis
+    </sql>
+
+    <sql id="chartGroupBy">
+        group by
+        <if test="request.categoryAxisParam.businessField">
+            ${mainTable}.${request.categoryAxisParam.businessFieldName}
+        </if>
+        <if test="!request.categoryAxisParam.businessField">
+            categoryAxis.field_value
+        </if>
+        <if test="request.subCategoryAxisParam != null">
+            ,
+            <if test="request.subCategoryAxisParam.businessField">
+                ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+            </if>
+            <if test="!request.subCategoryAxisParam.businessField">
+                subCategoryAxis.field_value
+            </if>
+        </if>
+    </sql>
 </mapper>

@@ -62,6 +62,85 @@
         </include>
     </select>
 
+    <select id="chart" resultType="cn.cordys.common.dto.chart.ChartResult">
+        select
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartSelect">
+            <property name="mainTable" value="cc"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cc.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            or sou.user_id = #{userId}
+            )
+        </if>
+
+        from customer_contact cc
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filterCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewFilterCondition.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+
+        <include refid="chartAxisJoin">
+            <property name="axisParam" value="request.categoryAxisParam"/>
+            <property name="tablePrefix" value="categoryAxis"/>
+        </include>
+        <include refid="chartAxisJoin">
+            <property name="axisParam" value="request.valueAxisParam"/>
+            <property name="tablePrefix" value="valueAxis"/>
+        </include>
+        <if test="request.subCategoryAxisParam != null">
+            <include refid="chartAxisJoin">
+                <property name="axisParam" value="request.subCategoryAxisParam"/>
+                <property name="tablePrefix" value="subXAxis"/>
+            </include>
+        </if>
+
+        where cc.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cc.owner = #{userId}
+        </if>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.filterCondition"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewFilterCondition"/>
+        </include>
+
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartGroupBy">
+            <property name="mainTable" value="cc"/>
+        </include>
+    </select>
+
+    <sql id="chartAxisJoin">
+        <if test="!${axisParam}.businessField">
+            <bind name="fieldId" value="${axisParam}.fieldId" />
+            <if test="${axisParam}.blob">
+                left join customer_contact_field_blob ${tablePrefix}
+                on cc.id = x_axis.resource_id and ${tablePrefix}.field_id = #{fieldId}
+            </if>
+            <if test="!${axisParam}.blob">
+                left join customer_contact_field ${tablePrefix}
+                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
+            </if>
+        </if>
+        <if test="${axisParam}.businessFieldName == 'departmentId'">
+            left join sys_organization_user ${tablePrefix}
+            on ${tablePrefix}.user_id = cc.owner
+        </if>
+    </sql>
+
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">

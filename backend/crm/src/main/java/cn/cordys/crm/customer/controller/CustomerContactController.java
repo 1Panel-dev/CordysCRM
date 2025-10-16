@@ -2,9 +2,8 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -67,6 +66,15 @@ public class CustomerContactController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @Operation(summary = "联系人图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        return customerContactService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/list/{customerId}")

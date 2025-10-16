@@ -3,7 +3,11 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.chart.ChartCategoryAxisConfig;
+import cn.cordys.common.dto.chart.ChartConfig;
+import cn.cordys.common.dto.chart.ChartValueAxisConfig;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.base.BaseTest;
@@ -39,6 +43,7 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String TAB = "tab";
     private static final String BASE_PATH = "/account/contact/";
     protected static final String BATCH_UPDATE = "batch/update";
+    protected static final String CHART = "chart";
     private static CustomerContact addCustomerContact;
     private static String customerId;
     private static ModuleFormConfigDTO moduleFormConfig;
@@ -218,6 +223,27 @@ class CustomerContactControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
+    }
+
+    @Test
+    @Order(4)
+    void testChart() throws Exception {
+        ChartAnalysisRequest request = new ChartAnalysisRequest();
+
+        for (BaseField field : moduleFormConfig.getFields().subList(0, 5)) {
+            ChartConfig chartConfig = new ChartConfig();
+            ChartCategoryAxisConfig chartCategoryAxisConfig = new ChartCategoryAxisConfig();
+            chartCategoryAxisConfig.setFieldId(field.getId());
+            chartConfig.setCategoryAxis(chartCategoryAxisConfig);
+            ChartValueAxisConfig chartValueAxisConfig = new ChartValueAxisConfig();
+            chartValueAxisConfig.setFieldId(field.getId());
+            chartConfig.setValueAxis(chartValueAxisConfig);
+            request.setChartConfig(chartConfig);
+            this.requestPostWithOkAndReturn(CHART, request);
+        }
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, CHART, request);
     }
 
     @Test

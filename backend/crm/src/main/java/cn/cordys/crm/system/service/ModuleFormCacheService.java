@@ -1,6 +1,12 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.chart.ChartCategoryAxisDbParam;
+import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.dto.chart.ChartValueAxisDbParam;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -9,8 +15,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,5 +82,65 @@ public class ModuleFormCacheService {
                         .toList()
         );
         return businessModuleFormConfig;
+    }
+
+    public List<ChartResult> translateAxisName(ModuleFormConfigDTO formConfig, ChartAnalysisDbRequest chartAnalysisDbRequest, List<ChartResult> chartResults) {
+        ChartCategoryAxisDbParam categoryAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
+        ChartCategoryAxisDbParam subCategoryAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
+        ChartValueAxisDbParam valueAxisParam = chartAnalysisDbRequest.getValueAxisParam();
+
+        List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
+        for (ChartResult chartResult : chartResults) {
+            BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
+            categoryFieldValue.setFieldId(categoryAxisParam.getFieldId());
+            categoryFieldValue.setFieldValue(chartResult.getCategoryAxis());
+            moduleFieldValues.add(categoryFieldValue);
+
+            BaseModuleFieldValue valueFieldValue = new BaseModuleFieldValue();
+            valueFieldValue.setFieldId(valueAxisParam.getFieldId());
+            valueFieldValue.setFieldValue(chartResult.getValueAxis());
+            moduleFieldValues.add(valueFieldValue);
+
+            if (subCategoryAxisParam != null) {
+                BaseModuleFieldValue subCategoryValue = new BaseModuleFieldValue();
+                subCategoryValue.setFieldId(subCategoryAxisParam.getFieldId());
+                subCategoryValue.setFieldValue(chartResult.getSubCategoryAxis());
+                moduleFieldValues.add(subCategoryValue);
+            }
+        }
+
+        moduleFieldValues = moduleFieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .distinct().toList();
+
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
+        Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisParam.getFieldId()))
+                .orElse(List.of())
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+        Map<String, String> subCategoryOptionMap = null;
+        if (subCategoryAxisParam != null) {
+            subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisParam.getFieldId()))
+                    .orElse(List.of())
+                    .stream()
+                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+        }
+
+        for (ChartResult chartResult : chartResults) {
+            if (categoryOptionMap.get(chartResult.getCategoryAxis()) != null) {
+                chartResult.setCategoryAxisName(categoryOptionMap.get(chartResult.getCategoryAxis()));
+            } else {
+                chartResult.setCategoryAxisName(chartResult.getCategoryAxis());
+            }
+
+            if (subCategoryAxisParam != null && subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
+                chartResult.setSubCategoryAxisName(subCategoryOptionMap.get(chartResult.getSubCategoryAxis()));
+            } else {
+                chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
+            }
+        }
+        return chartResults;
     }
 }
