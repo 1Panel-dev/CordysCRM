@@ -159,7 +159,6 @@
         FROM follow_up_plan fup
         LEFT JOIN clue c ON c.id = fup.clue_id
         LEFT JOIN customer cu ON cu.id = fup.customer_id
-        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -175,43 +174,48 @@
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
+        <if test=" (clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0) or
+                    (customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0) ">
+            join sys_organization_user sou on fup.owner = sou.user_id
+        </if>
         WHERE fup.organization_id = #{orgId}
         <!-- 业务数据权限条件 -->
         AND (
             <!-- 线索数据 -->
             (
-                c.id IS NOT NULL AND fup.type = 'CLUE'
+                fup.type = 'CLUE'
                 <if test="clueDataPermission != null and clueDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
-                <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0 and !clueDataPermission.self">
-                    AND sou.department_id IN (
-                    <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                        #{deptId}
-                    </foreach>
-                    <if test="clueDataPermission.viewId == 'ALL'">
-                        OR fup.owner = #{userId}
-                    </if>
+                <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
+                    AND (
+                        sou.department_id IN
+                        <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        <if test="clueDataPermission.viewId == 'ALL'">
+                            OR fup.owner = #{userId}
+                        </if>
                     )
                 </if>
             )
             OR
             <!-- 客户数据 -->
             (
-                cu.id IS NOT NULL AND fup.type = 'CUSTOMER'
-                <!-- 如果 customer 权限要求 only self -->
+                fup.type = 'CUSTOMER'
                 <if test="customerDataPermission != null and customerDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
 
-                <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0 and !customerDataPermission.self">
-                    AND (sou.department_id IN
-                    <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                        #{deptId}
-                    </foreach>
-                    <if test="customerDataPermission.viewId == 'ALL'">
-                        OR fup.owner = #{userId}
-                    </if>
+                <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
+                    AND (
+                        sou.department_id IN
+                        <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        <if test="customerDataPermission.viewId == 'ALL'">
+                            OR fup.owner = #{userId}
+                        </if>
                     )
                 </if>
             )
@@ -243,7 +247,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content' and condition.name != 'departmentId'
+                <if test="condition.name != 'content'
                     and condition.name != 'owner' and condition.name != 'type'
                     and condition.name != 'customerId' and condition.name != 'opportunityId'
                     and condition.name != 'clueId' and condition.name != 'contactId'
@@ -258,6 +262,9 @@
                     <if test="!condition.multipleValue">
                         LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
                         ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="condition.name == 'departmentId'">
+                        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
                     </if>
                     <if test="condition.name == 'phone'">
                         LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
@@ -270,7 +277,7 @@
     <sql id="viewFieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content' and condition.name != 'departmentId'
+                <if test="condition.name != 'content'
                     and condition.name != 'owner' and condition.name != 'type'
                     and condition.name != 'customerId' and condition.name != 'opportunityId'
                     and condition.name != 'clueId' and condition.name != 'contactId'
@@ -286,6 +293,9 @@
                         LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
                         ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
+                    <if test="condition.name == 'departmentId'">
+                        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
+                    </if>
                     <if test="condition.name == 'phone'">
                         LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
                     </if>
@@ -297,10 +307,13 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'content', 'owner', 'type', 'customerId', 'opportunityId', 'clueId', 'contactId', 'estimatedTime', 'method', 'status', 'converted',
-                'create_user', 'update_user', 'create_time', 'update_time', 'departmentId'}">
+                'create_user', 'update_user', 'create_time', 'update_time'}">
             <bind name="sortName" value="${sort}.name"/>
             LEFT JOIN follow_up_plan_field sort_table ON fup.id = sort_table.resource_id AND sort_table.field_id = #{sortName}
             LEFT JOIN sys_module_field module_table ON sort_table.field_id = module_table.id
+            <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+                LEFT JOIN sys_organization_user sou on sou.user_id = fup.owner
+            </if>
         </if>
     </sql>
 
@@ -490,7 +503,7 @@
                         fup.`type` ${sortType}, fup.id ASC
                     </when>
                     <when test="${sort}.name == 'owner'">
-                        fur.`owner` ${sortType}, fup.id ASC
+                        fup.`owner` ${sortType}, fup.id ASC
                     </when>
                     <when test="${sort}.name == 'method'">
                         fup.`method` ${sortType}, fup.id ASC
