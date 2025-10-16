@@ -31,6 +31,7 @@
             class="!pb-0 !pl-0"
             :label="oppLabel"
             required
+            :maxlength="255"
             :rules="[{ required: true, message: t('common.notNull', { value: oppLabel }) }]"
             name="oppName"
             :placeholder="t('common.pleaseInput')"
@@ -69,7 +70,7 @@
           block
           @click="onConfirm"
         >
-          {{ t('customer.transfer') }}
+          {{ t('clue.convert') }}
         </van-button>
       </div>
     </template>

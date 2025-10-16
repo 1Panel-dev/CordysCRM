@@ -180,8 +180,7 @@
         {
           label: t('clue.convert'),
           icon: 'iconicon_edit1',
-          permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-          allPermission: true,
+          permission: ['CLUE_MANAGEMENT:UPDATE'],
           action: (item: ClueListItem) => {
             convertTo(item);
           },

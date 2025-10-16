@@ -55,6 +55,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -115,6 +116,7 @@
         title: t('eventDrawer.record.converted'),
         type: FieldTypeEnum.SELECT,
         dataIndex: 'converted',
+        operatorOption: [EQUAL, NOT_EQUAL],
         selectProps: {
           options: [
             { value: true, label: t('common.yes') },
