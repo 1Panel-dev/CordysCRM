@@ -69,7 +69,7 @@ public interface DingTalkApiPaths {
      *         "userid_list":"123,456"
      * }
      */
-    String DING_NOTICE_URL = "POST https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2?access_token={0}";
+    String DING_NOTICE_URL = "https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2?access_token={0}";
 
 
 
