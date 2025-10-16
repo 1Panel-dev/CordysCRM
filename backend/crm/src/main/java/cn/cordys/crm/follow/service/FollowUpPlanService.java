@@ -186,10 +186,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId,
                                                                      DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 

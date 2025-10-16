@@ -393,11 +393,11 @@ public class FollowUpRecordService extends BaseFollowUpService {
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId,
                                                                        DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 解析当前用户数据权限
         List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
         buildListData(recordList, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, recordList);
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfoWithOption(page, recordList, optionMap);
     }
 

@@ -238,8 +238,6 @@
         <include refid="sort">
             <property name="sort" value="request.sort"/>
         </include>
-
-        LIMIT ${(request.current - 1) * request.pageSize}, ${request.pageSize}
     </select>
 
     <sql id="fieldConditionJoin">
