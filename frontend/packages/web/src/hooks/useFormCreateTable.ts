@@ -688,6 +688,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
   ];
 
+  function disableFilterAndSorter(cols: CrmDataTableColumn[]) {
+    return cols.map((c) => ({
+      ...c,
+      filter: false,
+      sorter: false,
+    })) as CrmDataTableColumn[];
+  }
+
   function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
     if ([FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)) {
       const customerField = fields.find((item) => item.businessKey === 'customerId');
@@ -714,6 +722,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
       fieldList.value = res.fields;
+
+      const isFollowModule = [FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey);
       columns = res.fields
         .filter(
           (e) =>
@@ -725,10 +735,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
             ) &&
             e.readable &&
-            !(
-              [FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey) &&
-              ['clueId', 'customerId'].includes(e.businessKey as string)
-            )
+            !(isFollowModule && ['clueId', 'customerId'].includes(e.businessKey as string))
         )
         .map((field) => {
           const noSorterType = [
@@ -842,6 +849,19 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
+          if (isFollowModule && field.businessKey === 'opportunityId') {
+            return {
+              title: field.name,
+              width: 200,
+              key: field.businessKey,
+              fieldId: field.id,
+              sortOrder: false,
+              sorter,
+              filedType: field.type,
+              render: (row: any) => row.opportunityName ?? '-',
+            };
+          }
+
           if (field.businessKey === 'owner') {
             return {
               title: field.name,
@@ -936,6 +956,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ...(internalColumnMap[props.formKey] || []),
         ...staticColumns,
       ];
+      if (isFollowModule) {
+        columns = disableFilterAndSorter(columns);
+      }
       if (
         !props.readonly &&
         ![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)

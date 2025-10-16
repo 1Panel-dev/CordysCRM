@@ -71,9 +71,11 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
+  import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { goDetail } = useOpenDetailPage();
 
   const activeTab = ref('');
   const { tabList, initTab } = useHiddenTab(FormDesignKeyEnum.FOLLOW_PLAN);
@@ -203,7 +205,7 @@
           CrmTableButton,
           {
             onClick: () => {
-              // TODO lmy
+              goDetail(row);
             },
           },
           { default: () => row.clueName ?? row.customerName, trigger: () => row.clueName ?? row.customerName }
