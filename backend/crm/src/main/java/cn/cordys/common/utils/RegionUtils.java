@@ -64,10 +64,6 @@ public class RegionUtils {
             return StringUtils.EMPTY;
         }
 
-        if (!name.contains(SPILT_STR)) {
-            return StringUtils.EMPTY;
-        }
-
         StringBuilder code = new StringBuilder(StringUtils.EMPTY);
         Queue<String> queue = new LinkedList<>();
         CollectionUtils.addAll(queue, name.split(SPILT_STR));
