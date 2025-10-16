@@ -26,7 +26,9 @@ import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -178,12 +180,19 @@ public class OpportunityStageService {
             throw new GenericException(Translator.get("opportunity_stage_not_exist"));
         }
         extOpportunityStageConfigMapper.updateStageConfig(request, userId);
+
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("stageName", oldStageConfig.getName());
+        originalVal.put("rate", oldStageConfig.getRate());
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("stageName", request.getName());
+        modifiedVal.put("rate", request.getRate());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(request.getId())
                         .resourceName(Translator.get("opportunity_stage_setting"))
-                        .originalValue(oldStageConfig)
-                        .modifiedValue(opportunityStageConfigMapper.selectByPrimaryKey(request.getId()))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
                         .build()
         );
     }

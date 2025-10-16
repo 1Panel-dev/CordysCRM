@@ -633,7 +633,7 @@
 
 
     <select id="getCustomerPoolId" resultType="cn.cordys.common.dto.OptionDTO">
-        select id, pool_id as name
+        select id, IFNULL(NULLIF(pool_id, ''), '') AS name
         from customer
         where id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
