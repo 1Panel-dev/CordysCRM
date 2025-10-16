@@ -8,7 +8,6 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ThirdConstants;
-import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -28,6 +27,7 @@ import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
+import cn.cordys.crm.integration.sync.dto.ThirdSwitchLogDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -951,13 +951,18 @@ public class IntegrationConfigService {
         if (organizationConfig == null) {
             return;
         }
-        String oldLog = organizationConfig.getSyncResource();
-        if (type.equals(oldLog)) {
+        String oldType = organizationConfig.getSyncResource();
+
+        if (type.equals(oldType)) {
             return;
         }
+        ThirdSwitchLogDTO oldLog = new ThirdSwitchLogDTO();
+        oldLog.setThirdType(oldType);
+        ThirdSwitchLogDTO newLog = new ThirdSwitchLogDTO();
+        newLog.setThirdType(type);
         //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，则关闭其他平台按钮
         // 关闭其他平台按钮
-        List<String> detailTypes = getDetailTypes(oldLog);
+        List<String> detailTypes = getDetailTypes(oldType);
         detailTypes.forEach(detailType -> {
             extOrganizationConfigDetailMapper.updateStatus(
                     false, detailType, organizationConfig.getId()
@@ -968,7 +973,7 @@ public class IntegrationConfigService {
                 .resourceName(Translator.get("third.setting"))
                 .resourceId(organizationConfig.getId())
                 .originalValue(oldLog)
-                .modifiedValue(type)
+                .modifiedValue(newLog)
                 .build());
     }
 
