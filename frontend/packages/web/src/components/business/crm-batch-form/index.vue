@@ -28,7 +28,6 @@
               v-for="(element, index) in form.list"
               :key="element.id ?? element._key"
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
-              :draggable="props.draggable && element.draggable !== false"
             >
               <CrmIcon
                 v-if="props.draggable && element.draggable !== false"
@@ -62,6 +61,7 @@
               "
                 class="block flex-1 overflow-hidden py-[4px]"
                 :class="model.formItemClass"
+                @mousedown.stop
               >
                 <template v-if="index === 0 && model.label && model.labelTooltip" #label>
                   <span class="inline-flex items-center gap-[8px]">
