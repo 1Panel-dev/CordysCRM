@@ -563,6 +563,7 @@ public class OpportunityService {
         StageConfigResponse failConfig = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0")
         ).findFirst().get();
+        Map<String, String> stageMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
         if (Strings.CI.equals(request.getStage(), successConfig.getId())) {
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -578,11 +579,17 @@ public class OpportunityService {
         newOpportunity.setStage(request.getStage());
         newOpportunity.setPos(nextPos);
         opportunityMapper.update(newOpportunity);
+
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("stage", stageMap.get(request.getStage()));
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(oldOpportunity.getName())
-                        .originalValue(oldOpportunity)
-                        .modifiedValue(opportunityMapper.selectByPrimaryKey(request.getId()))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
                         .build()
         );
     }
