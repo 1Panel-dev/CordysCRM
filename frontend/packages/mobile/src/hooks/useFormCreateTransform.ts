@@ -75,7 +75,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
         if (typeof data[fieldId] === 'string') {
           name = [options?.find((e) => e.id === data[fieldId])?.name];
         } else {
-          name = options?.filter((e) => data[fieldId].includes(e.id)).map((e) => e.name) || [];
+          name = options?.filter((e) => data[fieldId]?.includes(e.id)).map((e) => e.name) || [];
         }
       } else {
         name = options?.find((e) => e.id === data[fieldId])?.name;

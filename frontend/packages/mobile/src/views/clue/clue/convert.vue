@@ -68,6 +68,7 @@
           :loading="loading"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
           block
+          :disabled="isNoPermissionDisabled"
           @click="onConfirm"
         >
           {{ t('clue.convert') }}
@@ -171,6 +172,12 @@
       disabled: !hasAllPermission(['OPPORTUNITY_MANAGEMENT:ADD', 'CUSTOMER_MANAGEMENT:ADD']),
     },
   ]);
+
+  const isNoPermissionDisabled = computed(() =>
+    selectedType.value.includes(FormDesignKeyEnum.BUSINESS)
+      ? !hasAllPermission(['CUSTOMER_MANAGEMENT:ADD', 'OPPORTUNITY_MANAGEMENT:ADD'])
+      : !hasAllPermission(['CUSTOMER_MANAGEMENT:ADD'])
+  );
 
   function toggleSelect(value: FormDesignKeyEnum) {
     const index = selectedType.value.indexOf(value);

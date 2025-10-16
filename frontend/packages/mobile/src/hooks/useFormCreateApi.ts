@@ -8,6 +8,7 @@ import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert, s
 import {
   dataSourceTypes,
   departmentTypes,
+  getNormalFieldValue,
   linkAllAcceptTypes,
   memberTypes,
   multipleTypes,
@@ -616,7 +617,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
-          params[item.businessKey] = form[item.id] ?? '';
+          params[item.businessKey] = getNormalFieldValue(item, form[item.id]);
         } else {
           params.moduleFields.push({
             fieldId: item.id,
