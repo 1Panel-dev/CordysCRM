@@ -176,7 +176,10 @@
               goDetail(row);
             },
           },
-          { default: () => row.clueName ?? row.customerName, trigger: () => row.clueName ?? row.customerName }
+          {
+            default: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
+            trigger: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
+          }
         );
       },
     },
