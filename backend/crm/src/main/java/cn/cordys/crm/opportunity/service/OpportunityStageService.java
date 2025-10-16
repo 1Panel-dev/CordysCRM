@@ -17,6 +17,7 @@ import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.ibatis.session.ExecutorType;
@@ -164,8 +165,25 @@ public class OpportunityStageService {
      * @param request
      * @param orgId
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void updateRollBack(StageRollBackRequest request, String orgId) {
+        LambdaQueryWrapper<OpportunityStageConfig> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityStageConfig::getOrganizationId, orgId);
+        List<OpportunityStageConfig> stageConfigList = opportunityStageConfigMapper.selectListByLambda(wrapper);
         extOpportunityStageConfigMapper.updateRollBack(request, orgId);
+
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("afootRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getAfootRollBack().toString())));
+        originalVal.put("endRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getEndRollBack().toString())));
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("afootRollBack", Translator.get("log.enable.".concat(request.getAfootRollBack().toString())));
+        modifiedVal.put("endRollBack", Translator.get("log.enable.".concat(request.getEndRollBack().toString())));
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originalVal)
+                .resourceName(Translator.get("opportunity_stage_setting"))
+                .modifiedValue(modifiedVal)
+                .resourceId(orgId)
+                .build());
     }
 
 
@@ -184,10 +202,10 @@ public class OpportunityStageService {
         extOpportunityStageConfigMapper.updateStageConfig(request, userId);
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("stageName", oldStageConfig.getName());
+        originalVal.put("stage", oldStageConfig.getName());
         originalVal.put("rate", oldStageConfig.getRate());
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("stageName", request.getName());
+        modifiedVal.put("stage", request.getName());
         modifiedVal.put("rate", request.getRate());
         OperationLogContext.setContext(
                 LogContextInfo.builder()

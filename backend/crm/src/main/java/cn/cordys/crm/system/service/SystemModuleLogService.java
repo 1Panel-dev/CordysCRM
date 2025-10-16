@@ -47,14 +47,10 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 handleModuleMainNav(differ);
             }
 
-            if (Strings.CS.equals("rate", differ.getColumn())) {
-                differ.setColumnName(Translator.get("log.rate"));
-                differ.setNewValueName(differ.getNewValue());
-                differ.setOldValueName(differ.getOldValue());
-            }
 
-            if (Strings.CS.equals("stageName", differ.getColumn())) {
-                differ.setColumnName(Translator.get("log.stage"));
+            if (Strings.CI.equalsAny(differ.getColumn(),
+                    "rate", "stage", "afootRollBack", "endRollBack")) {
+                differ.setColumnName(Translator.get("log.".concat(differ.getColumn())));
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
             }
