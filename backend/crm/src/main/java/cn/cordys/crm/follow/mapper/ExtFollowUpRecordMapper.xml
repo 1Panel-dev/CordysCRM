@@ -204,6 +204,10 @@
             )
         )
 
+        <if test="request.keyword != null and request.keyword != ''">
+            AND (c.name like concat('%', #{request.keyword},'%') or cu.name like concat('%', #{request.keyword},'%'))
+        </if>
+
         <!-- 高级搜索/过滤, 排序条件 -->
         <include refid="filters">
             <property name="filters" value="request.filters"/>
@@ -218,7 +222,7 @@
             <property name="sort" value="request.sort"/>
         </include>
 
-        limit ${request.current}, ${request.pageSize}
+        LIMIT ${(request.current - 1) * request.pageSize}, ${request.pageSize}
     </select>
 
 
@@ -322,7 +326,7 @@
                 'create_user', 'update_user', 'create_time', 'update_time'}">
             <bind name="sortName" value="${sort}.name"/>
             left join follow_up_record_field sort_table
-            on furid = sort_table.resource_id and sort_table.field_id = #{sortName}
+            on fur.id = sort_table.resource_id and sort_table.field_id = #{sortName}
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
     </sql>
@@ -384,6 +388,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="fur.content"/>
+                </include>
+            </when>
+            <when test="condition.name == 'type'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="fur.type"/>
                 </include>
             </when>
             <when test="condition.name == 'owner'">
@@ -467,16 +477,16 @@
                 <bind name="sortType" value="${sort}.type" />
                 order by
                 <choose>
-                    <when test="${sort}.name == 'customerId'">
+                    <when test="${sort}.name == 'customer_id'">
                         fur.`customer_id` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'opportunityId'">
+                    <when test="${sort}.name == 'opportunity_id'">
                         fur.`opportunity_id` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'clueId'">
+                    <when test="${sort}.name == 'clue_id'">
                         fur.`clue_id` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'contactId'">
+                    <when test="${sort}.name == 'contact_id'">
                         fur.`contact_id` ${sortType}, fur.id ASC
                     </when>
                     <when test="${sort}.name == 'type'">
@@ -485,22 +495,22 @@
                     <when test="${sort}.name == 'owner'">
                         fur.`owner` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'followMethod'">
+                    <when test="${sort}.name == 'follow_method'">
                         fur.`follow_method` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'followTime'">
+                    <when test="${sort}.name == 'follow_time'">
                         fur.`follow_time` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'createTime'">
+                    <when test="${sort}.name == 'create_time'">
                         fur.`create_time` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'updateTime'">
+                    <when test="${sort}.name == 'update_time'">
                         fur.`update_time` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'createUser'">
+                    <when test="${sort}.name == 'create_user'">
                         fur.`create_user` ${sortType}, fur.id ASC
                     </when>
-                    <when test="${sort}.name == 'updateUser'">
+                    <when test="${sort}.name == 'update_user'">
                         fur.`update_user` ${sortType}, fur.id ASC
                     </when>
                     <otherwise>

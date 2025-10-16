@@ -216,6 +216,14 @@
             )
         )
 
+        <if test="request.status != null and request.status != '' and request.status != 'ALL'">
+            AND status = #{request.status}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            AND (c.name like concat('%', #{request.keyword},'%') or cu.name like concat('%', #{request.keyword},'%'))
+        </if>
+
         <!-- 高级搜索/过滤, 排序条件 -->
         <include refid="filters">
             <property name="filters" value="request.filters"/>
@@ -230,7 +238,7 @@
             <property name="sort" value="request.sort"/>
         </include>
 
-        limit ${request.current}, ${request.pageSize}
+        LIMIT ${(request.current - 1) * request.pageSize}, ${request.pageSize}
     </select>
 
     <sql id="fieldConditionJoin">
@@ -246,11 +254,11 @@
                     and condition.name != 'updateUser' and condition.name != 'updateTime'">
                     <if test="condition.multipleValue">
                         left join follow_up_plan_field_blob ${tablePrefix}_${i}
-                        on fur.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
                         left join follow_up_plan_field ${tablePrefix}_${i}
-                        on fur.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
             </foreach>
@@ -270,11 +278,11 @@
                     and condition.name != 'updateUser' and condition.name != 'updateTime'">
                     <if test="condition.multipleValue">
                         left join follow_up_plan_field_blob ${tablePrefix}_${i}
-                        on fur.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
                         left join follow_up_plan_field ${tablePrefix}_${i}
-                        on fur.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on fup.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
             </foreach>
@@ -286,8 +294,8 @@
                 {'content', 'owner', 'type', 'customerId', 'opportunityId', 'clueId', 'contactId', 'estimatedTime', 'method', 'status', 'converted',
                 'create_user', 'update_user', 'create_time', 'update_time'}">
             <bind name="sortName" value="${sort}.name"/>
-            left join follow_up_record_field sort_table
-            on furid = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join follow_up_plan_field sort_table
+            on fup.id = sort_table.resource_id and sort_table.field_id = #{sortName}
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
     </sql>
@@ -349,6 +357,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="fup.content"/>
+                </include>
+            </when>
+            <when test="condition.name == 'type'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="fup.type"/>
                 </include>
             </when>
             <when test="condition.name == 'owner'">
@@ -444,23 +458,23 @@
                 <bind name="sortType" value="${sort}.type" />
                 order by
                 <choose>
-                    <when test="${sort}.name == 'customerId'">
+                    <when test="${sort}.name == 'customer_id'">
                         fup.`customer_id` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'opportunityId'">
+                    <when test="${sort}.name == 'opportunity_id'">
                         fup.`opportunity_id` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'clueId'">
+                    <when test="${sort}.name == 'clue_id'">
                         fup.`clue_id` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'contactId'">
+                    <when test="${sort}.name == 'contact_id'">
                         fup.`contact_id` ${sortType}, fup.id ASC
                     </when>
                     <when test="${sort}.name == 'type'">
                         fup.`type` ${sortType}, fup.id ASC
                     </when>
                     <when test="${sort}.name == 'owner'">
-                        fur.`owner` ${sortType}, fur.id ASC
+                        fur.`owner` ${sortType}, fup.id ASC
                     </when>
                     <when test="${sort}.name == 'method'">
                         fup.`method` ${sortType}, fup.id ASC
@@ -471,19 +485,19 @@
                     <when test="${sort}.name == 'converted'">
                         fup.`converted` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'estimatedTime'">
+                    <when test="${sort}.name == 'estimated_time'">
                         fup.`estimated_time` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'createTime'">
+                    <when test="${sort}.name == 'create_time'">
                         fup.`create_time` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'updateTime'">
+                    <when test="${sort}.name == 'update_time'">
                         fup.`update_time` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'createUser'">
+                    <when test="${sort}.name == 'create_user'">
                         fup.`create_user` ${sortType}, fup.id ASC
                     </when>
-                    <when test="${sort}.name == 'updateUser'">
+                    <when test="${sort}.name == 'update_user'">
                         fup.`update_user` ${sortType}, fup.id ASC
                     </when>
                     <otherwise>
