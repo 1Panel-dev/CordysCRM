@@ -762,12 +762,7 @@ public class IntegrationConfigService {
             }
         }
 
-        boolean result = StringUtils.isNotBlank(token);
-
-        // 更新配置
-        updateExistingConfigIfNeeded(configDTO, organizationId, userId, token, types, result);
-
-        return result;
+        return StringUtils.isNotBlank(token);
     }
 
     /**
