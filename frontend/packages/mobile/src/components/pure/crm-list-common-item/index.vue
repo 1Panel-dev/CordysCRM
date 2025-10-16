@@ -3,11 +3,11 @@
     <div class="crm-list-common-item-header">
       <div class="one-line-text text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
       <CrmTag
-        v-if="item.stage && !props.hiddenStage"
+        v-if="item.stageName && !props.hiddenStage"
         class="flex-shrink-0"
-        :bg-color="getStage(item.stage)?.bgColor ?? 'var(--info-5)'"
-        :tag="t(getStage(item.stage)?.label)"
-        :text-color="getStage(item.stage)?.color ?? 'var(--info-blue)'"
+        :bg-color="getStage(item.stage)?.bgColor"
+        :tag="item.stageName ?? ''"
+        :text-color="getStage(item.stage)?.color"
       />
     </div>
     <div class="crm-list-common-item-content">
@@ -35,8 +35,6 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from '@lib/shared/hooks/useI18n';
-
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
   import useAppStore from '@/store/modules/app';
@@ -61,10 +59,32 @@
     (e: 'click', item: Record<string, any>): void;
   }>();
 
-  const { t } = useI18n();
+  function stageStyle(type: 'success' | 'error' | 'info') {
+    const map = {
+      success: { bgColor: 'var(--success-5)', color: 'var(--success-green)' },
+      error: { bgColor: 'var(--error-5)', color: 'var(--error-red)' },
+      info: { bgColor: 'var(--info-5)', color: 'var(--info-blue)' },
+    };
+    return map[type];
+  }
 
-  function getStage(stage: string): Record<string, any> {
-    return appStore.stageConfigList.find((item) => item.value === stage) as Record<string, any>;
+  function defaultStageStyle() {
+    return stageStyle('info');
+  }
+
+  function getStage(stageId: string): Record<string, string> {
+    const stage = appStore.originStageConfigList.find((item) => item.id === stageId);
+    if (!stage) {
+      return defaultStageStyle();
+    }
+
+    const { type, rate } = stage;
+    if (type === 'END') {
+      if (rate === '100') return stageStyle('success');
+      if (rate === '0') return stageStyle('error');
+    }
+
+    return stageStyle('info');
   }
 
   const actionList = computed(() => {

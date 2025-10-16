@@ -166,6 +166,9 @@
         {
           label: t('common.delete'),
           key: 'delete',
+          danger: true,
+          disabled: element.stageHasData,
+          tooltipContent: t('module.businessManage.stageHasData'),
         },
       ];
     }
@@ -249,10 +252,11 @@
       const { newIndex, oldIndex } = event;
       if (newIndex === oldIndex) return;
 
-      const movedItem = form.value.list.splice(oldIndex, 1)[0];
-      form.value.list.splice(newIndex, 0, movedItem);
+      const newList = [...form.value.list];
+      const [movedItem] = newList.splice(oldIndex, 1);
+      newList.splice(newIndex, 0, movedItem);
 
-      await sortOpportunityStage(form.value.list.map((e: StageConfigItem) => e.id));
+      await sortOpportunityStage(newList.map((e: StageConfigItem) => e.id));
       init();
       Message.success(t('common.operationSuccess'));
     } catch (error) {

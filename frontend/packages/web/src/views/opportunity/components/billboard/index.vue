@@ -46,7 +46,11 @@
         </n-button>
       </div>
     </div>
-    <n-scrollbar content-class="grid [grid-template-columns:repeat(7,300px)] gap-[16px] h-full" x-scrollable>
+    <n-scrollbar
+      :content-style="{ gridTemplateColumns: `repeat(${(stageConfig?.stageConfigList || []).length || 7}, 300px)` }"
+      content-class="grid gap-[16px] h-full"
+      x-scrollable
+    >
       <list
         v-for="(item, index) in stageConfig?.stageConfigList"
         ref="listRef"

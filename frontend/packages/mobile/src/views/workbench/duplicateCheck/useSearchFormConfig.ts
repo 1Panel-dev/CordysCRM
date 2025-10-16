@@ -44,7 +44,6 @@ export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
 
 export default function useSearchFormConfig() {
   const { t } = useI18n();
-  const appStore = useAppStore();
 
   // 客户公海共用表单
   const customerConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC];
@@ -306,10 +305,7 @@ export default function useSearchFormConfig() {
             label: field.label,
             key: field.key,
             valueSlotName: 'render',
-            render: (row: any) => {
-              const step = appStore.stageConfigList.find((item: any) => item.value === row.stage);
-              return step ? step.label : '-';
-            },
+            render: (row: any) => row.stageName ?? '-',
           };
         }
 

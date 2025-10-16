@@ -64,7 +64,7 @@ const useAppStore = defineStore('app', {
     eventSource: null,
     cacheRoutes: new Set([]),
     isManualBack: false,
-    stageConfigList: [], // 商机阶段配置
+    originStageConfigList: [],
   }),
   getters: {
     getOrgId(state: AppState) {
@@ -75,6 +75,12 @@ const useAppStore = defineStore('app', {
     },
     getManualBack(state: AppState) {
       return state.isManualBack;
+    },
+    stageConfigList(state: AppState) {
+      return state.originStageConfigList.map((e) => ({
+        value: e.id,
+        label: e.name,
+      }));
     },
   },
   actions: {
@@ -186,10 +192,7 @@ const useAppStore = defineStore('app', {
     async initStageConfig() {
       try {
         const stageConfig = await getOpportunityStageConfig();
-        this.stageConfigList = stageConfig.stageConfigList.map((e) => ({
-          value: e.id,
-          label: e.name,
-        }));
+        this.originStageConfigList = stageConfig.stageConfigList;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
