@@ -115,6 +115,17 @@
   // 校验导入模板
   async function validateTemplate(files: CrmFileItem[]) {
     fileList.value = files;
+    const file = fileList.value[0].file as File;
+
+    // 防止修改后未上传就校验
+    try {
+      await file.arrayBuffer();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+      Message.warning(t('crmImportButton.fileChange'));
+      return;
+    }
     validateInfo.value = {
       ...initValidateInfo,
     };
@@ -123,7 +134,7 @@
       validateModal.value = true;
       start();
 
-      const result = await importApiMap[props.apiType].preCheck(fileList.value[0].file as File);
+      const result = await importApiMap[props.apiType].preCheck(file);
       validateInfo.value = result.data;
       finish();
     } catch (error) {
