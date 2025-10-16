@@ -23,14 +23,15 @@
           @adv-search="handleAdvSearch"
           @keyword-search="searchByKeyword"
         />
-        <n-tabs v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
+        <!-- TODO lmy 切换 -->
+        <!-- <n-tabs v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
           <n-tab-pane name="table" class="hidden">
             <template #tab><CrmIcon type="iconicon_list" /></template>
           </n-tab-pane>
           <n-tab-pane name="timeline" class="hidden">
             <template #tab><CrmIcon type="iconicon_timeline" /></template>
           </n-tab-pane>
-        </n-tabs>
+        </n-tabs> -->
       </template>
     </CrmTable>
 

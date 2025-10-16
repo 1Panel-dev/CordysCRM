@@ -936,7 +936,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ...(internalColumnMap[props.formKey] || []),
         ...staticColumns,
       ];
-      if (!props.readonly) {
+      if (
+        !props.readonly &&
+        ![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)
+      ) {
         columns.unshift({
           type: 'selection',
           fixed: 'left',

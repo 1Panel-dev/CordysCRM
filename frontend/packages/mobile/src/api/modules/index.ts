@@ -3,6 +3,7 @@ import { showFailToast } from 'vant';
 import createAxios from '@lib/shared/api/http';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
+import useFollowApi from '@lib/shared/api/modules/follow';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
 import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
@@ -29,6 +30,19 @@ const orgApi = useOrgApi(CDR);
 const businessApi = useBusinessApi(CDR);
 const loginApi = useLoginApi(CDR);
 const licenseApi = useLicenseApi(CDR);
+const followApi = useFollowApi(CDR);
+
+export const {
+  getFollowPlanDetail,
+  getFollowPLanPage,
+  getFollowRecordDetail,
+  getFollowRecordPage,
+  deleteFollowRecord,
+  getFollowRecordTab,
+  getFollowPlanTab,
+  deleteFollowPlan,
+  updateFollowPlanStatus,
+} = followApi;
 
 export const {
   addProduct,

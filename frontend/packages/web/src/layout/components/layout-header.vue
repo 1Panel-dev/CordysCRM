@@ -16,7 +16,12 @@
             <span v-else></span>
           </template>
           <template #eventSlot>
-            <n-button class="p-[8px]" quaternary @click="showFollowDrawer = true">
+            <n-button
+              v-permission="['CUSTOMER_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ']"
+              class="p-[8px]"
+              quaternary
+              @click="showFollowDrawer = true"
+            >
               <template #icon>
                 <CrmIcon type="iconicon_data_plan" :size="16" />
               </template>
