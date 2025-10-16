@@ -45,6 +45,9 @@ public class GlobalOpportunityResponse {
     @Schema(description = "商机阶段")
     private String stage;
 
+    @Schema(description = "商机阶段")
+    private String stageName;
+
     @Schema(description = "负责人部门名称")
     private String departmentName;
 

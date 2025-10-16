@@ -748,11 +748,13 @@
         o.owner,
         o.products,
         o.stage,
-        o.follow_time
+        o.follow_time,
+        osc.name AS stageName
         FROM
         opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
         LEFT JOIN customer_contact ct ON o.contact_id = ct.id
+        LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
