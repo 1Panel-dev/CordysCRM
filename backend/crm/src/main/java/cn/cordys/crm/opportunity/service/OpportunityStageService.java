@@ -222,14 +222,31 @@ public class OpportunityStageService {
      * 排序
      *
      * @param ids
+     * @param orgId
      */
-    public void sort(List<String> ids) {
-        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-        ExtOpportunityStageConfigMapper configMapper = sqlSession.getMapper(ExtOpportunityStageConfigMapper.class);
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
+    public void sort(List<String> ids, String orgId) {
+        List<StageConfigResponse> oldStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<String> oldNames = oldStageConfigList.stream().map(StageConfigResponse::getName).toList();
+
         for (int i = 0; i < ids.size(); i++) {
-            configMapper.updatePos(ids.get(i), Long.valueOf(i + 1));
+            extOpportunityStageConfigMapper.updatePos(ids.get(i), Long.valueOf(i + 1));
         }
-        sqlSession.flushStatements();
-        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+        List<StageConfigResponse> newStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<String> newNames = newStageConfigList.stream().map(StageConfigResponse::getName).toList();
+
+        Map<String, List<String>> originalVal = new HashMap<>(1);
+        originalVal.put("stageSort", oldNames);
+        Map<String, List<String>> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("stageSort", newNames);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(orgId)
+                        .resourceName(Translator.get("opportunity_stage_setting"))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
     }
 }

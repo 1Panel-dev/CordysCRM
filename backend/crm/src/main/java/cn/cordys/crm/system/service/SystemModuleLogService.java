@@ -54,6 +54,12 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
             }
+
+            if (Strings.CS.equals("stageSort", differ.getColumn())) {
+                differ.setColumnName(Translator.get("opportunity_stage_setting"));
+                differ.setNewValueName(differ.getNewValue());
+                differ.setOldValueName(differ.getOldValue());
+            }
         });
     }
 
