@@ -171,7 +171,7 @@
           key: 'delete',
           danger: true,
           disabled: element.stageHasData,
-          tooltipContent: t('module.businessManage.stageHasData'),
+          tooltipContent: element.stageHasData ? t('module.businessManage.stageHasData') : '',
         },
       ];
     }
@@ -184,7 +184,7 @@
         key: 'delete',
         danger: true,
         disabled: element.stageHasData,
-        tooltipContent: t('module.businessManage.stageHasData'),
+        tooltipContent: element.stageHasData ? t('module.businessManage.stageHasData') : '',
       },
     ];
   }
