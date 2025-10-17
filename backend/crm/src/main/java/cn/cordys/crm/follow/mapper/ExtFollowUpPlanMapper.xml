@@ -184,6 +184,9 @@
             <!-- 线索数据 -->
             (
                 fup.type = 'CLUE'
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND c.name like concat('%', #{request.keyword},'%')
+                </if>
                 <if test="clueDataPermission != null and clueDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
@@ -203,6 +206,9 @@
             <!-- 客户数据 -->
             (
                 fup.type = 'CUSTOMER'
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND cu.name like concat('%', #{request.keyword},'%')
+                </if>
                 <if test="customerDataPermission != null and customerDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
@@ -223,10 +229,6 @@
 
         <if test="request.status != null and request.status != '' and request.status != 'ALL'">
             AND status = #{request.status}
-        </if>
-
-        <if test="request.keyword != null and request.keyword != ''">
-            AND (c.name like concat('%', #{request.keyword},'%') or cu.name like concat('%', #{request.keyword},'%'))
         </if>
 
         <!-- 高级搜索/过滤, 排序条件 -->

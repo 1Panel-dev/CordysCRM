@@ -171,9 +171,11 @@
         <!-- 业务数据权限条件 -->
 
         AND (
-            <!-- 线索数据 -->
-            (
-                fur.type = 'CLUE'
+        <!-- 线索数据 -->(
+                fur.type = 'CLUE' and c.name is not null
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND c.name like concat('%', #{request.keyword},'%')
+                </if>
                 <if test="clueDataPermission != null and clueDataPermission.self">
                     AND fur.owner = #{userId}
                 </if>
@@ -192,11 +194,13 @@
             OR
             <!-- 客户数据 -->
             (
-                fur.type = 'CUSTOMER'
+                fur.type = 'CUSTOMER' and cu.name is not null
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND cu.name like concat('%', #{request.keyword},'%')
+                </if>
                 <if test="customerDataPermission != null and customerDataPermission.self">
                     AND fur.owner = #{userId}
                 </if>
-
                 <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
                     AND (
                         sou.department_id IN
@@ -210,10 +214,6 @@
                 </if>
             )
         )
-
-        <if test="request.keyword != null and request.keyword != ''">
-            AND (c.name like concat('%', #{request.keyword},'%') or cu.name like concat('%', #{request.keyword},'%'))
-        </if>
 
         <!-- 高级搜索/过滤, 排序条件 -->
         <include refid="filters">
