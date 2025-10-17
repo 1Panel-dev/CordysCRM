@@ -446,17 +446,20 @@ public class FollowUpPlanService extends BaseFollowUpService {
     /**
      * 拦截跟进记录的操作权限
      * @param id 记录ID
-     * @param userId 用户ID
      * @param orgId 组织ID
      */
-    public void checkPlanPermission(String id, String userId, String orgId) {
+    public void checkPlanPermission(String id, String orgId) {
         FollowUpPlanDetailResponse planDetail = get(id, orgId);
+        boolean hasPermission;
         if (Strings.CS.equals(planDetail.getType(), ModuleKey.CLUE.name())) {
-            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
+            hasPermission = PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE);
         } else if (StringUtils.isNotEmpty(planDetail.getOpportunityId())) {
-            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE);
+            hasPermission = PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE);
         } else {
-            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+            hasPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+        }
+        if (!hasPermission) {
+            throw new GenericException(Translator.get("no.operation.permission"));
         }
     }
 }

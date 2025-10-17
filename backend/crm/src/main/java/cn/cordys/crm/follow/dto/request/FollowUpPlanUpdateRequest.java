@@ -14,7 +14,6 @@ public class FollowUpPlanUpdateRequest extends FollowUpPlanAddRequest {
     @Size(max = 32)
     private String id;
 
-    @NotNull
-    @Schema(description = "是否转为跟进记录", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "是否转为跟进记录")
     private Boolean converted;
 }

@@ -68,17 +68,15 @@ public class FollowUpPlanController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进计划")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public void delete(@PathVariable String id) {
-        followUpPlanService.checkPlanPermission(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId());
         followUpPlanService.delete(id);
     }
 
     @PostMapping("/status/update")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     @Operation(summary = "更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        followUpPlanService.checkPlanPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkPlanPermission(request.getId(),OrganizationContext.getOrganizationId());
         followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 
@@ -91,9 +89,8 @@ public class FollowUpPlanController {
 
     @PostMapping("/update")
     @Operation(summary = "更新线索跟进计划")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
-        followUpPlanService.checkPlanPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkPlanPermission(request.getId(), OrganizationContext.getOrganizationId());
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

@@ -67,9 +67,8 @@ public class FollowUpRecordController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进记录")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public void delete(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId());
         followUpRecordService.delete(id);
     }
 
@@ -82,9 +81,8 @@ public class FollowUpRecordController {
 
     @PostMapping("/update")
     @Operation(summary = "更新线索跟进记录")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
-        followUpRecordService.checkRecordPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpRecordService.checkRecordPermission(request.getId(), OrganizationContext.getOrganizationId());
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
