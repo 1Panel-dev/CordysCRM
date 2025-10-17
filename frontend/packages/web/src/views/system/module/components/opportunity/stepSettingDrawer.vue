@@ -154,7 +154,9 @@
     if (element.type === 'END') {
       return [];
     }
-    if (form.value.list.some((item: any) => item.type === 'AFOOT').length === 1) {
+
+    const minAfootCount = form.value.list.filter((item: any) => item.type === 'AFOOT').length === 1;
+    if (minAfootCount) {
       // 至少保留一个进行中的状态
       return [
         { label: t('module.businessManage.insetBefore'), key: 'before' },
