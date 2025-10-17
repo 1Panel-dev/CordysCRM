@@ -477,6 +477,9 @@ public class OpportunityService {
      */
     public OpportunityDetailResponse get(String id, String orgId) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
+        if (response == null) {
+            throw new GenericException(Translator.get("opportunity_not_found"));
+        }
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
         List<String> userIds = Stream.of(Arrays.asList(response.getCreateUser(), response.getUpdateUser(), response.getOwner(), response.getFollower()))
@@ -602,7 +605,7 @@ public class OpportunityService {
     public CustomerContactListAllResponse getContactList(String opportunityId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
         if (opportunity == null) {
-            throw new GenericException("opportunity_not_found");
+            throw new GenericException(Translator.get("opportunity_not_found"));
         }
         return customerContactService.getOpportunityContactList(opportunity.getContactId(), orgId);
     }

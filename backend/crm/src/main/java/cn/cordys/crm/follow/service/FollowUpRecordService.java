@@ -369,6 +369,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
         if (Strings.CS.equals(resourceType, FormKey.OPPORTUNITY.name())) {
             // 商机跟进记录来源: 1. 线索转化 2. 客户转化 3. 商机手动创建
             Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getSourceId());
+            if (opportunity == null) {
+                throw new GenericException(Translator.get("opportunity_not_found"));
+            }
             if (StringUtils.isNotEmpty(opportunity.getCustomerId())) {
                 request.setRefCustomerId(opportunity.getCustomerId());
                 request.setRefUserId(opportunity.getOwner());
