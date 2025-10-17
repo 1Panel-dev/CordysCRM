@@ -11,10 +11,8 @@ public class ThirdConfigDetailDTO {
     private String agentId;
     @Schema(description = "应用密钥", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appSecret;
+    @Schema(description = "内部应用ID")
+    private String appId;
     @Schema(description = "是否验证通过")
     private Boolean verify;
-    @Schema(description = "回调地址")
-    private String redirectUrl;
-    @Schema(description = "通知开启")
-    private Boolean oAuth2Enable;
 }

@@ -13,6 +13,8 @@ public class ThirdConfigurationDTO {
     private String agentId;
     @Schema(description = "应用密钥", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appSecret;
+    @Schema(description = "内部应用ID")
+    private String appId;
     @Schema(description = "同步用户")
     private Boolean startEnable;
     @Schema(description = "回调地址")

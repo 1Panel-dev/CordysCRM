@@ -87,7 +87,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         String result = String.join(",", resourceUserIds);
         dingTalkSendDTO.setUserid_list(result);
         dingTalkSendDTO.setTo_all_user("false");
-        dingTalkSendDTO.setAgent_id(thirdConfigurationDTO.getAgentId());
+        dingTalkSendDTO.setAgent_id(thirdConfigurationDTO.getAppId());
         dingTalkSendDTO.setMsg(new DingTalkMsgDTO());
         dingTalkSendDTO.getMsg().setText(new DingTalkTextDTO(context));
         dingTalkSendDTO.getMsg().setMsgtype("text");
