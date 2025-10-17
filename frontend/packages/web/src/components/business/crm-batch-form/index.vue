@@ -28,7 +28,6 @@
               v-for="(element, index) in form.list"
               :key="element.id ?? element._key"
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
-              :draggable="props.draggable && element.draggable !== false"
             >
               <CrmIcon
                 v-if="props.draggable && element.draggable !== false"
@@ -248,6 +247,7 @@
       showAllOr?: boolean;
       draggable?: boolean;
       popConfirmProps?: (ele: Record<string, any>, i: number) => CrmPopConfirmProps | CrmPopConfirmProps;
+      move?: (evt: any) => boolean;
     }>(),
     {
       maxHeight: '100%',
@@ -459,10 +459,7 @@
   }
 
   function handleMove(evt: any) {
-    if (evt.related.draggable === false) {
-      return false;
-    }
-    return true;
+    return props?.move && typeof props.move === 'function' ? props?.move(evt) : true;
   }
 
   // 取消编辑

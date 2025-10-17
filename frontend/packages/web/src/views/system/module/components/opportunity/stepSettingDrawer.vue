@@ -7,6 +7,7 @@
       :default-list="form.list"
       validate-when-add
       draggable
+      :move="handleMove"
       @save-row="handleSave"
       @drag="dragEnd"
       @cancel-row="handleCancelRow"
@@ -292,6 +293,25 @@
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  function handleMove(evt: any) {
+    const fromEl = evt.from;
+    const draggedEl = evt.dragged;
+    const relatedEl = evt.related;
+
+    const children = Array.from(fromEl.children);
+    const draggedIndex = children.indexOf(draggedEl);
+    const targetIndex = children.indexOf(relatedEl);
+
+    // 禁止拖拽最后两个
+    if (draggedIndex >= form.value.list.length - 2) return false;
+
+    // 禁止拖放到最后两个之后
+    if (targetIndex >= form.value.list.length - 2) return false;
+
+    // 允许其他情况
+    return true;
   }
 
   watch(
