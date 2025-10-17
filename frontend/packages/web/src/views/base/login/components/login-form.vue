@@ -240,7 +240,7 @@
     return userStore.loginType.includes('CAS');
   });
 
-  const isShowQRCode = ref(true);
+  const isShowQRCode = ref(false);
   const hasMoreLoginWay = computed(
     () => isShowLDAP.value || isShowOIDC.value || isShowOAUTH.value || isShowCAS.value || isShowQRCode.value
   );
@@ -248,6 +248,7 @@
   const activePlatformType = computed<string>(() => appStore.activePlatformResource.syncResource);
 
   async function initPlatformInfo() {
+    if (!activePlatformType.value) return;
     try {
       const res = await getThirdConfigByType(activePlatformType.value);
       if (getLoginType() && getLoginType() !== 'LOCAL' && getLoginType() !== 'LDAP') {
