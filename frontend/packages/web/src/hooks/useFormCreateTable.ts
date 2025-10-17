@@ -858,6 +858,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter,
               filedType: field.type,
+              ellipsis: {
+                tooltip: true,
+              },
               render: (row: any) => row.opportunityName ?? '-',
             };
           }

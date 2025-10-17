@@ -40,9 +40,7 @@ export default function useOpenDetailPage() {
   }
 
   function goDetail(item: any) {
-    if (item.opportunityId) {
-      openNewPageOpportunity(item);
-    } else if (item.resourceType === 'CLUE') {
+    if (item.resourceType === 'CLUE') {
       if (item.poolId) {
         openNewPageCluePool(item);
       } else {
