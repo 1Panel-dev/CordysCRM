@@ -58,6 +58,7 @@ nav:
         - 产品信息录入与管理: user_manual/product_entry.md
         - 销售管理与运营: user_manual/sales_manage.md
         - 企业微信集成与配置: user_manual/wecom.md
+        - 钉钉集成与配置: user_manual/dingtalk.md
         - 移动端访问与操作:  user_manual/mobile.md
         - 接入 SQLBot 进行智能问数:  user_manual/sqlbot.md
         - 接入 DataEase 进行数据分析:  user_manual/dataease.md
