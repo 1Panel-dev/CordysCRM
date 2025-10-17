@@ -15,11 +15,11 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
 
     public static final String SINGLE_OPTION_FIELD_SQL_TEMPLATE = """
             (
-               SELECT option.label
+               SELECT option_t.label
                FROM {0} f
                left join (
                    {1}
-               ) option on option.value = f.field_value
+               ) option_t on option_t.value = f.field_value
                 WHERE f.resource_id = c.id AND f.field_id = ''{2}''
                 LIMIT 1
             ) AS ''{3}''

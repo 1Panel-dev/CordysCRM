@@ -13,12 +13,12 @@ public abstract class MultipleOptionFieldParser<T extends BaseField> extends Opt
 
     public static final String MULTIPLE_OPTION_FIELD_SQL_TEMPLATE = """
             (
-               SELECT JSON_ARRAYAGG(option.label)
+               SELECT JSON_ARRAYAGG(option_t.label)
                FROM {0} f
                left join (
                    {1}
-               ) option on f.field_value like concat(''%'', option.value, ''%'')
-                WHERE option.label is not null and f.resource_id = c.id AND f.field_id = ''{2}''
+               ) option_t on f.field_value like concat(''%'', option_t.value, ''%'')
+                WHERE option_t.label is not null and f.resource_id = c.id AND f.field_id = ''{2}''
                 LIMIT 1
             ) AS ''{3}''
             """;
