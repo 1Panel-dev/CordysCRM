@@ -19,8 +19,9 @@
 
     在钉钉管理后台应用开发页面选择企业内部应用-钉钉应用-创建自建应用，在应用列表页面点击更多，查看应用详情-应用凭证与基础信息，并获取以下关键凭证：
 
-     - 应用的 Client ID
-     - 应用的 Client Secret
+     - 原企业内部应用AgentId (内部应用id，用于发送钉钉的应用通知) 
+     - 应用的 Client ID (应用id)
+     - 应用的 Client Secret  (应用密钥)
 
       ![配置](../img/user_manual/dingtalk_app.png)
       ![配置](../img/user_manual/dingtalk_app_create.png)
