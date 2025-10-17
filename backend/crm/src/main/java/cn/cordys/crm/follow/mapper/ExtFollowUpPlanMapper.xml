@@ -5,55 +5,58 @@
 
     <select id="selectList" resultType="cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse">
         SELECT
-        id,
-        customer_id,
-        opportunity_id,
-        type,
-        clue_id,
-        content,
-        owner,
-        contact_id,
-        estimated_time,
-        create_time,
-        update_time,
-        create_user,
-        update_user,
-        method,
-        converted,
-        status
+        fup.id,
+        fup.customer_id,
+        fup.opportunity_id,
+        fup.type,
+        fup.clue_id,
+        fup.content,
+        fup.owner,
+        fup.contact_id,
+        fup.estimated_time,
+        fup.create_time,
+        fup.update_time,
+        fup.create_user,
+        fup.update_user,
+        fup.method,
+        fup.converted,
+        fup.status,
+        if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM
-        follow_up_plan
+        follow_up_plan fup
+        LEFT JOIN clue c ON c.id = fup.clue_id
+        LEFT JOIN customer cu ON cu.id = fup.customer_id
         WHERE
-        organization_id =#{orgId}
+        fup.organization_id =#{orgId}
         <if test="resourceType == 'CUSTOMER'">
-            AND customer_id = #{request.sourceId}
+            AND fup.customer_id = #{request.sourceId}
         </if>
         <if test="resourceType == 'CLUE'">
-            AND clue_id = #{request.sourceId}
-            AND create_user = #{userId}
+            AND fup.clue_id = #{request.sourceId}
+            AND fup.create_user = #{userId}
         </if>
         <if test="resourceType == 'OPPORTUNITY'">
-            AND opportunity_id = #{request.sourceId}
+            AND fup.opportunity_id = #{request.sourceId}
         </if>
         <if test="type != null and type != ''">
-            AND type = #{type}
+            AND fup.type = #{type}
         </if>
         <if test="orgId != null and orgId != ''">
-            AND organization_id = #{orgId}
+            AND fup.organization_id = #{orgId}
         </if>
         <if test="request.keyword != null and request.keyword != ''">
-            AND content like concat('%', #{request.keyword},'%')
+            AND fup.content like concat('%', #{request.keyword},'%')
         </if>
         <if test="request.myPlan">
-            AND owner = #{userId}
+            AND fup.owner = #{userId}
         </if>
         <if test="request.status != null and request.status != '' and request.status != 'ALL'">
-            AND status = #{request.status}
+            AND fup.status = #{request.status}
         </if>
 
         <if test="customerData != null and !customerData.all and customerData.owner">
             <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND owner not in
+                AND fup.owner not in
                 <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
                     #{userId}
                 </foreach>
@@ -62,7 +65,7 @@
 
         <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
             <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND owner not in
+                AND fup.owner not in
                 <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
                     #{userId}
                 </foreach>
@@ -70,11 +73,11 @@
         </if>
 
         <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
-            AND owner = #{userId}
+            AND fup.owner = #{userId}
         </if>
 
         <if test="resourceTypeList!=null and resourceTypeList.size()>0">
-            AND type in
+            AND fup.type in
             <foreach collection="resourceTypeList" item="type" open="(" close=")" separator=",">
                 <choose>
                     <when test="type == 'OPPORTUNITY'">
@@ -88,19 +91,19 @@
         and
             <foreach collection="resourceTypeList" item="type" open="(" close=")" separator="or">
                 <if test="type == 'CUSTOMER'">
-                    customer_id is not null
+                    fup.customer_id is not null
                 </if>
                 <if test="type == 'OPPORTUNITY'">
-                    opportunity_id is not null
+                    fup.opportunity_id is not null
                 </if>
                 <if test="type == 'CLUE'">
-                    clue_id is not null
+                    fup.clue_id is not null
                 </if>
 
             </foreach>
         </if>
 
-        ORDER BY estimated_time DESC, create_time DESC
+        ORDER BY fup.estimated_time DESC, fup.create_time DESC
     </select>
 
 
