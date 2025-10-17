@@ -132,10 +132,23 @@
   const { openNewPage } = useOpenNewPage();
   function goDetail(key: string, item: FollowDetailItem) {
     if (key === 'clueName') {
-      openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
-        id: item.clueId,
-        transitionType: undefined,
-        name: item.clueName,
+      if (item.poolId) {
+        openNewPage(ClueRouteEnum.CLUE_MANAGEMENT_POOL, {
+          id: item.clueId,
+          name: item.clueName,
+          poolId: item.poolId,
+        });
+      } else {
+        openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
+          id: item.clueId,
+          transitionType: undefined,
+          name: item.clueName,
+        });
+      }
+    } else if (item.poolId) {
+      openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
+        id: item.customerId,
+        poolId: item.poolId,
       });
     } else {
       openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {

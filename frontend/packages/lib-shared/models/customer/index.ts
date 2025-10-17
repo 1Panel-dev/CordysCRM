@@ -100,6 +100,7 @@ export interface CustomerFollowRecordListItem {
   followMethod: string;
   departmentId: string;
   departmentName: string;
+  poolId: string;
   moduleFields: ModuleField[];
 }
 
