@@ -344,12 +344,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     },
     {
-      title: t('common.status'),
-      width: 120,
-      key: 'status',
-      render: props.specialRender?.status,
-    },
-    {
       title: t('eventDrawer.record.converted'),
       width: 120,
       key: 'converted',
@@ -710,6 +704,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           fieldId: (customerField ?? clueField)?.id,
           filedType: (customerField ?? clueField)?.type,
           columnSelectorDisabled: true,
+        },
+        {
+          title: t('common.status'),
+          width: 120,
+          key: 'status',
+          render: props.specialRender?.status,
         },
       ];
     }

@@ -42,13 +42,13 @@ export default function useOpenDetailPage() {
   function goDetail(item: any) {
     if (item.opportunityId) {
       openNewPageOpportunity(item);
-    } else if (item.type === 'CLUE') {
+    } else if (item.resourceType === 'CLUE') {
       if (item.poolId) {
         openNewPageCluePool(item);
       } else {
         openNewPageClue(item);
       }
-    } else if (item.type === 'CUSTOMER') {
+    } else if (item.resourceType === 'CUSTOMER') {
       if (item.poolId) {
         openNewPageCustomerSea(item);
       } else {

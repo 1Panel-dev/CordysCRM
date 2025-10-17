@@ -177,8 +177,8 @@
             },
           },
           {
-            default: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
-            trigger: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
+            default: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
+            trigger: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
           }
         );
       },

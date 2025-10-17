@@ -211,16 +211,19 @@
             },
           },
           {
-            default: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
-            trigger: () => (row.type === 'CLUE' ? row.clueName : row.customerName),
+            default: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
+            trigger: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
           }
         );
       },
       status: (row: any) => {
         return h(StatusTagSelect, {
-          status: row.status,
-          disabled: !!row.converted,
-          onChange: () => {
+          'status': row.status,
+          'disabled': !!row.converted,
+          'onUpdate:status': (val) => {
+            row.status = val;
+          },
+          'onChange': () => {
             changePlanStatus(row);
           },
         });

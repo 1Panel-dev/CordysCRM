@@ -9,12 +9,15 @@ import {
   GetFollowRecordTabUrl,
   GetFollowRecordUrl,
   UpdateFollowPlanStatusUrl,
+  UpdateFollowPlanUrl,
+  UpdateFollowRecordUrl,
 } from '@lib/shared/api/requrls/follow';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
   CustomerFollowRecordTableParams,
   CustomerTabHidden,
   FollowDetailItem,
+  UpdateCustomerFollowRecordParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 
@@ -48,6 +51,10 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.get<FollowDetailItem>({ url: `${GetFollowPlanUrl}/${id}` });
   }
 
+  function updateFollowRecord(data: UpdateCustomerFollowRecordParams) {
+    return CDR.post({ url: UpdateFollowRecordUrl, data });
+  }
+
   // 获取tab显隐藏
   function getFollowPlanTab() {
     return CDR.get<CustomerTabHidden>({ url: GetFollowPlanTabUrl });
@@ -61,6 +68,10 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateFollowPlanStatusUrl, data });
   }
 
+  function updateFollowPlan(data: UpdateCustomerFollowRecordParams) {
+    return CDR.post({ url: UpdateFollowPlanUrl, data });
+  }
+
   return {
     getFollowPlanDetail,
     getFollowPLanPage,
@@ -71,5 +82,7 @@ export default function useFollowApi(CDR: CordysAxios) {
     getFollowPlanTab,
     deleteFollowPlan,
     updateFollowPlanStatus,
+    updateFollowPlan,
+    updateFollowRecord,
   };
 }
