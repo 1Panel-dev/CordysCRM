@@ -8,7 +8,9 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
+import cn.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import cn.cordys.crm.follow.dto.request.PlanHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -85,5 +87,13 @@ public class FollowUpPlanController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/update")
+    @Operation(summary = "更新线索跟进计划")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
+    public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
+        followUpPlanService.checkPlanPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

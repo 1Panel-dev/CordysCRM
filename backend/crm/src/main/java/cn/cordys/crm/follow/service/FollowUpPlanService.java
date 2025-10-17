@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
@@ -256,6 +257,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
             planResponse.setClueName(clueMap.get(planResponse.getClueId()));
             planResponse.setPhone(contactPhoneMap.get(planResponse.getContactId()));
             planResponse.setPoolId(customerPoolIdMap.get(planResponse.getCustomerId()));
+            planResponse.setResourceType(planResponse.getType());
 
             UserResponse userResponse = userDeptMap.get(planResponse.getOwner());
             if (userResponse != null) {
@@ -449,7 +451,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public void checkPlanPermission(String id, String userId, String orgId) {
         FollowUpPlanDetailResponse planDetail = get(id, orgId);
-        dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(),
-                Strings.CS.equals(planDetail.getType(), "CLUE") ? PermissionConstants.CLUE_MANAGEMENT_READ : PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        if (Strings.CS.equals(planDetail.getType(), ModuleKey.CLUE.name())) {
+            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        } else if (StringUtils.isNotEmpty(planDetail.getOpportunityId())) {
+            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE);
+        } else {
+            dataScopeService.checkDataPermission(userId, orgId, planDetail.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+        }
     }
 }

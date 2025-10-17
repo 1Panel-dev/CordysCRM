@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -287,6 +288,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
             recordListResponse.setOpportunityName(opportunityMap.get(recordListResponse.getOpportunityId()));
             recordListResponse.setClueName(clueMap.get(recordListResponse.getClueId()));
             recordListResponse.setPhone(contactPhoneMap.get(recordListResponse.getContactId()));
+            recordListResponse.setResourceType(recordListResponse.getType());
 
             UserResponse userResponse = userDeptMap.get(recordListResponse.getOwner());
             if (userResponse != null) {
@@ -583,7 +585,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
      */
     public void checkRecordPermission(String id, String userId, String orgId) {
         FollowUpRecordDetailResponse recordDetail = get(id, orgId);
-        dataScopeService.checkDataPermission(userId, orgId, recordDetail.getOwner(),
-                Strings.CS.equals(recordDetail.getType(), "CLUE") ? PermissionConstants.CLUE_MANAGEMENT_READ : PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        if (Strings.CS.equals(recordDetail.getType(), ModuleKey.CLUE.name())) {
+            dataScopeService.checkDataPermission(userId, orgId, recordDetail.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        } else if (StringUtils.isNotEmpty(recordDetail.getOpportunityId())) {
+            dataScopeService.checkDataPermission(userId, orgId, recordDetail.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE);
+        } else {
+            dataScopeService.checkDataPermission(userId, orgId, recordDetail.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+        }
     }
 }

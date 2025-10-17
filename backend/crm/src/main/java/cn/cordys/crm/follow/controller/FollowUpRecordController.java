@@ -8,6 +8,8 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
@@ -76,6 +78,14 @@ public class FollowUpRecordController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/update")
+    @Operation(summary = "更新线索跟进记录")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE}, logical = Logical.OR)
+    public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
+        followUpRecordService.checkRecordPermission(request.getId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }
