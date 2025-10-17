@@ -691,10 +691,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   }
 
   function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
-    if ([FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)) {
+    if (props.formKey === FormDesignKeyEnum.FOLLOW_PLAN || props.formKey === FormDesignKeyEnum.FOLLOW_RECORD) {
       const customerField = fields.find((item) => item.businessKey === 'customerId');
       const clueField = fields.find((item) => item.businessKey === 'clueId');
-      return [
+
+      const baseColumns: CrmDataTableColumn[] = [
         {
           title: `${customerField?.name}/${clueField?.name}`,
           width: 200,
@@ -705,14 +706,21 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           filedType: (customerField ?? clueField)?.type,
           columnSelectorDisabled: true,
         },
-        {
+      ];
+
+      // FOLLOW_PLAN 才有状态列
+      if (props.formKey === FormDesignKeyEnum.FOLLOW_PLAN) {
+        baseColumns.push({
           title: t('common.status'),
           width: 120,
           key: 'status',
           render: props.specialRender?.status,
-        },
-      ];
+        });
+      }
+
+      return baseColumns;
     }
+
     return [];
   }
 
