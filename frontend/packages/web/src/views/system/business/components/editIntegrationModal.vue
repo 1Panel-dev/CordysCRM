@@ -94,6 +94,17 @@
           }}
         </div>
       </n-form-item>
+
+      <n-form-item
+        v-if="form.type === CompanyTypeEnum.DINGTALK"
+        path="appId"
+        :label="t('system.business.authenticationSettings.innerAppId')"
+      >
+        <n-input
+          v-model:value="form.appId"
+          :placeholder="t('system.business.authenticationSettings.innerAppIdPlaceholder')"
+        />
+      </n-form-item>
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">
@@ -262,6 +273,7 @@
     corpId: '',
     agentId: '',
     appSecret: '',
+    appId: '',
     type: CompanyTypeEnum.WECOM,
     redirectUrl: '',
     deAccount: '',
@@ -322,6 +334,12 @@
         message: t('common.notNull', {
           value: getAppSecretText.value,
         }),
+      },
+    ],
+    appId: [
+      {
+        required: true,
+        message: t('system.business.authenticationSettings.innerAppIdPlaceholder'),
       },
     ],
     redirectUrl: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
