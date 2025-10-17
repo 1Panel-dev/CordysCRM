@@ -1,32 +1,40 @@
 <template>
   <CrmDrawer v-model:show="show" :width="1000" :footer="false" :title="t('module.businessManage.businessStepSet')">
     <div class="mb-[16px] text-[16px] font-semibold">{{ t('module.businessManage.businessStepConfig') }}</div>
-    <CrmBatchForm
-      ref="batchFormRef"
-      :models="formItemModel"
-      :default-list="form.list"
-      validate-when-add
-      draggable
-      :move="handleMove"
-      @save-row="handleSave"
-      @drag="dragEnd"
-      @cancel-row="handleCancelRow"
-    >
-      <template #extra="{ element }">
-        <CrmMoreAction
-          :options="getDropdownOptions(element)"
-          placement="bottom"
-          @select="handleMoreSelect($event, element)"
-        >
-          <n-button ghost class="px-[7px]">
-            <template #icon>
-              <CrmIcon type="iconicon_ellipsis" :size="16" />
-            </template>
-          </n-button>
-        </CrmMoreAction>
-        <div v-if="getDropdownOptions(element).length === 0" class="w-[32px]"></div>
-      </template>
-    </CrmBatchForm>
+    <div class="bg-[var(--text-n9)] p-[16px]">
+      <div class="flex items-center gap-[8px]">
+        <div class="w-[12px]"></div>
+        <div v-for="(ele, index) of title" :key="`ele-${index}`" class="w-full flex-1">{{ ele }}</div>
+        <div class="w-[68px]"></div>
+      </div>
+      <CrmBatchForm
+        ref="batchFormRef"
+        :models="formItemModel"
+        :default-list="form.list"
+        validate-when-add
+        draggable
+        class="!p-0"
+        :move="handleMove"
+        @save-row="handleSave"
+        @drag="dragEnd"
+        @cancel-row="handleCancelRow"
+      >
+        <template #extra="{ element }">
+          <CrmMoreAction
+            :options="getDropdownOptions(element)"
+            placement="bottom"
+            @select="handleMoreSelect($event, element)"
+          >
+            <n-button ghost class="px-[7px]">
+              <template #icon>
+                <CrmIcon type="iconicon_ellipsis" :size="16" />
+              </template>
+            </n-button>
+          </CrmMoreAction>
+          <div v-if="getDropdownOptions(element).length === 0" class="w-[32px]"></div>
+        </template>
+      </CrmBatchForm>
+    </div>
     <div class="mb-[16px] mt-[24px] text-[16px] font-semibold">
       {{ t('module.businessManage.businessStepRollbackConfig') }}
     </div>
@@ -99,12 +107,13 @@
     list: [],
   });
 
+  const title = [t('opportunity.stage'), t('opportunity.win'), t('opportunity.stageType')];
+
   const formItemModel = ref<FormItemModel[]>([
     {
       path: 'name',
       type: FieldTypeEnum.INPUT,
       formItemClass: 'w-full flex-initial',
-      label: t('opportunity.stage'),
       inputProps: {
         maxlength: 16,
       },
@@ -119,7 +128,6 @@
       path: 'rate',
       type: FieldTypeEnum.INPUT_NUMBER,
       formItemClass: 'w-full flex-initial',
-      label: t('opportunity.win'),
       numberProps: {
         min: 0,
         max: 100,
@@ -139,7 +147,6 @@
       path: 'type',
       type: FieldTypeEnum.SELECT,
       formItemClass: 'w-full flex-initial',
-      label: t('opportunity.stageType'),
       selectProps: {
         disabledFunction: () => true,
         disabledTooltipFunction: () => t('opportunity.stageTypeDisabledChange'),
