@@ -31,4 +31,7 @@ public class SimpleField {
 
     @Schema(description = "数据源类型")
     private String dataSourceType;
+
+    @Schema(description = "显隐规则")
+    private List<ControlRuleProp> showControlRules;
 }

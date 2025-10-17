@@ -984,6 +984,7 @@ public class ModuleFormService {
             simpleField.setName(field.getName());
             simpleField.setType(field.getType());
             simpleField.setRequired(field.needRequireCheck());
+            simpleField.setShowControlRules(field.getShowControlRules());
             if (field instanceof HasOption fieldWithOption) {
                 simpleField.setOptions(fieldWithOption.getOptions());
             }
