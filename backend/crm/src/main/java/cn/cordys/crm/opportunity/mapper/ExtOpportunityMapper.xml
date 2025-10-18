@@ -118,6 +118,10 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user on o.owner = sys_organization_user.user_id
             and (
@@ -159,6 +163,10 @@
         <include refid="combine">
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
     </select>
 
 
