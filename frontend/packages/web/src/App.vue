@@ -113,6 +113,7 @@
     if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
       await userStore.checkIsLogin(isWXWork || isDingTalk);
       appStore.setLoginLoading(false);
+      userStore.initApiKeyList();
     }
   });
 
