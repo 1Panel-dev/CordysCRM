@@ -321,4 +321,7 @@ export default {
   'common.notAllowForwardSlash': '不允许输入/',
   'common.conversionSuccessful': '转换成功',
   'common.updateField': '编辑字段',
+  'common.noEnableApiKey': '暂无开启的 API Key',
+  'common.noEnableApiKeyTip': '无开启的 API Key，请立即添加！',
+  'common.goAdd': '去添加',
 };

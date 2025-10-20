@@ -321,4 +321,7 @@ export default {
   'common.notAllowForwardSlash': 'Not allowed to enter /',
   'common.conversionSuccessful': 'Conversion successful',
   'common.updateField': 'Field',
+  'common.noEnableApiKey': 'No enabled API Key',
+  'common.noEnableApiKeyTip': 'No enabled API Key, please add one now!',
+  'common.goAdd': 'Add',
 };

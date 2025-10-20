@@ -4,21 +4,26 @@
       v-if="!route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)"
       :is-preview="innerProps.isPreview"
       :logo="innerLogo"
+      @open-personal-info="handleOpenPersonalInfo"
     />
     <n-layout class="flex-1" has-sider>
-      <LayoutSider />
+      <LayoutSider @open-personal-info="handleOpenPersonalInfo" />
       <PageContent />
     </n-layout>
   </n-layout>
+  <PersonalInfoDrawer v-model:visible="showPersonalInfo" :active-tab-value="personalTab" />
 </template>
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { NLayout } from 'naive-ui';
 
+  import { PersonalEnum } from '@lib/shared/enums/systemEnum';
+
   import LayoutHeader from './components/layout-header.vue';
   import LayoutSider from './components/layout-sider.vue';
   import PageContent from './page-content.vue';
+  import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import { defaultPlatformLogo } from '@/config/business';
 
@@ -34,6 +39,13 @@
   const props = defineProps<Props>();
 
   const innerProps = ref<Props>(props);
+  const personalTab = ref(PersonalEnum.INFO);
+  const showPersonalInfo = ref<boolean>(false);
+
+  function handleOpenPersonalInfo(tab: PersonalEnum) {
+    personalTab.value = tab;
+    showPersonalInfo.value = true;
+  }
 
   watch(
     () => props.logo,
