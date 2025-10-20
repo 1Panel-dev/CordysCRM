@@ -172,6 +172,7 @@
   import { NBadge, NButton, NDivider, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
+  import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { LOCALE_OPTIONS } from '@lib/shared/locale';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -191,6 +192,7 @@
 
   import { changeLocaleBackEnd } from '@/api/modules';
   import { defaultPlatformLogo } from '@/config/business';
+  import useModal from '@/hooks/useModal';
   import useAppStore from '@/store/modules/app';
   import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
@@ -201,11 +203,16 @@
   const agentDrawer = defineAsyncComponent(() => import('@/components/business/crm-agent-drawer/index.vue'));
   const CrmFollowDrawer = defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/index.vue'));
 
+  const emit = defineEmits<{
+    (e: 'openPersonalInfo', tab: PersonalEnum): void;
+  }>();
+
   const route = useRoute();
 
   const { success, warning, loading } = useMessage();
   const { t } = useI18n();
   const { changeLocale, currentLocale } = useLocale(loading);
+  const { openModal } = useModal();
 
   const appStore = useAppStore();
   const userStore = useUserStore();
@@ -256,9 +263,26 @@
         };
     }
   });
+
+  const hasValidApiKey = computed(() => userStore.apiKeyList.some((key) => !key.isExpire && key.enable));
   const showAgentDrawer = ref(false);
   function showAgent() {
-    showAgentDrawer.value = true;
+    if (hasValidApiKey.value) {
+      showAgentDrawer.value = true;
+    } else {
+      openModal({
+        title: t('common.noEnableApiKey'),
+        type: 'warning',
+        content: t('common.noEnableApiKeyTip'),
+        showCancelButton: true,
+        positiveText: t('common.goAdd'),
+        negativeText: t('common.cancel'),
+        positiveButtonProps: { type: 'primary', size: 'medium' },
+        onPositiveClick: async () => {
+          emit('openPersonalInfo', PersonalEnum.API_KEY);
+        },
+      });
+    }
   }
 
   const showSearch = computed(() => lastScopedOptions.value.length);

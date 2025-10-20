@@ -55,7 +55,7 @@
 
   const activeAgent = ref<string | null>(localStorage.getItem('crm-agent-drawer-active-agent') || null);
   const agentList = ref<Record<string, any>[]>([]);
-  const firstValidApiKey = computed(() => userStore.apiKeyList.find((key) => !key.isExpire));
+  const firstValidApiKey = computed(() => userStore.apiKeyList.find((key) => !key.isExpire && key.enable));
   const activeAgentScript = computed(() => {
     const script = (agentList.value.find((agent) => agent.id === activeAgent.value)?.script as string) || '';
     let result = script.replace(/\$\{ak\}/g, firstValidApiKey.value?.accessKey || '');

@@ -78,7 +78,6 @@
       </div>
     </div>
   </n-layout-sider>
-  <PersonalInfoDrawer v-model:visible="showPersonalInfo" :active-tab-value="personalTab" />
   <personalExportDrawer v-model:visible="showPersonalExport" />
 </template>
 
@@ -96,7 +95,6 @@
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import personalExportDrawer from '@/views/system/business/components/personalExportDrawer.vue';
-  import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import useMenuTree from '@/hooks/useMenuTree';
   import useUser from '@/hooks/useUser';
@@ -117,6 +115,10 @@
 
   import { MenuGroupOption, MenuOption } from 'naive-ui/es/menu/src/interface';
 
+  const emit = defineEmits<{
+    (e: 'openPersonalInfo', tab: PersonalEnum): void;
+  }>();
+
   const { logout } = useUser();
 
   const { t } = useI18n();
@@ -129,7 +131,6 @@
   const menuValue = ref<string>(AppRouteEnum.SYSTEM_ORG);
   const expandedKeys = ref<string[]>([]);
   const personalMenuValue = ref<string>('');
-  const showPersonalInfo = ref<boolean>(false);
   const personalTab = ref(PersonalEnum.INFO);
   const visitedKey = 'doNotShowPersonalExportAgain';
   const { addVisited, getIsVisited } = useVisit(visitedKey);
@@ -272,7 +273,7 @@
       } else {
         personalTab.value = PersonalEnum.MY_PLAN;
       }
-      showPersonalInfo.value = true;
+      emit('openPersonalInfo', personalTab.value);
     } else if (key === AppRouteEnum.PERSONAL_EXPORT) {
       showPersonalExport.value = true;
     } else {
