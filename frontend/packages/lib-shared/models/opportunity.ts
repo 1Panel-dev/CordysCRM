@@ -23,6 +23,7 @@ export interface OpportunityItem {
   failureReason: string;
   hasPermission?: boolean;
   moduleFields: ModuleField[]; // 自定义字段
+  amount: number; // 金额
 }
 
 export interface SaveOpportunityParams {

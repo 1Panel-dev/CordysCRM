@@ -91,18 +91,18 @@
       <div class="ml-[24px]">
         {{ t('opportunity.averageAmount') }}
         <span class="ml-[4px]">
-          {{ abbreviateNumber(statisticInfo?.averageAmount, '').value }}
+          {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').value }}
           <span class="unit">
-            {{ abbreviateNumber(statisticInfo?.averageAmount, '').unit }}
+            {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').unit }}
           </span>
         </span>
       </div>
       <div class="ml-[24px]">
         {{ t('opportunity.totalAmount') }}
         <span class="ml-[4px]">
-          {{ abbreviateNumber(statisticInfo?.amount, '').value }}
+          {{ abbreviateNumber(totalAmountInfo?.amount, '').value }}
           <span class="unit">
-            {{ abbreviateNumber(statisticInfo?.amount, '').unit }}
+            {{ abbreviateNumber(totalAmountInfo?.amount, '').unit }}
           </span>
         </span>
       </div>
@@ -695,6 +695,21 @@
       console.error(error);
     }
   }
+  const totalAmountInfo = computed(() => {
+    if (checkedRowKeys.value.length > 0) {
+      const amount = propsRes.value.data
+        .filter((item: OpportunityItem) => checkedRowKeys.value.includes(item.id))
+        .reduce((total: number, item: OpportunityItem) => total + (item.amount || 0), 0);
+      return {
+        averageAmount: amount / checkedRowKeys.value.length,
+        amount,
+      };
+    }
+    return {
+      averageAmount: statisticInfo.value.averageAmount,
+      amount: statisticInfo.value.amount,
+    };
+  });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isAdvancedSearchMode = ref(false);
