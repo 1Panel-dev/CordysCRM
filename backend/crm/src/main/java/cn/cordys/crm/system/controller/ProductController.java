@@ -2,6 +2,7 @@ package cn.cordys.crm.system.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
@@ -128,4 +129,13 @@ public class ProductController {
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return productService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
+
+    @GetMapping("/list/option")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
+    @Operation(summary = "获取当前组织下全部产品的id,和name集合")
+    public List<OptionDTO> listOption() {
+        return productService.listOption(OrganizationContext.getOrganizationId());
+    }
+
+
 }
