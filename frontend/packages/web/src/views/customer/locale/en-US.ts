@@ -49,4 +49,18 @@ export default {
   'customer.recycleOpenSeaName': 'Belonging public pool',
   'customer.contacts': 'Contact',
   'customer.contact': 'Contact',
+  'customer.mergeAccount': 'Merge account',
+  'customer.merge': 'Merge',
+  'customer.confirmMerge': 'Confirm merge',
+  'customer.mergeConfirmTitle': 'Merge selected accounts?',
+  'customer.mergeConfirmContent': 'This action cannot be undone. Please proceed with caution!',
+  'customer.mergeTo': 'Merge to',
+  'customer.selectedAccount': 'Selected accounts',
+  'customer.otherAccount': 'Other accounts',
+  'customer.mergeRules': 'Merge rules',
+  'customer.selectedAccountMergeTip': '1. Select primary account and data to retain after merge',
+  'customer.afterMergeDeleteAccountBaseInfoTip': "2. Only primary account's basic info will be kept",
+  'customer.afterMergeInfoTip': '3. Contacts, follow-ups, opportunities, etc. will be merged under primary account',
+  'customer.selectedMergeAccountTooltip':
+    "Selected accounts: chosen from list; Other accounts: visible accounts; Owner assignment: only selected accounts' owners can be chosen; other accounts' owners remain unchanged",
 };

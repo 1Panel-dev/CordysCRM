@@ -44,4 +44,19 @@ export default {
   'customer.recycleReason': '回收原因',
   'customer.recycleOpenSeaName': '归属公海',
   'customer.contact': '联系人',
+  'customer.mergeAccount': '合并客户',
+  'customer.merge': '合并',
+  'customer.confirmMerge': '确认合并',
+  'customer.mergeConfirmTitle': '确定合并所选客户吗？',
+  'customer.mergeConfirmContent': '合并后，数据不可回退，请谨慎操作！',
+  'customer.mergeTo': '合并至',
+  'customer.selectedAccount': '已选客户',
+  'customer.otherAccount': '其他客户',
+  'customer.mergeRules': '合并规则',
+  'customer.selectedAccountMergeTip': '1.将所选客户合并后，可选择合并后主客户及要保留的数据',
+  'customer.afterMergeDeleteAccountBaseInfoTip': '2.合并后，系统仅保留主客户的基本信息，被合并客户的基本信息将会被删除',
+  'customer.afterMergeInfoTip':
+    '3.客户合并后，被合并客户的联系人，跟进计划，跟进记录，负责人记录，商机信息，协作成员等会合并至主客户下',
+  'customer.selectedMergeAccountTooltip':
+    '已选客户：从列表中选定的客户；其他客户：数据可见负责的客户，负责人选择：已选客户：仅可选择已选客户的负责人；其他客户：负责人保持不变',
 };

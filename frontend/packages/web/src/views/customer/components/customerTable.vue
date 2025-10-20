@@ -7,6 +7,7 @@
     :columns="tableColumns"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
+    @row-key-change="handleRowKeyChange"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -115,6 +116,7 @@
     :form-key="FormDesignKeyEnum.CUSTOMER"
     @refresh="() => (tableRefreshId += 1)"
   />
+  <mergeAccountModal v-model:show="showMergeModal" :selected-rows="selectedRows" />
 </template>
 
 <script setup lang="ts">
@@ -131,6 +133,7 @@
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import { CrmPopConfirmIconType } from '@/components/pure/crm-pop-confirm/index.vue';
@@ -147,6 +150,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import customerOverviewDrawer from './customerOverviewDrawer.vue';
+  import mergeAccountModal from './mergeAccountModal.vue';
 
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
@@ -154,6 +158,8 @@
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -213,10 +219,18 @@
         key: 'moveToOpenSea',
         permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
       },
+    ],
+    moreAction: [
       {
         label: t('common.batchEdit'),
         key: 'batchEdit',
         permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('customer.mergeAccount'),
+        key: 'merge',
+        // TODO 权限
+        // permission: ['CUSTOMER_MANAGEMENT:MERGE'],
       },
       {
         label: t('common.batchDelete'),
@@ -263,6 +277,32 @@
     showEditModal.value = true;
   }
 
+  const selectedRows = ref<InternalRowData[]>([]);
+  function handleRowKeyChange(keys: DataTableRowKey[], _rows: InternalRowData[]) {
+    selectedRows.value = _rows;
+  }
+
+  const showMergeModal = ref(false);
+  function handleMergeAccount() {
+    openModal({
+      type: 'error',
+      icon: () => {
+        return h(CrmIcon, {
+          type: 'iconicon_error_circle_filled',
+          size: 20,
+          class: 'mr-[8px] text-[var(--error-red)]',
+        });
+      },
+      title: t('customer.mergeConfirmTitle'),
+      content: t('customer.mergeConfirmContent'),
+      positiveText: t('customer.confirmMerge'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        showMergeModal.value = true;
+      },
+    });
+  }
+
   // 批量转移
   const showTransferModal = ref<boolean>(false);
   const showExportModal = ref<boolean>(false);
@@ -281,6 +321,9 @@
         break;
       case 'moveToOpenSea':
         handleMoveToOpenSea();
+        break;
+      case 'merge':
+        handleMergeAccount();
         break;
       case 'exportChecked':
         isExportAll.value = false;
