@@ -4,6 +4,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -300,5 +302,17 @@ class ProductControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_DELETE, DEFAULT_DELETE, addProduct.getId());
+    }
+
+    @Test
+    @Order(10)
+    void getOption() throws Exception {
+
+        MvcResult mvcResult = this.requestGetWithOkAndReturn("list/option");
+        List<OptionDTO> optionDTOList = getResultDataArray(mvcResult, OptionDTO.class);
+        Assertions.assertNotNull(optionDTOList);
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_GET, addProduct.getId());
     }
 }
