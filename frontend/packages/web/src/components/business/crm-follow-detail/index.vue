@@ -116,7 +116,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { statusTabList } from './config';
+  import { descriptionList, statusTabList } from './config';
   import useFollowApi, { type followEnumType } from './useFollowApi';
 
   const { t } = useI18n();
@@ -174,39 +174,6 @@
     needInitDetail: computed(() => needInitDetail.value),
     otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
   });
-
-  const descriptionList: Description[] = [
-    {
-      key: 'contactName',
-      label: t('common.contact'),
-      value: 'contactName',
-    },
-    {
-      key: 'phone',
-      label: t('common.phoneNumber'),
-      value: 'phone',
-    },
-    {
-      key: 'createTime',
-      label: t('common.createTime'),
-      value: 'createTime',
-    },
-    {
-      key: 'createUserName',
-      label: t('common.creator'),
-      value: 'createUserName',
-    },
-    {
-      key: 'updateTime',
-      label: t('common.updateTime'),
-      value: 'updateTime',
-    },
-    {
-      key: 'updateUserName',
-      label: t('common.updateUserName'),
-      value: 'updateUserName',
-    },
-  ];
 
   function getDescriptionFun(item: FollowDetailItem) {
     const isClue = item.type === 'CLUE' && item.clueId?.length;

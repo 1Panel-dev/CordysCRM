@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-bind="propsRes"
       class="crm-plan-table"
+      :not-show-table="activeShowType === 'timeline'"
       :action-config="{ baseAction: [] }"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -26,15 +27,54 @@
           @adv-search="handleAdvSearch"
           @keyword-search="searchByKeyword"
         />
-        <!-- TODO lmy 切换 -->
-        <!-- <n-tabs v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
+        <n-tabs v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
           <n-tab-pane name="table" class="hidden">
             <template #tab><CrmIcon type="iconicon_list" /></template>
           </n-tab-pane>
           <n-tab-pane name="timeline" class="hidden">
             <template #tab><CrmIcon type="iconicon_timeline" /></template>
           </n-tab-pane>
-        </n-tabs> -->
+        </n-tabs>
+      </template>
+
+      <template v-if="activeShowType === 'timeline'" #other>
+        <FollowRecord
+          v-model:data="propsRes.data"
+          :loading="propsRes.loading"
+          virtual-scroll-height="calc(100vh - 239px)"
+          :get-description-fun="getDescriptionFun"
+          key-field="id"
+          :disabled-open-detail="false"
+          type="followPlan"
+          :get-disabled-fun="() => true"
+          :empty-text="t('crmFollowRecord.noFollowPlan')"
+          @reach-bottom="handleReachBottom"
+          @change="changePlanStatus"
+        >
+          <template #titleLeft="{ item }">
+            <CrmTag type="primary" theme="light"> {{ item.type }} </CrmTag>
+          </template>
+          <template #headerAction="{ item }">
+            <div class="flex items-center gap-[4px]">
+              <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
+                {{ t('common.detail') }}
+              </n-button>
+              <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
+                {{ t('common.delete') }}
+              </n-button>
+            </div>
+          </template>
+          <template #createTime="{ descItem }">
+            <div class="flex items-center gap-[8px]">
+              {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+            </div>
+          </template>
+          <template #updateTime="{ descItem }">
+            <div class="flex items-center gap-[8px]">
+              {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+            </div>
+          </template>
+        </FollowRecord>
       </template>
     </CrmTable>
 
@@ -49,7 +89,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NTabPane, NTabs, useMessage } from 'naive-ui';
+  import { NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
+  import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -59,11 +100,14 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import { statusTabList } from '@/components/business/crm-follow-detail/config';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import { descriptionList, statusTabList } from '@/components/business/crm-follow-detail/config';
+  import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import DetailDrawer from './detailDrawer.vue';
@@ -170,13 +214,16 @@
   const sourceId = ref('');
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
+  function handleDetail(row: any) {
+    sourceId.value = row.id;
+    sourceName.value = row.resourceType === 'CLUE' ? row.clueName : row.customerName;
+    showDetailDrawer.value = true;
+  }
 
   function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'detail':
-        sourceId.value = row.id;
-        sourceName.value = row.clueName ?? row.customerName;
-        showDetailDrawer.value = true;
+        handleDetail(row);
         break;
       case 'delete':
         handleDelete(row.id);
@@ -264,6 +311,40 @@
   });
 
   const activeShowType = ref<'table' | 'timeline'>('table');
+  function getDescriptionFun(item: any) {
+    const isClue = item.resourceType === 'CLUE' && item.clueId?.length;
+    const customerNameKey = isClue ? 'clueName' : 'customerName';
+    let lastDescriptionList = [
+      ...[
+        {
+          key: customerNameKey,
+          label: isClue ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
+          value: customerNameKey,
+        },
+      ],
+      ...descriptionList,
+    ];
+
+    if (isClue) {
+      lastDescriptionList = lastDescriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
+    }
+
+    return (lastDescriptionList.map((desc: Description) => ({
+      ...desc,
+      value: item[desc.key as keyof any],
+    })) || []) as Description[];
+  }
+
+  function handleReachBottom() {
+    if (
+      propsRes.value.crmPagination?.itemCount &&
+      propsRes.value.crmPagination?.page &&
+      propsRes.value.crmPagination?.pageSize &&
+      propsRes.value.crmPagination.itemCount > propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize
+    ) {
+      propsEvent.value.pageChange(propsRes.value.crmPagination.page + 1);
+    }
+  }
 </script>
 
 <style lang="less" scoped>

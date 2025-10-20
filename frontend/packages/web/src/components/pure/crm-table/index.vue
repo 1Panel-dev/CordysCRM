@@ -72,37 +72,40 @@
         <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
       </n-button>
     </div>
-    <slot name="view"></slot>
-    <n-data-table
-      ref="tableRef"
-      v-bind="{ scrollX: scrollXWidth, ...$attrs }"
-      v-model:checked-row-keys="checkedRowKeys"
-      :columns="currentColumns as TableColumns"
-      :row-key="getRowKey"
-      flex-height
-      :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} ${
-        attrs.showSetting ? crmTableLayoutClass : ''
-      } flex-1`"
-      :virtual-scroll="!props.notVirtualScroll"
-      :virtual-scroll-x="props.virtualScrollX"
-      :min-row-height="tableLineHeight"
-      :header-height="tableLineHeight"
-      :row-props="rowProps"
-      @update:sorter="handleSorterChange"
-      @update:filters="handleFiltersChange"
-      @update:checked-row-keys="handleCheck"
-      @scroll="handleScroll"
-    >
-      <template #empty>
-        <div class="w-full">
-          <slot name="empty">
-            <div class="flex items-center justify-center">
-              <span class="text-[14px] text-[var(--text-n4)]">{{ t('common.noData') }}</span>
-            </div>
-          </slot>
-        </div>
-      </template>
-    </n-data-table>
+    <slot name="other"></slot>
+    <template v-if="!props.notShowTable">
+      <slot name="view"></slot>
+      <n-data-table
+        ref="tableRef"
+        v-bind="{ scrollX: scrollXWidth, ...$attrs }"
+        v-model:checked-row-keys="checkedRowKeys"
+        :columns="currentColumns as TableColumns"
+        :row-key="getRowKey"
+        flex-height
+        :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} ${
+          attrs.showSetting ? crmTableLayoutClass : ''
+        } flex-1`"
+        :virtual-scroll="!props.notVirtualScroll"
+        :virtual-scroll-x="props.virtualScrollX"
+        :min-row-height="tableLineHeight"
+        :header-height="tableLineHeight"
+        :row-props="rowProps"
+        @update:sorter="handleSorterChange"
+        @update:filters="handleFiltersChange"
+        @update:checked-row-keys="handleCheck"
+        @scroll="handleScroll"
+      >
+        <template #empty>
+          <div class="w-full">
+            <slot name="empty">
+              <div class="flex items-center justify-center">
+                <span class="text-[14px] text-[var(--text-n4)]">{{ t('common.noData') }}</span>
+              </div>
+            </slot>
+          </div>
+        </template>
+      </n-data-table>
+    </template>
     <div
       v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished"
       class="crm-table-bottom-tip flex text-center"
@@ -114,7 +117,7 @@
         <slot name="totalRight"></slot>
       </div>
       <div
-        v-if="hasFinished && !attrs.loading"
+        v-if="hasFinished && !attrs.loading && !props.notShowTable"
         :class="`-ml-[24px] flex flex-1 items-start ${
           !(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) ? 'items-center justify-center' : 'items-start'
         }`"
@@ -167,6 +170,7 @@
     columns: CrmDataTableColumn[];
     tableRowKey?: string;
     actionConfig?: BatchActionConfig; // 批量操作
+    notShowTable?: boolean; // 不展示表格
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
     dragMoveValidator?: (fromRow: any, toRow: any) => boolean; // 拖拽限制

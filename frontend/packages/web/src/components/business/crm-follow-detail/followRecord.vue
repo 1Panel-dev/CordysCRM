@@ -17,10 +17,11 @@
         <div class="mb-[24px] flex w-full flex-col gap-[16px]">
           <div class="crm-follow-record-title h-[32px]">
             <div class="flex items-center gap-[16px]">
+              <slot name="titleLeft" :item="item"></slot>
               <StatusTagSelect
                 v-if="item.status"
                 v-model:status="item.status"
-                :disabled="!props.getDisabledFun(item) || !!item.converted"
+                :disabled="!props.getDisabledFun?.(item) || !!item.converted"
                 @change="() => emit('change', item)"
               />
               <CrmTag v-if="item.status && item.converted"> {{ t('common.hasConvertToRecord') }} </CrmTag>
@@ -49,11 +50,7 @@
               </template> -->
               <template v-for="ele in props.getDescriptionFun(item)" :key="ele.key" #[ele.key]="{ item: descItem }">
                 <slot
-                  v-if="
-                    ['customerName', 'clueName'].includes(ele.key) &&
-                    props.type === 'followPlan' &&
-                    !props.disabledOpenDetail
-                  "
+                  v-if="['customerName', 'clueName'].includes(ele.key) && !props.disabledOpenDetail"
                   name="customerName"
                 >
                   <CrmTableButton @click="goDetail(ele.key, item)">
@@ -98,7 +95,7 @@
     type: 'followRecord' | 'followPlan';
     keyField: string;
     getDescriptionFun: (item: FollowDetailItem) => Description[];
-    getDisabledFun: (item: FollowDetailItem) => boolean;
+    getDisabledFun?: (item: FollowDetailItem) => boolean;
     virtualScrollHeight: string;
     emptyText?: string;
     disabledOpenDetail?: boolean;

@@ -3,6 +3,8 @@ import { TabPaneProps } from 'naive-ui';
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
+import type { Description } from '@/components/pure/crm-detail-card/index.vue';
+
 const { t } = useI18n();
 
 // 跟进计划状态
@@ -28,5 +30,38 @@ export const statusTabList = ref<TabPaneProps[]>([
     tab: t('common.canceled'),
   },
 ]);
+
+export const descriptionList: Description[] = [
+  {
+    key: 'contactName',
+    label: t('common.contact'),
+    value: 'contactName',
+  },
+  {
+    key: 'phone',
+    label: t('common.phoneNumber'),
+    value: 'phone',
+  },
+  {
+    key: 'createTime',
+    label: t('common.createTime'),
+    value: 'createTime',
+  },
+  {
+    key: 'createUserName',
+    label: t('common.creator'),
+    value: 'createUserName',
+  },
+  {
+    key: 'updateTime',
+    label: t('common.updateTime'),
+    value: 'updateTime',
+  },
+  {
+    key: 'updateUserName',
+    label: t('common.updateUserName'),
+    value: 'updateUserName',
+  },
+];
 
 export default {};
