@@ -34,41 +34,43 @@
         </n-tabs>
       </template>
       <template v-if="activeShowType === 'timeline'" #other>
-        <FollowRecord
-          v-model:data="propsRes.data"
-          :loading="propsRes.loading"
-          virtual-scroll-height="calc(100vh - 239px)"
-          :get-description-fun="getDescriptionFun"
-          key-field="id"
-          :disabled-open-detail="false"
-          type="followRecord"
-          :empty-text="t('crmFollowRecord.noFollowRecord')"
-          @reach-bottom="handleReachBottom"
-        >
-          <template #titleLeft="{ item }">
-            <CrmTag type="primary" theme="light"> {{ item.type }} </CrmTag>
-          </template>
-          <template #headerAction="{ item }">
-            <div class="flex items-center gap-[4px]">
-              <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
-                {{ t('common.detail') }}
-              </n-button>
-              <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
-                {{ t('common.delete') }}
-              </n-button>
-            </div>
-          </template>
-          <template #createTime="{ descItem }">
-            <div class="flex items-center gap-[8px]">
-              {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
-            </div>
-          </template>
-          <template #updateTime="{ descItem }">
-            <div class="flex items-center gap-[8px]">
-              {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
-            </div>
-          </template>
-        </FollowRecord>
+        <div class="h-full">
+          <FollowRecord
+            v-model:data="propsRes.data"
+            :loading="propsRes.loading"
+            virtual-scroll-height="calc(100vh - 239px)"
+            :get-description-fun="getDescriptionFun"
+            key-field="id"
+            :disabled-open-detail="false"
+            type="followRecord"
+            :empty-text="t('crmFollowRecord.noFollowRecord')"
+            @reach-bottom="handleReachBottom"
+          >
+            <template #titleLeft="{ item }">
+              <CrmTag type="primary" theme="light"> {{ item.type }} </CrmTag>
+            </template>
+            <template #headerAction="{ item }">
+              <div class="flex items-center gap-[4px]">
+                <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
+                  {{ t('common.detail') }}
+                </n-button>
+                <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
+                  {{ t('common.delete') }}
+                </n-button>
+              </div>
+            </template>
+            <template #createTime="{ descItem }">
+              <div class="flex items-center gap-[8px]">
+                {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+              </div>
+            </template>
+            <template #updateTime="{ descItem }">
+              <div class="flex items-center gap-[8px]">
+                {{ dayjs(descItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+              </div>
+            </template>
+          </FollowRecord>
+        </div>
       </template>
     </CrmTable>
 

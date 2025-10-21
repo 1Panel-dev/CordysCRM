@@ -8,14 +8,13 @@
     no-padding
     :footer="false"
   >
+    <template #titleRight>
+      <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleDelete">
+        {{ t('common.delete') }}
+      </n-button>
+    </template>
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
       <CrmCard hide-footer>
-        <div class="mb-[16px] flex justify-between">
-          <div class="text-[16px] font-semibold">{{ t('common.detail') }}</div>
-          <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleDelete">
-            {{ t('common.delete') }}
-          </n-button>
-        </div>
         <div class="flex-1">
           <CrmFormDescription
             :form-key="props.formKey"

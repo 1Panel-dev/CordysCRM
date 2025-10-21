@@ -18,7 +18,10 @@
         </n-image-group>
       </template>
       <template #[FieldTypeEnum.TEXTAREA]="{ item }">
-        <div class="field-line flex w-full items-center">
+        <div
+          class="field-line flex w-full"
+          :class="props.column && props.column > 1 ? 'items-baseline' : 'items-center'"
+        >
           <div
             class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
             :style="{ width: props.labelWidth || '120px' }"
@@ -149,9 +152,19 @@
   });
 
   const realDescriptions = computed(() => {
-    return descriptions.value.filter((item) => {
-      return !props.hiddenFields?.includes(item.fieldInfo.id);
-    });
+    return descriptions.value
+      .filter((item) => !props.hiddenFields?.includes(item.fieldInfo.id))
+      .map((item) => {
+        // 独占一行
+        if ([FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER].includes(item.fieldInfo.type)) {
+          const extraClass = props.column && props.column > 1 ? '!w-full' : '';
+          return {
+            ...item,
+            class: [item.class, extraClass].filter(Boolean).join(' '), // 合并 class
+          };
+        }
+        return item;
+      });
   });
   const isInit = ref(false);
 
