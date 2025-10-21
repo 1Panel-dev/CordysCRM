@@ -102,7 +102,10 @@
       navigator.userAgent.includes('dingtalk') ||
       navigator.userAgent.includes('aliapp(dingtalk') ||
       getQueryVariable('authCode') !== '';
-    const isLark = navigator.userAgent.includes('feishu') || navigator.userAgent.includes('lark');
+    const isLark =
+      navigator.userAgent.includes('feishu') ||
+      navigator.userAgent.includes('lark') ||
+      getQueryVariable('state') === 'LARK';
     if (!hasToken()) {
       if (isWXWork) {
         await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);

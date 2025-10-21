@@ -35,7 +35,7 @@
 
     const isDingTalk = ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode');
 
-    const isLark = ua.includes('feishu') || ua.includes('lark');
+    const isLark = ua.includes('feishu') || ua.includes('lark') || getQueryVariable('state') === 'LARK';
 
     if (!loginStatus && !hasToken() && (isWXWork || isDingTalk || isLark)) {
       await oAuthLogin();

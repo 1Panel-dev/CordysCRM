@@ -599,7 +599,7 @@ export function isDingTalkBrowser() {
 // 飞书
 export function isLarkBrowser(): boolean {
   const ua = window.navigator.userAgent.toLowerCase();
-  return ua.includes('lark') || ua.includes('feishu');
+  return ua.includes('lark') || ua.includes('feishu') || getQueryVariable('state') === 'LARK';
 }
 
 /**
