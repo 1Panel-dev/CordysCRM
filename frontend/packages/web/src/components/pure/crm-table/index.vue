@@ -265,6 +265,7 @@
             return h(FilterMenu, {
               'filterOptions': column.filterOptions as unknown as FilterOption[],
               'columnKey': column.key as string,
+              'filterApiKey': column?.remoteFilterApiKey,
               'filters': checkFilterMap.value, // 初始值
               'onUpdate:filters': (val) => {
                 checkFilterMap.value = val;

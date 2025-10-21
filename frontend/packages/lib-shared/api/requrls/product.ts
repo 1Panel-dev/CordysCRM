@@ -7,6 +7,7 @@ export const DeleteProductUrl = '/product/delete'; // 删除产品
 export const BatchDeleteProductUrl = '/product/batch/delete'; // 批量删除产品
 export const BatchUpdateProductUrl = '/product/batch/update'; // 批量更新产品
 export const DragSortProductUrl = '/product/edit/pos'; // 排序拖拽产品
+export const GetProductOptionsUrl = '/product/list/option'; // 获取当前组织下所有的产品
 // 导入
 export const PreCheckProductImportUrl = '/product/import/pre-check';
 export const DownloadProductTemplateUrl = '/product/template/download';

@@ -39,6 +39,7 @@ export type CrmDataTableColumn<T = any> = (
   render?: (rowData: T, rowIndex: number) => VNodeChild;
   renderFilterMenu?: RenderFilterMenu;
   isTag?: boolean; // 标签列
+  remoteFilterApiKey?: string; // filter筛选请求API_KEY
   tagGroupProps?: Omit<CrmTagGroupProps, 'tags'>; // 标签列属性
   filterOptions?: {
     value: string | number | boolean;

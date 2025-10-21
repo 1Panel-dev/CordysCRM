@@ -8,6 +8,7 @@ import {
   DragSortProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
+  GetProductOptionsUrl,
   GetProductUrl,
   ImportProductUrl,
   PreCheckProductImportUrl,
@@ -82,6 +83,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportProductUrl }, { fileList: [file] }, 'file');
   }
 
+  // 获取意向产品选项
+  function getProductOptions() {
+    return CDR.get<{ id: string; name: string }[]>({ url: GetProductOptionsUrl });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -95,5 +101,6 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportProduct,
     downloadProductTemplate,
     importProduct,
+    getProductOptions,
   };
 }

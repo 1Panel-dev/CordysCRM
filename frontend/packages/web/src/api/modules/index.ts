@@ -71,6 +71,7 @@ export const {
   preCheckImportProduct,
   downloadProductTemplate,
   importProduct,
+  getProductOptions,
 } = productApi;
 
 export const {

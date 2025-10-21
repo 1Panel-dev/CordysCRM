@@ -1,9 +1,9 @@
 <template>
-  <div class="crm-table-filter-menu">
+  <div class="crm-table-filter-menu min-h-[80px]">
     <n-scrollbar content-class="p-[8px] max-w-[160px]" style="max-height: 400px">
       <n-checkbox-group v-model:value="filterConditionMap[props.columnKey]">
-        <div v-for="(item, index) of filterOptions" :key="`${item.value}-${index}`" class="h-[32px] p-[4px]">
-          <n-tooltip to="body" :delay="300">
+        <div v-for="(item, index) of displayFilterOptions" :key="`${item.value}-${index}`" class="h-[32px] p-[4px]">
+          <n-tooltip to="body" :delay="300" flip>
             <template #trigger>
               <div class="flex items-center gap-[8px]">
                 <n-checkbox :value="item.value" label="" class="overflow-hidden">
@@ -32,12 +32,14 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import useRemoteFilterOptions from '@/hooks/useRemoteFilterOptions';
+
   import { FilterOption } from 'naive-ui/es/data-table/src/interface';
 
   const { t } = useI18n();
-
   const props = defineProps<{
     columnKey: string;
+    filterApiKey?: string;
     filterOptions: FilterOption[];
   }>();
 
@@ -58,6 +60,18 @@
   function handleConfirm() {
     emit('filter', filterConditionMap.value);
   }
+
+  const remoteFilterOptions = computed(() => {
+    if (props.filterApiKey) {
+      const { filterOptions } = useRemoteFilterOptions(props.filterApiKey);
+      return filterOptions;
+    }
+    return null;
+  });
+
+  const displayFilterOptions = computed(() => {
+    return props.filterOptions.length ? props.filterOptions : remoteFilterOptions.value?.value;
+  });
 </script>
 
 <style scoped lang="less">

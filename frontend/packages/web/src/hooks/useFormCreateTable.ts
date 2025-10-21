@@ -97,6 +97,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   // 数据源字段集合
   const dataSourceFieldIds = ref<string[]>([]);
 
+  const remoteFilterBusinessKey = ['products'];
+
   // 静态列和高级筛选增加原因配置筛选
   await initReasonConfig();
   const opportunityInternalColumns: CrmDataTableColumn[] = [
@@ -886,6 +888,24 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               },
               filedType: field.type,
               render: props.specialRender?.[field.businessKey],
+            };
+          }
+
+          if (
+            field.businessKey &&
+            remoteFilterBusinessKey.includes(field.businessKey) &&
+            props.formKey === FormDesignKeyEnum.BUSINESS
+          ) {
+            return {
+              title: field.name,
+              width: 150,
+              key: field.businessKey || field.id,
+              fieldId: field.id,
+              isTag: true,
+              filter: true,
+              filterOptions: [],
+              remoteFilterApiKey: field.businessKey,
+              filedType: field.type,
             };
           }
 
