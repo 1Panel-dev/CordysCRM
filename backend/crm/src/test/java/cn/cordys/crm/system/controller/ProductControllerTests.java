@@ -28,7 +28,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

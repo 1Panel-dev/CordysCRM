@@ -14,7 +14,6 @@ import cn.cordys.crm.search.response.advanced.AdvancedCustomerResponse;
 import cn.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
 import cn.cordys.crm.search.response.global.GlobalCustomerResponse;
 import cn.cordys.crm.system.dto.FilterConditionDTO;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

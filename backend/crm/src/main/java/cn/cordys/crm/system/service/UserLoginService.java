@@ -2,7 +2,6 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ThirdConstants;
-import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.dto.RoleDataScopeDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;

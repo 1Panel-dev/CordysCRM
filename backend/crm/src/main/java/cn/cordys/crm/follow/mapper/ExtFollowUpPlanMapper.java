@@ -1,6 +1,5 @@
 package cn.cordys.crm.follow.mapper;
 
-import cn.cordys.common.dto.BusinessDataPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
