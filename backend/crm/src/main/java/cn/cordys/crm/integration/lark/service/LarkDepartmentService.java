@@ -160,7 +160,7 @@ public class LarkDepartmentService {
                             .userId(larkUser.getUserId())
                             .name(larkUser.getName())
                             .email(larkUser.getEmail())
-                            .mobile(larkUser.getMobile())
+                            .mobile(larkUser.getMobile() != null && larkUser.getMobile().length() > 11 ? larkUser.getMobile().substring(larkUser.getMobile().length() - 11) : larkUser.getMobile())
                             .position(larkUser.getWorkStation())
                             .gender(larkUser.getGender() == null ? null : larkUser.getGender())
                             .avatar(StringUtils.isBlank(larkUser.getAvatar().getAvatar240()) ? null : larkUser.getAvatar().getAvatar240())
