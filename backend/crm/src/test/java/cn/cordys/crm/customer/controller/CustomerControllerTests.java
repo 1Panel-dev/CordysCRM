@@ -8,6 +8,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerField;
@@ -39,6 +40,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -51,6 +54,7 @@ class CustomerControllerTests extends BaseTest {
     protected static final String OPPORTUNITY_PAGE = "opportunity/page";
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
+    protected static final String MERGE = "merge";
     private static final String BASE_PATH = "/account/";
     private static final List<String> batchIds = new ArrayList<>();
     private static Customer addCustomer;
@@ -397,9 +401,7 @@ class CustomerControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();
-        customerList.forEach(customerListResponse -> {
-            batchIds.add(customerListResponse.getId());
-        });
+        customerList.forEach(customerListResponse -> batchIds.add(customerListResponse.getId()));
         BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
         reasonRequest.setIds(batchIds);
         this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
@@ -426,6 +428,22 @@ class CustomerControllerTests extends BaseTest {
         this.requestPostWithOk(OPPORTUNITY_PAGE, request);
         // check permission
         requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), OPPORTUNITY_PAGE, request);
+    }
+
+    @Test
+    @Order(15)
+    void testMerge() throws Exception {
+        CustomerMergeRequest mergeRequest = new CustomerMergeRequest();
+        mergeRequest.setMergeIds(List.of("test-id"));
+        mergeRequest.setToMergeId("test-id");
+        mergeRequest.setOwnerId("admin");
+        MvcResult mvcResult = this.requestPost(MERGE, mergeRequest).andExpect(status().is5xxServerError()).andReturn();
+        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("no.customer.merge.data"));
+        mergeRequest.setMergeIds(List.of(anotherCustomer.getId()));
+        mergeRequest.setToMergeId(addCustomer.getId());
+        this.requestPostWithOk(MERGE, mergeRequest);
+        // check permission
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE, MERGE, mergeRequest);
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {
