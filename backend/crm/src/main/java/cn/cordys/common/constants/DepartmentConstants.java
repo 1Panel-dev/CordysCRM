@@ -28,5 +28,9 @@ public enum DepartmentConstants {
     /**
      * SQLBOT
      */
-    SQLBOT
+    SQLBOT,
+    /**
+     * maxKB
+     */
+    MAXKB
 }

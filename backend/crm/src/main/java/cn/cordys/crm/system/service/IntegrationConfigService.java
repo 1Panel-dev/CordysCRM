@@ -14,6 +14,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.integration.agent.dto.MaxKBConfigDetailDTO;
 import cn.cordys.crm.integration.common.dto.ThirdConfigDetailDTO;
 import cn.cordys.crm.integration.common.dto.ThirdConfigDetailLogDTO;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
@@ -97,6 +98,7 @@ public class IntegrationConfigService {
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.WECOM.name()));
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.LARK.name()));
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.DINGTALK.name()));
+        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name()));
 
         // 添加数据看板配置
         ThirdConfigurationDTO deEmbeddedConfig = getThirdConfigurationDTOByType(
@@ -307,7 +309,13 @@ public class IntegrationConfigService {
             }
             jsonContent = JSON.toJSONString(sqlBotConfig);
             verify = sqlBotConfig.getVerify();
-        }  else {
+        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
+            MaxKBConfigDetailDTO mkConfig = new MaxKBConfigDetailDTO();
+            BeanUtils.copyBean(mkConfig, configDTO);
+            mkConfig.setVerify(configDTO.getVerify());
+            jsonContent = JSON.toJSONString(mkConfig);
+            verify = mkConfig.getVerify();
+        } else {
             return;
         }
 
@@ -346,9 +354,9 @@ public class IntegrationConfigService {
                 // 存在的类型，需要更新
                 OrganizationConfigDetail detail = existDetailTypeMap.get(type);
                 //如果更改的企业id和之前不一致，则如果之前的同步状态未true，则改为false
-                if (BooleanUtils.isTrue(organizationConfig.isSync()) && organizationConfig.getSyncResource() != null && Strings.CI.equals(organizationConfig.getSyncResource(),configDTO.getType())
+                if (BooleanUtils.isTrue(organizationConfig.isSync()) && organizationConfig.getSyncResource() != null && Strings.CI.equals(organizationConfig.getSyncResource(), configDTO.getType())
                         && !Strings.CI.equals(oldConfig.getCorpId(), configDTO.getCorpId())) {
-                   extOrganizationConfigMapper.updateSyncFlag(organizationConfig.getOrganizationId(), organizationConfig.getSyncResource(), organizationConfig.getType(), false);
+                    extOrganizationConfigMapper.updateSyncFlag(organizationConfig.getOrganizationId(), organizationConfig.getSyncResource(), organizationConfig.getType(), false);
                 }
                 updateExistingDetail(configDTO, userId, token, oldConfig, detail, typeEnableMap.get(type));
             }
@@ -583,6 +591,13 @@ public class IntegrationConfigService {
             );
         }
 
+        if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
+            return List.of(
+                    ThirdConstants.ThirdDetailType.MAXKB.toString()
+            );
+        }
+
+
         return new ArrayList<>();
     }
 
@@ -627,6 +642,8 @@ public class IntegrationConfigService {
             return verify ? "true" : null;
         } else if (DepartmentConstants.SQLBOT.name().equals(type)) {
             return tokenService.getSqlBotSrc(configDTO.getAppSecret()) ? "true" : null;
+        } else if (DepartmentConstants.MAXKB.name().equals(type)) {
+            return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret());
         }
 
         return null;
@@ -695,7 +712,7 @@ public class IntegrationConfigService {
             BeanUtils.copyBean(newDTO, newConfig);
             oldLog = oldDTO;
             newLog = newDTO;
-        }else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
             DeConfigDetailLogDTO oldDTO = getDeConfigDetailLogDTO(oldConfig);
             DeConfigDetailLogDTO newDTO = getDeConfigDetailLogDTO(newConfig);
             oldLog = oldDTO;

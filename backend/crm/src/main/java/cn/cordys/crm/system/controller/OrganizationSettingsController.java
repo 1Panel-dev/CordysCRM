@@ -131,4 +131,6 @@ public class OrganizationSettingsController {
         return integrationConfigService.getThirdTypeList(organizationId);
     }
 
+
+
 }

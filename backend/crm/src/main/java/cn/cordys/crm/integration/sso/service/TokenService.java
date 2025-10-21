@@ -4,6 +4,8 @@ import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.integration.agent.constant.MaxKBApiPaths;
+import cn.cordys.crm.integration.agent.response.MaxKBResponseEntity;
 import cn.cordys.crm.integration.common.client.QrCodeClient;
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
@@ -299,5 +301,27 @@ public class TokenService {
         }
 
         return larkToken.getTenantAccessToken();
+    }
+
+
+    /**
+     * 测试连接maxkb
+     * @param mkAddress
+     * @param apiKey
+     * @return
+     */
+    public String getMaxKBToken(String mkAddress, String apiKey) {
+        String body = qrCodeClient.exchange(
+                mkAddress.concat(MaxKBApiPaths.WORKSPACE),
+                "Bearer " + apiKey,
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        MaxKBResponseEntity entity = JSON.parseObject(body, MaxKBResponseEntity.class);
+        if (entity != null && entity.getCode() == 200) {
+            return entity.getMessage();
+        }
+        return null;
     }
 }

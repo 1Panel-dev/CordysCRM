@@ -43,5 +43,7 @@ public class ThirdConfigurationDTO {
     private String deSecretKey;
     @Schema(description = "DE组织id")
     private String deOrgID;
+    @Schema(description = "maxKB地址")
+    private String mkAddress;
 
 }
