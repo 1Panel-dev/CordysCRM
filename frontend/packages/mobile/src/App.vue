@@ -29,14 +29,15 @@
   onBeforeMount(async () => {
     changeLocale(navigator.language as LocaleType);
     const loginStatus = await userStore.isLogin(true);
-    const isWXWork = navigator.userAgent.includes('wxwork');
 
-    const isDingTalk =
-      navigator.userAgent.includes('dingtalk') ||
-      navigator.userAgent.includes('aliapp(dingtalk') ||
-      getQueryVariable('authCode');
+    const ua = navigator.userAgent.toLowerCase();
+    const isWXWork = ua.includes('wxwork');
 
-    if (!loginStatus && !hasToken() && (isWXWork || isDingTalk)) {
+    const isDingTalk = ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode');
+
+    const isLark = ua.includes('feishu') || ua.includes('lark');
+
+    if (!loginStatus && !hasToken() && (isWXWork || isDingTalk || isLark)) {
       await oAuthLogin();
       return;
     }

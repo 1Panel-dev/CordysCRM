@@ -2,7 +2,13 @@ import { useRouter } from 'vue-router';
 import { AxiosResponse } from 'axios';
 
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-import { getQueryVariable, getUrlParameterWidthRegExp, isDingTalkBrowser, isWeComBrowser } from '@lib/shared/method';
+import {
+  getQueryVariable,
+  getUrlParameterWidthRegExp,
+  isDingTalkBrowser,
+  isLarkBrowser,
+  isWeComBrowser,
+} from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 import { ConfigSynchronization } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
@@ -48,6 +54,20 @@ const platformConfig = {
       }`;
     },
   },
+  'lark': {
+    detect: isLarkBrowser,
+    platformConfigType: CompanyTypeEnum.LARK,
+    authLoginType: CompanyTypeEnum.LARK_OAUTH2,
+    type: 'lark',
+    codeKey: 'code',
+    codeKeysParams: ['code', 'state'],
+    authUrl: (config: ConfigSynchronization) => {
+      const redirectUrl = `${window.location.origin}/mobile`;
+      return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
+        config.agentId
+      }&redirect_uri=${encodeURIComponent(redirectUrl)}&state=LARK`;
+    },
+  },
 } as const;
 
 export default function useLogin() {
@@ -72,12 +92,12 @@ export default function useLogin() {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-        const err = error as Result;
-        if (err.code === 100500) {
-            router.replace({ name: 'login' });
-        } else if (err.code === 401) {
-            router.replace(AUTH_DISABLED_ROUTE_NAME);
-        }
+      const err = error as Result;
+      if (err.code === 100500) {
+        router.replace({ name: 'login' });
+      } else if (err.code === 401) {
+        router.replace(AUTH_DISABLED_ROUTE_NAME);
+      }
     }
   }
 

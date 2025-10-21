@@ -380,8 +380,7 @@
   const tabList = [
     { name: CompanyTypeEnum.WECOM, tab: t('system.business.WE_COM') },
     { name: CompanyTypeEnum.DINGTALK, tab: t('system.business.DING_TALK') },
-    // TODO 飞书先不上
-    // { name: CompanyTypeEnum.LARK, tab: t('system.business.LARK') },
+    { name: CompanyTypeEnum.LARK, tab: t('system.business.LARK') },
   ];
 
   // 所有可用的集成平台配置

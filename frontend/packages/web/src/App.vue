@@ -102,16 +102,19 @@
       navigator.userAgent.includes('dingtalk') ||
       navigator.userAgent.includes('aliapp(dingtalk') ||
       getQueryVariable('authCode') !== '';
+    const isLark = navigator.userAgent.includes('feishu') || navigator.userAgent.includes('lark');
     if (!hasToken()) {
       if (isWXWork) {
         await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);
       } else if (isDingTalk) {
         await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, isDingTalk);
+      } else if (isLark) {
+        await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, isLark);
       }
     }
 
     if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
-      await userStore.checkIsLogin(isWXWork || isDingTalk);
+      await userStore.checkIsLogin(isWXWork || isDingTalk || isLark);
       appStore.setLoginLoading(false);
     }
   });

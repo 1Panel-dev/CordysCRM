@@ -596,6 +596,12 @@ export function isDingTalkBrowser() {
   return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode');
 }
 
+// 飞书
+export function isLarkBrowser(): boolean {
+  const ua = window.navigator.userAgent.toLowerCase();
+  return ua.includes('lark') || ua.includes('feishu');
+}
+
 /**
  * 国际单位数字缩写
  * @param amount 金额数字
