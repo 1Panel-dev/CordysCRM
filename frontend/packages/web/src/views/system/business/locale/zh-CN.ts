@@ -85,7 +85,7 @@ export default {
   'system.business.authenticationSettings.LDAPPropertyMapTip': '左侧键为 Cordys 用户属性，右侧值为认证平台用户属性',
   'system.business.authenticationSettings.propertyMap': '属性映射',
   'system.business.authenticationSettings.testLogin': '测试登录',
-  'system.business.authenticationSettings.openSourceDataTools': '开源数据工具',
+  'system.business.authenticationSettings.openSourceDataTools': '数据分析工具',
   'system.business.authenticationSettings.collaborativeSoftware': '企业协同软件',
   'system.business.authenticationSettings.syncUser': '同步用户',
   'system.business.authenticationSettings.confirmTogglePlatform': '确定切换平台吗？',

@@ -90,7 +90,7 @@ export default {
     'Left key is Cordys user property, right value is authentication platform user property.',
   'system.business.authenticationSettings.propertyMap': 'Property Mapping',
   'system.business.authenticationSettings.testLogin': 'Test Login',
-  'system.business.authenticationSettings.openSourceDataTools': 'Open source data tools',
+  'system.business.authenticationSettings.openSourceDataTools': 'Data Analysis Tool',
   'system.business.authenticationSettings.collaborativeSoftware': 'Collaborative software',
   'system.business.authenticationSettings.syncUser': 'Sync users',
   'system.business.authenticationSettings.confirmTogglePlatform': 'Are you sure to switch platforms?',
