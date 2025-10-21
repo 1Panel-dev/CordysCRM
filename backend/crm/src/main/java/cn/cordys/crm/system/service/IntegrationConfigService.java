@@ -620,6 +620,8 @@ public class IntegrationConfigService {
         } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
             map.put(ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(), configDTO.getSqlBotChatEnable());
             map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), configDTO.getSqlBotBoardEnable());
+        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
+            map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), Boolean.TRUE);
         }
 
         return map;
