@@ -26,16 +26,17 @@ import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
-import cn.cordys.crm.customer.dto.request.CustomerAddRequest;
-import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
-import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
-import cn.cordys.crm.customer.dto.request.CustomerUpdateRequest;
+import cn.cordys.crm.customer.dto.request.*;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
+import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
@@ -131,6 +132,14 @@ public class CustomerService {
     private BaseMapper<CustomerField> customerFieldMapper;
     @Resource
     private BaseMapper<CustomerFieldBlob> customerFieldBlobMapper;
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
+    @Resource
+    private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtFollowUpRecordMapper extFollowUpRecordMapper;
+    @Resource
+    private ExtFollowUpPlanMapper extFollowUpPlanMapper;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -742,5 +751,39 @@ public class CustomerService {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
 
         customerFieldService.batchUpdate(request, field, originCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId);
+    }
+
+    /**
+     *
+     * @param request 合并请求参数
+     * @param currentUser 当前用户
+     * @param currentOrgId 当前组织ID
+     */
+    public void merge(CustomerMergeRequest request, String currentUser, String currentOrgId) {
+        /*
+         * 规则:
+         * 1. 合并客户联系人, 客户关联商机.
+         * 3. 合并客户跟进记录/计划.
+         * 4. 删除被合并的客户, 并添加对应的负责人为合并客户的协作人.
+         */
+        request.getMergeIds().remove(request.getToMergeId());
+        if (CollectionUtils.isEmpty(request.getMergeIds())) {
+            // 没有可合并的客户数据
+            throw new GenericException(Translator.get("no.customer.merge.data"));
+        }
+        extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId);
+        extOpportunityMapper.batchMerge(request, currentUser, currentOrgId);
+        extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
+        extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
+        List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
+        List<String> ownerIds = mergeCustomers.stream().map(Customer::getOwner).toList();
+        for (String ownerId : ownerIds) {
+            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
+            collaborationAddRequest.setCustomerId(request.getToMergeId());
+            collaborationAddRequest.setCollaborationType("COLLABORATION");
+            collaborationAddRequest.setUserId(ownerId);
+            customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
+        }
+        customerMapper.deleteByIds(request.getMergeIds());
     }
 }

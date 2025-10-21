@@ -161,6 +161,9 @@
           },
           {
             "id": "CUSTOMER_MANAGEMENT:EXPORT"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:MERGE"
           }
         ]
       },

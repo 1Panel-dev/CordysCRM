@@ -4,6 +4,7 @@ import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.customer.dto.request.ContactUniqueRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.search.response.advanced.AdvancedCustomerContactResponse;
@@ -66,6 +67,14 @@ public interface ExtCustomerContactMapper {
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
+
+    /**
+     * 批量合并客户联系人
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 
     List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                       @Param("dataPermission") DeptDataPermissionDTO dataPermission);

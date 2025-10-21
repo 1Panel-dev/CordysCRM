@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -205,4 +206,22 @@ public class CustomerController {
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return customerService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
+
+    @PostMapping("/merge/page")
+    @Operation(summary = "分页获取合并客户列表")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
+        request.setCombineSearch(request.getCombineSearch().convert());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "ALL", PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/merge")
+    @Operation(summary = "合并客户")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE)
+    public void merge(@Valid @RequestBody CustomerMergeRequest request) {
+        customerService.merge(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 }

@@ -5,6 +5,7 @@ import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
@@ -82,4 +83,12 @@ public interface ExtOpportunityMapper {
     void moveUpStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
     int countByStage(@Param("stageId") String stageId);
+
+    /**
+     * 批量合并客户商机
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 }

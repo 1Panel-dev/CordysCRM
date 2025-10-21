@@ -2,6 +2,7 @@ package cn.cordys.crm.follow.mapper;
 
 import cn.cordys.common.dto.BusinessDataPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
@@ -34,4 +35,12 @@ public interface ExtFollowUpPlanMapper {
     List<FollowUpPlan> selectPlanByTimestamp(@Param("timestamp") long timestamp);
 
     Long getNewFollowUpPlan(@Param("request") HomeStatisticSearchWrapperRequest request);
+
+    /**
+     * 批量合并客户(商机)记录
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 }

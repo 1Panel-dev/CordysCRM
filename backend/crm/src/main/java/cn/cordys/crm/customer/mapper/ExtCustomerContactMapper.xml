@@ -515,4 +515,13 @@
             #{id}
         </foreach>
     </update>
+
+    <update id="batchMerge" parameterType="cn.cordys.crm.customer.dto.request.CustomerMergeRequest">
+        update customer_contact set customer_id = #{request.toMergeId}, update_time = unix_timestamp() * 1000, update_user = #{userId}
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </update>
 </mapper>

@@ -60,6 +60,7 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_DELETE = "CUSTOMER_MANAGEMENT:DELETE";
     public static final String CUSTOMER_MANAGEMENT_EXPORT = "CUSTOMER_MANAGEMENT:EXPORT";
     public static final String CUSTOMER_MANAGEMENT_IMPORT = "CUSTOMER_MANAGEMENT:IMPORT";
+    public static final String CUSTOMER_MANAGEMENT_MERGE = "CUSTOMER_MANAGEMENT:MERGE";
     /*------ end: CUSTOMER_MANAGEMENT ------*/
 
 
