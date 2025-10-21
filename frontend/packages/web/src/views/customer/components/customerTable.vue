@@ -116,7 +116,7 @@
     :form-key="FormDesignKeyEnum.CUSTOMER"
     @refresh="() => (tableRefreshId += 1)"
   />
-  <mergeAccountModal v-model:show="showMergeModal" :selected-rows="selectedRows" />
+  <mergeAccountModal v-model:show="showMergeModal" :selected-rows="selectedRows" @saved="() => (tableRefreshId += 1)" />
 </template>
 
 <script setup lang="ts">

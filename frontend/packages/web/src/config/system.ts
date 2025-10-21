@@ -23,6 +23,10 @@ export const logTypeOption = [
     label: 'common.import',
   },
   {
+    value: OperationTypeEnum.MERGE,
+    label: 'customer.merge',
+  },
+  {
     value: OperationTypeEnum.EXPORT,
     label: 'common.export',
   },

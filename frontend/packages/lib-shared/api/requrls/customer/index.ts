@@ -50,6 +50,8 @@ export const ExportOpenSeaCustomerSelectedUrl = '/pool/account/export-select'; /
 export const PoolAccountBatchUpdateUrl = '/pool/account/batch-update'; // 批量编辑公海列表
 export const BatchUpdateAccountUrl = '/account/batch/update'; // 批量编辑客户列表
 export const BatchUpdateContactUrl = '/account/contact/batch/update'; // 批量编辑联系人
+export const MergeAccountUrl = '/account/merge'; // 合并客户
+export const MergeAccountPageUrl = '/account/merge/page'; // 获取数据范围权限客户列表
 
 export const CancelCustomerFollowPlanUrl = '/account/follow/plan/cancel'; // 取消客户跟进计划
 export const GetCustomerHeaderListUrl = '/account/owner/history/list'; // 客户负责人记录列表

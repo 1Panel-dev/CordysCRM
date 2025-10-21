@@ -44,6 +44,7 @@ export enum OperationTypeEnum {
   CANCEL = 'CANCEL',
   ADD_USER = 'ADD_USER',
   REMOVE_USER = 'REMOVE_USER',
+  MERGE = 'MERGE',
 }
 
 export enum PersonalExportStatusEnum {

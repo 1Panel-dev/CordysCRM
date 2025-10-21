@@ -93,6 +93,8 @@ import {
   ImportAccountUrl,
   ImportContactUrl,
   IsCustomerOpenSeaNoPickUrl,
+  MergeAccountPageUrl,
+  MergeAccountUrl,
   MoveToCustomerUrl,
   PickOpenSeaCustomerUrl,
   PoolAccountBatchUpdateUrl,
@@ -142,6 +144,7 @@ import type {
   CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
+  MergeAccountParams,
   MoveToPublicPoolParams,
   OpenSeaCustomerTableParams,
   PickOpenSeaCustomerParams,
@@ -719,6 +722,14 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragAccountPoolViewUrl, data });
   }
 
+  function mergeAccount(data: MergeAccountParams) {
+    return CDR.post({ url: MergeAccountUrl, data });
+  }
+
+  function mergeAccountPage(data: TableQueryParams) {
+    return CDR.post({ url: MergeAccountPageUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -831,5 +842,7 @@ export default function useProductApi(CDR: CordysAxios) {
     dragAccountPoolView,
     batchUpdateAccount,
     batchUpdateContact,
+    mergeAccount,
+    mergeAccountPage,
   };
 }

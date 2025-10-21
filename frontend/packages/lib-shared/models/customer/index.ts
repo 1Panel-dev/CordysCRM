@@ -355,3 +355,9 @@ export interface BatchUpdatePoolAccountParams {
   fieldId: string | null;
   fieldValue: any;
 }
+
+export interface MergeAccountParams {
+  mergeIds: string[]; // 合并客户ids
+  toMergeId: string | null; // 合并目标客户id
+  ownerId: string | null;
+}

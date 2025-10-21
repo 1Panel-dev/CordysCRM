@@ -306,6 +306,8 @@ export const {
   dragAccountPoolView,
   batchUpdateAccount,
   batchUpdateContact,
+  mergeAccount,
+  mergeAccountPage,
 } = customerApi;
 
 export const {
