@@ -15,7 +15,7 @@ public class ThirdDepartment {
     /**
      * 创建的部门id
      */
-    private Long id;
+    private String id;
 
     /**
      * 部门名称
@@ -25,7 +25,7 @@ public class ThirdDepartment {
     /**
      * 父部门id
      */
-    private Long parentId;
+    private String parentId;
 
     /**
      * 是否是根部门
@@ -47,7 +47,7 @@ public class ThirdDepartment {
 
 
     public static List<ThirdDepartment> buildDepartmentTree(String internalId, List<ThirdDepartment> departments) {
-        Map<Long, ThirdDepartment> departmentMap = new HashMap<>();
+        Map<String, ThirdDepartment> departmentMap = new HashMap<>();
         List<ThirdDepartment> rootDepartments = new ArrayList<>();
         // 1. 生成新的ID并存储到部门对象中
         for (ThirdDepartment department : departments) {
@@ -76,14 +76,14 @@ public class ThirdDepartment {
 
 
     public static List<ThirdDepartment> buildDepartmentTreeMultiple(String internalId, List<Department> currentDepartmentList, List<ThirdDepartment> departments) {
-        Map<Long, ThirdDepartment> departmentMap = new HashMap<>();
+        Map<String, ThirdDepartment> departmentMap = new HashMap<>();
         List<ThirdDepartment> rootDepartments = new ArrayList<>();
         // 1. 生成新的ID并存储到部门对象中
         for (ThirdDepartment department : departments) {
             departmentMap.put(department.getId(), department);
 
             currentDepartmentList.stream()
-                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getId().toString()))
+                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getId()))
                     .findFirst()
                     .ifPresentOrElse(dept -> {
                         department.setCrmId(dept.getId());
@@ -94,7 +94,7 @@ public class ThirdDepartment {
                             department.setCrmParentId(internalId);
                         } else {
                             currentDepartmentList.stream()
-                                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getParentId().toString()))
+                                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), department.getParentId()))
                                     .findFirst()
                                     .ifPresentOrElse(parent -> {
                                         department.setCrmId(IDGenerator.nextStr());

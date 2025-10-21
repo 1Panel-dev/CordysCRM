@@ -40,9 +40,9 @@ public class WeComDepartmentService {
 
         return response.getDepartment().stream().map(dept -> {
             ThirdDepartment thirdDept = new ThirdDepartment();
-            thirdDept.setId(dept.getId());
+            thirdDept.setId(dept.getId().toString());
             thirdDept.setName(dept.getName());
-            thirdDept.setParentId(dept.getParentId());
+            thirdDept.setParentId(dept.getParentId().toString());
             thirdDept.setOrder(dept.getOrder());
             thirdDept.setIsRoot(dept.getId() == 1);
             return thirdDept;

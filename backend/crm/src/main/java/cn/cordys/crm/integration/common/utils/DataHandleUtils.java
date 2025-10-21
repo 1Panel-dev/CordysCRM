@@ -124,7 +124,7 @@ public class DataHandleUtils {
             Department department = new Department();
             department.setId(internalDepartment.getId());
             department.setName(thirdDepartment.getName());
-            department.setResourceId(thirdDepartment.getId().toString());
+            department.setResourceId(thirdDepartment.getId());
             department.setUpdateUser(operatorId);
             department.setUpdateTime(currentTime);
             updateDepartments.add(department);
@@ -136,7 +136,7 @@ public class DataHandleUtils {
             department.setParentId(thirdDepartment.getCrmParentId());
             department.setPos(nextPos);
             department.setResource(type);
-            department.setResourceId(thirdDepartment.getId().toString());
+            department.setResourceId(thirdDepartment.getId());
             department.setCreateUser(operatorId);
             department.setUpdateUser(operatorId);
             department.setCreateTime(currentTime);
@@ -298,12 +298,12 @@ public class DataHandleUtils {
      * 同步构建更新和新增部门数据
      */
     private void buildUpdateAndAddDepartment(ThirdDepartment thirdDepartment, String operatorId, List<Department> currentDepartmentList) {
-        if (thirdDepartment.getId() == 1) {
+        if (thirdDepartment.getIsRoot()) {
             // 更新根部门
             Department department = new Department();
             department.setId(internalDepartment.getId());
             department.setName(thirdDepartment.getName());
-            department.setResourceId(thirdDepartment.getId().toString());
+            department.setResourceId(thirdDepartment.getId());
             department.setUpdateUser(operatorId);
             department.setUpdateTime(System.currentTimeMillis());
             updateDepartments.add(department);
@@ -325,7 +325,7 @@ public class DataHandleUtils {
         } else {
             // 查找是否已存在该部门
             Department existingDept = currentDepartmentList.stream()
-                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), thirdDepartment.getId().toString()))
+                    .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), thirdDepartment.getId()))
                     .findFirst()
                     .orElse(null);
 
@@ -342,7 +342,7 @@ public class DataHandleUtils {
     // 辅助方法
 
     private List<ThirdUser> getThirdUsers(ThirdDepartment thirdDepartment) {
-        return departmentUserMap.getOrDefault(thirdDepartment.getId().toString(), new ArrayList<>());
+        return departmentUserMap.getOrDefault(thirdDepartment.getId(), new ArrayList<>());
     }
 
     private void saveAllEntities() {
@@ -422,7 +422,7 @@ public class DataHandleUtils {
         return Optional.ofNullable(currentDepartmentList)
                 .orElse(Collections.emptyList())
                 .stream()
-                .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), thirdDepartment.getId().toString()))
+                .filter(dept -> Strings.CI.equalsAny(dept.getResourceId(), thirdDepartment.getId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -545,7 +545,7 @@ public class DataHandleUtils {
         department.setParentId(thirdDepartment.getCrmParentId());
         department.setPos(nextPos);
         department.setResource(type);
-        department.setResourceId(thirdDepartment.getId().toString());
+        department.setResourceId(thirdDepartment.getId());
         department.setCreateUser(operatorId);
         department.setUpdateUser(operatorId);
         department.setCreateTime(timestamp);

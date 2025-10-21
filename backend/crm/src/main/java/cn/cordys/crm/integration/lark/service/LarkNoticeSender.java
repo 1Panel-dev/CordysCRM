@@ -4,6 +4,8 @@ import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
+import cn.cordys.crm.integration.lark.dto.LarkTextDTO;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
@@ -78,7 +80,16 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         ThirdConfigurationDTO thirdConfigurationDTO = JSON.parseObject(
                 new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigurationDTO.class
         );
-        //TODO:// 发送飞书消息
+        for (String resourceUserId : resourceUserIds) {
+            LogUtils.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
+            LarkSendMessageDTO larkSendMessageDTO = new LarkSendMessageDTO();
+            larkSendMessageDTO.setReceive_id(resourceUserId);
+            larkSendMessageDTO.setMsg_type("text");
+            LarkTextDTO larkTextDTO = new LarkTextDTO();
+            larkTextDTO.setText(subjectText + "\n" + context);
+            larkSendMessageDTO.setContent(larkTextDTO);
+            tokenService.sendLarkNoticeByToken(larkSendMessageDTO, thirdConfigurationDTO.getAgentId(), thirdConfigurationDTO.getAppSecret());
+        }
 
     }
 }

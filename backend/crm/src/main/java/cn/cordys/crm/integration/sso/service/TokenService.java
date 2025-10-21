@@ -15,6 +15,7 @@ import cn.cordys.crm.integration.dingtalk.dto.DingTalkToken;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkTokenParamDTO;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
 import cn.cordys.crm.integration.lark.dto.LarkBaseParamDTO;
+import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkToken;
 import cn.cordys.crm.integration.lark.dto.LarkTokenParamDTO;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
@@ -275,6 +276,17 @@ public class TokenService {
         qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
 
+    /**
+     * 发送Lark通知通过token
+     * @param agentId  appId 飞书自建应用凭证
+     * @param appSecret appSecret 飞书自建应用密钥
+     * @param larkSendMessageDTO 消息体
+     */
+    public void sendLarkNoticeByToken(LarkSendMessageDTO larkSendMessageDTO, String agentId, String appSecret) {
+        String assessToken = getLarkToken(agentId, appSecret);
+        qrCodeClient.postExchange(LarkApiPaths.LARK_SEND_MESSAGE_URL + "?receive_id_type=" + "open_id",    "Bearer " + assessToken,
+                "Authorization", larkSendMessageDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+    }
 
 
     public String getLarkUserToken(String agentId, String appSecret, String code) {

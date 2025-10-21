@@ -62,9 +62,9 @@ public class DingTalkDepartmentService {
 
     private ThirdDepartment convertToThirdDepartment(DingTalkDepartment dingTalkDepartment) {
         ThirdDepartment thirdDepartment = new ThirdDepartment();
-        thirdDepartment.setId(dingTalkDepartment.getDeptId());
+        thirdDepartment.setId(dingTalkDepartment.getDeptId().toString());
         thirdDepartment.setName(dingTalkDepartment.getName());
-        thirdDepartment.setParentId(dingTalkDepartment.getParentId());
+        thirdDepartment.setParentId(dingTalkDepartment.getParentId().toString());
         thirdDepartment.setOrder(dingTalkDepartment.getOrder());
         thirdDepartment.setIsRoot(dingTalkDepartment.getDeptId() == 1);
         return thirdDepartment;

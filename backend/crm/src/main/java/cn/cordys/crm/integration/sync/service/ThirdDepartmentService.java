@@ -10,6 +10,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.common.utils.DataHandleUtils;
 import cn.cordys.crm.integration.dingtalk.service.DingTalkDepartmentService;
+import cn.cordys.crm.integration.lark.service.LarkDepartmentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
@@ -57,6 +58,9 @@ public class ThirdDepartmentService {
     private DingTalkDepartmentService dingTalkDepartmentService;
 
     @Resource
+    private LarkDepartmentService larkDepartmentService;
+
+    @Resource
     private IntegrationConfigService integrationConfigService;
 
     /**
@@ -91,7 +95,6 @@ public class ThirdDepartmentService {
         LogService logService = CommonBeanFactory.getBean(LogService.class);
 
         // 获取三方配置信息
-
         ThirdConfigurationDTO thirdConfig = getThirdConfig(orgId, type);
         boolean syncStatus = integrationConfigService.getSyncStatus(orgId,
                 OrganizationConfigConstants.ConfigType.THIRD.name(),
@@ -118,9 +121,10 @@ public class ThirdDepartmentService {
             if (thirdOrgDataDTO != null) {
                 departments = thirdOrgDataDTO.getDepartments();
             }
-        } /*else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             // 获取飞书部门列表
-        }*/ else {
+            departments = larkDepartmentService.getDepartmentList(accessToken);
+        } else {
             throw new GenericException("不支持的同步类型");
         }
 
@@ -128,20 +132,22 @@ public class ThirdDepartmentService {
             throw new GenericException("获取部门列表为空");
         }
 
-        List<Long> departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
         Map<String, List<ThirdUser>> departmentUserMap = new HashMap<>();
 
         if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
             // 获取企业微信部门用户
+            List<Long> departmentIds = departments.stream().map(ThirdDepartment::getId).map(Long::parseLong).toList();
             departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
         } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
             // 获取钉钉部门用户
             if (thirdOrgDataDTO != null) {
                 departmentUserMap = thirdOrgDataDTO.getUsers();
             }
-        } /*else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
+        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
             // 获取飞书部门用户
-        }*/ else {
+            List<String> departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
+            departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
+        } else {
             throw new GenericException("不支持的同步类型");
         }
 
