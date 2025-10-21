@@ -88,7 +88,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<AdvancedCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);
         if (CollectionUtils.isEmpty(list)) {
-            return PageUtils.setPageInfoWithOption(page, null, null);
+            return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
         }
         List<AdvancedCluePoolResponse> buildList = buildListData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);

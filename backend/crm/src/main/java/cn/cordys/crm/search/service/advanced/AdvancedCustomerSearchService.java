@@ -96,7 +96,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         List<AdvancedCustomerResponse> customers = extCustomerMapper.checkRepeatCustomer(request, orgId, userId);
         if (CollectionUtils.isEmpty(customers)) {
             return PageUtils.setPageInfoWithOption(
-                    page, null, null);
+                    page, List.of(), Map.of());
         }
         List<AdvancedCustomerResponse> buildList = buildCustomerList(orgId, userId, isAdmin, customers, enabledModules);
         Map<String, List<OptionDTO>> optionMap = buildCustomerOptionMap(orgId, customers, buildList);

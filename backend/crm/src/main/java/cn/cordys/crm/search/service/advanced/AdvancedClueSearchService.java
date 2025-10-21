@@ -87,7 +87,7 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         // 4. 查询并返回相似线索列表
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, null);
         if (CollectionUtils.isEmpty(list)) {
-            return PageUtils.setPageInfoWithOption(page, null, null);
+            return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
         }
         List<AdvancedClueResponse> buildList = buildClueList(list, orgId, userId);
 
