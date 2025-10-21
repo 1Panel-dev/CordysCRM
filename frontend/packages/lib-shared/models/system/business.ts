@@ -20,6 +20,7 @@ export interface ConfigSynchronization {
   corpId?: string; // 企业ID
   agentId?: string; // 应用ID
   appSecret?: string; // 应用密钥
+  mkAddress?: string; // mk地址
   sqlBotChatEnable?: boolean; // 智能问数是否开启
   sqlBotBoardEnable?: boolean; // 智能问数仪表板是否开启
   verify?: boolean; // 是否验证通过

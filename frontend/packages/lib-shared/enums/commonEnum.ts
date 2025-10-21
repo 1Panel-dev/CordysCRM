@@ -8,6 +8,7 @@ export enum CompanyTypeEnum {
   WE_COM_OAUTH2 = 'WECOM_OAUTH2', // OAUTH2认证
   DINGTALK_OAUTH2 = 'DINGTALK_OAUTH2', // 钉钉OAUTH2认证
   LARK_OAUTH2 = 'LARK_OAUTH2', // 飞书OAUTH2认证
+  MAXKB = 'MAXKB',
 }
 
 // 操作符号

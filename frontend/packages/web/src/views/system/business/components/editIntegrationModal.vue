@@ -23,6 +23,12 @@
           :placeholder="t('common.pleaseInput')"
         />
       </n-form-item> -->
+      <!-- MaxKB -->
+      <template v-if="[CompanyTypeEnum.MAXKB].includes(form?.type)">
+        <n-form-item path="mkAddress" :label="t('system.business.agent.agentMaxKBUrl')">
+          <n-input v-model:value="form.mkAddress" :placeholder="t('common.pleaseInput')" />
+        </n-form-item>
+      </template>
 
       <!-- 企业 ID -->
       <template v-if="platformType.includes(form?.type)">
@@ -62,11 +68,7 @@
       </template>
 
       <!-- 应用密钥 -->
-      <n-form-item
-        v-if="form.type !== CompanyTypeEnum.SQLBot"
-        path="appSecret"
-        :label="form.type === CompanyTypeEnum.DATA_EASE ? 'APP Secret' : t('system.business.appSecret')"
-      >
+      <n-form-item v-if="form.type !== CompanyTypeEnum.SQLBot" path="appSecret" :label="getAppSecretText">
         <n-input
           v-model:value="form.appSecret"
           type="password"
@@ -105,6 +107,7 @@
           :placeholder="t('system.business.authenticationSettings.innerAppIdPlaceholder')"
         />
       </n-form-item>
+
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">
@@ -274,6 +277,7 @@
     agentId: '',
     appSecret: '',
     appId: '',
+    mkAddress: '',
     type: CompanyTypeEnum.WECOM,
     redirectUrl: '',
     deAccount: '',
@@ -314,6 +318,7 @@
   const getAppSecretText = computed(() => {
     if (props.integration?.type === CompanyTypeEnum.DATA_EASE) return 'APP Secret';
     if (props.integration?.type === CompanyTypeEnum.SQLBot) return t('system.business.SQLBot.embeddedScript');
+    if (props.integration?.type === CompanyTypeEnum.MAXKB) return 'API Key';
     return t('system.business.appSecret');
   });
 
@@ -348,6 +353,7 @@
     deAccessKey: [{ required: true, message: t('common.notNull', { value: 'deAccessKey' }) }],
     deSecretKey: [{ required: true, message: t('common.notNull', { value: 'deSecretKey' }) }],
     deOrgID: [{ required: true, message: t('common.notNull', { value: t('system.business.DE.org') }) }],
+    mkAddress: [{ required: true, message: t('common.notNull', { value: t('system.business.agent.agentMaxKBUrl') }) }],
   }));
 
   const formRef = ref<FormInst | null>(null);
@@ -447,7 +453,7 @@
 
   const getLabelWidth = computed(() => {
     if (form.value.type === CompanyTypeEnum.DATA_EASE) return 120;
-    if (platformType.includes(form.value.type)) return 100;
+    if ([...platformType, CompanyTypeEnum.MAXKB].includes(form.value.type)) return 100;
     return 80;
   });
 </script>

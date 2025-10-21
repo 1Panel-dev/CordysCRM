@@ -229,8 +229,7 @@
       {
         label: t('customer.mergeAccount'),
         key: 'merge',
-        // TODO 权限
-        // permission: ['CUSTOMER_MANAGEMENT:MERGE'],
+        permission: ['CUSTOMER_MANAGEMENT:MERGE'],
       },
       {
         label: t('common.batchDelete'),

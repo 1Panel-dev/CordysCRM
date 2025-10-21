@@ -176,4 +176,8 @@ export default {
   'system.personal.addNewExport': '新增【我的导出】菜单',
   'system.personal.addNewExportPopContent': '可查看导出任务进度',
   'system.personal.noExportTask': '暂无导出任务',
+
+  'system.business.agent.agentTitle': '智能体平台',
+  'system.business.agent.agentMaxKBDescription': '强大易用的企业级智能体平台',
+  'system.business.agent.agentMaxKBUrl': 'MaxKB地址',
 };

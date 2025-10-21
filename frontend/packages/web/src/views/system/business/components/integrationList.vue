@@ -1,5 +1,5 @@
 <template>
-  <CrmCard class="mb-[16px]" hide-footer auto-height>
+  <CrmCard hide-footer auto-height>
     <div class="content-title mb-[16px]">{{ t('system.business.authenticationSettings.collaborativeSoftware') }}</div>
     <CrmTab
       v-model:active-tab="activePlatformTab"
@@ -126,7 +126,7 @@
       </div>
     </div>
   </CrmCard>
-  <CrmCard hide-footer auto-height :loading="loading">
+  <CrmCard class="my-[16px]" hide-footer auto-height :loading="loading">
     <div class="content-title">{{ t('system.business.authenticationSettings.openSourceDataTools') }}</div>
     <div v-if="integrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
       <div
@@ -258,6 +258,82 @@
       </div>
     </div>
   </CrmCard>
+  <CrmCard hide-footer auto-height>
+    <div class="min-h-[140px]">
+      <div class="content-title mb-[16px]">{{ t('system.business.agent.agentTitle') }}</div>
+      <div v-if="agentIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
+        <div
+          v-for="item of agentIntegrationList"
+          :key="item.type"
+          class="flex flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
+        >
+          <div class="flex">
+            <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
+              <CrmSvgIcon
+                v-if="[CompanyTypeEnum.MAXKB].includes(item.type as CompanyTypeEnum)"
+                :name="item.logo"
+                width="24px"
+                height="24px"
+              />
+              <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between gap-[8px]">
+                <div>
+                  <span class="mr-[8px] font-medium">{{ item.title }}</span>
+                  <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
+                    {{ t('system.business.notConfigured') }}
+                  </CrmTag>
+                  <CrmTag
+                    v-else-if="item.hasConfig && item.response.verify === false"
+                    theme="light"
+                    type="error"
+                    size="small"
+                    custom-class="px-[4px]"
+                  >
+                    {{ t('common.fail') }}
+                  </CrmTag>
+                  <CrmTag
+                    v-else-if="item.hasConfig && item.response.verify === null"
+                    theme="light"
+                    type="warning"
+                    size="small"
+                    custom-class="px-[4px]"
+                  >
+                    {{ t('common.unVerify') }}
+                  </CrmTag>
+                  <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
+                    {{ t('common.success') }}
+                  </CrmTag>
+                </div>
+                <div>
+                  <n-button
+                    v-permission="['SYSTEM_SETTING:UPDATE']"
+                    size="small"
+                    type="default"
+                    class="outline--secondary mr-[8px] px-[8px]"
+                    @click="handleEdit(item)"
+                  >
+                    {{ t('common.config') }}
+                  </n-button>
+                  <n-button
+                    :disabled="!item.hasConfig"
+                    size="small"
+                    type="default"
+                    class="outline--secondary px-[8px]"
+                    @click="testLink(item)"
+                  >
+                    {{ t('system.business.mailSettings.testLink') }}
+                  </n-button>
+                </div>
+              </div>
+              <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </CrmCard>
 
   <EditIntegrationModal
     v-model:show="showEditIntegrationModal"
@@ -346,6 +422,12 @@
       description: t('system.business.SQLBot.description'),
       logo: 'SQLBot',
     },
+    {
+      type: CompanyTypeEnum.MAXKB,
+      title: 'MaxKB',
+      description: t('system.business.agent.agentMaxKBDescription'),
+      logo: 'maxKB',
+    },
   ];
 
   const originIntegrationList = ref<IntegrationItem[]>([]);
@@ -355,6 +437,10 @@
     originIntegrationList.value.filter((e) => e.type === activePlatformTab.value)
   );
 
+  const agentIntegrationList = computed<IntegrationItem[]>(() =>
+    originIntegrationList.value.filter((e) => e.type === CompanyTypeEnum.MAXKB)
+  );
+
   const loading = ref(false);
   async function initSyncList() {
     try {
@@ -362,7 +448,11 @@
       const res = await getConfigSynchronization();
       const configMap = new Map(res.map((item) => [item.type, item]));
       originIntegrationList.value = allIntegrations
-        .filter((item) => [...platformType, CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot].includes(item.type))
+        .filter((item) =>
+          [...platformType, CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot, CompanyTypeEnum.MAXKB].includes(
+            item.type
+          )
+        )
         .map((item) => {
           const config = configMap.get(item.type);
           return {
@@ -379,7 +469,7 @@
         });
 
       integrationList.value = originIntegrationList.value.filter(
-        (e) => !platformType.includes(e.type as CompanyTypeEnum)
+        (e) => ![...platformType, CompanyTypeEnum.MAXKB].includes(e.type as CompanyTypeEnum)
       );
     } catch (error) {
       // eslint-disable-next-line no-console
