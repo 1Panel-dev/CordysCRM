@@ -5,22 +5,19 @@
 <script lang="ts" setup>
   import { useScriptTag } from '@vueuse/core';
 
-  // import { getLarkInfo } from '@/api/modules/user';
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+
+  import { getThirdConfigByType } from '@/api/modules';
 
   const { load } = useScriptTag(
     'https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/passport/qrcode/LarkSSOSDKWebQRCode-1.0.3.js'
   );
 
   const initActive = async () => {
-    // const data = await getLarkInfo();
-    // TODO:
-    const data = {
-      agentId: 'cli_9f7b3b1b1b1b1b1b',
-    };
+    const data = await getThirdConfigByType(CompanyTypeEnum.LARK);
+
     await load(true);
-    // const callBack = encodeURIComponent(window.location.origin);
     const redirectUrL = encodeURIComponent(window.location.origin);
-    // const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${data.agentId}&redirect_uri=${callBack}&response_type=code&state=fit2cloud-lark-qr`;
     const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${data.agentId}&redirect_uri=${redirectUrL}&response_type=code&state=fit2cloud-lark-qr`;
 
     const QRLoginObj = window.QRLogin({
