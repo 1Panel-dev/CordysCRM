@@ -325,6 +325,7 @@
     }
     appStore.connectSystemMessageSSE(userStore.showSystemNotify);
     appStore.showSQLBot();
+    userStore.initApiKeyList();
   });
 
   const innerLogo = computed(() =>
