@@ -47,6 +47,20 @@
               trigger: 'blur',
             },
           ],
+          workspaceId: [
+            {
+              required: true,
+              message: t('common.notNull', { value: t('agent.agentWorkSpace') }),
+              trigger: 'blur',
+            },
+          ],
+          applicationId: [
+            {
+              required: true,
+              message: t('common.notNull', { value: t('agent.agentSelected') }),
+              trigger: 'blur',
+            },
+          ],
         }"
         label-width="100"
       >
@@ -71,6 +85,42 @@
             :disabled="props.isDetail"
           />
         </n-form-item>
+        <n-form-item
+          v-if="props.agentId ? originType !== 'SCRIPT' : isEnableConfig"
+          :label="t('agent.addMethod')"
+          path="method"
+        >
+          <n-radio-group v-model:value="form.type" name="radiogroup" class="flex" @update:value="changeType">
+            <n-radio value="SCRIPT" class="flex-1 text-center">
+              {{ t('system.business.SQLBot.embeddedScript') }}
+            </n-radio>
+            <n-radio value="LIST" class="flex-1 text-center">
+              {{ t('agent.addMethodListSelect') }}
+            </n-radio>
+          </n-radio-group>
+        </n-form-item>
+        <template v-if="form.type === 'LIST'">
+          <n-form-item :label="t('agent.agentWorkSpace')" path="workspaceId">
+            <n-select
+              v-model:value="form.workspaceId"
+              filterable
+              :options="workSpaceOptions"
+              :disabled="!isEnableConfig"
+              @update:value="changeWorkSpace"
+            />
+          </n-form-item>
+
+          <n-form-item :label="t('agent.agentSelected')" path="applicationId">
+            <n-select
+              v-model:value="form.applicationId"
+              filterable
+              clearable
+              :options="agentOptions"
+              :disabled="!isEnableConfig"
+            />
+          </n-form-item>
+        </template>
+
         <n-form-item :label="t('agent.script')" path="script">
           <n-input v-model:value="form.script" type="textarea" :maxlength="500" />
           <div class="text-[12px] text-[var(--text-n4)]">
@@ -90,14 +140,19 @@
     NForm,
     NFormItem,
     NInput,
+    NRadio,
+    NRadioGroup,
+    NSelect,
     NSpin,
     NTooltip,
     NTreeSelect,
+    SelectOption,
     TreeOption,
     TreeSelectOption,
     useMessage,
   } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
@@ -106,7 +161,15 @@
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addAgent, getAgentDetail, updateAgent } from '@/api/modules';
+  import {
+    addAgent,
+    agentApplicationOptions,
+    agentWorkspaceOptions,
+    getAgentDetail,
+    getApplicationScript,
+    getConfigSynchronization,
+    updateAgent,
+  } from '@/api/modules';
 
   const props = defineProps<{
     agentId?: string;
@@ -132,7 +195,10 @@
     script: '',
     scopeIds: [] as SelectedUsersItem[],
     description: '',
+    type: 'SCRIPT',
     agentModuleId: '',
+    workspaceId: '',
+    applicationId: '',
   });
   const formRef = ref<InstanceType<typeof NForm>>();
 
@@ -178,7 +244,10 @@
       script: '',
       scopeIds: [],
       description: '',
+      type: 'SCRIPT',
       agentModuleId: '',
+      workspaceId: '',
+      applicationId: '',
     };
   }
 
@@ -187,10 +256,13 @@
       if (errors) return;
       loading.value = true;
       try {
+        const { workspaceId, applicationId } = form.value;
         if (props.agentId) {
           await updateAgent({
             ...form.value,
             id: props.agentId,
+            workspaceId: form.value.type === 'LIST' ? workspaceId : '',
+            applicationId: form.value.type === 'LIST' ? applicationId : '',
             scopeIds: form.value.scopeIds.map((item) => item.id),
           });
           message.success(t('common.updateSuccess'));
@@ -198,6 +270,8 @@
           await addAgent({
             ...form.value,
             scopeIds: form.value.scopeIds.map((item) => item.id),
+            workspaceId: form.value.type === 'LIST' ? workspaceId : '',
+            applicationId: form.value.type === 'LIST' ? applicationId : '',
           });
           message.success(t('common.addSuccess'));
         }
@@ -216,6 +290,7 @@
   }
 
   const detailLoading = ref(false);
+  const originType = ref('');
   async function initDetail() {
     try {
       detailLoading.value = true;
@@ -224,6 +299,7 @@
         ...res,
         scopeIds: res.members,
       };
+      originType.value = res.type;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to initialize agent detail:', error);
@@ -232,16 +308,107 @@
     }
   }
 
+  const agentOptions = ref<SelectOption[]>([]);
+  async function loadApplication(newVal: string) {
+    try {
+      const res = await agentApplicationOptions(newVal);
+      agentOptions.value = res.map((e) => ({ value: e.id, label: e.name }));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  async function loadApplicationScript(newVal: string) {
+    try {
+      const res = await getApplicationScript({
+        applicationId: newVal,
+        workspaceId: form.value.workspaceId,
+      });
+
+      form.value.script = '';
+      if (res) {
+        const scriptParams = res.parameters?.map((item) => `${item.parameter}=\${${item.value ?? ''}}`).join('&');
+        const script = `<iframe src="${res.src}?${scriptParams}" style="width: 100%; height: 100%;" frameborder="0" allow="microphone"></iframe>`;
+        form.value.script = script;
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  const workSpaceOptions = ref<SelectOption[]>([]);
+  async function initWorkSpaceOptions(isInit = false) {
+    try {
+      const res = await agentWorkspaceOptions();
+      workSpaceOptions.value = res.map((e) => ({ value: e.id, label: e.name }));
+      if (isInit) {
+        form.value.workspaceId = (workSpaceOptions.value[0]?.value ?? '') as string;
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to get work space options:', error);
+    }
+  }
+
+  function changeType(val: string) {
+    if (val === 'LIST') {
+      initWorkSpaceOptions(true);
+    }
+  }
+
+  const isEnableConfig = ref(false);
+  async function initAgentStatus() {
+    try {
+      const res = await getConfigSynchronization();
+      if (res) {
+        const mkAgentConfig = res.find((item) => item.type === CompanyTypeEnum.MAXKB);
+        isEnableConfig.value = !!mkAgentConfig && !!mkAgentConfig.mkEnable;
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function changeWorkSpace(val: string) {
+    form.value.applicationId = '';
+    form.value.script = '';
+  }
+
+  watch(
+    () => form.value.workspaceId,
+    (val) => {
+      if (val) {
+        loadApplication(val);
+      }
+    }
+  );
+
+  watch(
+    () => form.value.applicationId,
+    (val) => {
+      if (val) {
+        loadApplicationScript(val);
+      }
+    }
+  );
+
   watch(
     () => show.value,
     (val) => {
-      if (val && props.agentId) {
-        initDetail();
-      } else {
-        form.value.agentModuleId =
-          ((props.activeFolder && !['favorite', 'all'].includes(props.activeFolder)
-            ? props.activeFolder
-            : props.folderTree[0]?.id) as string) || '';
+      if (val) {
+        initAgentStatus();
+        initWorkSpaceOptions(!!props.agentId);
+        if (props.agentId) {
+          initDetail();
+        } else {
+          form.value.agentModuleId =
+            ((props.activeFolder && !['favorite', 'all'].includes(props.activeFolder)
+              ? props.activeFolder
+              : props.folderTree[0]?.id) as string) || '';
+        }
       }
     },
     { immediate: true }

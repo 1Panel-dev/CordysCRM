@@ -17,4 +17,8 @@ export default {
   'agent.goConfig': '去配置',
   'agent.script': '嵌入脚本',
   'agent.agentDetail': '智能体详情',
+  'agent.addMethod': '添加方式',
+  'agent.addMethodListSelect': '列表选择',
+  'agent.agentWorkSpace': '工作空间',
+  'agent.agentSelected': '选择智能体',
 };

@@ -17,4 +17,8 @@ export default {
   'agent.goConfig': 'Go to Configuration',
   'agent.script': 'Embed Script',
   'agent.agentDetail': 'Agent Detail',
+  'agent.addMethod': 'Add method',
+  'agent.addMethodListSelect': 'List selection',
+  'agent.agentWorkSpace': 'Workspace',
+  'agent.agentSelected': 'Select agent',
 };

@@ -36,6 +36,7 @@ export interface ConfigSynchronization {
   // 前端渲染参数
   deEmbedType?: string[]; // DE嵌入方式
   startEnable?: boolean; // 同步用户
+  mkEnable?: boolean; // 智能体
   appId?: string; // 钉钉内部应用id
 }
 

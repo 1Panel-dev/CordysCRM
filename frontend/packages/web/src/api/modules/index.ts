@@ -518,4 +518,7 @@ export const {
   agentDelete,
   agentCollect,
   getAgentOptions,
+  agentApplicationOptions,
+  agentWorkspaceOptions,
+  getApplicationScript,
 } = agentApi;

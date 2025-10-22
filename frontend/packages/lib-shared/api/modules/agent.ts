@@ -1,15 +1,18 @@
 import type {
   AddAgentModuleParams,
   AddAgentParams,
+  AgentApplicationScript,
   AgentModuleRenameParams,
   AgentModuleTreeNode,
   AgentRenameParams,
   AgentTableQueryParams,
+  ApplicationScriptParams,
   UpdateAgentParams,
 } from '../../models/agent';
 import type { ModuleDragParams, TableQueryParams } from '../../models/common';
 import {
   addAgentUrl,
+  agentApplicationUrl,
   agentCollectPageUrl,
   agentCollectUrl,
   agentDeleteUrl,
@@ -22,6 +25,8 @@ import {
   agentModuleTreeUrl,
   agentOptionUrl,
   agentPageUrl,
+  agentScriptUrl,
+  agentWorkspaceUrl,
   renameAgentUrl,
   unCollectAgentUrl,
   updateAgentUrl,
@@ -110,6 +115,21 @@ export default function useAgentApi(CDR: CordysAxios) {
     return CDR.get({ url: agentOptionUrl });
   }
 
+  // 获取智能体应用
+  function agentApplicationOptions(workspaceId: string) {
+    return CDR.get<AgentModuleRenameParams[]>({ url: `${agentApplicationUrl}/${workspaceId}` });
+  }
+
+  // 获取工作空间
+  function agentWorkspaceOptions() {
+    return CDR.get<AgentModuleRenameParams[]>({ url: agentWorkspaceUrl });
+  }
+
+  // 获取工作空间应用脚本
+  function getApplicationScript(data: ApplicationScriptParams) {
+    return CDR.post<AgentApplicationScript>({ url: agentScriptUrl, data });
+  }
+
   return {
     agentModuleRename,
     agentModuleMove,
@@ -127,5 +147,8 @@ export default function useAgentApi(CDR: CordysAxios) {
     agentDelete,
     agentCollect,
     getAgentOptions,
+    agentApplicationOptions,
+    agentWorkspaceOptions,
+    getApplicationScript,
   };
 }

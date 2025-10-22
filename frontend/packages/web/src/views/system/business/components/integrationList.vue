@@ -259,76 +259,91 @@
     </div>
   </CrmCard>
   <CrmCard hide-footer auto-height>
-    <div class="min-h-[140px]">
-      <div class="content-title mb-[16px]">{{ t('system.business.agent.agentTitle') }}</div>
-      <div v-if="agentIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
-        <div
-          v-for="item of agentIntegrationList"
-          :key="item.type"
-          class="flex flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
-        >
-          <div class="flex">
-            <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
-              <CrmSvgIcon
-                v-if="[CompanyTypeEnum.MAXKB].includes(item.type as CompanyTypeEnum)"
-                :name="item.logo"
-                width="24px"
-                height="24px"
-              />
-              <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
-            </div>
-            <div class="flex-1">
-              <div class="flex justify-between gap-[8px]">
-                <div>
-                  <span class="mr-[8px] font-medium">{{ item.title }}</span>
-                  <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
-                    {{ t('system.business.notConfigured') }}
-                  </CrmTag>
-                  <CrmTag
-                    v-else-if="item.hasConfig && item.response.verify === false"
-                    theme="light"
-                    type="error"
-                    size="small"
-                    custom-class="px-[4px]"
-                  >
-                    {{ t('common.fail') }}
-                  </CrmTag>
-                  <CrmTag
-                    v-else-if="item.hasConfig && item.response.verify === null"
-                    theme="light"
-                    type="warning"
-                    size="small"
-                    custom-class="px-[4px]"
-                  >
-                    {{ t('common.unVerify') }}
-                  </CrmTag>
-                  <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
-                    {{ t('common.success') }}
-                  </CrmTag>
-                </div>
-                <div>
-                  <n-button
-                    v-permission="['SYSTEM_SETTING:UPDATE']"
-                    size="small"
-                    type="default"
-                    class="outline--secondary mr-[8px] px-[8px]"
-                    @click="handleEdit(item)"
-                  >
-                    {{ t('common.config') }}
-                  </n-button>
-                  <n-button
-                    :disabled="!item.hasConfig"
-                    size="small"
-                    type="default"
-                    class="outline--secondary px-[8px]"
-                    @click="testLink(item)"
-                  >
-                    {{ t('system.business.mailSettings.testLink') }}
-                  </n-button>
-                </div>
+    <div class="content-title mb-[16px]">{{ t('system.business.agent.agentTitle') }}</div>
+    <div v-if="agentIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
+      <div
+        v-for="item of agentIntegrationList"
+        :key="item.type"
+        class="flex h-[140px] flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
+      >
+        <div class="flex">
+          <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
+            <CrmSvgIcon
+              v-if="[CompanyTypeEnum.MAXKB].includes(item.type as CompanyTypeEnum)"
+              :name="item.logo"
+              width="24px"
+              height="24px"
+            />
+            <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
+          </div>
+          <div class="flex-1">
+            <div class="flex justify-between gap-[8px]">
+              <div>
+                <span class="mr-[8px] font-medium">{{ item.title }}</span>
+                <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
+                  {{ t('system.business.notConfigured') }}
+                </CrmTag>
+                <CrmTag
+                  v-else-if="item.hasConfig && item.response.verify === false"
+                  theme="light"
+                  type="error"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.fail') }}
+                </CrmTag>
+                <CrmTag
+                  v-else-if="item.hasConfig && item.response.verify === null"
+                  theme="light"
+                  type="warning"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.unVerify') }}
+                </CrmTag>
+                <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
+                  {{ t('common.success') }}
+                </CrmTag>
               </div>
-              <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
+              <div>
+                <n-button
+                  v-permission="['SYSTEM_SETTING:UPDATE']"
+                  size="small"
+                  type="default"
+                  class="outline--secondary mr-[8px] px-[8px]"
+                  @click="handleEdit(item)"
+                >
+                  {{ t('common.config') }}
+                </n-button>
+                <n-button
+                  :disabled="!item.hasConfig"
+                  size="small"
+                  type="default"
+                  class="outline--secondary px-[8px]"
+                  @click="testLink(item)"
+                >
+                  {{ t('system.business.mailSettings.testLink') }}
+                </n-button>
+              </div>
             </div>
+            <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
+          </div>
+        </div>
+        <div class="flex justify-between gap-[8px]">
+          <div class="flex items-center gap-[8px]">
+            <n-tooltip :disabled="item.response.verify">
+              <template #trigger>
+                <n-switch
+                  size="small"
+                  :rubber-band="false"
+                  :value="item.response.mkEnable"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'mkEnable')"
+                />
+              </template>
+              {{ t('system.business.notConfiguredTip') }}
+            </n-tooltip>
+            <div class="text-[12px]">{{ t('module.agent') }}</div>
           </div>
         </div>
       </div>
@@ -461,6 +476,7 @@
               sqlBotBoardEnable: config?.sqlBotBoardEnable ?? false,
               sqlBotChatEnable: config?.sqlBotChatEnable ?? false,
               startEnable: config?.startEnable ?? false,
+              mkEnable: config?.mkEnable ?? false,
               type: item.type,
               ...config,
             },
@@ -504,7 +520,7 @@
 
   async function handleChangeEnable(
     item: IntegrationItem,
-    key: 'deBoardEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable' | 'startEnable'
+    key: 'deBoardEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable' | 'startEnable' | 'mkEnable'
   ) {
     try {
       loading.value = true;
@@ -523,6 +539,7 @@
           item.response.verify = false;
           item.response.deBoardEnable = true;
           item.response.startEnable = false;
+          item.response.mkEnable = false;
         })
         .finally(() => {
           loading.value = false;
@@ -549,6 +566,7 @@
           item.response.verify = false;
           item.response.deBoardEnable = true;
           item.response.startEnable = false;
+          item.response.mkEnable = false;
         });
     } catch (error) {
       // eslint-disable-next-line no-console

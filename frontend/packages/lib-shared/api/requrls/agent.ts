@@ -15,3 +15,7 @@ export const agentDetailUrl = '/agent/detail'; // 获取智能体详情
 export const agentDeleteUrl = '/agent/delete'; // 删除智能体
 export const agentCollectUrl = '/agent/collect'; // 收藏智能体
 export const agentOptionUrl = '/agent/option'; // 智能体选项
+
+export const agentApplicationUrl = '/agent/application'; // 智能体应用
+export const agentWorkspaceUrl = '/agent/workspace'; // 智能体工作空间
+export const agentScriptUrl = '/agent/script'; // 工作空间应用对应脚本

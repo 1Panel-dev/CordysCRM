@@ -29,6 +29,9 @@ export interface AddAgentParams {
   agentModuleId: string;
   scopeIds: string[];
   script: string;
+  type: string; // 添加方式
+  workspaceId: string; // 工作空间
+  applicationId: string; // 对应工作空间应用id
   description: string;
 }
 
@@ -54,4 +57,11 @@ export interface AgentDetail {
   members: AgentMember[];
   script: string;
   description: string;
+}
+
+export type ApplicationScriptParams = Pick<AddAgentParams, 'applicationId' | 'workspaceId'>;
+
+export interface AgentApplicationScript {
+  parameters: { parameter: string; value: string }[];
+  src: string;
 }
