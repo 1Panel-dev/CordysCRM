@@ -706,8 +706,8 @@
       };
     }
     return {
-      averageAmount: statisticInfo.value.averageAmount,
-      amount: statisticInfo.value.amount,
+      averageAmount: statisticInfo.value?.averageAmount ?? 0,
+      amount: statisticInfo.value?.amount ?? 0,
     };
   });
 
