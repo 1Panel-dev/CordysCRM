@@ -14,4 +14,7 @@ public class LarkTokenParamDTO  extends LarkBaseParamDTO {
     public String client_id;
     @Schema(description = "clientSecret")
     public String client_secret;
+    @Schema(description = "redirect_uri")
+    public String redirect_uri;
+
 }
