@@ -143,7 +143,8 @@ public class OpportunityService {
 
     public OpportunitySearchStatisticResponse searchStatistic(OpportunitySearchStatisticRequest request, String userId, String orgId,
                                                               DeptDataPermissionDTO deptDataPermission) {
-        return extOpportunityMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+        OpportunitySearchStatisticResponse response = extOpportunityMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+        return Optional.ofNullable(response).orElse(new OpportunitySearchStatisticResponse());
     }
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<OpportunityListResponse> list, List<OpportunityListResponse> buildList) {
