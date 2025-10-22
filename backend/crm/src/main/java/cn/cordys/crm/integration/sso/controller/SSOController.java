@@ -47,7 +47,12 @@ public class SSOController {
 
     @GetMapping("/oauth/lark")
     public SessionUser callbackLarkOauth(@RequestParam("code") String code) {
-        return ssoService.exchangeLarkOauth2(code);
+        return ssoService.exchangeLarkOauth2(code, false);
+    }
+
+    @GetMapping("/oauth/lark-mobile")
+    public SessionUser callbackLarkOauthByMobile(@RequestParam("code") String code) {
+        return ssoService.exchangeLarkOauth2(code, true);
     }
 
     @GetMapping("/oauth/github")

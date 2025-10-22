@@ -58,11 +58,11 @@ const platformConfig = {
     detect: isLarkBrowser,
     platformConfigType: CompanyTypeEnum.LARK,
     authLoginType: CompanyTypeEnum.LARK_OAUTH2,
-    type: 'lark',
+    type: 'lark-mobile',
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
     authUrl: (config: ConfigSynchronization) => {
-      const redirectUrl = `${window.location.origin}`;
+      const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
         config.agentId
       }&redirect_uri=${encodeURIComponent(redirectUrl)}&state=LARK`;
