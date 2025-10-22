@@ -46,7 +46,7 @@ public class ClueUserViewControllerTest extends BaseTest {
         request.setConditions(buildConditions());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         UserView resultData = getResultData(mvcResult, UserView.class);
-        this.viewId = resultData.getId();
+        viewId = resultData.getId();
 
     }
 
@@ -79,7 +79,7 @@ public class ClueUserViewControllerTest extends BaseTest {
     @Order(2)
     void testUpdate() throws Exception {
         UserViewUpdateRequest request = new UserViewUpdateRequest();
-        request.setId(this.viewId);
+        request.setId(viewId);
         request.setName("更新試圖22");
         request.setConditions(buildConditions());
         this.requestPost(DEFAULT_UPDATE, request);
@@ -91,7 +91,7 @@ public class ClueUserViewControllerTest extends BaseTest {
     @Test
     @Order(3)
     void testGetDetail() throws Exception {
-        this.requestGet(DETAIL, this.viewId);
+        this.requestGet(DETAIL, viewId);
     }
 
     @Test
@@ -103,15 +103,15 @@ public class ClueUserViewControllerTest extends BaseTest {
     @Test
     @Order(5)
     void testFixed() throws Exception {
-        this.requestGet(FIXED, this.viewId);
+        this.requestGet(FIXED, viewId);
     }
 
     @Test
     @Order(5)
     void testSortPos() throws Exception {
-        String moveId = this.viewId;
+        String moveId = viewId;
         testAdd();
-        String targetId = this.viewId;
+        String targetId = viewId;
         PosRequest request = new PosRequest();
         request.setOrgId(DEFAULT_ORGANIZATION_ID);
         request.setMoveId(moveId);
@@ -123,12 +123,12 @@ public class ClueUserViewControllerTest extends BaseTest {
     @Test
     @Order(6)
     void testEnable() throws Exception {
-        this.requestGet(ENABLE, this.viewId);
+        this.requestGet(ENABLE, viewId);
     }
 
     @Test
     @Order(10)
     void testDelete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, this.viewId);
+        this.requestGetWithOk(DEFAULT_DELETE, viewId);
     }
 }

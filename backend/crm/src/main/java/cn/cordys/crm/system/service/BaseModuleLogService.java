@@ -200,7 +200,7 @@ public abstract class BaseModuleLogService {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
     }
 
-    private JsonDifferenceDTO setResourceValueName(JsonDifferenceDTO differ, String tableName) {
+    private void setResourceValueName(JsonDifferenceDTO differ, String tableName) {
         if (differ.getOldValue() != null) {
             List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getOldValue().toString(), String.class));
             differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
@@ -209,7 +209,6 @@ public abstract class BaseModuleLogService {
             List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getNewValue().toString(), String.class));
             differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
         }
-        return differ;
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {

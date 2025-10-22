@@ -150,15 +150,7 @@ public class PersonalCenterService {
      * @throws GenericException 验证码错误或密码重置失败时抛出
      */
     public void resetUserPassword(PersonalPasswordRequest personalPasswordRequest, String operatorId) {
-        /*String email = personalPasswordRequest.getEmail();
-        String code = personalPasswordRequest.getCode();*/
         String password = personalPasswordRequest.getPassword();
-
-        // 验证邮箱验证码
-      /*  if (!verifyCode(email, code)) {
-            throw new GenericException(Translator.get("email_setting_verify_error"));
-        }*/
-
         //检查原密码
         if (checkPwd(personalPasswordRequest.getOriginPassword(), operatorId)) {
             // 更新用户密码

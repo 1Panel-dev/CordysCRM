@@ -145,7 +145,7 @@ class RoleControllerTests extends BaseTest {
         RoleScopeDept example = new RoleScopeDept();
         example.setDepartmentId("deptId");
         example.setRoleId(anotherUserRole.getId());
-        Assertions.assertTrue(roleScopeDeptMapper.select(example).size() > 0);
+        Assertions.assertFalse(roleScopeDeptMapper.select(example).isEmpty());
 
         // 获取该用户组拥有的权限
         Set<String> permissionIds = getPermissionIdSetByRoleId(anotherUserRole.getId());

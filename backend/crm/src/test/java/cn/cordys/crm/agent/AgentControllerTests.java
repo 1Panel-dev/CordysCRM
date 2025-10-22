@@ -56,8 +56,7 @@ public class AgentControllerTests extends BaseTest {
         request.setType("SCRIPT");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
-        Agent agent = agentMapper.selectByPrimaryKey(resultData.getId());
-        addAgent = agent;
+        addAgent = agentMapper.selectByPrimaryKey(resultData.getId());
     }
 
 

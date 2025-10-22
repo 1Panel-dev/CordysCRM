@@ -38,8 +38,8 @@ public class DataEaseClient {
 
     protected String endpoint;
     protected String prefix = "/de2api/";
-    private String accessKey;
-    private String secretKey;
+    private final String accessKey;
+    private final String secretKey;
 
     public DataEaseClient(ThirdConfigurationDTO thirdConfiguration) {
         this.accessKey = thirdConfiguration.getDeAccessKey();
@@ -229,7 +229,7 @@ public class DataEaseClient {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             IvParameterSpec iv1 = new IvParameterSpec(iv.getBytes());
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv1);
-            byte[] encrypted = cipher.doFinal(src.getBytes("UTF-8"));
+            byte[] encrypted = cipher.doFinal(src.getBytes(StandardCharsets.UTF_8));
             return Base64.encodeBase64String(encrypted);
         } catch (Exception e) {
             throw new RuntimeException("AES-GCM decrypt error:", e);

@@ -455,8 +455,7 @@ public class AgentBaseService extends DashboardSortService {
             List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
             departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
         }
-        List<AgentOptionDTO> agentOptions = extAgentMapper.getOptions(userId, orgId, departmentIds);
-        return agentOptions;
+        return extAgentMapper.getOptions(userId, orgId, departmentIds);
     }
 
 

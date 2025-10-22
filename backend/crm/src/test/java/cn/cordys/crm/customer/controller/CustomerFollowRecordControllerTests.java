@@ -51,8 +51,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);
-        FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(resultData.getId());
-        addFollowUpRecord = followUpRecord;
+        addFollowUpRecord = followUpRecordMapper.selectByPrimaryKey(resultData.getId());
     }
 
 

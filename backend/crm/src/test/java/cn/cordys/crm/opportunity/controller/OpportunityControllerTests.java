@@ -100,8 +100,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setExpectedEndTime(System.currentTimeMillis());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
-        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
-        addOpportunity = opportunity;
+        addOpportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
 
         request.setProducts(List.of("11", "22"));
         this.requestPost(DEFAULT_ADD, request);

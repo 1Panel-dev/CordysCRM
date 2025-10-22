@@ -12,7 +12,6 @@ import cn.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import cn.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
@@ -50,7 +49,7 @@ public class NoticeSendService {
     private void setLanguage(Object languageObj) {
         String language = languageObj instanceof String ? (String) languageObj : "";
         Locale locale = Locale.SIMPLIFIED_CHINESE;
-        if (StringUtils.containsIgnoreCase(language, "US")) {
+        if (Strings.CI.contains(language, "US")) {
             locale = Locale.US;
         }
         LocaleContextHolder.setLocale(locale);

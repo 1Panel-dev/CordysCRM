@@ -263,7 +263,7 @@ public class AgentModuleService extends MoveNodeService {
 
         Map<String, Integer> moduleCountMap = agentNode.stream()
                 .collect(Collectors.groupingBy(
-                        node -> node.getParentId(),
+                        BaseTreeNode::getParentId,
                         Collectors.summingInt(node -> 1)
                 ));
 

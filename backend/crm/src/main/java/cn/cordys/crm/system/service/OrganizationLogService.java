@@ -31,9 +31,7 @@ public class OrganizationLogService extends BaseModuleLogService {
                             case "org_admin" -> oldValueNames.add(Translator.get("role.org_admin"));
                             case "sales_manager" -> oldValueNames.add(Translator.get("role.sales_staff"));
                             case "role.sales_manager" -> oldValueNames.add(Translator.get("role.sales_manager"));
-                            default -> {
-                                oldValueNames.add(nameValue.toString());
-                            }
+                            default -> oldValueNames.add(nameValue.toString());
                         }
                     }
                 }
@@ -51,9 +49,7 @@ public class OrganizationLogService extends BaseModuleLogService {
                             case "org_admin" -> newValueNames.add(Translator.get("role.org_admin"));
                             case "sales_manager" -> newValueNames.add(Translator.get("role.sales_staff"));
                             case "role.sales_manager" -> newValueNames.add(Translator.get("role.sales_manager"));
-                            default -> {
-                                newValueNames.add(nameValue.toString());
-                            }
+                            default -> newValueNames.add(nameValue.toString());
                         }
                     }
                 }

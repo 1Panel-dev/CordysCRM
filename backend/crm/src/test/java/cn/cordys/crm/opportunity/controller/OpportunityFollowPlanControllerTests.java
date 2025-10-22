@@ -68,8 +68,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);
-        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(resultData.getId());
-        addFollowUpPlan = followUpPlan;
+        addFollowUpPlan = followUpPlanMapper.selectByPrimaryKey(resultData.getId());
     }
 
 

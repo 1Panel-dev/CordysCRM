@@ -48,8 +48,6 @@ class ProductControllerTests extends BaseTest {
     private static final String BASE_PATH = "/product/";
     private static final List<String> batchIds = new ArrayList<>();
     private static Product addProduct;
-    private static String moduleFieldPriceId = "";
-    private static String moduleFieldStatusId = "";
     private static ModuleFormConfigDTO moduleFormConfig;
 
     @Resource
@@ -119,12 +117,10 @@ class ProductControllerTests extends BaseTest {
                 .stream()
                 .filter(field -> Strings.CS.equals(field.getInternalKey(), "productPrice"))
                 .findFirst().orElse(null);
-        moduleFieldPriceId = moduleFieldPrice.getId();
         ModuleField moduleFieldStatus = select
                 .stream()
                 .filter(field -> Strings.CS.equals(field.getInternalKey(), "productStatus"))
                 .findFirst().orElse(null);
-        moduleFieldStatusId = moduleFieldStatus.getId();
         request = new ProductEditRequest();
         request.setName("productOne");
         request.setPrice(BigDecimal.valueOf(7.23d));

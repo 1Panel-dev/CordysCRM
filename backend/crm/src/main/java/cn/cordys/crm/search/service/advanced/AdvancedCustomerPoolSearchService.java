@@ -216,9 +216,6 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         boolean hasPool = userPoolMap.containsKey(customerPoolResponse.getPoolId());
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
 
-        if (hasPool && hasPermission) {
-            return true;
-        }
-        return false;
+        return hasPool && hasPermission;
     }
 }

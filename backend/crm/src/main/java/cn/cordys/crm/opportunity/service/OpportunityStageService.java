@@ -20,7 +20,6 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,13 +38,12 @@ public class OpportunityStageService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
-    @Resource
-    private SqlSessionFactory sqlSessionFactory;
 
     /**
      * 商机阶段配置列表
      *
      * @param orgId
+     *
      * @return
      */
     public StageConfigListResponse getStageConfigList(String orgId) {
@@ -58,16 +56,12 @@ public class OpportunityStageService {
     private void buildList(List<StageConfigResponse> stageConfigList, StageConfigListResponse response) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
-            response.setEndRollBack(stageConfigList.stream().findFirst().get().getEndRollBack());
-            response.setAfootRollBack(stageConfigList.stream().findFirst().get().getAfootRollBack());
-            stageConfigList.stream().forEach(stageConfig -> {
-                if (extOpportunityMapper.countByStage(stageConfig.getId()) > 0) {
-                    stageConfig.setStageHasData(true);
-                }
-            });
+            var first = stageConfigList.getFirst();
+            response.setEndRollBack(first.getEndRollBack());
+            response.setAfootRollBack(first.getAfootRollBack());
+            stageConfigList.forEach(sc -> sc.setStageHasData(extOpportunityMapper.countByStage(sc.getId()) > 0));
         }
     }
-
 
     /**
      * 添加商机配置

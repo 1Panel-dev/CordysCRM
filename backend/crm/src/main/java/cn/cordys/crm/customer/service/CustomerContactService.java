@@ -145,8 +145,7 @@ public class CustomerContactService {
     }
 
     private ModuleFormConfigDTO getFormConfig(String orgId) {
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
-        return customerFormConfig;
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
     }
 
     public List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {

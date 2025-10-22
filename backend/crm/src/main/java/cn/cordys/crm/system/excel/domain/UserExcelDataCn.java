@@ -55,10 +55,6 @@ public class UserExcelDataCn extends UserExcelData {
     @ExcelProperty("直属上级")
     private String supervisor;
 
-    /*@ColumnWidth(50)
-    @ExcelProperty("工作城市")
-    private String workCity;*/
-
     @ColumnWidth(50)
     @ExcelProperty("员工类型")
     private String employeeType;

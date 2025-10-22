@@ -89,8 +89,7 @@ public class CustomerRelationService {
         List<CustomerRelation> relations = requests.stream()
                 .filter(request -> StringUtils.isNotBlank(request.getCustomerId()) && StringUtils.isNotBlank(request.getRelationType()))
                 .map(item -> {
-                    CustomerRelation customerRelation = getCustomerRelation(item, customerId);
-                    return customerRelation;
+                    return getCustomerRelation(item, customerId);
                 }).toList();
 
         checkTargetCustomer(customerId, relations);
@@ -143,11 +142,11 @@ public class CustomerRelationService {
         if (CollectionUtils.isEmpty(customerIds)) {
             return;
         }
-        LambdaQueryWrapper<CustomerRelation> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<CustomerRelation> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CustomerRelation::getSourceCustomerId, customerIds);
         customerRelationMapper.deleteByLambda(wrapper);
 
-        wrapper = new LambdaQueryWrapper();
+        wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CustomerRelation::getTargetCustomerId, customerIds);
         customerRelationMapper.deleteByLambda(wrapper);
     }

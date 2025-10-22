@@ -318,7 +318,6 @@ public class UserSearchConfigService {
     private List<UserSearchConfig> getConfigList(String userId, String orgId) {
         LambdaQueryWrapper<UserSearchConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserSearchConfig::getUserId, userId).eq(UserSearchConfig::getOrganizationId, orgId);
-        List<UserSearchConfig> searchConfigs = userSearchConfigMapper.selectListByLambda(queryWrapper);
-        return searchConfigs;
+        return userSearchConfigMapper.selectListByLambda(queryWrapper);
     }
 }

@@ -99,7 +99,6 @@ public class RuleConditionDTO {
                     long timestamp = getTimestamp(startOfWeek.atStartOfDay());
                     timestamps.add(timestamp);
                     LocalDate now = LocalDate.now().with(DayOfWeek.SUNDAY);
-                    ;
                     long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
                     timestamps.add(timestampEnd);
                 }
@@ -156,7 +155,6 @@ public class RuleConditionDTO {
                     timestamps.add(timestampEnd);
                 }
             }
-            ;
         }
         return timestamps;
     }

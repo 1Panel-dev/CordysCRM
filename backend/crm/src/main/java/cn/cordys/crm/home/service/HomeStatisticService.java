@@ -56,7 +56,7 @@ public class HomeStatisticService {
     @Resource
     private RoleService roleService;
 
-    private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public HomeClueStatistic getClueStatistic(HomeStatisticBaseSearchRequest request, DeptDataPermissionDTO deptDataPermission, String orgId, String userId) {
         HomeClueStatistic clueStatistic = new HomeClueStatistic();
@@ -172,9 +172,8 @@ public class HomeStatisticService {
     }
 
     private HomeStatisticSearchWrapperRequest copyHomeStatisticSearchWrapperRequest(HomeStatisticSearchWrapperRequest request) {
-        HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(BeanUtils.copyBean(new HomeStatisticSearchRequest(), request.getStaticRequest()),
+        return new HomeStatisticSearchWrapperRequest(BeanUtils.copyBean(new HomeStatisticSearchRequest(), request.getStaticRequest()),
                 request.getDataPermission(), request.getOrgId(), request.getUserId());
-        return totalRequest;
     }
 
     /**
@@ -282,9 +281,8 @@ public class HomeStatisticService {
             }
             return deptDataPermission;
         } else if (Strings.CS.equals(request.getSearchType(), BusinessSearchType.ALL.name())) {
-            DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+            return dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                     OrganizationContext.getOrganizationId(), permission);
-            return deptDataPermission;
         } else {
             DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
             deptDataPermission.setSelf(true);

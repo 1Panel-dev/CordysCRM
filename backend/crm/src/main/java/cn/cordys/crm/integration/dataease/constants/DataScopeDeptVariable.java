@@ -1,4 +1,4 @@
-package cn.cordys.crm.integration.dataease.constanst;
+package cn.cordys.crm.integration.dataease.constants;
 
 /**
  * @Author: jianxing

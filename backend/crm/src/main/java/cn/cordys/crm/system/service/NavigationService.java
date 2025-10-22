@@ -37,8 +37,7 @@ public class NavigationService {
      * @return
      */
     public List<Navigation> getNavigationList(String orgId) {
-        List<Navigation> navigations = extNavigationMapper.selectList(orgId);
-        return navigations;
+        return extNavigationMapper.selectList(orgId);
     }
 
 

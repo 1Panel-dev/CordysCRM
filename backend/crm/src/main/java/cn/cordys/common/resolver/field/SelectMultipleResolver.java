@@ -24,11 +24,6 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
 
         // 校验值类型
         validateArray(selectField.getName(), value);
-
-        // 校验选项正确
-        // for (String item : (List<String>) value) {
-        //     validateOptions(selectField.getName(), item, selectField.getOptions());
-        // }
     }
 
     @Override

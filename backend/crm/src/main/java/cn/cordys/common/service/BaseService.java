@@ -369,13 +369,5 @@ public class BaseService {
     public String getAndCheckOptionName(String option) {
         return option == null ? Translator.get("common.option.not_exist") : option;
     }
-
-    public Map<String, String> getCustomerPoolId(List<String> customerIds) {
-        if (CollectionUtils.isEmpty(customerIds)) {
-            return Collections.emptyMap();
-        }
-        return extCustomerMapper.getCustomerPoolId(customerIds)
-                .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-    }
+    
 }

@@ -9,6 +9,7 @@ import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -24,9 +25,9 @@ public class CommonNoticeSendService {
 
     private static void setLanguage(String language) {
         Locale locale = Locale.SIMPLIFIED_CHINESE;
-        if (StringUtils.containsIgnoreCase(language, "US")) {
+        if (Strings.CI.contains(language, "US")) {
             locale = Locale.US;
-        } else if (StringUtils.containsIgnoreCase(language, "TW")) {
+        } else if (Strings.CI.contains(language, "TW")) {
             locale = Locale.TAIWAN;
         }
         LocaleContextHolder.setLocale(locale);

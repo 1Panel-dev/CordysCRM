@@ -56,10 +56,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
-    public static boolean isNullOrEmpty(Object obj) {
-        return obj == null || (obj instanceof String && ((String) obj).isEmpty());
-    }
-
     protected abstract String getFormKey();
 
     protected abstract BaseMapper<T> getResourceFieldMapper();
@@ -104,6 +100,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源和模块字段的 map
      *
      * @param resourceId
+     *
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
@@ -319,10 +316,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (value instanceof String str && StringUtils.isBlank(str)) {
             return true;
         }
-        if (value instanceof List list && list.isEmpty()) {
-            return true;
-        }
-        return false;
+        return value instanceof List list && list.isEmpty();
     }
 
     public BaseField getAndCheckField(String fieldId, String organizationId) {
@@ -456,13 +450,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 Class<?> valueClass = value.getClass();
                 if (value instanceof List<?>) {
                     valueClass = List.class;
-                } else if (value instanceof Map<?,?>) {
+                } else if (value instanceof Map<?, ?>) {
                     valueClass = Map.class;
                 } else if (value instanceof Integer) {
                     Class<?> type = clazz.getDeclaredField(fieldName).getType();
                     if (type.equals(BigDecimal.class)) {
                         value = BigDecimal.valueOf((Integer) value);
-                    } else  if (type.equals(Long.class)) {
+                    } else if (type.equals(Long.class)) {
                         value = Long.valueOf((Integer) value);
                     }
                     valueClass = value.getClass();
@@ -498,16 +492,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 查询指定资源的模块字段值
      *
      * @param resourceIds
-     * @return
-     */
-    public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds) {
-        return getResourceFieldMap(resourceIds, false);
-    }
-
-    /**
-     * 查询指定资源的模块字段值
      *
-     * @param resourceIds
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
@@ -590,46 +575,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return getResourceFieldBlobMapper().selectListByLambda(wrapper);
     }
 
-    public <T extends BaseModuleFieldValue> List<T> getCustomerFields(String formKey,
-                                                                      List<BaseModuleFieldValue> moduleFieldValues,
-                                                                      Class<T> clazz) {
-        if (CollectionUtils.isEmpty(moduleFieldValues)) {
-            return List.of();
-        }
-
-        Map<String, BaseField> fieldConfigMap = CommonBeanFactory.getBean(ModuleFormService.class)
-                .getAllFields(formKey, OrganizationContext.getOrganizationId())
-                .stream()
-                .collect(Collectors.toMap(BaseField::getId, Function.identity()));
-
-        List<T> customerFields = new ArrayList<>();
-        moduleFieldValues.stream()
-                .filter(BaseModuleFieldValue::valid)
-                .forEach(fieldValue -> {
-                    BaseField fieldConfig = fieldConfigMap.get(fieldValue.getFieldId());
-                    if (fieldConfig == null) {
-                        return;
-                    }
-
-                    // 获取字段解析器
-                    AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-                    // 校验参数值
-                    customFieldResolver.validate(fieldConfig, fieldValue.getFieldValue());
-                    // 将参数值转换成字符串入库
-                    String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
-
-                    try {
-                        T moduleField = clazz.getConstructor().newInstance();
-                        moduleField.setFieldId(fieldValue.getFieldId());
-                        moduleField.setFieldValue(strValue);
-                        customerFields.add(moduleField);
-                    } catch (Exception e) {
-                        LogUtils.error(e);
-                    }
-                });
-        return customerFields;
-    }
-
     /**
      * 删除指定资源的模块字段值
      *
@@ -651,11 +596,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param resourceIds
      */
     public void deleteByResourceIds(List<String> resourceIds) {
-        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(BaseResourceField::getResourceId, resourceIds);
         getResourceFieldMapper().deleteByLambda(wrapper);
 
-        LambdaQueryWrapper<V> blobWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<V> blobWrapper = new LambdaQueryWrapper<>();
         wrapper.in(BaseResourceField::getResourceId, resourceIds);
         getResourceFieldBlobMapper().deleteByLambda(blobWrapper);
     }

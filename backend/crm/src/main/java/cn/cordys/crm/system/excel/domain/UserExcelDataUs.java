@@ -55,10 +55,6 @@ public class UserExcelDataUs extends UserExcelData {
     @ExcelProperty("Supervisor")
     private String supervisor;
 
-    /*@ColumnWidth(50)
-    @ExcelProperty("Work city")
-    private String workCity;*/
-
     @ColumnWidth(50)
     @ExcelProperty("Employee type")
     private String employeeType;

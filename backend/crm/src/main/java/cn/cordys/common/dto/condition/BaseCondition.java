@@ -1,10 +1,10 @@
 package cn.cordys.common.dto.condition;
 
+import cn.cordys.common.utils.ConditionFilterUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.Data;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.List;
 
@@ -38,15 +38,15 @@ public class BaseCondition {
      * @return 转义后的关键字
      */
     public static String transferKeyword(String keyword) {
-        if (StringUtils.contains(keyword, "\\") && !StringUtils.contains(keyword, "\\\\")) {
-            keyword = StringUtils.replace(keyword, "\\", "\\\\");
+        if (Strings.CS.contains(keyword, "\\") && !Strings.CS.contains(keyword, "\\\\")) {
+            keyword = Strings.CS.replace(keyword, "\\", "\\\\");
         }
         // 判断是否已经转义过，未转义才进行转义。
-        if (StringUtils.contains(keyword, "%") && !StringUtils.contains(keyword, "\\%")) {
-            keyword = StringUtils.replace(keyword, "%", "\\%");
+        if (Strings.CS.contains(keyword, "%") && !Strings.CS.contains(keyword, "\\%")) {
+            keyword = Strings.CS.replace(keyword, "%", "\\%");
         }
-        if (StringUtils.contains(keyword, "_") && !StringUtils.contains(keyword, "\\_")) {
-            keyword = StringUtils.replace(keyword, "_", "\\_");
+        if (Strings.CS.contains(keyword, "_") && !Strings.CS.contains(keyword, "\\_")) {
+            keyword = Strings.CS.replace(keyword, "_", "\\_");
         }
         return keyword;
     }
@@ -56,12 +56,7 @@ public class BaseCondition {
     }
 
     public List<FilterCondition> getFilters() {
-        if (CollectionUtils.isEmpty(filters)) {
-            return List.of();
-        }
-        return filters.stream()
-                .filter(FilterCondition::valid)
-                .toList();
+        return ConditionFilterUtils.getValidConditions(filters);
     }
 
     /**
