@@ -398,10 +398,14 @@ public class SSOService {
         ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
         validateQrCodeEnabled(larkConfig);
 
-        return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString());
+        return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString(), false);
     }
 
-    private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String string) {
+    private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String loginType, Boolean isMobile) {
+        if (isMobile) {
+            // 移动端需要变更域名
+            larkConfig.setRedirectUrl(larkConfig.getRedirectUrl()+"/mobile");
+        }
         // 获取用户assess_token
         String assessToken = tokenService.getLarkUserAccessToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);
         if (StringUtils.isBlank(assessToken)) {
@@ -421,19 +425,19 @@ public class SSOService {
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
                 DepartmentConstants.LARK.name(),
-                string
+                loginType
         );
 
-        SecurityUtils.getSubject().getSession().setAttribute("authenticate", string);
+        SecurityUtils.getSubject().getSession().setAttribute("authenticate", loginType);
         return userLoginService.login(loginRequest);
     }
 
-    public SessionUser exchangeLarkOauth2(String code) {
+    public SessionUser exchangeLarkOauth2(String code, Boolean isMobile) {
         validateCode(code);
 
         ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
         validateQrCodeEnabled(larkConfig);
 
-        return getLarkSessionUser(code, larkConfig, UserSource.LARK_OAUTH2.toString());
+        return getLarkSessionUser(code, larkConfig, UserSource.LARK_OAUTH2.toString(), isMobile);
     }
 }
