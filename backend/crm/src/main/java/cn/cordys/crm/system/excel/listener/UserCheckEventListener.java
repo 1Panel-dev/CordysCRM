@@ -218,7 +218,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
                 continue;
             }
             String raw = row.get(headEntry.getKey());
-            String value = StringUtils.defaultString(raw, StringUtils.EMPTY);
+            String value = Objects.toString(raw, StringUtils.EMPTY);
 
             BiConsumer<UserExcelData, String> setter = FIELD_SETTERS.get(field);
             if (setter != null) {

@@ -28,7 +28,6 @@ import cn.cordys.crm.system.mapper.ExtProductMapper;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -67,10 +66,6 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
     private ModuleFormService moduleFormService;
     @Resource
     private ExtProductMapper extProductMapper;
-    @Resource
-    private BaseMapper<CluePool> poolMapper;
-    @Resource
-    private UserExtendService userExtendService;
     @Resource
     private DataScopeService dataScopeService;
 

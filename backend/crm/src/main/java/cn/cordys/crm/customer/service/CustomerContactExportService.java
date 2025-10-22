@@ -47,7 +47,6 @@ public class CustomerContactExportService extends BaseExportService {
     @Resource
     private CustomerContactService customerContactService;
 
-
     /**
      * 导出全部客户联系人数据
      *

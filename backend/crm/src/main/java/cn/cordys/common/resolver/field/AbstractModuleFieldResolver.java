@@ -6,9 +6,6 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
-import cn.cordys.crm.system.dto.field.base.RuleProp;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.List;
@@ -131,13 +128,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     protected String getJsonString(Object value) {
         return value == null ? null : JSON.toJSONString(value);
-    }
-
-    private boolean hasValidatorKey(List<RuleProp> rules, String validatorKey) {
-        if (CollectionUtils.isEmpty(rules)) {
-            return false;
-        }
-        return rules.stream().anyMatch(rule -> Strings.CS.equals(rule.getKey(), validatorKey));
     }
 
     protected List<String> parseFakeJsonArray(String content) {
