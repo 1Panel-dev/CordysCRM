@@ -59,7 +59,7 @@ export const getOptHomeConditions = async (
         value: isSuccess.value
           ? [successStage?.id]
           : stageConfig.value?.stageConfigList?.filter((i) => i.type === 'END').map((i) => i.id),
-        operator: OperatorEnum.IN,
+        operator: isSuccess.value ? OperatorEnum.IN : OperatorEnum.NOT_IN,
         name: 'stage',
         multipleValue: true,
         type: FieldTypeEnum.SELECT_MULTIPLE,
