@@ -21,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/module")
-@Tag(name = "模块设置")
+@Tag(name = "模块配置")
 public class ModuleController {
 
     @Resource

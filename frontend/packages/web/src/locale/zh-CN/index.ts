@@ -23,7 +23,7 @@ export default {
     'menu.collapsedSettings': '系统',
     'menu.settings.org': '组织架构',
     'menu.settings.permission': '角色权限',
-    'menu.settings.moduleSetting': '模块设置',
+    'menu.settings.moduleSetting': '模块配置',
     'menu.opportunity': '商机',
     'menu.collapsedOpportunity': '商机',
     'menu.collapsedProduct': '产品',

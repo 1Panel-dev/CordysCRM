@@ -446,7 +446,7 @@ CREATE TABLE sys_module
     `update_user`     VARCHAR(32) NOT NULL COMMENT '修改人',
     `update_time`     BIGINT      NOT NULL COMMENT '修改时间',
     PRIMARY KEY (id)
-) COMMENT = '模块设置'
+) COMMENT = '模块配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;

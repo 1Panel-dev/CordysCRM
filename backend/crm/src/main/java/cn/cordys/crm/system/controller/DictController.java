@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/dict")
-@Tag(name = "模块设置-字典管理")
+@Tag(name = "模块配置-字典管理")
 public class DictController {
 
     @Resource

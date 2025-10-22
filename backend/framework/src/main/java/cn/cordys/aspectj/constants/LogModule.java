@@ -58,7 +58,7 @@ public class LogModule {
     public static final String PERSONAL_INFORMATION_APIKEY = "PERSONAL_INFORMATION_APIKEY";
 
     /**
-     * 模块设置
+     * 模块配置
      */
     public static final String SYSTEM_MODULE = "SYSTEM_MODULE";
 

@@ -62,7 +62,7 @@ export const PreviewAttachmentUrl = '/attachment/preview'; // 预览附件
 export const DownloadAttachmentUrl = '/attachment/download'; // 下载附件
 export const DeleteAttachmentUrl = '/attachment/delete'; // 删除附件
 
-// 模块设置-字典管理-原因配置
+// 模块配置-字典管理-原因配置
 export const GetReasonUrl = '/dict/get'; // 获取原因
 export const AddReasonUrl = '/dict/add'; // 添加原因
 export const UpdateReasonUrl = '/dict/update'; // 更新原因

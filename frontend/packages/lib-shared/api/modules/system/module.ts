@@ -300,7 +300,7 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DownloadPictureUrl}/${id}` });
   }
 
-  // 模块设置-原因配置
+  // 模块配置-原因配置
   function getReasonList(type: ReasonTypeEnum) {
     return CDR.get<ReasonItem[]>({ url: `${GetReasonUrl}/${type}` });
   }
