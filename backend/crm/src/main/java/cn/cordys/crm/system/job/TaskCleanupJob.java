@@ -2,7 +2,7 @@ package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.job.listener.ExecuteEvent;
-import com.fit2cloud.quartz.anno.QuartzScheduled;
+import cn.cordys.quartz.anno.QuartzScheduled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;

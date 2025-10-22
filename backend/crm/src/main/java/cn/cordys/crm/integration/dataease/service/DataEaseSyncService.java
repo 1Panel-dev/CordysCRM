@@ -21,7 +21,7 @@ import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.security.UserDTO;
-import com.fit2cloud.quartz.anno.QuartzScheduled;
+import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;

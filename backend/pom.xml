@@ -269,7 +269,7 @@
 
         <!-- Scheduling -->
         <dependency>
-            <groupId>com.fit2cloud</groupId>
+            <groupId>cn.cordys</groupId>
             <artifactId>quartz-spring-boot-starter</artifactId>
             <version>${quartz-starter.version}</version>
         </dependency>

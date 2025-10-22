@@ -3,7 +3,7 @@ package cn.cordys.config;
 import cn.cordys.common.handler.ListTypeHandler;
 import cn.cordys.common.interceptor.UserDesensitizationInterceptor;
 import cn.cordys.mybatis.interceptor.MybatisInterceptor;
-import com.fit2cloud.quartz.anno.QuartzDataSource;
+import cn.cordys.quartz.anno.QuartzDataSource;
 import com.github.pagehelper.PageInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
 import org.mybatis.spring.annotation.MapperScan;

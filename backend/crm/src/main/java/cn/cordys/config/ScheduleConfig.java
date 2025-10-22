@@ -1,8 +1,10 @@
 package cn.cordys.config;
 
+import cn.cordys.QuartzFilter;
 import cn.cordys.common.schedule.ScheduleManager;
 import cn.cordys.common.schedule.ScheduleService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -37,5 +39,12 @@ public class ScheduleConfig {
     @ConditionalOnProperty(prefix = "quartz", value = "enabled", havingValue = "true")
     public ScheduleService scheduleService() {
         return new ScheduleService();
+    }
+
+    @Bean
+    public FilterRegistrationBean<QuartzFilter> quartzMvcConfigFilterRegistrationBean() {
+        FilterRegistrationBean<QuartzFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new QuartzFilter());
+        return registrationBean;
     }
 }

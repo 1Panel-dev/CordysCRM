@@ -1,7 +1,7 @@
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.LogUtils;
-import com.fit2cloud.quartz.anno.QuartzScheduled;
+import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;

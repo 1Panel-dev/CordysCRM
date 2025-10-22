@@ -3,7 +3,7 @@ package cn.cordys.crm.system.job;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.service.SystemService;
-import com.fit2cloud.quartz.anno.QuartzScheduled;
+import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.data.redis.core.Cursor;

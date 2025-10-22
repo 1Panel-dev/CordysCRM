@@ -5,7 +5,7 @@ import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.dto.response.AnnouncementDTO;
 import cn.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import cn.cordys.crm.system.service.AnnouncementService;
-import com.fit2cloud.quartz.anno.QuartzScheduled;
+import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
