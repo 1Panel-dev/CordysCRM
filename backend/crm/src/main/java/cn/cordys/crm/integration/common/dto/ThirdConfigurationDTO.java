@@ -45,5 +45,7 @@ public class ThirdConfigurationDTO {
     private String deOrgID;
     @Schema(description = "maxKB地址")
     private String mkAddress;
+    @Schema(description = "mk开启")
+    private Boolean mkEnable;
 
 }
