@@ -1092,6 +1092,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             }
           }
           businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+          if (fieldId === 'owner') {
+            businessFieldAttr.ownerId = item.owner;
+          }
         }
       });
       item.moduleFields?.forEach((field: ModuleField) => {
@@ -1133,6 +1136,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           customFieldAttr[field.fieldId] = field.fieldValue;
         }
       });
+
       return {
         ...item,
         ...customFieldAttr,

@@ -161,16 +161,19 @@
   }
 
   const otherAccountList = ref<SelectMixedOption[]>([]);
-  const accountList = computed<SelectMixedOption[]>(() =>
-    form.value.selectedAccount === 'selected'
-      ? (props.selectedRows.map((e) => ({
-          ownerId: e.owner,
-          ownerName: e.ownerName,
-          value: e.id,
-          label: e.name,
-        })) as SelectMixedOption[])
-      : otherAccountList.value
-  );
+  const accountList = computed<SelectMixedOption[]>(() => {
+    const selectAccountSource = props.selectedRows.map((e) => ({
+      ownerId: e.ownerId,
+      ownerName: e.ownerName,
+      value: e.id,
+      label: e.name,
+    })) as SelectMixedOption[];
+
+    const newSelectedAccount = Array.from(
+      new Map(selectAccountSource.map((item) => [item.value, item])).values()
+    ) as SelectMixedOption[];
+    return form.value.selectedAccount === 'selected' ? newSelectedAccount : otherAccountList.value;
+  });
 
   const otherOwnerList = ref<SelectMixedOption[]>([]);
   const ownerList = computed<SelectMixedOption[]>(() => {
@@ -179,7 +182,7 @@
         ? props.selectedRows
             .filter((e) => e.ownerName)
             .map((e) => ({
-              value: e.owner,
+              value: e.ownerId,
               label: e.ownerName,
             }))
         : otherOwnerList.value;
