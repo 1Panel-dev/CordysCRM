@@ -56,8 +56,8 @@ public class OpportunityStageService {
     }
 
     private void buildList(List<StageConfigResponse> stageConfigList, StageConfigListResponse response) {
+        response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
-            response.setStageConfigList(stageConfigList);
             response.setEndRollBack(stageConfigList.stream().findFirst().get().getEndRollBack());
             response.setAfootRollBack(stageConfigList.stream().findFirst().get().getAfootRollBack());
             stageConfigList.stream().forEach(stageConfig -> {
