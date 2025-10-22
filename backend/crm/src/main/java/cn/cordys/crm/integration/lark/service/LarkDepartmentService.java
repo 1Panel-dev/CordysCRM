@@ -177,7 +177,7 @@ public class LarkDepartmentService {
             List<LarkUser> larkUsers = getDepartmentUsers(tenantAccessToken, departmentId);
             thirdUserMap.put(departmentId, larkUsers.stream()
                     .map(larkUser -> ThirdUser.builder()
-                            .userId(larkUser.getUserId())
+                            .userId(larkUser.getOpenId())
                             .name(larkUser.getName())
                             .email(larkUser.getEmail())
                             .mobile(larkUser.getMobile() != null && larkUser.getMobile().length() > 11 ? larkUser.getMobile().substring(larkUser.getMobile().length() - 11) : larkUser.getMobile())

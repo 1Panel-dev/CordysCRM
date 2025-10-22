@@ -66,7 +66,7 @@ public class DataHandleUtils {
         organizationUserService.deleteUser(orgId, operatorId);
         departmentService.deleteByOrgId(orgId);
 
-        clearMessageConfig(orgId, type, operatorId);
+        clearMessageConfig(orgId, operatorId);
 
         thirdDepartmentTree.forEach(wecomDept -> handleTreeAddData(wecomDept, operatorId));
 
@@ -75,15 +75,11 @@ public class DataHandleUtils {
     }
 
     //删除消息配置的数据
-    private void clearMessageConfig(String orgId, String type, String operatorId) {
+    private void clearMessageConfig(String orgId, String operatorId) {
         MessageTaskBatchRequest request = new MessageTaskBatchRequest();
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            request.setSysEnable(false);
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            request.setEmailEnable(false);
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            request.setLarkEnable(false);
-        }
+        request.setWeComEnable(false);
+        request.setEmailEnable(false);
+        request.setLarkEnable(false);
         messageTaskService.batchSaveMessageTask(request, orgId, operatorId);
     }
 
