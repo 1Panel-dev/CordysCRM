@@ -29,6 +29,9 @@
             a.scope_id,
             a.script,
             a.description,
+            a.type,
+            a.workspace_id,
+            a.application_id
             am.NAME as agentModuleName
         FROM
             agent a

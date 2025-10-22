@@ -3,6 +3,7 @@ package cn.cordys.crm.integration.agent.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
@@ -11,6 +12,7 @@ import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
 import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.integration.agent.dto.response.ScriptResponse;
 import cn.cordys.crm.integration.agent.service.AgentBaseService;
 import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
@@ -117,4 +119,33 @@ public class AgentController {
         return agentBaseService.getAgentOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+
+    @GetMapping("/check")
+    @Operation(summary = "配置连接检测")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public Boolean checkConfig() {
+        return agentBaseService.checkConfig(OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/workspace")
+    @Operation(summary = "获取用户工作空间")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public List<OptionDTO> getWorkspace() {
+        return agentBaseService.workspace(OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/application/{workspaceId}")
+    @Operation(summary = "获取智能体应用")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public List<OptionDTO> getApplication(@PathVariable String workspaceId) {
+        return agentBaseService.application(workspaceId, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/script")
+    @Operation(summary = "获取脚本信息")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public ScriptResponse getScript(@Validated @RequestBody ScriptRequest request) {
+        return agentBaseService.script(request, OrganizationContext.getOrganizationId());
+    }
 }

@@ -53,6 +53,7 @@ public class AgentControllerTests extends BaseTest {
         request.setAgentModuleId("wx_123");
         request.setScopeIds(List.of("1", "2", "3"));
         request.setScript("<script src='xxxxx'></script>");
+        request.setType("SCRIPT");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
         Agent agent = agentMapper.selectByPrimaryKey(resultData.getId());

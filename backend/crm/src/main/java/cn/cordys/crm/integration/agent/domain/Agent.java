@@ -30,4 +30,14 @@ public class Agent extends BaseModel {
 
     @Schema(description = "描述")
     private String description;
+
+    @Schema(description = "添加方式")
+    private String type;
+
+    @Schema(description = "工作空间id")
+    private String workspaceId;
+
+    @Schema(description = "智能体应用id")
+    private String applicationId;
+
 }

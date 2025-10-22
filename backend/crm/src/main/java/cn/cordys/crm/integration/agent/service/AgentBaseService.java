@@ -5,6 +5,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.BaseTreeNode;
@@ -19,6 +20,7 @@ import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.dashboard.dto.MoveNodeSortDTO;
 import cn.cordys.crm.dashboard.service.DashboardSortService;
+import cn.cordys.crm.integration.agent.constant.MaxKBApiPaths;
 import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.domain.AgentCollection;
 import cn.cordys.crm.integration.agent.dto.AgentLogDTO;
@@ -26,10 +28,20 @@ import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
 import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
+import cn.cordys.crm.integration.agent.dto.response.ScriptResponse;
 import cn.cordys.crm.integration.agent.mapper.ExtAgentCollectionMapper;
 import cn.cordys.crm.integration.agent.mapper.ExtAgentMapper;
+import cn.cordys.crm.integration.agent.response.*;
+import cn.cordys.crm.integration.common.client.QrCodeClient;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.system.constants.OrganizationConfigConstants;
+import cn.cordys.crm.system.domain.OrganizationConfig;
+import cn.cordys.crm.system.domain.OrganizationConfigDetail;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
 import cn.cordys.crm.system.dto.request.NodeMoveRequest;
+import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
+import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.DepartmentService;
@@ -39,12 +51,15 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +90,12 @@ public class AgentBaseService extends DashboardSortService {
     private BaseMapper<AgentCollection> agentCollectionMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private ExtOrganizationConfigMapper extOrganizationConfigMapper;
+    @Resource
+    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
+    @Resource
+    private QrCodeClient qrCodeClient;
 
     /**
      * 添加智能体
@@ -82,7 +103,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param orgId
      * @param userId
-     *
      * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
@@ -103,6 +123,9 @@ public class AgentBaseService extends DashboardSortService {
         agent.setCreateUser(userId);
         agent.setUpdateTime(System.currentTimeMillis());
         agent.setUpdateUser(userId);
+        agent.setType(request.getType());
+        agent.setWorkspaceId(request.getWorkspaceId());
+        agent.setApplicationId(request.getApplicationId());
         agentMapper.insert(agent);
 
         //日志
@@ -141,7 +164,6 @@ public class AgentBaseService extends DashboardSortService {
      * 智能体详情
      *
      * @param id
-     *
      * @return
      */
     public AgentDetailResponse getDetail(String id) {
@@ -258,7 +280,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public Pager<List<AgentPageResponse>> getList(AgentPageRequest request, String userId, String orgId) {
@@ -356,7 +377,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public List<AgentPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
@@ -426,7 +446,6 @@ public class AgentBaseService extends DashboardSortService {
      *
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public List<AgentOptionDTO> getAgentOptions(String userId, String orgId) {
@@ -438,5 +457,162 @@ public class AgentBaseService extends DashboardSortService {
         }
         List<AgentOptionDTO> agentOptions = extAgentMapper.getOptions(userId, orgId, departmentIds);
         return agentOptions;
+    }
+
+
+    /**
+     * 检测配置连接
+     *
+     * @param orgId
+     * @return
+     */
+    public Boolean checkConfig(String orgId) {
+        ThirdConfigurationDTO configurationDTO = getConfig(orgId);
+        if (configurationDTO == null) {
+            return false;
+        }
+        return BooleanUtils.isTrue(configurationDTO.getVerify());
+    }
+
+    /**
+     * 获取配置
+     *
+     * @param orgId
+     * @return
+     */
+    private ThirdConfigurationDTO getConfig(String orgId) {
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
+                orgId, OrganizationConfigConstants.ConfigType.THIRD.name()
+        );
+        List<OrganizationConfigDetail> details = extOrganizationConfigDetailMapper
+                .getOrgConfigDetailByType(organizationConfig.getId(), null, List.of(DepartmentConstants.MAXKB.name()));
+
+        if (CollectionUtils.isEmpty(details)) {
+            return null;
+        }
+        ThirdConfigurationDTO configurationDTO = JSON.parseObject(
+                new String(details.getFirst().getContent()), ThirdConfigurationDTO.class
+        );
+
+        return configurationDTO;
+    }
+
+    /**
+     * 获取工作空间
+     *
+     * @param orgId
+     * @return
+     */
+    public List<OptionDTO> workspace(String orgId) {
+        ThirdConfigurationDTO config = getConfig(orgId);
+        if (config == null) {
+            return Collections.emptyList();
+        }
+        List<OptionDTO> workspaceList = getWorkspace(config);
+        return workspaceList;
+    }
+
+    private List<OptionDTO> getWorkspace(ThirdConfigurationDTO config) {
+        String body = qrCodeClient.exchange(
+                config.getMkAddress().concat(MaxKBApiPaths.WORKSPACE),
+                "Bearer " + config.getAppSecret(),
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        MaxKBDataResponse entity = JSON.parseObject(body, MaxKBDataResponse.class);
+        if (entity.getCode() != 200) {
+            throw new GenericException("获取工作空间失败，错误信息：" + entity.getMessage());
+        }
+        return entity.getData();
+    }
+
+
+    /**
+     * 获取智能体应用列表
+     *
+     * @param workspaceId
+     * @param orgId
+     * @return
+     */
+    public List<OptionDTO> application(String workspaceId, String orgId) {
+        ThirdConfigurationDTO config = getConfig(orgId);
+        if (config == null) {
+            return Collections.emptyList();
+        }
+        List<OptionDTO> workspaceList = getApplication(workspaceId, config);
+        return workspaceList;
+    }
+
+    private List<OptionDTO> getApplication(String workspaceId, ThirdConfigurationDTO config) {
+        String body = qrCodeClient.exchange(
+                HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION), workspaceId),
+                "Bearer " + config.getAppSecret(),
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        MaxKBDataResponse entity = JSON.parseObject(body, MaxKBDataResponse.class);
+        if (entity.getCode() != 200) {
+            throw new GenericException("获取智能体应用失败，错误信息：" + entity.getMessage());
+        }
+        return entity.getData();
+    }
+
+
+    /**
+     * 获取脚本信息
+     *
+     * @param request
+     * @param orgId
+     * @return
+     */
+    public ScriptResponse script(ScriptRequest request, String orgId) {
+        ThirdConfigurationDTO config = getConfig(orgId);
+        if (config == null) {
+            return new ScriptResponse();
+        }
+        ScriptResponse response = getScript(request, config);
+        return response;
+    }
+
+    private ScriptResponse getScript(ScriptRequest request, ThirdConfigurationDTO config) {
+        ScriptResponse response = new ScriptResponse();
+        String accessToken = qrCodeClient.exchange(
+                HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.ACCESS_TOKEN), request.getWorkspaceId(), request.getApplicationId()),
+                "Bearer " + config.getAppSecret(),
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        MaxKBTokenResponse maxKBResponse = JSON.parseObject(accessToken, MaxKBTokenResponse.class);
+        if (maxKBResponse.getCode() != 200) {
+            throw new GenericException("获取accessToken失败，错误信息：" + maxKBResponse.getMessage());
+        }
+        response.setSrc(config.getMkAddress().concat("/chat/").concat(maxKBResponse.getData().getAccessToken()));
+
+        String application = qrCodeClient.exchange(
+                HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION_DETAIL), request.getWorkspaceId(), request.getApplicationId()),
+                "Bearer " + config.getAppSecret(),
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        MaxKBApplicationResponse applicationResponse = JSON.parseObject(application, MaxKBApplicationResponse.class);
+        if (applicationResponse.getCode() != 200) {
+            throw new GenericException("获取应用信息失败，错误信息：" + applicationResponse.getMessage());
+        }
+        List<Nodes> nodes = applicationResponse.getData().getWorkflow().getNodes();
+
+        Nodes baseNode = nodes.stream().filter(node -> Strings.CI.equals(node.getId(), "base-node")).toList().getFirst();
+        List<ApiInputFieldList> apiInputFieldList = baseNode.getProperties().getApiInputFieldList();
+        apiInputFieldList.forEach(field -> {
+            switch (field.getVariable()) {
+                case "ak" -> response.setAk(field.getDefaultValue());
+                case "sk" -> response.setSk(field.getDefaultValue());
+                case "username" -> response.setUsername(field.getDefaultValue());
+            }
+        });
+        return response;
     }
 }
