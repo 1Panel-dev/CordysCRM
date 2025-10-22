@@ -289,7 +289,7 @@ public class TokenService {
     }
 
 
-    public String getLarkUserToken(String agentId, String appSecret, String redirectUrl, String code) {
+    public String getLarkUserAccessToken(String agentId, String appSecret, String redirectUrl, String code) {
         LarkTokenParamDTO larkTokenParamDTO = new LarkTokenParamDTO();
         larkTokenParamDTO.setClient_id(agentId);
         larkTokenParamDTO.setClient_secret(appSecret);
@@ -312,7 +312,7 @@ public class TokenService {
             LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
         }
 
-        return larkToken.getTenantAccessToken();
+        return larkToken.getAccessToken();
     }
 
 

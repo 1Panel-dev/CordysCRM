@@ -403,14 +403,14 @@ public class SSOService {
 
     private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String string) {
         // 获取用户assess_token
-        String assessToken = tokenService.getLarkUserToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);
+        String assessToken = tokenService.getLarkUserAccessToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);
         if (StringUtils.isBlank(assessToken)) {
             throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
         }
 
         // 读取用户信息
         Map<String, Object> larkUser = oauthUserService.getLarkUser(assessToken);
-        String userId = (String) larkUser.get("userId");
+        String userId = (String) larkUser.get("open_id");
 
         // 查找并验证用户
         UserDTO enableUser = getUserAndValidateEnable(userId);
