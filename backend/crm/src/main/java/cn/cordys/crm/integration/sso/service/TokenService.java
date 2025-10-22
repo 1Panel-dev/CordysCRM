@@ -289,16 +289,13 @@ public class TokenService {
     }
 
 
-    public String getLarkUserToken(String agentId, String appSecret, String code) {
+    public String getLarkUserToken(String agentId, String appSecret, String redirectUrl, String code) {
         LarkTokenParamDTO larkTokenParamDTO = new LarkTokenParamDTO();
         larkTokenParamDTO.setClient_id(agentId);
         larkTokenParamDTO.setClient_secret(appSecret);
         larkTokenParamDTO.setCode(code);
         larkTokenParamDTO.setGrant_type("authorization_code");
-        String requestDomain = HttpRequestUtil.getRequestDomain();
-        if (StringUtils.isNotBlank(requestDomain)) {
-            larkTokenParamDTO.setRedirect_uri(requestDomain);
-        }
+        larkTokenParamDTO.setRedirect_uri(redirectUrl);
         LarkToken larkToken = new LarkToken();
 
         try {

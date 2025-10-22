@@ -403,7 +403,7 @@ public class SSOService {
 
     private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String string) {
         // 获取用户assess_token
-        String assessToken = tokenService.getLarkUserToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), code);
+        String assessToken = tokenService.getLarkUserToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);
         if (StringUtils.isBlank(assessToken)) {
             throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
         }
