@@ -39,9 +39,9 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
             sendLark(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
-            LogUtils.debug("发送钉钉消息结束");
+            LogUtils.debug("发送飞书消息结束");
         } catch (Exception e) {
-            LogUtils.error("钉钉消息通知失败：" + e);
+            LogUtils.error("飞书消息通知失败：" + e);
         }
     }
 
