@@ -593,7 +593,7 @@ export function isWeComBrowser() {
 
 export function isDingTalkBrowser() {
   const ua = window.navigator.userAgent.toLowerCase();
-  return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode');
+  return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') ||  (getQueryVariable('authCode') !== '' && getQueryVariable('authCode') !== undefined && getQueryVariable('authCode') !== null);
 }
 
 // 飞书
