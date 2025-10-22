@@ -295,7 +295,10 @@ public class TokenService {
         larkTokenParamDTO.setClient_secret(appSecret);
         larkTokenParamDTO.setCode(code);
         larkTokenParamDTO.setGrant_type("authorization_code");
-
+        String requestDomain = HttpRequestUtil.getRequestDomain();
+        if (StringUtils.isNotBlank(requestDomain)) {
+            larkTokenParamDTO.setRedirect_uri(requestDomain);
+        }
         LarkToken larkToken = new LarkToken();
 
         try {
@@ -314,6 +317,7 @@ public class TokenService {
 
         return larkToken.getTenantAccessToken();
     }
+
 
 
     /**
