@@ -108,6 +108,17 @@
         />
       </n-form-item>
 
+      <n-form-item
+        v-if="form.type === CompanyTypeEnum.LARK"
+        path="redirectUrl"
+        :label="t('system.business.authenticationSettings.callbackUrl')"
+      >
+        <n-input
+          v-model:value="form.redirectUrl"
+          :placeholder="t('system.business.authenticationSettings.callbackUrlPlaceholder')"
+        />
+      </n-form-item>
+
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">
@@ -347,7 +358,11 @@
         message: t('system.business.authenticationSettings.innerAppIdPlaceholder'),
       },
     ],
-    redirectUrl: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
+    // 判断redirectUrl 如果form.type是LARK 则提示回调地址不能为空
+    redirectUrl:
+      props.integration?.type === CompanyTypeEnum.LARK
+        ? [{ required: true, message: t('common.notNull', { value: `${t('system.business.authenticationSettings.callbackUrl')} ` }) }]
+        : [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
     deAccount: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.account')} ` }) }],
     deEmbedType: [{ required: true, message: t('system.business.DE.embedTypeTip'), type: 'array' }],
     deAccessKey: [{ required: true, message: t('common.notNull', { value: 'deAccessKey' }) }],

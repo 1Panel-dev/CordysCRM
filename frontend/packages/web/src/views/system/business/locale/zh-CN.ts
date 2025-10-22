@@ -66,6 +66,7 @@ export default {
   'system.business.authenticationSettings.loginUrl': '登录地址',
   'system.business.authenticationSettings.loginUrlTip': '当身份认证失败，会重新定向到该登录页',
   'system.business.authenticationSettings.callbackUrl': '回调地址',
+  'system.business.authenticationSettings.callbackUrlPlaceholder': '请输入回调地址，用于接收认证平台的回调',
   'system.business.authenticationSettings.verifyUrl': '验证地址',
   'system.business.authenticationSettings.verifyUrlTip': '用于验证登录的信息是否正确',
   'system.business.authenticationSettings.authUrl': '授权端地址',

@@ -87,26 +87,4 @@ public class HttpRequestUtil {
         return MessageFormat.format(urlPattern, vars);
     }
 
-    /**
-     * 获取请求的域名部分，包含协议、域名和端口（如果不是默认端口）
-     * @return 域名部分，格式如 "http://example.com" 或 "https://example.com:8080"
-     */
-    public static String getRequestDomain() {
-        HttpServletRequest request = ServletUtils.getRequest();
-        if (request == null) {
-            return null;
-        }
-        String scheme = request.getScheme(); // http 或 https
-        String serverName = request.getServerName(); // 域名或 IP
-        int serverPort = request.getServerPort(); // 端口号
-
-        // 如果是 80 或 443 端口，则可省略
-        if ((scheme.equals("http") && serverPort == 80) ||
-                (scheme.equals("https") && serverPort == 443)) {
-            return scheme + "://" + serverName;
-        } else {
-            return scheme + "://" + serverName + ":" + serverPort;
-        }
-    }
-
 }

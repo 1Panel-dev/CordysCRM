@@ -70,6 +70,7 @@ export default {
   'system.business.authenticationSettings.loginUrlTip':
     'If authentication fails, users will be redirected to this login page.',
   'system.business.authenticationSettings.callbackUrl': 'Callback URL',
+  'system.business.authenticationSettings.callbackUrlPlaceholder': 'Please enter the callback URL to receive authentication platform callbacks',
   'system.business.authenticationSettings.verifyUrl': 'Verification URL',
   'system.business.authenticationSettings.verifyUrlTip': 'Used to verify if login information is correct.',
   'system.business.authenticationSettings.authUrl': 'Authorization URL',

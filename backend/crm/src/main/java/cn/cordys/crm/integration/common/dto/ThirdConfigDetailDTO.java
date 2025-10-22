@@ -13,6 +13,8 @@ public class ThirdConfigDetailDTO {
     private String appSecret;
     @Schema(description = "内部应用ID")
     private String appId;
+    @Schema(description = "回调地址")
+    private String redirectUrl;
     @Schema(description = "是否验证通过")
     private Boolean verify;
 }
