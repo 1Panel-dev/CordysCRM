@@ -7,6 +7,6 @@ public class LarkSendMessageDTO {
 
     private String receive_id;
     private String msg_type;
-    private LarkTextDTO content;
+    private String content;
 
 }

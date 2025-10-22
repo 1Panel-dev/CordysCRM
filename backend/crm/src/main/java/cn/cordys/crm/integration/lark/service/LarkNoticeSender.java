@@ -86,8 +86,8 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             larkSendMessageDTO.setReceive_id(resourceUserId);
             larkSendMessageDTO.setMsg_type("text");
             LarkTextDTO larkTextDTO = new LarkTextDTO();
-            larkTextDTO.setText(subjectText + "\n" + context);
-            larkSendMessageDTO.setContent(larkTextDTO);
+            larkTextDTO.setText(context);
+            larkSendMessageDTO.setContent(JSON.toJSONString(larkTextDTO));
             tokenService.sendLarkNoticeByToken(larkSendMessageDTO, thirdConfigurationDTO.getAgentId(), thirdConfigurationDTO.getAppSecret());
         }
 
