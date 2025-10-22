@@ -102,7 +102,7 @@
     </select>
 
     <select id="sourceList" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
-        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
+        select distinct c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
         c.follower, c.follow_time
         from customer c left join customer_collaboration cc on c.id = cc.customer_id and cc.user_id = #{userId}
 
