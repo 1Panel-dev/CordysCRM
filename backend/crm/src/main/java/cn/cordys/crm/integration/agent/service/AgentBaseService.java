@@ -25,6 +25,7 @@ import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.domain.AgentCollection;
 import cn.cordys.crm.integration.agent.dto.AgentLogDTO;
 import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
+import cn.cordys.crm.integration.agent.dto.ParameterDTO;
 import cn.cordys.crm.integration.agent.dto.request.*;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
@@ -577,6 +578,7 @@ public class AgentBaseService extends DashboardSortService {
 
     private ScriptResponse getScript(ScriptRequest request, ThirdConfigurationDTO config) {
         ScriptResponse response = new ScriptResponse();
+        List<ParameterDTO> parameters = new ArrayList<>();
         String accessToken = qrCodeClient.exchange(
                 HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.ACCESS_TOKEN), request.getWorkspaceId(), request.getApplicationId()),
                 "Bearer " + config.getAppSecret(),
@@ -601,17 +603,23 @@ public class AgentBaseService extends DashboardSortService {
         if (applicationResponse.getCode() != 200) {
             throw new GenericException("获取应用信息失败，错误信息：" + applicationResponse.getMessage());
         }
-        List<Nodes> nodes = applicationResponse.getData().getWorkflow().getNodes();
 
-        Nodes baseNode = nodes.stream().filter(node -> Strings.CI.equals(node.getId(), "base-node")).toList().getFirst();
-        List<ApiInputFieldList> apiInputFieldList = baseNode.getProperties().getApiInputFieldList();
-        apiInputFieldList.forEach(field -> {
-            switch (field.getVariable()) {
-                case "ak" -> response.setAk(field.getDefaultValue());
-                case "sk" -> response.setSk(field.getDefaultValue());
-                case "username" -> response.setUsername(field.getDefaultValue());
+        if (CollectionUtils.isNotEmpty(applicationResponse.getData().getWorkflow().getNodes())) {
+            List<Nodes> nodes = applicationResponse.getData().getWorkflow().getNodes();
+            Nodes baseNode = nodes.stream().filter(node -> Strings.CI.equals(node.getId(), "base-node")).toList().getFirst();
+            if (baseNode != null) {
+                List<ApiInputFieldList> apiInputFieldList = baseNode.getProperties().getApiInputFieldList();
+                if (CollectionUtils.isNotEmpty(apiInputFieldList)) {
+                    apiInputFieldList.forEach(field -> {
+                        ParameterDTO parameterDTO = new ParameterDTO();
+                        parameterDTO.setParameter(field.getVariable());
+                        parameterDTO.setValue(field.getDefaultValue());
+                        parameters.add(parameterDTO);
+                    });
+                }
             }
-        });
+        }
+        response.setParameters(parameters);
         return response;
     }
 }
