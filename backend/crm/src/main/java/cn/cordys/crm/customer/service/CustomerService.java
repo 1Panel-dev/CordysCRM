@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
@@ -767,6 +768,7 @@ public class CustomerService {
      * @param currentUser 当前用户
      * @param currentOrgId 当前组织ID
      */
+    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.MERGE, resourceId = "{#request.toMergeId}")
     public void merge(CustomerMergeRequest request, String currentUser, String currentOrgId) {
         /*
          * 规则:
@@ -775,7 +777,8 @@ public class CustomerService {
          * 4. 删除被合并的客户, 并添加对应的负责人为合并客户的协作人.
          */
         request.getMergeIds().remove(request.getToMergeId());
-        if (CollectionUtils.isEmpty(request.getMergeIds())) {
+        Customer oldCustomer = customerMapper.selectByPrimaryKey(request.getToMergeId());
+        if (CollectionUtils.isEmpty(request.getMergeIds()) || oldCustomer == null) {
             // 没有可合并的客户数据
             throw new GenericException(Translator.get("no.customer.merge.data"));
         }
@@ -793,6 +796,29 @@ public class CustomerService {
             customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
         }
         customerMapper.deleteByIds(request.getMergeIds());
+        for (Customer mergeCustomer : mergeCustomers) {
+            // 记录日志
+            LogDTO logDTO = new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE, LogModule.CUSTOMER_INDEX, mergeCustomer.getName());
+            logService.add(logDTO);
+        }
+
+        if (!Strings.CS.equals(oldCustomer.getOwner(), request.getOwnerId())) {
+            LogDTO logDTO = new LogDTO(currentOrgId, request.getToMergeId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_INDEX, oldCustomer.getName());
+            logDTO.setOriginalValue(oldCustomer);
+            // 负责人变更
+            Customer customer = BeanUtils.copyBean(new Customer(), oldCustomer);
+            customer.setOwner(request.getOwnerId());
+            customerMapper.updateById(customer);
+            // 日志
+            logDTO.setModifiedValue(customer);
+            logService.add(logDTO);
+        }
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .resourceId(request.getToMergeId())
+                .resourceName(oldCustomer.getName())
+                .originalValue(JSON.toJSONString(mergeCustomers.stream().map(Customer::getName).toList()))
+                .modifiedValue(oldCustomer.getName())
+                .build());
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

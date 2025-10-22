@@ -67,6 +67,10 @@ public final class LogType {
      * 导出
      */
     public static final String EXPORT = "EXPORT";
+    /**
+     * 合并
+     */
+    public static final String MERGE = "MERGE";
 
     private LogType() {
         // 私有构造函数防止实例化

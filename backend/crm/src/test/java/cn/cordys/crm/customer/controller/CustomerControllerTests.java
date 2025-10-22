@@ -469,8 +469,13 @@ class CustomerControllerTests extends BaseTest {
         mergeRequest.setOwnerId("admin");
         MvcResult mvcResult = this.requestPost(MERGE, mergeRequest).andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("no.customer.merge.data"));
+        CustomerAddRequest addRequest = new CustomerAddRequest();
+        addRequest.setName("zz");
+        addRequest.setOwner("admin");
+        MvcResult addResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, addRequest);
+        Customer resultData = getResultData(addResult, Customer.class);
         mergeRequest.setMergeIds(List.of(anotherCustomer.getId()));
-        mergeRequest.setToMergeId(addCustomer.getId());
+        mergeRequest.setToMergeId(resultData.getId());
         this.requestPostWithOk(MERGE, mergeRequest);
         // check permission
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE, MERGE, mergeRequest);
