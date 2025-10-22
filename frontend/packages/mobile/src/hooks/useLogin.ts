@@ -62,7 +62,7 @@ const platformConfig = {
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
     authUrl: (config: ConfigSynchronization) => {
-      const redirectUrl = `${window.location.origin}/mobile`;
+      const redirectUrl = `${window.location.origin}`;
       return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
         config.agentId
       }&redirect_uri=${encodeURIComponent(redirectUrl)}&state=LARK`;
