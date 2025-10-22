@@ -3,6 +3,7 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
@@ -224,4 +225,12 @@ public class CustomerController {
         customerService.merge(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "客户图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return customerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 }

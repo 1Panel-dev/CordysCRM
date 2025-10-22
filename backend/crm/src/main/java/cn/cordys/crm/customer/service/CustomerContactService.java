@@ -630,11 +630,8 @@ public class CustomerContactService {
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
-        Map<String, BaseField> fieldMap =  formConfig.getFields()
-                .stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
-        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, OrganizationContext.getOrganizationId(), fieldMap);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
-
         return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

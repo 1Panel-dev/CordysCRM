@@ -1,9 +1,7 @@
 package cn.cordys.crm.customer.mapper;
 
-import cn.cordys.common.dto.BasePageRequest;
-import cn.cordys.common.dto.BatchUpdateDbParam;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -89,4 +87,8 @@ public interface ExtCustomerMapper {
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     List<OptionDTO> getCustomerPoolId(@Param("ids") List<String> ids);
+
+    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+
 }

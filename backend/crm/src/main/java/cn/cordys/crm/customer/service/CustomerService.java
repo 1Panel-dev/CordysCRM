@@ -11,6 +11,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -24,6 +25,8 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -73,6 +76,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -162,7 +166,7 @@ public class CustomerService {
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<CustomerListResponse> list, List<CustomerListResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
         // 获取选项值对应的 option
@@ -174,6 +178,10 @@ public class CustomerService {
         optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
 
         return optionMap;
+    }
+
+    private ModuleFormConfigDTO getFormConfig(String orgId) {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
     }
 
     public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -294,7 +302,7 @@ public class CustomerService {
         customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, customerFields);
 
@@ -785,5 +793,12 @@ public class CustomerService {
             customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
         }
         customerMapper.deleteByIds(request.getMergeIds());
+    }
+
+    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ModuleFormConfigDTO formConfig = getFormConfig(orgId);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
+        List<ChartResult> chartResults = extCustomerMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

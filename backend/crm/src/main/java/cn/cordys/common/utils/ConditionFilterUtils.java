@@ -15,6 +15,7 @@ import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.UserViewService;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @Author: jianxing
@@ -42,7 +45,10 @@ import java.util.Map;
 @Component
 public class ConditionFilterUtils {
 
-    public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, String orgId, Map<String, BaseField> fieldMap) {
+    public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, ModuleFormConfigDTO formConfig) {
+        Map<String, BaseField> fieldMap = formConfig.getFields()
+                .stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+
         ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
         chartAnalysisDbRequest.setCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
         if (request.getChartConfig().getSubCategoryAxis() != null) {

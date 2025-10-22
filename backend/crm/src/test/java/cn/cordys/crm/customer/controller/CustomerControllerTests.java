@@ -6,6 +6,9 @@ import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartCategoryAxisConfig;
+import cn.cordys.common.dto.chart.ChartConfig;
+import cn.cordys.common.dto.chart.ChartValueAxisConfig;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -18,7 +21,9 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -56,6 +61,7 @@ class CustomerControllerTests extends BaseTest {
     protected static final String EXPORT_SELECT = "export-select";
     protected static final String MERGE = "merge";
     private static final String BASE_PATH = "/account/";
+    protected static final String CHART = "chart";
     private static final List<String> batchIds = new ArrayList<>();
     private static Customer addCustomer;
     private static Customer anotherCustomer;
@@ -80,10 +86,13 @@ class CustomerControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
+    private static ModuleFormConfigDTO moduleFormConfig;
+
     @Test
     @Order(0)
     void testModuleField() throws Exception {
-        this.requestGetWithOkAndReturn(MODULE_FORM);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
+        moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 
         // 校验权限
         requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ), MODULE_FORM);
@@ -244,6 +253,27 @@ class CustomerControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(4)
+    void testChart() throws Exception {
+        ChartAnalysisRequest request = new ChartAnalysisRequest();
+
+        for (BaseField field : moduleFormConfig.getFields().subList(0, 5)) {
+            ChartConfig chartConfig = new ChartConfig();
+            ChartCategoryAxisConfig chartCategoryAxisConfig = new ChartCategoryAxisConfig();
+            chartCategoryAxisConfig.setFieldId(field.getId());
+            chartConfig.setCategoryAxis(chartCategoryAxisConfig);
+            ChartValueAxisConfig chartValueAxisConfig = new ChartValueAxisConfig();
+            chartValueAxisConfig.setFieldId(field.getId());
+            chartConfig.setValueAxis(chartValueAxisConfig);
+            request.setChartConfig(chartConfig);
+            this.requestPostWithOkAndReturn(CHART, request);
+        }
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, CHART, request);
     }
 
     @Test
