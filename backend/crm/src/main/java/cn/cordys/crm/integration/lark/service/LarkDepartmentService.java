@@ -8,8 +8,10 @@ import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
 import cn.cordys.crm.integration.lark.dto.LarkDepartment;
 import cn.cordys.crm.integration.lark.dto.LarkDepartmentData;
 import cn.cordys.crm.integration.lark.dto.LarkUser;
+import cn.cordys.crm.integration.lark.dto.LarkTenant;
 import cn.cordys.crm.integration.lark.response.LarkDepartmentResponse;
 import cn.cordys.crm.integration.lark.response.LarkUserResponse;
+import cn.cordys.crm.integration.lark.response.LarkTenantResponse;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
@@ -138,8 +140,26 @@ public class LarkDepartmentService {
             thirdDept.setName(larkDept.getName());
             thirdDept.setParentId(larkDept.getParentDepartmentId());
             thirdDept.setOrder(Long.valueOf(larkDept.getOrder()));
-            thirdDept.setIsRoot("0".equals(larkDept.getParentDepartmentId()));
+            thirdDept.setIsRoot("0".equals(larkDept.getOpenDepartmentId()));
             thirdDepartments.add(thirdDept);
+        }
+        LarkTenant tenant = getTenantInfo(tenantAccessToken);
+        if (tenant != null) {
+            ThirdDepartment rootDept = new ThirdDepartment();
+            rootDept.setId("0");
+            rootDept.setName(tenant.getName());
+            rootDept.setParentId("NONE");
+            rootDept.setIsRoot(true);
+            rootDept.setOrder(0L);
+            thirdDepartments.add(rootDept);
+        } else {
+            ThirdDepartment rootDept = new ThirdDepartment();
+            rootDept.setId("0");
+            rootDept.setName("公司名称");
+            rootDept.setParentId("NONE");
+            rootDept.setIsRoot(true);
+            rootDept.setOrder(0L);
+            thirdDepartments.add(rootDept);
         }
         return thirdDepartments;
     }
@@ -171,4 +191,37 @@ public class LarkDepartmentService {
         return thirdUserMap;
     }
 
+    /**
+     * 获取企业信息
+     * @param tenantAccessToken 租户访问令牌
+     * @return 企业信息
+     */
+    public LarkTenant getTenantInfo(String tenantAccessToken) {
+        try {
+            String response = qrCodeClient.exchange(
+                    LarkApiPaths.LARK_TENANT_INFO_URL,
+                    "Bearer " + tenantAccessToken,
+                    "Authorization",
+                    MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_JSON
+            );
+
+            LarkTenantResponse larkTenantResponse = JSON.parseObject(response, LarkTenantResponse.class);
+            if (larkTenantResponse.getCode() == 0) {
+                LarkTenantResponse.LarkTenantData data = larkTenantResponse.getData();
+                if (data != null) {
+                    return data.getTenant();
+                }
+                return null;
+            } else {
+                LogUtils.error("Failed to get tenant info from Lark: {}", larkTenantResponse.getCode() + ":" + larkTenantResponse.getMsg());
+                throw new GenericException("Failed to get tenant info from Lark: " + larkTenantResponse.getMsg());
+            }
+        } catch (Exception e) {
+            LogUtils.error("Error while getting tenant info from Lark", e);
+            // 根据您的要求，捕获错误并可以返回 null 或抛出自定义异常
+            // 这里我们返回 null
+            return null;
+        }
+    }
 }

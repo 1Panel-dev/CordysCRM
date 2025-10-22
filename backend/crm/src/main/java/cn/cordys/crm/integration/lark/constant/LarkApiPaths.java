@@ -32,4 +32,10 @@ public interface LarkApiPaths {
      */
     String LARK_SEND_MESSAGE_URL = "https://open.feishu.cn/open-apis/im/v1/messages";
 
+    /**
+     * 获取企业信息
+     * GET
+     * https://open.feishu.cn/open-apis/tenant/v2/tenant/query
+     */
+    String LARK_TENANT_INFO_URL = "https://open.feishu.cn/open-apis/tenant/v2/tenant/query";
 }
