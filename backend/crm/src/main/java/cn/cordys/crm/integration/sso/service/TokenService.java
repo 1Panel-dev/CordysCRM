@@ -294,7 +294,7 @@ public class TokenService {
         larkTokenParamDTO.setClient_id(agentId);
         larkTokenParamDTO.setClient_secret(appSecret);
         larkTokenParamDTO.setCode(code);
-        larkTokenParamDTO.setGrantType("authorization_code");
+        larkTokenParamDTO.setGrant_type("authorization_code");
 
         LarkToken larkToken = new LarkToken();
 

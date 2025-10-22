@@ -33,7 +33,7 @@
     const ua = navigator.userAgent.toLowerCase();
     const isWXWork = ua.includes('wxwork');
 
-    const isDingTalk = ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || getQueryVariable('authCode');
+    const isDingTalk = ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') || (getQueryVariable('authCode') !== '' && getQueryVariable('authCode') !== undefined && getQueryVariable('authCode') !== null);
 
     const isLark = ua.includes('feishu') || ua.includes('lark') || getQueryVariable('state') === 'LARK';
 

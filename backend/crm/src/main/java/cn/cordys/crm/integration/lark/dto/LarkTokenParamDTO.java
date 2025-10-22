@@ -9,7 +9,7 @@ public class LarkTokenParamDTO  extends LarkBaseParamDTO {
     @Schema(description = "code")
     public String code;
     @Schema(description = "grantType")
-    public String grantType;
+    public String grant_type;
     @Schema(description = "clientId")
     public String client_id;
     @Schema(description = "clientSecret")

@@ -101,7 +101,7 @@
     const isDingTalk =
       navigator.userAgent.includes('dingtalk') ||
       navigator.userAgent.includes('aliapp(dingtalk') ||
-      getQueryVariable('authCode') !== '';
+        (getQueryVariable('authCode') !== '' && getQueryVariable('authCode') !== undefined && getQueryVariable('authCode') !== null);
     const isLark =
       navigator.userAgent.includes('feishu') ||
       navigator.userAgent.includes('lark') ||
@@ -112,7 +112,7 @@
       } else if (isDingTalk) {
         await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, isDingTalk);
       } else if (isLark) {
-        await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, isLark);
+        await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false);
       }
     }
 
