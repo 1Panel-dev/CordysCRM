@@ -410,8 +410,10 @@ public class SSOService {
 
         // 读取用户信息
         Map<String, Object> larkUser = oauthUserService.getLarkUser(assessToken);
-        String userId = (String) larkUser.get("open_id");
 
+        //获取larkUser中data 对象
+        Map<String, Object> data = (Map<String, Object>) larkUser.get("data");
+        String userId = (String) data.get("open_id");
         // 查找并验证用户
         UserDTO enableUser = getUserAndValidateEnable(userId);
 
