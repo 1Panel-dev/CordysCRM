@@ -816,8 +816,8 @@ public class CustomerService {
         OperationLogContext.setContext(LogContextInfo.builder()
                 .resourceId(request.getToMergeId())
                 .resourceName(oldCustomer.getName())
-                .originalValue(JSON.toJSONString(mergeCustomers.stream().map(Customer::getName).toList()))
-                .modifiedValue(oldCustomer.getName())
+                .originalValue(Map.of("merge", mergeCustomers.stream().map(Customer::getName).toList()))
+                .modifiedValue(Map.of("merge", List.of(oldCustomer.getName())))
                 .build());
     }
 
