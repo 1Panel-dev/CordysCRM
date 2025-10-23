@@ -15,7 +15,10 @@
           {{ props.detail?.operatorName }}
         </n-tooltip>
       </div>
-      <div v-if="detail?.type === OperationTypeEnum.UPDATE" class="flex flex-col gap-[8px]">
+      <div
+        v-if="[OperationTypeEnum.UPDATE, OperationTypeEnum.MERGE].includes(props.detail?.type as OperationTypeEnum)"
+        class="flex flex-col gap-[8px]"
+      >
         <div
           v-for="item in props.detail?.diffs"
           :key="item.column"
