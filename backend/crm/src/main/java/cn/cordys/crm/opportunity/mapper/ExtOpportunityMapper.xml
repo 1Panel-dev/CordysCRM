@@ -979,4 +979,13 @@
         </foreach>
         and organization_id = #{orgId}
     </update>
+
+    <select id="getMergeOpportunityList" resultType="cn.cordys.crm.opportunity.domain.Opportunity">
+        select id, name, customer_id from opportunity
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </select>
 </mapper>

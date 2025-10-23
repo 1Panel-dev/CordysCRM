@@ -571,4 +571,13 @@
         </foreach>
         and organization_id = #{orgId}
     </update>
+
+    <select id="getMergeRecordList" resultType="cn.cordys.crm.follow.domain.FollowUpRecord">
+        select * from follow_up_record
+        where customer_id in
+        <foreach collection="mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId};
+    </select>
 </mapper>

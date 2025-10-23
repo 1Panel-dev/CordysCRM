@@ -43,4 +43,5 @@ public interface ExtFollowUpRecordMapper {
      * @param orgId 组织ID
      */
     void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+
 }

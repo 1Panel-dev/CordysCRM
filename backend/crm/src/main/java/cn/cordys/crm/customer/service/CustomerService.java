@@ -35,10 +35,12 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -76,7 +78,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -781,12 +782,14 @@ public class CustomerService {
             // 没有可合并的客户数据
             throw new GenericException(Translator.get("no.customer.merge.data"));
         }
+        // 批量合并产生的修改日志
+        List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId);
         extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId);
         extOpportunityMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
         List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
-        List<String> ownerIds = mergeCustomers.stream().map(Customer::getOwner).toList();
+        List<String> ownerIds = mergeCustomers.stream().map(Customer::getOwner).filter(item -> !Strings.CS.equals(item, request.getOwnerId())).toList();
         for (String ownerId : ownerIds) {
             CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
             collaborationAddRequest.setCustomerId(request.getToMergeId());
@@ -796,9 +799,8 @@ public class CustomerService {
         }
         customerMapper.deleteByIds(request.getMergeIds());
         for (Customer mergeCustomer : mergeCustomers) {
-            // 记录日志
-            LogDTO logDTO = new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE, LogModule.CUSTOMER_INDEX, mergeCustomer.getName());
-            logService.add(logDTO);
+            // 被合并客户的删除日志
+            mergeLogs.add(new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE, LogModule.CUSTOMER_INDEX, mergeCustomer.getName()));
         }
 
         if (!Strings.CS.equals(oldCustomer.getOwner(), request.getOwnerId())) {
@@ -808,16 +810,20 @@ public class CustomerService {
             Customer customer = BeanUtils.copyBean(new Customer(), oldCustomer);
             customer.setOwner(request.getOwnerId());
             customerMapper.updateById(customer);
-            // 日志
+            // 合并客户的修改日志
             logDTO.setModifiedValue(customer);
-            logService.add(logDTO);
+            mergeLogs.add(logDTO);
         }
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .resourceId(request.getToMergeId())
-                .resourceName(oldCustomer.getName())
+
+        // 插入日志
+        OperationLogContext.setContext(LogContextInfo.builder().resourceId(request.getToMergeId()).resourceName(oldCustomer.getName())
                 .originalValue(Map.of("merge", mergeCustomers.stream().map(Customer::getName).toList()))
                 .modifiedValue(Map.of("merge", List.of(oldCustomer.getName())))
                 .build());
+
+        if (!CollectionUtils.isEmpty(mergeLogs)) {
+            logService.batchAdd(mergeLogs);
+        }
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -826,5 +832,38 @@ public class CustomerService {
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+    }
+
+
+    private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser, String currentOrgId) {
+        List<LogDTO> logs = new ArrayList<>();
+
+        // 联系人日志
+        List<CustomerContact> mergeContacts = extCustomerContactMapper.getMergeContactList(mergeRequest, currentOrgId);
+        if (CollectionUtils.isNotEmpty(mergeContacts)) {
+            for (CustomerContact contact : mergeContacts) {
+                LogDTO logDTO = new LogDTO(currentOrgId, contact.getId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_CONTACT, contact.getName());
+                CustomerContact newContact = BeanUtils.copyBean(new CustomerContact(), contact);
+                newContact.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setOriginalValue(contact);
+                logDTO.setModifiedValue(newContact);
+                logs.add(logDTO);
+            }
+        }
+        // 商机日志
+        List<Opportunity> mergeOpportunities = extOpportunityMapper.getMergeOpportunityList(mergeRequest, currentOrgId);
+        if (CollectionUtils.isNotEmpty(mergeOpportunities)) {
+            for (Opportunity opportunity : mergeOpportunities) {
+                LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE, LogModule.OPPORTUNITY, opportunity.getName());
+                Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);
+                newOpportunity.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setOriginalValue(opportunity);
+                logDTO.setModifiedValue(newOpportunity);
+                logs.add(logDTO);
+            }
+        }
+
+        // TODO: 跟进记录/计划日志
+        return logs;
     }
 }

@@ -524,4 +524,13 @@
         </foreach>
         and organization_id = #{orgId}
     </update>
+
+    <select id="getMergeContactList" resultType="cn.cordys.crm.customer.domain.CustomerContact">
+        select id, customer_id, name from customer_contact
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </select>
 </mapper>

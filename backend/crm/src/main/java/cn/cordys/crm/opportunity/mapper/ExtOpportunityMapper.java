@@ -90,6 +90,14 @@ public interface ExtOpportunityMapper {
      */
     void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 
+    /**
+     * 获取待合并的客户商机列表
+     * @param request 请求参数
+     * @param orgId 组织ID
+     * @return 客户商机列表
+     */
+    List<Opportunity> getMergeOpportunityList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
+
     List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
