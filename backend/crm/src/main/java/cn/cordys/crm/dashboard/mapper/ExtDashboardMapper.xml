@@ -19,7 +19,7 @@
         SELECT
             d.id,
             d.NAME,
-            d.resource_id,
+            d.resource_url,
             d.dashboard_module_id,
             d.scope_id,
             d.description,
@@ -45,7 +45,7 @@
             dashboard_module_id as parent_id,
             organization_id,
             'DASHBOARD' as type,
-            resource_id
+            resource_url
         FROM
             dashboard
         WHERE organization_id = #{orgId}
@@ -67,7 +67,7 @@
         select
             d.id,
             d.name,
-            d.resource_id,
+            d.resource_url,
             d.dashboard_module_id,
             d.scope_id,
             d.description,

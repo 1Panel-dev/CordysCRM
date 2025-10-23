@@ -29,12 +29,6 @@ public class ThirdConfigurationDTO {
     private Boolean sqlBotBoardEnable;
     @Schema(description = "sqlBot问数开启")
     private Boolean sqlBotChatEnable;
-    @Schema(description = "DE账号")
-    private String deAccount;
-    @Schema(description = "DE模块嵌入")
-    private Boolean deModuleEmbedding;
-    @Schema(description = "DE外链集成")
-    private Boolean deLinkIntegration;
     @Schema(description = "DE自动同步")
     private Boolean deAutoSync;
     @Schema(description = "DEAccessKey")

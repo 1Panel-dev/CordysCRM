@@ -43,9 +43,12 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,24 +77,30 @@ public class DashboardService extends DashboardSortService {
     @Resource
     private DepartmentService departmentService;
 
+    @Value("${dashboard.whitelist.enabled}")
+    private Boolean whitelistEnable;
+    @Value("#{'${dashboard.whitelist.allowed}'.split(',')}")
+    private List<String> allowedList;
+
     /**
      * 添加仪表板
      *
      * @param request
      * @param orgId
      * @param userId
-     *
      * @return
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
     public Dashboard addDashboard(DashboardAddRequest request, String orgId, String userId) {
+        checkAllowedList(request.getResourceUrl());
+
         checkDashboardName(request.getName(), request.getDashboardModuleId(), orgId, null);
         dashboardModuleService.checkDashboardModule(request.getDashboardModuleId());
         String id = IDGenerator.nextStr();
         Dashboard dashboard = new Dashboard();
         dashboard.setId(id);
         dashboard.setName(request.getName());
-        dashboard.setResourceId(request.getResourceId());
+        dashboard.setResourceUrl(request.getResourceUrl());
         dashboard.setPos(getNextPos(orgId));
         dashboard.setOrganizationId(orgId);
         dashboard.setDashboardModuleId(request.getDashboardModuleId());
@@ -113,6 +122,22 @@ public class DashboardService extends DashboardSortService {
         return dashboard;
     }
 
+    private void checkAllowedList(String resourceUrl) {
+        if (whitelistEnable) {
+            URL url = null;
+            try {
+                url = new URL(resourceUrl);
+            } catch (MalformedURLException e) {
+                throw new GenericException(e);
+            }
+            String host = url.getHost();
+            if (!allowedList.contains(host)) {
+                throw new GenericException(Translator.get("dashboard_url_not_allowed"));
+            }
+        }
+
+    }
+
     private Long getNextPos(String orgId) {
         Long pos = extDashboardMapper.getNextPosByOrgId(orgId);
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
@@ -130,7 +155,6 @@ public class DashboardService extends DashboardSortService {
      * 仪表板详情
      *
      * @param id
-     *
      * @return
      */
     public DashboardDetailResponse getDashboardDetail(String id) {
@@ -245,7 +269,6 @@ public class DashboardService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public Pager<List<DashboardPageResponse>> getList(DashboardPageRequest request, String userId, String orgId) {
@@ -329,7 +352,6 @@ public class DashboardService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public List<DashboardPageResponse> collectList(BasePageRequest request, String userId, String orgId) {

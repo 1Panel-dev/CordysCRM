@@ -17,6 +17,6 @@ public class DashboardTreeNode extends BaseTreeNode {
     @Schema(description = "是否收藏")
     private boolean myCollect = false;
 
-    @Schema(description = "仪表板id")
-    private String resourceId;
+    @Schema(description = "仪表板url")
+    private String resourceUrl;
 }

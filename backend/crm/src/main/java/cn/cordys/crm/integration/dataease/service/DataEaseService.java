@@ -32,12 +32,7 @@ public class DataEaseService {
     public DeAuthDTO getEmbeddedDeToken(String organizationId, String userId, boolean isModule) {
         // 获取组织配置
         ThirdConfigurationDTO thirdConfig = getDeConfig(organizationId);
-        String account = thirdConfig.getDeAccount();
-        if (BooleanUtils.isTrue(isModule)) {
-            account = userId;
-        }
-
-        return getEmbeddedDeToken(account, thirdConfig);
+        return getEmbeddedDeToken(userId, thirdConfig);
     }
 
     public DeAuthDTO getEmbeddedDeToken(String account, ThirdConfigurationDTO thirdConfig) {

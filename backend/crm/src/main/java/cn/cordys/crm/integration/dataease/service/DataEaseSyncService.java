@@ -75,8 +75,7 @@ public class DataEaseSyncService {
             LogUtils.error("获取DataEase配置失败，组织ID: " + orgId, e);
             return;
         }
-        if (thirdConfig == null || !BooleanUtils.isTrue(thirdConfig.getDeModuleEmbedding())
-                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
+        if (thirdConfig == null || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
             return;
         }
         try {

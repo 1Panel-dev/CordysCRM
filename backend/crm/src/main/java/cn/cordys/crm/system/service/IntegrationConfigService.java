@@ -674,17 +674,12 @@ public class IntegrationConfigService {
         // 校验url
         boolean verify = tokenService.pingDeUrl(configDTO.getRedirectUrl());
         DataEaseClient dataEaseClient = new DataEaseClient(configDTO);
-        if (BooleanUtils.isTrue(configDTO.getDeModuleEmbedding())
-                && StringUtils.isNotBlank(configDTO.getDeAccessKey())
+        if (StringUtils.isNotBlank(configDTO.getDeAccessKey())
                 && StringUtils.isNotBlank(configDTO.getDeSecretKey())
                 && StringUtils.isNotBlank(configDTO.getRedirectUrl())) {
             // 校验 ak，sk
             verify = verify && dataEaseClient.validate();
         }
-        String account = StringUtils.isBlank(configDTO.getDeAccount()) ? InternalUser.ADMIN.name() : configDTO.getDeAccount();
-        DeAuthDTO embeddedDeToken = dataEaseService.getEmbeddedDeToken(account, configDTO);
-        // 校验嵌入式token
-        verify = verify && dataEaseClient.validateEmbeddedToken(embeddedDeToken.getToken());
         return verify;
     }
 
@@ -759,11 +754,8 @@ public class IntegrationConfigService {
         DeConfigDetailLogDTO dto = new DeConfigDetailLogDTO();
         dto.setDeAppId(config.getAgentId());
         dto.setDeAppSecret(config.getAppSecret());
-        dto.setDeAccount(config.getDeAccount());
         dto.setDeBoardEnable(config.getDeBoardEnable());
         dto.setDeUrl(config.getRedirectUrl());
-        dto.setDeModuleEmbedding(config.getDeModuleEmbedding());
-        dto.setDeLinkIntegration(config.getDeLinkIntegration());
         dto.setDeAutoSync(config.getDeAutoSync());
         dto.setDeAccessKey(config.getDeAccessKey());
         dto.setDeSecretKey(config.getDeSecretKey());

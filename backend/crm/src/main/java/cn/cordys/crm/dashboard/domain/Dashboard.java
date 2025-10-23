@@ -13,8 +13,8 @@ public class Dashboard extends BaseModel {
     @Schema(description = "名称")
     private String name;
 
-    @Schema(description = "三方资源id")
-    private String resourceId;
+    @Schema(description = "仪表板url")
+    private String resourceUrl;
 
     @Schema(description = "模块id")
     private String dashboardModuleId;

@@ -16,8 +16,8 @@ public class DashboardDetailResponse {
     @Schema(description = "仪表板名称")
     private String name;
 
-    @Schema(description = "仪表板id")
-    private String resourceId;
+    @Schema(description = "仪表板url")
+    private String resourceUrl;
 
     @Schema(description = "文件夹id")
     private String dashboardModuleId;

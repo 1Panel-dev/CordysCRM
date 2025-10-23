@@ -18,9 +18,9 @@ public class DashboardAddRequest {
     @Schema(description = "仪表板名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @Schema(description = "仪表板id")
+    @Schema(description = "仪表板url")
     @NotBlank(message = "{dashboard.parent.id.not_blank}")
-    private String resourceId;
+    private String resourceUrl;
 
     @Schema(description = "文件夹id")
     @NotBlank(message = "{dashboard.parent.id.not_blank}")
