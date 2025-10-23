@@ -2,17 +2,25 @@ package cn.cordys.crm.clue.service;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.SubListUtils;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueExportRequest;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
+import cn.cordys.crm.customer.dto.request.ClueChartAnalysisDbRequest;
+import cn.cordys.crm.customer.dto.request.PoolClueChartAnalysisRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ExportTaskService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.registry.ExportThreadRegistry;
 import cn.idev.excel.EasyExcel;
@@ -42,6 +50,8 @@ public class CluePoolExportService extends ClueExportService {
     private ExtClueMapper extClueMapper;
     @Resource
     private ExportTaskService exportTaskService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
@@ -138,5 +148,14 @@ public class CluePoolExportService extends ClueExportService {
             }
         });
         return exportTask.getId();
+    }
+
+    public List<ChartResult> chart(PoolClueChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ModuleFormConfigDTO formConfig = clueService.getFormConfig(orgId);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
+        ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
+        clueChartAnalysisDbRequest.setPoolId(request.getPoolId());
+        List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

@@ -184,9 +184,8 @@ public class ClueService {
         return optionMap;
     }
 
-    private ModuleFormConfigDTO getFormConfig(String orgId) {
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
-        return customerFormConfig;
+    public ModuleFormConfigDTO getFormConfig(String orgId) {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
     }
 
     public List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
@@ -1016,7 +1015,8 @@ public class ClueService {
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
-        List<ChartResult> chartResults = extClueMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
+        List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

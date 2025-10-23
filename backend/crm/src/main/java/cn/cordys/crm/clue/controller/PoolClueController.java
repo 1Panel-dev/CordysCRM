@@ -2,6 +2,7 @@ package cn.cordys.crm.clue.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -15,6 +16,7 @@ import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.CluePoolExportService;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.clue.service.PoolClueService;
+import cn.cordys.crm.customer.dto.request.PoolClueChartAnalysisRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
@@ -126,5 +128,12 @@ public class PoolClueController {
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return cluePoolExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    }
+
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
+    @Operation(summary = "客户图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody PoolClueChartAnalysisRequest request) {
+        return cluePoolExportService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
 }

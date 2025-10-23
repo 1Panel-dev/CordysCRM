@@ -10,8 +10,8 @@ import lombok.Data;
  * @CreateTime: 2025-10-23  13:40
  */
 @Data
-public class PoolCustomerChartAnalysisRequest extends ChartAnalysisRequest {
-    @Schema(description = "公海ID")
+public class PoolClueChartAnalysisRequest extends ChartAnalysisRequest {
+    @Schema(description = "线索池ID")
     @NotBlank
     private String poolId;
 }

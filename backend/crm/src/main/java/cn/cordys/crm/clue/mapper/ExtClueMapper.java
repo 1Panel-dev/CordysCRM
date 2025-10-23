@@ -7,6 +7,7 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
+import cn.cordys.crm.customer.dto.request.ClueChartAnalysisDbRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.search.response.advanced.AdvancedCluePoolResponse;
 import cn.cordys.crm.search.response.advanced.AdvancedClueResponse;
@@ -119,6 +120,6 @@ public interface ExtClueMapper {
      */
     List<String> getTransitionClueIds(@Param("customerId") String customerId);
 
-    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+    List<ChartResult> chart(@Param("request") ClueChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
