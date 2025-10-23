@@ -12,6 +12,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -23,6 +24,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -149,7 +151,7 @@ public class OpportunityService {
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<OpportunityListResponse> list, List<OpportunityListResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, OpportunityListResponse::getModuleFields);
         // 获取选项值对应的 option
@@ -170,6 +172,10 @@ public class OpportunityService {
 
         return optionMap;
 
+    }
+
+    private ModuleFormConfigDTO getFormConfig(String orgId) {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
     }
 
     public List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list, String orgId) {
@@ -519,7 +525,7 @@ public class OpportunityService {
         response.setFailureReason(dictMap.get(response.getFailureReason()));
 
 
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
 
         // 补充负责人选项
@@ -768,5 +774,12 @@ public class OpportunityService {
         dragOpportunity.setUpdateUser(userId);
         dragOpportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.updateById(dragOpportunity);
+    }
+
+    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ModuleFormConfigDTO formConfig = getFormConfig(orgId);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
+        List<ChartResult> chartResults = extOpportunityMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

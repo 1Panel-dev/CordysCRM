@@ -101,7 +101,7 @@
         <if test="request.subCategoryAxisParam != null">
             <include refid="chartAxisJoin">
                 <property name="axisParam" value="request.subCategoryAxisParam"/>
-                <property name="tablePrefix" value="subXAxis"/>
+                <property name="tablePrefix" value="subCategoryAxis"/>
             </include>
         </if>
 
@@ -128,7 +128,7 @@
             <bind name="fieldId" value="${axisParam}.fieldId" />
             <if test="${axisParam}.blob">
                 left join customer_contact_field_blob ${tablePrefix}
-                on cc.id = x_axis.resource_id and ${tablePrefix}.field_id = #{fieldId}
+                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
             </if>
             <if test="!${axisParam}.blob">
                 left join customer_contact_field ${tablePrefix}

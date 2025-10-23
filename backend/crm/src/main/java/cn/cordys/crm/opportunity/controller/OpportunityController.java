@@ -2,9 +2,11 @@ package cn.cordys.crm.opportunity.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -199,5 +201,14 @@ public class OpportunityController {
     @Operation(summary = "商机阶段看板拖拽排序")
     public void sortModule(@Validated @RequestBody OpportunitySortRequest request) {
         opportunityService.sort(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "客户图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return opportunityService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }

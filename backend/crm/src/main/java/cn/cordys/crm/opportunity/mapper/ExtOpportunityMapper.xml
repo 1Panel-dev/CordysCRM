@@ -103,6 +103,92 @@
         </if>
     </select>
 
+    <select id="chart" resultType="cn.cordys.common.dto.chart.ChartResult">
+        select
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartSelect">
+            <property name="mainTable" value="o"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on o.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            or sou.user_id = #{userId}
+            )
+        </if>
+
+        FROM
+        opportunity o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filterCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewFilterCondition.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+
+        <include refid="chartAxisJoin">
+            <property name="axisParam" value="request.categoryAxisParam"/>
+            <property name="tablePrefix" value="categoryAxis"/>
+        </include>
+        <include refid="chartAxisJoin">
+            <property name="axisParam" value="request.valueAxisParam"/>
+            <property name="tablePrefix" value="valueAxis"/>
+        </include>
+        <if test="request.subCategoryAxisParam != null">
+            <include refid="chartAxisJoin">
+                <property name="axisParam" value="request.subCategoryAxisParam"/>
+                <property name="tablePrefix" value="subCategoryAxis"/>
+            </include>
+        </if>
+
+        where o.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and o.owner = #{userId}
+        </if>
+
+        <if test="request.viewId != null and request.viewId != '' and request.viewId == 'OPPORTUNITY_SUCCESS'">
+            and o.stage = 'SUCCESS'
+        </if>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.filterCondition"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewFilterCondition"/>
+        </include>
+
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartGroupBy">
+            <property name="mainTable" value="o"/>
+        </include>
+    </select>
+
+    <sql id="chartAxisJoin">
+        <if test="!${axisParam}.businessField">
+            <bind name="fieldId" value="${axisParam}.fieldId" />
+            <if test="${axisParam}.blob">
+                left join opportunity_field_blob ${tablePrefix}
+                on o.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
+            </if>
+            <if test="!${axisParam}.blob">
+                left join opportunity_field ${tablePrefix}
+                on o.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
+            </if>
+        </if>
+        <if test="${axisParam}.businessFieldName == 'departmentId'">
+            left join sys_organization_user ${tablePrefix}
+            on ${tablePrefix}.user_id = o.owner
+        </if>
+    </sql>
+
     <select id="searchStatistic" resultType="cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse">
         SELECT
         sum(o.amount) as amount,

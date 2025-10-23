@@ -1,10 +1,8 @@
 package cn.cordys.crm.opportunity.mapper;
 
 
-import cn.cordys.common.dto.BasePageRequest;
-import cn.cordys.common.dto.BatchUpdateDbParam;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -91,4 +89,7 @@ public interface ExtOpportunityMapper {
      * @param orgId 组织ID
      */
     void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+
+    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
