@@ -85,11 +85,7 @@
             :disabled="props.isDetail"
           />
         </n-form-item>
-        <n-form-item
-          v-if="props.agentId ? originType !== 'SCRIPT' : isEnableConfig"
-          :label="t('agent.addMethod')"
-          path="method"
-        >
+        <n-form-item v-if="isShowAddMethod" :label="t('agent.addMethod')" path="method">
           <n-radio-group v-model:value="form.type" name="radiogroup" class="flex" @update:value="changeType">
             <n-radio value="SCRIPT" class="flex-1 text-center">
               {{ t('system.business.SQLBot.embeddedScript') }}
@@ -105,7 +101,7 @@
               v-model:value="form.workspaceId"
               filterable
               :options="workSpaceOptions"
-              :disabled="!isEnableConfig"
+              :disabled="!isEnableConfig || props.isDetail"
               @update:value="changeWorkSpace"
             />
           </n-form-item>
@@ -116,7 +112,7 @@
               filterable
               clearable
               :options="agentOptions"
-              :disabled="!isEnableConfig"
+              :disabled="!isEnableConfig || props.isDetail"
             />
           </n-form-item>
         </template>
@@ -328,8 +324,9 @@
 
       form.value.script = '';
       if (res) {
-        const scriptParams = res.parameters?.map((item) => `${item.parameter}=\${${item.value ?? ''}}`).join('&');
-        const script = `<iframe src="${res.src}?${scriptParams}" style="width: 100%; height: 100%;" frameborder="0" allow="microphone"></iframe>`;
+        const scriptString = res.parameters?.map((item) => `${item.parameter}=\${${item.value ?? ''}}`).join('&');
+        const scriptParams = scriptString.length > 0 ? `?${scriptString}` : '';
+        const script = `<iframe src="${res.src}${scriptParams}" style="width: 100%; height: 100%;" frameborder="0" allow="microphone"></iframe>`;
         form.value.script = script;
       }
     } catch (e) {
@@ -371,6 +368,10 @@
       console.log(error);
     }
   }
+
+  const isShowAddMethod = computed(
+    () => isEnableConfig.value || (!!(props.agentId || props.isDetail) && originType.value !== 'SCRIPT')
+  );
 
   function changeWorkSpace(val: string) {
     form.value.applicationId = '';
