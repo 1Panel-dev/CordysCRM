@@ -121,69 +121,44 @@
 
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
-        <n-form-item path="deEmbedType" :label="t('system.business.DE.embedType')">
-          <n-checkbox-group v-model:value="form.deEmbedType">
-            <n-space item-style="display: flex;">
-              <n-checkbox
-                v-model:checked="form.deModuleEmbedding"
-                value="module"
-                :label="t('system.business.DE.embedModule')"
-              />
-              <n-checkbox v-model:checked="form.deLinkIntegration" value="link" :label="t('system.business.DE.link')" />
-            </n-space>
-          </n-checkbox-group>
+        <n-form-item path="deAutoSync" :label="t('system.business.DE.autoSync')" class="autoSyncItem">
+          <n-switch v-model:value="form.deAutoSync" />
+          <div class="w-full text-[12px] text-[var(--text-n4)]">{{ t('system.business.DE.autoSyncTip') }}</div>
         </n-form-item>
-        <template v-if="form.deEmbedType?.includes('module')">
-          <n-form-item path="deAutoSync" :label="t('system.business.DE.autoSync')" class="autoSyncItem">
-            <n-switch v-model:value="form.deAutoSync" />
-            <div class="w-full text-[12px] text-[var(--text-n4)]">{{ t('system.business.DE.autoSyncTip') }}</div>
-          </n-form-item>
-          <n-form-item path="deAccessKey" label="Access Key">
-            <n-input
-              v-model:value="form.deAccessKey"
-              type="password"
-              show-password-on="click"
-              :placeholder="t('common.pleaseInput')"
-              @change="fetchDEOrgList"
-            />
-          </n-form-item>
-          <n-form-item path="deSecretKey" label="Secret Key">
-            <n-input
-              v-model:value="form.deSecretKey"
-              type="password"
-              show-password-on="click"
-              :placeholder="t('common.pleaseInput')"
-              @change="fetchDEOrgList"
-            />
-          </n-form-item>
-          <n-form-item path="deOrgID" :label="t('system.business.DE.org')">
-            <n-tooltip :disabled="!!form.deAccessKey && !!form.deSecretKey">
-              <template #trigger>
-                <n-select
-                  v-model:value="form.deOrgID"
-                  size="medium"
-                  :options="DEOrgList"
-                  label-field="name"
-                  value-field="id"
-                  :disabled="!form.deAccessKey || !form.deSecretKey"
-                  :loading="orgListLoading"
-                  filterable
-                />
-              </template>
-              {{ t('system.business.DE.orgTip') }}
-            </n-tooltip>
-          </n-form-item>
-        </template>
-        <n-form-item
-          v-if="form.deEmbedType?.includes('link')"
-          path="deAccount"
-          :label="t('system.business.DE.account')"
-        >
+        <n-form-item path="deAccessKey" label="Access Key">
           <n-input
-            v-model:value="form.deAccount"
-            type="text"
-            :placeholder="t('system.business.DE.accountPlaceholder')"
+            v-model:value="form.deAccessKey"
+            type="password"
+            show-password-on="click"
+            :placeholder="t('common.pleaseInput')"
+            @change="fetchDEOrgList"
           />
+        </n-form-item>
+        <n-form-item path="deSecretKey" label="Secret Key">
+          <n-input
+            v-model:value="form.deSecretKey"
+            type="password"
+            show-password-on="click"
+            :placeholder="t('common.pleaseInput')"
+            @change="fetchDEOrgList"
+          />
+        </n-form-item>
+        <n-form-item path="deOrgID" :label="t('system.business.DE.org')">
+          <n-tooltip :disabled="!!form.deAccessKey && !!form.deSecretKey">
+            <template #trigger>
+              <n-select
+                v-model:value="form.deOrgID"
+                size="medium"
+                :options="DEOrgList"
+                label-field="name"
+                value-field="id"
+                :disabled="!form.deAccessKey || !form.deSecretKey"
+                :loading="orgListLoading"
+                filterable
+              />
+            </template>
+            {{ t('system.business.DE.orgTip') }}
+          </n-tooltip>
         </n-form-item>
       </template>
     </n-form>
@@ -291,10 +266,8 @@
     mkAddress: '',
     type: CompanyTypeEnum.WECOM,
     redirectUrl: '',
-    deAccount: '',
     deBoardEnable: false, // DE看板是否开启
     verify: undefined,
-    deEmbedType: [],
     deOrgID: '',
   });
   const DEOrgList = ref<DEOrgItem[]>([]);
@@ -316,9 +289,6 @@
     () => props.integration,
     (val) => {
       form.value = { ...(val as ConfigSynchronization) };
-      form.value.deEmbedType = [val?.deModuleEmbedding ? 'module' : '', val?.deLinkIntegration ? 'link' : ''].filter(
-        Boolean
-      );
       if (showModal.value && props.integration?.type === CompanyTypeEnum.DATA_EASE) {
         fetchDEOrgList();
       }
@@ -361,10 +331,13 @@
     // 判断redirectUrl 如果form.type是LARK 则提示回调地址不能为空
     redirectUrl:
       props.integration?.type === CompanyTypeEnum.LARK
-        ? [{ required: true, message: t('common.notNull', { value: `${t('system.business.authenticationSettings.callbackUrl')} ` }) }]
+        ? [
+            {
+              required: true,
+              message: t('common.notNull', { value: `${t('system.business.authenticationSettings.callbackUrl')} ` }),
+            },
+          ]
         : [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
-    deAccount: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.account')} ` }) }],
-    deEmbedType: [{ required: true, message: t('system.business.DE.embedTypeTip'), type: 'array' }],
     deAccessKey: [{ required: true, message: t('common.notNull', { value: 'deAccessKey' }) }],
     deSecretKey: [{ required: true, message: t('common.notNull', { value: 'deSecretKey' }) }],
     deOrgID: [{ required: true, message: t('common.notNull', { value: t('system.business.DE.org') }) }],
@@ -385,8 +358,6 @@
       loading.value = true;
       await updateConfigSynchronization({
         ...form.value,
-        deModuleEmbedding: form.value.deEmbedType?.includes('module'),
-        deLinkIntegration: form.value.deEmbedType?.includes('link'),
       });
       Message.success(t('common.updateSuccess'));
       showModal.value = false;
@@ -446,8 +417,6 @@
           linkLoading.value = true;
           const result = await testConfigSynchronization({
             ...form.value,
-            deModuleEmbedding: form.value.deEmbedType?.includes('module'),
-            deLinkIntegration: form.value.deEmbedType?.includes('link'),
           });
           const isSuccess = result.data.data;
           form.value.verify = result.data.data;

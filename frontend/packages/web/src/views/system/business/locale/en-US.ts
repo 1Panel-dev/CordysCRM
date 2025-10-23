@@ -39,7 +39,6 @@ export default {
   'system.business.DE.idPlaceholder': 'Please enter the ID to obtain the JWT Token',
   'system.business.DE.secretPlaceholder': 'Please enter the Secret to obtain the JWT Token',
   'system.business.DE.description': 'An open-source BI tool for everyone',
-  'system.business.DE.embedType': 'Embedding Method',
   'system.business.DE.embedTypeTip': 'Please select at least one embedding method.',
   'system.business.DE.embedModule': 'Module Embedding',
   'system.business.DE.link': 'External Link Integration',
@@ -47,7 +46,6 @@ export default {
   'system.business.DE.orgTip': 'Fill in the Access Key and Secret Key to select.',
   'system.business.DE.autoSync': 'Automatic Sync',
   'system.business.DE.autoSyncTip': 'The system synchronizes users every day at 00:00:00.',
-  'system.business.DE.account': 'Account',
   'system.business.DE.accountPlaceholder': 'Please enter the corresponding account in DataEase personal information',
   'system.business.SQLBot.description': 'Intelligent query system based on large models and RAG',
   'system.business.SQLBot.switch': 'intelligent question count',
@@ -70,7 +68,8 @@ export default {
   'system.business.authenticationSettings.loginUrlTip':
     'If authentication fails, users will be redirected to this login page.',
   'system.business.authenticationSettings.callbackUrl': 'Callback URL',
-  'system.business.authenticationSettings.callbackUrlPlaceholder': 'Please enter the callback URL to receive authentication platform callbacks',
+  'system.business.authenticationSettings.callbackUrlPlaceholder':
+    'Please enter the callback URL to receive authentication platform callbacks',
   'system.business.authenticationSettings.verifyUrl': 'Verification URL',
   'system.business.authenticationSettings.verifyUrlTip': 'Used to verify if login information is correct.',
   'system.business.authenticationSettings.authUrl': 'Authorization URL',

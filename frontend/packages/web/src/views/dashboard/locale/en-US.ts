@@ -9,7 +9,7 @@ export default {
   'dashboard.deleteDashboardTip':
     'After deletion, members will not be able to view it, but DataEase dashboards will not be affected',
   'dashboard.dashboardName': 'Dashboard Name',
-  'dashboard.dashboardId': 'Dashboard ID',
+  'dashboard.dashboardUrl': 'Dashboard URL',
   'dashboard.members': 'Members',
   'dashboard.folder': 'Folder',
   'dashboard.favoriteSuccess': 'Favorite Success',

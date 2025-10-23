@@ -8,7 +8,7 @@ export default {
   'dashboard.updateDashboard': '更新仪表板',
   'dashboard.deleteDashboardTip': '删除后，成员无法查看，DataEase 看板不受影响',
   'dashboard.dashboardName': '仪表板名称',
-  'dashboard.dashboardId': '仪表板 ID',
+  'dashboard.dashboardUrl': '仪表板 URL',
   'dashboard.members': '可查看成员',
   'dashboard.folder': '文件夹',
   'dashboard.favoriteSuccess': '收藏成功',

@@ -18,13 +18,8 @@
       </CrmTag>
     </div>
     <n-tabs v-model:value="activeDashboardType" type="segment" size="small">
-      <n-tab-pane v-if="DEConfig?.deLinkIntegration" name="link" :tab="t('system.business.DE.link')" class="hidden" />
-      <n-tab-pane
-        v-if="DEConfig?.deModuleEmbedding"
-        name="module"
-        :tab="t('system.business.DE.embedModule')"
-        class="hidden"
-      />
+      <n-tab-pane name="link" :tab="t('system.business.DE.link')" class="hidden" />
+      <n-tab-pane name="module" :tab="t('system.business.DE.embedModule')" class="hidden" />
     </n-tabs>
     <div class="flex-1">
       <dashboardLink v-if="activeDashboardType === 'link'" />
@@ -66,10 +61,10 @@
   async function init() {
     try {
       DEConfig.value = await getThirdPartyConfig('DE_BOARD');
-      if (DEConfig.value.deLinkIntegration) {
-        activeDashboardType.value = 'link';
-      } else {
+      if (DEConfig.value.deBoardEnable) {
         activeDashboardType.value = 'module';
+      } else {
+        activeDashboardType.value = 'link';
       }
     } catch (error) {
       // eslint-disable-next-line no-console

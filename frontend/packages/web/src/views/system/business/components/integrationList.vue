@@ -57,7 +57,7 @@
 
               <div>
                 <n-button
-                  v-if="item.type === CompanyTypeEnum.DATA_EASE && item.response.deModuleEmbedding"
+                  v-if="item.type === CompanyTypeEnum.DATA_EASE"
                   v-permission="['SYSTEM_SETTING:UPDATE']"
                   size="small"
                   type="default"
@@ -176,7 +176,7 @@
 
               <div>
                 <n-button
-                  v-if="item.type === CompanyTypeEnum.DATA_EASE && item.response.deModuleEmbedding"
+                  v-if="item.type === CompanyTypeEnum.DATA_EASE"
                   v-permission="['SYSTEM_SETTING:UPDATE']"
                   size="small"
                   type="default"

@@ -26,7 +26,7 @@
           resourceId: [
             {
               required: true,
-              message: t('common.notNull', { value: t('dashboard.dashboardId') }),
+              message: t('common.notNull', { value: t('dashboard.dashboardUrl') }),
               trigger: 'blur',
             },
           ],
@@ -43,7 +43,7 @@
         <n-form-item :label="t('dashboard.dashboardName')" path="name">
           <n-input v-model:value="form.name" :maxlength="255" />
         </n-form-item>
-        <n-form-item :label="t('dashboard.dashboardId')" path="resourceId">
+        <n-form-item :label="t('dashboard.dashboardUrl')" path="resourceId">
           <n-input v-model:value="form.resourceId" :maxlength="50" />
           <a
             href="https://rtykuh4z44.feishu.cn/docx/QN1TdHfxjofZXXxZ0toc9oIpnWd"

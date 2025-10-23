@@ -24,25 +24,8 @@
           </template>
         </CrmButtonGroup>
         <n-divider v-if="item.groupList.length" v-permission="['MODULE_SETTING:UPDATE']" class="!mx-[4px]" vertical />
-        <CrmPopConfirm
-          v-if="item.disabled"
-          :title="t('module.DataEaseTip')"
-          icon-type="primary"
-          :content="t('module.DataEaseTipContent')"
-          :positive-text="t('module.goConfig')"
-          trigger="hover"
-          negative-text=""
-          placement="right-end"
-          @confirm="goDEConfig"
-        >
-          <NSwitch
-            :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE']) || item.disabled"
-            :value="item.enable"
-            @update:value="(value:boolean)=>toggleModule(value,item)"
-          />
-        </CrmPopConfirm>
+
         <NSwitch
-          v-else
           size="small"
           :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
           :value="item.enable"

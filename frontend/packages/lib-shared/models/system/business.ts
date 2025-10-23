@@ -25,16 +25,12 @@ export interface ConfigSynchronization {
   sqlBotBoardEnable?: boolean; // 智能问数仪表板是否开启
   verify?: boolean; // 是否验证通过
   redirectUrl?: string; // DE URL
-  deAccount?: string; // DE 账号
   deBoardEnable?: boolean; // DE看板是否开启
-  deModuleEmbedding?: boolean; // DE模块嵌入
-  deLinkIntegration?: boolean; // DE链接集成
   deAutoSync?: boolean; // DE自动同步
   deAccessKey?: string; // DE访问密钥
   deSecretKey?: string; // DE密钥
   deOrgID?: string; // DE组织ID
   // 前端渲染参数
-  deEmbedType?: string[]; // DE嵌入方式
   startEnable?: boolean; // 同步用户
   mkEnable?: boolean; // 智能体
   appId?: string; // 钉钉内部应用id
