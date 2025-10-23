@@ -8,12 +8,18 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.*;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
+import cn.cordys.crm.customer.dto.request.CustomerChartAnalysisDbRequest;
+import cn.cordys.crm.customer.dto.request.PoolCustomerChartAnalysisRequest;
 import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import cn.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -26,6 +32,7 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -437,5 +444,14 @@ public class PoolCustomerService {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
 
         customerFieldService.batchUpdate(request, field, originCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
+    }
+
+    public List<ChartResult> chart(PoolCustomerChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ModuleFormConfigDTO formConfig = CommonBeanFactory.getBean(CustomerService.class).getFormConfig(orgId);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
+        CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
+        customerChartAnalysisDbRequest.setPoolId(request.getPoolId());
+        List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

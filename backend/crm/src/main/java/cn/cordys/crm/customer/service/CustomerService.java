@@ -27,7 +27,6 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
-import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -181,7 +180,7 @@ public class CustomerService {
         return optionMap;
     }
 
-    private ModuleFormConfigDTO getFormConfig(String orgId) {
+    public ModuleFormConfigDTO getFormConfig(String orgId) {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
     }
 
@@ -824,7 +823,8 @@ public class CustomerService {
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
-        List<ChartResult> chartResults = extCustomerMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
+        List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

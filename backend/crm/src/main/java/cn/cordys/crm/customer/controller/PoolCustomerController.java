@@ -2,14 +2,12 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
-import cn.cordys.crm.customer.dto.request.CustomerExportRequest;
-import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
-import cn.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
-import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
+import cn.cordys.crm.customer.dto.request.*;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerPoolExportService;
@@ -126,5 +124,12 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
     public String customerPoolExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return customerPoolExportService.exportCrossSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    }
+
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+    @Operation(summary = "客户图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody PoolCustomerChartAnalysisRequest request) {
+        return poolCustomerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
 }

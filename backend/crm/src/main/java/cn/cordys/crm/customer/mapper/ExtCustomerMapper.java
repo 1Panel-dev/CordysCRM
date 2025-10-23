@@ -4,6 +4,7 @@ import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
+import cn.cordys.crm.customer.dto.request.CustomerChartAnalysisDbRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
@@ -88,7 +89,7 @@ public interface ExtCustomerMapper {
 
     List<OptionDTO> getCustomerPoolId(@Param("ids") List<String> ids);
 
-    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+    List<ChartResult> chart(@Param("request") CustomerChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
 }
