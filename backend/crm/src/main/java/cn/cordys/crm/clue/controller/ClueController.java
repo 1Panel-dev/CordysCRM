@@ -2,9 +2,11 @@ package cn.cordys.crm.clue.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -218,5 +220,14 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return clueService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping("/chart")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "客户图表生成")
+    public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        return clueService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }

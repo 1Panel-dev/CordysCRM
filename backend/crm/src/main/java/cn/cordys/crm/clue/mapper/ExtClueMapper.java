@@ -1,10 +1,8 @@
 package cn.cordys.crm.clue.mapper;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.BasePageRequest;
-import cn.cordys.common.dto.BatchUpdateDbParam;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
@@ -120,4 +118,7 @@ public interface ExtClueMapper {
      * @return 线索ID集合
      */
     List<String> getTransitionClueIds(@Param("customerId") String customerId);
+
+    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
