@@ -106,6 +106,8 @@ module.exports = {
             '^echarts$',
             '^localforage$',
             '^vue-draggable-plus$',
+            '^echarts$',
+            '^echarts/*',
           ], // node依赖
           ['.*/assets/.*', '^@/assets$'], // 项目静态资源
           ['^@lib/shared/.*'], // 共享库

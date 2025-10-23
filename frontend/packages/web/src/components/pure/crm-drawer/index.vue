@@ -2,7 +2,7 @@
   <n-drawer
     v-bind="$attrs"
     v-model:show="show"
-    :width="props.width"
+    :width="drawerWidth"
     :show-mask="props.showMask"
     :placement="props.placement"
     class="crm-drawer"
@@ -42,8 +42,17 @@
           </div>
         </slot>
       </template>
+      <div v-if="!props.disabledWidthDrag && typeof drawerWidth === 'number'" class="handle" @mousedown="startResize">
+        <CrmIcon type="iconicon_move" class="absolute left-[-3px] top-[50%] w-[14px]" :size="14" />
+      </div>
       <n-spin :show="props.loading" class="h-full">
-        <slot />
+        <n-scrollbar
+          x-scrollable
+          content-class="h-full !w-full"
+          :content-style="{ minWidth: props.minWidth ? `${props.minWidth}px` : 'auto' }"
+        >
+          <slot />
+        </n-scrollbar>
       </n-spin>
       <template v-if="footer" #footer>
         <slot name="footer">
@@ -77,10 +86,12 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDrawer, NDrawerContent, NIcon, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar, NSpin, NTooltip } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   const { t } = useI18n();
   const props = withDefaults(
@@ -101,6 +112,8 @@
       closable?: boolean;
       showBack?: boolean; // 显示返回关闭按钮
       noPadding?: boolean; // 无内边距
+      disabledWidthDrag?: boolean; // 禁止拖拽宽度
+      minWidth?: number;
     }>(),
     {
       placement: 'right',
@@ -109,6 +122,7 @@
       showBack: false,
       noPadding: false,
       closable: true,
+      disabledWidthDrag: false,
     }
   );
 
@@ -123,6 +137,43 @@
     required: true,
     default: false,
   });
+
+  const resizing = ref(false); // 是否正在拖拽
+  const drawerWidth = ref(props.width); // 抽屉初始宽度
+  /**
+   * 鼠标单击开始监听拖拽移动
+   */
+  const startResize = (event: MouseEvent) => {
+    if (typeof drawerWidth.value === 'number') {
+      resizing.value = true;
+      const startX = event.clientX;
+      const initialWidth = drawerWidth.value;
+
+      // 计算鼠标移动距离
+      const handleMouseMove = (_event: MouseEvent) => {
+        if (resizing.value) {
+          const newWidth = initialWidth + (startX - _event.clientX); // 新的宽度等于当前抽屉宽度+鼠标移动的距离
+          if (typeof props.width === 'number' && newWidth >= 480 && newWidth <= window.innerWidth * 0.9) {
+            // 最大最小宽度限制，最小宽度为480，最大宽度为视图窗口宽度的90%
+            drawerWidth.value = newWidth;
+          }
+        }
+      };
+
+      // 松开鼠标按键，拖拽结束
+      const handleMouseUp = () => {
+        if (resizing.value) {
+          // 如果当前是在拖拽，则重置拖拽状态，且移除鼠标监听事件
+          resizing.value = false;
+          window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('mouseup', handleMouseUp);
+        }
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+  };
 
   function handleContinue() {
     emit('continue');
@@ -140,6 +191,14 @@
 
 <style lang="less">
   .crm-drawer {
+    .handle {
+      @apply absolute left-0 top-0 flex h-full items-center;
+
+      z-index: 200;
+      width: 10px;
+      background-color: var(--text-n8);
+      cursor: col-resize;
+    }
     .n-spin-content {
       @apply h-full;
     }

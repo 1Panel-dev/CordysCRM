@@ -43,35 +43,40 @@
         </template>
       </n-button>
     </div>
-    <n-select
-      v-model:value="activeTab"
-      :options="options"
-      filterable
-      label-field="name"
-      value-field="id"
-      :reset-menu-on-options-change="false"
-      :virtual-scroll="false"
-      :show-checkmark="false"
-      :render-option="renderOption"
-      class="view-select w-[200px]"
-      :node-props="getNodeProps"
-      :menu-props="{ class: 'crm-view-select-menu' }"
-      @update:show="setDraggerSort"
-    >
-      <template #header>
-        <n-button type="primary" text @click="handleAdd">
-          <template #icon>
-            <n-icon><Add /></n-icon>
-          </template>
-          {{ t('crmViewSelect.add') }}
-        </n-button>
-      </template>
-      <template #action>
-        <n-button type="primary" text @click="handleManage">
-          {{ t('crmViewSelect.manageViews') }}
-        </n-button>
-      </template>
-    </n-select>
+    <div class="flex items-center gap-[12px]">
+      <n-select
+        v-model:value="activeTab"
+        :options="options"
+        filterable
+        label-field="name"
+        value-field="id"
+        :reset-menu-on-options-change="false"
+        :virtual-scroll="false"
+        :show-checkmark="false"
+        :render-option="renderOption"
+        class="view-select w-[200px]"
+        :node-props="getNodeProps"
+        :menu-props="{ class: 'crm-view-select-menu' }"
+        @update:show="setDraggerSort"
+      >
+        <template #header>
+          <n-button type="primary" text @click="handleAdd">
+            <template #icon>
+              <n-icon><Add /></n-icon>
+            </template>
+            {{ t('crmViewSelect.add') }}
+          </n-button>
+        </template>
+        <template #action>
+          <n-button type="primary" text @click="handleManage">
+            {{ t('crmViewSelect.manageViews') }}
+          </n-button>
+        </template>
+      </n-select>
+      <n-button type="default" class="outline--secondary px-[8px]" @click="openViewDrawer">
+        <CrmIcon class="text-[var(--text-n1)]" type="iconicon_data" :size="16" />
+      </n-button>
+    </div>
   </div>
   <ManageViewsDrawer
     v-model:visible="manageViewsDrawerVisible"
@@ -88,6 +93,12 @@
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
     @refresh="handleChangeActive"
+  />
+  <chartsDrawer
+    v-if="isInitChartDrawer"
+    v-model:show="chartDrawerVisible"
+    :config-list="props.filterConfigList"
+    :custom-list="props.customFieldsConfigList"
   />
 </template>
 
@@ -122,6 +133,8 @@
   import useViewStore from '@/store/modules/view';
 
   import Sortable from 'sortablejs';
+
+  const chartsDrawer = defineAsyncComponent(() => import('./components/chartsDrawer.vue'));
 
   const { t } = useI18n();
   const viewStore = useViewStore();
@@ -383,6 +396,15 @@
         initSelectSortable(el as HTMLElement);
       }
     }, 50);
+  }
+
+  const chartDrawerVisible = ref(false);
+  const isInitChartDrawer = ref(false);
+  function openViewDrawer() {
+    isInitChartDrawer.value = true;
+    nextTick(() => {
+      chartDrawerVisible.value = true;
+    });
   }
 </script>
 

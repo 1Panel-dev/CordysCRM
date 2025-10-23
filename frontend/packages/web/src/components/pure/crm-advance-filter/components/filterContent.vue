@@ -5,7 +5,7 @@
         type="primary"
         theme="light"
         :color="{ color: 'var(--primary-6)' }"
-        class="z-[1] w-[38px]"
+        class="z-[1] w-[38px] cursor-pointer"
         @click="changeAllOr"
       >
         {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
