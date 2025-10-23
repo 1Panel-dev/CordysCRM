@@ -1,6 +1,6 @@
 <template>
-  <div class="flex h-full flex-col gap-[16px]">
-    <div class="flex items-center justify-between">
+  <div class="flex h-full flex-col">
+    <div class="mb-[16px] flex items-center justify-between">
       <n-button
         v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && !props.readonly"
         :loading="createLoading"
@@ -46,9 +46,18 @@
         </n-button>
       </div>
     </div>
+    <CrmViewSelect
+      v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter"
+      v-model:active-tab="activeTab"
+      :type="FormDesignKeyEnum.BUSINESS"
+      :custom-fields-config-list="filterConfigList"
+      :filter-config-list="customFieldsFilterConfig"
+      @refresh-table-data="refreshTimeStamp += 1"
+    />
     <n-scrollbar
       :content-style="{ gridTemplateColumns: `repeat(${(stageConfig?.stageConfigList || []).length || 7}, 300px)` }"
       content-class="grid gap-[16px] h-full"
+      class="flex-1"
       x-scrollable
     >
       <list
@@ -56,6 +65,7 @@
         ref="listRef"
         :key="item.id"
         :index="index"
+        :view-id="activeTab"
         :stage-ids="stageConfig?.stageConfigList.map((i) => i.id) || []"
         :keyword="keyword"
         :field-list="fieldList"
@@ -116,6 +126,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import list from './list.vue';
 
   import { getOpportunityStageConfig, getReasonConfig, updateOptStage } from '@/api/modules';
@@ -145,6 +156,8 @@
   const activeShowType = defineModel<'billboard' | 'table'>('activeShowType', {
     default: 'billboard',
   });
+  const activeTab = defineModel<string>('activeTab', { required: false });
+
   const createLoading = ref(false);
   const customerFormKey = ref(FormDesignKeyEnum.CUSTOMER);
   const linkFormInfo = ref();

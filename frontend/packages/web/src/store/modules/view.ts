@@ -3,7 +3,7 @@ import { TabPaneProps } from 'naive-ui';
 
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
 import type { SortParams, TableDraggedParams } from '@lib/shared/models/common';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
@@ -60,33 +60,45 @@ const useViewStore = defineStore('view', {
       await setItem(`view-sort-${tableKey}-${viewId}`, data);
     },
 
+    async getOpportunitySuccessStageOption() {
+      try {
+        const stageConfig: OpportunityStageConfig = await getOpportunityStageConfig();
+        const successStage = stageConfig?.stageConfigList?.find((i) => i.type === 'END' && i.rate === '100');
+        return [
+          {
+            dataIndex: 'stage',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            operator: OperatorEnum.IN,
+            value: [successStage?.id],
+          },
+        ];
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        return [
+          {
+            dataIndex: 'stage',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            operator: OperatorEnum.IN,
+            value: [],
+          },
+        ];
+      }
+    },
+
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
       const userStore = useUserStore();
 
       const stored = await this.getInternalViews(this.getInternalKey(type));
-      const stageConfig = ref<OpportunityStageConfig>();
-      async function initStageConfig() {
-        try {
-          stageConfig.value = await getOpportunityStageConfig();
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        }
-      }
-      await initStageConfig();
-      const successStage = stageConfig.value?.stageConfigList?.find((i) => i.type === 'END' && i.rate === '100');
       const listMap = internalList.reduce<Record<string, TabPaneProps>>((map, item) => {
         map[item.name as string] = item;
         return map;
       }, {});
 
       const storedIds = new Set(stored.map((i) => i.id));
-      const optItem = computed(() => ({
-        dataIndex: 'stage',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        operator: OperatorEnum.IN,
-        value: [successStage?.id],
-      }));
+
+      const optItem = type === FormDesignKeyEnum.BUSINESS ? await this.getOpportunitySuccessStageOption() : null;
+
       const merged = [
         // 优先使用 stored 的顺序和设置
         ...stored
@@ -98,7 +110,7 @@ const useViewStore = defineStore('view', {
               name: def.tab as string,
               list:
                 def.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-                  ? optItem.value
+                  ? optItem
                   : internalConditionsMap[def.name as string],
               type: 'internal',
               searchMode: item.searchMode ?? 'AND',
@@ -117,7 +129,7 @@ const useViewStore = defineStore('view', {
             searchMode: 'AND',
             list:
               item.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-                ? optItem.value
+                ? optItem
                 : internalConditionsMap[item.name as string],
           })),
       ];

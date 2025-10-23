@@ -162,6 +162,7 @@
     enableReason?: boolean;
     failId?: string;
     stageIds: string[];
+    viewId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'fail', item: OpportunityItem): void;
@@ -225,7 +226,7 @@
           },
         ],
         board: true,
-        viewId: 'ALL',
+        viewId: props.viewId,
       });
       if (res) {
         if (refresh) {
@@ -258,7 +259,7 @@
             operator: 'EQUALS',
           },
         ],
-        viewId: 'ALL',
+        viewId: props.viewId,
       });
       statisticInfo.value = res;
     } catch (error) {
@@ -288,12 +289,9 @@
     getStatistic();
   }
 
-  watch(
-    () => props.refreshTimeStamp,
-    () => {
-      refreshList();
-    }
-  );
+  watch([() => props.refreshTimeStamp, () => props.viewId], () => {
+    refreshList();
+  });
 
   async function handleUpdate(item: any) {
     try {

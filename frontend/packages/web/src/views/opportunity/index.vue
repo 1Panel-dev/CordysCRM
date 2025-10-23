@@ -5,6 +5,7 @@
         <CrmOpportunityTable
           v-if="activeShowType === 'table'"
           v-model:active-show-type="activeShowType"
+          v-model:active-tab="activeTab"
           :fullscreen-target-ref="opportunityCardRef"
           :opensea-hidden-columns="hiddenColumns"
           :form-key="FormDesignKeyEnum.BUSINESS"
@@ -13,6 +14,7 @@
         <billboard
           v-else
           v-model:active-show-type="activeShowType"
+          v-model:active-tab="activeTab"
           :fullscreen-target-ref="opportunityCardRef"
           :opensea-hidden-columns="hiddenColumns"
           :form-key="FormDesignKeyEnum.BUSINESS"
@@ -55,6 +57,7 @@
   const opportunityCardRef = ref<HTMLElement | null>(null);
 
   const activeShowType = ref<'table' | 'billboard'>('table');
+  const activeTab = ref();
   const showCustomerOverviewDrawer = ref(false);
   const showCustomerOpenseaOverviewDrawer = ref(false);
   const poolId = ref<string>('');

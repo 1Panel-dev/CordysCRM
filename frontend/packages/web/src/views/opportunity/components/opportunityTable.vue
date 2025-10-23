@@ -235,11 +235,10 @@
   const activeShowType = defineModel<'billboard' | 'table'>('activeShowType', {
     default: 'table',
   });
+  const activeTab = defineModel<string>('activeTab', { required: false });
 
   const keyword = ref('');
   const tableRefreshId = ref(0);
-
-  const activeTab = ref();
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -900,6 +899,11 @@
         inCustomerPool: route.query.inCustomerPool === 'true',
         poolId: route.query.poolId as string,
       });
+    }
+
+    // 从看板切换到表格获取一次数据
+    if (!props.isCustomerTab || !props.hiddenAdvanceFilter) {
+      loadList();
     }
   });
 

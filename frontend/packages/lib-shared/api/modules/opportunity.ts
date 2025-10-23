@@ -244,7 +244,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取商机阶段配置
   function getOpportunityStageConfig() {
-    return CDR.get<OpportunityStageConfig>({ url: GetOpportunityStageConfigUrl });
+    return CDR.get<OpportunityStageConfig>({ url: GetOpportunityStageConfigUrl }, { ignoreCancelToken: true });
   }
 
   // 删除商机阶段
