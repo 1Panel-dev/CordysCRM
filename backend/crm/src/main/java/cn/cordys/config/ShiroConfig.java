@@ -4,7 +4,9 @@ import cn.cordys.common.security.ApiKeyFilter;
 import cn.cordys.common.security.AuthFilter;
 import cn.cordys.common.security.CsrfFilter;
 import cn.cordys.common.security.realm.LocalRealm;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.security.ShiroFilter;
+import jakarta.servlet.Filter;
 import org.apache.shiro.aop.AnnotationResolver;
 import org.apache.shiro.authz.aop.*;
 import org.apache.shiro.cache.CacheManager;
@@ -50,27 +52,39 @@ public class ShiroConfig {
      * @return 配置好的 {@link ShiroFilterFactoryBean} 实例
      */
     @Bean
-    public ShiroFilterFactoryBean shiroFilterFactoryBean(DefaultWebSecurityManager sessionManager) {
-        ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
-        shiroFilterFactoryBean.setLoginUrl("/");
-        shiroFilterFactoryBean.setSecurityManager(sessionManager);
-        shiroFilterFactoryBean.setUnauthorizedUrl("/403");
-        shiroFilterFactoryBean.setSuccessUrl("/");
+    public ShiroFilterFactoryBean shiroFilterFactoryBean(final DefaultWebSecurityManager sessionManager) {
+        final var bean = new ShiroFilterFactoryBean();
+        bean.setLoginUrl("/");
+        bean.setSecurityManager(sessionManager);
+        bean.setUnauthorizedUrl("/403");
+        bean.setSuccessUrl("/");
 
-        // 添加自定义过滤器
-        shiroFilterFactoryBean.getFilters().put("apikey", new ApiKeyFilter());
-        shiroFilterFactoryBean.getFilters().put("csrf", new CsrfFilter());
-        shiroFilterFactoryBean.getFilters().put("authc", new AuthFilter());
+        final Map<String, String> chain = bean.getFilterChainDefinitionMap();
+        final Map<String, Filter> filters = bean.getFilters();
 
-        // 配置过滤器链
-        Map<String, String> definitionMap = shiroFilterFactoryBean.getFilterChainDefinitionMap();
-        ShiroFilter.chain();
-        definitionMap.putAll(ShiroFilter.loadBaseFilterChain());
-        definitionMap.putAll(ShiroFilter.ignoreCsrfFilter());
-        definitionMap.put("/**", "apikey, csrf, authc");
+        filters.put("apikey", new ApiKeyFilter());
+        filters.put("csrf", new CsrfFilter());
+        filters.put("authc", new AuthFilter());
 
-        return shiroFilterFactoryBean;
+        chain.putAll(ShiroFilter.loadBaseFilterChain());
+        chain.putAll(ShiroFilter.ignoreCsrfFilter());
+
+        // 配置自定义的过滤器链
+        configureXFilter(chain, filters);
+
+        return bean;
     }
+
+    private void configureXFilter(Map<String, String> chain, Map<String, Filter> filters) {
+        String pattern = "apikey, csrf, authc";
+        final Filter preApiKey = CommonBeanFactory.getFilter();
+        if (preApiKey != null) {
+            filters.put("preApikey", preApiKey);
+            pattern = "preApikey, " + pattern;
+        }
+        chain.put("/**", pattern);
+    }
+
 
     /**
      * 配置 Shiro 的缓存管理器，使用内存缓存管理。

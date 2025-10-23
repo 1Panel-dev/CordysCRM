@@ -96,7 +96,7 @@ public class LicenseService {
     }
 
     public LicenseDTO validate(String code) {
-        boolean isValid = CommonBeanFactory.packageExists("cn.cordys.xpack");
+        boolean isValid = CommonBeanFactory.packageExists();
         LicenseDTO licenseDTO = new LicenseDTO();
         if (isValid && StringUtils.isNotBlank(code)) {
             Object license = CommonBeanFactory.invoke("extLicenseService",

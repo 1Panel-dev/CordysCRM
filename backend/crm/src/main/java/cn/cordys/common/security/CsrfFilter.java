@@ -61,6 +61,11 @@ public class CsrfFilter extends AnonymousFilter {
             return true;
         }
 
+        // 允许 Swagger UI 访问，无需 CSRF 校验
+        if (Strings.CS.startsWithAny(httpServletRequest.getRequestURI(), "/swagger-ui", "/v3/api-docs")) {
+            return true;
+        }
+
         // 获取请求头中的 CSRF token 和 X-Auth-Token
         String csrfToken = httpServletRequest.getHeader(SessionConstants.CSRF_TOKEN);
         String xAuthToken = httpServletRequest.getHeader(SessionConstants.HEADER_TOKEN);

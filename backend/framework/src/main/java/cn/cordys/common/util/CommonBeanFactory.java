@@ -1,5 +1,6 @@
 package cn.cordys.common.util;
 
+import jakarta.servlet.Filter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
@@ -25,6 +26,8 @@ public class CommonBeanFactory implements ApplicationContextAware {
 
     // 保存ApplicationContext实例
     private static ApplicationContext context;
+
+    public static String BASE_X_P = "cn.cordys.xpack";
 
     /**
      * 根据Bean名称获取Bean实例
@@ -118,6 +121,22 @@ public class CommonBeanFactory implements ApplicationContextAware {
         // 按包路径扫描
         Set<BeanDefinition> defs = scanner.findCandidateComponents(basePackage);
         return !defs.isEmpty();
+    }
+
+    public static boolean packageExists() {
+        return packageExists(BASE_X_P);
+    }
+
+    public static Filter getFilter() {
+        try {
+            if (!packageExists()) {
+                return null;
+            }
+            final Class<? extends Filter> clazz = Class.forName(BASE_X_P + ".crm.ApiKeyPreFilter").asSubclass(Filter.class);
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**

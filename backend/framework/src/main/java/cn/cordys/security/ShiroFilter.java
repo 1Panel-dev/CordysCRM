@@ -1,7 +1,5 @@
 package cn.cordys.security;
 
-import cn.cordys.common.util.CommonBeanFactory;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,20 +14,6 @@ public final class ShiroFilter {
     // 私有构造函数防止实例化
     private ShiroFilter() {
         throw new AssertionError("工具类不应该被实例化");
-    }
-
-    /**
-     * 初始化过滤器链
-     */
-    public static void chain() {
-        boolean isValid = CommonBeanFactory.packageExists("cn.cordys.xpack");
-        if (isValid) {
-            try {
-                Class.forName("cn.cordys.xpack.crm.config.CsChain");
-            } catch (ClassNotFoundException ignored) {
-                // 类未找到时不执行任何操作
-            }
-        }
     }
 
     /**
