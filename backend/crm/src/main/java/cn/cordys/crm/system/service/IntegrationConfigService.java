@@ -151,6 +151,8 @@ public class IntegrationConfigService {
                 enableDTO.setBoardEnable(isEnabled);
             } else if (detailType.contains("CHAT")) {
                 enableDTO.setChatEnable(isEnabled);
+            } else if (detailType.contains("MAXKB")) {
+                enableDTO.setMkEnable(isEnabled);
             }
         }
 
@@ -170,6 +172,7 @@ public class IntegrationConfigService {
         configDTO.setDeBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
+        configDTO.setMkEnable(thirdEnableDTO.isMkEnable());
 
         return configDTO;
     }
@@ -486,6 +489,18 @@ public class IntegrationConfigService {
             jsonContent = JSON.toJSONString(larkConfigDetailDTO);
 
             openEnable = isVerified && enable;
+        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
+            MaxKBConfigDetailDTO mkConfig = new MaxKBConfigDetailDTO();
+            BeanUtils.copyBean(mkConfig, configDTO);
+            if (Boolean.TRUE.equals(configDTO.getMkEnable())) {
+                verifyMk(token, mkConfig);
+                configDTO.setVerify(mkConfig.getVerify());
+            } else {
+                mkConfig.setVerify(configDTO.getVerify());
+            }
+            oldConfig.setMkEnable(detail.getEnable());
+            jsonContent = JSON.toJSONString(mkConfig);
+            openEnable = enable;
         } else {
             return;
         }
@@ -556,6 +571,10 @@ public class IntegrationConfigService {
 
     private void verifySqlBot(String token, SqlBotConfigDetailDTO sqlBotConfig) {
         sqlBotConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
+    }
+
+    private void verifyMk(String token, MaxKBConfigDetailDTO mkConfig) {
+        mkConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
     /**
@@ -645,7 +664,7 @@ public class IntegrationConfigService {
         } else if (DepartmentConstants.SQLBOT.name().equals(type)) {
             return tokenService.getSqlBotSrc(configDTO.getAppSecret()) ? "true" : null;
         } else if (DepartmentConstants.MAXKB.name().equals(type)) {
-            return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret());
+            return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret()) ? "true" : null;
         }
 
         return null;
