@@ -72,9 +72,9 @@
         <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
       </n-button>
     </div>
+    <slot name="view"></slot>
     <slot name="other"></slot>
     <template v-if="!props.notShowTable">
-      <slot name="view"></slot>
       <n-data-table
         ref="tableRef"
         v-bind="{ scrollX: scrollXWidth, ...$attrs }"

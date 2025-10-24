@@ -570,7 +570,7 @@
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
     containerClass: '.crm-customer-table',
-    hiddenTotal: !!props.hiddenTotal,
+    hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

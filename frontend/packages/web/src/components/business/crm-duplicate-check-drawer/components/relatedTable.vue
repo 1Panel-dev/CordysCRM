@@ -40,7 +40,7 @@
       size: 'small',
     },
     hiddenRefresh: true,
-    hiddenTotal: true,
+    hiddenTotal: ref(true),
     containerClass: props.class,
   });
 

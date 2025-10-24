@@ -53,7 +53,7 @@ export interface FormCreateTableProps {
   readonly?: boolean;
   radio?: boolean; // 是否单选
   containerClass: string; // 容器元素类名
-  hiddenTotal?: boolean;
+  hiddenTotal?: Ref<boolean>;
   opportunityStage?: StageConfigItem[]; // 商机阶段筛选项
   hiddenAllScreen?: boolean;
   hiddenRefresh?: boolean;

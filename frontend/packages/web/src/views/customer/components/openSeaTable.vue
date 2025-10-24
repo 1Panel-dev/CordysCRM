@@ -526,7 +526,7 @@
       },
     },
     permission: ['CUSTOMER_MANAGEMENT_POOL:PICK', 'CUSTOMER_MANAGEMENT_POOL:ASSIGN', 'CUSTOMER_MANAGEMENT_POOL:DELETE'],
-    hiddenTotal: !!props.hiddenTotal,
+    hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

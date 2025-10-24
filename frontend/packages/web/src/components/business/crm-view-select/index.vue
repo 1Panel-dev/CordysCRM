@@ -187,10 +187,8 @@
     await viewStore.loadInternalViews(props.type, tabList.value as TabPaneProps[]);
     await viewStore.loadCustomViews(props.type);
     nextTick(() => {
-      if (!activeTab.value) {
-        // 默认视图是固定视图的第一个
-        activeTab.value = tags.value[0].id;
-      }
+      // 默认视图是固定视图的第一个
+      activeTab.value = tags.value[0].id;
     });
   });
 

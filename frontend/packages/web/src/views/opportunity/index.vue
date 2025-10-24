@@ -3,21 +3,10 @@
     <CrmCard hide-footer no-content-padding>
       <div class="h-full p-[16px]">
         <CrmOpportunityTable
-          v-if="activeShowType === 'table'"
-          v-model:active-show-type="activeShowType"
-          v-model:active-tab="activeTab"
           :fullscreen-target-ref="opportunityCardRef"
           :opensea-hidden-columns="hiddenColumns"
           :form-key="FormDesignKeyEnum.BUSINESS"
           @open-customer-drawer="handleOpenCustomerDrawer"
-        />
-        <billboard
-          v-else
-          v-model:active-show-type="activeShowType"
-          v-model:active-tab="activeTab"
-          :fullscreen-target-ref="opportunityCardRef"
-          :opensea-hidden-columns="hiddenColumns"
-          :form-key="FormDesignKeyEnum.BUSINESS"
         />
       </div>
     </CrmCard>
@@ -44,7 +33,6 @@
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
-  import billboard from './components/billboard/index.vue';
   import CrmOpportunityTable from './components/opportunityTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
@@ -56,8 +44,6 @@
   const Message = useMessage();
   const opportunityCardRef = ref<HTMLElement | null>(null);
 
-  const activeShowType = ref<'table' | 'billboard'>('table');
-  const activeTab = ref();
   const showCustomerOverviewDrawer = ref(false);
   const showCustomerOpenseaOverviewDrawer = ref(false);
   const poolId = ref<string>('');

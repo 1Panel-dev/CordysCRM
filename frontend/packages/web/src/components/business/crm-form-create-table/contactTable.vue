@@ -402,7 +402,7 @@
     showPagination: !props.sourceId,
     readonly: props.readonly,
     containerClass: '.crm-contact-table',
-    hiddenTotal: !!props.hiddenTotal,
+    hiddenTotal: ref(!!props.hiddenTotal),
     operationColumn: props.readonly
       ? undefined
       : {

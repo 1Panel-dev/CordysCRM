@@ -4,6 +4,7 @@
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     :class="`crm-opportunity-table-${props.formKey}`"
+    :not-show-table="activeShowType === 'billboard'"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
@@ -63,7 +64,7 @@
         @keyword-search="searchByKeyword"
       />
       <n-tabs
-        v-if="!props.isCustomerTab || !props.hiddenAdvanceFilter"
+        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter"
         v-model:value="activeShowType"
         type="segment"
         size="large"
@@ -88,6 +89,9 @@
         @refresh-table-data="searchData"
         @generated-chart="handleGeneratedChart"
       />
+    </template>
+    <template v-if="activeShowType === 'billboard'" #other>
+      <billboard ref="billboardRef" :keyword="keyword" :view-id="activeTab" :advance-filter="advanceFilter" />
     </template>
     <template v-if="showStatisticInfo" #totalRight>
       <div class="ml-[24px]">
@@ -188,6 +192,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import billboard from './billboard/index.vue';
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
@@ -234,11 +239,8 @@
   const { currentLocale } = useLocale(Message.loading);
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
-  const activeShowType = defineModel<'billboard' | 'table'>('activeShowType', {
-    default: 'table',
-  });
-  const activeTab = defineModel<string>('activeTab', { required: false });
-
+  const activeShowType = ref<'table' | 'billboard'>('table');
+  const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
@@ -656,7 +658,7 @@
       },
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
-    hiddenTotal: !!props.hiddenTotal,
+    hiddenTotal: computed(() => !!props.hiddenTotal || activeShowType.value === 'billboard'),
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],
   });
@@ -679,7 +681,9 @@
     };
   });
 
-  const showStatisticInfo = computed(() => propsRes.value.columns.find((i) => i.key === 'amount'));
+  const showStatisticInfo = computed(
+    () => propsRes.value.columns.find((i) => i.key === 'amount') && activeShowType.value !== 'billboard'
+  );
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
@@ -713,6 +717,7 @@
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const billboardRef = ref<InstanceType<typeof billboard>>();
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
@@ -720,9 +725,13 @@
     isAdvancedSearchMode.value = isAdvancedMode;
     advancedOriginalForm.value = originalForm;
     setAdvanceFilter(filter);
-    loadList();
-    getStatistic();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+    } else {
+      loadList();
+      getStatistic();
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   handleAdvanceFilter.value = handleAdvSearch;
@@ -794,10 +803,21 @@
       viewId: activeTab.value,
       customerId: props.sourceId,
     });
-    loadList();
-    getStatistic(_keyword);
-    crmTableRef.value?.scrollTo({ top: 0 });
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+    } else {
+      loadList();
+      getStatistic(_keyword);
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
+
+  watch(
+    () => activeShowType.value,
+    () => {
+      searchData();
+    }
+  );
 
   function handleGeneratedChart(res: FilterResult, form: FilterForm) {
     advancedOriginalForm.value = form;
@@ -910,11 +930,6 @@
         inCustomerPool: route.query.inCustomerPool === 'true',
         poolId: route.query.poolId as string,
       });
-    }
-
-    // 从看板切换到表格获取一次数据
-    if (!props.isCustomerTab || !props.hiddenAdvanceFilter) {
-      loadList();
     }
   });
 
