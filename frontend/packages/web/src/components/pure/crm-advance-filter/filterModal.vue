@@ -45,7 +45,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'handleFilter', value: FilterResult): void;
+    (e: 'handleFilter', value: FilterResult, originalForm: FilterForm): void;
     (e: 'refreshViewList'): void;
     (e: 'reset'): void;
   }>();
@@ -85,7 +85,7 @@
     filterContentRef.value?.formRef?.validate((errors) => {
       if (!errors) {
         visible.value = false;
-        emit('handleFilter', getParams());
+        emit('handleFilter', getParams(), cloneDeep(formModel.value));
       }
     });
   }

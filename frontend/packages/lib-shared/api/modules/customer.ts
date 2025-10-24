@@ -53,6 +53,9 @@ import {
   FixedAccountPoolViewUrl,
   FixedContactViewUrl,
   FixedCustomerViewUrl,
+  GenerateCustomerChartUrl,
+  generateCustomerContactChartUrl,
+  generateCustomerPoolChartUrl,
   GetAccountPoolViewDetailUrl,
   GetAccountPoolViewListUrl,
   GetAdvancedCustomerContactListUrl,
@@ -115,7 +118,9 @@ import {
   UpdateCustomerViewUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
+  ChartResponseDataItem,
   CommonList,
+  GenerateChartParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -235,6 +240,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: BatchUpdateContactUrl, data });
   }
 
+  // 生成客户图表
+  function generateCustomerChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: GenerateCustomerChartUrl, data });
+  }
+
   // 添加客户跟进记录
   function addCustomerFollowRecord(data: SaveCustomerFollowRecordParams) {
     return CDR.post({ url: AddCustomerFollowRecordUrl, data });
@@ -338,6 +348,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 删除客户联系人
   function deleteCustomerContact(id: string) {
     return CDR.get({ url: `${DeleteCustomerContactUrl}/${id}` });
+  }
+
+  // 生成客户联系人图表
+  function generateCustomerContactChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: generateCustomerContactChartUrl, data });
   }
 
   // 是否绑定商机
@@ -498,6 +513,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户公海跟进记录列表
   function getCustomerOpenSeaFollowRecordList(data: CustomerFollowRecordTableParams) {
     return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerOpenSeaFollowRecordListUrl, data });
+  }
+
+  // 生成客户公海图表
+  function generateCustomerPoolChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: generateCustomerPoolChartUrl, data });
   }
 
   // 获取客户tab显隐藏
@@ -844,5 +864,8 @@ export default function useProductApi(CDR: CordysAxios) {
     batchUpdateContact,
     mergeAccount,
     mergeAccountPage,
+    generateCustomerChart,
+    generateCustomerPoolChart,
+    generateCustomerContactChart,
   };
 }

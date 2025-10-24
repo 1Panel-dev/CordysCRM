@@ -20,6 +20,7 @@ export const GetAdvancedSearchClueDetailUrl = '/advanced/search/lead/detail'; //
 export const GetGlobalSearchClueListUrl = '/global/search/lead';
 export const GetGlobalCluePoolListUrl = '/global/search/clue_pool';
 export const BatchUpdateLeadUrl = '/lead/batch/update'; // 批量更新线索
+export const GenerateLeadChartUrl = '/lead/chart'; // 生成线索图表
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/lead/follow/record/update'; // 更新跟进记录
@@ -54,6 +55,7 @@ export const GetAdvancedCluePoolListUrl = '/advanced/search/lead-pool'; // 全�
 export const ExportCluePoolAllUrl = '/pool/lead/export-all'; // 导出全部线索池线索
 export const ExportCluePoolSelectedUrl = '/pool/lead/export-select'; // 导出选中线索池线索
 export const BatchUpdateCluePoolUrl = '/pool/lead/batch-update'; // 批量更新线索池线索
+export const GenerateLeadPoolChartUrl = '/pool/lead/chart'; // 生成线索池图表
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/lead/follow/record/pool/page'; // 获取跟进记录列表

@@ -99,6 +99,10 @@
     v-model:show="chartDrawerVisible"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
+    :type="props.type"
+    :default-view-id="activeTab"
+    :advanced-original-form="props.advancedOriginalForm"
+    @generated-chart="handleGeneratedChart"
   />
 </template>
 
@@ -121,7 +125,7 @@
   import type { TableDraggedParams } from '@lib/shared/models/common';
   import { ViewItem } from '@lib/shared/models/view';
 
-  import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import AddOrEditViewsDrawer from './components/addOrEditViewsDrawer.vue';
@@ -145,10 +149,12 @@
     type: TabType;
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
+    advancedOriginalForm?: FilterForm;
   }>();
 
   const emit = defineEmits<{
     (e: 'refreshTableData'): void;
+    (e: 'generatedChart', filterResult: FilterResult, filterForm: FilterForm): void;
   }>();
 
   const activeTab = defineModel<string>('activeTab', { default: '' });
@@ -407,6 +413,11 @@
     nextTick(() => {
       chartDrawerVisible.value = true;
     });
+  }
+
+  function handleGeneratedChart(filterResult: FilterResult, filterForm: FilterForm, viewId: string) {
+    activeTab.value = viewId;
+    emit('generatedChart', filterResult, filterForm);
   }
 </script>
 

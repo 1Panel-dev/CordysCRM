@@ -123,6 +123,7 @@ export const {
   addOpportunityStage,
   getOpportunityStageConfig,
   deleteOpportunityStage,
+  generateOpportunityChart,
 } = opportunityApi;
 
 export const {
@@ -195,6 +196,8 @@ export const {
   enableLeadPoolView,
   dragLeadPoolView,
   batchUpdateLead,
+  generateLeadChart,
+  generateLeadPoolChart,
 } = clueApi;
 
 export const {
@@ -308,6 +311,9 @@ export const {
   batchUpdateContact,
   mergeAccount,
   mergeAccountPage,
+  generateCustomerChart,
+  generateCustomerContactChart,
+  generateCustomerPoolChart,
 } = customerApi;
 
 export const {

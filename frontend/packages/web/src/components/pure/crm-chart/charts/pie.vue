@@ -29,20 +29,22 @@
   const id = getGenerateId();
 
   const { containerRef, groupName, dataIndicatorName, aggregationMethodName, xData, data } = toRefs(props);
-  const seriesData: PieSeriesOption = {
-    name:
-      props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
-    type: ChartTypeEnum.PIE as any,
-    data: data.value,
-    radius: '50%',
-    center: ['13%', '50%'],
-    label: {
-      show: false,
-    },
-    labelLine: {
-      show: false,
-    },
-  };
+  const series = computed<PieSeriesOption>(() => {
+    return {
+      name:
+        props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
+      type: ChartTypeEnum.PIE as any,
+      data: data.value,
+      radius: '50%',
+      center: ['13%', '50%'],
+      label: {
+        show: false,
+      },
+      labelLine: {
+        show: false,
+      },
+    };
+  });
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.PIE,
     id,
@@ -52,7 +54,7 @@
     aggregationMethodName,
     xData,
     data,
-    series: [seriesData],
+    series,
     containerRef,
   });
 

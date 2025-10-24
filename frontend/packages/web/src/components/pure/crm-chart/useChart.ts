@@ -17,7 +17,7 @@ export interface ChartProps {
   dataIndicatorName: Ref<string>;
   aggregationMethodName: Ref<string>;
   xData?: Ref<string[] | undefined>;
-  series: EChartsOption['series'];
+  series: Ref<EChartsOption['series']>;
   containerRef?: Ref<Element | undefined>;
   type: ChartTypeEnum;
   customConfig?: Ref<EChartsOption>;
@@ -132,7 +132,9 @@ export default function useChart(props: ChartProps) {
         type: 'value',
         name: isCount ? t('crmViewSelect.counts') : props.dataIndicatorName.value,
         nameTextStyle: {
-          align: 'right',
+          width: 400,
+          align: 'center',
+          overflow: 'truncate',
         },
         splitLine: {
           lineStyle: {
@@ -231,7 +233,7 @@ export default function useChart(props: ChartProps) {
           top: '2%',
         },
         ...partConfig.value,
-        series: props.series,
+        series: props.series.value,
       } as EChartsOption,
       props.customConfig?.value || {}
     )
@@ -239,6 +241,9 @@ export default function useChart(props: ChartProps) {
 
   const myChart = shallowRef<echarts.ECharts>();
   const chartDom = ref<HTMLElement | null>(null);
+  /**
+   * 处理图表容器尺寸变化
+   */
   function handleChartDomResize() {
     const seriesData: PieSeriesOption = {};
     const legend: LegendComponentOption = {
@@ -251,9 +256,9 @@ export default function useChart(props: ChartProps) {
       legend.textStyle!.width = Math.abs(chartDom.value.clientWidth - chartDom.value.clientHeight / 2 - 40);
       chartOptions.value = deepMerge(chartOptions.value, {
         legend,
-        series: Array.isArray(props.series)
-          ? props.series.map((e) => ({ ...e, ...seriesData }))
-          : { ...props.series, ...seriesData },
+        series: Array.isArray(props.series.value)
+          ? props.series.value.map((e) => ({ ...e, ...seriesData }))
+          : { ...props.series.value, ...seriesData },
       });
     }
   }
@@ -274,6 +279,13 @@ export default function useChart(props: ChartProps) {
       });
     }
   }
+
+  watch(
+    () => props.data.value,
+    () => {
+      refreshChart();
+    }
+  );
 
   function downloadChartImage() {
     if (myChart.value) {

@@ -74,7 +74,9 @@
           :type="FormDesignKeyEnum.CONTACT"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
+          :advanced-original-form="advancedOriginalForm"
           @refresh-table-data="searchData"
+          @generated-chart="handleGeneratedChart"
         />
       </template>
     </CrmTable>
@@ -166,7 +168,7 @@
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -530,12 +532,21 @@
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = ref(false);
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
+  const advancedOriginalForm = ref<FilterForm | undefined>();
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
+    advancedOriginalForm.value = originalForm;
     keyword.value = '';
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handleGeneratedChart(res: FilterResult, _form: FilterForm) {
+    advancedOriginalForm.value = _form;
+    setAdvanceFilter(res);
+    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+    searchData();
   }
 
   handleAdvanceFilter.value = handleAdvSearch;

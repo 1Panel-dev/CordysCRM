@@ -59,7 +59,9 @@
         :type="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
+        :advanced-original-form="advancedOriginalForm"
         @refresh-table-data="searchData"
+        @generated-chart="handleGeneratedChart"
       />
     </template>
   </CrmTable>
@@ -115,7 +117,7 @@
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -543,12 +545,14 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isAdvancedSearchMode = ref(false);
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
+  const advancedOriginalForm = ref<FilterForm | undefined>();
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+    advancedOriginalForm.value = originalForm;
   }
   handleAdvanceFilter.value = handleAdvSearch;
 
@@ -561,6 +565,13 @@
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+    advancedOriginalForm.value = form;
+    setAdvanceFilter(res);
+    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+    searchData();
   }
 
   handleSearchData.value = searchData;

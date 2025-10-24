@@ -4,9 +4,8 @@ import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
-import type { DataSourceProps } from '@/components/business/crm-data-source-select/index.vue';
-import { UserTagSelectorProps } from '@/components/business/crm-user-tag-selector/index.vue';
-
+import type { DataSourceProps } from '../../business/crm-data-source-select/type';
+import type { UserTagSelectorProps } from '../../business/crm-user-tag-selector/type';
 import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
 export interface ScopeProps {

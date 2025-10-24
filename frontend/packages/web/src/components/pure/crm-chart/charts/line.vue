@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+  import { LineSeriesOption } from 'echarts';
   import { LineChart } from 'echarts/charts';
   import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
@@ -27,6 +28,13 @@
 
   const id = getGenerateId();
   const { containerRef, groupName, dataIndicatorName, aggregationMethodName, xData, data } = toRefs(props);
+  const series = computed<LineSeriesOption>(() => ({
+    name:
+      props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
+    type: ChartTypeEnum.LINE,
+    smooth: true,
+    data: props.data,
+  }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.LINE,
     components: [TooltipComponent, TitleComponent, GridComponent, LineChart, CanvasRenderer],
@@ -36,16 +44,7 @@
     aggregationMethodName,
     xData,
     data,
-    series: [
-      {
-        name:
-          props.aggregationMethodName === t('crmViewSelect.count')
-            ? t('crmViewSelect.counts')
-            : props.dataIndicatorName,
-        type: ChartTypeEnum.LINE,
-        data: props.data,
-      },
-    ],
+    series,
     containerRef,
   });
 

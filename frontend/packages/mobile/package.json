@@ -16,8 +16,8 @@
     "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
-    "@wecom/jssdk": "^2.2.5",
     "nprogress": "^0.2.0",
+    "typescript": "5.9",
     "vant": "^4.8.2",
     "vue": "^3.5.13"
   },

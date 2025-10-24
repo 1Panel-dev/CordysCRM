@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+  import { PieSeriesOption } from 'echarts';
   import { PieChart } from 'echarts/charts';
   import { GridComponent, LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
@@ -27,7 +28,7 @@
 
   const id = getGenerateId();
   const { containerRef, groupName, dataIndicatorName, aggregationMethodName, xData, data } = toRefs(props);
-  const seriesData = {
+  const series = computed<PieSeriesOption>(() => ({
     name:
       props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
     type: ChartTypeEnum.PIE as any,
@@ -40,7 +41,7 @@
     labelLine: {
       show: false,
     },
-  };
+  }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.PIE,
     components: [TooltipComponent, TitleComponent, GridComponent, LegendComponent, PieChart, CanvasRenderer],
@@ -50,7 +51,7 @@
     aggregationMethodName,
     xData,
     data,
-    series: [seriesData],
+    series,
     containerRef,
     customConfig: computed(() => ({
       legend: {
@@ -64,38 +65,6 @@
     initChart(chartDom);
   });
 
-  watch(
-    () => props.isFullScreen,
-    (val) => {
-      nextTick(() => {
-        if (val) {
-          refreshChart({
-            legend: {
-              left: '45%',
-            },
-            series: [
-              {
-                ...seriesData,
-                center: ['20%', '50%'],
-              },
-            ],
-          });
-        } else {
-          refreshChart({
-            legend: {
-              left: '37%',
-            },
-            series: [
-              {
-                ...seriesData,
-                center: ['13%', '50%'],
-              },
-            ],
-          });
-        }
-      });
-    }
-  );
   defineExpose({ refreshChart, downloadChartImage });
 </script>
 

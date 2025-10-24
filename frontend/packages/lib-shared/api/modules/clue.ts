@@ -33,6 +33,8 @@ import {
   ExportClueSelectedUrl,
   FixedClueViewUrl,
   FixedPoolLeadViewUrl,
+  GenerateLeadChartUrl,
+  GenerateLeadPoolChartUrl,
   GetAdvancedCluePoolListUrl,
   GetAdvancedSearchClueDetailUrl,
   GetAdvancedSearchClueListUrl,
@@ -85,7 +87,9 @@ import type {
   UpdateClueParams,
 } from '@lib/shared/models/clue';
 import type {
+  ChartResponseDataItem,
   CommonList,
+  GenerateChartParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -308,6 +312,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}` });
   }
 
+  // 生成线索池图表
+  function generateLeadPoolChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: GenerateLeadPoolChartUrl, data });
+  }
+
   // 获取线索tab显隐藏
   function getClueTab() {
     return CDR.get<CustomerTabHidden>({ url: GetClueTabUrl });
@@ -331,6 +340,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 转换线索
   function transformClue(data: ConvertClueParams) {
     return CDR.post({ url: TransformClueUrl, data });
+  }
+
+  // 生成线索图表
+  function generateLeadChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: GenerateLeadChartUrl, data });
   }
 
   // 视图
@@ -515,5 +529,7 @@ export default function useProductApi(CDR: CordysAxios) {
     enableLeadPoolView,
     dragLeadPoolView,
     batchUpdateLead,
+    generateLeadChart,
+    generateLeadPoolChart,
   };
 }

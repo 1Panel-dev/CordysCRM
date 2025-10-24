@@ -19,7 +19,12 @@
       </div>
     </template>
     <div class="flex h-full flex-col">
-      <n-collapse :default-expanded-names="['1']" arrow-placement="right">
+      <n-collapse
+        v-model:expanded-names="expandNames"
+        :default-expanded-names="['1']"
+        arrow-placement="right"
+        display-directive="show"
+      >
         <n-collapse-item name="1">
           <template #header>
             <div class="w-full text-[16px] font-semibold">
@@ -55,14 +60,16 @@
               :options="dataIndicatorOptions"
               filterable
               class="w-[195px]"
-              :disabled="aggregationMethod === 'count'"
+              :disabled="aggregationMethod === 'COUNT'"
               :render-label="dataIndicatorRenderLabel"
             />
             <n-select v-model:value="aggregationMethod" :options="aggregationMethodOptions" class="w-[80px]" />
           </n-input-group>
         </div>
-        <div class="filter-input">
-          <n-button type="primary" ghost @click="generateChart">{{ t('crmViewSelect.generateChart') }}</n-button>
+        <div class="filter-input flex-1">
+          <n-button type="primary" ghost :loading="loading" @click="generateChart">
+            {{ t('crmViewSelect.generateChart') }}
+          </n-button>
         </div>
       </div>
       <div
@@ -70,6 +77,7 @@
       >
         <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
           <CrmChart
+            v-if="seriesData.length"
             :type="ChartTypeEnum.LINE"
             :group-name="groupByName"
             :data-indicator-name="dataIndicatorName"
@@ -88,7 +96,7 @@
   import { NButton, NCollapse, NCollapseItem, NInputGroup, NScrollbar, NSelect } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
@@ -98,11 +106,27 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
+  import {
+    generateCustomerChart,
+    generateCustomerContactChart,
+    generateCustomerPoolChart,
+    generateLeadChart,
+    generateLeadPoolChart,
+    generateOpportunityChart,
+  } from '@/api/modules';
+  import { TabType } from '@/hooks/useHiddenTab';
   import useViewStore from '@/store/modules/view';
 
   const props = defineProps<{
+    type: TabType;
     configList: FilterFormItem[];
     customList?: FilterFormItem[];
+    defaultViewId?: string;
+    advancedOriginalForm?: FilterForm;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'generatedChart', filterResult: FilterResult, filterForm: FilterForm, viewId: string): void;
   }>();
 
   const { t } = useI18n();
@@ -111,7 +135,7 @@
     required: true,
   });
   const viewStore = useViewStore();
-  const activeView = ref<string>('');
+  const activeView = ref<string>(props.defaultViewId || '');
   const options = computed(() => [
     {
       type: 'group',
@@ -162,27 +186,29 @@
   const groupBy = ref<string>(groupByOptions.value[0]?.value || '');
   const groupByName = computed(() => groupByOptions.value.find((e) => e.value === groupBy.value)?.label || '');
   const dataIndicatorOptions = computed(() =>
-    [...props.configList, ...(props.customList || [])].map((item) => ({
-      label: item.title,
-      value: item.dataIndex || '',
-    }))
+    [...props.configList, ...(props.customList || [])]
+      .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
+      .map((item) => ({
+        label: item.title,
+        value: item.dataIndex || '',
+      }))
   );
   const dataIndicator = ref<string>(dataIndicatorOptions.value[0]?.value || '');
   const dataIndicatorName = computed(
     () => dataIndicatorOptions.value.find((e) => e.value === dataIndicator.value)?.label || ''
   );
-  const aggregationMethod = ref<'sum' | 'average' | 'count'>('sum');
+  const aggregationMethod = ref<'SUM' | 'AVG' | 'COUNT'>('SUM');
   const aggregationMethodOptions = [
-    { label: t('crmViewSelect.sum'), value: 'sum' },
-    { label: t('crmViewSelect.average'), value: 'average' },
-    { label: t('crmViewSelect.count'), value: 'count' },
+    { label: t('crmViewSelect.sum'), value: 'SUM' },
+    { label: t('crmViewSelect.average'), value: 'AVG' },
+    { label: t('crmViewSelect.count'), value: 'COUNT' },
   ];
   const aggregationMethodName = computed(
     () => aggregationMethodOptions.find((e) => e.value === aggregationMethod.value)?.label || ''
   );
 
   function dataIndicatorRenderLabel(option: { label: string; value: string }) {
-    return aggregationMethod.value === 'count' ? t('crmViewSelect.count') : option.label;
+    return aggregationMethod.value === 'COUNT' ? t('crmViewSelect.count') : option.label;
   }
 
   function getParams(): FilterResult {
@@ -200,23 +226,73 @@
     };
   }
 
-  const xData = ref<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
-  const seriesData = ref<any[]>([150, 230, 224, 218, 135, 147, 260]);
+  const xData = ref<string[]>([]);
+  const seriesData = ref<any[]>([]);
+  const generateChartApiMap = {
+    [FormDesignKeyEnum.CUSTOMER]: generateCustomerChart,
+    [FormDesignKeyEnum.BUSINESS]: generateOpportunityChart,
+    [FormDesignKeyEnum.CLUE]: generateLeadChart,
+    [FormDesignKeyEnum.CLUE_POOL]: generateLeadPoolChart,
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: generateCustomerPoolChart,
+    [FormDesignKeyEnum.CONTACT]: generateCustomerContactChart,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: () => Promise.resolve(),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: () => Promise.resolve(),
+  };
+  const loading = ref<boolean>(false);
+  const expandNames = ref<string[]>(['1']);
+
   async function generateChart() {
-    try {
-      const isError = await filterContentRef.value?.formRef?.validate();
-      if (!isError) {
+    filterContentRef.value?.formRef?.validate(async (errors) => {
+      if (errors) {
         return;
       }
-      const filterResult = getParams();
-      // TODO:接口
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
+      try {
+        loading.value = true;
+        const filterResult = getParams();
+        // const res = await generateChartApiMap[props.type]({
+        //   filterCondition: filterResult,
+        //   poolId: '',
+        //   viewId: '',
+        //   chartConfig: {
+        //     chatType: chartType.value,
+        //     categoryAxis: {
+        //       fieldId: groupBy.value,
+        //     },
+        //     valueAxis: {
+        //       fieldId: dataIndicator.value,
+        //       aggregateMethod: aggregationMethod.value,
+        //     },
+        //   },
+        // });
+        emit('generatedChart', filterResult, formModel.value, activeView.value);
+        // TODO: 接口待调通
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        if (expandNames.value.length === 0) {
+          expandNames.value = ['1'];
+        }
+      } finally {
+        loading.value = false;
+      }
+    });
   }
 
   const chartContainerRef = ref<Element | undefined>(undefined);
+
+  watch(
+    () => show.value,
+    (newVal) => {
+      if (newVal) {
+        formModel.value = cloneDeep(props.advancedOriginalForm || defaultFormModel);
+        activeView.value = props.defaultViewId || '';
+      } else {
+        seriesData.value = [];
+        xData.value = [];
+      }
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less" scoped>

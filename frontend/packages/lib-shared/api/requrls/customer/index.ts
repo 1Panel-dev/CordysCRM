@@ -52,6 +52,8 @@ export const BatchUpdateAccountUrl = '/account/batch/update'; // 批量编辑客
 export const BatchUpdateContactUrl = '/account/contact/batch/update'; // 批量编辑联系人
 export const MergeAccountUrl = '/account/merge'; // 合并客户
 export const MergeAccountPageUrl = '/account/merge/page'; // 获取数据范围权限客户列表
+export const GenerateCustomerChartUrl = '/account/chart'; // 生成客户图表
+export const generateCustomerContactChartUrl = '/account/contact/chart'; // 生成客户联系人图表
 
 export const CancelCustomerFollowPlanUrl = '/account/follow/plan/cancel'; // 取消客户跟进计划
 export const GetCustomerHeaderListUrl = '/account/owner/history/list'; // 客户负责人记录列表
@@ -122,3 +124,4 @@ export const DeleteAccountPoolViewUrl = 'pool/account/view/delete';
 export const FixedAccountPoolViewUrl = 'pool/account/view/fixed';
 export const EnableAccountPoolViewUrl = 'pool/account/view/enable';
 export const DragAccountPoolViewUrl = 'pool/account/view/edit/pos';
+export const generateCustomerPoolChartUrl = '/pool/account/chart';

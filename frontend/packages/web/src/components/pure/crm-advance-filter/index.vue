@@ -38,7 +38,7 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import FilterModal from './filterModal.vue';
 
-  import { ConditionsItem, FilterFormItem, FilterResult } from './type';
+  import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from './type';
 
   const { t } = useI18n();
 
@@ -51,7 +51,7 @@
 
   const emit = defineEmits<{
     (e: 'keywordSearch', value: string): void;
-    (e: 'advSearch', value: FilterResult, isAdvancedSearchMode: boolean): void;
+    (e: 'advSearch', value: FilterResult, isAdvancedSearchMode: boolean, originalForm?: FilterForm): void;
     (e: 'refresh', value: FilterResult): void;
   }>();
 
@@ -72,7 +72,7 @@
     return item.value?.length;
   };
 
-  const handleFilter = (filter: FilterResult) => {
+  const handleFilter = (filter: FilterResult, originalForm?: FilterForm) => {
     keyword.value = '';
     const haveConditions: boolean =
       filter.conditions?.some((item) => {
@@ -82,7 +82,7 @@
 
     isAdvancedSearchMode.value = haveConditions;
     filterResult.value = filter;
-    emit('advSearch', filter, isAdvancedSearchMode.value);
+    emit('advSearch', filter, isAdvancedSearchMode.value, originalForm);
   };
 
   const filterModalRef = ref<InstanceType<typeof FilterModal>>();

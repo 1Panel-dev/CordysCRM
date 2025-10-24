@@ -35,6 +35,7 @@ export const SortOpportunityStageUrl = '/opportunity/stage/sort'; // 商机阶�
 export const AddOpportunityStageUrl = '/opportunity/stage/add'; // 商机阶段添加
 export const GetOpportunityStageConfigUrl = '/opportunity/stage/get'; // 获取商机阶段配置
 export const DeleteOpportunityStageUrl = '/opportunity/stage/delete'; // 删除商机阶段
+export const GenerateOpportunityChartUrl = '/opportunity/chart'; // 生成商机视图
 
 // 视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';

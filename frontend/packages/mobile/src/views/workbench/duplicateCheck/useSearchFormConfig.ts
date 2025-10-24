@@ -17,7 +17,6 @@ import {
   getSearchConfig,
   globalSearchOptPage,
 } from '@/api/modules';
-import useAppStore from '@/store/modules/app';
 import { hasAnyPermission } from '@/utils/permission';
 
 import { defaultSearchSetFormModel, lastScopedOptions, ScopedOptions, scopedOptions, SearchTableKey } from './config';

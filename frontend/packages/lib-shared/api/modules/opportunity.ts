@@ -18,6 +18,7 @@ import {
   ExportOpportunityAllUrl,
   ExportOpportunitySelectedUrl,
   FixedBusinessViewUrl,
+  GenerateOpportunityChartUrl,
   GetBusinessViewDetailUrl,
   GetBusinessViewListUrl,
   GetOpportunityContactListUrl,
@@ -50,7 +51,9 @@ import {
   UpdateOptFollowRecordUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
+  ChartResponseDataItem,
   CommonList,
+  GenerateChartParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -252,6 +255,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteOpportunityStageUrl}/${id}` });
   }
 
+  // 生成商机图表
+  function generateOpportunityChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: GenerateOpportunityChartUrl, data });
+  }
+
   // 视图
   function addBusinessView(data: ViewParams) {
     return CDR.post({ url: AddBusinessViewUrl, data });
@@ -369,5 +377,6 @@ export default function useProductApi(CDR: CordysAxios) {
     addOpportunityStage,
     getOpportunityStageConfig,
     deleteOpportunityStage,
+    generateOpportunityChart,
   };
 }

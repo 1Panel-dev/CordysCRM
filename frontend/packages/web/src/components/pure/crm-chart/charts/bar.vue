@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+  import { BarSeriesOption } from 'echarts';
   import { BarChart } from 'echarts/charts';
   import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
@@ -27,6 +28,13 @@
 
   const id = getGenerateId();
   const { containerRef, groupName, dataIndicatorName, aggregationMethodName, xData, data } = toRefs(props);
+  const series = computed<BarSeriesOption>(() => ({
+    name:
+      props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
+    type: ChartTypeEnum.BAR,
+    barWidth: '10px',
+    data: props.data,
+  }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.BAR,
     components: [TooltipComponent, TitleComponent, GridComponent, BarChart, CanvasRenderer],
@@ -36,17 +44,7 @@
     aggregationMethodName,
     xData,
     data,
-    series: [
-      {
-        name:
-          props.aggregationMethodName === t('crmViewSelect.count')
-            ? t('crmViewSelect.counts')
-            : props.dataIndicatorName,
-        type: ChartTypeEnum.BAR,
-        barWidth: '10px',
-        data: props.data,
-      },
-    ],
+    series,
     containerRef,
   });
 

@@ -1,3 +1,4 @@
+import type { FilterResult } from '@cordys/web/src/components/pure/crm-advance-filter/type';
 import { ColumnTypeEnum, OperatorEnum } from '@lib/shared/enums/commonEnum';
 
 // 请求返回结构
@@ -25,6 +26,9 @@ export interface TableQueryParams {
   filter?: object;
   // 查询条件
   keyword?: string;
+  // 视图ID
+  viewId?: string;
+  filterCondition?: FilterResult;
   [key: string]: any;
 }
 
@@ -83,4 +87,32 @@ export interface ModuleDragParams {
   dragNodeId: string;
   dropNodeId: string;
   dropPosition: number;
+}
+
+export interface ChartValueAxis {
+  fieldId: string;
+  aggregateMethod: string;
+}
+
+export interface ChartCategoryAxis {
+  fieldId: string;
+}
+export interface ChartConfig {
+  chatType: string; // TODO:chart
+  categoryAxis: ChartCategoryAxis;
+  subCategoryAxis?: ChartCategoryAxis;
+  valueAxis: ChartValueAxis;
+}
+
+export interface GenerateChartParams extends TableQueryParams {
+  chartConfig: ChartConfig;
+  poolId?: string;
+}
+
+export interface ChartResponseDataItem {
+  categoryAxis: string; // 类目 id
+  categoryAxisName: string; // 类目名称
+  subCategoryAxis: string; // 子类目 id
+  subCategoryAxisName: string; // 子类目名称
+  valueAxis: string; // 值
 }

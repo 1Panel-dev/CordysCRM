@@ -47,7 +47,7 @@
 
   import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
-  export interface DataSourceProps {
+  interface DataSourceTableProps {
     dataSourceType: FieldDataSourceTypeEnum;
     multiple?: boolean;
     disabled?: boolean;
@@ -56,7 +56,7 @@
     filterParams?: FilterResult;
   }
 
-  const props = withDefaults(defineProps<DataSourceProps>(), {
+  const props = withDefaults(defineProps<DataSourceTableProps>(), {
     multiple: true,
   });
   const emit = defineEmits<{

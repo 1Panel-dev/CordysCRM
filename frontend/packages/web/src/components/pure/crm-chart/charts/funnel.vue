@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+  import { FunnelSeriesOption } from 'echarts';
   import { FunnelChart } from 'echarts/charts';
   import { GridComponent, LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
@@ -26,6 +27,22 @@
 
   const id = getGenerateId();
   const { containerRef, groupName, dataIndicatorName, aggregationMethodName, data } = toRefs(props);
+  const series = computed<FunnelSeriesOption>(() => ({
+    name:
+      props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
+    type: ChartTypeEnum.FUNNEL,
+    data: props.data,
+    min: 0,
+    max: 100,
+    minSize: '0%',
+    maxSize: '100%',
+    sort: 'descending',
+    gap: 1,
+    label: {
+      show: true,
+      position: 'inside',
+    },
+  }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.FUNNEL,
     id,
@@ -34,26 +51,7 @@
     dataIndicatorName,
     aggregationMethodName,
     data,
-    series: [
-      {
-        name:
-          props.aggregationMethodName === t('crmViewSelect.count')
-            ? t('crmViewSelect.counts')
-            : props.dataIndicatorName,
-        type: ChartTypeEnum.FUNNEL,
-        data: props.data,
-        min: 0,
-        max: 100,
-        minSize: '0%',
-        maxSize: '100%',
-        sort: 'descending',
-        gap: 1,
-        label: {
-          show: true,
-          position: 'inside',
-        },
-      },
-    ],
+    series,
     containerRef,
     customConfig: computed(() => ({
       legend: {
