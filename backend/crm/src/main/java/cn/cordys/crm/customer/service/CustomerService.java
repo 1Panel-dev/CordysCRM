@@ -35,6 +35,8 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
@@ -144,6 +146,8 @@ public class CustomerService {
     private ExtFollowUpRecordMapper extFollowUpRecordMapper;
     @Resource
     private ExtFollowUpPlanMapper extFollowUpPlanMapper;
+    @Resource
+    private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -772,7 +776,7 @@ public class CustomerService {
          * 规则:
          * 1. 合并客户联系人, 客户关联商机.
          * 3. 合并客户跟进记录/计划.
-         * 4. 删除被合并的客户, 并添加对应的负责人为合并客户的协作人.
+         * 4. 删除被合并的客户, 并添加对应的负责人为合并客户的协作人, 被合并客户的协作人也要.
          */
         request.getMergeIds().remove(request.getToMergeId());
         Customer oldCustomer = customerMapper.selectByPrimaryKey(request.getToMergeId());
@@ -780,27 +784,24 @@ public class CustomerService {
             // 没有可合并的客户数据
             throw new GenericException(Translator.get("no.customer.merge.data"));
         }
+
         // 批量合并产生的修改日志
         List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId);
         extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId);
         extOpportunityMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
+
+        // 合并协作人&&删除被合并客户&&记录删除日志
+        mergeCollaboration(request, currentUser, currentOrgId);
         List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
-        List<String> ownerIds = mergeCustomers.stream().map(Customer::getOwner).filter(item -> !Strings.CS.equals(item, request.getOwnerId())).toList();
-        for (String ownerId : ownerIds) {
-            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
-            collaborationAddRequest.setCustomerId(request.getToMergeId());
-            collaborationAddRequest.setCollaborationType("COLLABORATION");
-            collaborationAddRequest.setUserId(ownerId);
-            customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
-        }
         customerMapper.deleteByIds(request.getMergeIds());
         for (Customer mergeCustomer : mergeCustomers) {
             // 被合并客户的删除日志
             mergeLogs.add(new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE, LogModule.CUSTOMER_INDEX, mergeCustomer.getName()));
         }
 
+        // 变更合并客户的负责人
         if (!Strings.CS.equals(oldCustomer.getOwner(), request.getOwnerId())) {
             LogDTO logDTO = new LogDTO(currentOrgId, request.getToMergeId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_INDEX, oldCustomer.getName());
             logDTO.setOriginalValue(oldCustomer);
@@ -813,12 +814,11 @@ public class CustomerService {
             mergeLogs.add(logDTO);
         }
 
-        // 插入日志
+        // 批量插入合并日志&&其他操作日志
         OperationLogContext.setContext(LogContextInfo.builder().resourceId(request.getToMergeId()).resourceName(oldCustomer.getName())
                 .originalValue(Map.of("merge", mergeCustomers.stream().map(Customer::getName).toList()))
                 .modifiedValue(Map.of("merge", List.of(oldCustomer.getName())))
                 .build());
-
         if (!CollectionUtils.isEmpty(mergeLogs)) {
             logService.batchAdd(mergeLogs);
         }
@@ -832,36 +832,117 @@ public class CustomerService {
         return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 
+    /**
+     * 合并客户协作人
+     * @param request 请求参数
+     * @param currentUser 当前用户
+     * @param currentOrgId 当前组织ID
+     */
+    private void mergeCollaboration(CustomerMergeRequest request, String currentUser, String currentOrgId) {
+        // 被合并客户的协作人
+        LambdaQueryWrapper<CustomerCollaboration> mergeCollaborationWrapper = new LambdaQueryWrapper<>();
+        mergeCollaborationWrapper.in(CustomerCollaboration::getCustomerId, request.getMergeIds());
+        List<CustomerCollaboration> mergeCollaborations = customerCollaborationMapper.selectListByLambda(mergeCollaborationWrapper);
+        List<String> toCollaborationUserIds = mergeCollaborations.stream().map(CustomerCollaboration::getUserId).distinct().toList();
+        // 被合并的客户负责人
+        List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
+        List<String> toCollaborationOwnerIds = mergeCustomers.stream().map(Customer::getOwner).toList();
+        // 合并去重
+        List<String> mergeIds = Stream.of(toCollaborationUserIds, toCollaborationOwnerIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        // 合并客户已存在的协作人
+        LambdaQueryWrapper<CustomerCollaboration> collaborationWrapper = new LambdaQueryWrapper<>();
+        collaborationWrapper.eq(CustomerCollaboration::getCustomerId, request.getToMergeId());
+        List<CustomerCollaboration> customerCollaborations = customerCollaborationMapper.selectListByLambda(collaborationWrapper);
+        List<String> collaborationUserIds = customerCollaborations.stream().map(CustomerCollaboration::getUserId).toList();
+        for (String mergeId : mergeIds) {
+            if (collaborationUserIds.contains(mergeId) || Strings.CS.equals(mergeId, request.getOwnerId())) {
+                // 已经是协作人或者是合并客户的负责人，跳过
+                continue;
+            }
+            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
+            collaborationAddRequest.setCustomerId(request.getToMergeId());
+            collaborationAddRequest.setCollaborationType("COLLABORATION");
+            collaborationAddRequest.setUserId(mergeId);
+            customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
+        }
 
+        // 删除被合并客户的协作人关系
+        LambdaQueryWrapper<CustomerCollaboration> delCollaborationWrapper = new LambdaQueryWrapper<>();
+        delCollaborationWrapper.in(CustomerCollaboration::getCustomerId, request.getMergeIds());
+        customerCollaborationMapper.deleteByLambda(delCollaborationWrapper);
+    }
+
+    /**
+     * 获取合并相关的日志
+     * @param mergeRequest 合并请求参数
+     * @param currentUser 当前用户
+     * @param currentOrgId 当前组织ID
+     * @return 日志列表
+     */
     private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser, String currentOrgId) {
         List<LogDTO> logs = new ArrayList<>();
 
+        List<Customer> mergeCustomers = customerMapper.selectByIds(mergeRequest.getMergeIds());
+        Map<String, String> customerMap = mergeCustomers.stream().collect(Collectors.toMap(Customer::getId, Customer::getName));
         // 联系人日志
         List<CustomerContact> mergeContacts = extCustomerContactMapper.getMergeContactList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeContacts)) {
             for (CustomerContact contact : mergeContacts) {
                 LogDTO logDTO = new LogDTO(currentOrgId, contact.getId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_CONTACT, contact.getName());
+                contact.setCustomerId(customerMap.get(contact.getCustomerId()));
+                logDTO.setOriginalValue(contact);
                 CustomerContact newContact = BeanUtils.copyBean(new CustomerContact(), contact);
                 newContact.setCustomerId(mergeRequest.getToMergeId());
-                logDTO.setOriginalValue(contact);
                 logDTO.setModifiedValue(newContact);
                 logs.add(logDTO);
             }
         }
+
         // 商机日志
         List<Opportunity> mergeOpportunities = extOpportunityMapper.getMergeOpportunityList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeOpportunities)) {
             for (Opportunity opportunity : mergeOpportunities) {
                 LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE, LogModule.OPPORTUNITY, opportunity.getName());
+                opportunity.setCustomerId(customerMap.get(opportunity.getCustomerId()));
+                logDTO.setOriginalValue(opportunity);
                 Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);
                 newOpportunity.setCustomerId(mergeRequest.getToMergeId());
-                logDTO.setOriginalValue(opportunity);
                 logDTO.setModifiedValue(newOpportunity);
                 logs.add(logDTO);
             }
         }
 
-        // TODO: 跟进记录/计划日志
+        // 跟进记录/计划日志
+        List<FollowUpRecord> mergeRecords = extFollowUpRecordMapper.getMergeRecordList(mergeRequest, currentOrgId);
+        List<String> recordCustomerIds = mergeRecords.stream().map(FollowUpRecord::getCustomerId).toList();
+        List<FollowUpPlan> mergePlans = extFollowUpPlanMapper.getMergePlanList(mergeRequest, currentOrgId);
+        List<String> planCustomerIds = mergePlans.stream().map(FollowUpPlan::getCustomerId).toList();
+        for (String mergeId : mergeRequest.getMergeIds()) {
+            if (recordCustomerIds.contains(mergeId)) {
+                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE, LogModule.FOLLOW_UP_RECORD, customerMap.get(mergeId));
+                FollowUpRecord oldRecord = new FollowUpRecord();
+                oldRecord.setCustomerId(customerMap.get(mergeId));
+                logDTO.setOriginalValue(oldRecord);
+                FollowUpRecord newRecord = new FollowUpRecord();
+                newRecord.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setModifiedValue(newRecord);
+                logs.add(logDTO);
+            }
+            if (planCustomerIds.contains(mergeId)) {
+                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE, LogModule.FOLLOW_UP_PLAN, customerMap.get(mergeId));
+                FollowUpPlan oldPlan = new FollowUpPlan();
+                oldPlan.setCustomerId(customerMap.get(mergeId));
+                logDTO.setOriginalValue(oldPlan);
+                FollowUpPlan newPlan = new FollowUpPlan();
+                newPlan.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setModifiedValue(newPlan);
+                logs.add(logDTO);
+            }
+        }
+
         return logs;
     }
 }
