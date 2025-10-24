@@ -102,29 +102,12 @@
         </encoder>
     </appender>
 
-    <appender name="consoleAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="console"/>
-    </appender>
-
     <appender name="traceAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>DEBUG</level>
         </filter>
         <queueSize>10000</queueSize>
         <appender-ref ref="traceAppender"/>
-    </appender>
-
-
-    <appender name="debugAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="debugAppender"/>
     </appender>
 
     <appender name="infoAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
@@ -175,6 +158,5 @@
 
     <!-- 容器日志记录调整 -->
     <logger name="org.eclipse.jetty.ee10.servlet.ServletChannel" level="ERROR"/>
-
 
 </configuration>
