@@ -18,7 +18,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.ALIYUN_LLM_API_KEY }}
           LANGUAGE: Chinese
           OPENAI_API_ENDPOINT: https://dashscope.aliyuncs.com/compatible-mode/v1
-          MODEL: qwen2.5-coder-3b-instruct
+          MODEL: qwen3-coder-plus
           PROMPT: "请检查以下代码差异是否有拼写或语法错误，若有问题请指出，无问题请标记 /lgtm，并用中文回答。"
           top_p: 1
           temperature: 1
