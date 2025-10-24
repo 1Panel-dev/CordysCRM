@@ -100,6 +100,7 @@ public class OAuthUserService {
      *
      * @param accessToken access_token
      * @param unionid     unionid
+     *
      * @return userId
      */
     public String getUserIdByUnionId(String accessToken, String unionid) {
@@ -107,7 +108,8 @@ public class OAuthUserService {
         Map<String, String> body = new HashMap<>();
         body.put("unionid", unionid);
         String response = post(url, body);
-        Map<String, Object> result = JSON.parseObject(response, new TypeReference<>() {});
+        Map<String, Object> result = JSON.parseObject(response, new TypeReference<>() {
+        });
         if (result.get("errcode") != null && (Integer) result.get("errcode") == 0) {
             Map<String, Object> user = (Map<String, Object>) result.get("result");
             return (String) user.get("userid");

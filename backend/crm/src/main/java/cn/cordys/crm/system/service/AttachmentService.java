@@ -55,6 +55,7 @@ public class AttachmentService {
 
     /**
      * 删除附件
+     *
      * @param attachmentId 附件ID
      */
     public void delete(String attachmentId) {
@@ -71,6 +72,7 @@ public class AttachmentService {
 
     /**
      * 获取文件流
+     *
      * @param attachmentId 附件ID
      *
      * @return 文件流

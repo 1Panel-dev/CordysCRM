@@ -104,7 +104,7 @@ public class PoolClueController {
     @PostMapping("/batch-update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新线索")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         poolClueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

@@ -9,6 +9,7 @@ public class OpportunityPageRequest extends BasePageRequest {
 
     @Schema(description = "看板模式")
     private Boolean board = false;
+
     public String getCustomerId() {
         return null;
     }

@@ -7,11 +7,11 @@ import cn.cordys.crm.integration.common.client.QrCodeClient;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
 import cn.cordys.crm.integration.lark.dto.LarkDepartment;
 import cn.cordys.crm.integration.lark.dto.LarkDepartmentData;
-import cn.cordys.crm.integration.lark.dto.LarkUser;
 import cn.cordys.crm.integration.lark.dto.LarkTenant;
+import cn.cordys.crm.integration.lark.dto.LarkUser;
 import cn.cordys.crm.integration.lark.response.LarkDepartmentResponse;
-import cn.cordys.crm.integration.lark.response.LarkUserResponse;
 import cn.cordys.crm.integration.lark.response.LarkTenantResponse;
+import cn.cordys.crm.integration.lark.response.LarkUserResponse;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
@@ -40,7 +40,8 @@ public class LarkDepartmentService {
      * 递归获取所有子部门信息
      *
      * @param tenantAccessToken 租户访问令牌
-     * @param departmentId  根部门ID
+     * @param departmentId      根部门ID
+     *
      * @return 子部门列表
      */
     public List<LarkDepartment> getAllSubDepartments(String tenantAccessToken, String departmentId) {
@@ -83,7 +84,8 @@ public class LarkDepartmentService {
      * 获取部门直属用户
      *
      * @param tenantAccessToken 租户访问令牌
-     * @param departmentId  部门ID
+     * @param departmentId      部门ID
+     *
      * @return 部门直属用户列表
      */
     public List<LarkUser> getDepartmentUsers(String tenantAccessToken, String departmentId) {
@@ -128,8 +130,10 @@ public class LarkDepartmentService {
 
     /**
      * 将飞书部门转化为CRM部门
-     * @return CRM部门列表
+     *
      * @param tenantAccessToken 租户访问令牌
+     *
+     * @return CRM部门列表
      */
     public List<ThirdDepartment> getDepartmentList(String tenantAccessToken) {
         List<LarkDepartment> larkDepartments = getAllSubDepartments(tenantAccessToken, "0");
@@ -166,9 +170,11 @@ public class LarkDepartmentService {
 
     /**
      * 获取部门直属用户的CRM用户列表
-     * @return 部门ID与用户列表的映射
+     *
      * @param tenantAccessToken 租户访问令牌
-     * @param departmentIds 部门ID列表
+     * @param departmentIds     部门ID列表
+     *
+     * @return 部门ID与用户列表的映射
      */
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
         Map<String, List<ThirdUser>> thirdUserMap = new HashMap<>();
@@ -186,14 +192,16 @@ public class LarkDepartmentService {
                             .avatar(StringUtils.isBlank(larkUser.getAvatar().getAvatar240()) ? null : larkUser.getAvatar().getAvatar240())
                             .isLeaderInDept(Strings.CI.equals(larkUser.getLeaderUserId(), larkUser.getUserId()))
                             .build())
-                .collect(Collectors.toList()));
+                    .collect(Collectors.toList()));
         });
         return thirdUserMap;
     }
 
     /**
      * 获取企业信息
+     *
      * @param tenantAccessToken 租户访问令牌
+     *
      * @return 企业信息
      */
     public LarkTenant getTenantInfo(String tenantAccessToken) {

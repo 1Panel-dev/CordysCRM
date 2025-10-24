@@ -1,4 +1,5 @@
 package cn.cordys.common.dto;
+
 import cn.cordys.common.util.JSON;
 import lombok.Data;
 

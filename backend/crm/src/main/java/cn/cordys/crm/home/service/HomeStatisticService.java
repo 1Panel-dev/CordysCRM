@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class HomeStatisticService {
 
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
@@ -55,8 +56,6 @@ public class HomeStatisticService {
     private DepartmentService departmentService;
     @Resource
     private RoleService roleService;
-
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public HomeClueStatistic getClueStatistic(HomeStatisticBaseSearchRequest request, DeptDataPermissionDTO deptDataPermission, String orgId, String userId) {
         HomeClueStatistic clueStatistic = new HomeClueStatistic();

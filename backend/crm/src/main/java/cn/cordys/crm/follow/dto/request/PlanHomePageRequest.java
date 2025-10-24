@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class PlanHomePageRequest extends BasePageRequest {
 
-	@NotEmpty
-	@Schema(description = "筛选状态", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String status;
+    @NotEmpty
+    @Schema(description = "筛选状态", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String status;
 }

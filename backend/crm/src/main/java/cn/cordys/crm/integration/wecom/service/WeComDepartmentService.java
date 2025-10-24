@@ -87,7 +87,7 @@ public class WeComDepartmentService {
                             .email(weComUser.getEmail())
                             .mobile(weComUser.getMobile())
                             .position(weComUser.getPosition())
-                            .isLeaderInDept(weComUser.getIsLeaderInDept().indexOf(Integer.parseInt(departmentId.toString()))>0)
+                            .isLeaderInDept(weComUser.getIsLeaderInDept().indexOf(Integer.parseInt(departmentId.toString())) > 0)
                             .build())
                     .collect(Collectors.toList());
 

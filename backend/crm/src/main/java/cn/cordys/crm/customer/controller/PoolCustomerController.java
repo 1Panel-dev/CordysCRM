@@ -104,12 +104,12 @@ public class PoolCustomerController {
         poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-	@PostMapping("/batch-update")
-	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
-	@Operation(summary = "批量更新客户")
-	public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
-		poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/batch-update")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
+    @Operation(summary = "批量更新客户")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
     @PostMapping("/export-all")
     @Operation(summary = "客户导出全部")

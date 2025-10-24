@@ -260,7 +260,7 @@ public class OrganizationConfigService {
                             new String(oauthDetail.getContent()), ThirdConfigurationDTO.class);
 
                     // 如果第三方配置和授权配置的 corpId 一致，更新第三方配置的 redirectUrl
-                    if ( Strings.CI.equals(thirdConfigurationDTO.getCorpId(), authConfig.getCorpId())) {
+                    if (Strings.CI.equals(thirdConfigurationDTO.getCorpId(), authConfig.getCorpId())) {
                         thirdConfigurationDTO.setRedirectUrl(authConfig.getRedirectUrl());
                         // 更新组织配置详情的内容
                         organizationConfigDetail.setContent(JSON.toJSONBytes(thirdConfigurationDTO));

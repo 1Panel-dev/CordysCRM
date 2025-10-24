@@ -50,10 +50,11 @@ public interface ExtCustomerContactMapper {
 
     /**
      * 更新公海联系人负责人
+     *
      * @param customerId 客户ID
-     * @param newOwner 新负责人
-     * @param oldOwner 旧负责人
-     * @param orgId 组织ID
+     * @param newOwner   新负责人
+     * @param oldOwner   旧负责人
+     * @param orgId      组织ID
      */
     void updatePoolContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
 
@@ -71,20 +72,23 @@ public interface ExtCustomerContactMapper {
 
     /**
      * 批量合并客户联系人
+     *
      * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
+     * @param userId  用户ID
+     * @param orgId   组织ID
      */
     void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 
     /**
      * 获取待合并的客户联系人列表
+     *
      * @param request 请求参数
-     * @param orgId 组织ID
+     * @param orgId   组织ID
+     *
      * @return 客户联系人列表
      */
     List<CustomerContact> getMergeContactList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
 
     List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                      @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }

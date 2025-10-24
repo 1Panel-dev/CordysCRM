@@ -196,7 +196,7 @@ public class CustomerContactController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE)
     @Operation(summary = "批量更新客户联系人")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         customerContactService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

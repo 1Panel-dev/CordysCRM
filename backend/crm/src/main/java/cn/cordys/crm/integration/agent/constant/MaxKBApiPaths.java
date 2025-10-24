@@ -11,6 +11,4 @@ public interface MaxKBApiPaths {
     String APPLICATION_DETAIL = "/admin/api/workspace/{0}/application/{1}";
 
 
-
-
 }

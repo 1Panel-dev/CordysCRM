@@ -1,7 +1,5 @@
 package cn.cordys.crm.integration.common.utils;
 
-import cn.cordys.common.util.ServletUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;

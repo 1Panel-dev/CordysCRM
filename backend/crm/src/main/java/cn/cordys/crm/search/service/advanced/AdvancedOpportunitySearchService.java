@@ -80,6 +80,7 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
      * @param request
      * @param orgId
      * @param userId
+     *
      * @return
      */
     @Override

@@ -76,7 +76,7 @@ public class FollowUpPlanController {
     @PostMapping("/status/update")
     @Operation(summary = "更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        followUpPlanService.checkPlanPermission(request.getId(),OrganizationContext.getOrganizationId());
+        followUpPlanService.checkPlanPermission(request.getId(), OrganizationContext.getOrganizationId());
         followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 

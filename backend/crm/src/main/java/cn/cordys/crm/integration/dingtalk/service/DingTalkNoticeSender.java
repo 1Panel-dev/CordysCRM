@@ -93,7 +93,6 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         dingTalkSendDTO.getMsg().setMsgtype("text");
 
 
-
         tokenService.sendDingNoticeByToken(dingTalkSendDTO, thirdConfigurationDTO.getAgentId(), thirdConfigurationDTO.getAppSecret());
     }
 }

@@ -88,6 +88,7 @@ public class DashboardService extends DashboardSortService {
      * @param request
      * @param orgId
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
@@ -155,6 +156,7 @@ public class DashboardService extends DashboardSortService {
      * 仪表板详情
      *
      * @param id
+     *
      * @return
      */
     public DashboardDetailResponse getDashboardDetail(String id) {
@@ -269,6 +271,7 @@ public class DashboardService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public Pager<List<DashboardPageResponse>> getList(DashboardPageRequest request, String userId, String orgId) {
@@ -352,6 +355,7 @@ public class DashboardService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public List<DashboardPageResponse> collectList(BasePageRequest request, String userId, String orgId) {

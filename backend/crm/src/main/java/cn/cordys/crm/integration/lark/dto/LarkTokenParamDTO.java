@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class LarkTokenParamDTO  extends LarkBaseParamDTO {
+public class LarkTokenParamDTO extends LarkBaseParamDTO {
 
     @Schema(description = "code")
     public String code;

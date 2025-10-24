@@ -1,4 +1,3 @@
-
 package cn.cordys.crm.integration.dataease.constants;
 
 import cn.cordys.common.constants.PermissionConstants;

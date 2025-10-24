@@ -92,6 +92,7 @@ public class SysOperationLogService {
      * 获取日志详情
      *
      * @param id 日志ID
+     *
      * @return 日志详情
      */
     public OperationLogDetailResponse getLogDetail(String id, String orgId) {
@@ -144,6 +145,7 @@ public class SysOperationLogService {
      * 例如：organizationId
      *
      * @param differenceDTOS
+     *
      * @return
      */
     private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differenceDTOS) {

@@ -6,7 +6,6 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.DepartmentConstants;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
@@ -20,7 +19,6 @@ import cn.cordys.crm.integration.common.dto.ThirdConfigDetailLogDTO;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.common.dto.ThirdEnableDTO;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
-import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
 import cn.cordys.crm.integration.dataease.service.DataEaseService;
@@ -127,6 +125,7 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
+     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {

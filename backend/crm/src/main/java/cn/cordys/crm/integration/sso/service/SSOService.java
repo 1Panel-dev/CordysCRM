@@ -404,7 +404,7 @@ public class SSOService {
     private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String loginType, Boolean isMobile) {
         if (isMobile) {
             // 移动端需要变更域名
-            larkConfig.setRedirectUrl(larkConfig.getRedirectUrl()+"/mobile");
+            larkConfig.setRedirectUrl(larkConfig.getRedirectUrl() + "/mobile");
         }
         // 获取用户assess_token
         String assessToken = tokenService.getLarkUserAccessToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);

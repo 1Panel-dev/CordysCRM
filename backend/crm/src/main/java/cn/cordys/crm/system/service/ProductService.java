@@ -294,6 +294,7 @@ public class ProductService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -309,6 +310,7 @@ public class ProductService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -342,6 +344,7 @@ public class ProductService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -359,7 +362,9 @@ public class ProductService {
 
     /**
      * 获取产品选项列表
+     *
      * @param organizationId 组织ID
+     *
      * @return 产品选项列表
      */
     public List<OptionDTO> listOption(String organizationId) {

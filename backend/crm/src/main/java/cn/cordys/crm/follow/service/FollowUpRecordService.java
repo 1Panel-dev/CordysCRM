@@ -389,11 +389,13 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 跟进记录的汇总列表
-     * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
-     * @param clueDataPermission 线索业务数据权限
+     *
+     * @param request                请求参数
+     * @param userId                 用户ID
+     * @param orgId                  组织ID
+     * @param clueDataPermission     线索业务数据权限
      * @param customerDataPermission 客户业务数据权限
+     *
      * @return 记录的汇总列表
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId,
@@ -408,8 +410,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 处理选项数据
-     * @param orgId 组织ID
+     *
+     * @param orgId      组织ID
      * @param recordList 记录列表
+     *
      * @return 选项集合
      */
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpRecordListResponse> recordList) {
@@ -563,8 +567,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 获取跟进记录对应数据权限配置
-     * @param currentUser 当前用户ID
+     *
+     * @param currentUser    当前用户ID
      * @param organizationId 组织ID
+     *
      * @return 数据权限配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
@@ -576,10 +582,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
     }
 
 
-
     /**
      * 拦截跟进记录的操作权限
-     * @param id 记录ID
+     *
+     * @param id    记录ID
      * @param orgId 组织ID
      */
     public void checkRecordPermission(String id, String orgId) {

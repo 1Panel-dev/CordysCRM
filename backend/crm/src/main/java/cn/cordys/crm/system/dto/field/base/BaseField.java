@@ -89,17 +89,17 @@ public abstract class BaseField {
     @Schema(description = "禁止修改的参数")
     private Set<String> disabledProps;
 
-	@JsonIgnore
-	public boolean isBlob() {
-		return isBlob(this.type);
-	}
-
     @JsonIgnore
-	public static boolean isBlob(String type) {
+    public static boolean isBlob(String type) {
         return Strings.CS.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),
                 FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.SELECT_MULTIPLE.name(), FieldType.CHECKBOX.name(),
                 FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.ATTACHMENT.name(), FieldType.LINK.name());
-	}
+    }
+
+    @JsonIgnore
+    public boolean isBlob() {
+        return isBlob(this.type);
+    }
 
     @JsonIgnore
     public boolean isAttachment() {

@@ -10,15 +10,15 @@ import java.util.List;
 @Data
 public class CustomerMergeRequest {
 
-	@NotNull
-	@Schema(description = "被合并的客户")
-	private List<String> mergeIds;
+    @NotNull
+    @Schema(description = "被合并的客户")
+    private List<String> mergeIds;
 
-	@NotEmpty
-	@Schema(description = "合并的客户", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String toMergeId;
+    @NotEmpty
+    @Schema(description = "合并的客户", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String toMergeId;
 
-	@NotEmpty
-	@Schema(description = "合并的负责人", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String ownerId;
+    @NotEmpty
+    @Schema(description = "合并的负责人", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String ownerId;
 }

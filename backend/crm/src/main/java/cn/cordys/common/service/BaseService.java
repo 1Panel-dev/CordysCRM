@@ -369,5 +369,5 @@ public class BaseService {
     public String getAndCheckOptionName(String option) {
         return option == null ? Translator.get("common.option.not_exist") : option;
     }
-    
+
 }

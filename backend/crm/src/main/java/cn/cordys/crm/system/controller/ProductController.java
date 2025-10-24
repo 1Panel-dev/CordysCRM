@@ -83,7 +83,7 @@ public class ProductController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新产品")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

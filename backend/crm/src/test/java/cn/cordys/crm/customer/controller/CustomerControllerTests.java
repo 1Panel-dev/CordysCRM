@@ -60,17 +60,16 @@ class CustomerControllerTests extends BaseTest {
     protected static final String EXPORT_ALL = "export-all";
     protected static final String EXPORT_SELECT = "export-select";
     protected static final String MERGE = "merge";
-    private static final String BASE_PATH = "/account/";
     protected static final String CHART = "chart";
+    private static final String BASE_PATH = "/account/";
     private static final List<String> batchIds = new ArrayList<>();
     private static Customer addCustomer;
     private static Customer anotherCustomer;
+    private static ModuleFormConfigDTO moduleFormConfig;
     @Resource
     private BaseMapper<Customer> customerMapper;
-
     @Resource
     private BaseMapper<CustomerField> customerFieldMapper;
-
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
@@ -80,13 +79,10 @@ class CustomerControllerTests extends BaseTest {
     @Resource
     private ExportTaskCenterService exportTaskCenterService;
 
-
     @Override
     protected String getBasePath() {
         return BASE_PATH;
     }
-
-    private static ModuleFormConfigDTO moduleFormConfig;
 
     @Test
     @Order(0)

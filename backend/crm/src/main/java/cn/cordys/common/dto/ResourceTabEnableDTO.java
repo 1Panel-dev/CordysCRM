@@ -18,12 +18,14 @@ public class ResourceTabEnableDTO {
 
     /**
      * 合并权限
+     *
      * @param other 其余数据权限配置
+     *
      * @return 合并后的数据权限配置
      */
     public ResourceTabEnableDTO or(ResourceTabEnableDTO other) {
         if (other != null) {
-            all  |= other.all;
+            all |= other.all;
             dept |= other.dept;
         }
         return this;

@@ -41,9 +41,9 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String ENABLE = "enable/{0}";
     protected static final String OPPORTUNITY_CHECK = "opportunity/check/{0}";
     protected static final String TAB = "tab";
-    private static final String BASE_PATH = "/account/contact/";
     protected static final String BATCH_UPDATE = "batch/update";
     protected static final String CHART = "chart";
+    private static final String BASE_PATH = "/account/contact/";
     private static CustomerContact addCustomerContact;
     private static String customerId;
     private static ModuleFormConfigDTO moduleFormConfig;

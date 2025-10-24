@@ -119,7 +119,7 @@ public class CustomerController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新客户")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         customerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

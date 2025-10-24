@@ -21,11 +21,13 @@ public interface ExtFollowUpPlanMapper {
 
     /**
      * 计划的汇总查询
-     * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
-     * @param clueDataPermission 线索数据权限
+     *
+     * @param request                请求参数
+     * @param userId                 用户ID
+     * @param orgId                  组织ID
+     * @param clueDataPermission     线索数据权限
      * @param customerDataPermission 客户数据权限
+     *
      * @return 记录列表
      */
     List<FollowUpPlanListResponse> selectTotalList(@Param("request") PlanHomePageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
@@ -37,9 +39,10 @@ public interface ExtFollowUpPlanMapper {
 
     /**
      * 批量合并客户(商机)记录
+     *
      * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
+     * @param userId  用户ID
+     * @param orgId   组织ID
      */
     void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
 }

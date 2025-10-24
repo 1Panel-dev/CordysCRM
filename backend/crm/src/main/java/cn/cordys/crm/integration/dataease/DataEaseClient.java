@@ -36,10 +36,10 @@ public class DataEaseClient {
         restTemplate = new RestTemplate();
     }
 
-    protected String endpoint;
-    protected String prefix = "/de2api/";
     private final String accessKey;
     private final String secretKey;
+    protected String endpoint;
+    protected String prefix = "/de2api/";
 
     public DataEaseClient(ThirdConfigurationDTO thirdConfiguration) {
         this.accessKey = thirdConfiguration.getDeAccessKey();

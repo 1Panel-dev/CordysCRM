@@ -36,7 +36,9 @@ public class PicService {
 
     /**
      * 获取图片文件流
+     *
      * @param picId 图片ID
+     *
      * @return 文件流
      */
     public ResponseEntity<org.springframework.core.io.Resource> getResource(String picId) {

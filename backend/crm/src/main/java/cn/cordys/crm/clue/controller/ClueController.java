@@ -129,7 +129,7 @@ public class ClueController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新线索")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request){
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         clueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

@@ -36,9 +36,9 @@ public class DataHandleUtils {
     private final Map<String, List<ThirdUser>> departmentUserMap;
     private final List<DepartmentCommander> departmentCommanders = new ArrayList<>();
     private final Department internalDepartment;
+    private final String type;
     private List<ThirdDepartment> thirdDepartmentTree;
     private Long nextPos;
-    private final String type;
 
 
     public DataHandleUtils(String orgId, Map<String, List<ThirdUser>> departmentUserMap, String type) {
@@ -281,7 +281,7 @@ public class DataHandleUtils {
                 updateExistingUser(organizationUser, thirdUser, departmentId, operatorId, currentTime);
 
                 // 检查并添加部门负责人
-                 addCommanderIfNeeded(organizationUser.getUserId(), departmentId, thirdUser,
+                addCommanderIfNeeded(organizationUser.getUserId(), departmentId, thirdUser,
                         currentCommander, operatorId, currentTime);
             } else {
                 // 添加新用户

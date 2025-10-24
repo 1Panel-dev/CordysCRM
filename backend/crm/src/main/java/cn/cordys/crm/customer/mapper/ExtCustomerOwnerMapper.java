@@ -13,7 +13,9 @@ public interface ExtCustomerOwnerMapper {
 
     /**
      * 获取最近的客户负责人
+     *
      * @param customerId 客户ID
+     *
      * @return 负责人ID
      */
     String getRecentOwner(@Param("customerId") String customerId);

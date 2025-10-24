@@ -180,11 +180,13 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     /**
      * 跟进计划汇总查询
-     * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
-     * @param clueDataPermission 线索数据权限
+     *
+     * @param request                请求参数
+     * @param userId                 用户ID
+     * @param orgId                  组织ID
+     * @param clueDataPermission     线索数据权限
      * @param customerDataPermission 客户数据权限
+     *
      * @return 跟进计划汇总列表
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId,
@@ -431,8 +433,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     /**
      * 获取跟进计划对应数据权限配置
-     * @param currentUser 当前用户ID
+     *
+     * @param currentUser    当前用户ID
      * @param organizationId 组织ID
+     *
      * @return 数据权限配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
@@ -445,7 +449,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     /**
      * 拦截跟进记录的操作权限
-     * @param id 记录ID
+     *
+     * @param id    记录ID
      * @param orgId 组织ID
      */
     public void checkPlanPermission(String id, String orgId) {

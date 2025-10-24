@@ -35,7 +35,6 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
-import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
@@ -763,9 +762,8 @@ public class CustomerService {
     }
 
     /**
-     *
-     * @param request 合并请求参数
-     * @param currentUser 当前用户
+     * @param request      合并请求参数
+     * @param currentUser  当前用户
      * @param currentOrgId 当前组织ID
      */
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.MERGE, resourceId = "{#request.toMergeId}")

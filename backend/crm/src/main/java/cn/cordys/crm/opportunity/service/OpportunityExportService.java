@@ -110,6 +110,7 @@ public class OpportunityExportService extends BaseExportService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
+     *
      * @return
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, OpportunityExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
@@ -156,6 +157,7 @@ public class OpportunityExportService extends BaseExportService {
      * @param userId
      * @param request
      * @param orgId
+     *
      * @return
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
@@ -220,7 +222,9 @@ public class OpportunityExportService extends BaseExportService {
      * @param ids
      * @param orgId
      * @param taskId
+     *
      * @return
+     *
      * @throws InterruptedException
      */
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
