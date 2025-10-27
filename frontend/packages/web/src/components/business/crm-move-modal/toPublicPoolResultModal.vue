@@ -16,27 +16,46 @@
         </span>
       </div>
       <div v-if="props.failCount > 0" class="text-[var(--text-n4)]">
-        {{ props.failedContent }}
+        <div v-if="props.reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS" class="flex items-center justify-center">
+          {{ t('customer.moveToOpenSeaFailedContent1') }}
+          <n-button type="primary" text @click="goConfig(props.reasonKey)">
+            {{ t('customer.moveToOpenSeaFailedContent2') }}
+          </n-button>
+        </div>
+        <div v-else class="flex items-center justify-center">
+          {{ t('clue.moveIntoCluePoolFailedContent1') }}
+          <n-button type="primary" text @click="goConfig(props.reasonKey)">
+            {{ t('clue.moveIntoCluePoolFailedContent2') }}
+          </n-button>
+        </div>
       </div>
     </div>
   </CrmModal>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { NButton } from 'naive-ui';
 
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  const { t } = useI18n();
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { SystemRouteEnum } from '@/enums/routeEnum';
+
+  import type { ReasonKey } from './index.vue';
 
   const props = defineProps<{
     failCount: number;
     successCount: number;
     title?: string;
-    failedContent?: string;
+    reasonKey: ReasonKey;
   }>();
+
+  const { t } = useI18n();
+  const { openNewPage } = useOpenNewPage();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -86,4 +105,16 @@
       return statusMap.value.error;
     }
   });
+
+  function goConfig(reasonKey: ReasonKey) {
+    if (reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS) {
+      openNewPage(SystemRouteEnum.SYSTEM_MODULE, {
+        openCluePoolDrawer: 'Y',
+      });
+    } else if (reasonKey === ReasonTypeEnum.CLUE_POOL_RS) {
+      openNewPage(SystemRouteEnum.SYSTEM_MODULE, {
+        openOpenSeaDrawer: 'Y',
+      });
+    }
+  }
 </script>

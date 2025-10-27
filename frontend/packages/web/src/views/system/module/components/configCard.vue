@@ -76,6 +76,7 @@
 
 <script setup lang="ts">
   import { RendererElement } from 'vue';
+  import { useRoute } from 'vue-router';
   import { NButton, NDivider, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -86,7 +87,6 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
@@ -105,15 +105,13 @@
 
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
-  import router from '@/router';
   // import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
-
-  import { SystemRouteEnum } from '@/enums/routeEnum';
 
   const { openModal } = useModal();
   const Message = useMessage();
   const { t } = useI18n();
+  const route = useRoute();
   // const licenseStore = useLicenseStore();
 
   const props = defineProps<{
@@ -453,12 +451,6 @@
     });
   }
 
-  function goDEConfig() {
-    router.push({
-      name: SystemRouteEnum.SYSTEM_BUSINESS,
-    });
-  }
-
   const selectKey = ref<ModuleConfigEnum>(ModuleConfigEnum.CUSTOMER_MANAGEMENT);
   const customerManagementFormVisible = ref(false);
   const customerManagementContactFormVisible = ref(false);
@@ -606,6 +598,11 @@
 
   onMounted(() => {
     initRenderReasonSwitch();
+    if (route.query.openCluePoolDrawer === 'Y') {
+      clueManagementCluePoolVisible.value = true;
+    } else if (route.query.openOpenSeaDrawer === 'Y') {
+      customerManagementOpenSeaVisible.value = true;
+    }
   });
 </script>
 

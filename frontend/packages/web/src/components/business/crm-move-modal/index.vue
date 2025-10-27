@@ -20,12 +20,12 @@
       </n-form-item>
     </n-form>
   </CrmModal>
-  <toPublicPoolResultModel
+  <toPublicPoolResultModal
     v-model:show="showToPoolResultModel"
     :fail-count="failCount"
     :success-count="successCount"
     :title="resultTitle"
-    :failed-content="resultFailedContent"
+    :reason-key="props.reasonKey"
   />
 </template>
 
@@ -40,7 +40,7 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
-  import toPublicPoolResultModel from './toPublicPoolResultModel.vue';
+  import toPublicPoolResultModal from './toPublicPoolResultModal.vue';
 
   import {
     batchMoveCustomer,
@@ -106,12 +106,6 @@
 
   const resultTitle = computed(() =>
     props.reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS ? t('customer.moveToOpenSea') : t('clue.moveIntoCluePool')
-  );
-
-  const resultFailedContent = computed(() =>
-    props.reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS
-      ? t('customer.moveToOpenSeaFailedContent')
-      : t('clue.moveIntoCluePoolFailedContent')
   );
 
   const contentTip = computed(() =>

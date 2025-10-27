@@ -24,8 +24,8 @@ export default {
   'clue.followingUp': 'Following up',
   'clue.interested': 'Interested',
   'clue.moveIntoCluePoolFailed': 'Partial transfer failed',
-  'clue.moveIntoCluePoolFailedContent':
-    'Successfully transferred leads will enter the lead pool, while failed leads will not. Please retry the transfer!',
+  'clue.moveIntoCluePoolFailedContent1': 'Please check the lead pool configuration,',
+  'clue.moveIntoCluePoolFailedContent2': 'Go to configuration',
   'clue.disabledTooltipText': 'The lead has been converted to a account and cannot be selected!',
   'clue.relationCustomer': 'Related account',
   'clue.convertToCustomerSuccess': 'Converted to account successfully',

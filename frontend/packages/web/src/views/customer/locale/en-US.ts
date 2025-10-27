@@ -13,8 +13,8 @@ export default {
   'customer.moveCustomerToOpenSeaTitleTip': 'Confirm moving {name} account to open pool?',
   'customer.batchMoveContentTip': 'After moving, the account will have no owner. Please proceed with caution!',
   'customer.confirmMove': 'Confirm move',
-  'customer.moveToOpenSeaFailedContent':
-    "Successfully transferred accounts will enter the open sea, while failed accounts will not enter the open sea. Please check the account's recycling on the high seas!",
+  'customer.moveToOpenSeaFailedContent1': 'Please check the open sea configuration,',
+  'customer.moveToOpenSeaFailedContent2': 'Go to configure',
   'customer.moveSuccess': 'Move success',
   'customer.contact.deleteContentTip':
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',
