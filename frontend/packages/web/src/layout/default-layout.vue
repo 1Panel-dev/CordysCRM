@@ -4,7 +4,6 @@
       v-if="!route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)"
       :is-preview="innerProps.isPreview"
       :logo="innerLogo"
-      @open-personal-info="handleOpenPersonalInfo"
     />
     <n-layout class="flex-1" has-sider>
       <LayoutSider @open-personal-info="handleOpenPersonalInfo" />

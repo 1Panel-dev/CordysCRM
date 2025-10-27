@@ -172,7 +172,6 @@
   import { NBadge, NButton, NDivider, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
-  import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { LOCALE_OPTIONS } from '@lib/shared/locale';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -190,7 +189,7 @@
   import licenseDrawer from '@/views/system/license/licenseDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { changeLocaleBackEnd } from '@/api/modules';
+  import { addApiKey, changeLocaleBackEnd } from '@/api/modules';
   import { defaultPlatformLogo } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import useAppStore from '@/store/modules/app';
@@ -203,16 +202,13 @@
   const agentDrawer = defineAsyncComponent(() => import('@/components/business/crm-agent-drawer/index.vue'));
   const CrmFollowDrawer = defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/index.vue'));
 
-  const emit = defineEmits<{
-    (e: 'openPersonalInfo', tab: PersonalEnum): void;
-  }>();
-
   const route = useRoute();
 
   const { success, warning, loading } = useMessage();
   const { t } = useI18n();
   const { changeLocale, currentLocale } = useLocale(loading);
   const { openModal } = useModal();
+  const Message = useMessage();
 
   const appStore = useAppStore();
   const userStore = useUserStore();
@@ -275,11 +271,14 @@
         type: 'warning',
         content: t('common.noEnableApiKeyTip'),
         showCancelButton: true,
-        positiveText: t('common.goAdd'),
+        positiveText: t('common.add'),
         negativeText: t('common.cancel'),
         positiveButtonProps: { type: 'primary', size: 'medium' },
         onPositiveClick: async () => {
-          emit('openPersonalInfo', PersonalEnum.API_KEY);
+          await addApiKey();
+          Message.success(t('common.newSuccess'));
+          await userStore.initApiKeyList();
+          showAgentDrawer.value = true;
         },
       });
     }
