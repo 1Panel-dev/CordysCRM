@@ -6,5 +6,7 @@ public enum UserViewResourceType {
     CUSTOMER_CONTACT,
     CLUE,
     CUSTOMER_POOL,
-    CLUE_POOL
+    CLUE_POOL,
+    FOLLOW_PLAN,
+    FOLLOW_RECORD
 }

@@ -172,7 +172,7 @@
 
         AND (
         <!-- 线索数据 -->(
-                fur.type = 'CLUE' and c.name is not null
+                fur.type = 'CLUE'
                 <if test="request.keyword != null and request.keyword != ''">
                     AND c.name like concat('%', #{request.keyword},'%')
                 </if>
@@ -194,7 +194,7 @@
             OR
             <!-- 客户数据 -->
             (
-                fur.type = 'CUSTOMER' and cu.name is not null
+                fur.type = 'CUSTOMER'
                 <if test="request.keyword != null and request.keyword != ''">
                     AND cu.name like concat('%', #{request.keyword},'%')
                 </if>
