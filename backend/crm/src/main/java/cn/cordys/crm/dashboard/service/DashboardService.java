@@ -47,8 +47,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,19 +124,41 @@ public class DashboardService extends DashboardSortService {
     }
 
     private void checkAllowedList(String resourceUrl) {
-        if (whitelistEnable) {
-            URL url = null;
-            try {
-                url = new URL(resourceUrl);
-            } catch (MalformedURLException e) {
-                throw new GenericException(e);
-            }
-            String host = url.getHost();
-            if (!allowedList.contains(host)) {
-                throw new GenericException(Translator.get("dashboard_url_not_allowed"));
-            }
+        if (!Boolean.TRUE.equals(whitelistEnable) || StringUtils.isBlank(resourceUrl)) {
+            return;
         }
 
+        final String host;
+        try {
+            URI uri = new URI(resourceUrl);
+            host = Optional.ofNullable(uri.getHost())
+                    .filter(h -> !h.isBlank())
+                    .map(h -> h.toLowerCase(Locale.ROOT).trim())
+                    .orElseThrow(() -> new GenericException(Translator.get("dashboard_url_invalid")));
+        } catch (URISyntaxException e) {
+            throw new GenericException(Translator.get("dashboard_url_invalid"));
+        }
+
+        List<String> allowed = allowedList == null ? Collections.emptyList() : allowedList;
+
+        boolean matched = allowed.stream()
+                .filter(Objects::nonNull)
+                .map(s -> s.trim().toLowerCase(Locale.ROOT))
+                .anyMatch(pattern -> {
+                    if ("*".equals(pattern)) {
+                        return true;
+                    }
+                    if (pattern.startsWith("*.")) {
+                        // 支持 \*.example.com 匹配 foo.example.com
+                        String suffix = pattern.substring(1); // ".example.com"
+                        return host.endsWith(suffix);
+                    }
+                    return host.equals(pattern);
+                });
+
+        if (!matched) {
+            throw new GenericException(Translator.get("dashboard_url_not_allowed"));
+        }
     }
 
     private Long getNextPos(String orgId) {
