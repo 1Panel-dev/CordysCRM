@@ -19,7 +19,7 @@ jobs:
           LANGUAGE: Chinese
           OPENAI_API_ENDPOINT: https://dashscope.aliyuncs.com/compatible-mode/v1
           MODEL: qwen3-coder-plus
-          PROMPT: "请检查以下代码差异是否有拼写或语法错误，若有问题请指出，无问题请标记 /lgtm，并用中文回答。"
+          PROMPT: "检查以下代码差异是否存在拼写或语法错误。如果有问题，请中文指出；若无问题，请标记整个PR为 /lgtm。"
           top_p: 1
           temperature: 1
           # max_tokens: 10000
