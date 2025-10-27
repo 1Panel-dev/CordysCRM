@@ -23,7 +23,7 @@
               trigger: 'blur',
             },
           ],
-          resourceId: [
+          resourceUrl: [
             {
               required: true,
               message: t('common.notNull', { value: t('dashboard.dashboardUrl') }),
@@ -43,8 +43,8 @@
         <n-form-item :label="t('dashboard.dashboardName')" path="name">
           <n-input v-model:value="form.name" :maxlength="255" />
         </n-form-item>
-        <n-form-item :label="t('dashboard.dashboardUrl')" path="resourceId">
-          <n-input v-model:value="form.resourceId" :maxlength="50" />
+        <n-form-item :label="t('dashboard.dashboardUrl')" path="resourceUrl">
+          <n-input v-model:value="form.resourceUrl" :maxlength="50" />
           <a
             href="https://rtykuh4z44.feishu.cn/docx/QN1TdHfxjofZXXxZ0toc9oIpnWd"
             class="text-[var(--primary-8)]"
@@ -119,7 +119,7 @@
   const loading = ref(false);
   const form = ref({
     name: '',
-    resourceId: '',
+    resourceUrl: '',
     scopeIds: [] as SelectedUsersItem[],
     description: '',
     dashboardModuleId: '',
@@ -156,7 +156,7 @@
   function handleCancel() {
     form.value = {
       name: '',
-      resourceId: '',
+      resourceUrl: '',
       scopeIds: [],
       description: '',
       dashboardModuleId: '',

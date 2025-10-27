@@ -14,7 +14,7 @@ export interface DashboardAddModuleParams {
 
 export interface DashboardAddParams {
   dashboardModuleId: string;
-  resourceId: string;
+  resourceUrl: string;
   scopeIds: string[];
   name: string;
   description: string;
@@ -59,7 +59,7 @@ export interface DashboardDetail {
   dashboardModuleName: string;
   name: string;
   scopeId: string;
-  resourceId: string;
+  resourceUrl: string;
 }
 
 export interface DashboardDragParams {
