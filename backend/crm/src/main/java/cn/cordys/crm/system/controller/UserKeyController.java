@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user/api/key")
-@Tag(name = "个人中心-APIKEY")
+@Tag(name = "个人中心-API Keys")
 public class UserKeyController {
 
     @Resource
