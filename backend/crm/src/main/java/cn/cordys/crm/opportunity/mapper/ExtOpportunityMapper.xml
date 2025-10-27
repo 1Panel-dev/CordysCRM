@@ -731,15 +731,17 @@
             )
         </if>
 
-        where c.organization_id = #{request.orgId} and
+        where c.organization_id = #{request.orgId}
         <if test="success">
-            c.stage = 'SUCCESS'
+            and c.stage = (
+            select id from opportunity_stage_config osc where osc.organization_id = #{request.orgId} and osc.`type` = 'END' and
+                rate = 100
+            )
             <if test="request.startTime != null and request.endTime != null">
                 and c.expected_end_time &gt;= #{request.startTime} and c.expected_end_time &lt;= #{request.endTime}
             </if>
         </if>
         <if test="!success">
-            c.stage != 'SUCCESS' and c.stage != 'FAIL'
             <if test="request.startTime != null and request.endTime != null">
                 <if test="request.staticRequest.timeField == 'EXPECTED_END_TIME'">
                     and c.expected_end_time &gt;= #{request.startTime} and c.expected_end_time &lt;= #{request.endTime}
