@@ -13,7 +13,6 @@
     >
       <template #actionLeft>
         <div class="flex gap-[12px]">
-          <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="segment" />
           <CrmTab v-model:active-tab="activeStatus" no-content :tab-list="statusTabList" type="segment" />
         </div>
       </template>
@@ -36,7 +35,17 @@
           </n-tab-pane>
         </n-tabs>
       </template>
-
+      <template #view>
+        <CrmViewSelect
+          v-model:active-tab="activeTab"
+          :type="FormDesignKeyEnum.FOLLOW_PLAN"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          :advanced-original-form="advancedOriginalForm"
+          @refresh-table-data="searchData"
+          @generated-chart="handleGeneratedChart"
+        />
+      </template>
       <template v-if="activeShowType === 'timeline'" #other>
         <div class="h-full">
           <FollowRecord
@@ -100,7 +109,7 @@
 
   import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -112,12 +121,12 @@
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detailDrawer.vue';
 
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
@@ -125,14 +134,6 @@
   const { goDetail } = useOpenDetailPage();
 
   const activeTab = ref('');
-  const { tabList, initTab } = useHiddenTab(FormDesignKeyEnum.FOLLOW_PLAN);
-
-  onBeforeMount(async () => {
-    await initTab();
-    nextTick(() => {
-      activeTab.value = tabList.value[0].name as string;
-    });
-  });
 
   const keyword = ref('');
   const activeStatus = ref<CustomerFollowPlanStatusEnum>(CustomerFollowPlanStatusEnum.ALL);
@@ -283,8 +284,10 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isAdvancedSearchMode = ref(false);
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
+  const advancedOriginalForm = ref<FilterForm | undefined>();
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';
+    advancedOriginalForm.value = originalForm;
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
@@ -299,6 +302,14 @@
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+    advancedOriginalForm.value = form;
+    setAdvanceFilter(res);
+    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+    searchData();
   }
 
   function searchByKeyword(val: string) {

@@ -323,6 +323,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
     },
+    {
+      key: 'content',
+      title: t('eventDrawer.record.content'),
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
   ];
 
   const planInternalColumns: CrmDataTableColumn[] = [
@@ -350,6 +358,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       width: 120,
       key: 'converted',
       render: (row: any) => (row.converted ? t('common.yes') : t('common.no')),
+    },
+    {
+      key: 'content',
+      title: t('eventDrawer.plan.content'),
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
     },
   ];
 

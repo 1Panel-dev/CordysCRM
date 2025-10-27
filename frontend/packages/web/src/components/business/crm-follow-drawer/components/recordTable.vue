@@ -11,9 +11,6 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
     >
-      <template #actionLeft>
-        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="segment" />
-      </template>
       <template #actionRight>
         <CrmAdvanceFilter
           ref="tableAdvanceFilterRef"
@@ -32,6 +29,17 @@
             <template #tab><CrmIcon type="iconicon_timeline" /></template>
           </n-tab-pane>
         </n-tabs>
+      </template>
+      <template #view>
+        <CrmViewSelect
+          v-model:active-tab="activeTab"
+          :type="FormDesignKeyEnum.FOLLOW_RECORD"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          :advanced-original-form="advancedOriginalForm"
+          @refresh-table-data="searchData"
+          @generated-chart="handleGeneratedChart"
+        />
       </template>
       <template v-if="activeShowType === 'timeline'" #other>
         <div class="h-full">
@@ -92,23 +100,22 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { descriptionList } from '@/components/business/crm-follow-detail/config';
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detailDrawer.vue';
 
   import { deleteFollowRecord } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useHiddenTab from '@/hooks/useHiddenTab';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
@@ -116,14 +123,6 @@
   const { goDetail } = useOpenDetailPage();
 
   const activeTab = ref('');
-  const { tabList, initTab } = useHiddenTab(FormDesignKeyEnum.FOLLOW_RECORD);
-
-  onBeforeMount(async () => {
-    await initTab();
-    nextTick(() => {
-      activeTab.value = tabList.value[0].name as string;
-    });
-  });
 
   const keyword = ref('');
 
@@ -235,8 +234,10 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isAdvancedSearchMode = ref(false);
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
+  const advancedOriginalForm = ref<FilterForm | undefined>();
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';
+    advancedOriginalForm.value = originalForm;
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
@@ -250,6 +251,14 @@
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+    advancedOriginalForm.value = form;
+    setAdvanceFilter(res);
+    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+    searchData();
   }
 
   function searchByKeyword(val: string) {

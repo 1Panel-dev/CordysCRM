@@ -1,18 +1,34 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddFollowPlanViewUrl,
+  AddFollowRecordViewUrl,
   DeleteFollowPlanUrl,
+  DeleteFollowPlanViewUrl,
   DeleteFollowRecordUrl,
+  DeleteFollowRecordViewUrl,
+  DragFollowPlanViewUrl,
+  DragFollowRecordViewUrl,
+  EnableFollowPlanViewUrl,
+  EnableFollowRecordViewUrl,
+  FixedFollowPlanViewUrl,
+  FixedFollowRecordViewUrl,
   GetFollowPlanPageUrl,
   GetFollowPlanTabUrl,
   GetFollowPlanUrl,
+  GetFollowPlanViewDetailUrl,
+  GetFollowPlanViewListUrl,
   GetFollowRecordPageUrl,
   GetFollowRecordTabUrl,
   GetFollowRecordUrl,
+  GetFollowRecordViewDetailUrl,
+  GetFollowRecordViewListUrl,
   UpdateFollowPlanStatusUrl,
   UpdateFollowPlanUrl,
+  UpdateFollowPlanViewUrl,
   UpdateFollowRecordUrl,
+  UpdateFollowRecordViewUrl,
 } from '@lib/shared/api/requrls/follow';
-import type { CommonList } from '@lib/shared/models/common';
+import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
 import type {
   CustomerFollowRecordTableParams,
   CustomerTabHidden,
@@ -20,6 +36,7 @@ import type {
   UpdateCustomerFollowRecordParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useFollowApi(CDR: CordysAxios) {
   // 跟进记录列表
@@ -72,6 +89,72 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateFollowPlanUrl, data });
   }
 
+  // 视图
+  function addFollowRecordView(data: ViewParams) {
+    return CDR.post({ url: AddFollowRecordViewUrl, data });
+  }
+
+  function updateFollowRecordView(data: ViewParams) {
+    return CDR.post({ url: UpdateFollowRecordViewUrl, data });
+  }
+
+  function getFollowRecordViewList() {
+    return CDR.get<ViewItem[]>({ url: GetFollowRecordViewListUrl });
+  }
+
+  function getFollowRecordViewDetail(id: string) {
+    return CDR.get({ url: `${GetFollowRecordViewDetailUrl}/${id}` });
+  }
+
+  function fixedFollowRecordView(id: string) {
+    return CDR.get({ url: `${FixedFollowRecordViewUrl}/${id}` });
+  }
+
+  function enableFollowRecordView(id: string) {
+    return CDR.get({ url: `${EnableFollowRecordViewUrl}/${id}` });
+  }
+
+  function deleteFollowRecordView(id: string) {
+    return CDR.get({ url: `${DeleteFollowRecordViewUrl}/${id}` });
+  }
+
+  function dragFollowRecordView(data: TableDraggedParams) {
+    return CDR.post({ url: DragFollowRecordViewUrl, data });
+  }
+
+  // 跟进计划视图
+  function addFollowPlanView(data: ViewParams) {
+    return CDR.post({ url: AddFollowPlanViewUrl, data });
+  }
+
+  function updateFollowPlanView(data: ViewParams) {
+    return CDR.post({ url: UpdateFollowPlanViewUrl, data });
+  }
+
+  function getFollowPlanViewList() {
+    return CDR.get<ViewItem[]>({ url: GetFollowPlanViewListUrl });
+  }
+
+  function getFollowPlanViewDetail(id: string) {
+    return CDR.get({ url: `${GetFollowPlanViewDetailUrl}/${id}` });
+  }
+
+  function fixedFollowPlanView(id: string) {
+    return CDR.get({ url: `${FixedFollowPlanViewUrl}/${id}` });
+  }
+
+  function enableFollowPlanView(id: string) {
+    return CDR.get({ url: `${EnableFollowPlanViewUrl}/${id}` });
+  }
+
+  function deleteFollowPlanView(id: string) {
+    return CDR.get({ url: `${DeleteFollowPlanViewUrl}/${id}` });
+  }
+
+  function dragFollowPlanView(data: TableDraggedParams) {
+    return CDR.post({ url: DragFollowPlanViewUrl, data });
+  }
+
   return {
     getFollowPlanDetail,
     getFollowPLanPage,
@@ -84,5 +167,21 @@ export default function useFollowApi(CDR: CordysAxios) {
     updateFollowPlanStatus,
     updateFollowPlan,
     updateFollowRecord,
+    addFollowRecordView,
+    updateFollowRecordView,
+    getFollowRecordViewList,
+    getFollowRecordViewDetail,
+    fixedFollowRecordView,
+    enableFollowRecordView,
+    deleteFollowRecordView,
+    dragFollowRecordView,
+    addFollowPlanView,
+    updateFollowPlanView,
+    getFollowPlanViewList,
+    getFollowPlanViewDetail,
+    fixedFollowPlanView,
+    enableFollowPlanView,
+    deleteFollowPlanView,
+    dragFollowPlanView,
   };
 }

@@ -56,6 +56,22 @@ export const {
   updateFollowPlanStatus,
   updateFollowPlan,
   updateFollowRecord,
+  addFollowRecordView,
+  updateFollowRecordView,
+  getFollowRecordViewList,
+  getFollowRecordViewDetail,
+  fixedFollowRecordView,
+  enableFollowRecordView,
+  deleteFollowRecordView,
+  dragFollowRecordView,
+  addFollowPlanView,
+  updateFollowPlanView,
+  getFollowPlanViewList,
+  getFollowPlanViewDetail,
+  fixedFollowPlanView,
+  enableFollowPlanView,
+  deleteFollowPlanView,
+  dragFollowPlanView,
 } = followApi;
 
 export const {
