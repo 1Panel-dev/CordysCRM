@@ -125,14 +125,13 @@
 
     <sql id="chartAxisJoin">
         <if test="!${axisParam}.businessField">
-            <bind name="fieldId" value="${axisParam}.fieldId" />
             <if test="${axisParam}.blob">
                 left join customer_contact_field_blob ${tablePrefix}
-                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
+                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
             </if>
             <if test="!${axisParam}.blob">
                 left join customer_contact_field ${tablePrefix}
-                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{fieldId}
+                on cc.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
             </if>
         </if>
         <if test="${axisParam}.businessFieldName == 'departmentId'">

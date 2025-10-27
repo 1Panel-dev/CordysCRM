@@ -89,6 +89,10 @@ public class ModuleFormCacheService {
         ChartCategoryAxisDbParam subCategoryAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
         ChartValueAxisDbParam valueAxisParam = chartAnalysisDbRequest.getValueAxisParam();
 
+        chartResults = chartResults.stream()
+                .filter(Objects::nonNull)
+                .toList();
+
         List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
         for (ChartResult chartResult : chartResults) {
             BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
