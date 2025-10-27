@@ -28,9 +28,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @Author: jianxing
@@ -46,8 +43,7 @@ import java.util.stream.Collectors;
 public class ConditionFilterUtils {
 
     public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, ModuleFormConfigDTO formConfig) {
-        Map<String, BaseField> fieldMap = formConfig.getFields()
-                .stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+        List<BaseField> fields = formConfig.getFields();
 
         ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
         chartAnalysisDbRequest.setCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
@@ -67,14 +63,9 @@ public class ConditionFilterUtils {
         ChartCategoryAxisDbParam xAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
         ChartCategoryAxisDbParam subXAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
         ChartValueAxisDbParam yAxisParam = chartAnalysisDbRequest.getValueAxisParam();
-        BaseField xBaseField = fieldMap.get(xAxisParam.getFieldId());
-        BaseField yBaseField = fieldMap.get(yAxisParam.getFieldId());
-        if (xBaseField == null ||
-                yBaseField == null ||
-                (subXAxisParam != null && fieldMap.get(subXAxisParam.getFieldId()) == null)
-        ) {
-            throw new GenericException(Translator.get("module.field.not_exist"));
-        }
+
+        BaseField xBaseField = getBaseFieldWithCheck(fields, xAxisParam.getFieldId());
+        BaseField yBaseField = getBaseFieldWithCheck(fields, yAxisParam.getFieldId());
 
         xAxisParam.setBlob(xBaseField.isBlob());
         xAxisParam.setBusinessField(StringUtils.isNotBlank(xBaseField.getBusinessKey()));
@@ -85,13 +76,20 @@ public class ConditionFilterUtils {
         yAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(yBaseField.getBusinessKey()));
 
         if (subXAxisParam != null) {
-            BaseField subXBaseField = fieldMap.get(subXAxisParam.getFieldId());
+            BaseField subXBaseField = getBaseFieldWithCheck(fields, subXAxisParam.getFieldId());
             subXAxisParam.setBlob(subXBaseField.isBlob());
             subXAxisParam.setBusinessField(StringUtils.isNotBlank(subXBaseField.getBusinessKey()));
             subXAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(subXBaseField.getBusinessKey()));
         }
 
         return chartAnalysisDbRequest;
+    }
+
+    private static BaseField getBaseFieldWithCheck(List<BaseField> fields, String fieldKey) {
+        return fields.stream()
+                .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
+                        || Strings.CI.equals(field.getBusinessKey(), fieldKey))
+                .findFirst().orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
     }
 
     public static void parseCondition(BaseCondition baseCondition) {
