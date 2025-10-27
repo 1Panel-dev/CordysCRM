@@ -1,6 +1,7 @@
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
+import { operatorOptionsMap } from './index';
 import { FilterFormItem } from './type';
 
 // 第二列默认：包含/属于/等于
@@ -18,6 +19,12 @@ export function getDefaultOperator(list: string[]) {
     return OperatorEnum.EQUALS;
   }
   return OperatorEnum.BETWEEN;
+}
+
+export function getOperator(type: FieldTypeEnum) {
+  const options = operatorOptionsMap[type] || [];
+  const optionsValueList = options.map((optionItem: { value: string; label: string }) => optionItem.value);
+  return getDefaultOperator(optionsValueList);
 }
 
 export function valueIsArray(listItem: FilterFormItem) {

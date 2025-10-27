@@ -98,13 +98,13 @@
   import { NButton, NCollapse, NCollapseItem, NInputGroup, NScrollbar, NSelect, NSpin, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { getOperator, valueIsArray } from '@/components/pure/crm-advance-filter/utils';
   import CrmChart from '@/components/pure/crm-chart/index.vue';
   import { ChartTypeEnum } from '@/components/pure/crm-chart/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -312,49 +312,56 @@
       Message.warning(t('crmViewSelect.orConditionNotAllowJump'));
       return;
     }
-    // eslint-disable-next-line no-console
-    console.log('Chart clicked:', params);
-    const groupByFieldType = computed(() => {
+    const groupByField = computed(() => {
       const allFields = [...props.configList, ...(props.customList || [])];
-      return allFields.find((e) => e.dataIndex === groupBy.value)?.type;
+      return allFields.find((e) => e.dataIndex === groupBy.value);
     });
-    const chartKey = Date.now().toString();
-    const form = {
-      searchMode: formModel.value.searchMode,
-      list: formModel.value.list,
-    };
-    let value = chartCategoryMap[params.name];
-    let selectedRows: InternalRowData[] = [];
-    let selectedUserList: SelectedUsersItem[] = [];
-    if (groupByFieldType.value === FieldTypeEnum.DATA_SOURCE) {
-      value = [value];
-      selectedRows = [{ id: value, name: params.name }];
-    } else if (
-      [
-        FieldTypeEnum.DEPARTMENT,
-        FieldTypeEnum.DEPARTMENT_MULTIPLE,
-        FieldTypeEnum.MEMBER,
-        FieldTypeEnum.MEMBER_MULTIPLE,
-      ].includes(groupByFieldType.value!)
-    ) {
-      value = [value];
-      selectedUserList = [{ id: value, name: params.name }];
+    if (groupByField.value) {
+      const chartKey = Date.now().toString();
+      const form = {
+        searchMode: formModel.value.searchMode,
+        list: [...formModel.value.list],
+      };
+      const value = chartCategoryMap[params.name];
+      let selectedRows: InternalRowData[] = [];
+      let selectedUserList: SelectedUsersItem[] = [];
+      let dataSourceProps = {};
+      if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(groupByField.value.type)) {
+        dataSourceProps = {
+          dataSourceType: groupByField.value.dataSourceProps?.dataSourceType,
+        };
+        selectedRows = [{ id: value, name: params.name }];
+      } else if (
+        [
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+        ].includes(groupByField.value.type)
+      ) {
+        selectedUserList = [{ id: value, name: params.name }];
+      }
+      const tempField = {
+        dataIndex: groupBy.value,
+        operator: getOperator(groupByField.value.type),
+        value,
+        selectedRows,
+        selectedUserList,
+        dataSourceProps,
+        type: groupByField.value.type || FieldTypeEnum.INPUT,
+      };
+      form.list.push({
+        ...tempField,
+        value: valueIsArray(tempField) ? [value] : value,
+      });
+      setViewChartParams(chartKey, {
+        viewId: activeView.value,
+        formModel: form as FilterForm,
+      });
+      openNewPage(props.routeName, {
+        chartKey,
+      });
     }
-    form.list.push({
-      dataIndex: groupBy.value,
-      operator: OperatorEnum.EQUALS,
-      value,
-      selectedRows,
-      selectedUserList,
-      type: groupByFieldType.value || FieldTypeEnum.INPUT,
-    });
-    setViewChartParams(chartKey, {
-      viewId: activeView.value,
-      formModel: form as FilterForm,
-    });
-    openNewPage(props.routeName, {
-      chartKey,
-    });
   }
 
   const chartContainerRef = ref<Element | undefined>(undefined);
