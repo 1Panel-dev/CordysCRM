@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 
-import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';

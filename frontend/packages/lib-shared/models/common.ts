@@ -106,7 +106,7 @@ export interface ChartConfig {
 
 export interface GenerateChartParams extends TableQueryParams {
   chartConfig: ChartConfig;
-  poolId?: string;
+  poolId?: string | number;
 }
 
 export interface ChartResponseDataItem {

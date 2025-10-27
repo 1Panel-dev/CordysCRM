@@ -86,6 +86,7 @@
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         :advanced-original-form="advancedOriginalForm"
+        :route-name="OpportunityRouteEnum.OPPORTUNITY_OPT"
         @refresh-table-data="searchData"
         @generated-chart="handleGeneratedChart"
       />
@@ -206,6 +207,8 @@
   import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+
+  import { OpportunityRouteEnum } from '@/enums/routeEnum';
 
   const useStore = useUserStore();
 
@@ -869,8 +872,8 @@
   }
 
   function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModal, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    const { viewId, formModel, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }

@@ -1,7 +1,7 @@
 <template>
-  <div class="w-[150px]">
+  <div class="w-fit min-w-[120px]">
     <div class="text-[14px] font-medium text-[var(--text-n1)]">{{ props.seriesName }}</div>
-    <div class="mt-[8px] flex items-center justify-between">
+    <div class="mt-[8px] flex items-center justify-between gap-[12px]">
       <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n2)]">
         <div class="h-[8px] w-[8px]" :style="{ backgroundColor: props.color }"></div>
         {{ props.name }}

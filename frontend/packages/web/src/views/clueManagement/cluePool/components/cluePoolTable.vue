@@ -69,6 +69,8 @@
         :type="FormDesignKeyEnum.CLUE_POOL"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
+        :pool-id="poolId"
+        :route-name="ClueRouteEnum.CLUE_MANAGEMENT_POOL"
         @refresh-table-data="searchData"
       />
     </template>
@@ -607,8 +609,8 @@
   const { initTableViewChartParams, getChartViewId } = useViewChartParams();
 
   function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModal, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    const { viewId, formModel, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }

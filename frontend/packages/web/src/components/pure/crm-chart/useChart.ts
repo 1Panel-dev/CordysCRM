@@ -22,6 +22,7 @@ export interface ChartProps {
   type: ChartTypeEnum;
   customConfig?: Ref<EChartsOption>;
   data: Ref<any[]>;
+  onClick?: (params: any) => void;
 }
 
 export const lightColors = [
@@ -81,7 +82,7 @@ export default function useChart(props: ChartProps) {
     percentMap[item.name] = ((item.value / total) * 100).toFixed(2);
   });
 
-  const xyAxis: EChartsOption = {
+  const xyAxis = computed<EChartsOption>(() => ({
     tooltip: {
       show: true,
       trigger: 'axis',
@@ -109,7 +110,7 @@ export default function useChart(props: ChartProps) {
     grid: {
       left: '2%',
       right: '2%',
-      bottom: '3%',
+      bottom: props.xData?.value && props.xData?.value.length >= 100 ? '10%' : '3%',
       top: '70px',
       containLabel: true,
     },
@@ -143,8 +144,25 @@ export default function useChart(props: ChartProps) {
         },
       },
     ],
-  };
-  const pieConfig: EChartsOption = {
+    dataZoom:
+      props.xData?.value && props.xData?.value.length >= 100
+        ? [
+            {
+              type: 'inside',
+              realtime: true,
+              start: 30,
+              end: 70,
+            },
+            {
+              type: 'slider',
+              realtime: true,
+              start: 30,
+              end: 70,
+            },
+          ]
+        : [],
+  }));
+  const pieConfig = computed<EChartsOption>(() => ({
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
@@ -194,8 +212,8 @@ export default function useChart(props: ChartProps) {
         },
       },
     },
-  };
-  const funnelConfig: EChartsOption = {
+  }));
+  const funnelConfig = computed<EChartsOption>(() => ({
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
@@ -212,15 +230,15 @@ export default function useChart(props: ChartProps) {
         return div;
       },
     },
-  };
+  }));
   const partConfig = computed<EChartsOption>(() => {
     if (props.type === ChartTypeEnum.FUNNEL) {
-      return funnelConfig;
+      return funnelConfig.value;
     }
     if ([ChartTypeEnum.PIE, ChartTypeEnum.DONUT].includes(props.type)) {
-      return pieConfig;
+      return pieConfig.value;
     }
-    return xyAxis;
+    return xyAxis.value;
   });
 
   const chartOptions = ref<EChartsOption>(
@@ -268,6 +286,10 @@ export default function useChart(props: ChartProps) {
     handleChartDomResize();
     myChart.value = echarts.init(_chartDom, 'light');
     myChart.value.setOption(chartOptions.value);
+    myChart.value.on('click', (params) => {
+      // 触发点击事件
+      props.onClick?.(params);
+    });
   }
 
   function refreshChart(opt?: EChartsOption) {
@@ -283,7 +305,22 @@ export default function useChart(props: ChartProps) {
   watch(
     () => props.data.value,
     () => {
-      refreshChart();
+      chartOptions.value = deepMerge(
+        {
+          title: {
+            text: title.value,
+            textAlign: 'left',
+            left: '1%',
+            top: '2%',
+          },
+          ...partConfig.value,
+          series: props.series.value,
+        } as EChartsOption,
+        props.customConfig?.value || {}
+      );
+      nextTick(() => {
+        refreshChart();
+      });
     }
   );
 

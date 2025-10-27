@@ -30,4 +30,5 @@ export default {
   'crmViewSelect.chartName': '{group} Group {indicator} ({aggregation})',
   'crmViewSelect.chartNameCount': '{group} Group Counts',
   'crmViewSelect.counts': 'Counts',
+  'crmViewSelect.orConditionNotAllowJump': 'The current combined conditions do not support jumping',
 };

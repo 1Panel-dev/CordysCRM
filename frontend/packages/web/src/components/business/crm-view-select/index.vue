@@ -102,6 +102,7 @@
     :type="props.type"
     :default-view-id="activeTab"
     :advanced-original-form="props.advancedOriginalForm"
+    :route-name="props.routeName"
     @generated-chart="handleGeneratedChart"
   />
 </template>
@@ -150,6 +151,8 @@
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
     advancedOriginalForm?: FilterForm;
+    poolId?: string | number;
+    routeName?: string;
   }>();
 
   const emit = defineEmits<{

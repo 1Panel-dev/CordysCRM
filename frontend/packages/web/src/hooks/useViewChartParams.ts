@@ -13,7 +13,7 @@ import { multipleValueTypeList } from '@/components/business/crm-form-create/con
 
 export interface ConditionParams {
   viewId: string;
-  formModal: FilterForm; // 高级筛选条件
+  formModel: FilterForm; // 高级筛选条件
 }
 
 export interface ViewChartResult extends ConditionParams {
@@ -31,7 +31,7 @@ export default function useViewChartParams() {
 
   // 存储图表参数对象
   /**
-   * @param chartKey 图表url上携带的对应的cartKey,跳转之前生成的随机id  http://localhost:5173/#/opportunity/opt?cartKey=176104198889700000
+   * @param chartKey 图表url上携带的对应的cartKey,跳转之前生成的随机id  http://localhost:5173/#/opportunity/opt?chartKey=176104198889700000
    * @param data 图表参数
    */
   function setViewChartParams(chartKey: string, data: ConditionParams) {
@@ -61,9 +61,9 @@ export default function useViewChartParams() {
   function getChartConditions(chartKey: string): ViewChartResult | null {
     const chartParams = getChartKeyParams(chartKey);
     if (chartParams) {
-      const { viewId, formModal } = chartParams;
+      const { viewId, formModel } = chartParams;
 
-      const list: FilterFormItem[] = (formModal.list || []) as FilterFormItem[];
+      const list: FilterFormItem[] = (formModel.list || []) as FilterFormItem[];
 
       const conditions: ConditionsItem[] = list.map((item: any) => ({
         value: item.value,
@@ -73,11 +73,11 @@ export default function useViewChartParams() {
         type: item.type,
       }));
 
-      const searchMode = formModal.searchMode as AccordBelowType;
+      const searchMode = formModel.searchMode as AccordBelowType;
 
       return {
         viewId,
-        formModal,
+        formModel,
         filterResult: {
           searchMode,
           conditions,

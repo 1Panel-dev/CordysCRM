@@ -5,7 +5,7 @@
 <script setup lang="ts">
   import { LineSeriesOption } from 'echarts';
   import { LineChart } from 'echarts/charts';
-  import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components';
+  import { DataZoomComponent, GridComponent, TitleComponent, TooltipComponent } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -23,6 +23,9 @@
     containerRef?: Element;
     isFullScreen: boolean;
   }>();
+  const emit = defineEmits<{
+    (e: 'chartClick', params: any): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -37,7 +40,7 @@
   }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.LINE,
-    components: [TooltipComponent, TitleComponent, GridComponent, LineChart, CanvasRenderer],
+    components: [TooltipComponent, TitleComponent, GridComponent, LineChart, DataZoomComponent, CanvasRenderer],
     id,
     groupName,
     dataIndicatorName,
@@ -46,6 +49,9 @@
     data,
     series,
     containerRef,
+    onClick(params) {
+      emit('chartClick', params);
+    },
   });
 
   onMounted(() => {

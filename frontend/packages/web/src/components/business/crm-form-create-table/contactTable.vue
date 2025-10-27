@@ -75,6 +75,7 @@
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
           :advanced-original-form="advancedOriginalForm"
+          :route-name="CustomerRouteEnum.CUSTOMER_CONTACT"
           @refresh-table-data="searchData"
           @generated-chart="handleGeneratedChart"
         />
@@ -196,7 +197,7 @@
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { AppRouteEnum } from '@/enums/routeEnum';
+  import { AppRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
     sourceId?: string;
@@ -583,8 +584,8 @@
 
   const { initTableViewChartParams, getChartViewId } = useViewChartParams();
   function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModal, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    const { viewId, formModel, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }

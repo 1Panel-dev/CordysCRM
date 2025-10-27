@@ -60,6 +60,8 @@
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         :advanced-original-form="advancedOriginalForm"
+        :pool-id="openSea"
+        :route-name="CustomerRouteEnum.CUSTOMER_OPEN_SEA"
         @refresh-table-data="searchData"
         @generated-chart="handleGeneratedChart"
       />
@@ -587,8 +589,8 @@
 
   const { initTableViewChartParams, getChartViewId } = useViewChartParams();
   function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModal, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    const { viewId, formModel, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }

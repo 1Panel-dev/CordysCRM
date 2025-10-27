@@ -1,13 +1,16 @@
 <template>
   <div class="absolute right-[16px] top-[16px] z-10 flex items-center gap-[12px]">
     <n-button type="default" class="outline--secondary px-[6px]" size="small" @click="emit('refresh')">
-      <CrmIcon type="iconicon_refresh" />
+      <CrmIcon type="iconicon_refresh" class="text-[var(--text-n1)]" />
     </n-button>
     <n-button type="default" class="outline--secondary px-[6px]" size="small" @click="emit('download')">
-      <CrmIcon type="iconicon_download" />
+      <CrmIcon type="iconicon_download" class="text-[var(--text-n1)]" />
     </n-button>
     <n-button type="default" class="outline--secondary px-[6px]" size="small" @click="toggleFullScreen">
-      <CrmIcon :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'" />
+      <CrmIcon
+        :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
+        class="text-[var(--text-n1)]"
+      />
     </n-button>
   </div>
 </template>

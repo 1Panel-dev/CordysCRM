@@ -30,4 +30,5 @@ export default {
   'crmViewSelect.chartName': '{group}分组的{indicator}({aggregation})',
   'crmViewSelect.chartNameCount': '{group}分组的记录数',
   'crmViewSelect.counts': '记录数',
+  'crmViewSelect.orConditionNotAllowJump': '当前组合条件暂不支持跳转',
 };

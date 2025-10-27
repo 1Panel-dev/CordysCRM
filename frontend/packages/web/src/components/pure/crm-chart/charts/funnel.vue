@@ -22,6 +22,9 @@
     containerRef?: Element;
     isFullScreen: boolean;
   }>();
+  const emit = defineEmits<{
+    (e: 'chartClick', params: any): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -63,6 +66,9 @@
         },
       },
     })),
+    onClick(params) {
+      emit('chartClick', params);
+    },
   });
 
   onMounted(() => {

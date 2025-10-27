@@ -23,6 +23,9 @@
     containerRef?: Element;
     isFullScreen: boolean;
   }>();
+  const emit = defineEmits<{
+    (e: 'chartClick', params: any): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -56,6 +59,9 @@
     data,
     series,
     containerRef,
+    onClick(params) {
+      emit('chartClick', params);
+    },
   });
 
   onMounted(() => {

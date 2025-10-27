@@ -72,6 +72,7 @@
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
         :advanced-original-form="advancedOriginalForm"
+        :route-name="CustomerRouteEnum.CUSTOMER_INDEX"
         @refresh-table-data="searchData"
         @generated-chart="handleGeneratedChart"
       />
@@ -161,6 +162,8 @@
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
@@ -669,8 +672,8 @@
   const { initTableViewChartParams, getChartViewId } = useViewChartParams();
 
   function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModal, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    const { viewId, formModel, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }

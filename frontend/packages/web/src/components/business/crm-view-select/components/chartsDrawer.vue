@@ -67,37 +67,41 @@
           </n-input-group>
         </div>
         <div class="filter-input flex-1">
-          <n-button type="primary" ghost :loading="loading" @click="generateChart">
+          <n-button type="primary" ghost :disabled="loading" @click="generateChart">
             {{ t('crmViewSelect.generateChart') }}
           </n-button>
         </div>
       </div>
-      <div
-        class="h-[45vh] min-h-[300px] overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
-      >
-        <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
-          <CrmChart
-            v-if="seriesData.length"
-            :type="ChartTypeEnum.LINE"
-            :group-name="groupByName"
-            :data-indicator-name="dataIndicatorName"
-            :aggregation-method-name="aggregationMethodName"
-            :x-data="xData"
-            :data="seriesData"
-            :container-ref="chartContainerRef"
-          />
-        </div>
+      <div class="flex-1 overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+        <n-spin :show="loading" class="h-full">
+          <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
+            <CrmChart
+              v-if="seriesData.length"
+              :type="generatedChartType"
+              :group-name="groupByName"
+              :data-indicator-name="dataIndicatorName"
+              :aggregation-method-name="aggregationMethodName"
+              :x-data="xData"
+              :data="seriesData"
+              :container-ref="chartContainerRef"
+              @chart-click="handleChartClick"
+              @refresh="generateChart"
+            />
+          </div>
+        </n-spin>
       </div>
     </div>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NCollapse, NCollapseItem, NInputGroup, NScrollbar, NSelect } from 'naive-ui';
+  import { NButton, NCollapse, NCollapseItem, NInputGroup, NScrollbar, NSelect, NSpin, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -115,14 +119,20 @@
     generateOpportunityChart,
   } from '@/api/modules';
   import { TabType } from '@/hooks/useHiddenTab';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import useViewChartParams from '@/hooks/useViewChartParams';
   import useViewStore from '@/store/modules/view';
+
+  import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
     type: TabType;
     configList: FilterFormItem[];
     customList?: FilterFormItem[];
     defaultViewId?: string;
+    poolId?: string | number;
     advancedOriginalForm?: FilterForm;
+    routeName?: string;
   }>();
 
   const emit = defineEmits<{
@@ -130,6 +140,9 @@
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
+  const { openNewPage } = useOpenNewPage();
+  const { setViewChartParams } = useViewChartParams();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -157,7 +170,7 @@
   };
   const formModel = ref<FilterForm>(cloneDeep(defaultFormModel));
   const filterContentRef = ref<InstanceType<typeof FilterContent>>();
-  const chartType = ref<string>(ChartTypeEnum.BAR);
+  const chartType = ref<ChartTypeEnum>(ChartTypeEnum.BAR);
   const chartTypeOptions = [
     { label: t('crmViewSelect.bar'), value: ChartTypeEnum.BAR },
     { label: t('crmViewSelect.line'), value: ChartTypeEnum.LINE },
@@ -176,6 +189,7 @@
             FieldTypeEnum.INPUT_MULTIPLE,
             FieldTypeEnum.LINK,
             FieldTypeEnum.SERIAL_NUMBER,
+            FieldTypeEnum.INPUT,
           ].includes(e.type)
       )
       .map((item) => ({
@@ -235,11 +249,13 @@
     [FormDesignKeyEnum.CLUE_POOL]: generateLeadPoolChart,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: generateCustomerPoolChart,
     [FormDesignKeyEnum.CONTACT]: generateCustomerContactChart,
-    [FormDesignKeyEnum.FOLLOW_PLAN]: () => Promise.resolve(),
-    [FormDesignKeyEnum.FOLLOW_RECORD]: () => Promise.resolve(),
+    [FormDesignKeyEnum.FOLLOW_PLAN]: () => Promise.resolve([]),
+    [FormDesignKeyEnum.FOLLOW_RECORD]: () => Promise.resolve([]),
   };
   const loading = ref<boolean>(false);
   const expandNames = ref<string[]>(['1']);
+  let chartCategoryMap: Record<string, any> = {};
+  const generatedChartType = ref<ChartTypeEnum>(chartType.value);
 
   async function generateChart() {
     filterContentRef.value?.formRef?.validate(async (errors) => {
@@ -249,23 +265,36 @@
       try {
         loading.value = true;
         const filterResult = getParams();
-        // const res = await generateChartApiMap[props.type]({
-        //   filterCondition: filterResult,
-        //   poolId: '',
-        //   viewId: '',
-        //   chartConfig: {
-        //     chatType: chartType.value,
-        //     categoryAxis: {
-        //       fieldId: groupBy.value,
-        //     },
-        //     valueAxis: {
-        //       fieldId: dataIndicator.value,
-        //       aggregateMethod: aggregationMethod.value,
-        //     },
-        //   },
-        // });
+        const res = await generateChartApiMap[props.type]({
+          filterCondition: filterResult,
+          poolId: props.poolId,
+          viewId: activeView.value,
+          chartConfig: {
+            chatType: chartType.value,
+            categoryAxis: {
+              fieldId: groupBy.value,
+            },
+            valueAxis: {
+              fieldId: dataIndicator.value,
+              aggregateMethod: aggregationMethod.value,
+            },
+          },
+        });
+        chartCategoryMap = {};
+        xData.value = [];
+        seriesData.value = [];
+        generatedChartType.value = chartType.value;
+        res.forEach((item) => {
+          chartCategoryMap[item.categoryAxisName || t('crmFormDesign.none')] = item.categoryAxis;
+          if ([ChartTypeEnum.LINE, ChartTypeEnum.BAR].includes(chartType.value)) {
+            xData.value.push(item.categoryAxisName || t('crmFormDesign.none'));
+          }
+          seriesData.value.push({
+            name: item.categoryAxisName || t('crmFormDesign.none'),
+            value: item.valueAxis,
+          });
+        });
         emit('generatedChart', filterResult, formModel.value, activeView.value);
-        // TODO: 接口待调通
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -275,6 +304,56 @@
       } finally {
         loading.value = false;
       }
+    });
+  }
+
+  function handleChartClick(params: any) {
+    if (formModel.value.searchMode === 'OR') {
+      Message.warning(t('crmViewSelect.orConditionNotAllowJump'));
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.log('Chart clicked:', params);
+    const groupByFieldType = computed(() => {
+      const allFields = [...props.configList, ...(props.customList || [])];
+      return allFields.find((e) => e.dataIndex === groupBy.value)?.type;
+    });
+    const chartKey = Date.now().toString();
+    const form = {
+      searchMode: formModel.value.searchMode,
+      list: formModel.value.list,
+    };
+    let value = chartCategoryMap[params.name];
+    let selectedRows: InternalRowData[] = [];
+    let selectedUserList: SelectedUsersItem[] = [];
+    if (groupByFieldType.value === FieldTypeEnum.DATA_SOURCE) {
+      value = [value];
+      selectedRows = [{ id: value, name: params.name }];
+    } else if (
+      [
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+      ].includes(groupByFieldType.value!)
+    ) {
+      value = [value];
+      selectedUserList = [{ id: value, name: params.name }];
+    }
+    form.list.push({
+      dataIndex: groupBy.value,
+      operator: OperatorEnum.EQUALS,
+      value,
+      selectedRows,
+      selectedUserList,
+      type: groupByFieldType.value || FieldTypeEnum.INPUT,
+    });
+    setViewChartParams(chartKey, {
+      viewId: activeView.value,
+      formModel: form as FilterForm,
+    });
+    openNewPage(props.routeName, {
+      chartKey,
     });
   }
 

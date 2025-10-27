@@ -11,6 +11,7 @@
         :data="props.data"
         :container-ref="props.containerRef"
         :is-full-screen="isFullScreen"
+        @chart-click="emit('chartClick', $event)"
       />
     </suspense>
     <toolbox
@@ -45,6 +46,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'chartClick', params: any): void;
   }>();
 
   const isFullScreen = ref(false);
