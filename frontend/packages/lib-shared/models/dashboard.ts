@@ -37,7 +37,7 @@ export interface DashboardTableItem {
   createTime: number;
   updateTime: number;
   name: string;
-  resourceId: string;
+  resourceUrl: string;
   dashboardModuleId: string;
   organizationId: string;
   pos: number;

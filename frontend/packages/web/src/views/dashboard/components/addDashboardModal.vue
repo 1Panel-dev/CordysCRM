@@ -44,7 +44,7 @@
           <n-input v-model:value="form.name" :maxlength="255" />
         </n-form-item>
         <n-form-item :label="t('dashboard.dashboardUrl')" path="resourceUrl">
-          <n-input v-model:value="form.resourceUrl" :maxlength="50" />
+          <n-input v-model:value="form.resourceUrl" :maxlength="500" />
         </n-form-item>
         <n-form-item :label="t('dashboard.folder')" path="dashboardModuleId">
           <n-tree-select

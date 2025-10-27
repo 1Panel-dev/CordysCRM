@@ -19,7 +19,11 @@
       </div>
     </div>
     <n-spin class="block flex-1" :show="loading" content-class="h-full">
-      <iframe id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
+      <iframe
+        id="iframe-dashboard-view"
+        style="width: 100%; height: 100%; border: 0"
+        :src="props.resourceUrl ?? iframeSrc"
+      ></iframe>
       <n-empty v-if="isError" size="large" :description="t('dashboard.loadFailed')"> </n-empty>
     </n-spin>
   </div>
@@ -38,9 +42,10 @@
 
   const props = defineProps<{
     title: string;
-    dashboardId: string;
+    dashboardId?: string; // 模块资源id
     isFavorite: boolean;
     isFullPage?: boolean;
+    resourceUrl?: string; // 外链嵌入url
   }>();
   const emit = defineEmits<{
     (e: 'toggleFavorite'): void;
@@ -58,7 +63,7 @@
   const params = {
     // 固定写法：dashboard 仪表板、dataV 数据大屏
     'busiFlag': 'dashboard',
-    'dvId': props.dashboardId,
+    'dvId': props?.dashboardId,
     // 固定写法
     'type': 'Dashboard',
     //  JWT token 认证。
@@ -111,7 +116,9 @@
 
   onBeforeMount(() => {
     window.addEventListener('message', onMessage, false);
-    init();
+    if (!props.resourceUrl) {
+      init();
+    }
   });
 </script>
 

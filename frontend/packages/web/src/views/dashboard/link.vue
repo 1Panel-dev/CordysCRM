@@ -29,8 +29,8 @@
         <dashboard
           v-else-if="activeNode"
           :title="activeNode.name"
-          :dashboard-id="activeNode.resourceId"
           :is-favorite="!!activeNode.myCollect"
+          :resource-url="activeNode.resourceUrl"
           @toggle-favorite="favoriteToggle(activeNode)"
         />
       </template>

@@ -18,9 +18,7 @@ export default function useMenuTree() {
   const menuTree = computed(() => {
     const copyRouter = cloneDeep(appClientMenus) as RouteRecordNormalized[];
 
-    const currentMenuConfig: string[] = appStore.moduleConfigList
-      .filter((e) => e.enable && !e.disabled)
-      .map((e) => e.moduleKey);
+    const currentMenuConfig: string[] = appStore.moduleConfigList.filter((e) => e.enable).map((e) => e.moduleKey);
 
     copyRouter.sort((a: RouteRecordNormalized, b: RouteRecordNormalized) => {
       const getModuleOrder = (route: RouteRecordNormalized) => {
