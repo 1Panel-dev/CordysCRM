@@ -15,6 +15,7 @@ export default {
   'settings.navbar.event': '记录/计划',
   'settings.help.guide': '新手指引',
   'settings.help.doc': '帮助文档',
+  'settings.help.apiDoc': 'API 文档',
   'settings.help.forumHelp': '论坛帮助',
   'settings.help.gitHubProject': 'GitHub 项目',
   'settings.help.enterpriseVersionTrial': '企业版试用',

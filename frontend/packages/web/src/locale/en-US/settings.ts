@@ -15,6 +15,7 @@ export default {
   'settings.navbar.event': 'Record/Plan',
   'settings.help.guide': 'Use Guide',
   'settings.help.doc': 'Help docs',
+  'settings.help.apiDoc': 'API docs',
   'settings.help.forumHelp': 'Forum Help',
   'settings.help.gitHubProject': 'GitHub project',
   'settings.help.enterpriseVersionTrial': 'Enterprise version trial',

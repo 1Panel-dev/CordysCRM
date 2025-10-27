@@ -85,7 +85,7 @@
     filterContentRef.value?.formRef?.validate((errors) => {
       if (!errors) {
         visible.value = false;
-        emit('handleFilter', getParams(), cloneDeep(formModel.value));
+        emit('handleFilter', getParams(), cloneDeep(formModel.value) as FilterForm);
       }
     });
   }
