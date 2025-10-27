@@ -300,18 +300,29 @@
     }
   }
 
-  const moreActions: ActionsItem[] = [
-    {
-      label: t('settings.help.doc'),
-      key: 'helpDoc',
-      iconType: 'iconicon_help_circle',
-    },
-    {
-      label: t('settings.help.apiDoc'),
-      key: 'apiDoc',
-      iconType: 'iconicon_info_circle',
-    },
-  ];
+  const moreActions = computed<ActionsItem[]>(() => {
+    if (licenseStore.hasLicense()) {
+      return [
+        {
+          label: t('settings.help.doc'),
+          key: 'helpDoc',
+          iconType: 'iconicon_help_circle',
+        },
+        {
+          label: t('settings.help.apiDoc'),
+          key: 'apiDoc',
+          iconType: 'iconicon_info_circle',
+        },
+      ];
+    }
+    return [
+      {
+        label: t('settings.help.doc'),
+        key: 'helpDoc',
+        iconType: 'iconicon_help_circle',
+      },
+    ];
+  });
 
   function selectMoreActions(item: ActionsItem) {
     switch (item.key) {

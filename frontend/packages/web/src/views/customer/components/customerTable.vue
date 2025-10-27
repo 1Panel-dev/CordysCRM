@@ -158,6 +158,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -665,12 +666,22 @@
     searchData();
   }
 
+  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+
+  function viewChartCallBack(params: ViewChartResult) {
+    const { viewId, formModal, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    setAdvanceFilter(filterResult);
+    activeTab.value = viewId;
+  }
+
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        setLoadListParams({ keyword: keyword.value, viewId: getChartViewId() ?? activeTab.value });
+        initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
     }
@@ -694,6 +705,10 @@
       activeSourceId.value = route.query.id as string;
       showOverviewDrawer.value = true;
     }
+  });
+
+  onBeforeUnmount(() => {
+    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   });
 </script>
 

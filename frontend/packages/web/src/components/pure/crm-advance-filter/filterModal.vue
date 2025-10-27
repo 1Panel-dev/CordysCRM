@@ -80,6 +80,12 @@
     };
   }
 
+  function initFormModal(newFormModel: FilterForm) {
+    formModel.value = {
+      ...newFormModel,
+    } as FilterForm;
+  }
+
   // 过滤
   function handleFilter() {
     filterContentRef.value?.formRef?.validate((errors) => {
@@ -107,5 +113,7 @@
   defineExpose({
     handleReset,
     setFormModal,
+    initFormModal,
+    formModel,
   });
 </script>

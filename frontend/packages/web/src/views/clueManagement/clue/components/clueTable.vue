@@ -167,6 +167,7 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -659,17 +660,33 @@
     searchData();
   }
 
+  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+
+  function getViewId() {
+    if (route.query.dim && homeDetailKey.value && isInitQuery.value) {
+      return route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
+    }
+    return getChartViewId() ?? activeTab.value;
+  }
+
+  function viewChartCallBack(params: ViewChartResult) {
+    const { viewId, formModal, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    setAdvanceFilter(filterResult);
+    activeTab.value = viewId;
+  }
+
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        const valueScoped = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
         setLoadListParams({
           keyword: keyword.value,
-          viewId: route.query.dim && homeDetailKey.value && isInitQuery.value ? valueScoped : activeTab.value,
+          viewId: getViewId(),
         });
         setHomePageParams();
+        initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
     }
@@ -701,6 +718,7 @@
 
   onBeforeUnmount(() => {
     sessionStorage.removeItem('homeData');
+    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   });
 </script>
 

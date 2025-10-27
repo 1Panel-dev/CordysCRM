@@ -146,6 +146,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -584,6 +585,13 @@
     }
   );
 
+  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+  function viewChartCallBack(params: ViewChartResult) {
+    const { viewId, formModal, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    setAdvanceFilter(filterResult);
+    activeTab.value = viewId;
+  }
   watch(
     () => activeTab.value,
     (val) => {
@@ -591,9 +599,10 @@
         checkedRowKeys.value = [];
         setLoadListParams({
           keyword: keyword.value,
-          viewId: activeTab.value,
+          viewId: getChartViewId() ?? activeTab.value,
           poolId: props.hiddenPoolSelect ? undefined : openSea.value,
         });
+        initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
     }
@@ -648,6 +657,10 @@
       openSea.value = route.query.poolId as string;
       showOverviewDrawer.value = true;
     }
+  });
+
+  onBeforeUnmount(() => {
+    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   });
 </script>
 

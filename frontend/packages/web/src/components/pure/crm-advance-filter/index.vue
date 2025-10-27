@@ -96,10 +96,16 @@
     isAdvancedSearchMode.value = isAdvancedMode;
   }
 
+  function initFormModal(newFormModel: FilterForm, isAdvancedMode: boolean) {
+    filterModalRef.value?.initFormModal(newFormModel);
+    isAdvancedSearchMode.value = isAdvancedMode;
+  }
+
   defineExpose({
     clearFilter,
     isAdvancedSearchMode,
     setAdvancedFilter,
+    initFormModal,
   });
 </script>
 

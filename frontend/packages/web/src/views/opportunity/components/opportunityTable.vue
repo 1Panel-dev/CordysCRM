@@ -202,6 +202,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -857,19 +858,35 @@
     isInitQuery.value = false;
   }
 
+  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+
+  function getViewId() {
+    const { dim, status, timeField } = route.query;
+    if (dim && status && timeField && isInitQuery.value) {
+      return route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
+    }
+    return getChartViewId() ?? activeTab.value;
+  }
+
+  function viewChartCallBack(params: ViewChartResult) {
+    const { viewId, formModal, filterResult } = params;
+    tableAdvanceFilterRef.value?.initFormModal(formModal, true);
+    setAdvanceFilter(filterResult);
+    activeTab.value = viewId;
+  }
+
   watch(
     () => activeTab.value,
     async (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        const valueScoped = route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
-        const { dim, status, timeField } = route.query;
         setLoadListParams({
           keyword: keyword.value,
-          viewId: dim && status && timeField && isInitQuery.value ? valueScoped : activeTab.value,
+          viewId: getViewId(),
           customerId: props.sourceId,
         });
-        await setHomePageParams();
+        setHomePageParams();
+        initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
         getStatistic();
       }
@@ -943,6 +960,7 @@
 
   onBeforeUnmount(() => {
     sessionStorage.removeItem('homeData');
+    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   });
 </script>
 

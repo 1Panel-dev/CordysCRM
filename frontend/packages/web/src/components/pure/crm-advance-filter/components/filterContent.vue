@@ -270,6 +270,7 @@
 
   import { operatorOptionsMap, scopeOptions } from '../index';
   import type { FilterForm, FilterFormItem } from '../type';
+  import { getDefaultOperator } from '../utils';
   import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
@@ -334,23 +335,6 @@
         .map((item) => ({ ...item, label: t(item.title as string) }));
     };
   });
-
-  // 第二列默认：包含/属于/等于
-  function getDefaultOperator(list: string[]) {
-    if (list.includes(OperatorEnum.CONTAINS)) {
-      return OperatorEnum.CONTAINS;
-    }
-    if (list.includes(OperatorEnum.DYNAMICS)) {
-      return OperatorEnum.DYNAMICS;
-    }
-    if (list.includes(OperatorEnum.IN)) {
-      return OperatorEnum.IN;
-    }
-    if (list.includes(OperatorEnum.EQUALS)) {
-      return OperatorEnum.EQUALS;
-    }
-    return OperatorEnum.BETWEEN;
-  }
 
   const getListItemByDataIndex = (dataIndex: string): FilterFormItem | undefined => {
     const mergedList: FilterFormItem[] = [...props.configList, ...(props.customList || [])];
