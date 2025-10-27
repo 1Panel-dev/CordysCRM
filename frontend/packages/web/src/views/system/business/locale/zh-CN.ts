@@ -146,7 +146,7 @@ export default {
   'system.personal.expiredTime': '到期时间',
   'system.personal.accessKeyDesc': 'Access Key 描述',
   'system.personal.accessKeyDescPlaceholder': '请输入 Access Key 描述',
-  'system.personal.closeTip': '关闭后，将导致使用该 Access Key 执行的测试任务执行失败，请谨慎操作！',
+  'system.personal.closeTip': '关闭后，使用 Access Key 调用 API 将失效，请谨慎操作！',
   'system.personal.expired': '已到期',
   'system.personal.expiredTip': '可在【设置】内更改到期时间',
   'system.personal.noData': '暂无数据，请 ',

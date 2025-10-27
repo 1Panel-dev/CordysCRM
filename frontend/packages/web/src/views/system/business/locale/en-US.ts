@@ -155,7 +155,7 @@ export default {
   'system.personal.expiredTime': 'Expiration time',
   'system.personal.accessKeyDesc': 'Access Key description',
   'system.personal.accessKeyDescPlaceholder': 'Enter Access Key description',
-  'system.personal.closeTip': 'Closing will cause tasks using this Access Key to fail',
+  'system.personal.closeTip': 'Disabling will invalidate the Access Key for API calls. Proceed with caution',
   'system.personal.expired': 'Expired',
   'system.personal.expiredTip': 'Change expiration time in Settings',
   'system.personal.noData': 'No data, please ',

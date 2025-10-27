@@ -484,8 +484,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 clueMapper.update(clue);
             });
         }
-
-
     }
 
 
@@ -517,8 +515,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 opportunityMapper.update(opportunity);
             });
         }
-
-
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
