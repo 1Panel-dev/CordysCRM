@@ -203,7 +203,6 @@
       value: hasOptPermission.value ? 0 : '-',
       priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
-      status: 'FOLLOWING',
       hasPermission: hasOptPermission.value,
       unit: t('workbench.dataOverview.countUnit'),
     },
@@ -212,7 +211,6 @@
       value: hasOptPermission.value ? 0 : '-',
       priorPeriodCompareRate: hasOptPermission.value ? 0 : '-',
       routeName: AppRouteEnum.OPPORTUNITY_OPT,
-      status: 'FOLLOWING',
       hasPermission: hasOptPermission.value,
       unit: t('workbench.dataOverview.amountUnit'),
     },
@@ -276,10 +274,10 @@
         : {}),
       ...(item.status
         ? {
-            timeField,
             status: item.status,
           }
         : {}),
+      ...(item.routeName === AppRouteEnum.OPPORTUNITY_OPT ? { timeField } : {}),
     });
   }
 

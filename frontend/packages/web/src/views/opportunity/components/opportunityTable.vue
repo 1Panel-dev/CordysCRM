@@ -844,7 +844,7 @@
   const isInitQuery = ref(true);
   async function setHomePageParams() {
     const { dim, status, timeField } = route.query;
-    if (dim && status && timeField && homeDetailKey.value && isInitQuery.value) {
+    if (dim && timeField && homeDetailKey.value && isInitQuery.value) {
       const conditionParams = await getOptHomeConditions(
         dim as string,
         status as string,
@@ -861,8 +861,8 @@
   const { initTableViewChartParams, getChartViewId } = useViewChartParams();
 
   function getViewId() {
-    const { dim, status, timeField } = route.query;
-    if (dim && status && timeField && isInitQuery.value) {
+    const { dim, timeField } = route.query;
+    if (dim && timeField && isInitQuery.value) {
       return route.query.type === 'SELF' ? route.query.type : useStore.getScopedValue;
     }
     return getChartViewId() ?? activeTab.value;

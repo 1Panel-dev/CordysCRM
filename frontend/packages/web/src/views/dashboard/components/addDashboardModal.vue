@@ -45,12 +45,6 @@
         </n-form-item>
         <n-form-item :label="t('dashboard.dashboardUrl')" path="resourceUrl">
           <n-input v-model:value="form.resourceUrl" :maxlength="50" />
-          <a
-            href="https://rtykuh4z44.feishu.cn/docx/QN1TdHfxjofZXXxZ0toc9oIpnWd"
-            class="text-[var(--primary-8)]"
-            target="_blank"
-            >https://rtykuh4z44.feishu.cn/docx/QN1TdHfxjofZXXxZ0toc9oIpnWd</a
-          >
         </n-form-item>
         <n-form-item :label="t('dashboard.folder')" path="dashboardModuleId">
           <n-tree-select

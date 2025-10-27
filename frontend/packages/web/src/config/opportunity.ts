@@ -55,15 +55,17 @@ export const getOptHomeConditions = async (
         multipleValue: false,
         type: FieldTypeEnum.TIME_RANGE_PICKER,
       },
-      {
-        value: isSuccess.value
-          ? [successStage?.id]
-          : stageConfig.value?.stageConfigList?.filter((i) => i.type === 'END').map((i) => i.id),
-        operator: isSuccess.value ? OperatorEnum.IN : OperatorEnum.NOT_IN,
-        name: 'stage',
-        multipleValue: true,
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-      },
+      ...(isSuccess.value
+        ? [
+            {
+              value: [successStage?.id],
+              operator: OperatorEnum.IN,
+              name: 'stage',
+              multipleValue: true,
+              type: FieldTypeEnum.SELECT_MULTIPLE,
+            },
+          ]
+        : []),
       ...(depIds?.length
         ? [
             {
