@@ -144,6 +144,10 @@ public class ModuleFormCacheService {
             } else {
                 chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
             }
+
+            if (chartResult.getValueAxis() == null) {
+                chartResult.setValueAxis(0);
+            }
         }
         return chartResults;
     }
