@@ -71,9 +71,11 @@ public class ConditionFilterUtils {
         xAxisParam.setBusinessField(StringUtils.isNotBlank(xBaseField.getBusinessKey()));
         xAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(xBaseField.getBusinessKey()));
 
-        yAxisParam.setBlob(yBaseField.isBlob());
-        yAxisParam.setBusinessField(StringUtils.isNotBlank(yBaseField.getBusinessKey()));
-        yAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(yBaseField.getBusinessKey()));
+        if (yBaseField != null) {
+            yAxisParam.setBlob(yBaseField.isBlob());
+            yAxisParam.setBusinessField(StringUtils.isNotBlank(yBaseField.getBusinessKey()));
+            yAxisParam.setBusinessFieldName(CaseFormatUtils.camelToUnderscore(yBaseField.getBusinessKey()));
+        }
 
         if (subXAxisParam != null) {
             BaseField subXBaseField = getBaseFieldWithCheck(fields, subXAxisParam.getFieldId());
@@ -86,6 +88,9 @@ public class ConditionFilterUtils {
     }
 
     private static BaseField getBaseFieldWithCheck(List<BaseField> fields, String fieldKey) {
+        if (StringUtils.isBlank(fieldKey)) {
+            return null;
+        }
         return fields.stream()
                 .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
                         || Strings.CI.equals(field.getBusinessKey(), fieldKey))

@@ -122,20 +122,20 @@
         <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
             <property name="axisParam" value="request.categoryAxisParam"/>
             <property name="tablePrefix" value="categoryAxis"/>
-            <property name="mainTable" value="customer"/>
+            <property name="mainTable" value="clue"/>
             <property name="mainTablePrefix" value="c"/>
         </include>
         <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
             <property name="axisParam" value="request.valueAxisParam"/>
             <property name="tablePrefix" value="valueAxis"/>
-            <property name="mainTable" value="customer"/>
+            <property name="mainTable" value="clue"/>
             <property name="mainTablePrefix" value="c"/>
         </include>
         <if test="request.subCategoryAxisParam != null">
             <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
                 <property name="axisParam" value="request.subCategoryAxisParam"/>
                 <property name="tablePrefix" value="subCategoryAxis"/>
-                <property name="mainTable" value="customer"/>
+                <property name="mainTable" value="clue"/>
                 <property name="mainTablePrefix" value="c"/>
             </include>
         </if>
