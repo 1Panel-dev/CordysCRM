@@ -440,6 +440,7 @@
                 </if>
             </if>
         </if>
+        limit 500
     </sql>
 
     <sql id="chartAxisJoin">
