@@ -93,7 +93,7 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :other-save-params="otherFollowRecordSaveParams"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -661,6 +661,18 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
   handleSearchData.value = searchData;
+
+  function handleFormCreateSaved(res: any) {
+    searchData();
+    if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER) {
+      activeSourceId.value = res.id;
+      initialSourceName.value = res.name;
+      activeFormKey.value = FormDesignKeyEnum.CONTACT;
+      nextTick(() => {
+        formCreateDrawerVisible.value = true;
+      });
+    }
+  }
 
   function handleGeneratedChart(res: FilterResult, form: FilterForm) {
     advancedOriginalForm.value = form;
