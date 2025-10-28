@@ -17,6 +17,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.*;
+import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -860,25 +861,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
         }
 
-        List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
-        for (ChartResult chartResult : chartResults) {
-            BaseModuleFieldValue categoryFieldValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
-            categoryFieldValue.setFieldValue(chartResult.getCategoryAxis());
-            moduleFieldValues.add(categoryFieldValue);
+        Map<String, List<OptionDTO>> optionMap = getChartOptionMap(formConfig, chartResults, categoryAxisParam,
+                subCategoryAxisParam);
 
-            if (subCategoryAxisParam != null) {
-                BaseModuleFieldValue subCategoryValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
-                categoryFieldValue.setFieldValue(chartResult.getSubCategoryAxis());
-                moduleFieldValues.add(subCategoryValue);
-            }
-        }
-
-        moduleFieldValues = moduleFieldValues.stream()
-                .filter(BaseModuleFieldValue::valid)
-                .distinct().toList();
-
-        // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
         Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisField.getId()))
                 .orElse(List.of())
                 .stream()
@@ -908,8 +893,83 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             if (chartResult.getValueAxis() == null) {
                 chartResult.setValueAxis(0);
             }
+
+            if (categoryAxisField.isLocation()) {
+                chartResult.setCategoryAxisName(RegionUtils.codeToName(chartResult.getCategoryAxis()));
+                chartResult.setCategoryAxis(RegionUtils.getCode(chartResult.getCategoryAxis()));
+            }
+
+            if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
+                chartResult.setSubCategoryAxisName(RegionUtils.codeToName(chartResult.getSubCategoryAxis()));
+                chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
+            }
         }
+
+        if (categoryAxisField.isLocation()) {
+            // 合并CategoryAxis相同的项
+            chartResults = mergeResult(chartResults, ChartResult::getCategoryAxis);
+        }
+
+        if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
+            // 合并SubCategoryAxis相同的项
+            chartResults = mergeResult(chartResults, ChartResult::getSubCategoryAxis);
+        }
+
         return chartResults;
+    }
+
+    private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
+        Map<String, ChartResult> mergedResults = new HashMap<>();
+        for (ChartResult chartResult : chartResults) {
+            String categoryAxis = getKeyFunc.apply(chartResult);
+            if (mergedResults.containsKey(categoryAxis)) {
+                ChartResult existingResult = mergedResults.get(categoryAxis);
+                if (existingResult.getValueAxis() instanceof Double && chartResult.getValueAxis() instanceof Double) {
+                    existingResult.setValueAxis((Double) existingResult.getValueAxis() + (Double) chartResult.getValueAxis());
+                } else if (existingResult.getValueAxis() instanceof Long && chartResult.getValueAxis() instanceof Long) {
+                    existingResult.setValueAxis((Long) existingResult.getValueAxis() + (Long) chartResult.getValueAxis());
+                } else if (existingResult.getValueAxis() instanceof Integer && chartResult.getValueAxis() instanceof Integer) {
+                    existingResult.setValueAxis((Integer) existingResult.getValueAxis() + (Integer) chartResult.getValueAxis());
+                }
+            } else {
+                mergedResults.put(categoryAxis, chartResult);
+            }
+        }
+        return new ArrayList<>(mergedResults.values());
+    }
+
+    private Map<String, List<OptionDTO>> getChartOptionMap(ModuleFormConfigDTO formConfig, List<ChartResult> chartResults,
+                                                           ChartCategoryAxisDbParam categoryAxisParam,
+                                                           ChartCategoryAxisDbParam subCategoryAxisParam) {
+        BaseField categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
+        List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
+        for (ChartResult chartResult : chartResults) {
+            if (categoryAxisField.hasOptions()) {
+                BaseModuleFieldValue categoryFieldValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
+                categoryFieldValue.setFieldValue(chartResult.getCategoryAxis());
+                moduleFieldValues.add(categoryFieldValue);
+            }
+
+            if (subCategoryAxisParam != null) {
+                BaseField subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
+                if (subCategoryAxisField.hasOptions()) {
+                    BaseModuleFieldValue subCategoryValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
+                    subCategoryValue.setFieldValue(chartResult.getSubCategoryAxis());
+                    moduleFieldValues.add(subCategoryValue);
+                }
+            }
+        }
+
+        moduleFieldValues = moduleFieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .distinct().toList();
+
+        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+            return Map.of();
+        }
+
+        // 获取选项值对应的 option
+        return moduleFormService.getOptionMap(formConfig, moduleFieldValues);
     }
 
     private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {

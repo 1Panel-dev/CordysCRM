@@ -150,4 +150,9 @@ public abstract class BaseField {
         return Strings.CS.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name(),
                 FieldType.LOCATION.name(), FieldType.PHONE.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name());
     }
+
+    @JsonIgnore
+    public boolean isLocation() {
+        return Strings.CS.equals(type, FieldType.LOCATION.name());
+    }
 }

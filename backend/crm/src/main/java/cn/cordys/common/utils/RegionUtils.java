@@ -6,6 +6,7 @@ import cn.cordys.crm.system.dto.regioncode.RegionCode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
@@ -116,5 +117,47 @@ public class RegionUtils {
         }
 
         return code.toString();
+    }
+
+    /**
+     * code => address
+     *
+     * @param codeStr
+     *
+     * @return address
+     */
+    public static String codeToName(String codeStr) {
+        String code = getCode(codeStr);
+        if (code == null) return null;
+        List<RegionCode> regionCodes = getRegionCodes();
+        return getRegionFullName(code, regionCodes);
+    }
+
+    public static String getCode(String codeStr) {
+        if (StringUtils.isBlank(codeStr)) {
+            return null;
+        }
+        String code =codeStr.split(SPILT_STR)[0];
+        return StringUtils.isBlank(code) ? null : code;
+    }
+
+    private static String getRegionFullName(String code, List<RegionCode> regionCodes) {
+        if (StringUtils.isBlank(code)) {
+            return null;
+        }
+        for (RegionCode regionCode : regionCodes) {
+            if (Strings.CS.equals(regionCode.getCode(), code)) {
+                return regionCode.getName();
+            }
+
+            List<RegionCode> children = regionCode.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                String regionFullName = getRegionFullName(code, children);
+                if (regionFullName != null && !Strings.CS.equals(regionFullName, code)) {
+                    return regionCode.getName() + SPILT_STR + regionFullName;
+                }
+            }
+        }
+        return code;
     }
 }
