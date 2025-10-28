@@ -629,6 +629,7 @@ public class CustomerContactService {
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
+        formConfig.getFields().addAll(customerContactFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return customerContactFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);

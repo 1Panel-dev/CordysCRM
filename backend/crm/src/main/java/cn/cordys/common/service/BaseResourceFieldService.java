@@ -19,7 +19,9 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.*;
 import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
@@ -991,5 +993,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
                         || Strings.CI.equals(field.getBusinessKey(), fieldKey))
                 .findFirst().orElse(null);
+    }
+
+    public static List<BaseField> getChartBaseFields() {
+        BaseField createUserField = new MemberField();
+        createUserField.setType(FieldType.MEMBER.name());
+        createUserField.setId("createUser");
+        createUserField.setBusinessKey("createUser");
+
+        BaseField updateUserField = new MemberField();
+        updateUserField.setType(FieldType.MEMBER.name());
+        updateUserField.setId("updateUser");
+        updateUserField.setBusinessKey("updateUser");
+
+        return List.of(createUserField, updateUserField);
     }
 }

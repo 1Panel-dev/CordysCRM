@@ -797,6 +797,7 @@ public class OpportunityService {
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
+        formConfig.getFields().addAll(opportunityFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extOpportunityMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return opportunityFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);

@@ -448,6 +448,7 @@ public class PoolCustomerService {
 
     public List<ChartResult> chart(PoolCustomerChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = CommonBeanFactory.getBean(CustomerService.class).getFormConfig(orgId);
+        formConfig.getFields().addAll(customerFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         customerChartAnalysisDbRequest.setPoolId(request.getPoolId());

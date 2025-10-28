@@ -74,7 +74,7 @@ public class ModuleFormCacheService {
                                 moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
                             }
                         })
-                        .toList()
+                        .collect(Collectors.toList())
         );
         return businessModuleFormConfig;
     }

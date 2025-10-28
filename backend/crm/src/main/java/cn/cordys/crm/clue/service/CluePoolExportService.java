@@ -151,6 +151,7 @@ public class CluePoolExportService extends ClueExportService {
 
     public List<ChartResult> chart(PoolClueChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = clueService.getFormConfig(orgId);
+        formConfig.getFields().addAll(clueFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         clueChartAnalysisDbRequest.setPoolId(request.getPoolId());
