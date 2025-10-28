@@ -123,9 +123,16 @@ public abstract class BaseField {
     }
 
     @JsonIgnore
-    public boolean hasOptions() {
+    public boolean hasSingleOptions() {
         return Strings.CS.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(),
                 FieldType.DATA_SOURCE.name(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
+    }
+
+    @JsonIgnore
+    public boolean hasOptions() {
+        return hasSingleOptions() || Strings.CS.equalsAny(type, FieldType.SELECT_MULTIPLE.name(),
+                FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(),
+                FieldType.DATA_SOURCE_MULTIPLE.name());
     }
 
     @JsonIgnore

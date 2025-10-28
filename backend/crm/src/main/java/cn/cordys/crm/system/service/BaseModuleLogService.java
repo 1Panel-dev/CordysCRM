@@ -71,7 +71,7 @@ public abstract class BaseModuleLogService {
         List<BaseModuleFieldValue> optionFieldValues = new ArrayList<>();
         differenceDTOS.forEach(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
-            if (moduleField != null && moduleField.hasOptions()) {
+            if (moduleField != null && moduleField.hasSingleOptions()) {
                 if (differ.getOldValue() != null) {
                     BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
                     fieldValue.setFieldId(differ.getColumn());
