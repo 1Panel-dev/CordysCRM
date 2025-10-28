@@ -265,13 +265,19 @@ public class RoleService {
         }
 
         if (request.getPermissions() != null) {
-            List<String> newPermissionIds = request.getPermissions().stream().filter(PermissionUpdateRequest::getEnable)
+            final Set<String> newPermissionIdSet = request.getPermissions().stream()
+                    .filter(p -> BooleanUtils.isTrue(p.getEnable()))
                     .map(PermissionUpdateRequest::getId)
-                    .toList();
-            if (!(newPermissionIds.containsAll(originPermissionIds) && originPermissionIds.containsAll(newPermissionIds))) {
+                    .collect(Collectors.toSet());
+
+            final Set<String> originPermissionIdSet = originPermissionIds == null
+                    ? Collections.emptySet()
+                    : new HashSet<>(originPermissionIds);
+
+            if (!Objects.equals(newPermissionIdSet, originPermissionIdSet)) {
                 // 如果权限有变更，则记录权限
-                modifiedRoleLogDTO.setPermissions(newPermissionIds);
-                originRoleLogDTO.setPermissions(originPermissionIds);
+                modifiedRoleLogDTO.setPermissions(new ArrayList<>(newPermissionIdSet));
+                originRoleLogDTO.setPermissions(new ArrayList<>(originPermissionIdSet));
             }
         }
 
@@ -448,9 +454,6 @@ public class RoleService {
      * @return
      */
     public String translateDefaultPermissionName(Permission p) {
-        if (StringUtils.isNotBlank(p.getName())) {
-            p.getName();
-        }
         String[] idSplit = p.getId().split(":");
         String permissionKey = idSplit[idSplit.length - 1];
         String permissionName = "permission." + permissionKey.toLowerCase();
