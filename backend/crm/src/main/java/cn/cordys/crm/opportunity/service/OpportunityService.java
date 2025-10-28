@@ -406,7 +406,7 @@ public class OpportunityService {
         }
         List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
 
-        Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
+        long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
         for (int i = 0; i < ids.size(); i++) {
@@ -564,37 +564,51 @@ public class OpportunityService {
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStage(OpportunityStageRequest request, String orgId) {
-        Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
-        Opportunity newOpportunity = new Opportunity();
-        newOpportunity.setLastStage(oldOpportunity.getStage());
-
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        StageConfigResponse successConfig = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "100")
-        ).findFirst().get();
-        StageConfigResponse failConfig = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0")
-        ).findFirst().get();
-        Map<String, String> stageMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
-
-        if (Strings.CI.equals(request.getStage(), successConfig.getId())) {
-            newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        final Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
+        if (oldOpportunity == null) {
+            throw new GenericException(Translator.get("opportunity_not_found"));
         }
 
-        if (Strings.CI.equals(request.getStage(), failConfig.getId())) {
-            newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        final List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+
+        final Optional<StageConfigResponse> successOpt = stageConfigList.stream()
+                .filter(cfg -> Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name())
+                        && Strings.CI.equals(cfg.getRate(), "100"))
+                .findFirst();
+
+        final Optional<StageConfigResponse> failOpt = stageConfigList.stream()
+                .filter(cfg -> Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name())
+                        && Strings.CI.equals(cfg.getRate(), "0"))
+                .findFirst();
+
+        final Map<String, String> stageMap = stageConfigList.stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+
+        final Opportunity newOpportunity = new Opportunity();
+        newOpportunity.setId(request.getId());
+        newOpportunity.setLastStage(oldOpportunity.getStage());
+        newOpportunity.setStage(request.getStage());
+
+        final boolean isSuccessStage = successOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
+        final boolean isFailStage = failOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
+
+        if (isSuccessStage || isFailStage) {
+            final long startOfTodayMillis =
+                    LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            newOpportunity.setActualEndTime(startOfTodayMillis);
+        }
+        if (isFailStage) {
             newOpportunity.setFailureReason(request.getFailureReason());
         }
-        Long nextPos = getNextPos(oldOpportunity.getOrganizationId(), request.getStage());
 
-        newOpportunity.setId(request.getId());
-        newOpportunity.setStage(request.getStage());
+        final Long nextPos = getNextPos(oldOpportunity.getOrganizationId(), request.getStage());
         newOpportunity.setPos(nextPos);
+
         opportunityMapper.update(newOpportunity);
 
-        Map<String, String> originalVal = new HashMap<>(1);
+        final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
-        Map<String, String> modifiedVal = new HashMap<>(1);
+        final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("stage", stageMap.get(request.getStage()));
 
         OperationLogContext.setContext(
@@ -682,7 +696,7 @@ public class OpportunityService {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            Long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
+            long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 for (int i = 0; i < opportunities.size(); i++) {
