@@ -21,7 +21,8 @@ export function getDefaultOperator(list: string[]) {
   return OperatorEnum.BETWEEN;
 }
 
-export function getOperator(type: FieldTypeEnum) {
+export function getOperator(type: FieldTypeEnum, value?: string | null) {
+  if (!value) return OperatorEnum.EMPTY;
   const options = operatorOptionsMap[type] || [];
   const optionsValueList = options.map((optionItem: { value: string; label: string }) => optionItem.value);
   return getDefaultOperator(optionsValueList);

@@ -1,5 +1,7 @@
 import { useRoute } from 'vue-router';
 
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { getSessionStorageTempState, setSessionStorageTempState } from '@lib/shared/method/local-storage';
 
 import {
@@ -65,7 +67,14 @@ export default function useViewChartParams() {
 
       const list: FilterFormItem[] = (formModel.list || []) as FilterFormItem[];
 
-      const conditions: ConditionsItem[] = list.map((item: any) => ({
+      const filterFormList = list.map((e) => {
+        if (e.type === FieldTypeEnum.INPUT_NUMBER) {
+          return { ...e, value: e.operator === OperatorEnum.EMPTY ? '' : Number(e.value) };
+        }
+        return e;
+      });
+
+      const conditions: ConditionsItem[] = filterFormList.map((item: any) => ({
         value: item.value,
         operator: item.operator,
         name: item.dataIndex ?? '',
@@ -77,7 +86,10 @@ export default function useViewChartParams() {
 
       return {
         viewId,
-        formModel,
+        formModel: {
+          searchMode,
+          list: filterFormList,
+        },
         filterResult: {
           searchMode,
           conditions,

@@ -210,6 +210,7 @@
             FieldTypeEnum.LINK,
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.INPUT,
+            FieldTypeEnum.DATE_TIME,
           ].includes(e.type)
       )
       .map((item) => ({
@@ -350,7 +351,7 @@
         dataSourceProps = {
           dataSourceType: groupByField.value.dataSourceProps?.dataSourceType,
         };
-        selectedRows = [{ id: value, name: params.name }];
+        selectedRows = value ? [{ id: value, name: params.name }] : [];
       } else if (
         [
           FieldTypeEnum.DEPARTMENT,
@@ -359,20 +360,28 @@
           FieldTypeEnum.MEMBER_MULTIPLE,
         ].includes(groupByField.value.type)
       ) {
-        selectedUserList = [{ id: value, name: params.name }];
+        selectedUserList = value ? [{ id: value, name: params.name }] : [];
       }
       const tempField = {
         dataIndex: groupBy.value,
-        operator: getOperator(groupByField.value.type),
+        operator: getOperator(groupByField.value.type, value),
         value,
         selectedRows,
         selectedUserList,
         dataSourceProps,
         type: groupByField.value.type || FieldTypeEnum.INPUT,
       };
+
+      let selectedVal;
+      if (valueIsArray(tempField)) {
+        selectedVal = value ? [value] : [];
+      } else {
+        selectedVal = value;
+      }
+
       form.list.push({
         ...tempField,
-        value: valueIsArray(tempField) ? [value] : value,
+        value: selectedVal,
       });
       setViewChartParams(chartKey, {
         viewId: activeView.value,

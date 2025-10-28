@@ -48,7 +48,7 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.TEXTAREA]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.LINK]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.PHONE]: COMMON_TEXT_OPERATORS,
-  [FieldTypeEnum.INPUT_NUMBER]: [EQUAL, GT, LT, GE, LE],
+  [FieldTypeEnum.INPUT_NUMBER]: [EQUAL, GT, LT, GE, LE, EMPTY],
   [FieldTypeEnum.SELECT]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.SELECT_MULTIPLE]: [...COMMON_SELECTION_OPERATORS, EQUAL, NOT_EQUAL],
   [FieldTypeEnum.RADIO]: COMMON_SELECTION_OPERATORS,
