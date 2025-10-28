@@ -7,4 +7,5 @@ export default {
   'product.new': 'New product',
   'product.batchUpSuccess': 'Batch up success',
   'product.batchDownSuccess': 'Batch down success',
+  'product.detail': 'Product Details',
 };

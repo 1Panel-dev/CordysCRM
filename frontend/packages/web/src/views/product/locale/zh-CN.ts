@@ -7,4 +7,5 @@ export default {
   'product.new': '新建产品',
   'product.batchUpSuccess': '上架成功',
   'product.batchDownSuccess': '下架成功',
+  'product.detail': '产品详情',
 };

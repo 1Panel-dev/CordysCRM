@@ -6,13 +6,14 @@
       :class="[`value-align-${props.valueAlign ?? 'end'}`, props.class]"
       :column="props.column"
       :label-width="props.labelWidth"
+      :tooltip-position="props.tooltipPosition"
     >
       <template #divider="{ item }">
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
       <template #image="{ item }">
         <n-image-group>
-          <n-space class="!justify-end">
+          <n-space :class="`${props.valueAlign ?? '!justify-end'}`">
             <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
           </n-space>
         </n-image-group>
@@ -124,6 +125,20 @@
     column?: number;
     valueAlign?: 'center' | 'start' | 'end';
     labelWidth?: string;
+    tooltipPosition?:
+      | 'top-start'
+      | 'top'
+      | 'top-end'
+      | 'right-start'
+      | 'right'
+      | 'right-end'
+      | 'bottom-start'
+      | 'bottom'
+      | 'bottom-end'
+      | 'left-start'
+      | 'left'
+      | 'left-end'
+      | undefined;
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;

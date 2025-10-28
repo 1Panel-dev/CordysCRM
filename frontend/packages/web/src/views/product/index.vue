@@ -43,22 +43,22 @@
         </template>
       </CrmTable>
     </div>
-
-    <CrmFormCreateDrawer
-      v-model:visible="formCreateDrawerVisible"
-      :form-key="FormDesignKeyEnum.PRODUCT"
-      :source-id="activeProductId"
-      :need-init-detail="!!activeProductId"
-      @saved="() => searchData()"
-    />
-    <CrmBatchEditModal
-      v-model:visible="showEditModal"
-      v-model:field-list="fieldList"
-      :ids="checkedRowKeys"
-      :form-key="FormDesignKeyEnum.PRODUCT"
-      @refresh="handleRefresh"
-    />
   </CrmCard>
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="FormDesignKeyEnum.PRODUCT"
+    :source-id="activeProductId"
+    :need-init-detail="!!activeProductId"
+    @saved="() => searchData()"
+  />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.PRODUCT"
+    @refresh="handleRefresh"
+  />
+  <detailDrawer v-model:visible="detailDrawerVisible" :source-id="activeProductId" @edit="handleEdit" />
 </template>
 
 <script lang="ts" setup>
@@ -72,14 +72,15 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import detailDrawer from './components/detail.vue';
 
   import { batchDeleteProduct, deleteProduct, dragSortProduct } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -219,6 +220,7 @@
       permission: ['PRODUCT_MANAGEMENT:DELETE'],
     },
   ];
+  const detailDrawerVisible = ref(false);
 
   const { useTableRes, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.PRODUCT,
@@ -235,7 +237,16 @@
     },
     specialRender: {
       name: (row: ProductListItem) => {
-        return h(CrmNameTooltip, { text: row.name });
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              activeProductId.value = row.id;
+              detailDrawerVisible.value = true;
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
       },
     },
     permission: ['PRODUCT_MANAGEMENT:UPDATE', 'PRODUCT_MANAGEMENT:DELETE'],

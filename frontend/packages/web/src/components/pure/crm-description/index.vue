@@ -13,7 +13,7 @@
             class="crm-description-item-label"
             :style="{ width: props.labelWidth || '120px', textAlign: props.labelAlign }"
           >
-            <n-tooltip :placement="item.tooltipPosition ?? 'top-start'">
+            <n-tooltip :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'">
               <template #trigger>
                 <div :class="props.oneLineLabel ? 'one-line-text' : ''">
                   {{ item.label }}
@@ -33,7 +33,7 @@
               <n-tooltip
                 v-else
                 :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
-                :placement="item.tooltipPosition ?? 'top-start'"
+                :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
               >
                 <template #trigger>
                   <div class="one-line-text">
@@ -96,6 +96,20 @@
       valueAlign?: 'center' | 'start' | 'end'; // value 对齐方式
       oneLineValue?: boolean; // value 是否单行显示
       oneLineLabel?: boolean; // label 是否单行显示
+      tooltipPosition?:
+        | 'top-start'
+        | 'top'
+        | 'top-end'
+        | 'right-start'
+        | 'right'
+        | 'right-end'
+        | 'bottom-start'
+        | 'bottom'
+        | 'bottom-end'
+        | 'left-start'
+        | 'left'
+        | 'left-end'
+        | undefined;
     }>(),
     {
       column: 1,
