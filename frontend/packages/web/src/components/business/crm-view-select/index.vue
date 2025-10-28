@@ -103,6 +103,7 @@
     :default-view-id="activeTab"
     :advanced-original-form="props.advancedOriginalForm"
     :route-name="props.routeName"
+    :pool-id="props.poolId"
     @generated-chart="handleGeneratedChart"
   />
 </template>

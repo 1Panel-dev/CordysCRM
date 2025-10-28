@@ -31,4 +31,6 @@ export default {
   'crmViewSelect.chartNameCount': '{group} Group Counts',
   'crmViewSelect.counts': 'Counts',
   'crmViewSelect.orConditionNotAllowJump': 'The current combined conditions do not support jumping',
+  'crmViewSelect.noDataIndicator':
+    'When there is no data indicator, only the count method is supported to generate charts',
 };

@@ -31,4 +31,5 @@ export default {
   'crmViewSelect.chartNameCount': '{group}分组的记录数',
   'crmViewSelect.counts': '记录数',
   'crmViewSelect.orConditionNotAllowJump': '当前组合条件暂不支持跳转',
+  'crmViewSelect.noDataIndicator': '无数据指标时仅支持计数方式生成图表',
 };

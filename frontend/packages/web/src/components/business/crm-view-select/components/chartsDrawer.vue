@@ -67,9 +67,19 @@
           </n-input-group>
         </div>
         <div class="filter-input flex-1">
-          <n-button type="primary" ghost :disabled="loading" @click="generateChart">
-            {{ t('crmViewSelect.generateChart') }}
-          </n-button>
+          <n-tooltip trigger="hover" :disabled="loading || !!dataIndicator || aggregationMethod === 'COUNT'">
+            <template #trigger>
+              <n-button
+                type="primary"
+                ghost
+                :disabled="loading || (!dataIndicator && aggregationMethod !== 'COUNT')"
+                @click="generateChart"
+              >
+                {{ t('crmViewSelect.generateChart') }}
+              </n-button>
+            </template>
+            {{ t('crmViewSelect.noDataIndicator') }}
+          </n-tooltip>
         </div>
       </div>
       <div class="flex-1 overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
@@ -95,7 +105,17 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NCollapse, NCollapseItem, NInputGroup, NScrollbar, NSelect, NSpin, useMessage } from 'naive-ui';
+  import {
+    NButton,
+    NCollapse,
+    NCollapseItem,
+    NInputGroup,
+    NScrollbar,
+    NSelect,
+    NSpin,
+    NTooltip,
+    useMessage,
+  } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -179,7 +199,7 @@
     { label: t('crmViewSelect.funnel'), value: ChartTypeEnum.FUNNEL },
   ];
   const groupByOptions = computed(() =>
-    [...props.configList, ...(props.customList || [])]
+    [...(props.customList || [])]
       .filter(
         (e) =>
           ![
@@ -200,7 +220,7 @@
   const groupBy = ref<string>(groupByOptions.value[0]?.value || '');
   const groupByName = computed(() => groupByOptions.value.find((e) => e.value === groupBy.value)?.label || '');
   const dataIndicatorOptions = computed(() =>
-    [...props.configList, ...(props.customList || [])]
+    [...(props.customList || [])]
       .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
       .map((item) => ({
         label: item.title,
@@ -211,7 +231,7 @@
   const dataIndicatorName = computed(
     () => dataIndicatorOptions.value.find((e) => e.value === dataIndicator.value)?.label || ''
   );
-  const aggregationMethod = ref<'SUM' | 'AVG' | 'COUNT'>('SUM');
+  const aggregationMethod = ref<'SUM' | 'AVG' | 'COUNT'>('COUNT');
   const aggregationMethodOptions = [
     { label: t('crmViewSelect.sum'), value: 'SUM' },
     { label: t('crmViewSelect.average'), value: 'AVG' },
@@ -313,7 +333,7 @@
       return;
     }
     const groupByField = computed(() => {
-      const allFields = [...props.configList, ...(props.customList || [])];
+      const allFields = [...(props.customList || [])];
       return allFields.find((e) => e.dataIndex === groupBy.value);
     });
     if (groupByField.value) {

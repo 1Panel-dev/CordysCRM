@@ -42,7 +42,11 @@
           </div>
         </slot>
       </template>
-      <div v-if="!props.disabledWidthDrag && typeof drawerWidth === 'number'" class="handle" @mousedown="startResize">
+      <div
+        v-if="!props.disabledWidthDrag && typeof drawerWidth === 'number'"
+        class="crm-drawer-handle"
+        @mousedown="startResize"
+      >
         <CrmIcon type="iconicon_move" class="absolute left-[-3px] top-[50%] w-[14px]" :size="14" />
       </div>
       <n-spin :show="props.loading" class="h-full">
@@ -191,7 +195,7 @@
 
 <style lang="less">
   .crm-drawer {
-    .handle {
+    .crm-drawer-handle {
       @apply absolute left-0 top-0 flex h-full items-center;
 
       z-index: 200;

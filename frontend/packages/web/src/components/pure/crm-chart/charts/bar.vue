@@ -37,7 +37,7 @@
     type: ChartTypeEnum.BAR,
     barWidth: '10px',
     data: props.data,
-    barMinHeight: 10,
+    barMinHeight: props.data.some((e) => e.value > 10) ? 10 : undefined,
   }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.BAR,
