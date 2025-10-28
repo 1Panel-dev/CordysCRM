@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="t('product.detail')">
+  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="title">
     <template #titleRight>
       <n-button
         v-permission="['PRODUCT_MANAGEMENT:UPDATE']"
@@ -21,6 +21,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            @init="handleInit"
           />
         </div>
       </CrmCard>
@@ -33,6 +34,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -50,4 +52,9 @@
   });
 
   const { t } = useI18n();
+  const title = ref('');
+
+  function handleInit(type?: CollaborationType, name?: string) {
+    title.value = name || '';
+  }
 </script>
