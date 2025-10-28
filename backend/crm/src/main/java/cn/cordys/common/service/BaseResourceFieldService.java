@@ -6,6 +6,10 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.chart.ChartCategoryAxisDbParam;
+import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -19,6 +23,7 @@ import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -28,6 +33,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -55,6 +61,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private LogService logService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
     protected abstract String getFormKey();
 
@@ -836,5 +844,92 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         for (V updateBlobField : updateBlobFields) {
             getResourceFieldBlobMapper().update(updateBlobField);
         }
+    }
+
+    public List<ChartResult> translateAxisName(ModuleFormConfigDTO formConfig, ChartAnalysisDbRequest chartAnalysisDbRequest, List<ChartResult> chartResults) {
+        ChartCategoryAxisDbParam categoryAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
+        ChartCategoryAxisDbParam subCategoryAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
+
+        chartResults = chartResults.stream()
+                .filter(Objects::nonNull)
+                .toList();
+
+        BaseField categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
+        BaseField subCategoryAxisField = null;
+        if (subCategoryAxisParam != null) {
+            subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
+        }
+
+        List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
+        for (ChartResult chartResult : chartResults) {
+            BaseModuleFieldValue categoryFieldValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
+            categoryFieldValue.setFieldValue(chartResult.getCategoryAxis());
+            moduleFieldValues.add(categoryFieldValue);
+
+            if (subCategoryAxisParam != null) {
+                BaseModuleFieldValue subCategoryValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
+                categoryFieldValue.setFieldValue(chartResult.getSubCategoryAxis());
+                moduleFieldValues.add(subCategoryValue);
+            }
+        }
+
+        moduleFieldValues = moduleFieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .distinct().toList();
+
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
+        Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisField.getId()))
+                .orElse(List.of())
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+        Map<String, String> subCategoryOptionMap = null;
+        if (subCategoryAxisParam != null) {
+            subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
+                    .orElse(List.of())
+                    .stream()
+                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+        }
+
+        for (ChartResult chartResult : chartResults) {
+            if (categoryOptionMap.get(chartResult.getCategoryAxis()) != null) {
+                chartResult.setCategoryAxisName(categoryOptionMap.get(chartResult.getCategoryAxis()));
+            } else {
+                chartResult.setCategoryAxisName(chartResult.getCategoryAxis());
+            }
+
+            if (subCategoryAxisParam != null && subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
+                chartResult.setSubCategoryAxisName(subCategoryOptionMap.get(chartResult.getSubCategoryAxis()));
+            } else {
+                chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
+            }
+
+            if (chartResult.getValueAxis() == null) {
+                chartResult.setValueAxis(0);
+            }
+        }
+        return chartResults;
+    }
+
+    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {
+        BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
+        if (baseField != null) {
+            // 业务字段key翻译成字段ID
+            categoryFieldValue.setFieldId(baseField.getId());
+        } else {
+            categoryFieldValue.setFieldId(fieldKey);
+        }
+        return categoryFieldValue;
+    }
+
+    private static BaseField getBaseField(List<BaseField> fields, String fieldKey) {
+        if (StringUtils.isBlank(fieldKey)) {
+            return null;
+        }
+        return fields.stream()
+                .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
+                        || Strings.CI.equals(field.getBusinessKey(), fieldKey))
+                .findFirst().orElse(null);
     }
 }

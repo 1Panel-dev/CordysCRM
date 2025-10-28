@@ -1017,6 +1017,6 @@ public class ClueService {
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return clueFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

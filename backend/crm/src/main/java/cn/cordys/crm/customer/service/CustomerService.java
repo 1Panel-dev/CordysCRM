@@ -829,7 +829,7 @@ public class CustomerService {
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return customerFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 
     /**

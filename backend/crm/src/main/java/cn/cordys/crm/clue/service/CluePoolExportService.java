@@ -20,7 +20,6 @@ import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ExportTaskService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.registry.ExportThreadRegistry;
 import cn.idev.excel.EasyExcel;
@@ -51,7 +50,7 @@ public class CluePoolExportService extends ClueExportService {
     @Resource
     private ExportTaskService exportTaskService;
     @Resource
-    private ModuleFormCacheService moduleFormCacheService;
+    private ClueFieldService clueFieldService;
 
     public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
@@ -156,6 +155,6 @@ public class CluePoolExportService extends ClueExportService {
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         clueChartAnalysisDbRequest.setPoolId(request.getPoolId());
         List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return clueFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

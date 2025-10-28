@@ -452,6 +452,6 @@ public class PoolCustomerService {
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         customerChartAnalysisDbRequest.setPoolId(request.getPoolId());
         List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return customerFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

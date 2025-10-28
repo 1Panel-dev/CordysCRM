@@ -451,7 +451,7 @@
                 )
             ) AS ${tablePrefix}_multiple
         </if>
-        <if test="!${axisParam}.businessField">
+        <if test="!${axisParam}.businessField and ${axisParam}.fieldId != null and ${axisParam}.fieldId != ''">
             <if test="${axisParam}.blob">
                 left join ${mainTable}_field_blob ${tablePrefix}
                 on ${mainTablePrefix}.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}

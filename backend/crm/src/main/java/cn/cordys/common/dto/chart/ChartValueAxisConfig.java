@@ -4,7 +4,6 @@ import cn.cordys.common.constants.ChartAggregateMethod;
 import cn.cordys.common.constants.EnumValue;
 import cn.cordys.common.uid.utils.EnumUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -13,7 +12,6 @@ import lombok.Data;
  */
 @Data
 public class ChartValueAxisConfig {
-    @NotBlank
     @Schema(description = "字段ID")
     private String fieldId;
 

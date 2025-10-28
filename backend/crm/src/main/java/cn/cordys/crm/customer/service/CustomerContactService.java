@@ -631,6 +631,6 @@ public class CustomerContactService {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return customerContactFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

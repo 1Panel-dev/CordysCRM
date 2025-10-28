@@ -785,6 +785,6 @@ public class OpportunityService {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extOpportunityMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return moduleFormCacheService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return opportunityFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }
