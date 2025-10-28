@@ -150,7 +150,7 @@ export default {
   'system.personal.forever': 'Permanent',
   'system.personal.custom': 'Custom',
   'system.personal.confirmDelete': 'Confirm delete?',
-  'system.personal.deleteTip': 'Deleting will cause tasks using this Access Key to fail',
+  'system.personal.deleteTip': 'Deleting will invalidate the Access Key for API calls. Proceed with caution',
   'system.personal.timeSetting': 'Time setting',
   'system.personal.expiredTime': 'Expiration time',
   'system.personal.accessKeyDesc': 'Access Key description',

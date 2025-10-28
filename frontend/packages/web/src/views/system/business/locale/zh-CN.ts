@@ -141,7 +141,7 @@ export default {
   'system.personal.forever': '永久有效',
   'system.personal.custom': '自定义',
   'system.personal.confirmDelete': '确认删除吗？',
-  'system.personal.deleteTip': '删除后，将导致使用该 Access Key 执行的测试任务执行失败，请谨慎操作！',
+  'system.personal.deleteTip': '删除后，使用 Access Key 调用 API 将失效，请谨慎操作！',
   'system.personal.timeSetting': '时间设置',
   'system.personal.expiredTime': '到期时间',
   'system.personal.accessKeyDesc': 'Access Key 描述',
