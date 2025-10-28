@@ -129,18 +129,24 @@
             <property name="tablePrefix" value="viewCombine"/>
         </include>
 
-        <include refid="chartAxisJoin">
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
             <property name="axisParam" value="request.categoryAxisParam"/>
             <property name="tablePrefix" value="categoryAxis"/>
+            <property name="mainTable" value="customer"/>
+            <property name="mainTablePrefix" value="c"/>
         </include>
-        <include refid="chartAxisJoin">
+        <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
             <property name="axisParam" value="request.valueAxisParam"/>
             <property name="tablePrefix" value="valueAxis"/>
+            <property name="mainTable" value="customer"/>
+            <property name="mainTablePrefix" value="c"/>
         </include>
         <if test="request.subCategoryAxisParam != null">
-            <include refid="chartAxisJoin">
+            <include refid="cn.cordys.common.mapper.CommonMapper.chartAxisJoin">
                 <property name="axisParam" value="request.subCategoryAxisParam"/>
                 <property name="tablePrefix" value="subCategoryAxis"/>
+                <property name="mainTable" value="customer"/>
+                <property name="mainTablePrefix" value="c"/>
             </include>
         </if>
 
@@ -174,23 +180,6 @@
             <property name="mainTable" value="c"/>
         </include>
     </select>
-
-    <sql id="chartAxisJoin">
-        <if test="!${axisParam}.businessField">
-            <if test="${axisParam}.blob">
-                left join customer_field_blob ${tablePrefix}
-                on c.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
-            </if>
-            <if test="!${axisParam}.blob">
-                left join customer_field ${tablePrefix}
-                on c.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
-            </if>
-        </if>
-        <if test="${axisParam}.businessFieldName == 'departmentId'">
-            left join sys_organization_user ${tablePrefix}
-            on ${tablePrefix}.user_id = c.owner
-        </if>
-    </sql>
 
     <select id="sourceList" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select distinct c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
