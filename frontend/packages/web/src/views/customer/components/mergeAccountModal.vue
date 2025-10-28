@@ -277,7 +277,10 @@
 
     if (option && 'ownerId' in option) {
       const ownerId = option.ownerId as string;
-      form.value.ownerId = ownerId;
+      const { selectedAccount } = form.value;
+      if (selectedAccount === 'other' || (selectedAccount === 'selected' && option?.ownerName)) {
+        form.value.ownerId = ownerId;
+      }
     }
   }
 
