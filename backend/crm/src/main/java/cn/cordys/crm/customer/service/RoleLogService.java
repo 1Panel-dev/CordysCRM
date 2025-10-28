@@ -48,20 +48,21 @@ public class RoleLogService extends BaseModuleLogService {
     }
 
     private void handleDeptIdsLogDetail(JsonDifferenceDTO differ) {
-        Object oldValue = differ.getOldValue();
-        Object newValue = differ.getNewValue();
-        Map<String, String> deptNameMap = getDeptNameMap(oldValue, newValue);
-        if (oldValue != null && oldValue instanceof List originDeptIds) {
-            List<String> deptNames = originDeptIds.stream()
-                    .map(deptNameMap::get)
-                    .filter(name -> name != null)
+        var oldValue = differ.getOldValue();
+        var newValue = differ.getNewValue();
+        var deptNameMap = getDeptNameMap(oldValue, newValue);
+
+        if (oldValue instanceof List<?> originDeptIds) {
+            var deptNames = originDeptIds.stream()
+                    .map(id -> deptNameMap.get(String.valueOf(id)))
+                    .filter(Objects::nonNull)
                     .toList();
             differ.setOldValueName(deptNames);
         }
-        if (newValue != null && newValue instanceof List newDeptIds) {
-            List<String> deptNames = newDeptIds.stream()
-                    .map(deptNameMap::get)
-                    .filter(name -> name != null)
+        if (newValue instanceof List<?> newDeptIds) {
+            var deptNames = newDeptIds.stream()
+                    .map(id -> deptNameMap.get(String.valueOf(id)))
+                    .filter(Objects::nonNull)
                     .toList();
             differ.setNewValueName(deptNames);
         }
@@ -69,24 +70,25 @@ public class RoleLogService extends BaseModuleLogService {
     }
 
     private void handlePermissionSettingLogDetail(JsonDifferenceDTO differ) {
-        Object oldValue = differ.getOldValue();
-        Set<String> originPermissionSet = new HashSet<>();
-        if (oldValue != null && oldValue instanceof List originPermissionIds) {
-            originPermissionSet.addAll(originPermissionIds);
+        var oldValue = differ.getOldValue();
+        var originPermissionSet = new HashSet<String>();
+        if (oldValue instanceof List<?> originPermissionIds) {
+            originPermissionIds.forEach(id -> originPermissionSet.add(String.valueOf(id)));
         }
-        Object newValue = differ.getNewValue();
-        Set<String> newPermissionSet = new HashSet<>();
-        if (newValue != null && newValue instanceof List newPermissionIds) {
-            newPermissionSet.addAll(newPermissionIds);
+        var newValue = differ.getNewValue();
+        var newPermissionSet = new HashSet<String>();
+        if (newValue instanceof List<?> newPermissionIds) {
+            newPermissionIds.forEach(id -> newPermissionSet.add(String.valueOf(id)));
         }
-        Map<String, List<String>> originPermissionMap = new HashMap<>();
-        Map<String, List<String>> newPermissionMap = new HashMap<>();
-        List<PermissionDefinitionItem> permissionDefinitions = roleService.getPermissionDefinitions();
+
+        var originPermissionMap = new HashMap<String, List<String>>();
+        var newPermissionMap = new HashMap<String, List<String>>();
+        var permissionDefinitions = roleService.getPermissionDefinitions();
         for (PermissionDefinitionItem permissionDefinition : permissionDefinitions) {
             for (PermissionDefinitionItem resourceItem : permissionDefinition.getChildren()) {
-                String resourceName = Translator.get(resourceItem.getName());
-                List<String> originPermissionNames = new ArrayList<>();
-                List<String> newPermissionNames = new ArrayList<>();
+                var resourceName = Translator.get(resourceItem.getName());
+                var originPermissionNames = new ArrayList<String>();
+                var newPermissionNames = new ArrayList<String>();
                 for (Permission permissionItem : resourceItem.getPermissions()) {
                     if (originPermissionSet.contains(permissionItem.getId())) {
                         originPermissionNames.add(translatePermissionName(permissionItem));
@@ -111,21 +113,15 @@ public class RoleLogService extends BaseModuleLogService {
     }
 
     private String getPermissionColumnName(Map<String, List<String>> permissionMap) {
-        StringBuilder sb = new StringBuilder();
-        permissionMap.forEach((originPermissionName, originPermissionNames) -> {
-            sb.append(originPermissionName).append(": ");
-            for (String permissionName : originPermissionNames) {
-                sb.append(permissionName).append(",");
-            }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("\n");
+        var sb = new StringBuilder();
+        permissionMap.forEach((resource, names) -> {
+            sb.append(resource).append(": ").append(String.join(",", names)).append("\n");
         });
         return sb.toString();
     }
 
     private String translatePermissionName(Permission permissionItem) {
         if (StringUtils.isNotBlank(permissionItem.getName())) {
-            // 有 name 字段翻译 name 字段
             return Translator.get(permissionItem.getName());
         } else {
             return roleService.translateDefaultPermissionName(permissionItem);
@@ -133,12 +129,12 @@ public class RoleLogService extends BaseModuleLogService {
     }
 
     private Map<String, String> getDeptNameMap(Object oldValue, Object newValue) {
-        List<String> deptIds = new ArrayList<>();
-        if (oldValue != null && oldValue instanceof List originDeptIds) {
-            deptIds.addAll(originDeptIds);
+        var deptIds = new ArrayList<String>();
+        if (oldValue instanceof List<?> originDeptIds) {
+            originDeptIds.forEach(id -> deptIds.add(String.valueOf(id)));
         }
-        if (newValue != null && newValue instanceof List newDeptIds) {
-            deptIds.addAll(newDeptIds);
+        if (newValue instanceof List<?> newDeptIds) {
+            newDeptIds.forEach(id -> deptIds.add(String.valueOf(id)));
         }
         return departmentService.getDepartmentOptionsByIds(deptIds)
                 .stream()

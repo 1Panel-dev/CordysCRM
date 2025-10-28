@@ -102,15 +102,19 @@ public class PoolCustomerService {
     public List<CustomerPoolDTO> getPoolOptions(String currentUser, String currentOrgId) {
         List<CustomerPoolDTO> options = new ArrayList<>();
         LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
-        poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, currentOrgId);
-        poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
+        poolWrapper.eq(CustomerPool::getEnable, true)
+                .eq(CustomerPool::getOrganizationId, currentOrgId)
+                .orderByDesc(CustomerPool::getUpdateTime);
+
         List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
         if (CollectionUtils.isEmpty(pools)) {
-            return new ArrayList<>();
+            return options;
         }
 
+        List<String> userIds = pools.stream()
+                .flatMap(pool ->
+                        Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
 
-        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
         Map<String, String> userMap = createOrUpdateUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
@@ -219,7 +223,7 @@ public class PoolCustomerService {
     public void delete(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
-        customerService.checkResourceRef(List.of(id));
+        Objects.requireNonNull(customerService).checkResourceRef(List.of(id));
         customerService.deleteCustomerResource(List.of(id));
 
         // 设置操作对象
@@ -267,7 +271,7 @@ public class PoolCustomerService {
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(ids);
         CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
-        customerService.checkResourceRef(ids);
+        Objects.requireNonNull(customerService).checkResourceRef(ids);
         customerService.deleteCustomerResource(ids);
 
         List<LogDTO> logs = customers.stream()
@@ -448,7 +452,7 @@ public class PoolCustomerService {
     }
 
     public List<ChartResult> chart(PoolCustomerChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
-        ModuleFormConfigDTO formConfig = CommonBeanFactory.getBean(CustomerService.class).getFormConfig(orgId);
+        ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(CustomerService.class)).getFormConfig(orgId);
         formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);

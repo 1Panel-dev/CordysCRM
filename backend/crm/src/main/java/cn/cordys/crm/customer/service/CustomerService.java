@@ -658,7 +658,7 @@ public class CustomerService {
         List<Customer> customerList = customerMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(customerList)) {
             List<String> names = customerList.stream().map(Customer::getName).toList();
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names), String.class));
         }
         return StringUtils.EMPTY;
     }
@@ -836,8 +836,9 @@ public class CustomerService {
 
     /**
      * 合并客户协作人
-     * @param request 请求参数
-     * @param currentUser 当前用户
+     *
+     * @param request      请求参数
+     * @param currentUser  当前用户
      * @param currentOrgId 当前组织ID
      */
     private void mergeCollaboration(CustomerMergeRequest request, String currentUser, String currentOrgId) {
@@ -879,9 +880,11 @@ public class CustomerService {
 
     /**
      * 获取合并相关的日志
+     *
      * @param mergeRequest 合并请求参数
-     * @param currentUser 当前用户
+     * @param currentUser  当前用户
      * @param currentOrgId 当前组织ID
+     *
      * @return 日志列表
      */
     private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser, String currentOrgId) {

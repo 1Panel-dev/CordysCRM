@@ -67,7 +67,7 @@ public class CustomerRelationService {
                     listResponse.setCustomerId(item.getTargetCustomerId());
                     customerIds.add(listResponse.getCustomerId());
                     return listResponse;
-                }).collect(Collectors.toList());
+                }).toList();
 
         result.addAll(subsidiaryCustomer);
 
@@ -108,8 +108,8 @@ public class CustomerRelationService {
      */
     private void checkTargetCustomer(String customerId, List<CustomerRelation> relations) {
         List<String> targetCustomerIds = relations.stream()
-                .filter(item -> !Strings.CS.equals(item.getTargetCustomerId(), customerId))
-                .map(CustomerRelation::getTargetCustomerId).toList();
+                .map(CustomerRelation::getTargetCustomerId)
+                .filter(targetCustomerId -> !Strings.CS.equals(targetCustomerId, customerId)).toList();
 
         if (CollectionUtils.isEmpty(targetCustomerIds)) {
             return;
@@ -120,7 +120,8 @@ public class CustomerRelationService {
         List<CustomerRelation> customerRelations = customerRelationMapper.selectListByLambda(customerRelation)
                 .stream()
                 .filter(item -> !Strings.CS.equals(item.getSourceCustomerId(), customerId))
-                .collect(Collectors.toList());
+                .toList();
+
         if (!customerRelations.isEmpty()) {
             List<String> sourceIds = customerRelations.stream()
                     .map(CustomerRelation::getSourceCustomerId)
