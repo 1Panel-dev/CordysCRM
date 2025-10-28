@@ -36,16 +36,12 @@ export function valueIsArray(listItem: FilterFormItem) {
       FieldTypeEnum.MEMBER_MULTIPLE,
       FieldTypeEnum.DATA_SOURCE_MULTIPLE,
       FieldTypeEnum.DATA_SOURCE,
-    ].includes(listItem.type) ||
-    [
       FieldTypeEnum.DEPARTMENT,
-      FieldTypeEnum.DEPARTMENT_MULTIPLE,
       FieldTypeEnum.MEMBER,
-      FieldTypeEnum.MEMBER_MULTIPLE,
       FieldTypeEnum.SELECT,
-      FieldTypeEnum.SELECT_MULTIPLE,
       FieldTypeEnum.RADIO,
       FieldTypeEnum.CHECKBOX,
+      FieldTypeEnum.LOCATION,
     ].includes(listItem.type) ||
     listItem.selectProps?.multiple ||
     listItem.cascaderProps?.multiple ||
