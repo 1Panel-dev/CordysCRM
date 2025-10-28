@@ -1,7 +1,7 @@
 <template>
   <div ref="customerCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
-      <div class="h-full p-[16px] !pb-0">
+      <div class="h-full px-[16px] pt-[16px]">
         <CustomerTable :form-key="FormDesignKeyEnum.CUSTOMER" />
       </div>
     </CrmCard>

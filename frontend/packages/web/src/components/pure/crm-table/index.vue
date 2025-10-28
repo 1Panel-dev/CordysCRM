@@ -2,7 +2,7 @@
   <div
     ref="tableFullRef"
     class="relative flex h-full flex-col overflow-hidden"
-    :class="[isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px] !pb-0' : '', props.class]"
+    :class="[isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] px-[16px] pt-[16px]' : '', props.class]"
   >
     <BatchAction
       v-if="props.actionConfig"

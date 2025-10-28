@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full p-[16px] !pb-0">
+  <div class="h-full w-full px-[16px] pt-[16px]">
     <CrmTable
       ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"

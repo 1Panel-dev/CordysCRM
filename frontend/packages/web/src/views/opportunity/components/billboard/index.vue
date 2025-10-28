@@ -2,7 +2,7 @@
   <n-scrollbar
     :content-style="{ gridTemplateColumns: `repeat(${(stageConfig?.stageConfigList || []).length || 7}, 300px)` }"
     content-class="grid gap-[16px] h-full"
-    class="flex-1"
+    class="mb-[16px] flex-1"
     x-scrollable
   >
     <list

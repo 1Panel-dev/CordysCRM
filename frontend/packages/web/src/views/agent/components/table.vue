@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full p-[24px]">
+  <div class="h-full px-[24px] pt-[24px]">
     <CrmTable
       ref="crmTableRef"
       v-bind="currentTable.propsRes.value"

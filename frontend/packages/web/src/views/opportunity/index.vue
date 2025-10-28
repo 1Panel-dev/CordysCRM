@@ -1,7 +1,7 @@
 <template>
   <div ref="opportunityCardRef" class="h-full">
     <CrmCard hide-footer no-content-padding>
-      <div class="h-full p-[16px]">
+      <div class="h-full px-[16px] pt-[16px]">
         <CrmOpportunityTable
           :fullscreen-target-ref="opportunityCardRef"
           :opensea-hidden-columns="hiddenColumns"
