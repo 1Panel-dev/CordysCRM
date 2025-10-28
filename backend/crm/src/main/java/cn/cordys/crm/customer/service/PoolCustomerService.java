@@ -12,6 +12,7 @@ import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.util.*;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.domain.*;
@@ -448,7 +449,7 @@ public class PoolCustomerService {
 
     public List<ChartResult> chart(PoolCustomerChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = CommonBeanFactory.getBean(CustomerService.class).getFormConfig(orgId);
-        formConfig.getFields().addAll(customerFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         customerChartAnalysisDbRequest.setPoolId(request.getPoolId());

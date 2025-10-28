@@ -19,6 +19,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -826,7 +827,7 @@ public class CustomerService {
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
-        formConfig.getFields().addAll(customerFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);

@@ -6,6 +6,7 @@ import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
@@ -151,7 +152,7 @@ public class CluePoolExportService extends ClueExportService {
 
     public List<ChartResult> chart(PoolClueChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = clueService.getFormConfig(orgId);
-        formConfig.getFields().addAll(clueFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         clueChartAnalysisDbRequest.setPoolId(request.getPoolId());
