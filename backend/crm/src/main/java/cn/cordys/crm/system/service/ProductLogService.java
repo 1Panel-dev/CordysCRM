@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,6 +34,7 @@ public class ProductLogService extends BaseModuleLogService {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.PRODUCT.getKey());
         String pictureModuleFieldId = "";
         String timeModuleFieldId = "";
+        List<String> attachModuleFieldIds = new ArrayList<>();
         List<ModuleForm> moduleForms = moduleFormBaseMapper.selectListByLambda(new LambdaQueryWrapper<ModuleForm>()
                 .eq(ModuleForm::getOrganizationId, orgId)
                 .eq(ModuleForm::getFormKey, FormKey.PRODUCT.getKey()));
@@ -50,6 +52,13 @@ public class ProductLogService extends BaseModuleLogService {
                             .eq(ModuleField::getType, FieldType.DATE_TIME.toString()));
             if (CollectionUtils.isNotEmpty(timeModuleFields)) {
                 timeModuleFieldId = timeModuleFields.getFirst().getId();
+            }
+            List<ModuleField> attachModuleFields = moduleFieldBaseMapper.selectListByLambda(
+                    new LambdaQueryWrapper<ModuleField>()
+                            .eq(ModuleField::getFormId, moduleForms.getFirst().getId())
+                            .eq(ModuleField::getType, FieldType.ATTACHMENT.toString()));
+            if (CollectionUtils.isNotEmpty(attachModuleFields)) {
+                attachModuleFieldIds = attachModuleFields.stream().map(ModuleField::getId).toList();
             }
         }
 
@@ -69,8 +78,15 @@ public class ProductLogService extends BaseModuleLogService {
                     differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
                 }
             }
-
+            if (CollectionUtils.isNotEmpty(attachModuleFieldIds)&& attachModuleFieldIds.contains(differ.getColumn())) {
+                setAttachName(differ);
+            }
         }
+    }
+
+    private void setAttachName(JsonDifferenceDTO differ) {
+        differ.setOldValueName("");
+        differ.setNewValueName(Translator.get("common.attachment.changed"));
     }
 
     /**
