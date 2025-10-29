@@ -40,6 +40,7 @@
           {
             required: true,
             message: t('common.notNull', { value: `${t('module.customerManagement')}` }),
+            trigger: ['blur'],
           },
         ]"
       >
@@ -64,6 +65,7 @@
           {
             required: true,
             message: t('common.notNull', { value: `${t('common.head')}` }),
+            trigger: ['blur', 'change'],
           },
         ]"
       >
@@ -282,6 +284,7 @@
         form.value.ownerId = ownerId;
       }
     }
+    formRef.value?.restoreValidation();
   }
 
   watch(
