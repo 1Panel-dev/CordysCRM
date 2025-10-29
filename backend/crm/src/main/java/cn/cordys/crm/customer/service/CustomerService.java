@@ -847,6 +847,7 @@ public class CustomerService {
         mergeCollaborationWrapper.in(CustomerCollaboration::getCustomerId, request.getMergeIds());
         List<CustomerCollaboration> mergeCollaborations = customerCollaborationMapper.selectListByLambda(mergeCollaborationWrapper);
         List<String> toCollaborationUserIds = mergeCollaborations.stream().map(CustomerCollaboration::getUserId).distinct().toList();
+        Map<String, String> toCollaborationMap = mergeCollaborations.stream().collect(Collectors.toMap(CustomerCollaboration::getUserId, CustomerCollaboration::getCollaborationType));
         // 被合并的客户负责人
         List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
         List<String> toCollaborationOwnerIds = mergeCustomers.stream().map(Customer::getOwner).toList();
@@ -867,7 +868,8 @@ public class CustomerService {
             }
             CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
             collaborationAddRequest.setCustomerId(request.getToMergeId());
-            collaborationAddRequest.setCollaborationType("COLLABORATION");
+            // 如果被合并客户的协作人中有该用户，则继承该协作类型，否则使用默认类型
+			collaborationAddRequest.setCollaborationType(toCollaborationMap.getOrDefault(mergeId, "COLLABORATION"));
             collaborationAddRequest.setUserId(mergeId);
             customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
         }
