@@ -286,7 +286,7 @@
   }
 
   const detailLoading = ref(false);
-  const originType = ref('');
+  const originType = ref('SCRIPT');
   async function initDetail() {
     try {
       detailLoading.value = true;
@@ -351,7 +351,7 @@
 
   function changeType(val: string) {
     if (val === 'LIST') {
-      initWorkSpaceOptions(true);
+      initWorkSpaceOptions(originType.value === 'SCRIPT');
     }
   }
 
@@ -401,7 +401,7 @@
     (val) => {
       if (val) {
         initAgentStatus();
-        initWorkSpaceOptions(!!props.agentId);
+        initWorkSpaceOptions(!props.agentId);
         if (props.agentId) {
           initDetail();
         } else {
@@ -409,6 +409,7 @@
             ((props.activeFolder && !['favorite', 'all'].includes(props.activeFolder)
               ? props.activeFolder
               : props.folderTree[0]?.id) as string) || '';
+          originType.value = 'SCRIPT';
         }
       }
     },
