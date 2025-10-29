@@ -109,7 +109,7 @@
                         <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
                                 <if test="v == 'CHN'">
-                                    ${column} REGEXP '^[0-9]{6}'
+                                    ${column} REGEXP '^[0-9]{6}(-.*)?$' or ${column} = 'CHN-'
                                  </if>
                                 <if test="v != 'CHN'">
                                     <if test="'${column}' == 'value'">
@@ -139,10 +139,10 @@
                 <when test="${condition}.operator == 'NOT_IN'">
                     <choose>
                         <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
-                            !(
+                            (!(
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
                                 <if test="v == 'CHN'">
-                                    ${column} REGEXP '^[0-9]{6}'
+                                    ${column} REGEXP '^[0-9]{6}(-.*)?$'
                                 </if>
                                 <if test="v != 'CHN'">
                                     <if test="'${column}' == 'value'">
@@ -152,6 +152,12 @@
                                         ${column}
                                     </if>
                                     LIKE CONCAT(#{v}, '%')
+                                </if>
+                            </foreach>
+                            )
+                            <foreach collection="${condition}.value" item="v">
+                                <if test="v == 'CHN'">
+                                AND ${column} != 'CHN-'
                                 </if>
                             </foreach>
                             )
