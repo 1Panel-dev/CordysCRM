@@ -55,7 +55,6 @@
   });
 
   function handleChange(value: string | number) {
-    console.log('Tab handleChange:', value);
     emit('change', value);
   }
 
