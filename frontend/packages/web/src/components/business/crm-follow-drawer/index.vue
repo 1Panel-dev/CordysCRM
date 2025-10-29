@@ -39,6 +39,14 @@
   const { t } = useI18n();
 
   const activeTab = ref('followRecord');
+
+  watch(
+    () => activeTab.value,
+    (newVal) => {
+      console.log('Active tab changed to:', newVal);
+    }
+  );
+
   const tabList = [
     {
       name: 'followRecord',

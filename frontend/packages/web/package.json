@@ -10,7 +10,7 @@
     "dev": "vite --config ./config/vite.config.dev.ts",
     "build": "vue-tsc --noEmit && vite build --config ./config/vite.config.prod.ts",
     "build:local": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode development",
-    "build:localProd": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode prod",
+    "build:localProd": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode localProd",
     "report": "cross-env REPORT=true npm run build",
     "preview": "npm run build && vite preview --host",
     "type:check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
