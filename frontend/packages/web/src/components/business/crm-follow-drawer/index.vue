@@ -8,16 +8,17 @@
     class="min-w-[1200px]"
     :title="t('settings.navbar.event')"
   >
-    <Suspense>
-      <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-        <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-          <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-        </CrmCard>
-
-        <RecordTable v-if="activeTab === 'followRecord'" />
-        <PlanTable v-if="activeTab === 'followPlan'" />
-      </div>
-    </Suspense>
+    <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+      </CrmCard>
+      <Suspense>
+        <div class="h-full">
+          <RecordTable v-if="activeTab === 'followRecord'" />
+          <PlanTable v-if="activeTab === 'followPlan'" />
+        </div>
+      </Suspense>
+    </div>
   </CrmDrawer>
 </template>
 
