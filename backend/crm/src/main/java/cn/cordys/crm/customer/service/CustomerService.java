@@ -806,8 +806,14 @@ public class CustomerService {
         if (!Strings.CS.equals(oldCustomer.getOwner(), request.getOwnerId())) {
             LogDTO logDTO = new LogDTO(currentOrgId, request.getToMergeId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_INDEX, oldCustomer.getName());
             logDTO.setOriginalValue(oldCustomer);
-            // 负责人变更
+            // 客户负责人变更，联系人同步更新
+            customerContactService.updateContactOwner(request.getToMergeId(), request.getOwnerId(), oldCustomer.getOwner(), currentOrgId);
+            // 如果责任人有修改，则添加责任人历史
+            customerOwnerHistoryService.add(oldCustomer, currentUser, false);
+            sendTransferNotice(List.of(oldCustomer), request.getOwnerId(), currentUser, currentOrgId);
             Customer customer = BeanUtils.copyBean(new Customer(), oldCustomer);
+            // 重置领取时间
+            customer.setCollectionTime(System.currentTimeMillis());
             customer.setOwner(request.getOwnerId());
             customerMapper.updateById(customer);
             // 合并客户的修改日志
