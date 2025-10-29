@@ -50,6 +50,7 @@ export default {
   'customer.mergeConfirmTitle': '确定合并所选客户吗？',
   'customer.mergeConfirmContent': '合并后，数据不可回退，请谨慎操作！',
   'customer.mergeTo': '合并至',
+  'customer.mergeSuccess': '合并成功',
   'customer.selectedAccount': '已选客户',
   'customer.otherAccount': '其他客户',
   'customer.mergeRules': '合并规则',

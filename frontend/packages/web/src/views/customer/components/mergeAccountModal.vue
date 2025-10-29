@@ -149,7 +149,7 @@
             toMergeId,
             ownerId,
           });
-          Message.success(t('common.transferSuccess'));
+          Message.success(t('customer.mergeSuccess'));
           emit('saved');
           cancelHandler();
         } catch (e) {

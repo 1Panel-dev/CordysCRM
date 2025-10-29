@@ -55,6 +55,7 @@ export default {
   'customer.mergeConfirmTitle': 'Merge selected accounts?',
   'customer.mergeConfirmContent': 'This action cannot be undone. Please proceed with caution!',
   'customer.mergeTo': 'Merge to',
+  'customer.mergeSuccess': 'Merge successful',
   'customer.selectedAccount': 'Selected accounts',
   'customer.otherAccount': 'Other accounts',
   'customer.mergeRules': 'Merge rules',
