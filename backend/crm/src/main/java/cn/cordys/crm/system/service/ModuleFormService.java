@@ -29,13 +29,16 @@ import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +85,8 @@ public class ModuleFormService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
+	@Autowired
+	private ExtAttachmentMapper extAttachmentMapper;
 
     /**
      * 获取模块表单配置
@@ -361,6 +366,14 @@ public class ModuleFormService {
             return null;
         }
         List<Attachment> attachments = attachmentMapper.selectByIds(attachmentIds);
+        List<String> createUserIds = attachments.stream().map(Attachment::getCreateUser).toList();
+        List<String> updateUserIds = attachments.stream().map(Attachment::getUpdateUser).toList();
+        List<User> users = userExtendService.getUserOptionByIds(ListUtils.union(createUserIds, updateUserIds));
+        Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
+        attachments.forEach(attachment -> {
+            attachment.setCreateUser(userMap.get(attachment.getCreateUser()));
+            attachment.setUpdateUser(userMap.get(attachment.getUpdateUser()));
+        });
         Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
         Map<String, List<Attachment>> attachmentMapResult = new HashMap<>(fieldAttachmentIds.size());
         for (Map.Entry<String, List<String>> entry : fieldAttachmentIds.entrySet()) {
