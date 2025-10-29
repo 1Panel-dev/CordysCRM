@@ -18,6 +18,7 @@
             :form-key="FormDesignKeyEnum.PRODUCT"
             :source-id="props.sourceId"
             :column="3"
+            :refresh-key="props.refreshId"
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
@@ -42,6 +43,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    refreshId?: number;
   }>();
   const emit = defineEmits<{
     (e: 'edit', sourceId: string): void;

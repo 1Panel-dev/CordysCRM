@@ -186,7 +186,7 @@
 
   const defaultFormModel: FilterForm = {
     searchMode: 'AND',
-    list: [{ dataIndex: null, operator: undefined, value: null, type: FieldTypeEnum.INPUT }],
+    list: [],
   };
   const formModel = ref<FilterForm>(cloneDeep(defaultFormModel));
   const filterContentRef = ref<InstanceType<typeof FilterContent>>();

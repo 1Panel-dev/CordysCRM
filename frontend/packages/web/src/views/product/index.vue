@@ -49,7 +49,7 @@
     :form-key="FormDesignKeyEnum.PRODUCT"
     :source-id="activeProductId"
     :need-init-detail="!!activeProductId"
-    @saved="() => searchData()"
+    @saved="handleRefresh"
   />
   <CrmBatchEditModal
     v-model:visible="showEditModal"
@@ -58,7 +58,12 @@
     :form-key="FormDesignKeyEnum.PRODUCT"
     @refresh="handleRefresh"
   />
-  <detailDrawer v-model:visible="detailDrawerVisible" :source-id="activeProductId" @edit="handleEdit" />
+  <detailDrawer
+    v-model:visible="detailDrawerVisible"
+    :source-id="activeProductId"
+    :refresh-id="tableRefreshId"
+    @edit="handleEdit"
+  />
 </template>
 
 <script lang="ts" setup>
