@@ -77,7 +77,8 @@ public interface ExtCustomerContactMapper {
      * @param userId  用户ID
      * @param orgId   组织ID
      */
-    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
+                    @Param("names") List<String> names, @Param("phones") List<String> phones);
 
     /**
      * 获取待合并的客户联系人列表

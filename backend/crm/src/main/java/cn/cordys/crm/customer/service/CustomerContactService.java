@@ -634,4 +634,31 @@ public class CustomerContactService {
         List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return customerContactFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
+
+    /**
+     * 联系人是否有唯一字段
+     * @param orgId 组织ID
+     * @return 是否唯一
+     */
+    public Map<String, Boolean> getUniqueMap(String orgId) {
+        Map<String, Boolean> uniqueMap = new HashMap<>(2);
+        LambdaQueryWrapper<ModuleForm> formQueryWrapper = new LambdaQueryWrapper<>();
+        formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId).eq(ModuleForm::getFormKey, FormKey.CONTACT.getKey());
+        List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formQueryWrapper);
+        List<String> formIds = forms.stream().map(ModuleForm::getId).toList();
+
+        LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
+                BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
+        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
+        List<ModuleFieldBlob> blobs = moduleFieldBlobMapper.selectByIds(fieldIds);
+
+        for (ModuleFieldBlob blob : blobs) {
+            BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
+            String internalKey = baseField.getInternalKey();
+            boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
+            uniqueMap.put(internalKey, hasUnique);
+        }
+        return uniqueMap;
+    }
 }

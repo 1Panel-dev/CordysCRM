@@ -510,6 +510,18 @@
         <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        <if test="names != null and names.size() > 0">
+            and name not in
+            <foreach collection="names" item="name" open="(" close=")" separator=",">
+                #{name}
+            </foreach>
+        </if>
+        <if test="phones != null and phones.size() > 0">
+            and phone not in
+            <foreach collection="phones" item="phone" open="(" close=")" separator=",">
+                #{phone}
+            </foreach>
+        </if>
         and organization_id = #{orgId}
     </update>
 

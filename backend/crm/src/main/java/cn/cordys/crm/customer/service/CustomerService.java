@@ -149,6 +149,8 @@ public class CustomerService {
     private ExtFollowUpPlanMapper extFollowUpPlanMapper;
     @Resource
     private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
+    @Resource
+    private BaseMapper<CustomerContact> customerContactMapper;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -788,7 +790,20 @@ public class CustomerService {
 
         // 批量合并产生的修改日志
         List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId);
-        extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId);
+        // 联系人需要排除重复项合并
+        Map<String, Boolean> uniqueMap = customerContactService.getUniqueMap(currentOrgId);
+        List<String> names = new ArrayList<>();
+        List<String> phones = new ArrayList<>();
+        LambdaQueryWrapper<CustomerContact> contactWrapper = new LambdaQueryWrapper<>();
+        contactWrapper.eq(CustomerContact::getCustomerId, request.getToMergeId());
+        List<CustomerContact> toMergeContacts = customerContactMapper.selectListByLambda(contactWrapper);
+        if (uniqueMap.get(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
+            names = toMergeContacts.stream().map(CustomerContact::getName).toList();
+        }
+        if (uniqueMap.get(BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())) {
+            phones = toMergeContacts.stream().map(CustomerContact::getPhone).toList();
+        }
+        extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId, names, phones);
         extOpportunityMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
