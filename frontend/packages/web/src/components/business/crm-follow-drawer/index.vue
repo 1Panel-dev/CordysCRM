@@ -13,9 +13,9 @@
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
       <Suspense>
-        <div class="h-full">
+        <div v-if="visible" class="h-full">
           <RecordTable v-if="activeTab === 'followRecord'" />
-          <PlanTable v-if="activeTab === 'followPlan'" />
+          <PlanTable v-else />
         </div>
       </Suspense>
     </div>
@@ -28,8 +28,9 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
-  import PlanTable from './components/planTable.vue';
-  import RecordTable from './components/recordTable.vue';
+
+  const RecordTable = defineAsyncComponent(() => import('./components/recordTable.vue'));
+  const PlanTable = defineAsyncComponent(() => import('./components/planTable.vue'));
 
   const visible = defineModel<boolean>('visible', {
     required: true,
