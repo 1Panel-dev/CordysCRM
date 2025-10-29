@@ -12,12 +12,16 @@
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
-      <Suspense>
-        <div v-if="visible" class="h-full">
-          <RecordTable v-if="activeTab === 'followRecord'" />
-          <PlanTable v-else />
-        </div>
-      </Suspense>
+      <div v-if="visible" class="h-full">
+        <Suspense>
+          <template v-if="activeTab === 'followRecord'">
+            <RecordTable />
+          </template>
+          <template v-else>
+            <PlanTable />
+          </template>
+        </Suspense>
+      </div>
     </div>
   </CrmDrawer>
 </template>
@@ -39,13 +43,6 @@
   const { t } = useI18n();
 
   const activeTab = ref('followRecord');
-
-  watch(
-    () => activeTab.value,
-    (newVal) => {
-      console.log('Active tab changed to:', newVal);
-    }
-  );
 
   const tabList = [
     {
