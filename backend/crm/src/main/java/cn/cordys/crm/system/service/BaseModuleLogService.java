@@ -48,7 +48,7 @@ public abstract class BaseModuleLogService {
         differ.setNewValueName(differ.getNewValue());
     }
 
-    abstract public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
+    abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
 
     /**
      * 处理非业务字段的自定义字段
@@ -58,7 +58,7 @@ public abstract class BaseModuleLogService {
      * @param orgId
      * @param formKey
      */
-    protected void handleModuleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId, String formKey) {
+    protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId, String formKey) {
         ModuleFormConfigDTO customerFormConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(formKey, orgId);
 
@@ -66,6 +66,13 @@ public abstract class BaseModuleLogService {
         Map<String, BaseField> moduleFieldMap = customerFormConfig.getFields()
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
+
+        List<JsonDifferenceDTO> modifiable = new ArrayList<>(differenceDTOS);
+        modifiable.removeIf(differ ->{
+            BaseField moduleField = moduleFieldMap.get(differ.getColumn());
+            return moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name());
+        });
+        differenceDTOS = modifiable;
 
         // 记录选项字段的字段值
         List<BaseModuleFieldValue> optionFieldValues = new ArrayList<>();
@@ -107,6 +114,8 @@ public abstract class BaseModuleLogService {
 
             }
         });
+
+        return differenceDTOS;
     }
 
     private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ, BaseField moduleField) {

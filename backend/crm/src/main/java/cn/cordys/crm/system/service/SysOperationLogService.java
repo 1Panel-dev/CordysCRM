@@ -125,7 +125,7 @@ public class SysOperationLogService {
                 OperationLog log = operationLogMapper.selectByPrimaryKey(id);
                 BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(log.getModule());
                 if (moduleLogService != null) {
-                    moduleLogService.handleLogField(differenceDTOS, orgId);
+                    differenceDTOS = moduleLogService.handleLogField(differenceDTOS, orgId);
                 } else {
                     differenceDTOS.forEach(BaseModuleLogService::translatorDifferInfo);
                 }

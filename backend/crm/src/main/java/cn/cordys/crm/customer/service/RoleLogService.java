@@ -27,7 +27,7 @@ public class RoleLogService extends BaseModuleLogService {
     private RoleService roleService;
 
     @Override
-    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS.forEach(differ -> {
             if (Strings.CS.equals(differ.getColumn(), "deptIds")) {
                 handleDeptIdsLogDetail(differ);
@@ -45,6 +45,7 @@ public class RoleLogService extends BaseModuleLogService {
                 BaseModuleLogService.translatorDifferInfo(differ);
             }
         });
+        return differenceDTOS;
     }
 
     private void handleDeptIdsLogDetail(JsonDifferenceDTO differ) {

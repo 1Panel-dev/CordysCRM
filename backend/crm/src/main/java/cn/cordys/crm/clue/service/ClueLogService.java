@@ -18,8 +18,8 @@ public class ClueLogService extends BaseModuleLogService {
 
 
     @Override
-    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        super.handleModuleLogField(differenceDTOS, orgId, FormKey.CLUE.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.CLUE.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
@@ -38,5 +38,6 @@ public class ClueLogService extends BaseModuleLogService {
             }
         }
 
+        return differenceDTOS;
     }
 }

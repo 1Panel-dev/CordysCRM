@@ -22,8 +22,8 @@ public class OpportunityLogService extends BaseModuleLogService {
     private BaseMapper<Customer> customerMapper;
 
     @Override
-    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
@@ -93,6 +93,7 @@ public class OpportunityLogService extends BaseModuleLogService {
                 }
             }
         }
+        return differenceDTOS;
     }
 
 

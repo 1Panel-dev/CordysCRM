@@ -22,7 +22,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
     private BaseMapper<ModuleField> moduleFieldMapper;
 
     @Override
-    public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS.forEach(differ -> {
             if (isLinkFormKey(differ.getColumn())) {
                 differ.setColumnName(Translator.get("log." + differ.getColumn() + ".link"));
@@ -61,6 +61,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setOldValueName(differ.getOldValue());
             }
         });
+
+        return differenceDTOS;
     }
 
     private void handleModuleMainNav(JsonDifferenceDTO differ) {
