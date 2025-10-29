@@ -445,23 +445,23 @@
 
     <sql id="chartAxisJoin">
         <if test="${axisParam}.businessField and ${axisParam}.businessFieldName == 'products'">
-            JOIN JSON_TABLE(
+            left join JSON_TABLE(
                 ${mainTablePrefix}.products,
                     '$[*]' COLUMNS (
                     id VARCHAR(50) PATH '$'
                 )
-            ) AS ${tablePrefix}_multiple
+            ) AS ${tablePrefix}_multiple on true
         </if>
         <if test="!${axisParam}.businessField and ${axisParam}.fieldId != null and ${axisParam}.fieldId != ''">
             <if test="${axisParam}.blob">
                 left join ${mainTable}_field_blob ${tablePrefix}
                 on ${mainTablePrefix}.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
-                JOIN JSON_TABLE(
+                left join JSON_TABLE(
                     ${tablePrefix}.field_value,
                     '$[*]' COLUMNS (
                         id VARCHAR(50) PATH '$'
                     )
-                ) AS ${tablePrefix}_multiple
+                ) AS ${tablePrefix}_multiple on true
             </if>
             <if test="!${axisParam}.blob">
                 left join ${mainTable}_field ${tablePrefix}

@@ -142,7 +142,13 @@
 
         where c.organization_id = #{orgId}
 
-        and c.in_shared_pool is false
+        <if test="request.poolId == null">
+            and c.in_shared_pool is false
+        </if>
+
+        <if test="request.poolId != null">
+            and c.in_shared_pool is true and c.pool_id = #{request.poolId}
+        </if>
 
         <if test="dataPermission != null and dataPermission.self">
             and c.owner = #{userId}
