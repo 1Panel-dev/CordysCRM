@@ -497,11 +497,10 @@ public class AgentBaseService extends DashboardSortService {
         if (CollectionUtils.isEmpty(details)) {
             return null;
         }
-        ThirdConfigurationDTO configurationDTO = JSON.parseObject(
+
+        return JSON.parseObject(
                 new String(details.getFirst().getContent()), ThirdConfigurationDTO.class
         );
-
-        return configurationDTO;
     }
 
     /**
@@ -516,8 +515,7 @@ public class AgentBaseService extends DashboardSortService {
         if (config == null) {
             return Collections.emptyList();
         }
-        List<OptionDTO> workspaceList = getWorkspace(config);
-        return workspaceList;
+        return getWorkspace(config);
     }
 
     private List<OptionDTO> getWorkspace(ThirdConfigurationDTO config) {
@@ -549,8 +547,7 @@ public class AgentBaseService extends DashboardSortService {
         if (config == null) {
             return Collections.emptyList();
         }
-        List<OptionDTO> workspaceList = getApplication(workspaceId, config);
-        return workspaceList;
+        return getApplication(workspaceId, config);
     }
 
     private List<OptionDTO> getApplication(String workspaceId, ThirdConfigurationDTO config) {
@@ -582,8 +579,7 @@ public class AgentBaseService extends DashboardSortService {
         if (config == null) {
             return new ScriptResponse();
         }
-        ScriptResponse response = getScript(request, config);
-        return response;
+        return getScript(request, config);
     }
 
     private ScriptResponse getScript(ScriptRequest request, ThirdConfigurationDTO config) {

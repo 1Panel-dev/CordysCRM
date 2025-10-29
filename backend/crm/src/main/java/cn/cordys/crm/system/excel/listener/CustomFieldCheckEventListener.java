@@ -197,12 +197,11 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
      * @return 是否非法
      */
     private String checkIllegalHead(Map<Integer, String> headMap) {
-        Collection<String> values = headMap.values();
         for (BaseField field : fieldMap.values()) {
             if (!field.canImport() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
                 continue;
             }
-            if (!values.contains(field.getName())) {
+            if (!headMap.containsValue(field.getName())) {
                 return field.getName();
             }
         }
