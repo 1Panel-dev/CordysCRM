@@ -9,10 +9,11 @@ import {
   FormDesignKeyEnum,
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
+  formatNumberValue,
   getNormalFieldValue,
   getRuleType,
   linkAllAcceptTypes,
@@ -319,7 +320,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     if (key === 'enable') {
       return value ? t('common.open') : t('common.close');
     }
-    return value || '-';
+    return value === undefined || value === null || value === '' ? '-' : value;
   }
 
   async function initFormDescription(formData?: FormDetail) {

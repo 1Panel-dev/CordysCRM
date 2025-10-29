@@ -137,7 +137,8 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { abbreviateNumber, formatNumberValue } from '@lib/shared/method';
+  import { abbreviateNumber } from '@lib/shared/method';
+  import { formatNumberValue } from '@lib/shared/method/formCreate';
   import { OpportunityItem, StageConfigItem } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';

@@ -4,10 +4,11 @@ import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
+  formatNumberValue,
   getNormalFieldValue,
   linkAllAcceptTypes,
   memberTypes,

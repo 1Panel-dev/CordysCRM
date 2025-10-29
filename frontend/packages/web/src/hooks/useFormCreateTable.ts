@@ -5,7 +5,8 @@ import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatNumberValue, formatTimeValue, getCityPath } from '@lib/shared/method';
+import { formatTimeValue, getCityPath } from '@lib/shared/method';
+import { formatNumberValue } from '@lib/shared/method/formCreate';
 import type { ModuleField } from '@lib/shared/models/customer';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 

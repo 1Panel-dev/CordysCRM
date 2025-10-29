@@ -63,12 +63,20 @@ export function getNormalFieldValue(item: FormCreateField, value: any) {
   return value;
 }
 
-export function formatNumberValue(value: string | number, field: FormCreateField) {
-  if (field.numberFormat === 'percent') {
-    return value ? `${value}%` : '-';
+/**
+ * 格式化数字
+ * @param value 数字
+ * @param type 类型
+ */
+export function formatNumberValue(value: string | number, item: FormCreateField) {
+  if (value !== undefined && value !== null && value !== '') {
+    if (item.numberFormat === 'percent') {
+      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
+    }
+    if (item.showThousandsSeparator) {
+      return (item.precision ? Number(Number(value).toFixed(item.precision)) : Number(value)).toLocaleString('en-US');
+    }
+    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
   }
-  if (field.showThousandsSeparator) {
-    return value ? Number(value).toLocaleString('en-us') : '-';
-  }
-  return value;
+  return '-';
 }

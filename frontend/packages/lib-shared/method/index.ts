@@ -521,24 +521,6 @@ export function formatTimeValue(value: string | number, type?: FormCreateFieldDa
 }
 
 /**
- * 格式化数字
- * @param value 数字
- * @param type 类型
- */
-export function formatNumberValue(value: string | number, item: FormCreateField) {
-  if (value) {
-    if (item.numberFormat === 'percent') {
-      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
-    }
-    if (item.showThousandsSeparator) {
-      return (item.precision ? Number(Number(value).toFixed(item.precision)) : Number(value)).toLocaleString('en-US');
-    }
-    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
-  }
-  return '-';
-}
-
-/**
  * 下载文件
  * @param byte 字节流
  * @param fileName 文件名

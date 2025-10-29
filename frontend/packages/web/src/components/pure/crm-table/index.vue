@@ -375,7 +375,12 @@
     }
 
     currentColumns.value = columns.map((column) => {
-      const defaultRender = (row: Record<string, any>) => row[column.key as string] || '-';
+      const defaultRender = (row: Record<string, any>) =>
+        row[column.key as string] === undefined ||
+        row[column.key as string] === null ||
+        row[column.key as string] === ''
+          ? '-'
+          : row[column.key as string];
       // 添加上render
       let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
       const disabled = props.columns.find((item) => item.key === column.key)?.disabled;
