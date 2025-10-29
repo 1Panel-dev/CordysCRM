@@ -113,6 +113,7 @@
               clearable
               :options="agentOptions"
               :disabled="!isEnableConfig || props.isDetail"
+              @update:value="changeApplicationId"
             />
           </n-form-item>
         </template>
@@ -373,9 +374,15 @@
     () => isEnableConfig.value || (!!(props.agentId || props.isDetail) && originType.value !== 'SCRIPT')
   );
 
-  function changeWorkSpace(val: string) {
+  function changeWorkSpace(_: string) {
     form.value.applicationId = '';
     form.value.script = '';
+  }
+
+  function changeApplicationId(val: string) {
+    if (val) {
+      loadApplicationScript(val);
+    }
   }
 
   watch(
@@ -383,15 +390,6 @@
     (val) => {
       if (val) {
         loadApplication(val);
-      }
-    }
-  );
-
-  watch(
-    () => form.value.applicationId,
-    (val) => {
-      if (val) {
-        loadApplicationScript(val);
       }
     }
   );
