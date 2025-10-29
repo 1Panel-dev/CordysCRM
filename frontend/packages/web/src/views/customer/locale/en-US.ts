@@ -60,7 +60,8 @@ export default {
   'customer.mergeRules': 'Merge rules',
   'customer.selectedAccountMergeTip': '1. Select primary account and data to retain after merge',
   'customer.afterMergeDeleteAccountBaseInfoTip': "2. Only primary account's basic info will be kept",
-  'customer.afterMergeInfoTip': '3. Contacts, follow-ups, opportunities, etc. will be merged under primary account',
+  'customer.afterMergeInfoTip':
+    '3. The account after the merger, merged account contact, follow up plan, follow up records, business information, collaboration members later merge to the account',
   'customer.selectedMergeAccountTooltip':
     "Selected accounts: chosen from list; Other accounts: visible accounts; Owner assignment: only selected accounts' owners can be chosen; other accounts' owners remain unchanged",
 };
