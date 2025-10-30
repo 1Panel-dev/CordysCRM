@@ -68,6 +68,8 @@
             <property name="mainTable" value="cc"/>
         </include>
 
+        from customer_contact cc
+
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on cc.owner = sou.user_id
             and (
@@ -78,8 +80,6 @@
             or sou.user_id = #{userId}
             )
         </if>
-
-        from customer_contact cc
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filterCondition.conditions"/>

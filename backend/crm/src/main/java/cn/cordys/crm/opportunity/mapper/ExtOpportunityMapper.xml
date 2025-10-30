@@ -109,6 +109,9 @@
             <property name="mainTable" value="o"/>
         </include>
 
+        FROM
+        opportunity o
+
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on o.owner = sou.user_id
             and (
@@ -120,8 +123,6 @@
             )
         </if>
 
-        FROM
-        opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id
         LEFT JOIN opportunity_stage_config osc ON o.stage = osc.id
 
