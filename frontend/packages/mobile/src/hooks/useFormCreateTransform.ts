@@ -73,12 +73,14 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       let name: string | string[] = '';
       if (dataSourceFieldIds.value.includes(fieldId)) {
         if (typeof data[fieldId] === 'string') {
-          name = [options?.find((e) => e.id === data[fieldId])?.name];
+          name = [options?.find((e) => e.id === data[fieldId])?.name || t('common.optionNotExist')];
         } else {
-          name = options?.filter((e) => data[fieldId]?.includes(e.id)).map((e) => e.name) || [];
+          name =
+            options?.filter((e) => data[fieldId]?.includes(e.id)).map((e) => e.name || t('common.optionNotExist')) ||
+            [];
         }
-      } else {
-        name = options?.find((e) => e.id === data[fieldId])?.name;
+      } else if (options?.find((e) => e.id === data[fieldId])) {
+        name = options?.find((e) => e.id === data[fieldId]).name || t('common.optionNotExist');
       }
       if (name) {
         businessFieldAttr[fieldId] = name;

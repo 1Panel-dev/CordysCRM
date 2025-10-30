@@ -58,7 +58,7 @@
 
   const originData = ref<any[]>([]);
   async function loadList(refresh = false) {
-    if (props.closeInitLoad) return;
+    if (props.closeInitLoad || loading.value) return;
     try {
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;
@@ -80,7 +80,7 @@
       const res = await props.loadListApi({
         keyword: props.keyword,
         ...props.listParams,
-        pageSize: 10,
+        pageSize: 20,
         current: currentPage.value,
       });
       if (props?.isReturnNativeResponse) {
