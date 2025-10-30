@@ -107,6 +107,8 @@
             <property name="mainTable" value="c"/>
         </include>
 
+        from customer c
+
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on c.owner = sou.user_id
             and (
@@ -117,8 +119,6 @@
             or sou.user_id = #{userId}
             )
         </if>
-
-        from customer c
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filterCondition.conditions"/>
