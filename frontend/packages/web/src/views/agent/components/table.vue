@@ -1,5 +1,5 @@
 <template>
-  <div :key="tableRefreshId" class="h-full px-[24px] pt-[24px]">
+  <div class="h-full px-[24px] pt-[24px]">
     <CrmTable
       ref="crmTableRef"
       v-bind="currentTable.propsRes.value"
@@ -289,7 +289,7 @@
       });
 
       Message.success(t('common.operationSuccess'));
-      tableRefreshId.value += 1;
+      currentTable.value.loadList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

@@ -754,10 +754,24 @@
     }
   }
 
-  onMounted(() => {
-    if (props.draggable) {
+  function ensureDraggable() {
+    if (!props.draggable) return;
+
+    nextTick(() => {
+      if (sortable.value) {
+        sortable.value.destroy();
+        sortable.value = null;
+      }
       setDraggerSort();
-    }
+    });
+  }
+
+  watch([() => attrs.data, () => props.draggable], () => {
+    ensureDraggable();
+  });
+
+  onMounted(() => {
+    ensureDraggable();
   });
 
   const scrollXWidth = computed(() =>
