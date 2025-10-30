@@ -77,9 +77,12 @@ export default function useChart(props: ChartProps) {
         })
   );
   const total = props.data.value.reduce((sum, current) => sum + current.value, 0);
-  const percentMap: Record<string, any> = {};
-  props.data.value.forEach((item) => {
-    percentMap[item.name] = ((item.value / total) * 100).toFixed(2);
+  const percentMap = computed(() => {
+    const map: Record<string, any> = {};
+    props.data.value.forEach((item: any) => {
+      map[item.name] = total ? ((item.value / total) * 100).toFixed(2) : 0;
+    });
+    return map;
   });
 
   const xyAxis = computed<EChartsOption>(() => ({
@@ -199,10 +202,13 @@ export default function useChart(props: ChartProps) {
       itemStyle: {
         borderRadius: 2,
       },
+      height: '80%',
       formatter(name) {
         const item = props.data.value.find((e: any) => e.name === name);
         return item
-          ? `{name|${name}}  {value|${Number(item.value).toLocaleString('en-US')}} {percent|${percentMap[item.name]}%}`
+          ? `{name|${name}}  {value|${Number(item.value).toLocaleString('en-US')}} {percent|${
+              percentMap.value[item.name]
+            }%}`
           : name;
       },
       textStyle: {
