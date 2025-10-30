@@ -88,6 +88,7 @@
         <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
           <n-spin :show="loading" class="h-full">
             <CrmChart
+              v-if="seriesData.length > 0"
               :type="generatedChartType"
               :group-name="groupByName"
               :data-indicator-name="dataIndicatorName"
@@ -98,6 +99,9 @@
               @chart-click="handleChartClick"
               @refresh="generateChart"
             />
+            <n-empty v-else :show-icon="false">
+              <div class="flex h-[300px] items-center">{{ t('common.noData') }}</div>
+            </n-empty>
           </n-spin>
         </div>
       </div>
@@ -110,6 +114,7 @@
     NButton,
     NCollapse,
     NCollapseItem,
+    NEmpty,
     NInputGroup,
     NScrollbar,
     NSelect,
@@ -405,6 +410,10 @@
       } else {
         seriesData.value = [];
         xData.value = [];
+        groupBy.value = groupByOptions.value[0]?.value || '';
+        dataIndicator.value = dataIndicatorOptions.value[0]?.value || '';
+        chartType.value = ChartTypeEnum.BAR;
+        aggregationMethod.value = 'COUNT';
       }
     },
     { immediate: true }
