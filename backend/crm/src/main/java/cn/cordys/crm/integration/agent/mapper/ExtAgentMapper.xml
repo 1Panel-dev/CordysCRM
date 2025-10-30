@@ -196,6 +196,6 @@
             or a.create_user = #{userId}
             )
         </if>
-        order by a.create_time desc
+        order by a.pos desc
     </select>
 </mapper>
