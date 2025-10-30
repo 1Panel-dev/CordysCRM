@@ -82,7 +82,9 @@
           </n-tooltip>
         </div>
       </div>
-      <div class="flex-1 overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+      <div
+        class="min-h-[300px] flex-1 overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
+      >
         <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
           <n-spin :show="loading" class="h-full">
             <CrmChart
