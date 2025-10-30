@@ -148,4 +148,12 @@ public class AgentController {
     public ScriptResponse getScript(@Validated @RequestBody ScriptRequest request) {
         return agentBaseService.script(request, OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/edition")
+    @Operation(summary = "获取版本")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public Boolean getEdition() {
+        return agentBaseService.edition(OrganizationContext.getOrganizationId());
+    }
 }

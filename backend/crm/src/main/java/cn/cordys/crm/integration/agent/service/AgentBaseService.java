@@ -104,7 +104,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param orgId
      * @param userId
-     *
      * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
@@ -166,7 +165,6 @@ public class AgentBaseService extends DashboardSortService {
      * 智能体详情
      *
      * @param id
-     *
      * @return
      */
     public AgentDetailResponse getDetail(String id) {
@@ -283,7 +281,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public Pager<List<AgentPageResponse>> getList(AgentPageRequest request, String userId, String orgId) {
@@ -381,7 +378,6 @@ public class AgentBaseService extends DashboardSortService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public List<AgentPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
@@ -451,7 +447,6 @@ public class AgentBaseService extends DashboardSortService {
      *
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public List<AgentOptionDTO> getAgentOptions(String userId, String orgId) {
@@ -469,7 +464,6 @@ public class AgentBaseService extends DashboardSortService {
      * 检测配置连接
      *
      * @param orgId
-     *
      * @return
      */
     public Boolean checkConfig(String orgId) {
@@ -484,7 +478,6 @@ public class AgentBaseService extends DashboardSortService {
      * 获取配置
      *
      * @param orgId
-     *
      * @return
      */
     private ThirdConfigurationDTO getConfig(String orgId) {
@@ -507,7 +500,6 @@ public class AgentBaseService extends DashboardSortService {
      * 获取工作空间
      *
      * @param orgId
-     *
      * @return
      */
     public List<OptionDTO> workspace(String orgId) {
@@ -539,7 +531,6 @@ public class AgentBaseService extends DashboardSortService {
      *
      * @param workspaceId
      * @param orgId
-     *
      * @return
      */
     public List<OptionDTO> application(String workspaceId, String orgId) {
@@ -571,7 +562,6 @@ public class AgentBaseService extends DashboardSortService {
      *
      * @param request
      * @param orgId
-     *
      * @return
      */
     public ScriptResponse script(ScriptRequest request, String orgId) {
@@ -627,5 +617,37 @@ public class AgentBaseService extends DashboardSortService {
         }
         response.setParameters(parameters);
         return response;
+    }
+
+
+    /**
+     * 获取版本
+     *
+     * @param orgId
+     * @return
+     */
+    public Boolean edition(String orgId) {
+        ThirdConfigurationDTO config = getConfig(orgId);
+        if (config == null) {
+            return false;
+        }
+        return getEdition(config);
+    }
+
+    private Boolean getEdition(ThirdConfigurationDTO config) {
+        String body = qrCodeClient.exchange(
+                config.getMkAddress().concat(MaxKBApiPaths.EDITION),
+                "Bearer " + config.getAppSecret(),
+                HttpHeaders.AUTHORIZATION,
+                MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON
+        );
+        Map map = JSON.parseObject(body, Map.class);
+        if ((Integer) map.get("code") != 200) {
+            throw new GenericException("获取版本异常，错误信息：" + map.get("message"));
+        }
+
+        Map dataMap = (Map) map.get("data");
+        return BooleanUtils.isTrue((Boolean) dataMap.get("license_is_valid"));
     }
 }
