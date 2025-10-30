@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-bottom-padding :special-height="64">
+  <CrmCard hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
@@ -42,11 +42,11 @@
         />
       </template>
       <template v-if="activeShowType === 'timeline'" #other>
-        <div class="h-full">
+        <div class="flex-1">
           <FollowRecord
             v-model:data="propsRes.data"
             :loading="propsRes.loading"
-            virtual-scroll-height="calc(100vh - 239px)"
+            virtual-scroll-height="calc(100vh - 289px)"
             :get-description-fun="getDescriptionFun"
             key-field="id"
             :disabled-open-detail="false"

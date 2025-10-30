@@ -8,11 +8,11 @@
     class="min-w-[1200px]"
     :title="t('settings.navbar.event')"
   >
-    <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
+    <div class="flex h-full flex-col bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
-      <div v-if="visible" class="h-full">
+      <div v-if="visible" class="flex-1">
         <Suspense>
           <template v-if="activeTab === 'followRecord'">
             <RecordTable />
