@@ -88,7 +88,6 @@
         <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
           <n-spin :show="loading" class="h-full">
             <CrmChart
-              v-if="seriesData.length"
               :type="generatedChartType"
               :group-name="groupByName"
               :data-indicator-name="dataIndicatorName"
