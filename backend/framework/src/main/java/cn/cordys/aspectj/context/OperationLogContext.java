@@ -47,7 +47,7 @@ public class OperationLogContext {
         if (mapStack.isEmpty()) {
             mapStack.push(new HashMap<>());
         }
-        mapStack.peek().put(name, value);
+        Objects.requireNonNull(mapStack.peek()).put(name, value);
     }
 
     /**

@@ -127,7 +127,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param update            是否更新
      */
     public <K> void saveModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
-        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
+        List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
         if (CollectionUtils.isEmpty(allFields)) {
             return;
@@ -452,33 +452,33 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return fieldValue;
     }
 
-    private <K> Object setResourceFieldValue(K resource, String fieldName, Object value) {
+    private <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
         Class<?> clazz = resource.getClass();
         // 设置字段值
-        Object fieldValue = null;
         try {
             if (value != null) {
                 Class<?> valueClass = value.getClass();
-                if (value instanceof List<?>) {
-                    valueClass = List.class;
-                } else if (value instanceof Map<?, ?>) {
-                    valueClass = Map.class;
-                } else if (value instanceof Integer) {
-                    Class<?> type = clazz.getDeclaredField(fieldName).getType();
-                    if (type.equals(BigDecimal.class)) {
-                        value = BigDecimal.valueOf((Integer) value);
-                    } else if (type.equals(Long.class)) {
-                        value = Long.valueOf((Integer) value);
+                switch (value) {
+                    case List<?> ignored -> valueClass = List.class;
+                    case Map<?, ?> ignored -> valueClass = Map.class;
+                    case Integer i -> {
+                        Class<?> type = clazz.getDeclaredField(fieldName).getType();
+                        if (type.equals(BigDecimal.class)) {
+                            value = BigDecimal.valueOf(i);
+                        } else if (type.equals(Long.class)) {
+                            value = Long.valueOf(i);
+                        }
+                        valueClass = value.getClass();
                     }
-                    valueClass = value.getClass();
+                    default -> {
+                    }
                 }
-                fieldValue = clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), valueClass)
+                clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), valueClass)
                         .invoke(resource, value);
             }
         } catch (Exception e) {
             LogUtils.error(e);
         }
-        return fieldValue;
     }
 
     private T newResourceField() {
@@ -510,7 +510,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }
-        Map<String, BaseField> fieldConfigMap = CommonBeanFactory.getBean(ModuleFormService.class).
+        Map<String, BaseField> fieldConfigMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
                 getAllFields(getFormKey(), OrganizationContext.getOrganizationId())
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
@@ -626,7 +626,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return;
         }
 
-        Map<String, BaseField> fieldConfigMap = CommonBeanFactory.getBean(ModuleFormService.class)
+        Map<String, BaseField> fieldConfigMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId())
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
@@ -777,7 +777,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     public <K> void updateModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
-        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
+        List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
         if (CollectionUtils.isEmpty(allFields)) {
             return;
@@ -792,7 +792,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<T> updateFields = new ArrayList<>();
         List<V> updateBlobFields = new ArrayList<>();
 
-        resourceFields.stream().forEach(resourceField -> {
+        resourceFields.forEach(resourceField -> {
             if (moduleFieldValueMap.containsKey(resourceField.getFieldId())) {
                 BaseModuleFieldValue fieldValue = moduleFieldValueMap.get(resourceField.getFieldId());
 

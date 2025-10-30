@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public abstract class BaseExportService {
 
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
-        return CommonBeanFactory.getBean(ModuleFormService.class)
+        return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(formKey, orgId)
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));

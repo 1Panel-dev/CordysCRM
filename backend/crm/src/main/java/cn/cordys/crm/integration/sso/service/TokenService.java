@@ -327,9 +327,6 @@ public class TokenService {
                 MediaType.APPLICATION_JSON
         );
         MaxKBResponseEntity entity = JSON.parseObject(body, MaxKBResponseEntity.class);
-        if (entity != null && entity.getCode() == 200) {
-            return true;
-        }
-        return false;
+        return entity != null && entity.getCode() == 200;
     }
 }

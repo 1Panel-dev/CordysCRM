@@ -72,7 +72,6 @@ public class FollowUpPlanLogService extends BaseModuleLogService {
 
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
-                continue;
             }
 
         }

@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * There are two kinds of executors: one for scheduled padding, the other for padding immediately.
  */
 public class BufferPaddingExecutor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RingBuffer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BufferPaddingExecutor.class);
 
     /**
      * Constants

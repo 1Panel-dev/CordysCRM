@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,7 @@ public class ModuleFormCacheService {
      * @return 表单配置
      */
     public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
-        ModuleFormConfigDTO config = CommonBeanFactory.getBean(this.getClass()).getConfig(formKey, organizationId);
+        ModuleFormConfigDTO config = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass())).getConfig(formKey, organizationId);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
 

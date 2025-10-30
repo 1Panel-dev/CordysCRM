@@ -37,12 +37,6 @@ public class HomeStatisticSearchWrapperRequest {
         return StringUtils.isNotBlank(staticRequest.getPeriod()) && BooleanUtils.isTrue(staticRequest.getPriorPeriodEnable());
     }
 
-    public void clearStartTimeAndEndTie() {
-        staticRequest.setStartTime(null);
-        staticRequest.setEndTime(null);
-        staticRequest.setPeriod(null);
-    }
-
     public Long getStartTime() {
         String period = staticRequest.getPeriod();
         Long startTime = staticRequest.getStartTime();
@@ -52,23 +46,15 @@ public class HomeStatisticSearchWrapperRequest {
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
-            switch (statisticPeriod) {
-                case TODAY:
-                    startTime = now.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_WEEK:
-                    startTime = now.with(DayOfWeek.MONDAY)
-                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_MONTH:
-                    startTime = now.withDayOfMonth(1)
-                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-                case THIS_YEAR:
-                    startTime = now.withDayOfYear(1)
-                            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    break;
-            }
+            startTime = switch (statisticPeriod) {
+                case TODAY -> now.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_WEEK -> now.with(DayOfWeek.MONDAY)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_MONTH -> now.withDayOfMonth(1)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                case THIS_YEAR -> now.withDayOfYear(1)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            };
         }
         return startTime;
     }

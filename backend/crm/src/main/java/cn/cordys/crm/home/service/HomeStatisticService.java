@@ -309,7 +309,7 @@ public class HomeStatisticService {
             if (hasDeptAndChildPermission) {
                 // 查询本部门数据
                 OrganizationUser organizationUser = dataScopeService.getOrganizationUser(userId, orgId);
-                deptIds.addAll(List.of(organizationUser.getDepartmentId()));
+                deptIds.add(organizationUser.getDepartmentId());
             }
 
             if (hasDeptCustomPermission) {
@@ -354,9 +354,7 @@ public class HomeStatisticService {
                 iterator.remove();
                 if (CollectionUtils.isNotEmpty(node.getChildren())) {
                     // 如果当前节点有子部门，则保留子部门
-                    for (BaseTreeNode child : node.getChildren()) {
-                        addNodes.add(child);
-                    }
+                    addNodes.addAll(node.getChildren());
                 }
             }
         }

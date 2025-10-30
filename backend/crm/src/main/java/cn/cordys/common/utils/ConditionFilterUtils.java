@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: jianxing
@@ -136,7 +137,7 @@ public class ConditionFilterUtils {
                 // 附件类型转义名称
                 List<String> attachmentNames = List.of(item.getCombineValue().toString().split(StringUtils.SPACE));
                 ExtAttachmentMapper attachmentMapper = CommonBeanFactory.getBean(ExtAttachmentMapper.class);
-                List<String> attachmentIds = attachmentMapper.getAttachmentIdsByNames(attachmentNames);
+                List<String> attachmentIds = Objects.requireNonNull(attachmentMapper).getAttachmentIdsByNames(attachmentNames);
                 item.setValue(CollectionUtils.isEmpty(attachmentIds) ? attachmentNames : attachmentIds);
             }
         });
@@ -147,11 +148,11 @@ public class ConditionFilterUtils {
         if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
             // 查询视图
             UserViewService userViewService = CommonBeanFactory.getBean(UserViewService.class);
-            String viewSearchMode = userViewService.getSearchMode(viewId);
+            String viewSearchMode = Objects.requireNonNull(userViewService).getSearchMode(viewId);
             List<FilterCondition> viewConditions = userViewService.getFilterConditions(viewId);
 
             //新增子节点数据
-            List<BaseTreeNode> tree = CommonBeanFactory.getBean(DepartmentService.class).getTree(OrganizationContext.getOrganizationId());
+            List<BaseTreeNode> tree = Objects.requireNonNull(CommonBeanFactory.getBean(DepartmentService.class)).getTree(OrganizationContext.getOrganizationId());
             buildConditions(viewConditions, tree);
 
             CombineSearch viewCondition = new CombineSearch();

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jianxing
@@ -45,12 +46,12 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List ids = JSON.parseArray(value, String.class);
+        List<String> ids = JSON.parseArray(value, String.class);
 
-        List names = extUserMapper.selectUserNameByIds(ids);
+        List<String> names = Objects.requireNonNull(extUserMapper).selectUserNameByIds(ids);
 
         if (CollectionUtils.isNotEmpty(names)) {
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names), String.class));
         }
 
         return StringUtils.EMPTY;
@@ -62,7 +63,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
             return StringUtils.EMPTY;
         }
         List<String> names = parseFakeJsonArray(text);
-        List<String> ids = extUserMapper.selectUserIdsByNames(names);
+        List<String> ids = Objects.requireNonNull(extUserMapper).selectUserIdsByNames(names);
         if (CollectionUtils.isNotEmpty(ids)) {
             return ids;
         }

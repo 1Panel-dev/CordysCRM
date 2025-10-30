@@ -225,7 +225,7 @@ public class DataEaseSyncService {
 
         // 获取DE中存在的CRM角色
         Set<String> linkDeRoleNames = deRoleNames.stream()
-                .filter(deRoleName -> roleNameSet.contains(deRoleName))
+                .filter(roleNameSet::contains)
                 .collect(Collectors.toSet());
         if (!linkDeRoleNames.equals(crmRoleNames)) {
             // 如果DE中的角色不包含CRM中的角色，则需要更新
@@ -237,7 +237,7 @@ public class DataEaseSyncService {
             List<String> deRoleIds = deRoleNames.stream()
                     .filter(deRoleName -> !roleNameSet.contains(deRoleName))
                     .map(crmRoleName -> roleMap.get(crmRoleName).getId())
-                    .collect(Collectors.toList());
+                    .toList();
             updateRoleIds.addAll(deRoleIds);
             userUpdateRequest.setRoleIds(updateRoleIds);
         } else {
@@ -307,7 +307,7 @@ public class DataEaseSyncService {
     private void addUsers(DeTempResourceDTO deTempResourceDTO) {
         List<UserDTO> enableUsers = deTempResourceDTO.getCrmUsers()
                 .stream().filter(UserDTO::getEnable)
-                .collect(Collectors.toList());
+                .toList();
         Map<String, List<String>> customDeptRoleDeptMap = deTempResourceDTO.getCustomDeptRoleDeptMap();
         Map<String, List<UserRole>> userRoleMap = deTempResourceDTO.getCrmUserRoleMap();
         List<BaseTreeNode> tree = deTempResourceDTO.getDeptTree();
@@ -585,7 +585,7 @@ public class DataEaseSyncService {
         deTempResourceDTO.setSysVariableMap(sysVariableMap);
 
         for (DataScopeVariable value : DataScopeVariable.values()) {
-            if (!sysVariableMap.keySet().contains(value.name())) {
+            if (!sysVariableMap.containsKey(value.name())) {
                 // 创建数据权限系统变量
                 SysVariableDTO dataScopeVariable = createDataScopeVariable(dataEaseClient, value.name(), variableValueMap);
                 sysVariableMap.put(value.name(), dataScopeVariable);
@@ -623,9 +623,9 @@ public class DataEaseSyncService {
         }
 
         List<String> deptIds = extDepartmentMapper.selectAllDepartmentIds(deTempResourceDTO.getCrmOrgId());
-        Set<String> deptIdSet = deptIds.stream().collect(Collectors.toSet());
+        Set<String> deptIdSet = new HashSet<>(deptIds);
         for (DataScopeDeptVariable value : DataScopeDeptVariable.values()) {
-            if (!sysVariableMap.keySet().contains(value.name())) {
+            if (!sysVariableMap.containsKey(value.name())) {
                 // 创建数据权限部门变量
                 try {
                     SysVariableDTO dataScopeDeptVariable = createDataScopeDeptVariable(dataEaseClient, value.name(), deptIds, variableValueMap);
@@ -647,7 +647,7 @@ public class DataEaseSyncService {
                 // 取 deptIds 和 valueMap.key() 的差集
                 List<String> addValues = deptIds.stream()
                         .filter(deptId -> !valueMap.containsKey(deptId))
-                        .collect(Collectors.toList());
+                        .toList();
 
                 SysVariableValueCreateRequest variableValueCreateRequest = new SysVariableValueCreateRequest();
                 variableValueCreateRequest.setSysVariableId(sysVariable.getId());

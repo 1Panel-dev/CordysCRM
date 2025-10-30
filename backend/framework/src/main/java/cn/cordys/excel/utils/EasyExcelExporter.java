@@ -22,7 +22,7 @@ import java.util.Optional;
 public class EasyExcelExporter {
 
 
-    private Class clazz;
+    private final Class clazz;
 
     public EasyExcelExporter(Class clazz) {
         this.clazz = clazz;
@@ -74,14 +74,9 @@ public class EasyExcelExporter {
     }
 
     public void buildExportResponse(HttpServletResponse response, String fileName) {
-        try {
-            response.setContentType("application/vnd.ms-excel");
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()) + ".xlsx");
-        } catch (IOException e) {
-            LogUtils.error(e);
-            throw new GenericException(e.getMessage());
-        }
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
     }
 
     public void exportByCustomWriteHandler(HttpServletResponse response, List<List<String>> headList, List<List<Object>> data,

@@ -60,20 +60,14 @@ public class UserSearchConfigService {
                 throw new GenericException(Translator.get("search.config.limit"));
             }
             switch (key) {
-                case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
+                case SearchModuleEnum.SEARCH_ADVANCED_CLUE, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
                     saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
                     break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
+                case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
                     saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
                     saveSearchFields(value, userId, orgId, FormKey.CONTACT.getKey(), key, request);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                    saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
                     break;
                 case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
                     saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key, request);
@@ -168,7 +162,7 @@ public class UserSearchConfigService {
      */
     private void buildContactFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
-        businessFormConfig.getFields().stream().forEach(field -> {
+        businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CONTACT_CUSTOMER)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CONTACT, defaultSearchConfigs);
             }
@@ -189,7 +183,7 @@ public class UserSearchConfigService {
      */
     private void buildClueFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
-        businessFormConfig.getFields().stream().forEach(field -> {
+        businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CLUE_NAME)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE, defaultSearchConfigs);
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, defaultSearchConfigs);
@@ -212,7 +206,7 @@ public class UserSearchConfigService {
      */
     private void buildCustomerFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
-        businessFormConfig.getFields().stream().forEach(field -> {
+        businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CUSTOMER_NAME)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, defaultSearchConfigs);
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, defaultSearchConfigs);
@@ -232,7 +226,7 @@ public class UserSearchConfigService {
      */
     private void buildOpportunityFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
-        businessFormConfig.getFields().stream().forEach(field -> {
+        businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.OPPORTUNITY_NAME)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, defaultSearchConfigs);
             }

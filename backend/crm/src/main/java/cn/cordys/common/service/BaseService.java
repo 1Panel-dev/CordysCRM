@@ -60,7 +60,7 @@ public class BaseService {
      * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
-        return setCreateAndUpdateUserName(List.of(object)).get(0);
+        return setCreateAndUpdateUserName(List.of(object)).getFirst();
     }
 
     /**
@@ -111,7 +111,7 @@ public class BaseService {
      * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
-        return setCreateUpdateOwnerUserName(List.of(object)).get(0);
+        return setCreateUpdateOwnerUserName(List.of(object)).getFirst();
     }
 
     /**

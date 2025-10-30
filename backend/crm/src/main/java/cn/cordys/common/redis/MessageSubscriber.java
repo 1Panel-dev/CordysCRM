@@ -23,9 +23,7 @@ public class MessageSubscriber implements MessageListener {
 
 
     public MessageSubscriber(List<TopicConsumer> consumers) {
-        consumers.forEach(consumer -> {
-            consumerMap.put(consumer.getChannel(), consumer);
-        });
+        consumers.forEach(consumer -> consumerMap.put(consumer.getChannel(), consumer));
     }
 
     /**

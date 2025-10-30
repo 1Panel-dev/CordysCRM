@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
 
 @Component
@@ -55,7 +56,7 @@ public class MailSender {
             email = username;
         } else {
             String mailHost = javaMailSender.getHost();
-            String domainName = mailHost.substring(mailHost.indexOf(".") + 1);
+            String domainName = Objects.requireNonNull(mailHost).substring(mailHost.indexOf(".") + 1);
             email = username + "@" + domainName;
         }
         InternetAddress from = new InternetAddress();

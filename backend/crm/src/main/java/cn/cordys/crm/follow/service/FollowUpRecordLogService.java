@@ -69,7 +69,6 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
 
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
-                continue;
             }
         }
         return differenceDTOS;

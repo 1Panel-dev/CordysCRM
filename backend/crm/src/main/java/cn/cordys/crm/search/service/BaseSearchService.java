@@ -198,7 +198,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param conditions       过滤条件列表
      */
     public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword, List<FilterCondition> conditions) {
-        String name = "";
+        String name;
         if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())) {
             name = userSearchConfig.getBusinessKey();
         } else {

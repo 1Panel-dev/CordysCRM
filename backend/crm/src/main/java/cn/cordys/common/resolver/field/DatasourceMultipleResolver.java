@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<DatasourceMultipleField> {
 
@@ -59,23 +60,23 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         List list = JSON.parseArray(value, String.class);
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CUSTOMER")) {
-            return customerService.getCustomerNameByIds(list);
+            return Objects.requireNonNull(customerService).getCustomerNameByIds(list);
         }
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CONTACT")) {
-            return contactService.getContactNameByIds(list);
+            return Objects.requireNonNull(contactService).getContactNameByIds(list);
         }
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "OPPORTUNITY")) {
-            return opportunityService.getOpportunityNameByIds(list);
+            return Objects.requireNonNull(opportunityService).getOpportunityNameByIds(list);
         }
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CLUE")) {
-            return clueService.getClueNameByIds(list);
+            return Objects.requireNonNull(clueService).getClueNameByIds(list);
         }
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "PRODUCT")) {
-            return productService.getProductNameByIds(list);
+            return Objects.requireNonNull(productService).getProductNameByIds(list);
         }
 
         return StringUtils.EMPTY;
@@ -89,27 +90,27 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         List<String> names = parseFakeJsonArray(text);
 
         if (Strings.CI.equals(field.getDataSourceType(), "CUSTOMER")) {
-            List<Customer> customerList = customerService.getCustomerListByNames(names);
+            List<Customer> customerList = Objects.requireNonNull(customerService).getCustomerListByNames(names);
             List<String> ids = customerList.stream().map(Customer::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
         if (Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
-            List<Opportunity> opportunityList = opportunityService.getOpportunityListByNames(names);
+            List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService).getOpportunityListByNames(names);
             List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
         if (Strings.CI.equals(field.getDataSourceType(), "CLUE")) {
-            List<Clue> clueList = clueService.getClueListByNames(names);
+            List<Clue> clueList = Objects.requireNonNull(clueService).getClueListByNames(names);
             List<String> ids = clueList.stream().map(Clue::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
         if (Strings.CI.equals(field.getDataSourceType(), "CONTACT")) {
-            List<CustomerContact> contactList = contactService.getContactListByNames(names);
+            List<CustomerContact> contactList = Objects.requireNonNull(contactService).getContactListByNames(names);
             List<String> ids = contactList.stream().map(CustomerContact::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
         if (Strings.CI.equals(field.getDataSourceType(), "PRODUCT")) {
-            List<Product> productList = productService.getProductListByNames(names);
+            List<Product> productList = Objects.requireNonNull(productService).getProductListByNames(names);
             List<String> ids = productList.stream().map(Product::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }

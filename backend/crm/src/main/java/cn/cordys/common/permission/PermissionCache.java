@@ -11,10 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +26,7 @@ public class PermissionCache {
     public List<RolePermissionDTO> getRolePermissions(String userId, String orgId) {
         RoleService roleService = CommonBeanFactory.getBean(RoleService.class);
         // 获取角色
-        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(userId, orgId);
+        List<RoleDataScopeDTO> roleOptions = Objects.requireNonNull(roleService).getRoleOptions(userId, orgId);
         List<String> roleIds = roleOptions.stream()
                 .map(RoleDataScopeDTO::getId).collect(Collectors.toList());
 

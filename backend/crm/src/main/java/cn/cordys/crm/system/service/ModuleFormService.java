@@ -29,7 +29,6 @@ import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,7 +37,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,8 +83,6 @@ public class ModuleFormService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
-	@Autowired
-	private ExtAttachmentMapper extAttachmentMapper;
 
     /**
      * 获取模块表单配置

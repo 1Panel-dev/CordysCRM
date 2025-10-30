@@ -106,7 +106,7 @@ public class OrgTablePermissionHandler implements TablePermissionHandler {
      */
     protected <T> String getSystemOptionFileSql(Stream<T> stream, Function<T, String> getKeyFunc, Function<T, String> getNameFunc, String fieldName) {
         StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("case c." + fieldName);
+        sqlBuilder.append("case c.").append(fieldName);
         stream.forEach(clueStatus -> sqlBuilder.append(String.format(" when '%s' then '%s'", getKeyFunc.apply(clueStatus), getNameFunc.apply(clueStatus))));
         sqlBuilder.append(" else '' end as ").append(fieldName);
         return sqlBuilder.toString();

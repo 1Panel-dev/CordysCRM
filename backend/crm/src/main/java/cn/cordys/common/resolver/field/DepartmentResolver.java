@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentField> {
 
@@ -40,9 +41,9 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
             return StringUtils.EMPTY;
         }
 
-        List<String> names = extDepartmentMapper.getNameByIds(List.of(value));
+        List<String> names = Objects.requireNonNull(extDepartmentMapper).getNameByIds(List.of(value));
         if (CollectionUtils.isNotEmpty(names)) {
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names), String.class));
         }
 
         return StringUtils.EMPTY;
@@ -53,7 +54,7 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }
-        List<String> ids = extDepartmentMapper.getIdsByNames(List.of(text));
+        List<String> ids = Objects.requireNonNull(extDepartmentMapper).getIdsByNames(List.of(text));
         if (CollectionUtils.isNotEmpty(ids)) {
             return ids.getFirst();
         }

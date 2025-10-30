@@ -123,6 +123,7 @@ class CustomerControllerTests extends BaseTest {
         CustomerAddRequest request = new CustomerAddRequest();
         request.setName("aa");
         request.setOwner("bb");
+        Assertions.assertNotNull(moduleField);
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -290,6 +291,7 @@ class CustomerControllerTests extends BaseTest {
         String resultData = getResultData(mvcResult, String.class);
         Thread.sleep(1500); // 等待导出任务完成
         ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData);
+        Assertions.assertNotNull(resourceResponseEntity.getBody());
         Assertions.assertTrue(resourceResponseEntity.getBody().exists());
         ExportTask exportTask = new ExportTask();
         exportTask.setId(resultData);

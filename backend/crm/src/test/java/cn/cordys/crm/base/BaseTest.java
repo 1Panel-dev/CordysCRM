@@ -402,7 +402,7 @@ public abstract class BaseTest {
                         }
                         if (listObject.getFirst() instanceof File || listObject.getFirst() instanceof MockMultipartFile) {
                             // 参数是多个文件时,设置多个文件
-                            for (Object subObject : ((List) o)) {
+                            for (Object subObject : listObject) {
                                 multipartFile = getMockMultipartFile(key, subObject);
                                 requestBuilder.file(multipartFile);
                             }

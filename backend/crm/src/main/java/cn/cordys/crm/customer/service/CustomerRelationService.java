@@ -88,9 +88,7 @@ public class CustomerRelationService {
         // 再创建
         List<CustomerRelation> relations = requests.stream()
                 .filter(request -> StringUtils.isNotBlank(request.getCustomerId()) && StringUtils.isNotBlank(request.getRelationType()))
-                .map(item -> {
-                    return getCustomerRelation(item, customerId);
-                }).toList();
+                .map(item -> getCustomerRelation(item, customerId)).toList();
 
         checkTargetCustomer(customerId, relations);
 

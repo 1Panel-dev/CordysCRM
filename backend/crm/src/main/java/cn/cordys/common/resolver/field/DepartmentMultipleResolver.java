@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<DepartmentMultipleField> {
 
@@ -39,12 +40,12 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List ids = JSON.parseArray(value, String.class);
+        List<String> ids = JSON.parseArray(value, String.class);
 
-        List names = extDepartmentMapper.getNameByIds(ids);
+        List<String> names = Objects.requireNonNull(extDepartmentMapper).getNameByIds(ids);
 
         if (CollectionUtils.isNotEmpty(names)) {
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names), String.class));
         }
 
         return StringUtils.EMPTY;
@@ -56,7 +57,7 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
             return StringUtils.EMPTY;
         }
         List<String> names = parseFakeJsonArray(text);
-        List<String> ids = extDepartmentMapper.getIdsByNames(names);
+        List<String> ids = Objects.requireNonNull(extDepartmentMapper).getIdsByNames(names);
         if (CollectionUtils.isNotEmpty(ids)) {
             return ids;
         }

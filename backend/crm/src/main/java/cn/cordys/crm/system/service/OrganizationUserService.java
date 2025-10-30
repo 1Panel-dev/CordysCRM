@@ -378,9 +378,7 @@ public class OrganizationUserService {
      * @param operatorId
      */
     private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId, String orgId) {
-        Optional.ofNullable(roleIds).ifPresent(ids -> {
-            extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId());
-        });
+        Optional.ofNullable(roleIds).ifPresent(ids -> extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId()));
         if (CollectionUtils.isNotEmpty(roleIds)) {
             addUserRole(roleIds, oldUser.getUserId(), operatorId);
         }
@@ -567,9 +565,7 @@ public class OrganizationUserService {
     }
 
     public void disableUsers(List<OrganizationUser> userList, String operatorId) {
-        userList.forEach(user -> {
-            SessionUtils.kickOutUser(operatorId, user.getUserId());
-        });
+        userList.forEach(user -> SessionUtils.kickOutUser(operatorId, user.getUserId()));
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtUserMapper extUserMapper = sqlSession.getMapper(ExtUserMapper.class);
         ExtOrganizationUserMapper extOrganizationUserMapper = sqlSession.getMapper(ExtOrganizationUserMapper.class);

@@ -21,7 +21,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
     private static SoftReference<List<RegionCode>> regionCodeRef;
 
     public static List<RegionCode> getRegionCodes() {
-        List<RegionCode> regions = null;
+        List<RegionCode> regions;
 
         if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
             synchronized (LocationResolver.class) {
@@ -38,7 +38,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
     private static List<RegionCode> loadRegionData() {
         try (InputStream is = LocationResolver.class.getClassLoader()
                 .getResourceAsStream("region/region.json")) {
-            return JSON.parseObject(is, new TypeReference<List<RegionCode>>() {
+            return JSON.parseObject(is, new TypeReference<>() {
             });
         } catch (Exception e) {
             throw new RuntimeException("加载行政区划数据失败", e);

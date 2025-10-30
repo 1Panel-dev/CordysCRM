@@ -1,5 +1,6 @@
 package cn.cordys.common.uid.utils;
 
+import java.io.Serial;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 64 bytes = 8 bytes (object reference) + 6 * 8 bytes (padded long) + 8 bytes (a long value)
  */
 public class PaddedAtomicLong extends AtomicLong {
+    @Serial
     private static final long serialVersionUID = -3415778863941386253L;
 
     /**

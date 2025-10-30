@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jianxing
@@ -44,10 +45,10 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
             return StringUtils.EMPTY;
         }
 
-        List<String> names = extUserMapper.selectUserNameByIds(List.of(value));
+        List<String> names = Objects.requireNonNull(extUserMapper).selectUserNameByIds(List.of(value));
 
         if (CollectionUtils.isNotEmpty(names)) {
-            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names), String.class));
         }
 
         return StringUtils.EMPTY;
@@ -58,7 +59,7 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }
-        List<String> ids = extUserMapper.selectUserIdsByNames(List.of(text));
+        List<String> ids = Objects.requireNonNull(extUserMapper).selectUserIdsByNames(List.of(text));
         if (CollectionUtils.isNotEmpty(ids)) {
             return ids.getFirst();
         }
