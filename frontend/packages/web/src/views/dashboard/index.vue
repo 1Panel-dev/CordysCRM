@@ -19,7 +19,12 @@
     </div>
     <n-tabs v-model:value="activeDashboardType" type="segment" size="small">
       <n-tab-pane name="link" :tab="t('system.business.DE.link')" class="hidden" />
-      <n-tab-pane name="module" :tab="t('system.business.DE.embedModule')" class="hidden" />
+      <n-tab-pane
+        v-if="DEConfig?.deBoardEnable"
+        name="module"
+        :tab="t('system.business.DE.embedModule')"
+        class="hidden"
+      />
     </n-tabs>
     <div class="flex-1">
       <dashboardLink v-if="activeDashboardType === 'link'" />
