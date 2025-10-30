@@ -83,8 +83,8 @@
         </div>
       </div>
       <div class="flex-1 overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-        <n-spin :show="loading" class="h-full">
-          <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
+        <div ref="chartContainerRef" class="h-full bg-[var(--text-n10)]">
+          <n-spin :show="loading" class="h-full">
             <CrmChart
               v-if="seriesData.length"
               :type="generatedChartType"
@@ -97,8 +97,8 @@
               @chart-click="handleChartClick"
               @refresh="generateChart"
             />
-          </div>
-        </n-spin>
+          </n-spin>
+        </div>
       </div>
     </div>
   </CrmDrawer>
