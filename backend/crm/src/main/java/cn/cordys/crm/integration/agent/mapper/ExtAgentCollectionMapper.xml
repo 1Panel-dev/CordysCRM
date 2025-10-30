@@ -63,12 +63,12 @@
                         a.`create_time` ${sortType}
                     </when>
                     <otherwise>
-                        order by a.create_time desc
+                        order by a.pos desc
                     </otherwise>
                 </choose>
             </when>
             <otherwise>
-                order by a.create_time desc
+                order by a.pos desc
             </otherwise>
         </choose>
     </sql>

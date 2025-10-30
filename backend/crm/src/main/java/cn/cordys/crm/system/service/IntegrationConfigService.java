@@ -737,6 +737,17 @@ public class IntegrationConfigService {
             SqlBotConfigDetailLogDTO newDTO = getSqlBotConfigDetailLogDTO(newConfig);
             oldLog = oldDTO;
             newLog = newDTO;
+        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
+            Map<String, String> oldDTO = new HashMap<>(1);
+            oldDTO.put("mkAddress", oldConfig.getMkAddress());
+            oldDTO.put("apiKey", oldConfig.getAppSecret());
+            oldDTO.put("mkEnable", Translator.get("log.enable.".concat(oldConfig.getMkEnable().toString())));
+            Map<String, String> newDTO = new HashMap<>(1);
+            newDTO.put("mkAddress", newConfig.getMkAddress());
+            newDTO.put("apiKey", newConfig.getAppSecret());
+            newDTO.put("mkEnable", Translator.get("log.enable.".concat(newConfig.getMkEnable().toString())));
+            oldLog = oldDTO;
+            newLog = newDTO;
         }
 
         if (oldLog != null) {
