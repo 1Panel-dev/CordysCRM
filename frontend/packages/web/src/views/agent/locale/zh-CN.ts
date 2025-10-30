@@ -21,4 +21,5 @@ export default {
   'agent.addMethodListSelect': '列表选择',
   'agent.agentWorkSpace': '工作空间',
   'agent.agentSelected': '选择智能体',
+  'agent.agentDefaultWorkspace': '默认工作空间',
 };

@@ -65,3 +65,9 @@ export interface AgentApplicationScript {
   parameters: { parameter: string; value: string }[];
   src: string;
 }
+
+export interface AgentPosParams {
+  moveId: string;
+  targetId: string;
+  moveMode: 'BEFORE' | 'AFTER';
+}

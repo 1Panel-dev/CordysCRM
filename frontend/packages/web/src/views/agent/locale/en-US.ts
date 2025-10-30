@@ -21,4 +21,5 @@ export default {
   'agent.addMethodListSelect': 'List selection',
   'agent.agentWorkSpace': 'Workspace',
   'agent.agentSelected': 'Select agent',
+  'agent.agentDefaultWorkspace': 'Default workspace',
 };

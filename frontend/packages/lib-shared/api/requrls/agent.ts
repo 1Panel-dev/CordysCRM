@@ -4,6 +4,7 @@ export const agentModuleDeleteUrl = '/agent/module/delete'; // 删除智能体�
 export const agentModuleAddUrl = '/agent/module/add'; // 添加智能体模块
 export const agentModuleTreeUrl = '/agent/module/tree'; // 获取智能体模块树
 export const agentModuleCountUrl = '/agent/module/count'; // 获取智能体模块数量
+export const agentPosUrl = '/agent/edit/pos'; // 智能体排序
 
 export const updateAgentUrl = '/agent/update'; // 更新智能体
 export const renameAgentUrl = '/agent/rename'; // 重命名智能体
@@ -19,3 +20,4 @@ export const agentOptionUrl = '/agent/option'; // 智能体选项
 export const agentApplicationUrl = '/agent/application'; // 智能体应用
 export const agentWorkspaceUrl = '/agent/workspace'; // 智能体工作空间
 export const agentScriptUrl = '/agent/script'; // 工作空间应用对应脚本
+export const getMkAgentVersionUrl = '/agent/edition'; // 获取智能体mk版本

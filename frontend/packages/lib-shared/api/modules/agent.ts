@@ -4,6 +4,7 @@ import type {
   AgentApplicationScript,
   AgentModuleRenameParams,
   AgentModuleTreeNode,
+  AgentPosParams,
   AgentRenameParams,
   AgentTableQueryParams,
   ApplicationScriptParams,
@@ -25,8 +26,10 @@ import {
   agentModuleTreeUrl,
   agentOptionUrl,
   agentPageUrl,
+  agentPosUrl,
   agentScriptUrl,
   agentWorkspaceUrl,
+  getMkAgentVersionUrl,
   renameAgentUrl,
   unCollectAgentUrl,
   updateAgentUrl,
@@ -130,6 +133,16 @@ export default function useAgentApi(CDR: CordysAxios) {
     return CDR.post<AgentApplicationScript>({ url: agentScriptUrl, data });
   }
 
+  // 获取智能体mk版本
+  function getMkAgentVersion() {
+    return CDR.get<'PE' | 'EE'>({ url: getMkAgentVersionUrl });
+  }
+
+  // 智能体排序
+  function agentPos(data: AgentPosParams) {
+    return CDR.post({ url: agentPosUrl, data });
+  }
+
   return {
     agentModuleRename,
     agentModuleMove,
@@ -150,5 +163,7 @@ export default function useAgentApi(CDR: CordysAxios) {
     agentApplicationOptions,
     agentWorkspaceOptions,
     getApplicationScript,
+    getMkAgentVersion,
+    agentPos,
   };
 }

@@ -543,4 +543,6 @@ export const {
   agentApplicationOptions,
   agentWorkspaceOptions,
   getApplicationScript,
+  getMkAgentVersion,
+  agentPos,
 } = agentApi;

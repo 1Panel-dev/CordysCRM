@@ -165,6 +165,7 @@
     getAgentDetail,
     getApplicationScript,
     getConfigSynchronization,
+    getMkAgentVersion,
     updateAgent,
   } from '@/api/modules';
 
@@ -337,10 +338,33 @@
   }
 
   const workSpaceOptions = ref<SelectOption[]>([]);
+  const defaultWorkSpaceOptions = [
+    {
+      value: 'default',
+      label: t('agent.agentDefaultWorkspace'),
+    },
+  ];
+
+  const isDefaultWorkspace = ref(true);
+  async function initMkVersion() {
+    try {
+      const res = await getMkAgentVersion();
+      isDefaultWorkspace.value = res === 'PE';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   async function initWorkSpaceOptions(isInit = false) {
     try {
-      const res = await agentWorkspaceOptions();
-      workSpaceOptions.value = res.map((e) => ({ value: e.id, label: e.name }));
+      if (isDefaultWorkspace.value) {
+        workSpaceOptions.value = defaultWorkSpaceOptions;
+      } else {
+        const res = await agentWorkspaceOptions();
+        workSpaceOptions.value = res.map((e) => ({ value: e.id, label: e.name }));
+      }
+
       if (isInit) {
         form.value.workspaceId = (workSpaceOptions.value[0]?.value ?? '') as string;
       }
@@ -421,6 +445,10 @@
         ((val && !['favorite', 'all'].includes(val) ? val : props.folderTree[0]?.id) as string) || '';
     }
   );
+
+  onBeforeMount(() => {
+    initMkVersion();
+  });
 </script>
 
 <style lang="less" scoped></style>
