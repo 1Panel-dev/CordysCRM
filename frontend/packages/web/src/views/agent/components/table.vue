@@ -1,14 +1,16 @@
 <template>
-  <div class="h-full px-[24px] pt-[24px]">
+  <div :key="tableRefreshId" class="h-full px-[24px] pt-[24px]">
     <CrmTable
       ref="crmTableRef"
       v-bind="currentTable.propsRes.value"
       class="crm-agent-table flex-1"
+      :draggable="hasAnyPermission(['AGENT:UPDATE'])"
       @page-change="currentTable.propsEvent.value.pageChange"
       @page-size-change="currentTable.propsEvent.value.pageSizeChange"
       @sorter-change="currentTable.propsEvent.value.sorterChange"
       @filter-change="currentTable.propsEvent.value.filterChange"
       @refresh="searchData"
+      @drag="dragHandler"
     >
       <template #tableTop>
         <div class="flex items-center justify-between">
@@ -27,6 +29,7 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { TableDraggedParams } from '@lib/shared/models/common';
 
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -38,8 +41,16 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import favoriteIcon from './favoriteIcon.vue';
 
-  import { agentCollect, agentDelete, getAgentCollectPage, getAgentPage, unCollectAgent } from '@/api/modules';
+  import {
+    agentCollect,
+    agentDelete,
+    agentPos,
+    getAgentCollectPage,
+    getAgentPage,
+    unCollectAgent,
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     isFavorite?: boolean;
@@ -267,6 +278,22 @@
     });
     currentTable.value.loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  async function dragHandler(params: TableDraggedParams) {
+    try {
+      await agentPos({
+        moveId: params.moveId,
+        targetId: params.targetId,
+        moveMode: params.moveMode,
+      });
+
+      Message.success(t('common.operationSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   }
 
   watch(
