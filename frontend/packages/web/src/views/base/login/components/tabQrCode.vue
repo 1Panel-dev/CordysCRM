@@ -16,7 +16,7 @@
   <div v-if="activeQrCodeName === 'LARK'" class="login-qrcode">
     <div class="qrcode">
       <div class="title">
-        <CrmIcon type="icon-logo_lark" :size="24"></CrmIcon>
+        <CrmIcon class="mr-[8px]" type="iconlogo_lark" :size="24"></CrmIcon>
         {{ t('login.form.LARKScanLogin') }}
       </div>
       <lark-qr-code v-if="activeQrCodeName === 'LARK'" />
@@ -57,7 +57,6 @@
     display: flex;
     align-items: center;
     margin-top: 24px;
-    min-width: 480px;
     flex-direction: column;
     .qrcode {
       display: flex;
