@@ -53,12 +53,12 @@ public class ConditionFilterUtils {
         chartAnalysisDbRequest.setValueAxisParam(BeanUtils.copyBean(new ChartValueAxisDbParam(), request.getChartConfig().getValueAxis()));
 
         // 处理视图查询条件
-        chartAnalysisDbRequest.setViewCombineSearch(getViewCondition(chartAnalysisDbRequest.getViewId()));
+        chartAnalysisDbRequest.setViewFilterCondition(getViewCondition(chartAnalysisDbRequest.getViewId()));
 
         // 处理高级搜索条件
         parseCondition(chartAnalysisDbRequest.getFilterCondition());
         // 处理视图筛选条件
-        parseCondition(chartAnalysisDbRequest.getViewCombineSearch());
+        parseCondition(chartAnalysisDbRequest.getViewFilterCondition());
 
         ChartCategoryAxisDbParam xAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
         ChartCategoryAxisDbParam subXAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();

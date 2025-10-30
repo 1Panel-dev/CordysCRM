@@ -21,9 +21,6 @@ public class ChartAnalysisRequest {
     @Valid
     private CombineSearch filterCondition;
 
-    @Schema(description = "过滤条件")
-    private CombineSearch viewCombineSearch;
-
     @Schema(description = "搜索条件，支持组合搜索")
     @NotNull
     @Valid
