@@ -626,15 +626,15 @@ public class AgentBaseService extends DashboardSortService {
      * @param orgId
      * @return
      */
-    public Boolean edition(String orgId) {
+    public String edition(String orgId) {
         ThirdConfigurationDTO config = getConfig(orgId);
         if (config == null) {
-            return false;
+            throw new GenericException(Translator.get("third.config.not.exist"));
         }
         return getEdition(config);
     }
 
-    private Boolean getEdition(ThirdConfigurationDTO config) {
+    private String getEdition(ThirdConfigurationDTO config) {
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.EDITION),
                 "Bearer " + config.getAppSecret(),
@@ -648,6 +648,6 @@ public class AgentBaseService extends DashboardSortService {
         }
 
         Map dataMap = (Map) map.get("data");
-        return BooleanUtils.isTrue((Boolean) dataMap.get("license_is_valid"));
+        return (String) dataMap.get("edition");
     }
 }

@@ -153,7 +153,7 @@ public class AgentController {
     @GetMapping("/edition")
     @Operation(summary = "获取版本")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public Boolean getEdition() {
+    public String getEdition() {
         return agentBaseService.edition(OrganizationContext.getOrganizationId());
     }
 }
