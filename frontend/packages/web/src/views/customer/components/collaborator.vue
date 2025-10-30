@@ -40,7 +40,9 @@
       require-mark-placement="left"
       label-align="right"
       :rules="{
-        member: [{ required: true, message: t('common.notNull', { value: t('role.member') }) }],
+        member: [
+          { trigger: ['input', 'blur'], required: true, message: t('common.notNull', { value: t('role.member') }) },
+        ],
       }"
     >
       <n-form-item path="member" :label="t('role.member')">

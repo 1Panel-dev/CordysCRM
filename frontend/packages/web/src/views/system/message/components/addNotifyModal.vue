@@ -187,12 +187,22 @@
   }
 
   const rules: FormRules = {
-    subject: [{ required: true, message: t('common.notNull', { value: `${t('system.message.announcementTitle')}` }) }],
-    content: [
-      { required: true, message: t('common.notNull', { value: `${t('system.message.announcementContent')}` }) },
+    subject: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: `${t('system.message.announcementTitle')}` }),
+      },
     ],
-    range: [{ required: true, validator: validateTimeRange }],
-    ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
+    content: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: `${t('system.message.announcementContent')}` }),
+      },
+    ],
+    range: [{ trigger: ['input', 'blur'], required: true, validator: validateTimeRange }],
+    ownerIds: [{ trigger: ['input', 'blur'], required: true, message: t('common.pleaseSelect') }],
   };
 
   const initForm: AnnouncementSaveParams = {

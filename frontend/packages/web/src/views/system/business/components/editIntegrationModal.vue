@@ -304,18 +304,32 @@
   });
 
   const rules = computed<FormRules>(() => ({
-    corpId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.corpId')} ` }) }],
+    corpId: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: `${t('system.business.corpId')} ` }),
+      },
+    ],
     agentId: [
       {
+        trigger: ['input', 'blur'],
         required: true,
         message: t('common.notNull', {
           value: `${props.integration?.type === CompanyTypeEnum.DATA_EASE ? 'APP ID' : t('system.business.agentId')} `,
         }),
       },
     ],
-    appKey: [{ required: true, message: t('common.notNull', { value: `${t('system.business.appKey')} ` }) }],
+    appKey: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: `${t('system.business.appKey')} ` }),
+      },
+    ],
     appSecret: [
       {
+        trigger: ['input', 'blur'],
         required: true,
         message: t('common.notNull', {
           value: getAppSecretText.value,
@@ -324,6 +338,7 @@
     ],
     appId: [
       {
+        trigger: ['input', 'blur'],
         required: true,
         message: t('system.business.authenticationSettings.innerAppIdPlaceholder'),
       },
@@ -333,15 +348,38 @@
       props.integration?.type === CompanyTypeEnum.LARK
         ? [
             {
+              trigger: ['input', 'blur'],
               required: true,
               message: t('common.notNull', { value: `${t('system.business.authenticationSettings.callbackUrl')} ` }),
             },
           ]
-        : [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
-    deAccessKey: [{ required: true, message: t('common.notNull', { value: 'deAccessKey' }) }],
-    deSecretKey: [{ required: true, message: t('common.notNull', { value: 'deSecretKey' }) }],
-    deOrgID: [{ required: true, message: t('common.notNull', { value: t('system.business.DE.org') }) }],
-    mkAddress: [{ required: true, message: t('common.notNull', { value: t('system.business.agent.agentMaxKBUrl') }) }],
+        : [
+            {
+              trigger: ['input', 'blur'],
+              required: true,
+              message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }),
+            },
+          ],
+    deAccessKey: [
+      { trigger: ['input', 'blur'], required: true, message: t('common.notNull', { value: 'deAccessKey' }) },
+    ],
+    deSecretKey: [
+      { trigger: ['input', 'blur'], required: true, message: t('common.notNull', { value: 'deSecretKey' }) },
+    ],
+    deOrgID: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: t('system.business.DE.org') }),
+      },
+    ],
+    mkAddress: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: t('system.business.agent.agentMaxKBUrl') }),
+      },
+    ],
   }));
 
   const formRef = ref<FormInst | null>(null);

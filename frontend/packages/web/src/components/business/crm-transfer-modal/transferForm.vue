@@ -45,7 +45,7 @@
   const formRef = ref<FormInst | null>(null);
 
   const rules: FormRules = {
-    owner: [{ required: true, message: t('opportunity.selectReceiverPlaceholder') }],
+    owner: [{ trigger: ['input', 'blur'], required: true, message: t('opportunity.selectReceiverPlaceholder') }],
   };
 
   defineExpose({

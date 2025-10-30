@@ -329,7 +329,13 @@
   const formRef = ref<FormInst | null>(null);
   const form = ref<{ reason: string }>({ reason: '' });
   const rules: FormRules = {
-    reason: [{ required: true, message: t('common.notNull', { value: t('common.deactivationReason') }) }],
+    reason: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: t('common.deactivationReason') }),
+      },
+    ],
   };
 
   async function handleToggleStatus(row: CustomerContractListItem) {
