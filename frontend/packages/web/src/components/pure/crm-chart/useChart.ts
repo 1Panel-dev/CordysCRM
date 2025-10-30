@@ -86,10 +86,17 @@ export default function useChart(props: ChartProps) {
     tooltip: {
       show: true,
       trigger: 'axis',
+      borderWidth: 0,
       axisPointer: {
         type: 'shadow',
+        shadowStyle: {
+          color: getComputedStyle(document.documentElement).getPropertyValue('--text-n6').trim(),
+          opacity: 0.1,
+        },
         label: {
           show: true,
+          backgroundColor: 'none',
+          color: getComputedStyle(document.documentElement).getPropertyValue('--primary-8').trim(),
         },
       },
       formatter: (params: any) => {
@@ -118,12 +125,15 @@ export default function useChart(props: ChartProps) {
       {
         type: 'category',
         data: props.xData?.value,
+        axisLabel: {
+          color: getComputedStyle(document.documentElement).getPropertyValue('--text-n4').trim(),
+        },
         axisTick: {
           alignWithLabel: true,
         },
         axisLine: {
           lineStyle: {
-            color: 'var(--text-n8)',
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-n8').trim(),
           },
         },
       },
@@ -131,11 +141,8 @@ export default function useChart(props: ChartProps) {
     yAxis: [
       {
         type: 'value',
-        name: isCount ? t('crmViewSelect.counts') : props.dataIndicatorName.value,
-        nameTextStyle: {
-          width: 400,
-          align: 'center',
-          overflow: 'truncate',
+        axisLabel: {
+          color: getComputedStyle(document.documentElement).getPropertyValue('--text-n4').trim(),
         },
         splitLine: {
           lineStyle: {
@@ -187,9 +194,16 @@ export default function useChart(props: ChartProps) {
       top: 'middle',
       right: 0,
       itemGap: 16,
+      itemWidth: 8,
+      itemHeight: 8,
+      itemStyle: {
+        borderRadius: 2,
+      },
       formatter(name) {
         const item = props.data.value.find((e: any) => e.name === name);
-        return item ? `{name|${name}}  {value|${item.value}} {percent|${percentMap[item.name]}%}` : name;
+        return item
+          ? `{name|${name}}  {value|${Number(item.value).toLocaleString('en-US')}} {percent|${percentMap[item.name]}%}`
+          : name;
       },
       textStyle: {
         width: 400,
@@ -202,11 +216,13 @@ export default function useChart(props: ChartProps) {
           value: {
             width: '33%',
             fontSize: 12,
+            fontWeight: 500,
             color: getComputedStyle(document.documentElement).getPropertyValue('--text-n1').trim(),
           },
           percent: {
             width: '33%',
             fontSize: 12,
+            fontWeight: 500,
             color: getComputedStyle(document.documentElement).getPropertyValue('--text-n1').trim(),
           },
         },
@@ -249,6 +265,9 @@ export default function useChart(props: ChartProps) {
           textAlign: 'left',
           left: '1%',
           top: '2%',
+          textStyle: {
+            fontSize: 14,
+          },
         },
         ...partConfig.value,
         series: props.series.value,
@@ -312,6 +331,9 @@ export default function useChart(props: ChartProps) {
             textAlign: 'left',
             left: '1%',
             top: '2%',
+            textStyle: {
+              fontSize: 14,
+            },
           },
           ...partConfig.value,
           series: props.series.value,

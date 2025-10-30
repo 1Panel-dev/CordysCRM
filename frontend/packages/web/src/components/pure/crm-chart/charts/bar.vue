@@ -38,6 +38,9 @@
     barWidth: '10px',
     data: props.data,
     barMinHeight: props.data.some((e) => e.value > 10) ? 10 : undefined,
+    itemStyle: {
+      borderRadius: [2, 2, 0, 0],
+    },
   }));
   const { initChart, refreshChart, downloadChartImage } = useChart({
     type: ChartTypeEnum.BAR,

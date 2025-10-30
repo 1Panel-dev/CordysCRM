@@ -227,7 +227,7 @@
           </n-button>
         </div>
       </n-form>
-      <div class="mt-[5px] flex items-center justify-between">
+      <div class="flex items-center justify-between">
         <n-tooltip v-if="!props.readonly" :delay="300" :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd">
           <template #trigger>
             <n-button type="primary" :disabled="isDisabledAdd" text class="w-[fit-content]" @click="handleAddItem">

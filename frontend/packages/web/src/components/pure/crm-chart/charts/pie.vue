@@ -38,7 +38,7 @@
         props.aggregationMethodName === t('crmViewSelect.count') ? t('crmViewSelect.counts') : props.dataIndicatorName,
       type: ChartTypeEnum.PIE as any,
       data: data.value,
-      radius: '50%',
+      radius: '40%',
       center: ['13%', '50%'],
       label: {
         show: false,
