@@ -1001,6 +1001,8 @@ public class ModuleFormService {
                 simpleField.setDataSourceType(datasourceField.getDataSourceType());
             } else if (field instanceof DatasourceMultipleField datasourceMultipleField) {
                 simpleField.setDataSourceType(datasourceMultipleField.getDataSourceType());
+            } else if (field instanceof LocationField locationField) {
+                simpleField.setLocationType(locationField.getLocationType());
             }
             return simpleField;
         }).toList();
