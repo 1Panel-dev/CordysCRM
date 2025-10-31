@@ -1003,6 +1003,8 @@ public class ModuleFormService {
                 simpleField.setDataSourceType(datasourceMultipleField.getDataSourceType());
             } else if (field instanceof LocationField locationField) {
                 simpleField.setLocationType(locationField.getLocationType());
+            } else if (field instanceof DateTimeField dateTimeField) {
+                simpleField.setDateType(dateTimeField.getDateType());
             }
             return simpleField;
         }).toList();
