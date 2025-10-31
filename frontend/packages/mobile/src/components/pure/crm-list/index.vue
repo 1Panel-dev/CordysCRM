@@ -58,7 +58,7 @@
 
   const originData = ref<any[]>([]);
   async function loadList(refresh = false) {
-    if (props.closeInitLoad || loading.value) return;
+    if (props.closeInitLoad) return;
     try {
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;

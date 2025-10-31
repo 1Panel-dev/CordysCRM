@@ -3,6 +3,7 @@
     v-if="props.multiple"
     ref="crmListRef"
     v-model:model-value="list"
+    v-model:loading="loading"
     :keyword="props.keyword"
     :list-params="props.listParams"
     :load-list-api="props.loadListApi"
@@ -97,7 +98,9 @@
   onMounted(() => {
     if (!props.multiple) {
       // 单选容器包裹 list 组件导致创建 list 组件时不会触发组件初始化加载，需要手动调用一下
-      loadList(true);
+      nextTick(() => {
+        loadList(true);
+      });
     }
   });
 
