@@ -16,6 +16,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,15 +104,18 @@ public class CustomerCollaborationService {
 
         // 添加协作人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
-        Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
-        Map<String, Object> paramMap = new HashMap<>(4);
-        paramMap.put("useTemplate", "true");
-        paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
-        paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
-        paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
-        paramMap.put("name", customer.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
-                paramMap, userId, orgId, List.of(customer.getOwner()), true);
+        if (StringUtils.isEmpty(customer.getOwner()) || customer.getInSharedPool()) {
+            // 公海客户添加协作人无需通知
+            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
+            Map<String, Object> paramMap = new HashMap<>(4);
+            paramMap.put("useTemplate", "true");
+            paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
+            paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
+            paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
+            paramMap.put("name", customer.getName());
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
+                    paramMap, userId, orgId, List.of(customer.getOwner()), true);
+        }
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
     }
 
