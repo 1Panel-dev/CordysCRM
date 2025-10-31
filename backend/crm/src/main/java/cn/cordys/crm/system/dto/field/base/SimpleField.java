@@ -35,6 +35,9 @@ public class SimpleField {
     @Schema(description = "地址类型|格式")
     private String locationType;
 
+    @Schema(description = "日期类型|格式", allowableValues = {"month", "date", "datetime"})
+    private String dateType;
+
     @Schema(description = "显隐规则")
     private List<ControlRuleProp> showControlRules;
 }
