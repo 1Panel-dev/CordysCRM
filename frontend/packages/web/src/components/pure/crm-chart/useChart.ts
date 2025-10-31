@@ -76,11 +76,11 @@ export default function useChart(props: ChartProps) {
           aggregation: props.aggregationMethodName.value,
         })
   );
-  const total = props.data.value.reduce((sum, current) => sum + current.value, 0);
+  const total = computed(() => props.data.value.reduce((sum, current) => sum + current.value, 0));
   const percentMap = computed(() => {
     const map: Record<string, any> = {};
     props.data.value.forEach((item: any) => {
-      map[item.name] = total ? ((item.value / total) * 100).toFixed(2) : 0;
+      map[item.name] = total.value ? ((item.value / total.value) * 100).toFixed(2) : 0;
     });
     return map;
   });
@@ -129,6 +129,7 @@ export default function useChart(props: ChartProps) {
         type: 'category',
         data: props.xData?.value,
         axisLabel: {
+          interval: 0,
           color: getComputedStyle(document.documentElement).getPropertyValue('--text-n4').trim(),
         },
         axisTick: {
