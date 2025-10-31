@@ -73,7 +73,12 @@
           </n-button>
         </template>
       </n-select>
-      <n-button type="default" class="outline--secondary px-[8px]" @click="openViewDrawer">
+      <n-button
+        v-if="![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.type)"
+        type="default"
+        class="outline--secondary px-[8px]"
+        @click="openViewDrawer"
+      >
         <CrmIcon class="text-[var(--text-n1)]" type="iconicon_data" :size="16" />
       </n-button>
     </div>
@@ -122,6 +127,7 @@
   import { Add } from '@vicons/ionicons5';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCopiedName } from '@lib/shared/method';
   import type { TableDraggedParams } from '@lib/shared/models/common';
