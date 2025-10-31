@@ -484,6 +484,9 @@ public class AgentBaseService extends DashboardSortService {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
                 orgId, OrganizationConfigConstants.ConfigType.THIRD.name()
         );
+        if (organizationConfig == null) {
+            return null;
+        }
         List<OrganizationConfigDetail> details = extOrganizationConfigDetailMapper
                 .getOrgConfigDetailByType(organizationConfig.getId(), null, List.of(DepartmentConstants.MAXKB.name()));
 
