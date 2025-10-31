@@ -12,33 +12,24 @@
         @click="clickTag(item.key)"
       >
         <div class="flex items-center gap-[8px]">
-          <CrmSvgIcon name="dataease" width="14px" height="14px" />
+          <CrmSvgIcon v-if="item.key === 'DE'" :name="item.icon" width="14px" height="14px" />
+          <CrmIcon v-else :type="item.icon" />
           {{ item.label }}
         </div>
       </CrmTag>
     </div>
-    <n-tabs v-model:value="activeDashboardType" type="segment" size="small">
-      <n-tab-pane name="link" :tab="t('system.business.DE.link')" class="hidden" />
-      <n-tab-pane
-        v-if="DEConfig?.deBoardEnable"
-        name="module"
-        :tab="t('system.business.DE.embedModule')"
-        class="hidden"
-      />
-    </n-tabs>
     <div class="flex-1">
-      <dashboardLink v-if="activeDashboardType === 'link'" />
+      <dashboardLink v-if="activeDashboard === 'LINK'" />
       <dashboardModule v-else />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { NTabPane, NTabs } from 'naive-ui';
-
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ConfigSynchronization } from '@lib/shared/models/system/business';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dashboardLink from './link.vue';
@@ -48,33 +39,45 @@
 
   const { t } = useI18n();
 
-  const dashboardList = ref([
+  const fullList = [
+    {
+      key: 'LINK',
+      label: t('system.business.DE.link'),
+      icon: 'iconicon_link2',
+    },
     {
       key: 'DE',
       label: 'DataEase',
+      icon: 'dataease',
     },
-  ]);
-  const activeDashboard = ref(dashboardList.value[0].key);
-  const activeDashboardType = ref<'link' | 'module'>('link');
-
-  function clickTag(key: string) {
-    activeDashboard.value = key;
-  }
+  ];
 
   const DEConfig = ref<ConfigSynchronization>();
 
   async function init() {
     try {
       DEConfig.value = await getThirdPartyConfig('DE_BOARD');
-      if (DEConfig.value.deBoardEnable) {
-        activeDashboardType.value = 'module';
-      } else {
-        activeDashboardType.value = 'link';
-      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  const dashboardList = computed(() => {
+    return fullList.filter((item) => {
+      if (item.key === 'DE' && DEConfig.value) {
+        return true;
+      }
+      if (item.key === 'LINK') {
+        return true;
+      }
+      return false;
+    });
+  });
+  const activeDashboard = ref(dashboardList.value[0].key);
+
+  function clickTag(key: string) {
+    activeDashboard.value = key;
   }
 
   onBeforeMount(() => {

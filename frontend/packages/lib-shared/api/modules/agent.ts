@@ -135,7 +135,7 @@ export default function useAgentApi(CDR: CordysAxios) {
 
   // 获取智能体mk版本
   function getMkAgentVersion() {
-    return CDR.get<'PE' | 'EE'>({ url: getMkAgentVersionUrl });
+    return CDR.get<'PE' | 'EE'>({ url: getMkAgentVersionUrl }, { noErrorTip: true });
   }
 
   // 智能体排序

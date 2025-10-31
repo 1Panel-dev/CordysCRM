@@ -19,7 +19,6 @@ import {
   GetPageConfigUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
-  GetThirdConfigByTypeUrl,
   GetThirdPartyConfigUrl,
   GetThirdPartyResourceUrl,
   GetThirdTypeListUrl,
@@ -99,14 +98,9 @@ export default function useProductApi(CDR: CordysAxios) {
   // 根据类型获取开启的三方扫码设置
   function getThirdConfigByType<T = ConfigSynchronization>(type: string, isReturnNativeResponse = false) {
     return CDR.get<T>(
-      { url: `${GetThirdConfigByTypeUrl}/${type}` },
+      { url: `${GetThirdPartyConfigUrl}/${type}` },
       {
-        noErrorTip: [
-          CompanyTypeEnum.SQLBot,
-          CompanyTypeEnum.DINGTALK,
-          CompanyTypeEnum.WECOM,
-          CompanyTypeEnum.LARK,
-        ].includes(type as CompanyTypeEnum),
+        noErrorTip: true,
         isReturnNativeResponse,
       }
     );
@@ -179,7 +173,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取第三方配置
   function getThirdPartyConfig(type: string) {
-    return CDR.get<ConfigSynchronization>({ url: `${GetThirdPartyConfigUrl}/${type}` });
+    return CDR.get<ConfigSynchronization>({ url: `${GetThirdPartyConfigUrl}/${type}` }, { noErrorTip: true });
   }
 
   // 获取 DE 组织列表

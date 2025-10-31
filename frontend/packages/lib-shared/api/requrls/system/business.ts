@@ -5,7 +5,6 @@ export const TestConfigEmailUrl = '/organization/settings/email/test'; // 邮件
 export const GetConfigSynchronizationUrl = '/organization/settings/third-party'; // 获取三方设置
 export const UpdateConfigSynchronizationUrl = '/organization/settings/third-party/edit'; // 更新三方设置
 export const TestConfigSynchronizationUrl = '/organization/settings/third-party/test'; // 三方设置-测试连接
-export const GetThirdConfigByTypeUrl = '/organization/settings/third-party/get'; // 根据类型获取开启的三方扫码设置
 export const GetThirdTypeListUrl = '/organization/settings/third-party/types'; // 获取三方应用扫码类型集合
 export const GetDETokenUrl = '/organization/settings/de-token'; // 获取DEToken
 export const SyncDEUrl = '/organization/settings/de/sync'; // 同步 DE 配置
