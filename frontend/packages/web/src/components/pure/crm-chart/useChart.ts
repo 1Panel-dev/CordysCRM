@@ -4,7 +4,7 @@ import type { EChartsOption, LegendComponentOption, PieSeriesOption } from 'echa
 import * as echarts from 'echarts/core';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { deepMerge } from '@lib/shared/method';
+import { abbreviateNumber, deepMerge } from '@lib/shared/method';
 
 import tooltip from './components/tooltip.vue';
 
@@ -206,9 +206,9 @@ export default function useChart(props: ChartProps) {
       formatter(name) {
         const item = props.data.value.find((e: any) => e.name === name);
         return item
-          ? `{name|${name}}  {value|${Number(item.value).toLocaleString('en-US')}} {percent|${
-              percentMap.value[item.name]
-            }%}`
+          ? `{name|${name}}  {value|${abbreviateNumber(item.value, '').value}${
+              abbreviateNumber(item.value, '').unit
+            }} {percent|${percentMap.value[item.name]}%}`
           : name;
       },
       textStyle: {

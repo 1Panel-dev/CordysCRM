@@ -109,11 +109,11 @@
   function goConfig(reasonKey: ReasonKey) {
     if (reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS) {
       openNewPage(SystemRouteEnum.SYSTEM_MODULE, {
-        openCluePoolDrawer: 'Y',
+        openOpenSeaDrawer: 'Y',
       });
     } else if (reasonKey === ReasonTypeEnum.CLUE_POOL_RS) {
       openNewPage(SystemRouteEnum.SYSTEM_MODULE, {
-        openOpenSeaDrawer: 'Y',
+        openCluePoolDrawer: 'Y',
       });
     }
   }

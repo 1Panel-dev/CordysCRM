@@ -6,7 +6,9 @@
         <div class="h-[8px] w-[8px] overflow-hidden rounded-[2px]" :style="{ backgroundColor: props.color }"></div>
         {{ props.name }}
       </div>
-      <div class="text-[12px] font-semibold text-[var(--text-n1)]">{{ props.value }}</div>
+      <div class="text-[12px] font-semibold text-[var(--text-n1)]">
+        {{ typeof props.value === 'number' ? props.value.toLocaleString('en-US') : props.value }}
+      </div>
       <div v-if="props.percent !== undefined" class="text-[12px] font-semibold text-[var(--text-n1)]">
         {{ props.percent }}%
       </div>

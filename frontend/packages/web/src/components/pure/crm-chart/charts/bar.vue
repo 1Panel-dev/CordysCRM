@@ -37,7 +37,7 @@
     type: ChartTypeEnum.BAR,
     barWidth: '10px',
     data: props.data,
-    barMinHeight: props.data.some((e) => e.value > 10) ? 10 : undefined,
+    barMinHeight: props.data.every((e) => e.value > 0) ? 10 : undefined,
     itemStyle: {
       borderRadius: [2, 2, 0, 0],
     },
