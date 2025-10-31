@@ -120,7 +120,7 @@ export default function useChart(props: ChartProps) {
     grid: {
       left: '2%',
       right: '2%',
-      bottom: props.xData?.value && props.xData?.value.length >= 100 ? '10%' : '3%',
+      bottom: props.xData?.value && props.xData?.value.length >= 30 ? '10%' : '3%',
       top: '70px',
       containLabel: true,
     },
@@ -129,8 +129,8 @@ export default function useChart(props: ChartProps) {
         type: 'category',
         data: props.xData?.value,
         axisLabel: {
-          interval: 0,
           color: getComputedStyle(document.documentElement).getPropertyValue('--text-n4').trim(),
+          rotate: 45,
         },
         axisTick: {
           alignWithLabel: true,
@@ -156,7 +156,7 @@ export default function useChart(props: ChartProps) {
       },
     ],
     dataZoom:
-      props.xData?.value && props.xData?.value.length >= 100
+      props.xData?.value && props.xData?.value.length >= 30
         ? [
             {
               type: 'inside',
