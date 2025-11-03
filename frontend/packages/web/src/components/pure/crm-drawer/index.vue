@@ -179,6 +179,16 @@
     }
   };
 
+  watch(
+    () => props.width,
+    (newWidth) => {
+      drawerWidth.value = newWidth;
+    },
+    {
+      immediate: true,
+    }
+  );
+
   function handleContinue() {
     emit('continue');
   }
