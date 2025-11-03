@@ -12,9 +12,7 @@
 
 Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系统）融合而成，寓意“关系的纽带系统”，诠释了 CRM 的本质：连接客户，缔造长期价值。
 
-> 注：Cordys CRM 预计在2025年底正式开源并发布，现已开启公测。
-
-[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-20251103.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
 
 **Cordys CRM** 的核心优势是：
 
@@ -68,6 +66,10 @@ docker run -d \
     <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity.png" alt="Opportunity List" /></td>
     <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/opportunity-detail.png" alt="Opportunity Detail" /></td>
   </tr>
+  <tr>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/bi.png" alt="BI" /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/ai.png" alt="AI" /></td>
+  </tr>  
 </table>
 
 ## Roadmap
@@ -85,11 +87,13 @@ docker run -d \
 - [x] 2025.09.26：[v1.2.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.1) 发布
 - [x] 2025.10.11：[v1.2.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.2) 发布
 - [x] 2025.10.17：[v1.2.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.3) 发布
-- [ ] 2025.11：代码开源、正式发布
+- [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布
+- [ ] 2025.12：合同模块发布（包括合同、发票和回款等）
 
 ## 技术栈
 
 -  AI 智能体能力: [MaxKB](https://github.com/1Panel-dev/MaxKB)
+-  AI 智能问数能力：[SQLBot](https://github.com/dataease/SQLBot)
 -  数据可视化能力: [DataEase](https://github.com/dataease/dataease)
 -  后端: [Spring Boot](https://spring.io/projects/spring-boot)
 -  前端: [Vue.js](https://vuejs.org/) 、[Naive-UI](https://www.naiveui.com/) 、[Vant-UI](https://vant-ui.github.io/)
