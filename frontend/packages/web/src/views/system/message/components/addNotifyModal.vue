@@ -202,7 +202,7 @@
       },
     ],
     range: [{ trigger: ['input', 'blur'], required: true, validator: validateTimeRange }],
-    ownerIds: [{ trigger: ['input', 'blur'], required: true, message: t('common.pleaseSelect') }],
+    ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
   };
 
   const initForm: AnnouncementSaveParams = {
