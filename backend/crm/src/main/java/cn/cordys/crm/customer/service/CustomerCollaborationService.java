@@ -104,7 +104,7 @@ public class CustomerCollaborationService {
 
         // 添加协作人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
-        if (StringUtils.isEmpty(customer.getOwner()) || customer.getInSharedPool()) {
+        if (StringUtils.isNotBlank(customer.getOwner()) && !customer.getInSharedPool()) {
             // 公海客户添加协作人无需通知
             Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
             Map<String, Object> paramMap = new HashMap<>(4);
