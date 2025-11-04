@@ -49,6 +49,17 @@ const useViewStore = defineStore('view', {
       await setItem(key, data);
     },
 
+    async getActiveView(key: string) {
+      const { getItem } = useLocalForage();
+      const data = await getItem<string>(`active-view-${key}`);
+      return data;
+    },
+
+    async setActiveView(key: string, viewId: string) {
+      const { setItem } = useLocalForage();
+      await setItem(`active-view-${key}`, viewId);
+    },
+
     async getViewSort(tableKey: string, viewId: string) {
       const { getItem } = useLocalForage();
       const data = await getItem<SortParams>(`view-sort-${tableKey}-${viewId}`);

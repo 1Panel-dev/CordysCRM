@@ -190,17 +190,31 @@
     [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable && item.fixed)
   );
 
+  const sortData = computed(() => [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable));
+
   const { tabList, initTab } = useHiddenTab(props.type);
 
   onMounted(async () => {
     await initTab();
     await viewStore.loadInternalViews(props.type, tabList.value as TabPaneProps[]);
     await viewStore.loadCustomViews(props.type);
-    nextTick(() => {
-      // 默认视图是固定视图的第一个
-      activeTab.value = tags.value[0].id;
+    nextTick(async () => {
+      // 如果上一次的值存在则取上一次，不存在就取固定视图的第一个
+      const lastTab = await viewStore.getActiveView(props.type);
+      if (lastTab && sortData.value.find((item) => item.id === lastTab)) {
+        activeTab.value = lastTab;
+      } else {
+        activeTab.value = tags.value[0].id;
+      }
     });
   });
+
+  watch(
+    () => activeTab.value,
+    async (val) => {
+      viewStore.setActiveView(props.type, val);
+    }
+  );
 
   const scrollWrapperRef = ref<HTMLDivElement | null>(null);
   const { showArrows, scrollLeft, scrollRight, updateScrollStatus, canScrollLeft, canScrollRight } =
@@ -342,7 +356,6 @@
     'data-id': option.id,
   });
 
-  const sortData = computed(() => [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable));
   const sortable = ref();
 
   function initSelectSortable(el: HTMLElement) {
