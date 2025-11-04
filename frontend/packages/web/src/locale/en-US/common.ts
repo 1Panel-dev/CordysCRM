@@ -283,7 +283,7 @@ export default {
   'common.lastThirtyDays': 'Last 30 Days',
   'common.nextThirtyDays': 'Next 30 Days',
   'common.sort': 'Sort',
-  'common.tabConfig': 'Tab config',
+  'common.tabConfig': 'Tab settings',
   'common.head': 'Head',
   'common.phoneNumber': 'Phone number',
   'common.transfer': 'Transfer',
