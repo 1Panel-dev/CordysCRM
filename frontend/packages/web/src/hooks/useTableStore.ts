@@ -17,13 +17,11 @@ export default function useTableStore() {
   const appStore = useAppStore();
 
   async function getTableColumnsMap(tableKey: TableKeyEnum): Promise<TableStorageConfigItem | null> {
-    // TODO 存储隔离
     const tableColumnsMap = await getItem<TableStorageConfigItem>(tableKey);
     return tableColumnsMap;
   }
 
   async function setTableColumnsMap(tableKey: TableKeyEnum, tableColumnsMap: TableStorageConfigItem) {
-    // TODO 存储隔离
     await setItem(tableKey, tableColumnsMap);
   }
 

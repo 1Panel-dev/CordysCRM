@@ -14,7 +14,6 @@ function setupPageGuard(router: Router) {
     setRouteEmitter(to);
     // 取消上个路由未完成的请求（不包含设置了ignoreCancelToken的请求）
     axiosCanceler.removeAllPending();
-    // TODO 携带参数
     next();
   });
 }

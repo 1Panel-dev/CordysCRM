@@ -9,7 +9,7 @@ import type { SortParams, TableDraggedParams } from '@lib/shared/models/common';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 import type { ViewItem } from '@lib/shared/models/view';
 
-import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
+import { ConditionsItem, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import { internalConditionsMap, viewApiMap } from '@/components/business/crm-view-select/config';
 
 import { getOpportunityStageConfig } from '@/api/modules';
@@ -114,24 +114,27 @@ const useViewStore = defineStore('view', {
                   : internalConditionsMap[def.name as string],
               type: 'internal',
               searchMode: item.searchMode ?? 'AND',
-            };
+            } as ViewItem;
           }),
 
         // 添加 stored 中没有的新项
         ...internalList
           .filter((item) => !storedIds.has(item.name as string))
-          .map((item) => ({
-            id: item.name as string,
-            name: item.tab as string,
-            enable: true,
-            fixed: true,
-            type: 'internal',
-            searchMode: 'AND',
-            list:
-              item.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-                ? optItem
-                : internalConditionsMap[item.name as string],
-          })),
+          .map(
+            (item) =>
+              ({
+                id: item.name as string,
+                name: item.tab as string,
+                enable: true,
+                fixed: true,
+                type: 'internal',
+                searchMode: 'AND',
+                list:
+                  item.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+                    ? optItem
+                    : internalConditionsMap[item.name as string],
+              } as ViewItem)
+          ),
       ];
       // admin 不显示部门视图
       if (userStore.userInfo.id === 'admin') {
@@ -159,7 +162,7 @@ const useViewStore = defineStore('view', {
       } else {
         try {
           res = await viewApiMap.detail[type](option.id);
-          res.list = res.conditions.map((item: ConditionsItem) => {
+          res.list = (res.conditions ?? []).map((item: ConditionsItem) => {
             const options =
               res.optionMap?.[item.name as string]?.filter((i: { id: string; name: string }) =>
                 item.value?.includes(i.id)
@@ -170,7 +173,7 @@ const useViewStore = defineStore('view', {
               ...item,
               dataIndex: item.name,
               ...(keyText ? { [keyText]: options } : {}),
-            };
+            } as FilterFormItem;
           });
         } catch (error) {
           // eslint-disable-next-line no-console
