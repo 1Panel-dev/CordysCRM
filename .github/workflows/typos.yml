@@ -1,7 +1,11 @@
 name: Typos Checking
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   pull-requests: write
