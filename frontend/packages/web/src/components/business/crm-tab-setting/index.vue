@@ -12,31 +12,32 @@
         {{ t('common.tabConfig') }}
       </n-button>
     </template>
-    <n-scrollbar class="max-h-[416px] px-[12px] py-[4px]">
-      <div class="mb-[4px] flex h-[24px] w-[175px] items-center justify-between text-[12px]">
+    <n-scrollbar class="max-h-[416px] py-[4px]">
+      <div class="mb-[4px] flex h-[24px] w-[175px] items-center justify-between px-[8px] text-[12px]">
         <div class="font-medium text-[var(--text-n1)]"> {{ t('common.tabConfig') }} </div>
         <n-button text type="primary" size="tiny" :disabled="!hasChange" @click="handleReset">
           {{ t('common.resetDefault') }}
         </n-button>
       </div>
-      <div
-        v-for="element in cachedData"
-        :key="element.name"
-        class="flex h-[28px] w-[175px] items-center justify-between py-[4px]"
-      >
-        <div class="flex flex-1 items-center overflow-hidden">
-          <span class="one-line-text text-[12px]">
-            {{ element.tab }}
-          </span>
+      <VueDraggable v-model="cachedData" handle=".sort-handle" @change="handleChange">
+        <div v-for="element in cachedData" :key="element.name" class="crm-tab-setting-item px-[8px]">
+          <div class="flex flex-1 items-center gap-[8px]">
+            <CrmIcon type="iconicon_move" class="sort-handle cursor-move text-[var(--text-n4)]" :size="12" />
+            <div class="flex flex-1 items-center overflow-hidden">
+              <span class="one-line-text text-[12px]">
+                {{ element.tab }}
+              </span>
+            </div>
+            <n-switch
+              v-model:value="element.enable"
+              :disabled="!element.allowClose"
+              size="small"
+              :rubber-band="false"
+              @update:value="handleChange"
+            />
+          </div>
         </div>
-        <n-switch
-          v-model:value="element.enable"
-          :disabled="!element.allowClose"
-          size="small"
-          :rubber-band="false"
-          @update:value="handleChange"
-        />
-      </div>
+      </VueDraggable>
     </n-scrollbar>
   </n-popover>
 </template>
@@ -44,6 +45,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { NButton, NPopover, NScrollbar, NSwitch } from 'naive-ui';
+  import { VueDraggable } from 'vue-draggable-plus';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
@@ -102,22 +104,34 @@
   async function loadTab() {
     try {
       const localTabs = await getTabsFromLocal();
-      const currentTabNames = props.tabList.map((tab) => tab.name);
+      const currentTabMap = new Map(props.tabList.map((tab) => [tab.name, tab]));
 
-      const validLocalTabs = localTabs.filter((tab) => currentTabNames.includes(tab.name));
+      if (localTabs.length > 0) {
+        // 使用本地存储的顺序，但只包含当前仍然存在的标签页
+        const mergedTabs = localTabs
+          .filter((tab) => currentTabMap.has(tab.name)) // 过滤掉已删除的标签页
+          .map((localTab) => ({
+            ...currentTabMap.get(localTab.name)!,
+            enable: localTab.enable, // 保留启用状态
+          }));
 
-      const mergedTabs = props.tabList.map((tab) => {
-        const localTab = validLocalTabs.find((e) => e.name === tab.name);
-        return {
-          ...tab,
-          enable: localTab ? localTab.enable : true,
-        };
-      });
+        // 添加新增的标签页（在本地存储中不存在的）
+        const existingNames = new Set(mergedTabs.map((tab) => tab.name));
+        const newTabs = props.tabList
+          .filter((tab) => !existingNames.has(tab.name))
+          .map((tab) => ({ ...tab, enable: true }));
 
-      cachedData.value = mergedTabs;
+        const finalTabs = [...mergedTabs, ...newTabs];
+        cachedData.value = finalTabs;
 
-      if (!isArraysEqualWithOrder(localTabs, mergedTabs)) {
-        await saveTabsToLocal(mergedTabs);
+        // 如果有新增标签页或顺序变化，更新本地存储
+        if (newTabs.length > 0 || !isArraysEqualWithOrder(localTabs, mergedTabs)) {
+          await saveTabsToLocal(finalTabs);
+        }
+      } else {
+        // 没有本地存储，使用默认设置
+        cachedData.value = props.tabList.map((tab) => ({ ...tab, enable: true }));
+        await saveTabsToLocal(cachedData.value);
       }
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -158,6 +172,15 @@
 
 <style lang="less">
   .crm-tab-setting-popover {
-    padding: 0 !important;
+    padding: 4px !important;
+    min-width: 175px;
+    .crm-tab-setting-item {
+      height: 28px;
+      gap: 8px;
+      @apply flex items-center justify-between rounded;
+      &:hover {
+        background: var(--text-n9);
+      }
+    }
   }
 </style>
