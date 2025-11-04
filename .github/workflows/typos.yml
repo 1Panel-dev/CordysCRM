@@ -14,8 +14,9 @@ jobs:
   run:
     name: Spell Check with Typos
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the repository, using the secret token for private repos
+      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -25,4 +26,6 @@ jobs:
       - name: Check spelling
         uses: crate-ci/typos@master
         with:
-          config: .github/workflows/typos-extend-exclude.toml
+          files: |
+            **/*.java
+            **/*.vue
