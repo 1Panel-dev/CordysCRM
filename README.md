@@ -19,7 +19,7 @@ Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系�
 - **灵活易用**：基于现代化技术栈构建，使用体验好；平台支持基于角色的权限管控，提供灵活的模块化配置，可无缝集成企业微信、钉钉、飞书等主流办公平台，实现高效协同；
 - **安全可控**：私有化部署，所有客户数据与业务信息均存储于企业自有服务器，数据主权完全自主，同时便于深度集成与二次开发；
 - **AI 加持**：开放 MCP Server，借助 [MaxKB](https://github.com/1Panel-dev/MaxKB) 强大的智能体开发能力，轻松构建智能创建、智能跟进、智能报价等多样化智能体；
-- **BI 加持**：融合 [DataEase](https://github.com/dataease/dataease) 与 [SQLBot](https://github.com/dataease/SQLBot) 的强大能力，实现销售数据的可视化呈现、自助分析，以及基于自然语言的智能查询与归因分析。
+- **BI 加持**：融合 [DataEase](https://github.com/dataease/dataease) 与 [SQLBot](https://github.com/dataease/SQLBot) 的强大能力，实现销售数据可视化呈现、自助分析，以及基于自然语言的智能查询与归因分析。
 
 ## 快速开始
 
