@@ -382,12 +382,10 @@
   import { platformType } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import { useAppStore } from '@/store';
-  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
-  const licenseStore = useLicenseStore();
   const appStore = useAppStore();
   const { openModal } = useModal();
   const activePlatformTab = ref<CompanyTypeEnum>(CompanyTypeEnum.WECOM);
