@@ -40,6 +40,7 @@
     v-model:show="show"
     :folder-tree="folderTree"
     :dashboard-id="activeDashboardId"
+    :dashboard-module-id="selectedKeys[0]"
     @finish="handleFinish"
   />
 </template>

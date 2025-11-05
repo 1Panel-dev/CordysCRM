@@ -96,6 +96,7 @@
 
   const props = defineProps<{
     dashboardId?: string;
+    dashboardModuleId?: string;
     folderTree: TreeSelectOption[];
   }>();
   const emit = defineEmits<{
@@ -111,12 +112,18 @@
   });
 
   const loading = ref(false);
+  const activeFolder = computed(() => {
+    if (props.dashboardModuleId && props.dashboardModuleId !== 'all') {
+      return props.dashboardModuleId;
+    }
+    return '';
+  });
   const form = ref({
     name: '',
     resourceUrl: '',
     scopeIds: [] as SelectedUsersItem[],
     description: '',
-    dashboardModuleId: '',
+    dashboardModuleId: activeFolder.value,
   });
   const formRef = ref<InstanceType<typeof NForm>>();
 
@@ -153,7 +160,7 @@
       resourceUrl: '',
       scopeIds: [],
       description: '',
-      dashboardModuleId: '',
+      dashboardModuleId: activeFolder.value,
     };
   }
 
@@ -213,7 +220,7 @@
       if (val && props.dashboardId) {
         initDetail();
       } else {
-        form.value.dashboardModuleId = (props.folderTree[0]?.id as string) || '';
+        form.value.dashboardModuleId = activeFolder.value || (props.folderTree[0]?.id as string) || '';
       }
     },
     { immediate: true }
