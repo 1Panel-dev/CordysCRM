@@ -61,15 +61,14 @@
 
   onMounted(async () => {
     await initOpenSeaOptions();
-    if (route.query.id) {
-      activeSourceId.value = route.query.id as string;
-      if (route.query.inSharedPool === 'true') {
-        poolId.value = (route.query.poolId as string) ?? '';
-        showOpenSeaOverviewDrawer.value = true;
-      } else {
-        isInitCustomerDrawer.value = true;
-        showCustomerOverviewDrawer.value = true;
-      }
+    if (!route.query.id) return
+    activeSourceId.value = route.query.id as string;
+    if (route.query.inSharedPool === 'true') {
+      poolId.value = (route.query.poolId as string) ?? '';
+      showOpenSeaOverviewDrawer.value = true;
+    } else {
+      isInitCustomerDrawer.value = true;
+      showCustomerOverviewDrawer.value = true;
     }
   });
 </script>
