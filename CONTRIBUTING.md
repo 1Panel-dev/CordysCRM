@@ -1,32 +1,38 @@
 # Contributing
 
-As a contributor, you should agree that: 
+As a contributor, please acknowledge and agree that:
 
-- The producer can adjust the open-source agreement to be more strict or relaxed as deemed necessary.
-- Your contributed code may be used for commercial purposes, including but not limited to its cloud business operations.
+- The project maintainers may adjust the open-source license terms as necessary to make them either more strict or more relaxed.  
+- Any code you contribute may be used for commercial purposes, including but not limited to the project’s cloud-based operations.
 
 
-## Create pull request
-PR are always welcome, even if they only contain small fixes like typos or a few lines of code. If there will be a significant effort, please document it as an issue and get a discussion going before starting to work on it.
+## Creating a Pull Request
 
-Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot of features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
+Pull requests (PRs) are always welcome — even small ones that fix typos or minor issues.  
+If your contribution involves significant work or new features, please open an issue first to start a discussion before you begin implementation.
 
-This [development guideline](https://metersphere.io/docs/v2.x/dev_manual/) contains information about repository structure, how to set up development environment, how to run it, and more.
+Please break down your changes into small, focused PRs whenever possible.  
+Large PRs with many features or extensive changes are difficult to review and may take longer to merge. Incremental submissions are strongly encouraged.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete.
+These development guidelines provide information about the repository structure, how to set up your development environment, how to run the project, and more.
 
-## Report issues
-It is a great way to contribute by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue and follow the template to fill in required information.
+**Note:** When splitting a feature into multiple PRs, please ensure that each individual PR can be safely merged into the `master` branch without breaking existing functionality.  
+If a PR introduces incomplete or non-functional changes, it will not be merged until the feature is complete.
 
-Before opening any issue, please look up the existing issues to avoid submitting a duplication.
-If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
+## Reporting Issues
 
-When reporting issues, always include:
+Reporting issues is a great way to contribute to the project.  
+Well-written and detailed bug reports are always appreciated! Please open a new issue and fill out all required information using the provided template.
 
-* Which version you are using.
-* Steps to reproduce the issue.
-* Snapshots or log files if needed.
+Before opening a new issue, please check the existing issue list to avoid duplicates.  
+If a similar issue already exists, you can subscribe to it to receive updates.  
+If you have additional information to share, please add it as a comment on that issue.
 
-Because the issues are open to the public, when submitting files, be sure to remove any sensitive information, e.g. user name, password, IP address, and company name. You can
-replace those parts with "REDACTED" or other strings like "****".
+When reporting an issue, please include the following information:
 
+- The version you are using  
+- Steps to reproduce the problem  
+- Screenshots or log files, if applicable
+
+Because all issues are public, please ensure that you remove any sensitive information (e.g., usernames, passwords, IP addresses, or company names) from your submissions.  
+Replace sensitive data with placeholders such as `REDACTED` or `****`.
