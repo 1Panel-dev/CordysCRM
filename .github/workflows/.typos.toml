@@ -1,9 +1,0 @@
-[files]
-include = [
-    "**/*.java",
-    "**/*.vue",
-    "**/*.ts"
-]
-
-# 明确排除其他所有文件
-extend-exclude = ["*"]
