@@ -33,8 +33,10 @@ COPY installer/shells /shells
 COPY installer/conf /installer/conf
 
 # MCP JAR 拷贝到 lib
-RUN if [ -f installer/mcp-server.jar ]; then \
-        cp installer/mcp-server.jar /app/mcp/cordys-crm-mcp-server.jar; \
+RUN if [ -f ./installer/mcp-server.jar ]; then \
+        cp ./installer/mcp-server.jar /app/mcp/cordys-crm-mcp-server.jar; \
+    else \
+        echo "installer/mcp-server.jar not found, skipping copy."; \
     fi
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
