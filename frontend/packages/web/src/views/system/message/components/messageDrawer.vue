@@ -6,6 +6,17 @@
     width="1200"
     :footer="false"
   >
+    <template #titleRight>
+      <div class="flex items-center gap-[8px]">
+        <n-switch v-model:value="unReadEnable" :rubber-band="false" size="small" @update:value="changeHandler" />
+        <div class="text-[14px] font-normal">{{ t('system.message.unreadOnly') }}</div>
+        <n-divider v-permission="['SYSTEM_NOTICE:UPDATE']" class="!mx-0" vertical />
+        <n-button v-permission="['SYSTEM_NOTICE:UPDATE']" text type="primary" @click="setAllMessageStatus">
+          <CrmIcon class="mr-[4px]" type="iconicon_browse" :size="16" />
+          {{ t('system.message.markAllAsRead') }}
+        </n-button>
+      </div>
+    </template>
     <div class="message-wrapper">
       <div class="message-count">
         <div class="p-[24px]">
@@ -63,15 +74,6 @@
                 <div class="text-[var(--text-n4)]">{{ t('common.to') }}</div>
               </template>
             </n-date-picker>
-          </div>
-          <div class="mb-[8px] flex items-center gap-[8px]">
-            <n-switch v-model:value="unReadEnable" :rubber-band="false" @update:value="changeHandler" />
-            {{ t('system.message.unreadOnly') }}
-            <n-divider v-permission="['SYSTEM_NOTICE:UPDATE']" class="!mx-0" vertical />
-            <n-button v-permission="['SYSTEM_NOTICE:UPDATE']" text type="primary" @click="setAllMessageStatus">
-              <CrmIcon class="mr-[4px]" type="iconicon_browse" :size="16" />
-              {{ t('system.message.markAllAsRead') }}
-            </n-button>
           </div>
         </div>
         <CrmMessageList
