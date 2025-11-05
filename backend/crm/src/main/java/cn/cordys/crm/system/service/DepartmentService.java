@@ -77,6 +77,7 @@ public class DepartmentService extends MoveNodeService {
      *
      * @param request
      * @param orgId
+     * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.ADD)
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
