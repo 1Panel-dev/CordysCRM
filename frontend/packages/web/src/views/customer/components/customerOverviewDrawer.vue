@@ -2,7 +2,6 @@
   <CrmOverviewDrawer
     v-model:show="show"
     v-model:active-tab="activeTab"
-    v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
     :title="sourceName"
@@ -190,51 +189,43 @@
   });
 
   const activeTab = ref('contact');
-  const cachedList = ref([]);
   const tabList = computed<TabContentItem[]>(() => {
     const fullList = [
-      {
-        name: 'contact',
-        tab: t('opportunity.contactInfo'),
-        enable: true,
-        allowClose: false,
-      },
       {
         name: 'followRecord',
         tab: t('crmFollowRecord.followRecord'),
         enable: true,
-        allowClose: true,
+      },
+      {
+        name: 'contact',
+        tab: t('opportunity.contactInfo'),
+        enable: true,
       },
       {
         name: 'followPlan',
         tab: t('common.plan'),
         enable: true,
-        allowClose: true,
       },
       {
         name: 'headRecord',
         tab: t('common.headRecord'),
         enable: true,
-        allowClose: true,
       },
       {
         name: 'relation',
         tab: t('customer.relation'),
         enable: true,
-        allowClose: true,
       },
       {
         name: 'opportunityInfo',
         tab: t('customer.opportunityInfo'),
         enable: true,
-        allowClose: true,
         permission: ['OPPORTUNITY_MANAGEMENT:READ'],
       },
       {
         name: 'collaborator',
         tab: t('customer.collaborator'),
         enable: true,
-        allowClose: true,
       },
     ];
     if (collaborationType.value) {
