@@ -1,0 +1,7 @@
+[files]
+include = [
+    "**/*.java",
+    "**/*.vue",
+    "**/*.ts"
+]
+extend-exclude = ["*"]
