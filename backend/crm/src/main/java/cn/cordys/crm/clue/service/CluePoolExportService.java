@@ -55,7 +55,6 @@ public class CluePoolExportService extends ClueExportService {
 
     public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
-        //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
@@ -69,7 +68,6 @@ public class CluePoolExportService extends ClueExportService {
                         .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
-                //分批查询数据并写入文件
                 batchHandleData(fileId,
                         headList,
                         exportTask,
@@ -77,14 +75,12 @@ public class CluePoolExportService extends ClueExportService {
                         request,
                         t -> getExportData(request, userId, orgId, dataPermission, exportTask.getId()));
 
-                //更新状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
 
             } catch (InterruptedException e) {
                 LogUtils.error("任务停止中断", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
             } catch (Exception e) {
-                //更新任务
                 LogUtils.error("任务失败", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
@@ -100,7 +96,6 @@ public class CluePoolExportService extends ClueExportService {
     @Override
     public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
         checkFileName(request.getFileName());
-        // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
@@ -133,17 +128,13 @@ public class CluePoolExportService extends ClueExportService {
                         writer.write(data, sheet);
                     });
                 }
-
-                //更新导出任务状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
             } catch (Exception e) {
                 LogUtils.error("导出线索池异常", e);
-                //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
                 //从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
-                //日志
                 exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_POOL_INDEX, request.getFileName());
             }
         });

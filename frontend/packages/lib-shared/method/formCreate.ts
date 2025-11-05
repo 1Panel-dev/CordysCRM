@@ -66,7 +66,7 @@ export function getNormalFieldValue(item: FormCreateField, value: any) {
 /**
  * 格式化数字
  * @param value 数字
- * @param type 类型
+ * @param item
  */
 export function formatNumberValue(value: string | number, item: FormCreateField) {
   if (value !== undefined && value !== null && value !== '') {

@@ -361,7 +361,12 @@
                 categoryAxis_multiple.id
             </if>
             <if test="!request.categoryAxisParam.blob">
-                ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                <if test="request.categoryAxisParam.businessFieldName == 'department_id'">
+                    categoryAxis.department_id
+                </if>
+                <if test="request.categoryAxisParam.businessFieldName != 'department_id'">
+                    ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                </if>
             </if>
         </if>
         <if test="!request.categoryAxisParam.businessField">
@@ -376,19 +381,24 @@
 
         <if test="request.subCategoryAxisParam != null">
             <if test="request.subCategoryAxisParam.businessField">
-                <if test="request.categoryAxisParam.blob">
-                    categoryAxis_multiple.id
+                <if test="request.subCategoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
                 </if>
-                <if test="!request.categoryAxisParam.blob">
-                    ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                <if test="!request.subCategoryAxisParam.blob">
+                    <if test="request.subCategoryAxisParam.businessFieldName == 'department_id'">
+                        subCategoryAxis.department_id
+                    </if>
+                    <if test="request.subCategoryAxisParam.businessFieldName != 'department_id'">
+                        ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                    </if>
                 </if>
             </if>
             <if test="!request.subCategoryAxisParam.businessField">
-                <if test="request.categoryAxisParam.blob">
-                    categoryAxis_multiple.id
+                <if test="request.subCategoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
                 </if>
-                <if test="!request.categoryAxisParam.blob">
-                    categoryAxis.field_value
+                <if test="!request.subCategoryAxisParam.blob">
+                    subCategoryAxis.field_value
                 </if>
             </if>
             as subCategoryAxis,
@@ -416,7 +426,12 @@
                 categoryAxis_multiple.id
             </if>
             <if test="!request.categoryAxisParam.blob">
-                ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                <if test="request.categoryAxisParam.businessFieldName == 'department_id'">
+                    categoryAxis.department_id
+                </if>
+                <if test="request.categoryAxisParam.businessFieldName != 'department_id'">
+                    ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                </if>
             </if>
         </if>
         <if test="!request.categoryAxisParam.businessField">
@@ -431,11 +446,17 @@
             ,
             <if test="request.subCategoryAxisParam.businessField">
                 <if test="request.categoryAxisParam.blob">
-                    categoryAxis_multiple.id
+                    subCategoryAxis_multiple.id
                 </if>
                 <if test="!request.categoryAxisParam.blob">
-                    ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                    <if test="request.subCategoryAxisParam.businessFieldName == 'department_id'">
+                        subCategoryAxis.department_id
+                    </if>
+                    <if test="request.subCategoryAxisParam.businessFieldName != 'department_id'">
+                        ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                    </if>
                 </if>
+
             </if>
             <if test="!request.subCategoryAxisParam.businessField">
                 <if test="request.categoryAxisParam.blob">
@@ -474,7 +495,7 @@
                 on ${mainTablePrefix}.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
             </if>
         </if>
-        <if test="${axisParam}.businessFieldName == 'departmentId'">
+        <if test="${axisParam}.businessFieldName == 'department_id'">
             left join sys_organization_user ${tablePrefix}
             on ${tablePrefix}.user_id = ${mainTablePrefix}.owner
         </if>

@@ -14,6 +14,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.dto.field.DepartmentField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
@@ -43,8 +44,16 @@ import java.util.Objects;
 @Component
 public class ConditionFilterUtils {
 
+    private static final String COUNT_FIELD = "COUNT";
+
     public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, ModuleFormConfigDTO formConfig) {
         List<BaseField> fields = formConfig.getFields();
+
+        BaseField departmentField = new DepartmentField();
+        departmentField.setId("departmentId");
+        departmentField.setType(FieldType.DEPARTMENT.name());
+        departmentField.setBusinessKey("department_id");
+        fields.add(departmentField);
 
         ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
         chartAnalysisDbRequest.setCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
@@ -90,6 +99,9 @@ public class ConditionFilterUtils {
 
     private static BaseField getBaseFieldWithCheck(List<BaseField> fields, String fieldKey) {
         if (StringUtils.isBlank(fieldKey)) {
+            return null;
+        }
+        if (Strings.CS.equals(fieldKey, COUNT_FIELD)) {
             return null;
         }
         return fields.stream()
