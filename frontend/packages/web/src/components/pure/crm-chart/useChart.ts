@@ -96,11 +96,6 @@ export default function useChart(props: ChartProps) {
           color: getComputedStyle(document.documentElement).getPropertyValue('--text-n6').trim(),
           opacity: 0.1,
         },
-        label: {
-          show: true,
-          backgroundColor: 'none',
-          color: getComputedStyle(document.documentElement).getPropertyValue('--primary-8').trim(),
-        },
       },
       formatter: (params: any) => {
         // 当trigger是'axis'时，params是数组

@@ -297,7 +297,7 @@
             },
             valueAxis: {
               fieldId: dataIndicator.value,
-              aggregateMethod: aggregationMethod.value,
+              aggregateMethod: dataIndicator.value === 'COUNT' ? 'COUNT' : aggregationMethod.value,
             },
           },
         });
