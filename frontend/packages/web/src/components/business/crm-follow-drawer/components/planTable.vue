@@ -127,10 +127,12 @@
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { setItem, getItem } = useLocalForage();
   const { goDetail } = useOpenDetailPage();
 
   const activeTab = ref('');
@@ -323,7 +325,19 @@
     searchData();
   });
 
-  const activeShowType = ref<'table' | 'timeline'>('table');
+  const activeShowType = ref<'table' | 'timeline'>();
+  watch(
+    () => activeShowType.value,
+    async (val) => {
+      if (val) {
+        await setItem(`plan-active-show-type`, activeShowType.value as 'table' | 'timeline');
+      }
+    }
+  );
+  onMounted(async () => {
+    activeShowType.value = (await getItem<'timeline' | 'table'>(`plan-active-show-type`)) ?? 'table';
+  });
+
   function getDescriptionFun(item: any) {
     const isClue = item.resourceType === 'CLUE' && item.clueId?.length;
     const customerNameKey = isClue ? 'clueName' : 'customerName';

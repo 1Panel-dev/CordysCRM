@@ -116,11 +116,13 @@
   import { deleteFollowRecord } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
   const Message = useMessage();
   const { goDetail } = useOpenDetailPage();
+  const { setItem, getItem } = useLocalForage();
 
   const activeTab = ref('');
 
@@ -272,7 +274,18 @@
     searchData();
   });
 
-  const activeShowType = ref<'table' | 'timeline'>('table');
+  const activeShowType = ref<'table' | 'timeline'>();
+  watch(
+    () => activeShowType.value,
+    async (val) => {
+      if (val) {
+        await setItem(`record-active-show-type`, activeShowType.value as 'table' | 'timeline');
+      }
+    }
+  );
+  onMounted(async () => {
+    activeShowType.value = (await getItem<'timeline' | 'table'>(`record-active-show-type`)) ?? 'table';
+  });
 
   function getDescriptionFun(item: any) {
     const isClue = item.resourceType === 'CLUE' && item.clueId?.length;
