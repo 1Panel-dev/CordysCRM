@@ -32,7 +32,7 @@ COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
 COPY installer/shells /shells
 COPY installer/conf /installer/conf
 
-COPY installer/mcp /app
+COPY installer/mcp /app/mcp
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=cn.cordys.Application
