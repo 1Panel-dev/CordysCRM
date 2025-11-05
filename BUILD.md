@@ -26,7 +26,7 @@
 > ✅ 参数说明：
 >
 > * `-DskipTests`: 跳过测试用例执行。
-> * `-DskipAntRunForJenkins`: 跳过 Jenkins 使用的 Ant 任务。
+> * `-DskipAntRunForJenkins`: 跳过 Jenkins 使用的 Ant 任务！
 
 ---
 
