@@ -35,8 +35,8 @@
     },
     {
       "icon_id": "34134721",
-      "name": "icon_file-unknow_colorful",
-      "font_class": "icon_file-unknow_colorful1",
+      "name": "icon_file-unknown_colorful",
+      "font_class": "icon_file-unknown_colorful1",
       "unicode": "e7e4",
       "unicode_decimal": 59364
     },
@@ -329,8 +329,8 @@
     },
     {
       "icon_id": "36196460",
-      "name": "icon_file-vedio_colorful_ash",
-      "font_class": "icon_file-vedio_colorful_ash",
+      "name": "icon_file_video_colorful_ash",
+      "font_class": "icon_file_video_colorful_ash",
       "unicode": "e64c",
       "unicode_decimal": 58956
     },
@@ -350,8 +350,8 @@
     },
     {
       "icon_id": "36196463",
-      "name": "icon_file-vedio_colorful",
-      "font_class": "icon_file-vedio_colorful",
+      "name": "icon_file_video_colorful",
+      "font_class": "icon_file_video_colorful",
       "unicode": "e64f",
       "unicode_decimal": 58959
     },
@@ -427,8 +427,8 @@
     },
     {
       "icon_id": "36196937",
-      "name": "icon_file-unknow_colorful",
-      "font_class": "icon_file-unknow_colorful",
+      "name": "icon_file-unknown_colorful",
+      "font_class": "icon_file-unknown_colorful",
       "unicode": "e660",
       "unicode_decimal": 58976
     },
