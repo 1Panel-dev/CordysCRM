@@ -80,8 +80,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -592,9 +590,7 @@ public class OpportunityService {
         final boolean isFailStage = failOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
 
         if (isSuccessStage || isFailStage) {
-            final long startOfTodayMillis =
-                    LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            newOpportunity.setActualEndTime(startOfTodayMillis);
+            newOpportunity.setActualEndTime(System.currentTimeMillis());
         }
         if (isFailStage) {
             newOpportunity.setFailureReason(request.getFailureReason());

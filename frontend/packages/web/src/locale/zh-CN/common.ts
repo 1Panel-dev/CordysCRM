@@ -282,7 +282,7 @@ export default {
 
   'common.day': '天前',
   'common.sort': '排序',
-  'common.tabConfig': 'tab配置',
+  'common.tabConfig': '标签页配置',
   'common.head': '负责人',
   'common.phoneNumber': '手机号',
   'common.transfer': '转移',

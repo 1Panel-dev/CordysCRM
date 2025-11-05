@@ -51,7 +51,7 @@
           <FollowRecord
             v-model:data="propsRes.data"
             :loading="propsRes.loading"
-            virtual-scroll-height="calc(100vh - 289px)"
+            :virtual-scroll-height="isFullScreen ? 'calc(100vh - 143px)' : 'calc(100vh - 289px)'"
             :get-description-fun="getDescriptionFun"
             key-field="id"
             :disabled-open-detail="false"
@@ -127,10 +127,12 @@
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { setItem, getItem } = useLocalForage();
   const { goDetail } = useOpenDetailPage();
 
   const activeTab = ref('');
@@ -239,7 +241,6 @@
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.FOLLOW_PLAN,
     containerClass: '.crm-plan-table',
-    hiddenAllScreen: true,
     hiddenRefresh: true,
     operationColumn: {
       key: 'operation',
@@ -283,6 +284,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
@@ -323,7 +325,19 @@
     searchData();
   });
 
-  const activeShowType = ref<'table' | 'timeline'>('table');
+  const activeShowType = ref<'table' | 'timeline'>();
+  watch(
+    () => activeShowType.value,
+    async (val) => {
+      if (val) {
+        await setItem(`plan-active-show-type`, activeShowType.value as 'table' | 'timeline');
+      }
+    }
+  );
+  onMounted(async () => {
+    activeShowType.value = (await getItem<'timeline' | 'table'>(`plan-active-show-type`)) ?? 'table';
+  });
+
   function getDescriptionFun(item: any) {
     const isClue = item.resourceType === 'CLUE' && item.clueId?.length;
     const customerNameKey = isClue ? 'clueName' : 'customerName';

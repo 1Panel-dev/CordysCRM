@@ -51,17 +51,17 @@
             <slot name="rightTop" />
             <div class="relative bg-[var(--text-n10)]">
               <CrmTab
-                v-if="showTabList.length"
+                v-if="cachedList.length"
                 v-model:active-tab="activeTab"
                 no-content
-                :tab-list="showTabList"
+                :tab-list="cachedList"
                 type="line"
               />
               <div v-if="props.showTabSetting" class="absolute right-[24px] top-2">
                 <CrmTabSetting
-                  v-model:cached-list="cachedList"
                   :tab-list="props.tabList"
                   :setting-key="`${props.formKey}-settingKey`"
+                  @init="initTabList"
                 />
               </div>
             </div>
@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NTooltip, TabPaneProps } from 'naive-ui';
+  import { NButton, NTooltip } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -122,23 +122,9 @@
     required: true,
   });
 
-  const cachedList = defineModel<TabContentItem[]>('cachedList', {
-    required: true,
-  });
+  const cachedList = ref<TabContentItem[]>(props.tabList);
 
   const { t } = useI18n();
-
-  const showTabList = computed(() => {
-    if (props.showTabSetting) {
-      return cachedList.value.reduce((acc: TabContentItem[], e: TabContentItem) => {
-        if (e.enable) {
-          acc.push({ name: e.name, tab: e.tab, permission: e.permission || [], enable: e.enable });
-        }
-        return acc;
-      }, []);
-    }
-    return props.tabList;
-  });
 
   const formDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(props.formKey);
@@ -157,16 +143,16 @@
     emit('buttonSelect', key, done);
   }
 
+  function initTabList(list: TabContentItem[]) {
+    cachedList.value = list;
+  }
+
   watch(
-    () => showTabList.value,
-    (val: TabPaneProps[]) => {
-      // 避免已选中关闭后激活展示错误
-      if (!val.some((tab) => tab.name === activeTab.value)) {
+    () => cachedList.value,
+    (val) => {
+      nextTick(() => {
         activeTab.value = (val[0]?.name ?? '') as string;
-      }
-    },
-    {
-      deep: true,
+      });
     }
   );
 </script>

@@ -202,6 +202,7 @@
   import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { useUserStore } from '@/store';
@@ -211,6 +212,7 @@
   import { OpportunityRouteEnum } from '@/enums/routeEnum';
 
   const useStore = useUserStore();
+  const { setItem, getItem } = useLocalForage();
 
   const props = defineProps<{
     isCustomerTab?: boolean;
@@ -243,7 +245,7 @@
   const { currentLocale } = useLocale(Message.loading);
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
-  const activeShowType = ref<'table' | 'billboard'>('table');
+  const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
@@ -818,8 +820,13 @@
 
   watch(
     () => activeShowType.value,
-    () => {
-      searchData();
+    async (val) => {
+      if (val) {
+        if (!props.isCustomerTab && !props.hiddenAdvanceFilter) {
+          await setItem(`opportunity-active-show-type`, activeShowType.value as 'table' | 'billboard');
+        }
+        searchData();
+      }
     }
   );
 
@@ -930,11 +937,17 @@
     }
   });
 
-  onMounted(() => {
+  onMounted(async () => {
     emit('init', {
       filterConfigList: filterConfigList.value,
       customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
     });
+
+    if (!props.isCustomerTab && !props.hiddenAdvanceFilter) {
+      activeShowType.value = (await getItem<'billboard' | 'table'>(`opportunity-active-show-type`)) ?? 'table';
+    } else {
+      activeShowType.value = 'table';
+    }
 
     if (route.query.id && !props.isCustomerTab) {
       activeOpportunity.value = {

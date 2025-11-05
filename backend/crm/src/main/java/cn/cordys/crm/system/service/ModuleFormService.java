@@ -692,7 +692,7 @@ public class ModuleFormService {
         // 来源表单字段
         Map<String, BaseField> sourceFieldMap = sourceFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
         // 填充数据
-        Class<?> targerClass = target.getClass();
+        Class<?> targetClass = target.getClass();
         Class<?> sourceClass = source.getClass();
         List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
         @SuppressWarnings("unchecked")
@@ -717,7 +717,7 @@ public class ModuleFormService {
                 continue;
             }
             // 放入目标对象字段
-            putTargetFieldVal(targetField, sourceValue, targerClass, target, targetFieldVals);
+            putTargetFieldVal(targetField, sourceValue, targetClass, target, targetFieldVals);
         }
         return fillBuilder.entity(target).fields(targetFieldVals).build();
     }

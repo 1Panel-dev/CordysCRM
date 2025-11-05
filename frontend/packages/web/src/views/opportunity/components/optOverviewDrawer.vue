@@ -2,7 +2,6 @@
   <CrmOverviewDrawer
     v-model:show="showOptOverviewDrawer"
     v-model:active-tab="activeTab"
-    v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
     :title="titleName"
@@ -200,19 +199,16 @@
   });
 
   const activeTab = ref('followRecord');
-  const cachedList = ref([]);
   const tabList: TabContentItem[] = [
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
-      allowClose: false,
     },
     {
       name: 'followPlan',
       tab: t('common.plan'),
       enable: true,
-      allowClose: true,
     },
     {
       name: 'contact',

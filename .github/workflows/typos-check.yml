@@ -1,7 +1,10 @@
 name: Typos Checking
-
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   pull-requests: write
@@ -11,13 +14,9 @@ jobs:
     name: Spell Check with Typos
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository, using the secret token for private repos
-      - name: Checkout Repository
+      - name: Checkout Actions Repository
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUBTOKEN }}
 
-      # Run the spell check with crate-ci/typos Action
       - name: Check spelling
         uses: crate-ci/typos@master
         with:

@@ -18,8 +18,8 @@ Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系�
 
 - **灵活易用**：基于现代化技术栈构建，使用体验好；平台支持基于角色的权限管控，提供灵活的模块化配置，可无缝集成企业微信、钉钉、飞书等主流办公平台，实现高效协同；
 - **安全可控**：私有化部署，所有客户数据与业务信息均存储于企业自有服务器，数据主权完全自主，同时便于深度集成与二次开发；
-- **AI 加持**：开放 MCP Server，借助 [MaxKB](https://github.com/1Panel-dev/MaxKB) 强大的智能体开发能力，轻松构建智能创建、智能跟进、智能报价等多样化智能体。
-- **BI 加持**：融合 [DataEase](https://github.com/dataease/dataease) 与 [SQLBot](https://github.com/dataease/SQLBot) 的强大能力，实现销售数据的可视化呈现、自助分析， 以及基于自然语言的智能查询与归因分析；
+- **AI 加持**：开放 MCP Server，借助 [MaxKB](https://github.com/1Panel-dev/MaxKB) 强大的智能体开发能力，轻松构建智能创建、智能跟进、智能报价等多样化智能体；
+- **BI 加持**：融合 [DataEase](https://github.com/dataease/dataease) 与 [SQLBot](https://github.com/dataease/SQLBot) 的强大能力，实现销售数据可视化呈现、自助分析，以及基于自然语言的智能查询与归因分析。
 
 ## 快速开始
 
@@ -77,7 +77,7 @@ docker run -d \
 - [x] 2024.09：写下第一行代码
 - [x] 2025.06：v1.0 开发完成
 - [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
-- [x] 2025.08：完成和 SQLBot 和 DataEase 的对接
+- [x] 2025.08：完成与 SQLBot 和 DataEase 的对接
 - [x] 2025.08.27：[v1.1.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.5) 发布，开始公测
 - [x] 2025.08.27：[v1.1.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.6) 发布
 - [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布
@@ -87,24 +87,24 @@ docker run -d \
 - [x] 2025.09.26：[v1.2.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.1) 发布
 - [x] 2025.10.11：[v1.2.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.2) 发布
 - [x] 2025.10.17：[v1.2.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.3) 发布
-- [x] 2025.11：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布,代码正式开源
+- [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布，代码正式开源
 - [ ] 2025.12：合同模块发布（包括合同、发票和回款等）
 
 ## 技术栈
 
--  AI 智能体能力: [MaxKB](https://github.com/1Panel-dev/MaxKB)
+-  AI 智能体能力：[MaxKB](https://github.com/1Panel-dev/MaxKB)
 -  AI 智能问数能力：[SQLBot](https://github.com/dataease/SQLBot)
--  数据可视化能力: [DataEase](https://github.com/dataease/dataease)
--  后端: [Spring Boot](https://spring.io/projects/spring-boot)
--  前端: [Vue.js](https://vuejs.org/) 、[Naive-UI](https://www.naiveui.com/) 、[Vant-UI](https://vant-ui.github.io/)
--  中间件: [MySQL](https://www.mysql.com/) , [Redis](https://redis.com/)
--  基础设施: [Docker](https://www.docker.com/)
+-  数据可视化能力：[DataEase](https://github.com/dataease/dataease)
+-  后端：[Spring Boot](https://spring.io/projects/spring-boot)
+-  前端：[Vue.js](https://vuejs.org/) 、[Naive-UI](https://www.naiveui.com/) 、[Vant-UI](https://vant-ui.github.io/)
+-  中间件：[MySQL](https://www.mysql.com/) , [Redis](https://redis.com/)
+-  基础设施：[Docker](https://www.docker.com/)
 
 ## 飞致云旗下的其他明星项目
 
+- [JumpServer](https://github.com/jumpserver/jumpserver/) - 广受欢迎的开源堡垒机
 - [1Panel](https://github.com/1panel-dev/1panel/) - 现代化、开源的 Linux 服务器运维管理面板
 - [MaxKB](https://github.com/1panel-dev/MaxKB/) - 强大易用的企业级智能体平台
-- [JumpServer](https://github.com/jumpserver/jumpserver/) - 广受欢迎的开源堡垒机
 - [DataEase](https://github.com/dataease/dataease/) - 人人可用的开源 BI 工具
 - [SQLBot](https://github.com/dataease/SQLBot/) - 基于大模型和 RAG 的智能问数系统
 - [MeterSphere](https://github.com/metersphere/metersphere/) - 新一代的开源持续测试工具

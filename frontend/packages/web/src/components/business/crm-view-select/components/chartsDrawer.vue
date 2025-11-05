@@ -55,26 +55,20 @@
         <div class="filter-input">
           <div class="filter-input-label">{{ t('crmViewSelect.dataIndicator') }}</div>
           <n-input-group>
+            <n-select v-model:value="dataIndicator" :options="dataIndicatorOptions" filterable class="w-[195px]" />
             <n-select
-              v-model:value="dataIndicator"
-              :options="dataIndicatorOptions"
-              filterable
-              class="w-[195px]"
-              :disabled="aggregationMethod === 'COUNT'"
-              :render-label="dataIndicatorRenderLabel"
+              v-model:value="aggregationMethod"
+              :options="aggregationMethodOptions"
+              :disabled="dataIndicator === 'COUNT'"
+              :render-label="dataIndicatorMethodRenderLabel"
+              class="w-[80px]"
             />
-            <n-select v-model:value="aggregationMethod" :options="aggregationMethodOptions" class="w-[80px]" />
           </n-input-group>
         </div>
         <div class="filter-input flex-1">
-          <n-tooltip trigger="hover" :disabled="loading || !!dataIndicator || aggregationMethod === 'COUNT'">
+          <n-tooltip trigger="hover" :disabled="loading || !!dataIndicator">
             <template #trigger>
-              <n-button
-                type="primary"
-                ghost
-                :disabled="loading || (!dataIndicator && aggregationMethod !== 'COUNT')"
-                @click="generateChart"
-              >
+              <n-button type="primary" ghost :disabled="loading || !dataIndicator" @click="generateChart">
                 {{ t('crmViewSelect.generateChart') }}
               </n-button>
             </template>
@@ -205,7 +199,7 @@
     { label: t('crmViewSelect.funnel'), value: ChartTypeEnum.FUNNEL },
   ];
   const groupByOptions = computed(() =>
-    [...(props.customList || [])]
+    [...(props.customList || []), ...(props.configList || []).filter((e) => e.dataIndex === 'departmentId')]
       .filter(
         (e) =>
           ![
@@ -233,23 +227,23 @@
         label: item.title,
         value: item.dataIndex || '',
       }))
+      .concat([{ label: t('crmViewSelect.counts'), value: 'COUNT' }])
   );
   const dataIndicator = ref<string>(dataIndicatorOptions.value[0]?.value || '');
   const dataIndicatorName = computed(
     () => dataIndicatorOptions.value.find((e) => e.value === dataIndicator.value)?.label || ''
   );
-  const aggregationMethod = ref<'SUM' | 'AVG' | 'COUNT'>('COUNT');
+  const aggregationMethod = ref<'SUM' | 'AVG'>('SUM');
   const aggregationMethodOptions = [
     { label: t('crmViewSelect.sum'), value: 'SUM' },
     { label: t('crmViewSelect.average'), value: 'AVG' },
-    { label: t('crmViewSelect.count'), value: 'COUNT' },
   ];
   const aggregationMethodName = computed(
     () => aggregationMethodOptions.find((e) => e.value === aggregationMethod.value)?.label || ''
   );
 
-  function dataIndicatorRenderLabel(option: { label: string; value: string }) {
-    return aggregationMethod.value === 'COUNT' ? t('crmViewSelect.count') : option.label;
+  function dataIndicatorMethodRenderLabel(option: { label: string; value: string }) {
+    return dataIndicator.value === 'COUNT' ? t('crmViewSelect.count') : option.label;
   }
 
   function getParams(): FilterResult {
@@ -303,7 +297,7 @@
             },
             valueAxis: {
               fieldId: dataIndicator.value,
-              aggregateMethod: aggregationMethod.value,
+              aggregateMethod: dataIndicator.value === 'COUNT' ? 'COUNT' : aggregationMethod.value,
             },
           },
         });
@@ -340,7 +334,10 @@
       return;
     }
     const groupByField = computed(() => {
-      const allFields = [...(props.customList || [])];
+      const allFields = [
+        ...(props.customList || []),
+        ...(props.configList || []).filter((e) => e.dataIndex === 'departmentId'),
+      ];
       return allFields.find((e) => e.dataIndex === groupBy.value);
     });
     if (groupByField.value) {
@@ -407,13 +404,17 @@
       if (newVal) {
         formModel.value = cloneDeep(props.advancedOriginalForm || defaultFormModel);
         activeView.value = props.defaultViewId || '';
+        setTimeout(() => {
+          // 自动加载图表
+          generateChart();
+        });
       } else {
         seriesData.value = [];
         xData.value = [];
         groupBy.value = groupByOptions.value[0]?.value || '';
         dataIndicator.value = dataIndicatorOptions.value[0]?.value || '';
         chartType.value = ChartTypeEnum.BAR;
-        aggregationMethod.value = 'COUNT';
+        aggregationMethod.value = 'SUM';
       }
     },
     { immediate: true }

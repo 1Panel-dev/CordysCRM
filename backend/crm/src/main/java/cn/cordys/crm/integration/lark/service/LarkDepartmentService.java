@@ -189,7 +189,7 @@ public class LarkDepartmentService {
                             .mobile(larkUser.getMobile() != null && larkUser.getMobile().length() > 11 ? larkUser.getMobile().substring(larkUser.getMobile().length() - 11) : larkUser.getMobile())
                             .position(larkUser.getWorkStation())
                             .gender(larkUser.getGender() == null ? null : larkUser.getGender())
-                            .avatar(StringUtils.isBlank(larkUser.getAvatar().getAvatar240()) ? null : larkUser.getAvatar().getAvatar240())
+                            .avatar((larkUser.getAvatar() == null || StringUtils.isBlank(larkUser.getAvatar().getAvatar240())) ? null : larkUser.getAvatar().getAvatar240())
                             .isLeaderInDept(Strings.CI.equals(larkUser.getLeaderUserId(), larkUser.getUserId()))
                             .build())
                     .collect(Collectors.toList()));
