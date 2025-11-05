@@ -1,5 +1,5 @@
 export default {
-  'login.form.title': '智能CRM，自由无界',
+  'login.form.title': '新一代的开源 AI CRM 系统',
   'login.form.userName.errMsg': '用户名不能为空',
   'login.form.password.errMsg': '密码不能为空',
   'login.form.login.errMsg': '登录出错，请刷新重试',
