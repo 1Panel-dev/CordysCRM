@@ -86,7 +86,7 @@ export default {
   'common.detail': 'Detail',
   'common.communicationContent': 'Communication content',
   'common.head': 'Head',
-  'common.createTime': 'Created time',
+  'common.createTime': 'Create time',
   'common.login': 'Login...',
   'common.searchByName': 'Search by name',
   'common.optionNotExist': 'Option does not exist',

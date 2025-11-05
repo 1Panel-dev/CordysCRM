@@ -11,5 +11,3 @@ jobs:
 
       - name: Check spelling
         uses: crate-ci/typos@master
-        with:
-          args: --type java --type vue --type ts
