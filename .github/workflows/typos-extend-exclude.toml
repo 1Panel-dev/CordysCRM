@@ -1,7 +1,2 @@
 [files]
-include = [
-    "**/*.java",
-    "**/*.vue",
-    "**/*.ts"
-]
-extend-exclude = ["*"]
+extend-exclude = ["*.json", "**/*.json", "**/*.js", "**/*.html", "**/*.xml", "**/config.ts", "OWNERS", "CODEOWNERS", "LICENSE", "NOTICE"]
