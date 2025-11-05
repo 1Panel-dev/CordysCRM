@@ -592,9 +592,7 @@ public class OpportunityService {
         final boolean isFailStage = failOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
 
         if (isSuccessStage || isFailStage) {
-            final long startOfTodayMillis =
-                    LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            newOpportunity.setActualEndTime(startOfTodayMillis);
+            newOpportunity.setActualEndTime(System.currentTimeMillis());
         }
         if (isFailStage) {
             newOpportunity.setFailureReason(request.getFailureReason());
