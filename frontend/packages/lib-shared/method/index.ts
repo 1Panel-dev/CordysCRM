@@ -575,7 +575,13 @@ export function isWeComBrowser() {
 
 export function isDingTalkBrowser() {
   const ua = window.navigator.userAgent.toLowerCase();
-  return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') ||  (getQueryVariable('authCode') !== '' && getQueryVariable('authCode') !== undefined && getQueryVariable('authCode') !== null);
+  return (
+    ua.includes('dingtalk') ||
+    ua.includes('aliapp(dingtalk') ||
+    (getQueryVariable('authCode') !== '' &&
+      getQueryVariable('authCode') !== undefined &&
+      getQueryVariable('authCode') !== null)
+  );
 }
 
 // 飞书
@@ -652,7 +658,7 @@ export function getFileIconType(type: string) {
     case 'xlsx':
       return 'iconicon_file-excel_colorful';
     case 'mp4':
-      return 'iconicon_file-vedio_colorful';
+      return 'iconicon_file-video_colorful';
     case 'csv':
       return 'iconicon_file-CSV_colorful';
     case 'xmind':
@@ -670,7 +676,7 @@ export function getFileIconType(type: string) {
     default:
       return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(type)
         ? 'iconicon_file-image_colorful'
-        : 'iconicon_file-unknow_colorful1';
+        : 'iconicon_file-unknown_colorful1';
   }
 }
 
