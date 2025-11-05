@@ -32,7 +32,7 @@
 
 ## 💻 3. 前端构建
 
-前端构建请参考 [`/frontend/REDEME.md`](./frontend/REDEME.md) 中的具体说明。
+前端构建请参考 [`/frontend/REDEME.md`](./frontend/REDEME.md) 中的具体说明！
 
 > 📌 提示：确保运行环境已正确安装 Node.js 和依赖环境!
 
