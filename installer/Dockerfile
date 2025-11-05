@@ -1,4 +1,4 @@
-FROM node:22-slim AS frontend
+FROM --platform=${BUILDPLATFORM} node:22-slim AS frontend
 
 WORKDIR /frontend
 COPY frontend /frontend
