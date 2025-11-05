@@ -102,9 +102,9 @@ docker run -d \
 
 ## 飞致云旗下的其他明星项目
 
+- [JumpServer](https://github.com/jumpserver/jumpserver/) - 广受欢迎的开源堡垒机
 - [1Panel](https://github.com/1panel-dev/1panel/) - 现代化、开源的 Linux 服务器运维管理面板
 - [MaxKB](https://github.com/1panel-dev/MaxKB/) - 强大易用的企业级智能体平台
-- [JumpServer](https://github.com/jumpserver/jumpserver/) - 广受欢迎的开源堡垒机
 - [DataEase](https://github.com/dataease/dataease/) - 人人可用的开源 BI 工具
 - [SQLBot](https://github.com/dataease/SQLBot/) - 基于大模型和 RAG 的智能问数系统
 - [MeterSphere](https://github.com/metersphere/metersphere/) - 新一代的开源持续测试工具
