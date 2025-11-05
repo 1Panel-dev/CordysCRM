@@ -46,7 +46,7 @@
           <FollowRecord
             v-model:data="propsRes.data"
             :loading="propsRes.loading"
-            virtual-scroll-height="calc(100vh - 289px)"
+            :virtual-scroll-height="isFullScreen ? 'calc(100vh - 143px)' : 'calc(100vh - 289px)'"
             :get-description-fun="getDescriptionFun"
             key-field="id"
             :disabled-open-detail="false"
@@ -203,7 +203,6 @@
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.FOLLOW_RECORD,
     containerClass: '.crm-record-table',
-    hiddenAllScreen: true,
     hiddenRefresh: true,
     operationColumn: {
       key: 'operation',
@@ -235,6 +234,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
