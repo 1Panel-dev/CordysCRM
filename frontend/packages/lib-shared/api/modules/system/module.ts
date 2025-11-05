@@ -245,7 +245,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getFieldDeptTree() {
-    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptTreeUrl });
+    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptTreeUrl }, { ignoreCancelToken: true });
   }
 
   function getFieldClueList(data: FormDesignDataSourceTableQueryParams) {
