@@ -17,7 +17,7 @@ public class PageUtils {
     /**
      * 设置分页信息并返回自定义的分页对象。
      * <p>
-     * 此方法将 PageHelper 的分页数据（如当前页、每页记录数、总记录数）转换为自定义的 {@link Pager} 对象。
+     * 此方法将 PageHelper 的分页数据（如：当前页、每页记录数、总记录数）转换为自定义的 {@link Pager} 对象。
      * </p>
      *
      * @param page PageHelper 分页对象，包含分页相关的信息
