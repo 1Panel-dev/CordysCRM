@@ -71,12 +71,12 @@ export const FileIconMap: FileIconMapping = {
     [UploadStatus.done]: 'iconicon_file-ppt_colorful1',
   },
   unknown: {
-    [UploadStatus.init]: 'iconicon_file-unknow_colorful1',
-    [UploadStatus.done]: 'iconicon_file-unknow_colorful1',
+    [UploadStatus.init]: 'iconicon_file-unknown_colorful1',
+    [UploadStatus.done]: 'iconicon_file-unknown_colorful1',
   },
   none: {
-    [UploadStatus.init]: 'iconicon_file-unknow_colorful1',
-    [UploadStatus.done]: 'iconicon_file-unknow_colorful1',
+    [UploadStatus.init]: 'iconicon_file-unknown_colorful1',
+    [UploadStatus.done]: 'iconicon_file-unknown_colorful1',
   },
   json: {
     [UploadStatus.init]: 'icona-icon_file-json',

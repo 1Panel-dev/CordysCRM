@@ -670,7 +670,7 @@ export function getFileIconType(type: string) {
     default:
       return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(type)
         ? 'iconicon_file-image_colorful'
-        : 'iconicon_file-unknow_colorful1';
+        : 'iconicon_file-unknown_colorful1';
   }
 }
 
