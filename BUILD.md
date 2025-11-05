@@ -16,7 +16,7 @@
 
 ## 🖥️ 2. 后端构建
 
-执行以下命令构建后端模块（如 `framework`、`crm`、`app` 等）并安装到本地仓库：
+执行以下命令构建后端模块（如 `backend` 中的 `framework`、`crm`、`app` 等）并安装到本地仓库：
 
 ```bash
 ./mvnw clean install -DskipTests -DskipAntRunForJenkins --file backend/pom.xml
