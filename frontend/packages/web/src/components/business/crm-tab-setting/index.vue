@@ -30,7 +30,7 @@
             </div>
             <n-switch
               v-model:value="element.enable"
-              :disabled="!element.allowClose"
+              :disabled="cachedData.filter((e) => e.enable).length <= 1 && element.enable"
               size="small"
               :rubber-band="false"
               @update:value="handleChange"
@@ -61,9 +61,11 @@
     settingKey: string;
   }>();
 
-  const cachedData = defineModel<TabContentItem[]>('cachedList', {
-    default: [],
-  });
+  const emit = defineEmits<{
+    (e: 'init', value: TabContentItem[]): void;
+  }>();
+
+  const cachedData = ref<TabContentItem[]>(props.tabList);
 
   const popoverVisible = ref(false);
 
@@ -101,6 +103,8 @@
     }
   }
 
+  const enableTabs = computed<TabContentItem[]>(() => cachedData.value.filter((e) => e.enable));
+
   async function loadTab() {
     try {
       const localTabs = await getTabsFromLocal();
@@ -130,7 +134,6 @@
         }
       } else {
         // 没有本地存储，使用默认设置
-        cachedData.value = props.tabList.map((tab) => ({ ...tab, enable: true }));
         await saveTabsToLocal(cachedData.value);
       }
     } catch (e) {
@@ -144,6 +147,7 @@
   function handleUpdateShow(show: boolean) {
     if (!show && hasChange.value) {
       saveTabsToLocal(cachedData.value);
+      emit('init', enableTabs.value);
       hasChange.value = false;
     }
   }
@@ -157,8 +161,9 @@
     loadTab();
   }
 
-  onBeforeMount(() => {
-    loadTab();
+  onBeforeMount(async () => {
+    await loadTab();
+    emit('init', enableTabs.value);
   });
 
   watch(
