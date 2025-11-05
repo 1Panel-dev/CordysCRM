@@ -46,9 +46,12 @@ import java.util.*;
 @Service
 public class AnnouncementService {
 
-    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+    // Redis 存储用户前缀
+    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";
+    // Redis 存储信息前缀
+    private static final String ANNOUNCE_PREFIX = "announce_content:";
+    // Redis 存储用户读取前缀
+    private static final String USER_READ_PREFIX = "user_read:";
     @Resource
     private BaseMapper<Announcement> announcementMapper;
     @Resource
