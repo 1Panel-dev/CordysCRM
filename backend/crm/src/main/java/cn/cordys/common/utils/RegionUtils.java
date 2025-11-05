@@ -57,7 +57,6 @@ public class RegionUtils {
      * address => code
      *
      * @param name address
-     *
      * @return code
      */
     public static String nameToCode(String name) {
@@ -123,7 +122,6 @@ public class RegionUtils {
      * code => address
      *
      * @param codeStr
-     *
      * @return address
      */
     public static String codeToName(String codeStr) {
@@ -137,7 +135,7 @@ public class RegionUtils {
         if (StringUtils.isBlank(codeStr)) {
             return null;
         }
-        String code =codeStr.split(SPILT_STR)[0];
+        String code = codeStr.split(SPILT_STR)[0];
         return StringUtils.isBlank(code) ? null : code;
     }
 
