@@ -51,7 +51,7 @@ docker run -d \
 
 安装完成后，可以参考此 [在线文档](https://cordys.cn/docs/) 来使用 Cordys CRM。
 
-在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
+你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
 <image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
 
