@@ -72,6 +72,10 @@ docker run -d \
   </tr>  
 </table>
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=1Panel-dev/CordysCRM&type=date&legend=top-left)](https://www.star-history.com/#1Panel-dev/CordysCRM&type=date&legend=top-left)
+
 ## Roadmap
 
 - [x] 2024.09：写下第一行代码
