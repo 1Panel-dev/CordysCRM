@@ -224,7 +224,10 @@
         const info = await checkRepeat({
           id: item.id,
           value,
-          formKey: route.query.formKey as FormDesignKeyEnum,
+          formKey:
+            route.query.formKey !== FormDesignKeyEnum.CUSTOMER_CONTACT
+              ? (route.query.formKey as FormDesignKeyEnum)
+              : FormDesignKeyEnum.CONTACT,
         });
         if (info.repeat) {
           return info.name.length
