@@ -14,15 +14,24 @@ import java.util.stream.Collectors;
  * @CreateTime: 2025-07-25  14:05
  */
 public enum InternalUserView {
+    /**
+     * 全部视图
+     */
     ALL,
+    /**
+     * 个人视图
+     */
     SELF,
+    /**
+     * 部门视图
+     */
     DEPARTMENT,
     /**
-     * 协作客户
+     * 协作客户视图
      */
     CUSTOMER_COLLABORATION,
     /**
-     * 成功机会
+     * 赢单视图
      */
     OPPORTUNITY_SUCCESS;
 
