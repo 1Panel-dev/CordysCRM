@@ -45,3 +45,5 @@
 ```bash
 ./mvnw clean package
 ```
+> ✅ 备注：
+> mvnw 为项目自带打包工具，也可使用本地部署的 mvn
