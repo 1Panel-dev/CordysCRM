@@ -35,8 +35,10 @@
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
 
+  import { PageConfig } from '@/store/modules/app/types';
+
   export interface UploadCardItem {
-    valueKey?: string;
+    valueKey: keyof PageConfig;
     title: string;
     tip: string;
     showTag?: boolean;

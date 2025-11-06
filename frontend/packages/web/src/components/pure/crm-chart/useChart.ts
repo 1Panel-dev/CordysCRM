@@ -122,7 +122,7 @@ export default function useChart(props: ChartProps) {
     xAxis: [
       {
         type: 'category',
-        data: props.xData?.value,
+        data: props.xData?.value?.map((item) => (item.length > 12 ? `${item.slice(0, 12)}...` : item)),
         axisLabel: {
           color: getComputedStyle(document.documentElement).getPropertyValue('--text-n4').trim(),
           rotate: 45,

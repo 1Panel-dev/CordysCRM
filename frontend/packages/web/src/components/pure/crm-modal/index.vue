@@ -4,7 +4,7 @@
     v-model:show="showModal"
     :show-icon="props.showIcon"
     :preset="props.preset"
-    :class="`crm-modal-${props.size || 'medium'}`"
+    :class="`crm-modal crm-modal-${props.size || 'medium'}`"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
     @after-leave="emit('cancel')"
@@ -22,9 +22,9 @@
         <slot name="titleRight"></slot>
       </slot>
     </template>
-    <div>
+    <n-scrollbar style="padding-right: 8px; max-height: 80vh">
       <slot></slot>
-    </div>
+    </n-scrollbar>
     <template v-if="props.footer" #action>
       <slot name="footer">
         <div class="flex w-full items-center justify-between">
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonProps, NButton, NModal, NTooltip } from 'naive-ui';
+  import { ButtonProps, NButton, NModal, NScrollbar, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -121,4 +121,14 @@
   }
 </script>
 
-<style></style>
+<style>
+  .crm-modal {
+    padding-right: 8px;
+    .n-dialog__action {
+      padding-right: 8px;
+    }
+  }
+  :deep(.n-scrollbar-rail.n-scrollbar-rail--vertical--right) {
+    right: 0;
+  }
+</style>
