@@ -33,7 +33,7 @@
     "pinia": "^2.3.0",
     "pinia-plugin-persistedstate": "^3.2.1",
     "query-string": "^8.2.0",
-    "vue": "^3.5.13",
+    "vue": "^3.5.22",
     "vue-echarts": "^6.7.3",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.5.0"

@@ -491,14 +491,16 @@
         };
       }
 
+      // 代码定义的初始化列宽
+      const codeMinWidth = propsColumns.find((e) => e.key === column.key)?.minWidth;
       return {
         ...column,
         ...sorterAndFilterColumn(column),
         titleAlign: 'left',
         resizable: column.resizable !== undefined ? column.resizable : true,
         render,
-        maxWidth: 600,
-        minWidth: calculateColumnMinWidth(column),
+        maxWidth: 300,
+        minWidth: typeof codeMinWidth === 'number' ? codeMinWidth : calculateColumnMinWidth(column),
       };
     });
   }
@@ -561,6 +563,12 @@
           }
         });
         setItem(attrs.tableKey as TableKeyEnum, tableColumnsMap);
+        currentColumns.value = currentColumns.value.map((col, index) => {
+          return {
+            ...col,
+            width: tableColumnsMap.column[index]?.width || col.width,
+          };
+        });
       }
     }, 300);
     const observer = new ResizeObserver((entries) => {
@@ -777,8 +785,8 @@
   const scrollXWidth = computed(() =>
     currentColumns.value.reduce((prev, curr) => {
       const width = typeof curr.width === 'number' ? curr.width : 0;
-      const minWidth = typeof curr.minWidth === 'number' ? curr.minWidth : 120;
-      return prev + Math.max(width, minWidth);
+      const minWidth = typeof curr.minWidth === 'number' ? curr.minWidth : calculateColumnMinWidth(curr);
+      return prev + Math.max(width, typeof minWidth === 'number' ? minWidth : 0);
     }, 0)
   );
 

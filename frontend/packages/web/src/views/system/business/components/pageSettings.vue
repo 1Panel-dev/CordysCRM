@@ -56,12 +56,13 @@
           <UploadCard
             v-for="item in cardList"
             :key="item.valueKey"
-            v-model:file-list="pageConfig[item.valueKey as keyof typeof pageConfig] as CrmFileItem[]"
+            v-model:file-list="pageConfig[item.valueKey] as CrmFileItem[]"
             :show-tag="item.showTag"
             :title="item.title"
             :max-size="item.maxSize"
             :size-unit="item.sizeUnit"
             :tip="item.tip"
+            :value-key="item.valueKey"
           />
           <n-form ref="loginConfigFormRef" :model="pageConfig">
             <n-form-item
@@ -140,12 +141,13 @@
           <UploadCard
             v-for="item in platformCardList"
             :key="item.valueKey"
-            v-model:file-list="pageConfig[item.valueKey as keyof typeof pageConfig] as CrmFileItem[]"
+            v-model:file-list="pageConfig[item.valueKey] as CrmFileItem[]"
             :show-tag="item.showTag"
             :title="item.title"
             :max-size="item.maxSize"
             :size-unit="item.sizeUnit"
             :tip="item.tip"
+            :value-key="item.valueKey"
           />
           <n-form ref="platformConfigFormRef" :model="pageConfig">
             <n-form-item :label="t('settings.help.doc')" path="helpDoc">
@@ -198,6 +200,7 @@
   import { defaultLoginImage, defaultLoginLogo, defaultPlatformLogo } from '@/config/business';
   import useFullScreen from '@/hooks/useFullScreen';
   import useAppStore from '@/store/modules/app';
+  import { PageConfig } from '@/store/modules/app/types';
   import { setCustomTheme, setPlatformColor, watchStyle, watchTheme } from '@/utils/theme';
 
   const { t } = useI18n();
@@ -206,7 +209,7 @@
   const { currentLocale } = useLocale(Message.loading);
 
   const pageLoading = ref(false);
-  const pageConfig = ref({ ...appStore.pageConfig, slogan: t(appStore.pageConfig.slogan) });
+  const pageConfig = ref<PageConfig>({ ...appStore.pageConfig, slogan: t(appStore.pageConfig.slogan) });
 
   const styleList = [
     {
