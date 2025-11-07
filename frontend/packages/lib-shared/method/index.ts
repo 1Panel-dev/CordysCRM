@@ -452,7 +452,7 @@ export function getCityPath(cityId: string | null): string {
  */
 export function getIndustryPath(industryId: string | null): string {
   if (!industryId) return '';
-  const nodePathObject = findNodePathByKey([industryOptions], industryId, undefined, 'value');
+  const nodePathObject = findNodePathByKey(industryOptions, industryId, undefined, 'value');
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }

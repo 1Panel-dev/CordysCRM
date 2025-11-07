@@ -12,7 +12,7 @@
       v-html="props.fieldConfig.description"
     ></div>
     <CrmIndustrySelect
-      v-model:value="industry"
+      v-model:value="value"
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectIndustry')"
       :disabled="props.fieldConfig.editable === false"
       :range="props.fieldConfig.locationType"
@@ -45,8 +45,6 @@
   const value = defineModel<string>('value', {
     default: '',
   });
-
-  const industry = ref<string | null>('');
 
   watch(
     () => props.fieldConfig.defaultValue,
