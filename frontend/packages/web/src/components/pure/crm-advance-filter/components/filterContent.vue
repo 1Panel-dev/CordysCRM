@@ -134,6 +134,16 @@
               check-strategy="parent"
               @update:value="valueChange"
             />
+            <CrmIndustrySelect
+              v-else-if="item.type === FieldTypeEnum.INDUSTRY"
+              v-model:value="item.value"
+              :placeholder="t('common.pleaseInput')"
+              :disabled="isValueDisabled(item)"
+              clearable
+              multiple
+              check-strategy="parent"
+              @update:value="valueChange"
+            />
             <CrmUserTagSelector
               v-else-if="
                 [
@@ -256,6 +266,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
 
+  import CrmIndustrySelect from '@/components/pure/crm-industry-select/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';

@@ -9,6 +9,7 @@ import type {
   FormCreateFieldDateType,
 } from '@cordys/web/src/components/business/crm-form-create/types';
 import { getLocalStorage } from '@lib/shared/method/local-storage';
+import industryOptions from '@cordys/web/src/components/pure/crm-industry-select/config';
 
 /**
  * 递归深度合并
@@ -442,6 +443,16 @@ export function findNodePathByKey<T>(
 export function getCityPath(cityId: string | null): string {
   if (!cityId) return '';
   const nodePathObject = findNodePathByKey([CHINA_PCD, ...COUNTRIES_TREE], cityId, undefined, 'value');
+  const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
+  return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
+}
+
+/**
+ * 根据 industryId 返回行业路径
+ */
+export function getIndustryPath(industryId: string | null): string {
+  if (!industryId) return '';
+  const nodePathObject = findNodePathByKey([industryOptions], industryId, undefined, 'value');
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }

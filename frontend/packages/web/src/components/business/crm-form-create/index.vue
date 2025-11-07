@@ -169,6 +169,9 @@
     if (type === FieldTypeEnum.ATTACHMENT) {
       return CrmFormCreateComponents.advancedComponents.file;
     }
+    if (type === FieldTypeEnum.INDUSTRY) {
+      return CrmFormCreateComponents.advancedComponents.industry;
+    }
   }
 
   function applyFieldLink(item: FormCreateField) {

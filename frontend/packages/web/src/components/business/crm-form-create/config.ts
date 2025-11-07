@@ -377,6 +377,21 @@ export const fileDefaultFieldConfig: FormCreateField = {
   limitSize: '',
 };
 
+export const industryDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.INDUSTRY,
+  icon: 'iconicon_industry',
+  name: 'crmFormDesign.industry',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  defaultValue: [],
+  readable: true,
+  editable: true,
+  mobile: true,
+  rules: [],
+};
+
 export const locationDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.LOCATION,
@@ -514,6 +529,7 @@ export const advancedFields: FormCreateField[] = [
   serialNumberDefaultFieldConfig,
   linkDefaultFieldConfig,
   fileDefaultFieldConfig,
+  industryDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -559,6 +575,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.SERIAL_NUMBER]: [],
   [FieldTypeEnum.LINK]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.ATTACHMENT]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.INDUSTRY]: [FieldRuleEnum.REQUIRED],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

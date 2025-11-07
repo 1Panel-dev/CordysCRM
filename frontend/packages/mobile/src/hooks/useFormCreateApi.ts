@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
@@ -233,6 +233,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value = addressArr.length
                 ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
                 : '-';
+            } else if (item.type === FieldTypeEnum.INDUSTRY) {
+              value = field?.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
             } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
               value = formatNumberValue(field?.fieldValue as string, item);
             } else if (item.type === FieldTypeEnum.DATE_TIME) {

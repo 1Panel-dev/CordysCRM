@@ -11,4 +11,5 @@ export default {
   'crmFormCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
   'crmFormCreate.advanced.typeNotValid': '非法的文件类型，请重新选择',
   'crmFormCreate.advanced.limitCount': '，最大限制 {count} 个',
+  'crmFormCreate.advanced.selectIndustry': '请选择行业',
 };

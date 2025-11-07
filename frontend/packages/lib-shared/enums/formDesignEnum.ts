@@ -55,6 +55,7 @@ export enum FieldTypeEnum {
   SERIAL_NUMBER = 'SERIAL_NUMBER', // 流水号
   LINK = 'LINK', // 链接
   ATTACHMENT = 'ATTACHMENT',
+  INDUSTRY = 'INDUSTRY',
 }
 
 export enum FieldRuleEnum {
