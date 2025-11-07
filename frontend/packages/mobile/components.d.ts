@@ -35,6 +35,7 @@ declare module 'vue' {
     FollowDetail: typeof import('./src/components/business/crm-follow-list/followDetail.vue')['default'];
     FollowPlan: typeof import('./src/components/business/crm-follow-list/followPlan.vue')['default'];
     FollowRecord: typeof import('./src/components/business/crm-follow-list/followRecord.vue')['default'];
+    Industry: typeof import('./src/components/business/crm-form-create/components/advanced/industry.vue')['default'];
     InputNumber: typeof import('./src/components/business/crm-form-create/components/basic/inputNumber.vue')['default'];
     Link: typeof import('./src/components/business/crm-form-create/components/advanced/link.vue')['default'];
     ListItem: typeof import('./src/components/business/crm-follow-list/components/listItem.vue')['default'];

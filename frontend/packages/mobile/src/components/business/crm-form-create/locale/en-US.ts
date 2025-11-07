@@ -27,4 +27,5 @@ export default {
   'formCreate.advanced.anyType': 'any format',
   'formCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
   'formCreate.advanced.limitCount': ', maximum limit is {count}',
+  'formCreate.advanced.selectIndustry': 'Please select an industry',
 };
