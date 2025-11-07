@@ -227,8 +227,7 @@
           </n-form-item>
           <n-button
             :disabled="(props.keepOneLine && formModel.list.length === 1) || props.readonly"
-            ghost
-            class="px-[7px]"
+            class="outline--secondary px-[7px]"
             @click="handleDeleteItem(listIndex)"
           >
             <template #icon>

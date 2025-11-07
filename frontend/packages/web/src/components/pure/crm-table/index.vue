@@ -332,6 +332,7 @@
             title: '',
             key: SpecialColumnEnum.DRAG,
             width: 40,
+            fixed: 'left',
             resizable: false,
           },
         ]

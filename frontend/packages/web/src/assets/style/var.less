@@ -163,9 +163,11 @@
 
 .btn-outline-sec-disabled() {
   &:disabled {
-    border: solid 1px var(--text-n7) !important;
     color: var(--text-n6) !important;
     background-color: var(--text-n9) !important;
+    .n-button__border {
+      border: solid 1px var(--text-n7) !important;
+    }
   }
 }
 
