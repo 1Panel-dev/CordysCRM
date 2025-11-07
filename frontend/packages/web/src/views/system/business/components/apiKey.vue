@@ -148,7 +148,6 @@
       v-model:show="timeModalVisible"
       :title="t('system.personal.setValidTime')"
       :positive-text="t('common.save')"
-      class="crm-form-modal"
       @confirm="handleTimeConfirm"
       @cancel="handleTimeClose"
     >

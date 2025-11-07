@@ -4,7 +4,7 @@
     v-model:show="showModal"
     :show-icon="props.showIcon"
     :preset="props.preset"
-    :class="`crm-modal crm-modal-${props.size || 'medium'}`"
+    :class="`crm-modal crm-form-modal crm-modal-${props.size || 'medium'}`"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
     @after-leave="emit('cancel')"

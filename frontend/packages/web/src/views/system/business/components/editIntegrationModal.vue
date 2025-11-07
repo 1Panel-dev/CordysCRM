@@ -2,7 +2,6 @@
   <CrmModal
     v-model:show="showModal"
     :title="t('system.business.configType', { type: props.title })"
-    class="crm-form-modal"
     :mask-closable="false"
   >
     <n-form
