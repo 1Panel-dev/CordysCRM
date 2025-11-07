@@ -1,5 +1,6 @@
 package cn.cordys.common.resolver.field;
 
+import cn.cordys.common.utils.IndustryUtils;
 import cn.cordys.crm.system.dto.field.IndustryField;
 
 /**
@@ -13,12 +14,12 @@ public class IndustryResolver extends AbstractModuleFieldResolver<IndustryField>
 	}
 
 	@Override
-	public Object trans2Value(IndustryField selectField, String value) {
-		return value;
+	public Object trans2Value(IndustryField field, String value) {
+		return IndustryUtils.mapping(value, false);
 	}
 
 	@Override
 	public Object text2Value(IndustryField field, String text) {
-		return text;
+		return IndustryUtils.mapping(text, true);
 	}
 }
