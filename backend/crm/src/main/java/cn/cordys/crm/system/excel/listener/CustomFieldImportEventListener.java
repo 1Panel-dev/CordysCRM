@@ -114,7 +114,7 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
                     FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
-                    FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name())) {
+                    FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
                 fieldLenLimit.put(field.getName(), 255);
             }
             if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
