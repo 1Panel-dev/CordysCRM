@@ -1,11 +1,5 @@
 <template>
-  <CrmModal
-    v-model:show="showModal"
-    class="crm-form-modal"
-    size="small"
-    :title="t('system.personal.changePassword')"
-    @cancel="cancel"
-  >
+  <CrmModal v-model:show="showModal" size="small" :title="t('system.personal.changePassword')" @cancel="cancel">
     <n-form
       ref="formRef"
       :model="form"
