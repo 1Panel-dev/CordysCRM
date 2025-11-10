@@ -18,22 +18,21 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
     public static final String P = "P";
     public static final String C = "C";
     private static final String SPILT_STR = "-";
-    private static SoftReference<List<RegionCode>> regionCodeRef;
+    private static SoftReference<List<RegionCode>> regionCache;
 
     public static List<RegionCode> getRegionCodes() {
-        List<RegionCode> regions;
+        var regions = regionCache.get();
+        if (regions != null) return regions;
 
-        if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
-            synchronized (LocationResolver.class) {
-                if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
-                    regions = loadRegionData();
-                    regionCodeRef = new SoftReference<>(regions);
-                }
+        synchronized (LocationResolver.class) {
+            regions = regionCache.get();
+            if (regions == null) {
+                regions = loadRegionData();
+                regionCache = new SoftReference<>(regions);
             }
+            return regions;
         }
-        return regions;
     }
-
 
     private static List<RegionCode> loadRegionData() {
         try (InputStream is = LocationResolver.class.getClassLoader()
