@@ -626,6 +626,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 formDetail.value[field.id] = addressArr.length
                   ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
                   : '-';
+              } else if (linkField.type === FieldTypeEnum.INDUSTRY) {
+                formDetail.value[field.id] = linkField.value ? getIndustryPath(linkField.value as string) : '-';
               } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
                 formDetail.value[field.id] = linkField.value.slice(0, 255);
               } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
