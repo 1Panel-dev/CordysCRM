@@ -13,7 +13,7 @@ public class CheckboxParser extends MultipleOptionFieldParser<CheckBoxField> {
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(CheckBoxField field) {
+    public FieldDTO parseToSQLBotField(CheckBoxField field) {
         return parse2SQLBotField(field, field.getOptions());
     }
 }
