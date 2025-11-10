@@ -22,7 +22,7 @@ export default {
   'customer.collectionTime': '领取时间',
   'customer.remainingVesting': '剩余归属',
   'customer.lastFollowUps': '最新跟进人员',
-  'customer.lastFollowUpDate': '最新跟进日期',
+  'customer.lastFollowUpDate': '最新跟进时间',
   'customer.disableReason': '停用原因',
   'customer.claimTip': '确定领取该客户吗？',
   'customer.batchClaimTip': '确定领取 {count} 个客户吗？',
