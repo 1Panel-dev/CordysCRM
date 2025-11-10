@@ -11,6 +11,7 @@ import cn.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,8 @@ public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandl
     @Resource
     private UserExtendService userExtendService;
 
-    {
+    @PostConstruct
+    public void registerHandler() {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CUSTOMER, this);
     }
 
