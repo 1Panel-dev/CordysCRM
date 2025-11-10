@@ -73,8 +73,8 @@ public class IndustryUtils {
 		List<String> path = new ArrayList<>();
 		Queue<String> findQueue = new LinkedList<>();
 		CollectionUtils.addAll(findQueue, str.split(SPILT_STR));
-		List<IndustryDict> regionCodes = getIndustries();
-		boolean found = findRecursive(regionCodes, findQueue, path, nameToCode);
+		List<IndustryDict> industries = getIndustries();
+		boolean found = findRecursive(industries, findQueue, path, nameToCode);
 		return found ? String.join(SPILT_STR, path) : StringUtils.EMPTY;
 	}
 
