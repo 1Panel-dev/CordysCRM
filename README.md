@@ -12,7 +12,7 @@
 
 Cordys [/ˈkɔːrdɪs/] 由“Cord”（连接之绳）与“System”（系统）融合而成，寓意“关系的纽带系统”，诠释了 CRM 的本质：连接客户，缔造长期价值。
 
-[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-20251103.png)](https://www.bilibili.com/video/BV1Wm1sB4ExL/)
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-video-20251110.png)](https://www.bilibili.com/video/BV1Wm1sB4ExL/)
 
 **Cordys CRM** 的核心优势是：
 
