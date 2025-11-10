@@ -40,7 +40,7 @@ public abstract class OptionFieldParser<T extends BaseField> implements ModuleFi
             return null;
         }
 
-        StringBuffer sqlBuffer = new StringBuffer();
+        StringBuilder sqlBuffer = new StringBuilder();
 
         for (int i = 0; i < options.size(); i++) {
             OptionProp option = options.get(i);

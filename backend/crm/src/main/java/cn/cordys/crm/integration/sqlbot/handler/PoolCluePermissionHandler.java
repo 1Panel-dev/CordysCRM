@@ -13,14 +13,12 @@ import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
@@ -86,19 +84,35 @@ public class PoolCluePermissionHandler extends DataScopeTablePermissionHandler {
     }
 
     private List<String> getClueIds(String currentUser, String currentOrgId) {
-        LambdaQueryWrapper<CluePool> poolWrapper = new LambdaQueryWrapper<>();
-        poolWrapper.eq(CluePool::getEnable, true).eq(CluePool::getOrganizationId, currentOrgId);
-        poolWrapper.orderByDesc(CluePool::getUpdateTime);
-        List<CluePool> cluePools = poolMapper.selectListByLambda(poolWrapper);
+        LambdaQueryWrapper<CluePool> query = new LambdaQueryWrapper<CluePool>()
+                .eq(CluePool::getEnable, true)
+                .eq(CluePool::getOrganizationId, currentOrgId)
+                .orderByDesc(CluePool::getUpdateTime);
 
-        List<String> clueIds = new ArrayList<>();
-        cluePools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
-                clueIds.add(pool.getId());
-            }
-        });
-        return clueIds;
+        List<CluePool> cluePools = poolMapper.selectListByLambda(query);
+        if (cluePools == null || cluePools.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return cluePools.stream()
+                .filter(pool -> {
+                    List<String> scopeIds = Optional.ofNullable(pool.getScopeId())
+                            .filter(StringUtils::isNotBlank)
+                            .map(json -> JSON.parseArray(json, String.class))
+                            .map(ids -> userExtendService.getScopeOwnerIds(ids, currentOrgId))
+                            .orElse(Collections.emptyList());
+
+                    List<String> ownerIds = Optional.ofNullable(pool.getOwnerId())
+                            .filter(StringUtils::isNotBlank)
+                            .map(json -> JSON.parseArray(json, String.class))
+                            .map(ids -> userExtendService.getScopeOwnerIds(ids, currentOrgId))
+                            .orElse(Collections.emptyList());
+
+                    return scopeIds.contains(currentUser)
+                            || ownerIds.contains(currentUser)
+                            || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue());
+                })
+                .map(CluePool::getId)
+                .toList();
     }
 }
