@@ -372,7 +372,7 @@
           ...listItem,
           ...item,
           type: listItem.type,
-          ...(listItem.showScope ? { scope: listItem.scope } : undefined),
+          ...(listItem.showScope ? { scope: item.scope ?? listItem.scope } : undefined),
         };
         formModel.value.list[index] = currentListItem;
       }
