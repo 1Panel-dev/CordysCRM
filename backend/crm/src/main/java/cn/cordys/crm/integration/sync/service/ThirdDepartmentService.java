@@ -6,6 +6,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.common.utils.DataHandleUtils;
@@ -13,7 +14,6 @@ import cn.cordys.crm.integration.dingtalk.service.DingTalkDepartmentService;
 import cn.cordys.crm.integration.lark.service.LarkDepartmentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
-import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
@@ -31,10 +31,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -92,91 +92,101 @@ public class ThirdDepartmentService {
      * 执行同步操作
      */
     private void performSync(String operatorId, String orgId, String type) {
-        LogService logService = CommonBeanFactory.getBean(LogService.class);
+        var logService = CommonBeanFactory.getBean(LogService.class);
+        LogUtils.info("开始同步组织架构，同步类型：{}", type);
 
         // 获取三方配置信息
-        ThirdConfigurationDTO thirdConfig = getThirdConfig(orgId, type);
-        boolean syncStatus = integrationConfigService.getSyncStatus(orgId,
-                OrganizationConfigConstants.ConfigType.THIRD.name(),
-                type);
-        // 获取访问令牌
-        String accessToken = getToken(type, thirdConfig);
+        var thirdConfig = getThirdConfig(orgId, type);
+        var syncStatus = integrationConfigService.getSyncStatus(
+                orgId, OrganizationConfigConstants.ConfigType.THIRD.name(), type);
 
+        // 获取访问令牌
+        var accessToken = getToken(type, thirdConfig);
         if (StringUtils.isBlank(accessToken)) {
             throw new GenericException("获取访问令牌失败");
         }
+        LogUtils.info("获取访问令牌成功，同步类型：{}", type);
 
-        ThirdOrgDataDTO thirdOrgDataDTO = null;
-        if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken);
-        }
+        // 将字符串类型安全转换为枚举
+        var deptType = parseDepartmentType(type);
 
-        List<ThirdDepartment> departments = new ArrayList<>();
+        List<ThirdDepartment> departments;
+        Map<String, List<ThirdUser>> departmentUserMap;
 
-        // 获取部门和用户数据
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            departments = weComDepartmentService.getDepartmentList(accessToken);
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            // 获取钉钉部门列表
-            if (thirdOrgDataDTO != null) {
-                departments = thirdOrgDataDTO.getDepartments();
+        switch (deptType) {
+            case WECOM -> {
+                departments = weComDepartmentService.getDepartmentList(accessToken);
+                LogUtils.info("企业微信部门数：{}", departments.size());
+
+                var departmentIds = departments.stream()
+                        .map(ThirdDepartment::getId)
+                        .map(Long::parseLong)
+                        .toList();
+                departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
+                LogUtils.info("企业微信部门用户数：{}", departmentUserMap.size());
             }
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            // 获取飞书部门列表
-            departments = larkDepartmentService.getDepartmentList(accessToken);
-        } else {
-            throw new GenericException("不支持的同步类型");
+            case DINGTALK -> {
+                var thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken);
+                if (thirdOrgDataDTO == null) {
+                    throw new GenericException("钉钉组织数据为空");
+                }
+                departments = thirdOrgDataDTO.getDepartments();
+                departmentUserMap = thirdOrgDataDTO.getUsers();
+                LogUtils.info("钉钉部门数：{}，部门用户数：{}", departments.size(), departmentUserMap.size());
+            }
+            case LARK -> {
+                departments = larkDepartmentService.getDepartmentList(accessToken);
+                LogUtils.info("飞书部门数：{}", departments.size());
+
+                var departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
+                departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
+                LogUtils.info("飞书部门用户数：{}", departmentUserMap.size());
+            }
+            default -> throw new GenericException("不支持的同步类型：" + type);
         }
 
         if (CollectionUtils.isEmpty(departments)) {
             throw new GenericException("获取部门列表为空");
         }
 
-        Map<String, List<ThirdUser>> departmentUserMap = new HashMap<>();
-
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            // 获取企业微信部门用户
-            List<Long> departmentIds = departments.stream().map(ThirdDepartment::getId).map(Long::parseLong).toList();
-            departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            // 获取钉钉部门用户
-            if (thirdOrgDataDTO != null) {
-                departmentUserMap = thirdOrgDataDTO.getUsers();
-            }
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            // 获取飞书部门用户
-            List<String> departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
-            departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
-        } else {
-            throw new GenericException("不支持的同步类型");
-        }
-
-        // 处理同步数据
         syncDepartmentsAndUsers(orgId, departments, departmentUserMap, syncStatus, operatorId, type);
 
-        // 记录日志
-        assert logService != null;
+        Objects.requireNonNull(logService, "LogService 未注入");
+        LogUtils.info("同步组织架构完成，同步类型：{}", type);
         logSyncOperation(logService, orgId, operatorId);
+    }
+
+    private DepartmentConstants parseDepartmentType(String type) {
+        return Arrays.stream(DepartmentConstants.values())
+                .filter(e -> e.name().equalsIgnoreCase(type))
+                .findFirst()
+                .orElseThrow(() -> new GenericException("未知的同步类型：" + type));
     }
 
     /**
      * 获取第三方访问令牌
      */
     private String getToken(String type, ThirdConfigurationDTO thirdConfig) {
-        String accessToken;
-        //根据类型获取不同平台的访问令牌
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            // 获取企业微信访问令牌
-            accessToken = tokenService.getAssessToken(thirdConfig.getCorpId(), thirdConfig.getAppSecret());
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            // 获取钉钉访问令牌
-            accessToken = tokenService.getDingTalkToken(thirdConfig.getAgentId(), thirdConfig.getAppSecret());
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            // 获取飞书访问令牌
-            accessToken = tokenService.getLarkToken(thirdConfig.getAgentId(), thirdConfig.getAppSecret());
-        } else {
-            throw new GenericException("不支持的同步类型");
-        }
+        Objects.requireNonNull(thirdConfig, "第三方配置信息不能为空");
+
+        var deptType = parseDepartmentType(type);
+        var accessToken = switch (deptType) {
+            case WECOM -> tokenService.getAssessToken(
+                    thirdConfig.getCorpId(),
+                    thirdConfig.getAppSecret()
+            );
+            case DINGTALK -> tokenService.getDingTalkToken(
+                    thirdConfig.getAgentId(),
+                    thirdConfig.getAppSecret()
+            );
+            case LARK -> tokenService.getLarkToken(
+                    thirdConfig.getAgentId(),
+                    thirdConfig.getAppSecret()
+            );
+            default -> throw new GenericException("不支持的同步类型：" + type);
+        };
+
+        LogUtils.debug("获取访问令牌成功，类型：{}", deptType.name());
         return accessToken;
     }
 
@@ -204,10 +214,12 @@ public class ThirdDepartmentService {
         DataHandleUtils dataHandleUtils = new DataHandleUtils(orgId, departmentUserMap, type);
 
         if (isUpdate) {
+            LogUtils.info("开始多次同步更新数据,同步类型：{}, 更新部门用户数量：{}", type, departments.size());
             // 多次同步 更新
             dataHandleUtils.handleUpdateData(departments, operatorId);
         } else {
             // 首次同步 新增
+            LogUtils.info("开始首次同步新增数据,同步类型：{}, 新增部门用户数量：{}", type, departments.size());
             dataHandleUtils.handleAddData(departments, operatorId, orgId, type);
         }
     }
