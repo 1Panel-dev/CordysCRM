@@ -44,6 +44,7 @@ public class DataInitService {
             initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
             initOneTime(moduleFormService::modifyFieldMobile, "modify.field.mobile");
             initOneTime(moduleFormService::modifyPhoneFieldFormat, "modify.field.format");
+            initOneTime(moduleFormService::initFormScenarioProp, "init.record.form.scenario");
         } finally {
             lock.unlock();
         }
