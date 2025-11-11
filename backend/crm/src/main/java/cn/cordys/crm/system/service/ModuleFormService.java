@@ -27,6 +27,7 @@ import cn.cordys.crm.system.dto.field.base.*;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
+import cn.cordys.crm.system.dto.form.base.LinkScenario;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -671,13 +672,20 @@ public class ModuleFormService {
      * @param orgId            组织ID
      * @param <T>              实体类型
      * @param <S>              数据来源类型
+     * @param scenarioKey      场景Key
      *
      * @return 填充结果
      */
-    public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId, String sourceFormKey) throws Exception {
+    public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig,
+                                                    String orgId, String sourceFormKey, String scenarioKey) throws Exception {
         FormLinkFill.FormLinkFillBuilder<T> fillBuilder = FormLinkFill.builder();
-        Map<String, List<LinkField>> linkProp = targetFormConfig.getFormProp().getLinkProp();
+        Map<String, List<LinkScenario>> linkProp = targetFormConfig.getFormProp().getLinkProp();
         if (linkProp == null || CollectionUtils.isEmpty(linkProp.get(sourceFormKey))) {
+            return fillBuilder.entity(target).build();
+        }
+        // 未找到联动场景，直接返回目标对象
+        Optional<LinkScenario> scenarioOptional = linkProp.get(sourceFormKey).stream().filter(scenario -> Strings.CS.equals(scenario.getKey(), scenarioKey)).findFirst();
+        if (scenarioOptional.isEmpty()) {
             return fillBuilder.entity(target).build();
         }
 
@@ -697,7 +705,7 @@ public class ModuleFormService {
         List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
         @SuppressWarnings("unchecked")
         List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
-        for (LinkField linkField : linkProp.get(sourceFormKey)) {
+        for (LinkField linkField : scenarioOptional.get().getLinkFields()) {
             BaseField targetField = targetFieldMap.get(linkField.getCurrent());
             BaseField sourceField = sourceFieldMap.get(linkField.getLink());
             if (targetField == null || sourceField == null) {
