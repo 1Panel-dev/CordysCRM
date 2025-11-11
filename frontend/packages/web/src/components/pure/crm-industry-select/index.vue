@@ -11,12 +11,13 @@
     }"
     max-tag-count="responsive"
     :placeholder="props.placeholder"
+    :render-label="renderOption"
     @update:value="handleChange"
   />
 </template>
 
 <script setup lang="ts">
-  import { CascaderOption, NCascader } from 'naive-ui';
+  import { CascaderOption, NCascader, NTooltip } from 'naive-ui';
 
   import { industryOptions } from './config';
 
@@ -50,6 +51,19 @@
     pathValues: Array<CascaderOption | null> | Array<CascaderOption[] | null> | null
   ) {
     emit('change', value, option, pathValues);
+  }
+
+  function renderOption(option: CascaderOption) {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        trigger: () => h('div', { class: 'one-line-text' }, { default: () => option.label }),
+        default: () => h('div', {}, { default: () => option.label }),
+      }
+    );
   }
 </script>
 

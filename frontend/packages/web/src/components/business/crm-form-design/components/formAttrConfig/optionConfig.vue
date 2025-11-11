@@ -36,7 +36,7 @@
           :default-checked="fieldConfig.defaultValue === item.value"
           class="flex items-center"
           :disabled="props.disabled"
-          @click="() => handleRadioOptionClick(item.value)"
+          @click="debounce(() => handleRadioOptionClick(item.value), 200)"
         />
         <n-input
           v-model:value="item.label"
@@ -130,6 +130,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import { debounce } from 'lodash-es';
 
   const props = defineProps<{
     disabled?: boolean;
