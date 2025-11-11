@@ -8,7 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.LinkScenario;
+import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
@@ -822,7 +822,7 @@ public class ClueService {
         FormLinkFill<Customer> customerLinkFillDTO;
         try {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
-                    customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenario.CLUE_TO_CUSTOMER.name());
+                    customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CUSTOMER.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.customer.error"));
@@ -851,7 +851,7 @@ public class ClueService {
         FormLinkFill<Opportunity> opportunityLinkFillDTO;
         try {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
-                    opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenario.CLUE_TO_OPPORTUNITY.name());
+                    opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_OPPORTUNITY.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.opportunity.error"));

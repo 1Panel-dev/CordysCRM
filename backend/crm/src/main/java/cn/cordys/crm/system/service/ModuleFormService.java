@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
@@ -937,6 +938,26 @@ public class ModuleFormService {
                 moduleFormBlobMapper.updateById(formBlob);
             }
         }
+    }
+
+    /**
+     * 初始化跟进记录表单联动场景
+     */
+    @SuppressWarnings("unchecked")
+    public void initFormScenarioProp() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ModuleForm::getFormKey, FormKey.FOLLOW_RECORD.getKey());
+        ModuleForm recordForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+        ModuleFormBlob recordFormBlob = moduleFormBlobMapper.selectByPrimaryKey(recordForm.getId());
+        Map<String, Object> propMap = JSON.parseMap(recordFormBlob.getProp());
+        Map<String, List<LinkScenario>> linkProp = new HashMap<>(4);
+        linkProp.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.OPPORTUNITY.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.OPPORTUNITY_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.FOLLOW_PLAN.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.PLAN_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        propMap.put("linkProp", linkProp);
+        recordFormBlob.setProp(JSON.toJSONString(propMap));
+        moduleFormBlobMapper.updateById(recordFormBlob);
     }
 
     /**
