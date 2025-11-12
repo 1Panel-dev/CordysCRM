@@ -2,7 +2,7 @@ import { showSuccessToast } from 'vant';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
-import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, FormDesignKeyEnum, type FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import {
@@ -36,6 +36,7 @@ export interface FormCreateApiProps {
   otherSaveParams?: Record<string, any>;
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
+  linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -475,11 +476,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     };
   }
 
-  function fillLinkFormFieldValue(field: FormCreateField) {
+  function fillLinkFormFieldValue(field: FormCreateField, scenario: FormLinkScenarioEnum) {
     if (props.linkFormKey?.value) {
-      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]?.find(
-        (e) => e.current === field.id
-      )?.link;
+      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]
+        ?.find((e) => e.key === scenario)
+        ?.linkFields?.find((e) => e.current === field.id && e.enable)?.link;
       if (linkFieldId) {
         const linkField = props.linkFormInfo?.value?.[linkFieldId];
         if (linkField) {

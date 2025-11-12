@@ -1,4 +1,4 @@
-import { FieldTypeEnum } from '../enums/formDesignEnum';
+import { FieldTypeEnum, FormLinkScenarioEnum } from '../enums/formDesignEnum';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];

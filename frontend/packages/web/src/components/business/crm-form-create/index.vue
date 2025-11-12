@@ -53,7 +53,7 @@
   import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
   import { cloneDeep, isEqual } from 'lodash-es';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
@@ -71,6 +71,7 @@
     otherSaveParams?: Record<string, any>;
     linkFormInfo?: Record<string, any>; // 关联表单信息
     linkFormKey?: FormDesignKeyEnum;
+    linkScenario?: FormLinkScenarioEnum; // 关联表单场景
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -88,8 +89,16 @@
   });
 
   const formRef = ref<FormInst>();
-  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams, linkFormInfo, linkFormKey } =
-    toRefs(props);
+  const {
+    needInitDetail,
+    formKey,
+    sourceId,
+    initialSourceName,
+    otherSaveParams,
+    linkFormInfo,
+    linkFormKey,
+    linkScenario,
+  } = toRefs(props);
 
   const {
     fieldList,
@@ -112,6 +121,7 @@
     otherSaveParams,
     linkFormInfo,
     linkFormKey,
+    linkScenario,
   });
 
   function getItemComponent(type: FieldTypeEnum) {
@@ -271,7 +281,7 @@
     if (props.sourceId && props.needInitDetail) {
       await initFormDetail();
     }
-    initForm();
+    initForm(props.linkScenario);
   });
 </script>
 

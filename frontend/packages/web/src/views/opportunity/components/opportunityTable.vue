@@ -137,6 +137,11 @@
     :need-init-detail="needInitDetail"
     :link-form-info="linkFormInfo"
     :link-form-key="FormDesignKeyEnum.CUSTOMER"
+    :link-scenario="
+      realFormKey === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS
+        ? FormLinkScenarioEnum.CUSTOMER_TO_OPPORTUNITY
+        : undefined
+    "
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -168,7 +173,7 @@
   import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -395,11 +400,12 @@
   });
 
   const createLoading = ref(false);
-  const customerFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const linkFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const sourceId = ref(props.sourceId || '');
   const linkFormInfo = ref();
   const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
-    formKey: computed(() => customerFormKey.value),
-    sourceId: computed(() => props.sourceId),
+    formKey: computed(() => linkFormKey.value),
+    sourceId,
   });
 
   // 编辑
@@ -412,9 +418,12 @@
   }
 
   // 跟进
-
-  function handleFollowUp(row: OpportunityItem) {
+  async function handleFollowUp(row: OpportunityItem) {
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
+    linkFormKey.value = FormDesignKeyEnum.BUSINESS;
+    sourceId.value = row.id;
+    await initFormDetail(false, true);
+    linkFormInfo.value = linkFormFieldMap.value;
     otherFollowRecordSaveParams.value.opportunityId = row.id;
     const { customerName, customerId, name } = row;
     initialSourceName.value = JSON.stringify({
@@ -423,7 +432,6 @@
       customerId,
     });
     needInitDetail.value = false;
-    linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
 
@@ -919,7 +927,10 @@
       activeSourceId.value = props.isCustomerTab ? props.sourceId || '' : '';
       initialSourceName.value = props.isCustomerTab ? props.customerName || '' : '';
       needInitDetail.value = false;
-      await initFormDetail(false, true);
+      if (props.isCustomerTab) {
+        linkFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        await initFormDetail(false, true);
+      }
       linkFormInfo.value = linkFormFieldMap.value;
       formCreateDrawerVisible.value = true;
     } catch (error) {

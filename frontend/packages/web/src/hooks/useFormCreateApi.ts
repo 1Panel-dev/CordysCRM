@@ -7,6 +7,7 @@ import {
   FieldRuleEnum,
   FieldTypeEnum,
   FormDesignKeyEnum,
+  type FormLinkScenarioEnum,
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
@@ -45,6 +46,7 @@ export interface FormCreateApiProps {
   otherSaveParams?: Ref<Record<string, any> | undefined>;
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
+  linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -569,11 +571,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function fillLinkFormFieldValue(field: FormCreateField) {
+  function fillLinkFormFieldValue(field: FormCreateField, scenario: FormLinkScenarioEnum) {
     if (props.linkFormKey?.value) {
-      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]?.find(
-        (e) => e.current === field.id
-      )?.link;
+      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]
+        ?.find((e) => e.key === scenario)
+        ?.linkFields?.find((e) => e.current === field.id && e.enable)?.link;
       if (linkFieldId) {
         const linkField = props.linkFormInfo?.value?.[linkFieldId];
         if (linkField) {
@@ -946,7 +948,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function initForm() {
+  function initForm(linkScenario?: FormLinkScenarioEnum) {
     fieldList.value.forEach((item) => {
       if (props.needInitDetail?.value) {
         // 详情页编辑时，从详情获取值，不需要默认值
@@ -1034,9 +1036,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           },
         ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       }
-      if (props.linkFormInfo?.value) {
+      if (props.linkFormInfo?.value && linkScenario) {
         // 如果有关联表单信息，则填充关联表单字段值
-        fillLinkFormFieldValue(item);
+        fillLinkFormFieldValue(item, linkScenario);
       }
     });
     nextTick(() => {
@@ -1051,7 +1053,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       item.initialOptions = [];
     });
     initFormFieldConfig(fieldList.value);
-    initForm();
+    initForm(props.linkScenario?.value);
   }
 
   async function saveForm(

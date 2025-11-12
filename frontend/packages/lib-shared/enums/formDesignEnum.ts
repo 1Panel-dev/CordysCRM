@@ -73,3 +73,13 @@ export enum FieldDataSourceTypeEnum {
   CUSTOMER_OPTIONS = 'CUSTOMER_OPTIONS', // 客户选项
   USER_OPTIONS = 'USER_OPTIONS', // 成员选项
 }
+
+export enum FormLinkScenarioEnum {
+  CLUE_TO_CUSTOMER = 'CLUE_TO_CUSTOMER', // 线索转客户
+  CLUE_TO_OPPORTUNITY = 'CLUE_TO_OPPORTUNITY', // 线索转商机
+  CUSTOMER_TO_OPPORTUNITY = 'CUSTOMER_TO_OPPORTUNITY', // 客户转商机
+  CLUE_TO_RECORD = 'CLUE_TO_RECORD', // 线索转跟进记录
+  CUSTOMER_TO_RECORD = 'CUSTOMER_TO_RECORD', // 客户转跟进记录
+  BUSINESS_TO_RECORD = 'BUSINESS_TO_RECORD', // 商机转跟进记录
+  PLAN_TO_RECORD = 'PLAN_TO_RECORD', // 跟进计划转跟进记录
+}

@@ -13,7 +13,7 @@
     ></div>
     <n-input
       v-model:value="value"
-      :maxlength="1000"
+      :maxlength="3000"
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false"
       type="textarea"
