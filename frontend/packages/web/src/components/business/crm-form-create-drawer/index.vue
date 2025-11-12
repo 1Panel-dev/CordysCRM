@@ -30,6 +30,7 @@
       :is-edit="needInitDetail"
       :link-form-info="props.linkFormInfo"
       :link-form-key="props.linkFormKey"
+      :link-scenario="props.linkScenario"
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
@@ -41,7 +42,7 @@
 <script setup lang="ts">
   import { NButton } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
@@ -60,6 +61,7 @@
     otherSaveParams?: Record<string, any>;
     linkFormInfo?: Record<string, any>; // 关联表单信息
     linkFormKey?: FormDesignKeyEnum;
+    linkScenario?: FormLinkScenarioEnum; // 关联表单场景
   }>();
   const emit = defineEmits<{
     (e: 'saved', res: any): void;

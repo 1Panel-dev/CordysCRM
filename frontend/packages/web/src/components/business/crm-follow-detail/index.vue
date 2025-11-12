@@ -92,6 +92,7 @@
       :need-init-detail="needInitDetail"
       :link-form-info="linkFormInfo"
       :link-form-key="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
+      :link-scenario="FormLinkScenarioEnum.PLAN_TO_RECORD"
       :other-save-params="props.activeType === 'followPlan' ? otherFollowRecordSaveParams : undefined"
       @saved="handleAfterSave"
     />
@@ -103,7 +104,7 @@
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 

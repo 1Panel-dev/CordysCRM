@@ -5,7 +5,7 @@
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
-    :maxlength="1000"
+    :maxlength="3000"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
     :disabled="props.fieldConfig.editable === false"
     clearable
