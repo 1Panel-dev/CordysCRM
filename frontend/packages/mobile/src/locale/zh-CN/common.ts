@@ -73,6 +73,8 @@ export default {
   'common.loading': '加载中...',
   'common.dayUnit': '天',
   'common.transferSuccess': '转移成功',
+  'common.transferFailed': '转移失败',
+  'common.confirmMoveIn': '确认移入',
   'common.updateToCurrentProgress': '更新为当前进度',
   'common.success': '成功',
   'common.fail': '失败',
@@ -95,4 +97,6 @@ export default {
   'common.close': '关闭',
   'common.convertPlanToRecord': '计划转记录',
   'common.hasConvertToRecord': '已转记录',
+  'common.moveInReason': '移入原因',
+  'common.noReason': '未配置移入原因',
 };
