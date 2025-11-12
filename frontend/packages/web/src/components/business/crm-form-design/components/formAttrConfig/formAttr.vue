@@ -234,12 +234,12 @@
       },
       {
         label: t('crmFormDesign.business'),
-        value: FormDesignKeyEnum.CUSTOMER,
+        value: FormDesignKeyEnum.BUSINESS,
         linkClearPop: false,
       },
       {
         label: t('crmFormDesign.customer'),
-        value: FormDesignKeyEnum.BUSINESS,
+        value: FormDesignKeyEnum.CUSTOMER,
         linkClearPop: false,
       },
       {

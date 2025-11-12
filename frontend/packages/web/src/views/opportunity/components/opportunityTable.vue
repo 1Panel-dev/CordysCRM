@@ -136,12 +136,8 @@
     :initial-source-name="initialSourceName"
     :need-init-detail="needInitDetail"
     :link-form-info="linkFormInfo"
-    :link-form-key="FormDesignKeyEnum.CUSTOMER"
-    :link-scenario="
-      realFormKey === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS
-        ? FormLinkScenarioEnum.CUSTOMER_TO_OPPORTUNITY
-        : undefined
-    "
+    :link-form-key="linkFormKey"
+    :link-scenario="linkScenario"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -406,6 +402,15 @@
   const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
     formKey: computed(() => linkFormKey.value),
     sourceId,
+  });
+  const linkScenario = computed(() => {
+    if (realFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS) {
+      return FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
+    }
+    if (realFormKey.value === FormDesignKeyEnum.CUSTOMER_OPPORTUNITY) {
+      return FormLinkScenarioEnum.CUSTOMER_TO_OPPORTUNITY;
+    }
+    return undefined;
   });
 
   // 编辑
