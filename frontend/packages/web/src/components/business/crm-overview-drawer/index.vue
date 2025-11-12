@@ -41,7 +41,7 @@
         </n-button>
       </CrmMoreAction>
     </template>
-    <div class="h-full w-full overflow-hidden">
+    <div v-if="layout === 'horizontal'" class="h-full w-full overflow-hidden">
       <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2" disabled>
         <template #1>
           <slot name="left" />
@@ -57,8 +57,10 @@
                 :tab-list="cachedList"
                 type="line"
               />
-              <div v-if="props.showTabSetting" class="absolute right-[24px] top-2">
+              <div class="absolute right-[24px] top-2 flex items-center gap-[16px]">
+                <CrmTab v-model:active-tab="layout" no-content :tab-list="layoutList" type="segment" />
                 <CrmTabSetting
+                  v-if="props.showTabSetting"
                   :tab-list="props.tabList"
                   :setting-key="`${props.formKey}-settingKey`"
                   @init="initTabList"
@@ -72,6 +74,39 @@
         </template>
       </CrmSplitPanel>
     </div>
+
+    <n-scrollbar v-else>
+      <div class="bg-[var(--text-n9)] px-[16px] pt-[16px]">
+        <CrmCard no-content-padding hide-footer auto-height>
+          <slot name="left" />
+        </CrmCard>
+      </div>
+
+      <div class="flex h-[calc(100vh-65px)] w-full flex-col bg-[var(--text-n9)] p-[16px]">
+        <slot name="rightTop" />
+        <div class="relative bg-[var(--text-n10)]">
+          <CrmTab
+            v-if="cachedList.length"
+            v-model:active-tab="activeTab"
+            no-content
+            :tab-list="cachedList"
+            type="line"
+          />
+          <div class="absolute right-[24px] top-2 flex items-center gap-[16px]">
+            <CrmTab v-model:active-tab="layout" no-content :tab-list="layoutList" type="segment" />
+            <CrmTabSetting
+              v-if="props.showTabSetting"
+              :tab-list="props.tabList"
+              :setting-key="`${props.formKey}-settingKey`"
+              @init="initTabList"
+            />
+          </div>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <slot name="right" />
+        </div>
+      </div>
+    </n-scrollbar>
   </CrmDrawer>
   <CrmFormCreateDrawer
     v-model:visible="formDrawerVisible"
@@ -83,10 +118,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NTooltip } from 'naive-ui';
+  import { NButton, NTooltip, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import CrmCard from '@/components/pure/crm-card/index.vue';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -97,6 +133,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
+  import useLocalForage from '@/hooks/useLocalForage';
 
   const props = defineProps<{
     title?: string;
@@ -124,6 +161,7 @@
 
   const cachedList = ref<TabContentItem[]>(props.tabList);
 
+  const { setItem, getItem } = useLocalForage();
   const { t } = useI18n();
 
   const formDrawerVisible = ref(false);
@@ -155,6 +193,36 @@
       });
     }
   );
+
+  const layout = ref<'horizontal' | 'vertical'>();
+  const layoutList = [
+    {
+      name: 'horizontal',
+      tab: t('crmFormDesign.horizontal'),
+    },
+    {
+      name: 'vertical',
+      tab: t('crmFormDesign.vertical'),
+    },
+  ];
+
+  onMounted(async () => {
+    layout.value =
+      (await getItem<'horizontal' | 'vertical'>(`active-overview-layout-${props.formKey}`)) ?? 'horizontal';
+  });
+
+  watch(
+    () => layout.value,
+    async (val) => {
+      if (val) {
+        await setItem(`active-overview-layout-${props.formKey}`, val);
+      }
+    }
+  );
+
+  defineExpose({
+    layout,
+  });
 </script>
 
 <style lang="less" scoped>

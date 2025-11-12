@@ -1,5 +1,6 @@
 <template>
   <CrmOverviewDrawer
+    ref="crmOverviewDrawerRef"
     v-model:show="show"
     v-model:active-tab="activeTab"
     :tab-list="tabList"
@@ -19,6 +20,9 @@
           :form-key="FormDesignKeyEnum.CLUE"
           :source-id="sourceId"
           class="p-[16px_24px]"
+          :column="layout === 'vertical' ? 3 : undefined"
+          :label-width="layout === 'vertical' ? 'auto' : undefined"
+          :value-align="layout === 'vertical' ? 'start' : undefined"
           @init="handleDescriptionInit"
           @open-customer-detail="emit('openCustomerDrawer', $event)"
         />
@@ -124,6 +128,9 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const Message = useMessage();
+
+  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
+  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
 
   const sourceId = computed(() => props.detail?.id ?? '');
   const sourceName = ref('');
