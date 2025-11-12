@@ -941,6 +941,48 @@ public class ModuleFormService {
     }
 
     /**
+     * 处理表单联动的旧数据&&支持多场景 (客户&商机)
+     */
+    @SuppressWarnings("unchecked")
+    public void processOldLinkData() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ModuleForm::getFormKey, List.of(FormKey.CUSTOMER.getKey(), FormKey.OPPORTUNITY.getKey()));
+        List<ModuleForm> forms = moduleFormMapper.selectListByLambda(wrapper);
+        Map<String, String> formKeyMap = forms.stream().collect(Collectors.toMap(ModuleForm::getId, ModuleForm::getFormKey));
+        List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formKeyMap.keySet().stream().toList());
+        for (ModuleFormBlob formBlob : moduleFormBlobs) {
+            Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+            Object linkProp = propMap.get("linkProp");
+            if (linkProp == null) {
+                continue;
+            }
+            String formKey = formKeyMap.get(formBlob.getId());
+            Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
+            for (Map.Entry<String, Object> entry : linkPropMap.entrySet()) {
+                if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
+                    continue;
+                }
+                List<Map> fields = (List<Map>) entry.getValue();
+                List<LinkField> fieldList = fields.stream().map(field -> {
+                    LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
+                    linkField.setEnable(true);
+                    return linkField;
+                }).toList();
+                String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                        LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
+                        (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                                LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
+                LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
+                Map<String, List<LinkScenario>> dataMap = new HashMap<>(2);
+                dataMap.put(entry.getKey(), List.of(linkScenario));
+                propMap.put("linkProp", dataMap);
+                formBlob.setProp(JSON.toJSONString(propMap));
+                moduleFormBlobMapper.updateById(formBlob);
+            }
+        }
+    }
+
+    /**
      * 初始化跟进记录表单联动场景
      */
     @SuppressWarnings("unchecked")
