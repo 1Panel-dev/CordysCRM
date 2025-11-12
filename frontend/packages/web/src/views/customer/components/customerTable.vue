@@ -396,7 +396,12 @@
     }
   }
 
-  const { linkFormFieldMap, initFormDetail } = useFormCreateApi({
+  const {
+    fieldList: customerFormFields,
+    linkFormFieldMap,
+    initFormConfig,
+    initFormDetail,
+  } = useFormCreateApi({
     formKey: activeFormKey,
     sourceId: activeSourceId,
     needInitDetail: computed(() => true),
@@ -418,6 +423,9 @@
         needInitDetail.value = false;
         initialSourceName.value = row.name;
         otherFollowRecordSaveParams.value.customerId = row.id;
+        if (customerFormFields.value.length === 0) {
+          await initFormConfig();
+        }
         await initFormDetail(false, true);
         formCreateDrawerVisible.value = true;
         break;
