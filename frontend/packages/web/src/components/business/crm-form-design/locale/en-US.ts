@@ -97,6 +97,7 @@ export default {
   'crmFormDesign.customer': 'Account',
   'crmFormDesign.contract': 'Contact',
   'crmFormDesign.business': 'Opportunity',
+  'crmFormDesign.opportunity': 'Opportunity',
   'crmFormDesign.product': 'Product',
   'crmFormDesign.clue': 'Lead',
   'crmFormDesign.plan': 'Follow-up Plan',
@@ -176,7 +177,7 @@ export default {
   'crmFormDesign.CUSTOMER_TO_OPPORTUNITY': 'Account to Opportunity',
   'crmFormDesign.CLUE_TO_RECORD': 'Write Record',
   'crmFormDesign.CUSTOMER_TO_RECORD': 'Write Record',
-  'crmFormDesign.BUSINESS_TO_RECORD': 'Write Record',
+  'crmFormDesign.OPPORTUNITY_TO_RECORD': 'Write Record',
   'crmFormDesign.PLAN_TO_RECORD': 'Plan to Record',
   'crmFormDesign.tip.CLUE_TO_CUSTOMER':
     'When converting a lead to an account, fill the lead form field content into the account form field',
@@ -188,7 +189,7 @@ export default {
     'When writing follow-up records in the lead module, fill the lead form field content into the record form fields',
   'crmFormDesign.tip.CUSTOMER_TO_RECORD':
     'When writing follow-up records in the customer module, fill the lead form field content into the record form fields',
-  'crmFormDesign.tip.BUSINESS_TO_RECORD':
+  'crmFormDesign.tip.OPPORTUNITY_TO_RECORD':
     'When writing follow-up records in the business module, fill the business form field content into the record form fields',
   'crmFormDesign.tip.PLAN_TO_RECORD':
     'When performing plan to record operations, fill the plan form field content into the record form fields',

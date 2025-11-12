@@ -402,7 +402,7 @@
     initFormConfig,
     initFormDetail,
   } = useFormCreateApi({
-    formKey: activeFormKey,
+    formKey: computed(() => FormDesignKeyEnum.CUSTOMER),
     sourceId: activeSourceId,
     needInitDetail: computed(() => true),
   });

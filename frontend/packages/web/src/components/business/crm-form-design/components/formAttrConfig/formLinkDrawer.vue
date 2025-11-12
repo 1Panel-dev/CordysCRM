@@ -184,7 +184,7 @@
   }>();
 
   const defaultFormModel = {
-    key: FormLinkScenarioEnum.BUSINESS_TO_RECORD,
+    key: FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD,
     linkFields: [
       {
         current: '',
@@ -199,7 +199,7 @@
   const formModel = ref<FormConfigLinkScenarioItem>(cloneDeep(defaultFormModel));
   const _formKey = computed(() => props.formKey);
   const activeScenario = ref(
-    scenarioList.value.length ? scenarioList.value[0].key : FormLinkScenarioEnum.BUSINESS_TO_RECORD
+    scenarioList.value.length ? scenarioList.value[0].key : FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD
   );
 
   const { fieldList, initFormConfig } = useFormCreateApi({
@@ -248,7 +248,7 @@
         scenarioList.value = cloneDeep(props.linkProp?.[props.formKey] || []);
         activeScenario.value = scenarioList.value.length
           ? scenarioList.value[0].key
-          : FormLinkScenarioEnum.BUSINESS_TO_RECORD;
+          : FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
         formModel.value = scenarioList.value ? scenarioList.value[0] : cloneDeep(defaultFormModel);
         if (scenarioList.value[0].linkFields.length === 0) {
           formModel.value.linkFields.push({
