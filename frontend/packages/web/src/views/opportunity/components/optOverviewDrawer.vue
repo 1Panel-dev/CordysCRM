@@ -1,5 +1,6 @@
 <template>
   <CrmOverviewDrawer
+    ref="crmOverviewDrawerRef"
     v-model:show="showOptOverviewDrawer"
     v-model:active-tab="activeTab"
     :tab-list="tabList"
@@ -19,6 +20,9 @@
           :source-id="sourceId"
           :refresh-key="refreshKey"
           class="p-[16px_24px]"
+          :column="layout === 'vertical' ? 3 : undefined"
+          :label-width="layout === 'vertical' ? 'auto' : undefined"
+          :value-align="layout === 'vertical' ? 'start' : undefined"
           @init="handleDescriptionInit"
           @open-customer-detail="emit('openCustomerDrawer', $event)"
         />
@@ -111,6 +115,9 @@
   const showOptOverviewDrawer = defineModel<boolean>('show', {
     required: true,
   });
+
+  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
+  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
 
   const transferForm = ref<TransferParams>({
     owner: null,

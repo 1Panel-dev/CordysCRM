@@ -1,5 +1,6 @@
 <template>
   <CrmOverviewDrawer
+    ref="crmOverviewDrawerRef"
     v-model:show="show"
     v-model:active-tab="activeTab"
     :tab-list="tabList"
@@ -18,6 +19,9 @@
           :source-id="sourceId"
           class="p-[16px_24px]"
           :hidden-fields="hiddenColumns"
+          :column="layout === 'vertical' ? 3 : undefined"
+          :label-width="layout === 'vertical' ? 'auto' : undefined"
+          :value-align="layout === 'vertical' ? 'start' : undefined"
         />
       </div>
     </template>
@@ -89,6 +93,9 @@
   const { t } = useI18n();
   const Message = useMessage();
   const { openNewPage } = useOpenNewPage();
+
+  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
+  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
 
   const sourceId = computed(() => props.detail?.id ?? '');
 

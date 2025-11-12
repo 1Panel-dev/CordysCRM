@@ -1,5 +1,6 @@
 <template>
   <CrmOverviewDrawer
+    ref="crmOverviewDrawerRef"
     v-model:show="show"
     v-model:active-tab="activeTab"
     :tab-list="tabList"
@@ -26,6 +27,9 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           class="p-[16px_24px]"
+          :column="layout === 'vertical' ? 3 : undefined"
+          :label-width="layout === 'vertical' ? 'auto' : undefined"
+          :value-align="layout === 'vertical' ? 'start' : undefined"
           @init="handleDescriptionInit"
         />
       </div>
@@ -135,6 +139,10 @@
   const show = defineModel<boolean>('show', {
     required: true,
   });
+
+  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
+  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
+
   const refreshKey = ref(0);
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
