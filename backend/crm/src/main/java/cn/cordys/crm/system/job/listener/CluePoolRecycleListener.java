@@ -14,6 +14,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -128,7 +129,8 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
                                      Map<String, CluePoolRecycleRule> recycleRuleMap) {
         clues.forEach(clue ->
                 ownersPoolMap.forEach((ownerIds, pool) -> {
-                    if (ownerIds.contains(clue.getOwner())) {
+                    if (ownerIds.contains(clue.getOwner()) && StringUtils.isBlank(clue.getTransitionId())) {
+                        // 满足负责人配置自动回收&&未转客户的线索
                         CluePoolRecycleRule rule = recycleRuleMap.get(pool.getId());
                         if (rule != null && cluePoolService.checkRecycled(clue, rule)) {
                             recycleClueToPool(clue, pool);
