@@ -422,8 +422,13 @@
     showConvertClueModal.value = true;
   }
 
-  const { linkFormFieldMap, initFormDetail } = useFormCreateApi({
-    formKey: computed(() => FormDesignKeyEnum.FOLLOW_RECORD_CLUE),
+  const {
+    fieldList: clueFormFields,
+    linkFormFieldMap,
+    initFormConfig,
+    initFormDetail,
+  } = useFormCreateApi({
+    formKey: computed(() => FormDesignKeyEnum.CLUE),
     sourceId: activeClueId,
     needInitDetail: computed(() => true),
   });
@@ -439,6 +444,9 @@
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
+        if (clueFormFields.value.length === 0) {
+          await initFormConfig();
+        }
         await initFormDetail(false, true);
         isInitFormCreateDrawer.value = true;
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;

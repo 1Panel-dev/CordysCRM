@@ -422,6 +422,7 @@
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
     linkFormKey.value = FormDesignKeyEnum.BUSINESS;
     sourceId.value = row.id;
+    await initFormConfig();
     await initFormDetail(false, true);
     linkFormInfo.value = linkFormFieldMap.value;
     otherFollowRecordSaveParams.value.opportunityId = row.id;
@@ -929,6 +930,7 @@
       needInitDetail.value = false;
       if (props.isCustomerTab) {
         linkFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        await initFormConfig();
         await initFormDetail(false, true);
       }
       linkFormInfo.value = linkFormFieldMap.value;
@@ -944,7 +946,6 @@
   onBeforeMount(async () => {
     if (props.isCustomerTab) {
       searchData();
-      initFormConfig();
     }
   });
 
