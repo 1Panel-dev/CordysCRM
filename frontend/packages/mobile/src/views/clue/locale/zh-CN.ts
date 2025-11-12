@@ -25,4 +25,6 @@ export default {
   'clue.backClueList': '返回线索列表',
   'clue.afterConvertGoDetailText': '{name}详情',
   'clue.countDownTip': '{count} 秒后回到线索列表，也可手动回到线索列表',
+  'clue.moveToLeadPoolTip': '移入后，线索将无负责人，请谨慎操作！',
+  'clue.moveIntoCluePool': '移入线索池',
 };

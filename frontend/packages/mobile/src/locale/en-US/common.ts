@@ -72,6 +72,8 @@ export default {
   'common.loading': 'Loading...',
   'common.dayUnit': 'Days',
   'common.transferSuccess': 'Transfer Success',
+  'common.transferFailed': 'Transfer failed',
+  'common.confirmMoveIn': 'Confirm move in',
   'common.updateToCurrentProgress': 'Update to current progress',
   'common.success': 'Success',
   'common.fail': 'Error',
@@ -94,4 +96,6 @@ export default {
   'common.close': 'Closed',
   'common.convertPlanToRecord': 'Plan transfer record',
   'common.hasConvertToRecord': 'Have record',
+  'common.moveInReason': 'Move-in reason',
+  'common.noReason': 'Reason for migration not configured',
 };

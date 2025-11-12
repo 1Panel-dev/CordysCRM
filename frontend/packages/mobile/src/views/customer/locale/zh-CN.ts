@@ -26,4 +26,6 @@ export default {
   'customer.selectCustomer': '选择客户',
   'customer.readOnly': '只读',
   'customer.cooperation': '协作',
+  'customer.moveToOpenSea': '移入公海',
+  'customer.batchMoveContentTip': '移入后，客户将无负责人，请谨慎操作！',
 };
