@@ -55,7 +55,11 @@ public class SessionUtils {
      * @return 当前 Session 的 ID
      */
     public static String getSessionId() {
-        return (String) SecurityUtils.getSubject().getSession().getId();
+        try {
+            return (String) SecurityUtils.getSubject().getSession().getId();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
