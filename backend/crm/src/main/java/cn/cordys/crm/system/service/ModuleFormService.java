@@ -958,6 +958,7 @@ public class ModuleFormService {
             }
             String formKey = formKeyMap.get(formBlob.getId());
             Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
+            Map<String, List<LinkScenario>> dataMap = new HashMap<>(2);
             for (Map.Entry<String, Object> entry : linkPropMap.entrySet()) {
                 if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
                     continue;
@@ -973,12 +974,11 @@ public class ModuleFormService {
                         (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
                                 LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
                 LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
-                Map<String, List<LinkScenario>> dataMap = new HashMap<>(2);
                 dataMap.put(entry.getKey(), List.of(linkScenario));
-                propMap.put("linkProp", dataMap);
-                formBlob.setProp(JSON.toJSONString(propMap));
-                moduleFormBlobMapper.updateById(formBlob);
             }
+            propMap.put("linkProp", dataMap);
+            formBlob.setProp(JSON.toJSONString(propMap));
+            moduleFormBlobMapper.updateById(formBlob);
         }
     }
 
