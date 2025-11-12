@@ -314,7 +314,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by o.create_time desc
+                order by o.create_time desc, o.id asc
             </otherwise>
         </choose>
     </sql>
