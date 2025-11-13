@@ -42,6 +42,11 @@ import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
+import cn.cordys.crm.follow.constants.FollowUpPlanType;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -155,6 +160,10 @@ public class ClueService {
     private BaseMapper<ClueField> clueFieldMapper;
     @Resource
     private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
+    @Resource
+    private BaseMapper<FollowUpRecord> followUpRecordMapper;
+    @Resource
+    private BaseMapper<FollowUpPlan> followUpPlanMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -775,13 +784,54 @@ public class ClueService {
         if (request.getOppCreated()) {
             transformCustomer.setName(request.getOppName());
             Opportunity transformOpportunity = generateOpportunityByLinkForm(clue, transformCsAssociateDTO.getContactId(), transformCustomer, currentUser, orgId);
+            // 转移线索的计划&记录
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), transformOpportunity.getId());
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
                     paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
             return transformOpportunity.getId();
         } else {
+            // 转移线索的计划&记录
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), null);
             return transformCustomer.getId();
+        }
+    }
+
+    /**
+     * 批量复制线索跟进计划和记录
+     * @param clueId 线索ID
+     * @param customerId 客户ID
+     * @param opportunityId 商机ID
+     */
+    public void batchCopyCluePlanAndRecord(String clueId, String customerId, String opportunityId) {
+        // 记录
+        LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordLambdaQueryWrapper.eq(FollowUpRecord::getClueId, clueId).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpRecord> followUpRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(followUpRecords)) {
+            followUpRecords.forEach(record -> {
+                record.setId(IDGenerator.nextStr());
+                record.setClueId(null);
+                record.setType(FollowUpPlanType.CUSTOMER.name());
+                record.setCustomerId(customerId);
+                record.setOpportunityId(opportunityId);
+            });
+            followUpRecordMapper.batchInsert(followUpRecords);
+        }
+        // 计划
+        LambdaQueryWrapper<FollowUpPlan> planLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        planLambdaQueryWrapper.eq(FollowUpPlan::getClueId, clueId).eq(FollowUpPlan::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpPlan> followUpPlans = followUpPlanMapper.selectListByLambda(planLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(followUpPlans)) {
+            followUpPlans.forEach(plan -> {
+                plan.setId(IDGenerator.nextStr());
+                plan.setClueId(null);
+                plan.setType(FollowUpPlanType.CUSTOMER.name());
+                plan.setCustomerId(customerId);
+                plan.setOpportunityId(opportunityId);
+            });
+            followUpPlanMapper.batchInsert(followUpPlans);
         }
     }
 
@@ -886,7 +936,6 @@ public class ClueService {
         addRequest.setModuleFields(opportunityLinkFillDTO.getFields());
         addRequest.setFollower(clue.getFollower());
         addRequest.setFollowTime(clue.getFollowTime());
-        addRequest.setClueId(clue.getId());
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 
