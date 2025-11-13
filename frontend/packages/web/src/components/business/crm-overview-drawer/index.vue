@@ -1,13 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="showDrawer"
-    :content-style="{ minWidth: '1200px' }"
-    width="100%"
-    :footer="false"
-    no-padding
-    :show-back="true"
-    :closable="false"
-  >
+  <CrmDrawer v-model:show="showDrawer" width="100%" :footer="false" no-padding :show-back="true" :closable="false">
     <template #title>
       <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
         <template #trigger>
@@ -49,15 +41,16 @@
         <template #2>
           <div class="flex h-full w-full flex-col bg-[var(--text-n9)] p-[16px]">
             <slot name="rightTop" />
-            <div class="relative bg-[var(--text-n10)]">
+            <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
               <CrmTab
                 v-if="cachedList.length"
                 v-model:active-tab="activeTab"
                 no-content
                 :tab-list="cachedList"
                 type="line"
+                class="cachedListTab flex-1 overflow-hidden"
               />
-              <div class="absolute right-[24px] top-2 flex items-center gap-[16px]">
+              <div class="mr-[24px] flex items-center gap-[16px]">
                 <CrmTab v-model:active-tab="layout" no-content :tab-list="layoutList" type="segment" />
                 <CrmTabSetting
                   v-if="props.showTabSetting"
@@ -84,15 +77,16 @@
 
       <div class="flex h-[calc(100vh-65px)] w-full flex-col bg-[var(--text-n9)] p-[16px]">
         <slot name="rightTop" />
-        <div class="relative bg-[var(--text-n10)]">
+        <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
           <CrmTab
             v-if="cachedList.length"
             v-model:active-tab="activeTab"
             no-content
             :tab-list="cachedList"
             type="line"
+            class="cachedListTab flex-1 overflow-hidden"
           />
-          <div class="absolute right-[24px] top-2 flex items-center gap-[16px]">
+          <div class="mr-[24px] flex items-center gap-[16px]">
             <CrmTab v-model:active-tab="layout" no-content :tab-list="layoutList" type="segment" />
             <CrmTabSetting
               v-if="props.showTabSetting"
@@ -231,5 +225,10 @@
   }
   .crm-button-group {
     gap: 12px;
+  }
+  .cachedListTab {
+    :deep(.n-tabs-nav.n-tabs-nav--line-type.n-tabs-nav--top .n-tabs-nav-scroll-content) {
+      border-bottom-color: transparent;
+    }
   }
 </style>
