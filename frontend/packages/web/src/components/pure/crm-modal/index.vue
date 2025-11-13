@@ -22,7 +22,7 @@
         <slot name="titleRight"></slot>
       </slot>
     </template>
-    <n-scrollbar style="padding-right: 8px; max-height: 80vh">
+    <n-scrollbar style="padding-right: 8px; max-height: 70vh">
       <slot></slot>
     </n-scrollbar>
     <template v-if="props.footer" #action>
