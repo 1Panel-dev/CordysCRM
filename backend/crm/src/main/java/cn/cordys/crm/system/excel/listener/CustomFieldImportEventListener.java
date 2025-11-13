@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.excel.listener;
 
 import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
@@ -15,8 +14,6 @@ import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.excel.domain.ExcelErrData;
-import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.event.AnalysisEventListener;
 import lombok.Getter;
@@ -30,7 +27,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class CustomFieldImportEventListener<T, F extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
+/**
+ * 自定义字段导入处理器
+ * @param <T> 业务实体
+ * @author song-cc-rock
+ */
+public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map<Integer, String>> {
 
     /**
      * 主表数据
@@ -50,6 +52,10 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
      * 业务实体
      */
     private final Class<T> entityClass;
+    /**
+     * 自定义字段表
+     */
+    private final String fieldTable;
     /**
      * setter cache
      */
@@ -78,7 +84,6 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
      * 数据库Mapper(校验数据库值唯一)
      */
     private final CommonMapper commonMapper;
-    private final BaseMapper<F> fieldMapper;
     /**
      * 后置处理函数
      */
@@ -104,7 +109,7 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
     private int successCount;
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
-                                          BaseMapper<F> fieldMapper, CustomImportAfterDoConsumer<T, BaseResourceField> consumer, int batchSize) {
+                                          String fieldTable, CustomImportAfterDoConsumer<T, BaseResourceField> consumer, int batchSize) {
         fields.forEach(field -> {
             if (field.needRequireCheck()) {
                 requires.add(field.getName());
@@ -127,7 +132,7 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
         this.operator = operator;
         this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
-        this.fieldMapper = fieldMapper;
+        this.fieldTable = fieldTable;
         this.consumer = consumer;
         this.batchSize = batchSize > 0 ? batchSize : 2000;
         // 初始化大小,扩容有开销
@@ -189,10 +194,8 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
                     List<String> valList = commonMapper.getCheckValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldName, currentOrg);
                     uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
                 } else {
-                    LambdaQueryWrapper<F> wrapper = new LambdaQueryWrapper<>();
-                    wrapper.eq(BaseResourceField::getFieldId, field.getId());
-                    List<F> sourceList = fieldMapper.selectListByLambda(wrapper);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(sourceList.stream().map(BaseModuleFieldValue::getFieldValue).map(String::valueOf).distinct().toList()));
+                    List<String> valList = commonMapper.getCheckFieldValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldTable, field.getId(), currentOrg);
+                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));
                 }
             });
         }

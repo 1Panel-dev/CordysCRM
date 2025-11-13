@@ -42,6 +42,9 @@ public interface CommonMapper {
     String checkFieldRepeatName(@Param("dataTable") String dataTable, @Param("fieldTable") String fieldTable,
                                 @Param("fieldId") String fieldId, @Param("fieldValue") String fieldValue, @Param("orgId") String orgId);
 
+    List<String> getCheckFieldValList(@Param("dataTable") String dataTable, @Param("fieldTable") String fieldTable,
+                                      @Param("fieldId") String fieldId, @Param("orgId") String orgId);
+
     /**
      * 校验业务字段是否重复
      *
