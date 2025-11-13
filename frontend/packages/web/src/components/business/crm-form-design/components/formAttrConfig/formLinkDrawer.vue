@@ -185,13 +185,7 @@
 
   const defaultFormModel = {
     key: FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD,
-    linkFields: [
-      {
-        current: '',
-        link: '',
-        enable: true,
-      },
-    ],
+    linkFields: [],
   };
 
   const linkFieldsScrollbar = ref<ScrollbarInst>();
