@@ -60,9 +60,12 @@ public class ModuleFormService {
 
     static {
         TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
-                FieldType.DEPARTMENT.name(), "sys_department", FieldSourceType.CUSTOMER.name(), "customer",
-                FieldSourceType.CLUE.name(), "clue", FieldSourceType.CONTACT.name(), "customer_contact",
-                FieldSourceType.OPPORTUNITY.name(), "opportunity", FieldSourceType.PRODUCT.name(), "product");
+                FieldType.DEPARTMENT.name(), "sys_department",
+                FieldSourceType.CUSTOMER.name(), "customer",
+                FieldSourceType.CLUE.name(), "clue",
+                FieldSourceType.CONTACT.name(), "customer_contact",
+                FieldSourceType.OPPORTUNITY.name(), "opportunity",
+                FieldSourceType.PRODUCT.name(), "product");
     }
 
     @Value("classpath:form/form.json")
