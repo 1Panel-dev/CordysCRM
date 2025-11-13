@@ -17,10 +17,4 @@ public class FollowUpRecordPageRequest extends BasePageRequest {
 
     @Schema(description = "引用的线索ID集合")
     private List<String> refClueIds;
-
-    @Schema(description = "引用的客户ID")
-    private String refCustomerId;
-
-    @Schema(description = "引用的用户ID")
-    private String refUserId;
 }
