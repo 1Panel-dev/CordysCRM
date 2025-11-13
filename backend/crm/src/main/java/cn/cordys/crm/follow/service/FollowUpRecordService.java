@@ -362,21 +362,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @return
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
-        if (Strings.CS.equals(resourceType, FormKey.CUSTOMER.name())) {
-            // 如果是客户类型，查询所有转移的线索来源ID的记录
-            LambdaQueryWrapper<Clue> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Clue::getTransitionId, request.getSourceId());
-            List<Clue> clues = clueMapper.selectListByLambda(queryWrapper);
-            request.setTransitionIds(clues.stream().map(Clue::getId).toList());
-        }
-        if (Strings.CS.equals(resourceType, FormKey.OPPORTUNITY.name())) {
-            // 商机跟进记录来源: 1. 线索转化 2. 商机手动创建
-            Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getSourceId());
-            if (opportunity == null) {
-                throw new GenericException(Translator.get("opportunity_not_found"));
-            }
-            request.setRefClueIds(List.of(opportunity.getClueId()));
-        }
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
         buildListData(list, orgId);

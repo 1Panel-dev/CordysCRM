@@ -287,7 +287,6 @@ public class OpportunityService {
         opportunity.setExpectedEndTime(request.getExpectedEndTime());
         opportunity.setFollower(request.getFollower());
         opportunity.setFollowTime(request.getFollowTime());
-        opportunity.setClueId(request.getClueId());
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }
