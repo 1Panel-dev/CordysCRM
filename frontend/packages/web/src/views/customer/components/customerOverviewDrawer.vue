@@ -59,6 +59,7 @@
           :show-action="
             collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly
           "
+          :parentFormKey="FormDesignKeyEnum.CUSTOMER"
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"

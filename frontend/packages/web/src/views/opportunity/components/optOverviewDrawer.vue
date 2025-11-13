@@ -58,6 +58,7 @@
         :initial-source-name="initialSourceName"
         :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         :show-action="isNotFail && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+        :parentFormKey="FormDesignKeyEnum.BUSINESS"
       />
 
       <ContactTable
