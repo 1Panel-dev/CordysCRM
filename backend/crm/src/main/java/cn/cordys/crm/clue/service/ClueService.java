@@ -1085,4 +1085,51 @@ public class ClueService {
         List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return clueFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
+
+    /**
+     * 处理已转移线索的跟进计划和记录
+     */
+    public void processTransferredCluePlanAndRecord() {
+        List<FollowUpRecord> records = new ArrayList<>();
+        List<FollowUpPlan> plans = new ArrayList<>();
+        LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Clue::getTransitionType, "CUSTOMER");
+        List<Clue> clues = clueMapper.selectListByLambda(wrapper);
+        List<Clue> transferredClues = clues.stream().filter(clue -> StringUtils.isNotBlank(clue.getTransitionId())).toList();
+        Map<String, String> clueTransferMap = transferredClues.stream().collect(Collectors.toMap(Clue::getId, Clue::getTransitionId));
+        List<String> clueIds = transferredClues.stream().map(Clue::getId).toList();
+        // 记录
+        LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordLambdaQueryWrapper.in(FollowUpRecord::getClueId, clueIds).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpRecord> clueRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
+        clueRecords.forEach(clueRecord -> {
+            clueRecord.setId(IDGenerator.nextStr());
+            clueRecord.setCustomerId(clueTransferMap.get(clueRecord.getClueId()));
+            clueRecord.setClueId(null);
+            clueRecord.setType(FollowUpPlanType.CUSTOMER.name());
+            if (StringUtils.isNotBlank(clueRecord.getCustomerId())) {
+                records.add(clueRecord);
+            }
+        });
+        // 计划
+        LambdaQueryWrapper<FollowUpPlan> planLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        planLambdaQueryWrapper.in(FollowUpPlan::getClueId, clueIds).eq(FollowUpPlan::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpPlan> cluePlans = followUpPlanMapper.selectListByLambda(planLambdaQueryWrapper);
+        cluePlans.forEach(cluePlan -> {
+            cluePlan.setId(IDGenerator.nextStr());
+            cluePlan.setCustomerId(clueTransferMap.get(cluePlan.getClueId()));
+            cluePlan.setClueId(null);
+            cluePlan.setType(FollowUpPlanType.CUSTOMER.name());
+            if (StringUtils.isNotBlank(cluePlan.getCustomerId())) {
+                plans.add(cluePlan);
+            }
+        });
+        // 批量插入
+        if (CollectionUtils.isNotEmpty(records)) {
+            followUpRecordMapper.batchInsert(records);
+        }
+        if (CollectionUtils.isNotEmpty(plans)) {
+            followUpPlanMapper.batchInsert(plans);
+        }
+    }
 }
