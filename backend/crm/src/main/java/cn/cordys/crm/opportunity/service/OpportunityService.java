@@ -285,6 +285,9 @@ public class OpportunityService {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
         opportunity.setExpectedEndTime(request.getExpectedEndTime());
+        opportunity.setFollower(request.getFollower());
+        opportunity.setFollowTime(request.getFollowTime());
+        opportunity.setClueId(request.getClueId());
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }

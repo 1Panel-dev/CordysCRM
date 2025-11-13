@@ -27,4 +27,10 @@ public class CustomerAddRequest {
 
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "最新跟进人(转客户时需录入)")
+    private String follower;
+
+    @Schema(description = "最新跟进时间(转客户时需录入)")
+    private Long followTime;
 }

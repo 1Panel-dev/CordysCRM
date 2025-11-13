@@ -46,4 +46,13 @@ public class OpportunityAddRequest {
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
+    @Schema(description = "最新跟进人(转商机时需录入)")
+    private String follower;
+
+    @Schema(description = "最新跟进时间(转商机时需录入)")
+    private Long followTime;
+
+    @Schema(description = "线索ID(转商机时需录入)")
+    private String clueId;
+
 }

@@ -749,6 +749,15 @@ public class ClueService {
             // 根据表单联动来创建客户
             transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
         }
+        if (transformCustomer.getFollowTime() == null || transformCustomer.getFollowTime() < clue.getFollowTime()) {
+            // 刷新同名客户最新跟进时间
+            Customer updateCustomer = new Customer();
+            updateCustomer.setId(transformCustomer.getId());
+            updateCustomer.setFollower(clue.getFollower());
+            updateCustomer.setFollowTime(clue.getFollowTime());
+            customerMapper.updateById(updateCustomer);
+        }
+
         TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
         clue.setTransitionId(transformCustomer.getId());
         clue.setTransitionType("CUSTOMER");
@@ -833,6 +842,8 @@ public class ClueService {
         addRequest.setOwner(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getOwner()) ?
                 clue.getOwner() : customerLinkFillDTO.getEntity().getOwner());
         addRequest.setModuleFields(customerLinkFillDTO.getFields());
+        addRequest.setFollower(clue.getFollower());
+        addRequest.setFollowTime(clue.getFollowTime());
         return customerService.add(addRequest, currentUser, orgId);
     }
 
@@ -873,6 +884,9 @@ public class ClueService {
             addRequest.setContactId(contactId);
         }
         addRequest.setModuleFields(opportunityLinkFillDTO.getFields());
+        addRequest.setFollower(clue.getFollower());
+        addRequest.setFollowTime(clue.getFollowTime());
+        addRequest.setClueId(clue.getId());
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 
