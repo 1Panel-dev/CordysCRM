@@ -356,7 +356,7 @@
   }
 
   function handleClear(close: () => void) {
-    formModel.value = cloneDeep(defaultFormModel);
+    formModel.value.linkFields = [];
     close();
   }
 
