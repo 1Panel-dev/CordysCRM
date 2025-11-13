@@ -956,28 +956,34 @@ public class ModuleFormService {
         for (ModuleFormBlob formBlob : moduleFormBlobs) {
             Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
             Object linkProp = propMap.get("linkProp");
-            if (linkProp == null) {
-                continue;
-            }
-            String formKey = formKeyMap.get(formBlob.getId());
-            Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
             Map<String, List<LinkScenario>> dataMap = new HashMap<>(2);
-            for (Map.Entry<String, Object> entry : linkPropMap.entrySet()) {
-                if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
-                    continue;
+            String formKey = formKeyMap.get(formBlob.getId());
+            if (linkProp == null) {
+                if (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey())) {
+                    dataMap.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_CUSTOMER.name()).linkFields(new ArrayList<>()).build()));
+                } else if (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey())) {
+                    dataMap.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
+                    dataMap.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
                 }
-                List<Map> fields = (List<Map>) entry.getValue();
-                List<LinkField> fieldList = fields.stream().map(field -> {
-                    LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
-                    linkField.setEnable(true);
-                    return linkField;
-                }).toList();
-                String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
-                        LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
-                        (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
-                                LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
-                LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
-                dataMap.put(entry.getKey(), List.of(linkScenario));
+            } else {
+                Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
+                for (Map.Entry<String, Object> entry : linkPropMap.entrySet()) {
+                    if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
+                        continue;
+                    }
+                    List<Map> fields = (List<Map>) entry.getValue();
+                    List<LinkField> fieldList = fields.stream().map(field -> {
+                        LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
+                        linkField.setEnable(true);
+                        return linkField;
+                    }).toList();
+                    String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                            LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
+                            (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                                    LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
+                    LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
+                    dataMap.put(entry.getKey(), List.of(linkScenario));
+                }
             }
             propMap.put("linkProp", dataMap);
             formBlob.setProp(JSON.toJSONString(propMap));
