@@ -28,7 +28,7 @@ public class FollowUpPlanAddRequest {
     @Schema(description = "线索id")
     private String clueId;
 
-    @Size(max = 1000)
+    @Size(max = 3000)
     @Schema(description = "预计沟通内容", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 

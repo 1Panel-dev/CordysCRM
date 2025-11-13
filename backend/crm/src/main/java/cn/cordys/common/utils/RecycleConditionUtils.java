@@ -53,7 +53,7 @@ public class RecycleConditionUtils {
         if (!pickedTime.toLocalTime().equals(LocalDateTime.MIN.toLocalTime())) {
             betweenDays++;
         }
-        return (int) betweenDays;
+        return betweenDays < 0 ? 0 : (int) betweenDays;
 
     }
 
