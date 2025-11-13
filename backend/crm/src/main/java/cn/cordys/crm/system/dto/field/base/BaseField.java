@@ -156,7 +156,7 @@ public abstract class BaseField {
     @JsonIgnore
     public boolean needComment() {
         return Strings.CS.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name(),
-                FieldType.LOCATION.name(), FieldType.PHONE.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.INDUSTRY.name());
+                FieldType.LOCATION.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.INDUSTRY.name());
     }
 
     @JsonIgnore

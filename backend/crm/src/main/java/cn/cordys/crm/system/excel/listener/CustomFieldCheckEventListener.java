@@ -1,8 +1,6 @@
 package cn.cordys.crm.system.excel.listener;
 
 import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -10,8 +8,6 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.excel.domain.ExcelErrData;
-import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.event.AnalysisEventListener;
 import lombok.Getter;
@@ -23,13 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class CustomFieldCheckEventListener<T extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
+public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
     private final Map<String, BaseField> fieldMap;
     /**
      * 源数据表
      */
     private final String sourceTable;
+    private final String fieldTable;
     private final String currentOrg;
     /**
      * 必填
@@ -41,7 +38,6 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
     private final Map<String, BaseField> uniques = new HashMap<>();
     private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
     private final CommonMapper commonMapper;
-    private final BaseMapper<T> fieldMapper;
     /**
      * 值缓存, 用来校验Excel字段值是否唯一
      */
@@ -58,7 +54,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
     private Map<String, BusinessModuleField> businessFieldMap;
     private boolean atLeaseOne = false;
 
-    public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {
+    public CustomFieldCheckEventListener(List<BaseField> fields, String source, String fieldTable, String currentOrg) {
         fields.forEach(field -> {
             if (field.needRequireCheck()) {
                 requires.add(field.getName());
@@ -79,7 +75,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
         this.sourceTable = source;
         this.currentOrg = currentOrg;
         this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
-        this.fieldMapper = fieldMapper;
+        this.fieldTable = fieldTable;
     }
 
     @Override
@@ -127,11 +123,8 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
                     List<String> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
                     uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
                 } else {
-                    LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-                    wrapper.eq(BaseResourceField::getFieldId, field.getId());
-                    List<T> sourceList = fieldMapper.selectListByLambda(wrapper);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(sourceList.stream().map(BaseModuleFieldValue::getFieldValue).map(String::valueOf).distinct().toList()));
-                }
+                    List<String> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, field.getId(), currentOrg);
+                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));                }
             });
         }
     }
