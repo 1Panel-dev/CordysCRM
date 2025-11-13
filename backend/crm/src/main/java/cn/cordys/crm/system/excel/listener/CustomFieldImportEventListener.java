@@ -118,7 +118,7 @@ public class CustomFieldImportEventListener<T, F extends BaseResourceField> exte
                 fieldLenLimit.put(field.getName(), 255);
             }
             if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-                fieldLenLimit.put(field.getName(), 1000);
+                fieldLenLimit.put(field.getName(), 3000);
             }
         });
         this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
