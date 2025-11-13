@@ -58,6 +58,7 @@
           :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
           :source-id="sourceId"
           :show-action="showAction"
+          :parentFormKey="FormDesignKeyEnum.CLUE"
         />
 
         <CrmHeaderTable

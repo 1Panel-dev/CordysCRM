@@ -90,9 +90,9 @@
       :source-id="realFollowSourceId"
       :initial-source-name="props.initialSourceName"
       :need-init-detail="needInitDetail"
-      :link-form-info="linkFormInfo"
-      :link-form-key="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
-      :link-scenario="FormLinkScenarioEnum.PLAN_TO_RECORD"
+      :link-form-info="linkFormFieldMap"
+      :link-form-key="linkFormKey"
+      :link-scenario="linkScenario"
       :other-save-params="props.activeType === 'followPlan' ? otherFollowRecordSaveParams : undefined"
       @saved="handleAfterSave"
     />
@@ -135,6 +135,7 @@
     initialSourceName?: string; // 初始化详情时的名称
     showAdd?: boolean; // 显示增加按钮
     anyPermission?: string[]; // 无任一权限展示无权限
+    parentFormKey?: FormDesignKeyEnum; // 上级表单key
   }
 
   const props = withDefaults(defineProps<FollowDetailProps>(), {
@@ -168,10 +169,28 @@
   });
 
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
-  const planFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const linkFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const linkScenario = computed(() => {
+    if (props.parentFormKey === FormDesignKeyEnum.CUSTOMER) {
+      return FormLinkScenarioEnum.CUSTOMER_TO_RECORD;
+    }
+    if (props.parentFormKey === FormDesignKeyEnum.BUSINESS) {
+      return FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
+    }
+    if (props.parentFormKey === FormDesignKeyEnum.CLUE) {
+      return FormLinkScenarioEnum.CLUE_TO_RECORD;
+    }
+    return FormLinkScenarioEnum.PLAN_TO_RECORD;
+  });
+  const linkSourceId = computed(() => {
+    if (linkScenario.value !== FormLinkScenarioEnum.PLAN_TO_RECORD) {
+      return props.sourceId;
+    }
+    return activePlan.value?.id;
+  });
   const { fieldList, formDetail, initFormDetail, initFormConfig, linkFormFieldMap, saveForm } = useFormCreateApi({
-    formKey: computed(() => planFormKey.value),
-    sourceId: computed(() => activePlan.value.id),
+    formKey: computed(() => linkFormKey.value),
+    sourceId: linkSourceId,
     needInitDetail: computed(() => needInitDetail.value),
     otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
   });
@@ -205,21 +224,25 @@
   // 编辑记录或计划
   const realFollowSourceId = ref<string | undefined>('');
   const isConverted = ref(false);
-  function handleAdd() {
+  async function handleAdd() {
+    activePlan.value = undefined;
     realFormKey.value =
       (followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
         props.activeType
       ] as FormDesignKeyEnum) ?? realFormKey.value;
     realFollowSourceId.value = props.sourceId;
     needInitDetail.value = false;
-    formDrawerVisible.value = true;
     if (props.activeType === 'followPlan') {
       isConverted.value = false;
       otherFollowRecordSaveParams.value.converted = isConverted.value;
+    } else {
+      linkFormKey.value = props.parentFormKey || linkFormKey.value;
+      await initFormConfig();
+      await initFormDetail(false, true);
     }
+    formDrawerVisible.value = true;
   }
 
-  const linkFormInfo = ref<Record<string, any> | undefined>({});
   async function handleConvert(item: FollowDetailItem) {
     activePlan.value = item;
     isConverted.value = true;
@@ -227,12 +250,11 @@
     realFollowSourceId.value = '';
     realFormKey.value =
       followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followRecord ?? realFormKey.value;
-    planFormKey.value =
+    linkFormKey.value =
       followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followPlan ?? realFormKey.value;
     needInitDetail.value = false;
     await initFormConfig();
     await initFormDetail(false, true);
-    linkFormInfo.value = linkFormFieldMap.value;
     formDrawerVisible.value = true;
   }
 
@@ -272,7 +294,7 @@
 
   // 更新计划为已转记录
   async function updatePlan() {
-    planFormKey.value = followFormKeyMap[getApiKey(activePlan.value) as keyof typeof followFormKeyMap]?.[
+    linkFormKey.value = followFormKeyMap[getApiKey(activePlan.value) as keyof typeof followFormKeyMap]?.[
       props.activeType
     ] as FormDesignKeyEnum;
     realFollowSourceId.value = activePlan.value.id;
