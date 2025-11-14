@@ -3,7 +3,7 @@ export default {
   'message.errorTip': 'Error Tip',
   'message.logouting': 'Logging out...',
   'message.loginExpired': 'Login expired, please login again!',
-  'message.logoutSuccess': 'Logout success',
+  'message.logoutSuccess': 'Logout successful',
   'message.loadingDefaultTip': 'Loading...',
   'message.menuLoading': 'Loading the menu...',
   'message.menuLoadSuccess': 'Menu loaded successfully',

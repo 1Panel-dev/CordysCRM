@@ -54,6 +54,14 @@
                   >
                     <div class="one-line-text">{{ t('module.desensitizationSet') }}</div>
                   </n-button>
+                  <CrmMoreAction
+                    v-if="item.key === 'event'"
+                    :options="eventMoreOptions"
+                    trigger="hover"
+                    @select="(item) => handleMoreSelect(item.key as string)"
+                  >
+                    <n-button type="primary" text :keyboard="false">{{ t('common.more') }}</n-button>
+                  </CrmMoreAction>
                 </div>
               </VueDraggable>
             </div>
@@ -70,6 +78,8 @@
       </div>
     </div>
   </n-scrollbar>
+  <followRecordDrawer v-model:visible="customerManagementFollowRecordVisible" />
+  <followPlanDrawer v-model:visible="customerManagementFollowPlanVisible" />
 </template>
 
 <script setup lang="ts">
@@ -83,7 +93,11 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
+  import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import ConfigCard from './components/configCard.vue';
+  import followPlanDrawer from './components/customManagement/followPlanDrawer.vue';
+  import followRecordDrawer from './components/customManagement/followRecordDrawer.vue';
   import desensitizationModal from './components/desensitizationModal.vue';
 
   import { moduleNavListSort, setTopNavListSort } from '@/api/modules';
@@ -214,6 +228,33 @@
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    }
+  }
+
+  const eventMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      key: 'followRecord',
+      label: t('module.followRecordFormSetting'),
+    },
+    {
+      key: 'followPlan',
+      label: t('module.followPlanFormSetting'),
+    },
+  ]);
+
+  const customerManagementFollowRecordVisible = ref(false);
+  const customerManagementFollowPlanVisible = ref(false);
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'followRecord':
+        customerManagementFollowRecordVisible.value = true;
+        break;
+      case 'followPlan':
+        customerManagementFollowPlanVisible.value = true;
+        break;
+      default:
+        break;
     }
   }
 

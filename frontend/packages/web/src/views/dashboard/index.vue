@@ -65,7 +65,7 @@
 
   const dashboardList = computed(() => {
     return fullList.filter((item) => {
-      if (item.key === 'DE' && DEConfig.value) {
+      if (item.key === 'DE' && DEConfig.value?.deBoardEnable) {
         return true;
       }
       if (item.key === 'LINK') {

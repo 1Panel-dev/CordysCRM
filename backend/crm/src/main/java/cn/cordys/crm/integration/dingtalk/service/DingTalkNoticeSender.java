@@ -37,9 +37,8 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
         String context = super.getContext(messageDetailDTO, noticeModel);
-        String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
-            sendDingTalk(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
+            sendDingTalk(context, noticeModel, messageDetailDTO.getOrganizationId());
             LogUtils.debug("发送钉钉消息结束");
         } catch (Exception e) {
             LogUtils.error("钉钉消息通知失败：" + e);
@@ -50,7 +49,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         this.send(clonedMessageDetail, clonedNoticeModel);
     }
 
-    private void sendDingTalk(String context, NoticeModel noticeModel, String organizationId, String subjectText) {
+    private void sendDingTalk(String context, NoticeModel noticeModel, String organizationId) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;

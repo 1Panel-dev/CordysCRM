@@ -61,7 +61,7 @@
 
   onMounted(async () => {
     await initOpenSeaOptions();
-    if (!route.query.id) return
+    if (!route.query.id) return;
     activeSourceId.value = route.query.id as string;
     if (route.query.inSharedPool === 'true') {
       poolId.value = (route.query.poolId as string) ?? '';

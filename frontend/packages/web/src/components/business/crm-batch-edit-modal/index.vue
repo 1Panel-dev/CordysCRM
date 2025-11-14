@@ -3,7 +3,6 @@
     v-model:show="visible"
     :title="t('common.batchEdit')"
     siz="small"
-    class="crm-form-modal"
     :positive-text="t('common.update')"
     :negative-text="t('common.cancel')"
     :ok-loading="loading"

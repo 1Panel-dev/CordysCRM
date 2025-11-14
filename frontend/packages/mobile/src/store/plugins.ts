@@ -12,7 +12,6 @@ declare module 'pinia' {
 export const debouncePlugin = ({ options, store }: PiniaPluginContext): void | Record<string, any> => {
   if (options.debounce) {
     return Object.keys(options.debounce).reduce((debounceActions: Record<string, any>, action) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       debounceActions[action] = debounce(store[action], options.debounce![action]);
       return debounceActions;
     }, {});

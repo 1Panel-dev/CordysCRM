@@ -58,7 +58,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         String keyword = request.getKeyword();
         if (StringUtils.isBlank(keyword)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -81,7 +81,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-                return PageUtils.setPageInfo(page, null);
+                return PageUtils.setPageInfo(page, List.of());
             }
             for (UserSearchConfig userSearchConfig : opportunitySearchConfigs) {
                 //如果和固定展示列名重复不加入fieldIdSet
@@ -114,7 +114,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         }
         if (CollectionUtils.isEmpty(conditions)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
@@ -122,7 +122,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalOpportunityResponse> globalOpportunityResponses = extOpportunityMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalOpportunityResponses)) {
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
         List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);

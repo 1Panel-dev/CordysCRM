@@ -186,7 +186,11 @@
           {{ t('crmFormDesign.showRule') }}
         </div>
         <n-button :disabled="fieldConfig.disabledProps?.includes('showControlRules')" @click="showRuleConfig">
-          {{ t('common.setting') }}
+          {{
+            fieldConfig.showControlRules?.length
+              ? t('crmFormDesign.showRuleCount', { count: fieldConfig.showControlRules?.length })
+              : t('common.setting')
+          }}
         </n-button>
       </div>
       <!-- 显隐规则 End -->
@@ -1177,7 +1181,7 @@
       value: FieldDataSourceTypeEnum.CONTACT,
     },
     {
-      label: t('crmFormDesign.business'),
+      label: t('crmFormDesign.opportunity'),
       value: FieldDataSourceTypeEnum.BUSINESS,
     },
     {

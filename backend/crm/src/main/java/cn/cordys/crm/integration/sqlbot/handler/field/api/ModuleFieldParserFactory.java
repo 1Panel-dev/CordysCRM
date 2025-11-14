@@ -11,7 +11,7 @@ import java.util.Map;
  * @CreateTime: 2025-08-05  09:59
  */
 public class ModuleFieldParserFactory {
-    private static final Map<String, ModuleFieldParser> MODULE_FIELD_PARSER_MAP = new HashMap<>();
+    private static final Map<String, ModuleFieldParser<?>> MODULE_FIELD_PARSER_MAP = new HashMap<>();
     private static final DefaultParser DEFAULT_PARSER = new DefaultParser();
 
     static {
@@ -35,11 +35,11 @@ public class ModuleFieldParserFactory {
         registerFieldParser(FieldType.DATA_SOURCE_MULTIPLE, new DatasourceMultipleParser());
     }
 
-    private static void registerFieldParser(FieldType fieldType, ModuleFieldParser parser) {
+    private static void registerFieldParser(FieldType fieldType, ModuleFieldParser<?> parser) {
         MODULE_FIELD_PARSER_MAP.put(fieldType.name(), parser);
     }
 
-    public static ModuleFieldParser getFieldParser(String fieldType) {
+    public static ModuleFieldParser<?> getFieldParser(String fieldType) {
         return MODULE_FIELD_PARSER_MAP.get(fieldType) != null ? MODULE_FIELD_PARSER_MAP.get(fieldType) : DEFAULT_PARSER;
     }
 }

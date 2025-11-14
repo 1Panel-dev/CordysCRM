@@ -35,6 +35,9 @@
         <foreach collection="names" item="name" open="(" separator="," close=")">
             #{name}
         </foreach>
+        <if test="tableName == 'clue'">
+            and (transition_id IS NULL OR  transition_id = '')
+        </if>
     </select>
 
     <select id="getSourceOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">

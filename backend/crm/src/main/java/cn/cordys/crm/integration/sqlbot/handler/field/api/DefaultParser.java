@@ -20,7 +20,7 @@ public class DefaultParser implements ModuleFieldParser<BaseField> {
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(BaseField field) {
+    public FieldDTO parseToSQLBotField(BaseField field) {
         FieldDTO fieldDTO = new FieldDTO();
         fieldDTO.setName(field.getId());
         fieldDTO.setType("text");

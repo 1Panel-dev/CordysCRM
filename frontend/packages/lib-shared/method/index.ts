@@ -9,6 +9,7 @@ import type {
   FormCreateFieldDateType,
 } from '@cordys/web/src/components/business/crm-form-create/types';
 import { getLocalStorage } from '@lib/shared/method/local-storage';
+import industryOptions from '@cordys/web/src/components/pure/crm-industry-select/config';
 
 /**
  * 递归深度合并
@@ -447,6 +448,16 @@ export function getCityPath(cityId: string | null): string {
 }
 
 /**
+ * 根据 industryId 返回行业路径
+ */
+export function getIndustryPath(industryId: string | null): string {
+  if (!industryId) return '';
+  const nodePathObject = findNodePathByKey(industryOptions, industryId, undefined, 'value');
+  const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
+  return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
+}
+
+/**
  * 返回添加节点下一个有效未命名name
  * @param existingNames 已存在名称列表
  * @param baseName 基础名称
@@ -575,7 +586,13 @@ export function isWeComBrowser() {
 
 export function isDingTalkBrowser() {
   const ua = window.navigator.userAgent.toLowerCase();
-  return ua.includes('dingtalk') || ua.includes('aliapp(dingtalk') ||  (getQueryVariable('authCode') !== '' && getQueryVariable('authCode') !== undefined && getQueryVariable('authCode') !== null);
+  return (
+    ua.includes('dingtalk') ||
+    ua.includes('aliapp(dingtalk') ||
+    (getQueryVariable('authCode') !== '' &&
+      getQueryVariable('authCode') !== undefined &&
+      getQueryVariable('authCode') !== null)
+  );
 }
 
 // 飞书
@@ -652,7 +669,7 @@ export function getFileIconType(type: string) {
     case 'xlsx':
       return 'iconicon_file-excel_colorful';
     case 'mp4':
-      return 'iconicon_file-vedio_colorful';
+      return 'iconicon_file-video_colorful';
     case 'csv':
       return 'iconicon_file-CSV_colorful';
     case 'xmind':
@@ -670,7 +687,7 @@ export function getFileIconType(type: string) {
     default:
       return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(type)
         ? 'iconicon_file-image_colorful'
-        : 'iconicon_file-unknow_colorful1';
+        : 'iconicon_file-unknown_colorful1';
   }
 }
 

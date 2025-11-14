@@ -259,7 +259,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by c.create_time desc
+                order by c.create_time desc, c.id asc
             </otherwise>
         </choose>
     </sql>

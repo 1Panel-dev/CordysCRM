@@ -31,4 +31,6 @@ export default {
   'clue.backClueList': 'Back to Clue List',
   'clue.afterConvertGoDetailText': '{name} Details',
   'clue.countDownTip': 'Returning to the clue list in {count} seconds. You can also go back manually.',
+  'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
+  'clue.moveIntoCluePool': 'Move to lead pool',
 };

@@ -29,32 +29,50 @@
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
       </van-tab>
     </van-tabs>
+    <template
+      v-if="
+        activeTab === 'info' &&
+        hasAnyPermission(['CLUE_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:RECYCLE'])
+      "
+      #footer
+    >
+      <CrmActionButtons
+        :show-edit-button="hasAllPermission(['CLUE_MANAGEMENT:UPDATE'])"
+        :actions="actions"
+        @select="handleMoreSelect"
+      />
+    </template>
   </CrmPageWrapper>
 </template>
 
 <script setup lang="ts">
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmActionButtons, { CrmActionButtonsItem } from '@/components/business/crm-action-buttons/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
 
-  import { getClueHeaderList } from '@/api/modules';
+  import { deleteClue, getClueHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
-  import { ClueRouteEnum } from '@/enums/routeEnum';
+  import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
   defineOptions({
     name: ClueRouteEnum.CLUE_DETAIL,
   });
   const route = useRoute();
   const { t } = useI18n();
+  const router = useRouter();
 
   const activeTab = ref('info');
   const tabList = [
@@ -88,6 +106,120 @@
     initFormDescription();
   });
 
+  const actions = ref<CrmActionButtonsItem[]>([
+    {
+      key: 'transfer',
+      text: t('common.transfer'),
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+    },
+    {
+      key: 'moveToPool',
+      text: t('clue.moveIntoCluePool'),
+      permission: ['CLUE_MANAGEMENT:RECYCLE'],
+    },
+    {
+      key: 'convert',
+      text: t('clue.convert'),
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+    },
+    {
+      key: 'delete',
+      text: t('common.delete'),
+      color: 'var(--error-red)',
+      permission: ['CLUE_MANAGEMENT:DELETE'],
+    },
+  ]);
+
+  function handleEdit(id: string) {
+    router.push({
+      name: CommonRouteEnum.FORM_CREATE,
+      query: {
+        id,
+        formKey: FormDesignKeyEnum.CLUE,
+        needInitDetail: 'Y',
+      },
+    });
+  }
+
+  function handleTransfer(id: string) {
+    router.push({
+      name: CustomerRouteEnum.CUSTOMER_TRANSFER,
+      query: {
+        id,
+        apiKey: FormDesignKeyEnum.CLUE,
+      },
+    });
+  }
+
+  function convertTo(id: string, name: string) {
+    router.push({
+      name: ClueRouteEnum.CONVERT,
+      query: {
+        clueId: id,
+        clueName: name,
+      },
+    });
+  }
+
+  function handleDelete(id: string) {
+    showConfirmDialog({
+      title: t('clue.deleteTitle'),
+      message: t('clue.batchDeleteContentTip'),
+      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonColor: 'var(--error-red)',
+      beforeClose: async (action) => {
+        if (action === 'confirm') {
+          try {
+            await deleteClue(id);
+            showSuccessToast(t('common.deleteSuccess'));
+            await sleep(300);
+            router.back();
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
+  }
+
+  function handleMoveToPool() {
+    router.push({
+      name: ClueRouteEnum.MOVE_TO_POOL,
+      query: {
+        id: sourceId.value,
+        name: sourceName.value,
+        reasonKey: ReasonTypeEnum.CLUE_POOL_RS,
+      },
+    });
+  }
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'edit':
+        handleEdit(sourceId.value);
+        break;
+      case 'transfer':
+        handleTransfer(sourceId.value);
+        break;
+      case 'convert':
+        convertTo(sourceId.value, sourceName.value as string);
+        break;
+      case 'delete':
+        handleDelete(sourceId.value);
+        break;
+      case 'moveToPool':
+        handleMoveToPool();
+        break;
+      default:
+        break;
+    }
+  }
+
   const readonly = computed(() => !hasAnyPermission(['CLUE_MANAGEMENT:UPDATE']));
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
@@ -97,6 +229,8 @@
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'info') {
+      initFormDescription();
     }
   });
 </script>

@@ -3,7 +3,6 @@
     v-model:show="showModal"
     :title="form.id ? t('system.message.updateAnnouncement') : t('system.message.newAnnouncement')"
     :ok-loading="loading"
-    class="crm-form-modal"
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >

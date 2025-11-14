@@ -36,7 +36,7 @@
         </div>
         <div v-for="element in notAllowSortCachedColumns" :key="element.key" class="crm-table-column-setting-item">
           <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
-            <CrmIcon type="iconicon_move" class="cursor-not-allowed text-[var(--text-n4)]" :size="12" />
+            <CrmIcon type="iconicon_move" class="cursor-not-allowed text-[var(--text-n6)]" :size="12" />
             <CrmIcon
               :type="element.fixed ? 'iconicon_pin_filled' : 'iconicon_pin'"
               :class="`${element.columnSelectorDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${
@@ -62,8 +62,10 @@
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
               <CrmIcon
                 type="iconicon_move"
-                :class="`text-[var(--text-n4)] ${
-                  element.key !== SpecialColumnEnum.OPERATION ? 'sort-handle cursor-move' : 'cursor-not-allowed'
+                :class="` ${
+                  element.key !== SpecialColumnEnum.OPERATION
+                    ? 'sort-handle cursor-move text-[var(--text-n4)]'
+                    : 'cursor-not-allowed text-[var(--text-n6)]'
                 }`"
                 :size="12"
               />

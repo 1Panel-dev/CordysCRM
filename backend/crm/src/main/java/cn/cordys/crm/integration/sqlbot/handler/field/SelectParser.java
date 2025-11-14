@@ -13,7 +13,7 @@ public class SelectParser extends OptionFieldParser<SelectField> {
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(SelectField field) {
+    public FieldDTO parseToSQLBotField(SelectField field) {
         return parse2SQLBotField(field, field.getOptions());
     }
 }

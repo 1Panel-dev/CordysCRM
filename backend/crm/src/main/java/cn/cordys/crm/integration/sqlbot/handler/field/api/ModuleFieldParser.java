@@ -22,5 +22,5 @@ public interface ModuleFieldParser<T extends BaseField> {
      *
      * @return 转换后的FieldDTO对象
      */
-    FieldDTO parse2SQLBotField(T field);
+    FieldDTO parseToSQLBotField(T field);
 }

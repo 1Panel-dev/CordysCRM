@@ -10,9 +10,9 @@
 
 **Cordys CRM** 是新一代的开源 AI CRM 系统，是集信息化、数字化、智能化于一体的「客户关系管理系统」，由 [飞致云](https://fit2cloud.com/) 匠心出品。Cordys CRM 能够帮助企业实现从线索到回款（L2C）的全流程精细化管理，覆盖线索获取、智能分配、客户与联系人管理、商机跟进、合同签约及回款执行，构建端到端的销售运营闭环。
 
-Cordys（/ˈkɔːrdɪs/）由“Cord”（连接之绳）与“System”（系统）融合而成，寓意“关系的纽带系统”，诠释了 CRM 的本质：连接客户，缔造长期价值。
+Cordys [/ˈkɔːrdɪs/] 由“Cord”（连接之绳）与“System”（系统）融合而成，寓意“关系的纽带系统”，诠释了 CRM 的本质：连接客户，缔造长期价值。
 
-[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-20251103.png)](https://www.bilibili.com/video/BV1gVh9zAEde/)
+[![Watch the video](https://resource.fit2cloud.com/1panel/cordys-crm/img/overview-video-20251110.png)](https://www.bilibili.com/video/BV1Wm1sB4ExL/)
 
 **Cordys CRM** 的核心优势是：
 
@@ -51,7 +51,7 @@ docker run -d \
 
 安装完成后，可以参考此 [在线文档](https://cordys.cn/docs/) 来使用 Cordys CRM。
 
-在公测期间，欢迎大家参与并反馈宝贵意见。你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
+你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
 
 <image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
 
@@ -72,6 +72,10 @@ docker run -d \
   </tr>  
 </table>
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=1Panel-dev/CordysCRM&type=date&legend=top-left)](https://www.star-history.com/#1Panel-dev/CordysCRM&type=date&legend=top-left)
+
 ## Roadmap
 
 - [x] 2024.09：写下第一行代码
@@ -88,6 +92,7 @@ docker run -d \
 - [x] 2025.10.11：[v1.2.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.2) 发布
 - [x] 2025.10.17：[v1.2.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.3) 发布
 - [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布，代码正式开源
+- [x] 2025.11.05：[v1.3.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.1) 发布
 - [ ] 2025.12：合同模块发布（包括合同、发票和回款等）
 
 ## 技术栈

@@ -61,15 +61,23 @@ public class DingTalkDepartmentService {
 
 
     private ThirdDepartment convertToThirdDepartment(DingTalkDepartment dingTalkDepartment) {
-        ThirdDepartment thirdDepartment = new ThirdDepartment();
-        thirdDepartment.setId(dingTalkDepartment.getDeptId().toString());
+        var thirdDepartment = new ThirdDepartment();
+
+        thirdDepartment.setId(String.valueOf(dingTalkDepartment.getDeptId()));
         thirdDepartment.setName(dingTalkDepartment.getName());
-        thirdDepartment.setParentId(dingTalkDepartment.getParentId().toString());
+
+        // 判断根部门
+        var isRoot = dingTalkDepartment.getDeptId() == 1;
+        thirdDepartment.setIsRoot(isRoot);
+
+        // 根部门和普通部门的 parentId 不同处理
+        thirdDepartment.setParentId(isRoot ? "NONE" : String.valueOf(dingTalkDepartment.getParentId()));
+
+        // 排序
         thirdDepartment.setOrder(dingTalkDepartment.getOrder());
-        thirdDepartment.setIsRoot(dingTalkDepartment.getDeptId() == 1);
+
         return thirdDepartment;
     }
-
 
     /**
      * 获取所有钉钉组织架构和用户

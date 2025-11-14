@@ -157,7 +157,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by cc.create_time desc
+                order by cc.create_time desc, cc.id asc
             </otherwise>
         </choose>
     </sql>

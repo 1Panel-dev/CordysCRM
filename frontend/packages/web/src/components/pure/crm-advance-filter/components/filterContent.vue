@@ -134,6 +134,16 @@
               check-strategy="parent"
               @update:value="valueChange"
             />
+            <CrmIndustrySelect
+              v-else-if="item.type === FieldTypeEnum.INDUSTRY"
+              v-model:value="item.value"
+              :placeholder="t('common.pleaseInput')"
+              :disabled="isValueDisabled(item)"
+              clearable
+              multiple
+              check-strategy="parent"
+              @update:value="valueChange"
+            />
             <CrmUserTagSelector
               v-else-if="
                 [
@@ -217,8 +227,7 @@
           </n-form-item>
           <n-button
             :disabled="(props.keepOneLine && formModel.list.length === 1) || props.readonly"
-            ghost
-            class="px-[7px]"
+            class="outline--secondary px-[7px]"
             @click="handleDeleteItem(listIndex)"
           >
             <template #icon>
@@ -256,6 +265,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
 
+  import CrmIndustrySelect from '@/components/pure/crm-industry-select/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';
@@ -362,7 +372,7 @@
           ...listItem,
           ...item,
           type: listItem.type,
-          ...(listItem.showScope ? { scope: listItem.scope } : undefined),
+          ...(listItem.showScope ? { scope: item.scope ?? listItem.scope } : undefined),
         };
         formModel.value.list[index] = currentListItem;
       }

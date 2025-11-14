@@ -234,7 +234,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by c.create_time desc
+                order by c.create_time desc, c.id asc
             </otherwise>
         </choose>
     </sql>
@@ -352,6 +352,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.follow_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'contact'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.contact"/>
                 </include>
             </when>
             <when test="condition.name == 'phone'">
