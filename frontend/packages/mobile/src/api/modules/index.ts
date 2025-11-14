@@ -129,6 +129,7 @@ export const {
   getGlobalSearchClueList,
   getGlobalCluePoolList,
   transformClue,
+  moveToLeadPool,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;
@@ -205,6 +206,7 @@ export const {
   getGlobalCustomerList,
   getGlobalOpenSeaCustomerList,
   getGlobalModuleCount,
+  moveCustomerToPool,
 } = customerApi;
 
 export const {

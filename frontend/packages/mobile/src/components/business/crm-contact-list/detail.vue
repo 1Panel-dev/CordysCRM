@@ -3,20 +3,12 @@
     <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
       <CrmDescription :description="descriptions" />
     </div>
-    <template
-      v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE']) && route.query.readonly?.toString() === 'N'"
-      #footer
-    >
-      <van-button
-        type="danger"
-        class="!rounded-[var(--border-radius-small)] !text-[16px]"
-        block
-        plain
-        :loading="loading"
-        @click="handleDelete"
-      >
-        {{ t('common.delete') }}
-      </van-button>
+    <template v-if="route.query.readonly?.toString() === 'N'" #footer>
+      <CrmActionButtons
+        :show-edit-button="hasAllPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
+        :actions="actions"
+        @select="handleMoreSelect"
+      />
     </template>
   </CrmPageWrapper>
 </template>
@@ -34,7 +26,9 @@
 
   import { deleteCustomerContact } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission } from '@/utils/permission';
+
+  import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const route = useRoute();
   const router = useRouter();
@@ -74,6 +68,39 @@
         }
       },
     });
+  }
+
+  const actions = ref([
+    {
+      key: 'delete',
+      text: t('common.delete'),
+      color: 'var(--error-red)',
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'],
+    },
+  ]);
+
+  function handleEdit(id: string) {
+    router.push({
+      name: CommonRouteEnum.FORM_CREATE,
+      query: {
+        id,
+        formKey: id ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT,
+        needInitDetail: 'Y',
+      },
+    });
+  }
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'edit':
+        handleEdit(route.query.id?.toString() || '');
+        break;
+      case 'delete':
+        handleDelete();
+        break;
+      default:
+        break;
+    }
   }
 
   onBeforeMount(async () => {

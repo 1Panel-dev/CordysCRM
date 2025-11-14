@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -148,7 +149,7 @@ public class RestControllerExceptionHandler {
                         e.getMessage(), getStackTraceAsString(e)));
     }
 
-    @ExceptionHandler({NoResourceFoundException.class})
+    @ExceptionHandler({NoResourceFoundException.class, UnavailableSecurityManagerException.class})
     public ResponseEntity<ResultHolder> handleNoResourceFoundException(NoResourceFoundException e) {
         LogUtils.error("No static resource");
         return null;

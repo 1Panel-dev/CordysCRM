@@ -1,4 +1,4 @@
-import type { FormDesignKeyEnum } from '../../enums/formDesignEnum';
+import type { FormDesignKeyEnum, FormLinkScenarioEnum } from '../../enums/formDesignEnum';
 import type { TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -176,8 +176,13 @@ export interface FormActionButton {
 export interface FormFieldLinkItem {
   current: string;
   link: string;
+  enable: boolean;
 }
-export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormFieldLinkItem[]>>;
+export interface FormConfigLinkScenarioItem {
+  key: FormLinkScenarioEnum;
+  linkFields: FormFieldLinkItem[];
+}
+export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormConfigLinkScenarioItem[]>>;
 export type FormViewSize = 'small' | 'medium' | 'large';
 export interface FormConfig {
   layout: number;

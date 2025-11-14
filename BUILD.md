@@ -9,14 +9,15 @@
 该命令会将 `parent pom` 安装到本地 Maven 仓库，使其他外部子工程可以获取最新的 `<properties>` 配置。
 
 ```bash
+# 如果遇到网络问题，可以使用阿里云镜像加速
 ./mvnw install -N
 ```
-
+ 这是多模块项目的必要步骤，确保所有子模块能正确继承父POM的配置。
 ---
 
 ## 🖥️ 2. 后端构建
 
-执行以下命令构建后端模块（如 `framework`、`crm`、`app` 等）并安装到本地仓库：
+执行以下命令构建后端模块（如 `backend` 中的 `framework`、`crm`、`app` 等）并安装到本地仓库：
 
 ```bash
 ./mvnw clean install -DskipTests -DskipAntRunForJenkins --file backend/pom.xml
@@ -31,9 +32,9 @@
 
 ## 💻 3. 前端构建
 
-前端构建请参考 [`/frontend/REDEME.md`](./frontend/REDEME.md) 中的具体说明。
+前端构建请参考 [`/frontend/REDEME.md`](./frontend/REDEME.md) 中的具体说明！
 
-> 📌 提示：确保已正确安装 Node.js 和依赖环境。
+> 📌 提示：确保运行环境已正确安装 Node.js 和依赖环境!
 
 ---
 
@@ -44,3 +45,5 @@
 ```bash
 ./mvnw clean package
 ```
+> ✅ 备注：
+> mvnw 为项目自带打包工具，也可使用本地部署的 mvn

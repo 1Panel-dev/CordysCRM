@@ -354,18 +354,12 @@
     }
   }
 }
-// 先不要了 TODO
-// .n-modal,
-// .dialog {
-//   position: fixed;
-//   top: 40vh;
-//   right: 0;
-//   bottom: 52vh;
-//   left: 0;
-//   margin: auto;
-//   width: fit-content;
-//   height: fit-content;
-// }
+.n-modal-body-wrapper {
+  padding: 6vh 0;
+  box-sizing: border-box;
+  height: calc(100vh + 12%);
+  transform: translateY(-10%);
+}
 // small-modal
 .crm-modal-small {
   &.n-modal {
@@ -545,5 +539,29 @@
     width: 6px;
     min-width: 6px;
     height: 6px;
+  }
+}
+.n-alert {
+  padding: 16px 24px;
+  &.n-alert--right-adjust {
+    .n-alert-body {
+      padding-right: 36px;
+    }
+  }
+  &.n-alert--show-icon {
+    .n-alert-body {
+      padding-left: 28px;
+    }
+  }
+  .n-alert__icon {
+    left: 16px;
+    margin-top: 0 !important;
+    height: 100%;
+  }
+  .n-alert__close {
+    margin: 22px 24px;
+  }
+  .n-alert-body {
+    padding: 0 8px;
   }
 }

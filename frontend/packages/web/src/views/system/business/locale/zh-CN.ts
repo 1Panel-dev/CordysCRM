@@ -164,6 +164,7 @@ export default {
   'system.personal.currentPassword': '当前密码',
   'system.personal.changePasswordTip': '检测到您当前正在使用默认初始密码，为了您的账户安全，建议立即',
   'system.personal.password': '新密码',
+  'system.personal.confirmNewPassWord': '确认新密码',
   'system.personal.reInput.password': '请再次输入密码',
   'system.personal.password.diff': '两次密码不一致',
   'system.personal.password.style': '密码需要包含数字和字母',

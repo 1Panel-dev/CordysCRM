@@ -36,8 +36,6 @@
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <customManagementContactFormDrawer v-model:visible="customerManagementContactFormVisible" />
-  <followRecordDrawer v-model:visible="customerManagementFollowRecordVisible" />
-  <followPlanDrawer v-model:visible="customerManagementFollowPlanVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
   <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
   <CapacitySetDrawer
@@ -92,8 +90,6 @@
   import clueFormDrawer from './clueManagement/formDrawer.vue';
   import MoveLeadReasonDrawer from './clueManagement/moveReasonDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
-  import followPlanDrawer from './customManagement/followPlanDrawer.vue';
-  import followRecordDrawer from './customManagement/followRecordDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import MoveAccountReasonDrawer from './customManagement/moveReasonDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
@@ -246,14 +242,6 @@
   }
 
   const accountMoreOptions = computed<ActionsItem[]>(() => [
-    {
-      key: 'followRecord',
-      label: t('module.followRecordFormSetting'),
-    },
-    {
-      key: 'followPlan',
-      label: t('module.followPlanFormSetting'),
-    },
     {
       key: 'capacitySet',
       label: t('module.customer.capacitySet'),
@@ -455,8 +443,6 @@
   const customerManagementFormVisible = ref(false);
   const customerManagementContactFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);
-  const customerManagementFollowRecordVisible = ref(false);
-  const customerManagementFollowPlanVisible = ref(false);
   const capacitySetVisible = ref(false);
 
   const clueManagementFormVisible = ref(false);
@@ -512,12 +498,6 @@
 
   function handleMoreSelect(key: string) {
     switch (key) {
-      case 'followRecord':
-        customerManagementFollowRecordVisible.value = true;
-        break;
-      case 'followPlan':
-        customerManagementFollowPlanVisible.value = true;
-        break;
       case 'capacitySet':
         selectKey.value = ModuleConfigEnum.CUSTOMER_MANAGEMENT;
         capacitySetVisible.value = true;

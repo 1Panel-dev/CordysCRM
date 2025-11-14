@@ -5,7 +5,7 @@ import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
 import { formatNumberValue } from '@lib/shared/method/formCreate';
 import type { ModuleField } from '@lib/shared/models/customer';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
@@ -93,6 +93,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
   const addressFieldIds = ref<string[]>([]);
+  // 存储行业类型字段集合
+  const industryFieldIds = ref<string[]>([]);
   // 业务字段集合
   const businessFieldIds = ref<string[]>([]);
   // 数据源字段集合
@@ -811,6 +813,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           }
           if (field.type === FieldTypeEnum.LOCATION) {
             addressFieldIds.value.push(field.businessKey || field.id);
+          } else if (field.type === FieldTypeEnum.INDUSTRY) {
+            industryFieldIds.value.push(field.businessKey || field.id);
           } else if (
             [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
             !props.excludeFieldIds?.includes(field.businessKey || field.id)
@@ -1083,6 +1087,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
             : '-';
           businessFieldAttr[fieldId] = value;
+        } else if (industryFieldIds.value.includes(fieldId)) {
+          // 行业类型字段，解析代码替换成行业名称
+          businessFieldAttr[fieldId] = item[fieldId] ? getIndustryPath(item[fieldId] as string) : '-';
         } else if (options && options.length > 0) {
           let name: string | string[] = '';
           if (dataSourceFieldIds.value.includes(fieldId)) {
@@ -1126,6 +1133,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
             : '-';
           customFieldAttr[field.fieldId] = value;
+        } else if (industryFieldIds.value.includes(field.fieldId)) {
+          // 行业类型字段，解析代码替换成行业名称
+          customFieldAttr[field.fieldId] = field.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
         } else if (options && options.length > 0) {
           let name: string | string[] = '';
           if (dataSourceFieldIds.value.includes(field.fieldId)) {

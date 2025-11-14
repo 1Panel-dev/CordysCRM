@@ -1,9 +1,9 @@
 export default {
   // 消息提醒相关
   'message.errorTip': 'Error Tip',
-  'message.logouting': 'Logging out...',
+  'message.loggingOut': 'Logging out...',
   'message.loginExpired': 'Login expired, please login again!',
-  'message.logoutSuccess': 'Logout success',
+  'message.logoutSuccess': 'Logout successful',
   'message.loadingDefaultTip': 'Loading...',
   'message.menuLoading': 'Loading the menu...',
   'message.menuLoadSuccess': 'Menu loaded successfully',

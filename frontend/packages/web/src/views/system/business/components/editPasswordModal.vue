@@ -1,18 +1,12 @@
 <template>
-  <CrmModal
-    v-model:show="showModal"
-    class="crm-form-modal"
-    size="small"
-    :title="t('system.personal.changePassword')"
-    @cancel="cancel"
-  >
+  <CrmModal v-model:show="showModal" size="small" :title="t('system.personal.changePassword')" @cancel="cancel">
     <n-form
       ref="formRef"
       :model="form"
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
-      :label-width="currentLocale === 'en-US' ? 100 : 80"
+      :label-width="currentLocale === 'en-US' ? 110 : 100"
     >
       <n-form-item path="originPassword" :label="t('system.personal.currentPassword')">
         <n-input
@@ -37,8 +31,8 @@
       <n-form-item
         ref="rPasswordFormItemRef"
         first
+        :label="t('system.personal.confirmNewPassWord')"
         path="confirmPassword"
-        :class="currentLocale === 'en-US' ? 'pl-[100px]' : 'confirm-password'"
       >
         <n-input
           v-model:value="form.confirmPassword"
@@ -201,9 +195,3 @@
     });
   }
 </script>
-
-<style scoped lang="less">
-  .confirm-password {
-    padding-left: 80px !important;
-  }
-</style>

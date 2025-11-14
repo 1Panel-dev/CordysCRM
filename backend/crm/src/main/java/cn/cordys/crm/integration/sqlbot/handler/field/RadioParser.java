@@ -13,7 +13,7 @@ public class RadioParser extends OptionFieldParser<RadioField> {
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(RadioField field) {
+    public FieldDTO parseToSQLBotField(RadioField field) {
         return parse2SQLBotField(field, field.getOptions());
     }
 }

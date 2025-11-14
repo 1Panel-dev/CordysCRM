@@ -285,6 +285,8 @@ public class OpportunityService {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
         opportunity.setExpectedEndTime(request.getExpectedEndTime());
+        opportunity.setFollower(request.getFollower());
+        opportunity.setFollowTime(request.getFollowTime());
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }
@@ -706,8 +708,8 @@ public class OpportunityService {
                 // record logs
                 logService.batchAdd(logs);
             };
-            CustomFieldImportEventListener<Opportunity, OpportunityField> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
-                    opportunityFieldMapper, afterDo, 2000);
+            CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
+                    "opportunity_field", afterDo, 2000);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
@@ -728,7 +730,7 @@ public class OpportunityService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener<OpportunityField> eventListener = new CustomFieldCheckEventListener<>(fields, "opportunity", currentOrg, opportunityFieldMapper);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

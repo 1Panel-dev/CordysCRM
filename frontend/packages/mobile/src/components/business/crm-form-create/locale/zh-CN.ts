@@ -27,4 +27,5 @@ export default {
   'formCreate.advanced.anyType': '任意格式',
   'formCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
   'formCreate.advanced.limitCount': '，最大限制 {count} 个',
+  'formCreate.advanced.selectIndustry': '请选择行业',
 };

@@ -21,6 +21,11 @@ pnpm-error.log*
 !.mvn/maven-wrapper.properties
 .history
 
+# VS Code
+.vscode
+*.project
+*.factorypath
+
 src/main/resources/static
 src/main/resources/templates
 target

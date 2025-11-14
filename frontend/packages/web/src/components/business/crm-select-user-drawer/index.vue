@@ -34,11 +34,22 @@
         @update-value="handleUpdateValue"
       />
     </div>
+    <template #footer>
+      <div class="flex w-full items-center gap-[12px]">
+        <n-button :disabled="addMembers.length === 0" :loading="props.loading" type="primary" @click="handleAddConfirm">
+          {{ t(props.okText || 'common.add') }}
+        </n-button>
+        <n-button secondary @click="handleCancelAdd">
+          {{ t('common.cancel') }}
+        </n-button>
+      </div>
+    </template>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
   import {
+    NButton,
     NSkeleton,
     NTabPane,
     NTabs,
@@ -115,6 +126,7 @@
   const selectedNodes = ref<SelectedUsersItem[]>([]);
 
   function handleCancelAdd() {
+    visible.value = false;
     addMembers.value = [];
     selectedNodes.value = [];
     addMemberType.value = (props.memberTypes?.[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;

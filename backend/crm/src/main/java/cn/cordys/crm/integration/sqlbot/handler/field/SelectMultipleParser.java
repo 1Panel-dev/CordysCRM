@@ -13,7 +13,7 @@ public class SelectMultipleParser extends MultipleOptionFieldParser<SelectMultip
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(SelectMultipleField field) {
+    public FieldDTO parseToSQLBotField(SelectMultipleField field) {
         return parse2SQLBotField(field, field.getOptions());
     }
 }

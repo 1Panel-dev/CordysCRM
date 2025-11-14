@@ -42,6 +42,7 @@ export function valueIsArray(listItem: FilterFormItem) {
       FieldTypeEnum.RADIO,
       FieldTypeEnum.CHECKBOX,
       FieldTypeEnum.LOCATION,
+      FieldTypeEnum.TREE_SELECT,
     ].includes(listItem.type) ||
     listItem.selectProps?.multiple ||
     listItem.cascaderProps?.multiple ||
