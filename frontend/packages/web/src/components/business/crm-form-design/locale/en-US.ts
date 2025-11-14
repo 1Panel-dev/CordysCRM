@@ -96,7 +96,6 @@ export default {
   'crmFormDesign.selectDataSource': 'Select {type}',
   'crmFormDesign.customer': 'Account',
   'crmFormDesign.contract': 'Contact',
-  'crmFormDesign.business': 'Opportunity',
   'crmFormDesign.opportunity': 'Opportunity',
   'crmFormDesign.product': 'Product',
   'crmFormDesign.clue': 'Lead',
@@ -184,13 +183,13 @@ export default {
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY':
     'When converting a lead to an opportunity, fill the lead form fields into the opportunity form fields',
   'crmFormDesign.tip.CUSTOMER_TO_OPPORTUNITY':
-    'When creating an opportunity in the customer details, fill the customer form fields into the opportunity form fields',
+    'When creating an opportunity in the account details, fill the account form fields into the opportunity form fields',
   'crmFormDesign.tip.CLUE_TO_RECORD':
     'When writing follow-up records in the lead module, fill the lead form field content into the record form fields',
   'crmFormDesign.tip.CUSTOMER_TO_RECORD':
-    'When writing follow-up records in the customer module, fill the lead form field content into the record form fields',
+    'When writing follow-up records in the account module, fill the account form field content into the record form fields',
   'crmFormDesign.tip.OPPORTUNITY_TO_RECORD':
-    'When writing follow-up records in the business module, fill the business form field content into the record form fields',
+    'When writing follow-up records in the opportunity module, fill the opportunity form field content into the record form fields',
   'crmFormDesign.tip.PLAN_TO_RECORD':
     'When performing plan to record operations, fill the plan form field content into the record form fields',
 };
