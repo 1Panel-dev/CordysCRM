@@ -9,6 +9,7 @@ yarn-error.log*
 pnpm-error.log*
 
 # Editor directories and files
+.DS_Store
 .idea/*
 !.idea/icon.png
 **/*.iml
