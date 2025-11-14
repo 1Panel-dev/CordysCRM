@@ -18,7 +18,7 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
 
-FROM ghcr.io/cordys-dev/cordys-base
+FROM ghcr.io/cordys-dev/cordys-base:latest
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
