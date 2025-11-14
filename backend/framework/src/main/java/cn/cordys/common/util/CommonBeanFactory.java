@@ -24,10 +24,9 @@ import java.util.regex.Pattern;
 @Component
 public class CommonBeanFactory implements ApplicationContextAware {
 
+    public static String BASE_X_P = "cn.cordys.xpack";
     // 保存ApplicationContext实例
     private static ApplicationContext context;
-
-    public static String BASE_X_P = "cn.cordys.xpack";
 
     /**
      * 根据Bean名称获取Bean实例

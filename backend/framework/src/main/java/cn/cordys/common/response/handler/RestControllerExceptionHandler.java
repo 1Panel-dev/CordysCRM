@@ -9,6 +9,7 @@ import cn.cordys.common.util.Translator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.lang.ShiroException;
 import org.eclipse.jetty.io.EofException;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import org.apache.shiro.UnavailableSecurityManagerException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

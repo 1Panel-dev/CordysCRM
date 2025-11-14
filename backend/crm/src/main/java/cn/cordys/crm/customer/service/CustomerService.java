@@ -890,7 +890,7 @@ public class CustomerService {
             CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
             collaborationAddRequest.setCustomerId(request.getToMergeId());
             // 如果被合并客户的协作人中有该用户，则继承该协作类型，否则使用默认类型
-			collaborationAddRequest.setCollaborationType(toCollaborationMap.getOrDefault(mergeId, "COLLABORATION"));
+            collaborationAddRequest.setCollaborationType(toCollaborationMap.getOrDefault(mergeId, "COLLABORATION"));
             collaborationAddRequest.setUserId(mergeId);
             customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
         }

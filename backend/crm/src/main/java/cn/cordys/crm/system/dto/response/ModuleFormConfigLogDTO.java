@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 public class ModuleFormConfigLogDTO {
 
-	@Schema(description = "字段集合及其属性")
-	private List<BaseField> fields;
+    @Schema(description = "字段集合及其属性")
+    private List<BaseField> fields;
 
-	@Schema(description = "表单属性")
-	private FormPropLogDTO formProp;
+    @Schema(description = "表单属性")
+    private FormPropLogDTO formProp;
 }

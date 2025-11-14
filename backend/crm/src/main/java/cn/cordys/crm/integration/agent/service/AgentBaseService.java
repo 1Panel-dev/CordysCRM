@@ -396,7 +396,7 @@ public class AgentBaseService extends DashboardSortService {
      */
     public void editPos(AgentEditPosRequest request, String userId, String orgId) {
         Agent agent = checkAgent(request.getMoveId());
-        if (StringUtils.isNotBlank(request.getAgentModuleId()) &&!Strings.CS.equals(request.getAgentModuleId(), agent.getAgentModuleId())) {
+        if (StringUtils.isNotBlank(request.getAgentModuleId()) && !Strings.CS.equals(request.getAgentModuleId(), agent.getAgentModuleId())) {
             agentModuleService.checkAgentModule(request.getAgentModuleId());
             checkAgentName(agent.getName(), request.getAgentModuleId(), orgId, agent.getId());
 

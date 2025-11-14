@@ -68,7 +68,7 @@ public abstract class BaseModuleLogService {
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differenceDTOS);
-        modifiable.removeIf(differ ->{
+        modifiable.removeIf(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             return moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name());
         });

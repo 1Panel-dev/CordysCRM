@@ -19,7 +19,6 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
-import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;

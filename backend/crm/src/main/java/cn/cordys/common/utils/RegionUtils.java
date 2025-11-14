@@ -112,8 +112,8 @@ public class RegionUtils {
     public static String codeToName(String codeStr) {
         String code = getCode(codeStr);
         if (code == null) {
-			return null;
-		}
+            return null;
+        }
         List<RegionCode> regionCodes = getRegionCodes();
         return getRegionFullName(code, regionCodes);
     }

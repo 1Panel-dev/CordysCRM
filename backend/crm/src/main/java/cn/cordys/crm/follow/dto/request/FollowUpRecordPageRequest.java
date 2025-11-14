@@ -4,8 +4,6 @@ import cn.cordys.common.dto.BasePageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class FollowUpRecordPageRequest extends BasePageRequest {
 

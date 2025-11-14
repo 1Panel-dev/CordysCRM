@@ -124,7 +124,8 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
                 } else {
                     List<String> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, field.getId(), currentOrg);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));                }
+                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));
+                }
             });
         }
     }

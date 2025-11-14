@@ -19,9 +19,9 @@ import java.util.List;
 @AllArgsConstructor
 public class LinkScenario {
 
-	@NotEmpty
-	@Schema(description = "场景业务KEY", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String key;
-	@Schema(description = "联动字段集合")
-	private List<LinkField> linkFields;
+    @NotEmpty
+    @Schema(description = "场景业务KEY", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String key;
+    @Schema(description = "联动字段集合")
+    private List<LinkField> linkFields;
 }

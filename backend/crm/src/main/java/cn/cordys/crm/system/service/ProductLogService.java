@@ -78,7 +78,7 @@ public class ProductLogService extends BaseModuleLogService {
                     differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
                 }
             }
-            if (CollectionUtils.isNotEmpty(attachModuleFieldIds)&& attachModuleFieldIds.contains(differ.getColumn())) {
+            if (CollectionUtils.isNotEmpty(attachModuleFieldIds) && attachModuleFieldIds.contains(differ.getColumn())) {
                 setAttachName(differ);
             }
         }

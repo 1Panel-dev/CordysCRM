@@ -67,6 +67,61 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     @Resource
     private ModuleFormService moduleFormService;
 
+    private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
+        Map<String, ChartResult> mergedResults = new HashMap<>();
+        for (ChartResult chartResult : chartResults) {
+            String categoryAxis = getKeyFunc.apply(chartResult);
+            if (mergedResults.containsKey(categoryAxis)) {
+                ChartResult existingResult = mergedResults.get(categoryAxis);
+                if (existingResult.getValueAxis() instanceof Double && chartResult.getValueAxis() instanceof Double) {
+                    existingResult.setValueAxis((Double) existingResult.getValueAxis() + (Double) chartResult.getValueAxis());
+                } else if (existingResult.getValueAxis() instanceof Long && chartResult.getValueAxis() instanceof Long) {
+                    existingResult.setValueAxis((Long) existingResult.getValueAxis() + (Long) chartResult.getValueAxis());
+                } else if (existingResult.getValueAxis() instanceof Integer && chartResult.getValueAxis() instanceof Integer) {
+                    existingResult.setValueAxis((Integer) existingResult.getValueAxis() + (Integer) chartResult.getValueAxis());
+                }
+            } else {
+                mergedResults.put(categoryAxis, chartResult);
+            }
+        }
+        return new ArrayList<>(mergedResults.values());
+    }
+
+    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {
+        BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
+        if (baseField != null) {
+            // 业务字段key翻译成字段ID
+            categoryFieldValue.setFieldId(baseField.getId());
+        } else {
+            categoryFieldValue.setFieldId(fieldKey);
+        }
+        return categoryFieldValue;
+    }
+
+    private static BaseField getBaseField(List<BaseField> fields, String fieldKey) {
+        if (StringUtils.isBlank(fieldKey)) {
+            return null;
+        }
+        return fields.stream()
+                .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
+                        || Strings.CI.equals(field.getBusinessKey(), fieldKey))
+                .findFirst().orElse(null);
+    }
+
+    public static List<BaseField> getChartBaseFields() {
+        BaseField createUserField = new MemberField();
+        createUserField.setType(FieldType.MEMBER.name());
+        createUserField.setId("createUser");
+        createUserField.setBusinessKey("createUser");
+
+        BaseField updateUserField = new MemberField();
+        updateUserField.setType(FieldType.MEMBER.name());
+        updateUserField.setId("updateUser");
+        updateUserField.setBusinessKey("updateUser");
+
+        return List.of(createUserField, updateUserField);
+    }
+
     protected abstract String getFormKey();
 
     protected abstract BaseMapper<T> getResourceFieldMapper();
@@ -761,7 +816,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
-
     public <K> void updateModuleFieldByAgent(K customer, List<BaseModuleFieldValue> originCustomerFields, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
@@ -920,26 +974,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return chartResults;
     }
 
-    private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
-        Map<String, ChartResult> mergedResults = new HashMap<>();
-        for (ChartResult chartResult : chartResults) {
-            String categoryAxis = getKeyFunc.apply(chartResult);
-            if (mergedResults.containsKey(categoryAxis)) {
-                ChartResult existingResult = mergedResults.get(categoryAxis);
-                if (existingResult.getValueAxis() instanceof Double && chartResult.getValueAxis() instanceof Double) {
-                    existingResult.setValueAxis((Double) existingResult.getValueAxis() + (Double) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Long && chartResult.getValueAxis() instanceof Long) {
-                    existingResult.setValueAxis((Long) existingResult.getValueAxis() + (Long) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Integer && chartResult.getValueAxis() instanceof Integer) {
-                    existingResult.setValueAxis((Integer) existingResult.getValueAxis() + (Integer) chartResult.getValueAxis());
-                }
-            } else {
-                mergedResults.put(categoryAxis, chartResult);
-            }
-        }
-        return new ArrayList<>(mergedResults.values());
-    }
-
     private Map<String, List<OptionDTO>> getChartOptionMap(ModuleFormConfigDTO formConfig, List<ChartResult> chartResults,
                                                            ChartCategoryAxisDbParam categoryAxisParam,
                                                            ChartCategoryAxisDbParam subCategoryAxisParam) {
@@ -972,40 +1006,5 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         // 获取选项值对应的 option
         return moduleFormService.getOptionMap(formConfig, moduleFieldValues);
-    }
-
-    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {
-        BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
-        if (baseField != null) {
-            // 业务字段key翻译成字段ID
-            categoryFieldValue.setFieldId(baseField.getId());
-        } else {
-            categoryFieldValue.setFieldId(fieldKey);
-        }
-        return categoryFieldValue;
-    }
-
-    private static BaseField getBaseField(List<BaseField> fields, String fieldKey) {
-        if (StringUtils.isBlank(fieldKey)) {
-            return null;
-        }
-        return fields.stream()
-                .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
-                        || Strings.CI.equals(field.getBusinessKey(), fieldKey))
-                .findFirst().orElse(null);
-    }
-
-    public static List<BaseField> getChartBaseFields() {
-        BaseField createUserField = new MemberField();
-        createUserField.setType(FieldType.MEMBER.name());
-        createUserField.setId("createUser");
-        createUserField.setBusinessKey("createUser");
-
-        BaseField updateUserField = new MemberField();
-        updateUserField.setType(FieldType.MEMBER.name());
-        updateUserField.setId("updateUser");
-        updateUserField.setBusinessKey("updateUser");
-
-        return List.of(createUserField, updateUserField);
     }
 }

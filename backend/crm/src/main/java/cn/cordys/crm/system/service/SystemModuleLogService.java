@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.service;
 
-import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
@@ -19,9 +18,9 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class SystemModuleLogService extends BaseModuleLogService {
 
+    public static final String LINK_KEY_SPILT = "-";
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
-    public static final String LINK_KEY_SPILT = "-";
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {

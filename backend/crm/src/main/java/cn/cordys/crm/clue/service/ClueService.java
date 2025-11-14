@@ -45,8 +45,6 @@ import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
-import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
-import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
