@@ -38,11 +38,7 @@
   watch(
     () => size.value,
     (val) => {
-      if (val === 0) {
-        collapsed.value = true;
-      } else {
-        collapsed.value = false;
-      }
+      collapsed.value = val === 0;
     }
   );
 
