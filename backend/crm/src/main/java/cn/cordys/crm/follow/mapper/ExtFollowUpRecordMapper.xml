@@ -147,7 +147,7 @@
             join sys_organization_user sou on fur.owner = sou.user_id
         </if>
 
-        WHERE fur.organization_id = #{orgId}
+        WHERE fur.organization_id = #{orgId} and (c.transition_type is null or c.transition_type != 'CUSTOMER')
         <!-- 业务数据权限条件 -->
 
         AND (
