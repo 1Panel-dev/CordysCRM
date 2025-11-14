@@ -233,7 +233,7 @@
         linkClearPop: false,
       },
       {
-        label: t('crmFormDesign.business'),
+        label: t('crmFormDesign.opportunity'),
         value: FormDesignKeyEnum.BUSINESS,
         linkClearPop: false,
       },

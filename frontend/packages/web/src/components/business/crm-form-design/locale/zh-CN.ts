@@ -94,7 +94,6 @@ export default {
   'crmFormDesign.selectDataSource': '选择{type}',
   'crmFormDesign.customer': '客户',
   'crmFormDesign.contract': '联系人',
-  'crmFormDesign.business': '商机',
   'crmFormDesign.opportunity': '商机',
   'crmFormDesign.product': '产品',
   'crmFormDesign.clue': '线索',
@@ -181,7 +180,7 @@ export default {
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY': '线索转商机时，将线索表单字段填充到商机表单字段',
   'crmFormDesign.tip.CUSTOMER_TO_OPPORTUNITY': '在客户详情创建商机时，将客户表单字段填充到商机表单字段',
   'crmFormDesign.tip.CLUE_TO_RECORD': '在线索模块写跟进记录时，将线索的表单字段内容填充到记录表单字段',
-  'crmFormDesign.tip.CUSTOMER_TO_RECORD': '在客户模块写跟进记录时，将线索的表单字段内容填充到记录表单字段',
+  'crmFormDesign.tip.CUSTOMER_TO_RECORD': '在客户模块写跟进记录时，将客户的表单字段内容填充到记录表单字段',
   'crmFormDesign.tip.OPPORTUNITY_TO_RECORD': '在商机模块写跟进记录时，将商机的表单字段内容填充到记录表单字段',
   'crmFormDesign.tip.PLAN_TO_RECORD': '在进行计划转记录操作时，将计划的表单字段内容填充到记录表单字段',
 };

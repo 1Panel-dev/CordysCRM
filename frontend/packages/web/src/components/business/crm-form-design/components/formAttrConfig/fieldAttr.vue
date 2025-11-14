@@ -1181,7 +1181,7 @@
       value: FieldDataSourceTypeEnum.CONTACT,
     },
     {
-      label: t('crmFormDesign.business'),
+      label: t('crmFormDesign.opportunity'),
       value: FieldDataSourceTypeEnum.BUSINESS,
     },
     {
