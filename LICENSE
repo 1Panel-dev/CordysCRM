@@ -1,14 +1,18 @@
-# Open Source License
+This project is distributed under the GNU General Public License, version 3 (GPLv3),
+with the following additional terms and conditions:
 
-CordysCRM is licensed under a modified version of the GNU General Public License version 3 (GPLv3), with the following additional conditions:
+1. Logos and Copyright  
+   You may not remove, alter, or hide any logos, trademarks, or copyright
+   notices displayed in the web interface or within the source code.
 
-1. LOGO and copyright information: In the process of using CordysCRM's frontend, you may not remove or modify the LOGO or copyright information in the CordysCRM console or applications.
+2. Contributor Terms  
+   By contributing to this project, you agree that:  
+   a. The project maintainer may update or revise this open-source license
+      to make it more permissive or more restrictive as needed.  
+   b. Your contributions may be used for commercial purposes, including
+      but not limited to the project’s cloud and business operations.
 
-2. As a contributor, you should agree that:
+All other terms of the GNU General Public License, version 3 (GPLv3) remain in effect.
+Full text: https://www.gnu.org/licenses/gpl-3.0.html
 
-a. The producer can adjust the open-source agreement to be more strict or relaxed as deemed necessary.
-b. Your contributed code may be used for commercial purposes, including but not limited to its cloud business operations.
-
-Apart from the specific conditions mentioned above, all other rights and restrictions follow the GPLv3. Detailed information about the GPLv3 can be found at https://www.gnu.org/licenses/gpl-3.0.html.
-
-© 2025 FIT2CLOUD, Inc.
+Copyright (c) 2025-present FIT2CLOUD.
