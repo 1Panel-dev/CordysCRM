@@ -244,13 +244,6 @@
           ? scenarioList.value[0].key
           : FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
         formModel.value = scenarioList.value ? scenarioList.value[0] : cloneDeep(defaultFormModel);
-        if (scenarioList.value[0].linkFields.length === 0) {
-          formModel.value.linkFields.push({
-            current: '',
-            link: '',
-            enable: true,
-          });
-        }
         initFormConfig();
       }
     },
