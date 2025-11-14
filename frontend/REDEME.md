@@ -2,7 +2,7 @@
 
 ## 工程简介
 
-使用 `monorepo` 模式管理前端工程，拆分为`lib-shared`公共资源包、`mobile`移动端工程包和`web`工程包
+使用 `monorepo` 模式管理前端工程，拆分为`lib-shared`公共资源包、`mobile`移动端工程包和`web`工程包。
 
 ## 工程结构
 
