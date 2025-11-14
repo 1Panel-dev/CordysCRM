@@ -4,7 +4,6 @@
     :title="t('customer.mergeAccount')"
     :ok-loading="loading"
     :positive-text="t('customer.merge')"
-    class="crm-form-modal"
     @confirm="confirmHandler"
     @cancel="cancelHandler"
   >

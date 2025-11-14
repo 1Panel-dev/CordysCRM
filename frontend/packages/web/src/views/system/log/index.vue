@@ -106,7 +106,7 @@
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getCityPath } from '@lib/shared/method';
+  import { getCityPath, getIndustryPath } from '@lib/shared/method';
   import type { OperationLogDetail, OperationLogItem, OperationLogParams } from '@lib/shared/models/system/log';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -194,6 +194,7 @@
     try {
       activeLogDetail.value = await operationLogDetail(id);
       const locationIds = ['workCity'];
+      const industryIds: string[] = [];
       // 处理地址字段的值
       const matchedKey = Object.keys(moduleFormKeyMap).find((module) => activeLogDetail.value?.module === module);
       if (matchedKey) {
@@ -204,6 +205,8 @@
         fieldList.value.forEach((item) => {
           if (item.type === FieldTypeEnum.LOCATION) {
             locationIds.push(item.id);
+          } else if (item.type === FieldTypeEnum.INDUSTRY) {
+            industryIds.push(item.id);
           }
         });
       }
@@ -211,6 +214,9 @@
         if (locationIds.includes(item.column)) {
           item.newValueName = cityFormat(item.newValue);
           item.oldValueName = cityFormat(item.oldValue);
+        } else if (industryIds.includes(item.column)) {
+          item.newValueName = item.newValue ? getIndustryPath(item.newValue as string) : '-';
+          item.oldValueName = item.oldValue ? getIndustryPath(item.oldValue as string) : '-';
         }
       });
     } catch (error) {

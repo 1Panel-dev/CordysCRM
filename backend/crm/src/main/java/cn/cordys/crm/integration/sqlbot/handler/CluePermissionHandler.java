@@ -10,6 +10,7 @@ import cn.cordys.crm.integration.sqlbot.dto.TableDTO;
 import cn.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,8 @@ public class CluePermissionHandler extends DataScopeTablePermissionHandler {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
-    {
+    @PostConstruct
+    public void registerHandler() {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.CLUE, this);
     }
 

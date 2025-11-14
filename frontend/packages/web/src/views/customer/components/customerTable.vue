@@ -93,6 +93,11 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :other-save-params="otherFollowRecordSaveParams"
+    :link-form-info="linkFormFieldMap"
+    :link-form-key="FormDesignKeyEnum.CUSTOMER"
+    :link-scenario="
+      activeFormKey === FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER ? FormLinkScenarioEnum.CUSTOMER_TO_RECORD : undefined
+    "
     @saved="handleFormCreateSaved"
   />
   <CrmTableExportModal
@@ -127,7 +132,7 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -157,6 +162,7 @@
 
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
@@ -390,13 +396,25 @@
     }
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  const {
+    fieldList: customerFormFields,
+    linkFormFieldMap,
+    initFormConfig,
+    initFormDetail,
+  } = useFormCreateApi({
+    formKey: computed(() => FormDesignKeyEnum.CUSTOMER),
+    sourceId: activeSourceId,
+    needInitDetail: computed(() => true),
+  });
+
+  async function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
         activeSourceId.value = row.id;
         needInitDetail.value = true;
         otherFollowRecordSaveParams.value.id = row.id;
+        linkFormFieldMap.value = {};
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
@@ -405,6 +423,10 @@
         needInitDetail.value = false;
         initialSourceName.value = row.name;
         otherFollowRecordSaveParams.value.customerId = row.id;
+        if (customerFormFields.value.length === 0) {
+          await initFormConfig();
+        }
+        await initFormDetail(false, true);
         formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':

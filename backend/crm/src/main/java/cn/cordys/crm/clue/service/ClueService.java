@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
@@ -41,6 +42,11 @@ import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
+import cn.cordys.crm.follow.constants.FollowUpPlanType;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -154,6 +160,10 @@ public class ClueService {
     private BaseMapper<ClueField> clueFieldMapper;
     @Resource
     private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
+    @Resource
+    private BaseMapper<FollowUpRecord> followUpRecordMapper;
+    @Resource
+    private BaseMapper<FollowUpPlan> followUpPlanMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -703,10 +713,21 @@ public class ClueService {
         }
 
         // 关联
-        transformCsAssociate(clue, transitionCs, currentUser, orgId);
+        TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transitionCs, currentUser, orgId);
         clue.setTransitionId(transitionCs.getId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
+
+        // 转移线索的计划&记录
+        batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null, transformCsAssociateDTO.getContactId());
+        // 刷新客户的最新跟进时间
+        if (clue.getFollowTime() != null && (transitionCs.getFollowTime() == null || transitionCs.getFollowTime() < clue.getFollowTime())) {
+            Customer updateCustomer = new Customer();
+            updateCustomer.setId(transitionCs.getId());
+            updateCustomer.setFollower(clue.getFollower());
+            updateCustomer.setFollowTime(clue.getFollowTime());
+            customerMapper.updateById(updateCustomer);
+        }
 
         // 只通知线索负责人
         Map<String, Object> paramMap = new HashMap<>(8);
@@ -748,6 +769,15 @@ public class ClueService {
             // 根据表单联动来创建客户
             transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
         }
+        if (clue.getFollowTime() != null && (transformCustomer.getFollowTime() == null || transformCustomer.getFollowTime() < clue.getFollowTime())) {
+            // 刷新同名客户最新跟进时间
+            Customer updateCustomer = new Customer();
+            updateCustomer.setId(transformCustomer.getId());
+            updateCustomer.setFollower(clue.getFollower());
+            updateCustomer.setFollowTime(clue.getFollowTime());
+            customerMapper.updateById(updateCustomer);
+        }
+
         TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
         clue.setTransitionId(transformCustomer.getId());
         clue.setTransitionType("CUSTOMER");
@@ -765,13 +795,56 @@ public class ClueService {
         if (request.getOppCreated()) {
             transformCustomer.setName(request.getOppName());
             Opportunity transformOpportunity = generateOpportunityByLinkForm(clue, transformCsAssociateDTO.getContactId(), transformCustomer, currentUser, orgId);
+            // 转移线索的计划&记录
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), transformOpportunity.getId(), transformCsAssociateDTO.getContactId());
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
                     paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
             return transformOpportunity.getId();
         } else {
+            // 转移线索的计划&记录
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), null, transformCsAssociateDTO.getContactId());
             return transformCustomer.getId();
+        }
+    }
+
+    /**
+     * 批量复制线索跟进计划和记录
+     * @param clueId 线索ID
+     * @param customerId 客户ID
+     * @param opportunityId 商机ID
+     */
+    public void batchCopyCluePlanAndRecord(String clueId, String customerId, String opportunityId, String contactId) {
+        // 记录
+        LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordLambdaQueryWrapper.eq(FollowUpRecord::getClueId, clueId).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpRecord> followUpRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(followUpRecords)) {
+            followUpRecords.forEach(record -> {
+                record.setId(IDGenerator.nextStr());
+                record.setClueId(null);
+                record.setType(FollowUpPlanType.CUSTOMER.name());
+                record.setCustomerId(customerId);
+                record.setOpportunityId(opportunityId);
+                record.setContactId(contactId);
+            });
+            followUpRecordMapper.batchInsert(followUpRecords);
+        }
+        // 计划
+        LambdaQueryWrapper<FollowUpPlan> planLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        planLambdaQueryWrapper.eq(FollowUpPlan::getClueId, clueId).eq(FollowUpPlan::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpPlan> followUpPlans = followUpPlanMapper.selectListByLambda(planLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(followUpPlans)) {
+            followUpPlans.forEach(plan -> {
+                plan.setId(IDGenerator.nextStr());
+                plan.setClueId(null);
+                plan.setType(FollowUpPlanType.CUSTOMER.name());
+                plan.setCustomerId(customerId);
+                plan.setOpportunityId(opportunityId);
+                plan.setContactId(contactId);
+            });
+            followUpPlanMapper.batchInsert(followUpPlans);
         }
     }
 
@@ -821,7 +894,7 @@ public class ClueService {
         FormLinkFill<Customer> customerLinkFillDTO;
         try {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
-                    customerFormConfig, orgId, FormKey.CLUE.getKey());
+                    customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CUSTOMER.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.customer.error"));
@@ -832,6 +905,8 @@ public class ClueService {
         addRequest.setOwner(customerLinkFillDTO.getEntity() == null || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getOwner()) ?
                 clue.getOwner() : customerLinkFillDTO.getEntity().getOwner());
         addRequest.setModuleFields(customerLinkFillDTO.getFields());
+        addRequest.setFollower(clue.getFollower());
+        addRequest.setFollowTime(clue.getFollowTime());
         return customerService.add(addRequest, currentUser, orgId);
     }
 
@@ -850,7 +925,7 @@ public class ClueService {
         FormLinkFill<Opportunity> opportunityLinkFillDTO;
         try {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
-                    opportunityFormConfig, orgId, FormKey.CLUE.getKey());
+                    opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_OPPORTUNITY.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.opportunity.error"));
@@ -872,6 +947,8 @@ public class ClueService {
             addRequest.setContactId(contactId);
         }
         addRequest.setModuleFields(opportunityLinkFillDTO.getFields());
+        addRequest.setFollower(clue.getFollower());
+        addRequest.setFollowTime(clue.getFollowTime());
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 
@@ -965,8 +1042,8 @@ public class ClueService {
                 // record logs
                 logService.batchAdd(logs);
             };
-            CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
-                    clueFieldMapper, afterDo, 2000);
+            CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
+                    "clue_field", afterDo, 2000);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
@@ -987,7 +1064,7 @@ public class ClueService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CLUE.getKey(), currentOrg);
-            CustomFieldCheckEventListener<ClueField> eventListener = new CustomFieldCheckEventListener<>(fields, "clue", currentOrg, clueFieldMapper);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -1020,5 +1097,52 @@ public class ClueService {
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return clueFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+    }
+
+    /**
+     * 处理已转移线索的跟进计划和记录
+     */
+    public void processTransferredCluePlanAndRecord() {
+        List<FollowUpRecord> records = new ArrayList<>();
+        List<FollowUpPlan> plans = new ArrayList<>();
+        LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Clue::getTransitionType, "CUSTOMER");
+        List<Clue> clues = clueMapper.selectListByLambda(wrapper);
+        List<Clue> transferredClues = clues.stream().filter(clue -> StringUtils.isNotBlank(clue.getTransitionId())).toList();
+        Map<String, String> clueTransferMap = transferredClues.stream().collect(Collectors.toMap(Clue::getId, Clue::getTransitionId));
+        List<String> clueIds = transferredClues.stream().map(Clue::getId).toList();
+        // 记录
+        LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordLambdaQueryWrapper.in(FollowUpRecord::getClueId, clueIds).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpRecord> clueRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
+        clueRecords.forEach(clueRecord -> {
+            clueRecord.setId(IDGenerator.nextStr());
+            clueRecord.setCustomerId(clueTransferMap.get(clueRecord.getClueId()));
+            clueRecord.setClueId(null);
+            clueRecord.setType(FollowUpPlanType.CUSTOMER.name());
+            if (StringUtils.isNotBlank(clueRecord.getCustomerId())) {
+                records.add(clueRecord);
+            }
+        });
+        // 计划
+        LambdaQueryWrapper<FollowUpPlan> planLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        planLambdaQueryWrapper.in(FollowUpPlan::getClueId, clueIds).eq(FollowUpPlan::getType, FollowUpPlanType.CLUE.name());
+        List<FollowUpPlan> cluePlans = followUpPlanMapper.selectListByLambda(planLambdaQueryWrapper);
+        cluePlans.forEach(cluePlan -> {
+            cluePlan.setId(IDGenerator.nextStr());
+            cluePlan.setCustomerId(clueTransferMap.get(cluePlan.getClueId()));
+            cluePlan.setClueId(null);
+            cluePlan.setType(FollowUpPlanType.CUSTOMER.name());
+            if (StringUtils.isNotBlank(cluePlan.getCustomerId())) {
+                plans.add(cluePlan);
+            }
+        });
+        // 批量插入
+        if (CollectionUtils.isNotEmpty(records)) {
+            followUpRecordMapper.batchInsert(records);
+        }
+        if (CollectionUtils.isNotEmpty(plans)) {
+            followUpPlanMapper.batchInsert(plans);
+        }
     }
 }

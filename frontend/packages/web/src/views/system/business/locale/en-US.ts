@@ -174,6 +174,7 @@ export default {
   'system.personal.changePasswordTip':
     'Detected that you are currently using the default initial password. For the security of your account, it is recommended to change your password immediately',
   'system.personal.password': 'New Psw',
+  'system.personal.confirmNewPassWord': 'Confirm Psw',
   'system.personal.reInput.password': 'Please enter password again',
   'system.personal.password.diff': 'Two passwords are inconsistent',
   'system.personal.password.style': 'The password must contain numbers and letters',

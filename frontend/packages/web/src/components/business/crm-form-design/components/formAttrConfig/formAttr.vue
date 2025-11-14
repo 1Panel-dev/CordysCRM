@@ -144,27 +144,18 @@
         {{ t('crmFormDesign.formLink') }}
       </div>
       <div v-for="item in formKeyOptions" :key="item.value" class="flex w-full items-center gap-[8px]">
-        <n-button class="flex-1" @click="showLinkConfig(item.value)">
+        <n-button>
           <div>{{ item.label }}</div>
-          <div v-if="formConfig.linkProp?.[item.value]">
-            {{ t('crmFormDesign.linkSettingTip', { count: formConfig.linkProp?.[item.value]?.length }) }}
+        </n-button>
+        <n-button class="flex-1" @click="showLinkConfig(item.value)">
+          <div>
+            {{
+              formConfig.linkProp?.[item.value]
+                ? t('crmFormDesign.linkSettingTip', { count: getSettingScenarioCount(formConfig.linkProp[item.value]) })
+                : t('common.setting')
+            }}
           </div>
         </n-button>
-        <CrmPopConfirm
-          v-if="formConfig.linkProp?.[item.value]"
-          :title="t('crmFormDesign.linkSettingClearTip')"
-          icon-type="warning"
-          :content="t('crmFormDesign.linkSettingClearTipContent')"
-          :positive-text="t('common.confirm')"
-          trigger="click"
-          :negative-text="t('common.cancel')"
-          placement="right-end"
-          @confirm="clearLink(item.value)"
-        >
-          <n-button type="primary" text>
-            {{ t('common.clear') }}
-          </n-button>
-        </CrmPopConfirm>
       </div>
     </div>
     <!-- 表单联动 End -->
@@ -183,10 +174,9 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig, FormFieldLinkItem } from '@lib/shared/models/system/module';
+  import { FormConfig, FormConfigLinkScenarioItem, FormFieldLinkItem } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import formLinkDrawer from './formLinkDrawer.vue';
 
@@ -238,7 +228,22 @@
     }
     return [
       {
-        label: t('common.plan'),
+        label: t('crmFormDesign.clue'),
+        value: FormDesignKeyEnum.CLUE,
+        linkClearPop: false,
+      },
+      {
+        label: t('crmFormDesign.opportunity'),
+        value: FormDesignKeyEnum.BUSINESS,
+        linkClearPop: false,
+      },
+      {
+        label: t('crmFormDesign.customer'),
+        value: FormDesignKeyEnum.CUSTOMER,
+        linkClearPop: false,
+      },
+      {
+        label: t('crmFormDesign.onlyPlan'),
         value: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
         linkClearPop: false,
       },
@@ -252,7 +257,7 @@
     linkConfigVisible.value = true;
   }
 
-  function handleLinkConfigSave(formKey: FormDesignKeyEnum, value: FormFieldLinkItem[]) {
+  function handleLinkConfigSave(formKey: FormDesignKeyEnum, value: FormConfigLinkScenarioItem[]) {
     if (formConfig.value.linkProp) {
       formConfig.value.linkProp[formKey] = value;
     } else {
@@ -262,8 +267,11 @@
     }
   }
 
-  function clearLink(formKey: FormDesignKeyEnum) {
-    delete formConfig.value.linkProp?.[formKey];
+  function getSettingScenarioCount(items?: FormConfigLinkScenarioItem[]) {
+    if (items) {
+      return items.filter((e) => e.linkFields.length > 0).length;
+    }
+    return 0;
   }
 </script>
 

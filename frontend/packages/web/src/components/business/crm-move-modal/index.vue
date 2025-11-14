@@ -7,7 +7,6 @@
     :mask-closable="false"
     :type="props.type"
     :ok-button-props="{ disabled: enableReason ? !form.reason : false, type: props.type || 'primary' }"
-    class="crm-form-modal"
     :positive-text="t('common.confirmMoveIn')"
     :ok-loading="loading"
     @confirm="handleConfirm"

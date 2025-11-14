@@ -50,7 +50,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         String keyword = request.getKeyword();
         if (StringUtils.isBlank(keyword)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
@@ -71,7 +71,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
             List<UserSearchConfig> customerPoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC)).toList();
             if (CollectionUtils.isEmpty(customerPoolSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-                return PageUtils.setPageInfo(page, null);
+                return PageUtils.setPageInfo(page, List.of());
             }
             for (UserSearchConfig userSearchConfig : customerPoolSearchConfigs) {
                 //如果和固定展示列名重复不加入fieldIdSet
@@ -89,7 +89,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         }
         if (CollectionUtils.isEmpty(conditions)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
@@ -97,7 +97,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<GlobalCustomerPoolResponse> customerPoolResponses = extCustomerMapper.globalPoolSearchList(request, orgId);
         if (CollectionUtils.isEmpty(customerPoolResponses)) {
-            return PageUtils.setPageInfo(page, null);
+            return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
         List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC);

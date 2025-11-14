@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
+
     <property resource="commons.properties"/>
     <property file="/opt/cordys/conf/cordys-crm.properties" ignoreResourceNotFound="true"/>
+
+    <!-- Console 输出 -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %5p %40.40c:%4L - %m%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Trace Appender -->
+    <!-- ===================== 文件 Appender ===================== -->
+
     <appender name="traceAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>TRACE</level>
@@ -27,8 +31,7 @@
         </encoder>
     </appender>
 
-    <appender name="debugAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="debugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>DEBUG</level>
             <onMatch>ACCEPT</onMatch>
@@ -46,10 +49,11 @@
         </encoder>
     </appender>
 
-    <appender name="infoAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+    <appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
         <File>${logging.file.path}/info.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -63,28 +67,7 @@
         </encoder>
     </appender>
 
-    <appender name="errorAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-
-        <File>${logging.file.path}/error.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <maxFileSize>50MB</maxFileSize>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-
-    <appender name="warnAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="warnAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
             <onMatch>ACCEPT</onMatch>
@@ -102,61 +85,100 @@
         </encoder>
     </appender>
 
+    <appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <File>${logging.file.path}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logging.file.path}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <maxFileSize>50MB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- ===================== Async Appender ===================== -->
+
     <appender name="traceAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
         <queueSize>10000</queueSize>
         <appender-ref ref="traceAppender"/>
     </appender>
 
+    <appender name="debugAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <queueSize>10000</queueSize>
+        <appender-ref ref="debugAppender"/>
+    </appender>
+
     <appender name="infoAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
         <queueSize>10000</queueSize>
         <appender-ref ref="infoAppender"/>
     </appender>
 
-    <appender name="errorAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <includeCallerData>true</includeCallerData>
-        <appender-ref ref="errorAppender"/>
-    </appender>
-
     <appender name="warnAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
         <queueSize>10000</queueSize>
         <includeCallerData>true</includeCallerData>
         <appender-ref ref="warnAppender"/>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="infoAsyncAppender"/>
-        <appender-ref ref="console"/>
-    </root>
+    <appender name="errorAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <queueSize>10000</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="errorAppender"/>
+    </appender>
 
+    <!-- ===================== Logger ===================== -->
+
+    <!-- cn.cordys 模块日志 -->
     <logger name="cn.cordys" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="traceAsyncAppender"/>
+        <appender-ref ref="debugAsyncAppender"/>
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
     </logger>
 
+    <!-- cn.cordys.Application 单独 INFO 输出 -->
     <logger name="cn.cordys.Application" additivity="false" level="${logback.level:INFO}">
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 
-    <logger name="cn.cordys" level="${logger.sql.level:INFO}">
-        <appender-ref ref="console"/>
-    </logger>
-
-    <!-- 容器日志记录调整 -->
+    <!-- 容器日志 -->
     <logger name="org.eclipse.jetty.ee10.servlet.ServletChannel" level="ERROR"/>
+
+    <!-- ===================== Root ===================== -->
+    <root level="INFO">
+        <appender-ref ref="console"/>
+    </root>
 
 </configuration>

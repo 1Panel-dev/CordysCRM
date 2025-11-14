@@ -22,9 +22,9 @@ public class BasePageRequest extends BaseCondition {
     private int current;
 
     /**
-     * 每页显示条数，范围为 5 到 500
+     * 每页显示条数，范围为 1 到 500
      */
-    @Min(value = 5, message = "每页显示条数必须不小于5")
+    @Min(value = 1, message = "每页显示条数必须不小于1")
     @Max(value = 500, message = "每页显示条数不能大于500")
     @Schema(description = "每页显示条数")
     private int pageSize;

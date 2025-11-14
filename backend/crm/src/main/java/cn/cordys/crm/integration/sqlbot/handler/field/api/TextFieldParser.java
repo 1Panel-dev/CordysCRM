@@ -29,7 +29,7 @@ public abstract class TextFieldParser<T extends BaseField> implements ModuleFiel
     }
 
     @Override
-    public FieldDTO parse2SQLBotField(BaseField field) {
+    public FieldDTO parseToSQLBotField(BaseField field) {
         FieldDTO fieldDTO = new FieldDTO();
         fieldDTO.setName(field.getId());
         if (field.multiple() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {

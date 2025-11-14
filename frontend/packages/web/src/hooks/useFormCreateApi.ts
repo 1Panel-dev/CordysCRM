@@ -7,9 +7,10 @@ import {
   FieldRuleEnum,
   FieldTypeEnum,
   FormDesignKeyEnum,
+  type FormLinkScenarioEnum,
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
@@ -45,6 +46,7 @@ export interface FormCreateApiProps {
   otherSaveParams?: Ref<Record<string, any> | undefined>;
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
+  linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -210,7 +212,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       },
       {
         title: t('customer.lastFollowUps'),
-        key: 'follower',
+        key: 'followerName',
       },
       {
         title: t('customer.lastFollowUpDate'),
@@ -484,6 +486,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value = addressArr.length
                 ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
                 : '-';
+            } else if (item.type === FieldTypeEnum.INDUSTRY) {
+              value = field?.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
             } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
               value = formatNumberValue(field?.fieldValue as string, item);
             } else if (item.type === FieldTypeEnum.DATE_TIME) {
@@ -567,11 +571,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function fillLinkFormFieldValue(field: FormCreateField) {
+  function fillLinkFormFieldValue(field: FormCreateField, scenario: FormLinkScenarioEnum) {
     if (props.linkFormKey?.value) {
-      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]?.find(
-        (e) => e.current === field.id
-      )?.link;
+      const linkFieldId = formConfig.value.linkProp?.[props.linkFormKey.value]
+        ?.find((e) => e.key === scenario)
+        ?.linkFields?.find((e) => e.current === field.id && e.enable)?.link;
       if (linkFieldId) {
         const linkField = props.linkFormInfo?.value?.[linkFieldId];
         if (linkField) {
@@ -624,6 +628,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 formDetail.value[field.id] = addressArr.length
                   ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
                   : '-';
+              } else if (linkField.type === FieldTypeEnum.INDUSTRY) {
+                formDetail.value[field.id] = linkField.value ? getIndustryPath(linkField.value as string) : '-';
               } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
                 formDetail.value[field.id] = linkField.value.slice(0, 255);
               } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
@@ -942,7 +948,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function initForm() {
+  function initForm(linkScenario?: FormLinkScenarioEnum) {
     fieldList.value.forEach((item) => {
       if (props.needInitDetail?.value) {
         // 详情页编辑时，从详情获取值，不需要默认值
@@ -1030,9 +1036,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           },
         ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       }
-      if (props.linkFormInfo?.value) {
+      if (props.linkFormInfo?.value && linkScenario) {
         // 如果有关联表单信息，则填充关联表单字段值
-        fillLinkFormFieldValue(item);
+        fillLinkFormFieldValue(item, linkScenario);
       }
     });
     nextTick(() => {
@@ -1047,7 +1053,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       item.initialOptions = [];
     });
     initFormFieldConfig(fieldList.value);
-    initForm();
+    initForm(props.linkScenario?.value);
   }
 
   async function saveForm(

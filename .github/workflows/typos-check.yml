@@ -1,13 +1,23 @@
-name: Typos Check
-on: [push, pull_request]
+name: Typos Checking
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
 
 jobs:
   run:
     name: Spell Check with Typos
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Actions Repository
-      uses: actions/checkout@v2
+      - name: Checkout Actions Repository
+        uses: actions/checkout@v2
 
-    - name: Check spelling
-      uses: crate-ci/typos@master
+      - name: Check spelling
+        uses: crate-ci/typos@master
+        with:
+          config: .github/workflows/typos-extend-exclude.toml

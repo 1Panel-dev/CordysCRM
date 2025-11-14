@@ -96,11 +96,12 @@ export default {
   'crmFormDesign.selectDataSource': 'Select {type}',
   'crmFormDesign.customer': 'Account',
   'crmFormDesign.contract': 'Contact',
-  'crmFormDesign.business': 'Opportunity',
+  'crmFormDesign.opportunity': 'Opportunity',
   'crmFormDesign.product': 'Product',
   'crmFormDesign.clue': 'Lead',
   'crmFormDesign.plan': 'Follow-up Plan',
   'crmFormDesign.showRule': 'Visibility Rule',
+  'crmFormDesign.showRuleCount': 'Set {count} Visibility Rules',
   'crmFormDesign.showRuleSetting': 'Set Visibility Rule',
   'crmFormDesign.choice': 'Choice',
   'crmFormDesign.show': 'Show',
@@ -133,7 +134,7 @@ export default {
   'crmFormDesign.currentForm': 'Current Form',
   'crmFormDesign.addLink': 'Add Linkage',
   'crmFormDesign.fieldNotExist': 'Field does not exist',
-  'crmFormDesign.linkSettingTip': 'Set {count} linkages',
+  'crmFormDesign.linkSettingTip': '{count} scenarios set',
   'crmFormDesign.linkSettingClearTip': 'Are you sure you want to clear the form linkage?',
   'crmFormDesign.linkSettingClearTipContent': 'After clearing, the form will no longer display linked values',
   'crmFormDesign.repeatFieldName': 'A field with the same name already exists, please re-enter',
@@ -168,4 +169,27 @@ export default {
   'crmFormDesign.onlyFull': 'Only full-width is supported',
   'crmFormDesign.none': 'none',
   'crmFormDesign.onlyOneFileTip': 'If not checked, the maximum limit is 10 attachments',
+  'crmFormDesign.industry': 'Industry',
+  'crmFormDesign.onlyPlan': 'Plan',
+  'crmFormDesign.CLUE_TO_CUSTOMER': 'Lead to Account',
+  'crmFormDesign.CLUE_TO_OPPORTUNITY': 'Lead to Opportunity',
+  'crmFormDesign.CUSTOMER_TO_OPPORTUNITY': 'Account to Opportunity',
+  'crmFormDesign.CLUE_TO_RECORD': 'Write Record',
+  'crmFormDesign.CUSTOMER_TO_RECORD': 'Write Record',
+  'crmFormDesign.OPPORTUNITY_TO_RECORD': 'Write Record',
+  'crmFormDesign.PLAN_TO_RECORD': 'Plan to Record',
+  'crmFormDesign.tip.CLUE_TO_CUSTOMER':
+    'When converting a lead to an account, fill the lead form field content into the account form field',
+  'crmFormDesign.tip.CLUE_TO_OPPORTUNITY':
+    'When converting a lead to an opportunity, fill the lead form fields into the opportunity form fields',
+  'crmFormDesign.tip.CUSTOMER_TO_OPPORTUNITY':
+    'When creating an opportunity in the account details, fill the account form fields into the opportunity form fields',
+  'crmFormDesign.tip.CLUE_TO_RECORD':
+    'When writing follow-up records in the lead module, fill the lead form field content into the record form fields',
+  'crmFormDesign.tip.CUSTOMER_TO_RECORD':
+    'When writing follow-up records in the account module, fill the account form field content into the record form fields',
+  'crmFormDesign.tip.OPPORTUNITY_TO_RECORD':
+    'When writing follow-up records in the opportunity module, fill the opportunity form field content into the record form fields',
+  'crmFormDesign.tip.PLAN_TO_RECORD':
+    'When performing plan to record operations, fill the plan form field content into the record form fields',
 };

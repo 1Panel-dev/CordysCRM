@@ -989,7 +989,15 @@
             trigger: () => {
               return t('org.formPlatformSync', { type: platFormName.value });
             },
-            default: () => t('org.checkIsOpenConfig'),
+            default: () => {
+              return h(
+                'div',
+                {
+                  class: 'w-[248px]',
+                },
+                t('org.checkIsOpenConfig')
+              );
+            },
           }
         ),
         // 有同步配置权限则都展示

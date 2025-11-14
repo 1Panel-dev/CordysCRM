@@ -161,6 +161,8 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       borderInfo: `1px solid ${getLessVariableValue('--info-blue')}`,
       colorInfo: getLessVariableValue('--info-5'),
       iconColor: getLessVariableValue('--primary-8'),
+      iconSize: '20px',
+      closeIconSize: '16px',
     },
     Message: {
       borderRadius: '6px',

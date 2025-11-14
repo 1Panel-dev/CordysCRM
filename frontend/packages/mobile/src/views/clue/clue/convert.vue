@@ -144,7 +144,7 @@
   import { getOptFormConfig, transformClue } from '@/api/modules';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
-  import { CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
+  import { ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -238,7 +238,9 @@
   }
 
   function back() {
-    router.back();
+    router.push({
+      name: ClueRouteEnum.CLUE_INDEX,
+    });
   }
 
   function goDetail() {

@@ -89,9 +89,7 @@ public abstract class DataScopeTablePermissionHandler extends ModuleFieldTablePe
      */
     protected String getInConditionStr(Collection<String> ids) {
         return "'"
-                + ids
-                .stream()
-                .collect(Collectors.joining("','"))
+                + String.join("','", ids)
                 + "'";
     }
 }

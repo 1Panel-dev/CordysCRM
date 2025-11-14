@@ -2,6 +2,7 @@ package cn.cordys.common.service;
 
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.OnceInterface;
+import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.system.domain.Parameter;
 import cn.cordys.crm.system.service.ModuleFieldService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -32,6 +33,8 @@ public class DataInitService {
     private Redisson redisson;
     @Resource
     private ModuleFieldService moduleFieldService;
+    @Resource
+    private ClueService clueService;
 
     public void initOneTime() {
         RLock lock = redisson.getLock("init_data_lock");
@@ -44,6 +47,9 @@ public class DataInitService {
             initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
             initOneTime(moduleFormService::modifyFieldMobile, "modify.field.mobile");
             initOneTime(moduleFormService::modifyPhoneFieldFormat, "modify.field.format");
+            initOneTime(moduleFormService::processOldLinkData, "process.old.link.data");
+            initOneTime(moduleFormService::initFormScenarioProp, "init.record.form.scenario");
+            initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");
         } finally {
             lock.unlock();
         }

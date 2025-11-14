@@ -135,6 +135,16 @@ public class FilterCondition {
                         lastWeeks.add(timestampEnd);
                         return lastWeeks;
                     }
+                    case "NEXT_WEEK" -> {
+                        List<Long> nextWeeks = new ArrayList<>();
+                        LocalDate startOfNextWeek = LocalDate.now().plusWeeks(1).with(java.time.DayOfWeek.MONDAY);
+                        long timestamp = getTimestamp(startOfNextWeek.atStartOfDay());
+                        nextWeeks.add(timestamp);
+                        LocalDate startOfNextWeekEnd = LocalDate.now().plusWeeks(1).with(DayOfWeek.SUNDAY);
+                        long timestampEnd = getTimestamp(startOfNextWeekEnd.atTime(23, 59, 59, 999_000_000));
+                        nextWeeks.add(timestampEnd);
+                        return nextWeeks;
+                    }
                     case "MONTH" -> {
                         List<Long> months = new ArrayList<>();
                         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
@@ -155,6 +165,16 @@ public class FilterCondition {
                         lastMonths.add(timestampEnd);
                         return lastMonths;
                     }
+                    case "NEXT_MONTH" -> {
+                        List<Long> nextMonths = new ArrayList<>();
+                        LocalDate startOfNextMonth = LocalDate.now().plusMonths(1).withDayOfMonth(1);
+                        long timestamp = getTimestamp(startOfNextMonth.atStartOfDay());
+                        nextMonths.add(timestamp);
+                        LocalDate startOfNextMonthEnd = LocalDate.now().plusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(startOfNextMonthEnd.atTime(23, 59, 59, 999_000_000));
+                        nextMonths.add(timestampEnd);
+                        return nextMonths;
+                    }
                     case "LAST_SEVEN" -> {
                         List<Long> lastSevens = new ArrayList<>();
                         LocalDate startOfLastSevenDays = LocalDate.now().minusDays(7);
@@ -173,15 +193,6 @@ public class FilterCondition {
                         sevens.add(timestampEnd);
                         return sevens;
                     }
-                    case "LAST_THIRTY" -> {
-                        List<Long> lastThirty = new ArrayList<>();
-                        LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
-                        long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
-                        lastThirty.add(timestamp);
-                        long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
-                        lastThirty.add(timestampEnd);
-                        return lastThirty;
-                    }
                     case "THIRTY" -> {
                         List<Long> thirty = new ArrayList<>();
                         LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(29);
@@ -191,6 +202,109 @@ public class FilterCondition {
                         thirty.add(timestampEnd);
                         return thirty;
                     }
+                    case "LAST_THIRTY" -> {
+                        List<Long> lastThirty = new ArrayList<>();
+                        LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
+                        long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
+                        lastThirty.add(timestamp);
+                        long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
+                        lastThirty.add(timestampEnd);
+                        return lastThirty;
+                    }
+                    case "SIXTY" -> {
+                        List<Long> sixty = new ArrayList<>();
+                        LocalDate startOfNextSixtyDays = LocalDate.now().plusDays(59);
+                        long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
+                        sixty.add(timestamp);
+                        long timestampEnd = getTimestamp(startOfNextSixtyDays.atTime(23, 59, 59, 999_000_000));
+                        sixty.add(timestampEnd);
+                        return sixty;
+                    }
+                    case "LAST_SIXTY" -> {
+                        List<Long> lastSixty = new ArrayList<>();
+                        LocalDate startOfLastSixtyDays = LocalDate.now().minusDays(60);
+                        long timestamp = getTimestamp(startOfLastSixtyDays.atStartOfDay());
+                        lastSixty.add(timestamp);
+                        long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
+                        lastSixty.add(timestampEnd);
+                        return lastSixty;
+                    }
+                    //本季度
+                    case "QUARTER" -> {
+                        List<Long> quarters = new ArrayList<>();
+                        LocalDate now = LocalDate.now();
+                        int currentMonth = now.getMonthValue();
+                        int startMonth = (currentMonth - 1) / 3 * 3 + 1;
+                        LocalDate startOfQuarter = LocalDate.of(now.getYear(), startMonth, 1);
+                        long timestamp = getTimestamp(startOfQuarter.atStartOfDay());
+                        quarters.add(timestamp);
+                        LocalDate endOfQuarter = startOfQuarter.plusMonths(2).with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(endOfQuarter.atTime(23, 59, 59, 999_000_000));
+                        quarters.add(timestampEnd);
+                        return quarters;
+                    }
+                    //上季度
+                    case "LAST_QUARTER" -> {
+                        List<Long> lastQuarters = new ArrayList<>();
+                        LocalDate now = LocalDate.now();
+                        int currentMonth = now.getMonthValue();
+                        int startMonth = (currentMonth - 1) / 3 * 3 + 1;
+                        LocalDate startOfLastQuarter = LocalDate.of(now.getYear(), startMonth, 1).minusMonths(3);
+                        long timestamp = getTimestamp(startOfLastQuarter.atStartOfDay());
+                        lastQuarters.add(timestamp);
+                        LocalDate endOfLastQuarter = startOfLastQuarter.plusMonths(2).with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(endOfLastQuarter.atTime(23, 59, 59, 999_000_000));
+                        lastQuarters.add(timestampEnd);
+                        return lastQuarters;
+                    }
+                    //下季度
+                    case "NEXT_QUARTER" -> {
+                        List<Long> nextQuarters = new ArrayList<>();
+                        LocalDate now = LocalDate.now();
+                        int currentMonth = now.getMonthValue();
+                        int startMonth = (currentMonth - 1) / 3 * 3 + 1;
+                        LocalDate startOfNextQuarter = LocalDate.of(now.getYear(), startMonth, 1).plusMonths(3);
+                        long timestamp = getTimestamp(startOfNextQuarter.atStartOfDay());
+                        nextQuarters.add(timestamp);
+                        LocalDate endOfNextQuarter = startOfNextQuarter.plusMonths(2).with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(endOfNextQuarter.atTime(23, 59, 59, 999_000_000));
+                        nextQuarters.add(timestampEnd);
+                        return nextQuarters;
+                    }
+                    //本年度
+                    case "YEAR" -> {
+                        List<Long> years = new ArrayList<>();
+                        LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+                        long timestamp = getTimestamp(startOfYear.atStartOfDay());
+                        years.add(timestamp);
+                        LocalDate now = LocalDate.now().with(TemporalAdjusters.lastDayOfYear());
+                        long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
+                        years.add(timestampEnd);
+                        return years;
+                    }
+                    //上年度
+                    case "LAST_YEAR" -> {
+                        List<Long> lastYears = new ArrayList<>();
+                        LocalDate startOfLastYear = LocalDate.now().minusYears(1).withDayOfYear(1);
+                        long timestamp = getTimestamp(startOfLastYear.atStartOfDay());
+                        lastYears.add(timestamp);
+                        LocalDate startOfLastYearEnd = LocalDate.now().minusYears(1).with(TemporalAdjusters.lastDayOfYear());
+                        long timestampEnd = getTimestamp(startOfLastYearEnd.atTime(23, 59, 59, 999_000_000));
+                        lastYears.add(timestampEnd);
+                        return lastYears;
+                    }
+                    //下年度
+                    case "NEXT_YEAR" -> {
+                        List<Long> nextYears = new ArrayList<>();
+                        LocalDate startOfNextYear = LocalDate.now().plusYears(1).withDayOfYear(1);
+                        long timestamp = getTimestamp(startOfNextYear.atStartOfDay());
+                        nextYears.add(timestamp);
+                        LocalDate startOfNextYearEnd = LocalDate.now().plusYears(1).with(TemporalAdjusters.lastDayOfYear());
+                        long timestampEnd = getTimestamp(startOfNextYearEnd.atTime(23, 59, 59, 999_000_000));
+                        nextYears.add(timestampEnd);
+                        return nextYears;
+                    }
+
                 }
 
             } else {

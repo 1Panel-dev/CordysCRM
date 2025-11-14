@@ -23,5 +23,5 @@ export default {
   'workbench.duplicateCheck.opportunityStage': 'Opportunity stage',
   'workbench.duplicateCheck.openSeaName': 'OpenSea name',
   'workbench.duplicateCheck.leadPoolName': 'Lead pool name',
-  'workbench.duplicateCheck.lastFollowUpDate': 'Last follow-up date',
+  'workbench.duplicateCheck.lastFollowUpDate': 'Last follow-up time',
 };

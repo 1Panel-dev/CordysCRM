@@ -28,7 +28,7 @@ public class FollowUpRecordAddRequest {
     @Schema(description = "线索id")
     private String clueId;
 
-    @Size(max = 1000)
+    @Size(max = 3000)
     @Schema(description = "跟进内容", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 
