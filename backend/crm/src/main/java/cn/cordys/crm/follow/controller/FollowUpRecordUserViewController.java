@@ -58,7 +58,7 @@ public class FollowUpRecordUserViewController {
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
 	@Operation(summary = "记录视图详情")
 	public UserViewResponse viewDetail(@PathVariable String id) {
-		return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.FOLLOW_PLAN.getKey());
+		return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.FOLLOW_RECORD.getKey());
 	}
 
 
