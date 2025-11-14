@@ -127,7 +127,7 @@ const useUserStore = defineStore('user', {
         const { t } = useI18n();
         if (!silence) {
           const appStore = useAppStore();
-          appStore.showLoading(t('message.logouting'));
+          appStore.showLoading(t('message.loggingOut'));
         }
         await signout();
       } finally {

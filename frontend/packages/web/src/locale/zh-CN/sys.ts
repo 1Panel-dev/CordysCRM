@@ -1,7 +1,7 @@
 export default {
   // 消息提醒相关
   'message.errorTip': '错误提示',
-  'message.logouting': '正在退出登录...',
+  'message.loggingOut': '正在退出登录...',
   'message.loginExpired': '登录过期，请重新登录!',
   'message.logoutSuccess': '登出成功',
   'message.loadingDefaultTip': '加载中...',
