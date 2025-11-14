@@ -43,8 +43,9 @@ import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
-import cn.cordys.crm.follow.domain.FollowUpPlan;
-import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.domain.*;
+import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -161,7 +162,15 @@ public class ClueService {
     @Resource
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
     @Resource
+    private BaseMapper<FollowUpRecordField> followUpRecordFieldMapper;
+    @Resource
+    private BaseMapper<FollowUpRecordFieldBlob> followUpRecordFieldBlobMapper;
+    @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
+    @Resource
+    private BaseMapper<FollowUpPlanField> followUpPlanFieldMapper;
+    @Resource
+    private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -819,8 +828,24 @@ public class ClueService {
         recordLambdaQueryWrapper.eq(FollowUpRecord::getClueId, clueId).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
         List<FollowUpRecord> followUpRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(followUpRecords)) {
+            List<String> ids = followUpRecords.stream().map(FollowUpRecord::getId).toList();
+            LambdaQueryWrapper<FollowUpRecordField> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            fieldLambdaQueryWrapper.in(FollowUpRecordField::getResourceId, ids);
+            List<FollowUpRecordField> followUpRecordFields = followUpRecordFieldMapper.selectListByLambda(fieldLambdaQueryWrapper);
+            LambdaQueryWrapper<FollowUpRecordFieldBlob> fieldBlobLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            fieldBlobLambdaQueryWrapper.in(FollowUpRecordFieldBlob::getResourceId, ids);
+            List<FollowUpRecordFieldBlob> followUpRecordFieldBlobs = followUpRecordFieldBlobMapper.selectListByLambda(fieldBlobLambdaQueryWrapper);
             followUpRecords.forEach(record -> {
-                record.setId(IDGenerator.nextStr());
+                String recordId = IDGenerator.nextStr();
+                followUpRecordFields.stream().filter(recordField ->Strings.CS.equals(recordField.getResourceId(), record.getId())).forEach(field -> {
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(recordId);
+                });
+                followUpRecordFieldBlobs.stream().filter(recordFieldBlob -> Strings.CS.equals(recordFieldBlob.getResourceId(), record.getId())).forEach(fieldBlob -> {
+                    fieldBlob.setId(IDGenerator.nextStr());
+                    fieldBlob.setResourceId(recordId);
+                });
+                record.setId(recordId);
                 record.setClueId(null);
                 record.setType(FollowUpPlanType.CUSTOMER.name());
                 record.setCustomerId(customerId);
@@ -828,14 +853,32 @@ public class ClueService {
                 record.setContactId(contactId);
             });
             followUpRecordMapper.batchInsert(followUpRecords);
+            followUpRecordFieldMapper.batchInsert(followUpRecordFields);
+            followUpRecordFieldBlobMapper.batchInsert(followUpRecordFieldBlobs);
         }
         // 计划
         LambdaQueryWrapper<FollowUpPlan> planLambdaQueryWrapper = new LambdaQueryWrapper<>();
         planLambdaQueryWrapper.eq(FollowUpPlan::getClueId, clueId).eq(FollowUpPlan::getType, FollowUpPlanType.CLUE.name());
         List<FollowUpPlan> followUpPlans = followUpPlanMapper.selectListByLambda(planLambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(followUpPlans)) {
+            List<String> ids = followUpPlans.stream().map(FollowUpPlan::getId).toList();
+            LambdaQueryWrapper<FollowUpPlanField> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            fieldLambdaQueryWrapper.in(FollowUpPlanField::getResourceId, ids);
+            List<FollowUpPlanField> followUpPlanFields = followUpPlanFieldMapper.selectListByLambda(fieldLambdaQueryWrapper);
+            LambdaQueryWrapper<FollowUpPlanFieldBlob> fieldBlobLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            fieldBlobLambdaQueryWrapper.in(FollowUpPlanFieldBlob::getResourceId, ids);
+            List<FollowUpPlanFieldBlob> followUpPlanFieldBlobs = followUpPlanFieldBlobMapper.selectListByLambda(fieldBlobLambdaQueryWrapper);
             followUpPlans.forEach(plan -> {
-                plan.setId(IDGenerator.nextStr());
+                String planId = IDGenerator.nextStr();
+                followUpPlanFields.stream().filter(planField ->Strings.CS.equals(planField.getResourceId(), plan.getId())).forEach(field -> {
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(planId);
+                });
+                followUpPlanFieldBlobs.stream().filter(planFieldBlob -> Strings.CS.equals(planFieldBlob.getResourceId(), plan.getId())).forEach(fieldBlob -> {
+                    fieldBlob.setId(IDGenerator.nextStr());
+                    fieldBlob.setResourceId(planId);
+                });
+                plan.setId(planId);
                 plan.setClueId(null);
                 plan.setType(FollowUpPlanType.CUSTOMER.name());
                 plan.setCustomerId(customerId);
@@ -843,6 +886,8 @@ public class ClueService {
                 plan.setContactId(contactId);
             });
             followUpPlanMapper.batchInsert(followUpPlans);
+            followUpPlanFieldMapper.batchInsert(followUpPlanFields);
+            followUpPlanFieldBlobMapper.batchInsert(followUpPlanFieldBlobs);
         }
     }
 
