@@ -966,12 +966,12 @@ public class ModuleFormService {
     }
 
     /**
-     * 处理表单联动的旧数据&&支持多场景 (客户&商机)
+     * 处理表单联动的旧数据&&支持多场景 (客户&商机&记录)
      */
     @SuppressWarnings("unchecked")
     public void processOldLinkData() {
         LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(ModuleForm::getFormKey, List.of(FormKey.CUSTOMER.getKey(), FormKey.OPPORTUNITY.getKey()));
+        wrapper.in(ModuleForm::getFormKey, List.of(FormKey.CUSTOMER.getKey(), FormKey.OPPORTUNITY.getKey(), FormKey.FOLLOW_RECORD.getKey()));
         List<ModuleForm> forms = moduleFormMapper.selectListByLambda(wrapper);
         Map<String, String> formKeyMap = forms.stream().collect(Collectors.toMap(ModuleForm::getId, ModuleForm::getFormKey));
         List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formKeyMap.keySet().stream().toList());
@@ -986,6 +986,8 @@ public class ModuleFormService {
                 } else if (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey())) {
                     dataMap.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
                     dataMap.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
+                } else {
+                    dataMap.put(FormKey.FOLLOW_PLAN.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.PLAN_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
                 }
             } else {
                 Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
@@ -999,10 +1001,16 @@ public class ModuleFormService {
                         linkField.setEnable(true);
                         return linkField;
                     }).toList();
-                    String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
-                            LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
-                            (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
-                                    LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
+                    String scenarioKey;
+                    if (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey())) {
+                        scenarioKey = LinkScenarioKey.CLUE_TO_CUSTOMER.name();
+                    } else if (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey())) {
+                        scenarioKey = LinkScenarioKey.CLUE_TO_OPPORTUNITY.name();
+                    } else if (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CUSTOMER.getKey())) {
+                        scenarioKey = LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name();
+                    } else {
+                        scenarioKey = LinkScenarioKey.PLAN_TO_RECORD.name();
+                    }
                     LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
                     dataMap.put(entry.getKey(), List.of(linkScenario));
                 }
@@ -1027,7 +1035,6 @@ public class ModuleFormService {
         linkProp.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
         linkProp.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
         linkProp.put(FormKey.OPPORTUNITY.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.OPPORTUNITY_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
-        linkProp.put(FormKey.FOLLOW_PLAN.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.PLAN_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
         propMap.put("linkProp", linkProp);
         recordFormBlob.setProp(JSON.toJSONString(propMap));
         moduleFormBlobMapper.updateById(recordFormBlob);
