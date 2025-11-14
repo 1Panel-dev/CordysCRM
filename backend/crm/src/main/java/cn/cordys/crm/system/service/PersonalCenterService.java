@@ -102,7 +102,7 @@ public class PersonalCenterService {
                     organizationId
             );
         } catch (Exception e) {
-            stringRedisTemplate.delete(redisKey); //
+            stringRedisTemplate.delete(redisKey);
             throw new GenericException(e.getMessage());
         }
     }
