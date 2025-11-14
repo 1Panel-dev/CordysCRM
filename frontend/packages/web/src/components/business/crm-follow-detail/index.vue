@@ -170,18 +170,24 @@
 
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const linkFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
-  const linkScenario = computed(() => {
-    if (props.parentFormKey === FormDesignKeyEnum.CUSTOMER) {
-      return FormLinkScenarioEnum.CUSTOMER_TO_RECORD;
+  const linkScenario = ref(FormLinkScenarioEnum.PLAN_TO_RECORD);
+  watch(
+    () => props.parentFormKey,
+    (val) => {
+      if (val === FormDesignKeyEnum.CUSTOMER) {
+        linkScenario.value = FormLinkScenarioEnum.CUSTOMER_TO_RECORD;
+      }
+      if (val === FormDesignKeyEnum.BUSINESS) {
+        linkScenario.value = FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
+      }
+      if (val === FormDesignKeyEnum.CLUE) {
+        linkScenario.value = FormLinkScenarioEnum.CLUE_TO_RECORD;
+      }
+    },
+    {
+      immediate: true,
     }
-    if (props.parentFormKey === FormDesignKeyEnum.BUSINESS) {
-      return FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
-    }
-    if (props.parentFormKey === FormDesignKeyEnum.CLUE) {
-      return FormLinkScenarioEnum.CLUE_TO_RECORD;
-    }
-    return FormLinkScenarioEnum.PLAN_TO_RECORD;
-  });
+  );
   const linkSourceId = computed(() => {
     if (linkScenario.value !== FormLinkScenarioEnum.PLAN_TO_RECORD) {
       return props.sourceId;
@@ -244,6 +250,7 @@
   }
 
   async function handleConvert(item: FollowDetailItem) {
+    linkScenario.value = FormLinkScenarioEnum.PLAN_TO_RECORD;
     activePlan.value = item;
     isConverted.value = true;
     otherFollowRecordSaveParams.value.converted = isConverted.value;
