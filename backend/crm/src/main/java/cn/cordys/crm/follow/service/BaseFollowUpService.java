@@ -38,7 +38,7 @@ public class BaseFollowUpService {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), permission);
 
-        //全部数据
+        // 全部数据
         if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
             customerDataDTO.setAll(true);
             return customerDataDTO;
@@ -58,7 +58,7 @@ public class BaseFollowUpService {
                 customerDataDTO.setOwner(true);
             }
         } else {
-            //不是协作人
+            // 不是协作人
             customerDataDTO.setOwner(true);
         }
 
@@ -115,7 +115,7 @@ public class BaseFollowUpService {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), permission);
 
-        //全部数据
+        // 全部数据
         if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
             customerDataDTO.setAll(true);
             return customerDataDTO;
