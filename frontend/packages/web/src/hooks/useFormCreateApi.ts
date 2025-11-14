@@ -212,7 +212,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       },
       {
         title: t('customer.lastFollowUps'),
-        key: 'follower',
+        key: 'followerName',
       },
       {
         title: t('customer.lastFollowUpDate'),
