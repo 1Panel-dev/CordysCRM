@@ -1,0 +1,11 @@
+[default.extend-words]
+AKE = "AKE"
+[default.extend-identifiers]
+maintain_column_froms = "maintain_column_froms"
+[files]
+extend-exclude = [
+  "frontend/public", 
+  "frontend/packages/web/src/components/business/crm-city-select/config.ts", 
+  "backend/crm/src/main/resources/region/region.json",
+  "iconfont.json"
+]
