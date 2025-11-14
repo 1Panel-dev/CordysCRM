@@ -328,7 +328,7 @@ export default {
   'common.dashboard': '仪表板',
   'common.convertPlanToRecord': '计划转记录',
   'common.hasConvertToRecord': '已转记录',
-  'common.notAllowForwardSlash': '不允许输入/',
+  'common.notAllowForwardSlash': '不允许输入 /',
   'common.conversionSuccessful': '转换成功',
   'common.updateField': '编辑字段',
   'common.noEnableApiKey': '暂无开启的 API Key',
