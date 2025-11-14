@@ -35,7 +35,7 @@ public class FollowUpRecordUserViewController {
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
 	@Operation(summary = "添加记录视图")
 	public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-		return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.FOLLOW_PLAN.name());
+		return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.FOLLOW_RECORD.name());
 	}
 
 
@@ -66,7 +66,7 @@ public class FollowUpRecordUserViewController {
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
 	@Operation(summary = "记录视图列表")
 	public List<UserViewListResponse> queryList() {
-		return userViewService.list(UserViewResourceType.FOLLOW_PLAN.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+		return userViewService.list(UserViewResourceType.FOLLOW_RECORD.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 
@@ -81,7 +81,7 @@ public class FollowUpRecordUserViewController {
 	@Operation(summary = "记录视图-拖拽排序")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
 	public void editPos(@Validated @RequestBody PosRequest request) {
-		userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.FOLLOW_PLAN.name());
+		userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.FOLLOW_RECORD.name());
 	}
 
 
