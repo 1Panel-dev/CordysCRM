@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 public class LocationResolver extends AbstractModuleFieldResolver<LocationField> {
@@ -65,50 +67,36 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         String code = value.substring(0, value.indexOf(SPILT_STR));
         //描述
         String detail = value.substring(value.indexOf(SPILT_STR) + 1);
-
-        String regionName = StringUtils.EMPTY;
-        List<RegionCode> regionCode = getRegionCodes();
-
-        for (RegionCode country : regionCode) {
-            // 检查国家编码
-            if (country.getCode().equals(code)) {
-                regionName = country.getName();
-                break;
-            }
-            // 检查省级编码
-            if (country.getChildren() != null) {
-                for (RegionCode province : country.getChildren()) {
-                    if (province.getCode().equals(code)) {
-                        regionName = country.getName() + "-" + province.getName();
-                        break;
-                    }
-                    // 检查市级编码
-                    if (province.getChildren() != null) {
-                        for (RegionCode city : province.getChildren()) {
-                            if (city.getCode().equals(code)) {
-                                regionName = country.getName() + "-" + province.getName() + "-" + city.getName();
-                                break;
-                            }
-                            // 检查区级编码
-                            if (city.getChildren() != null) {
-                                for (RegionCode area : city.getChildren()) {
-                                    if (area.getCode().equals(code)) {
-                                        regionName = country.getName() + "-" + province.getName() + "-" + city.getName() + "-" + area.getName();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        //解析名称
+        String regionName = resolveRegionName(code);
 
         if (StringUtils.isBlank(detail)) {
             return regionName;
         }
         return regionName + SPILT_STR + detail;
+    }
+
+    private String resolveRegionName(String code) {
+        List<RegionCode> regionCode = getRegionCodes();
+        return resolveRegionName(regionCode, code, new ArrayDeque<>());
+    }
+
+    private String resolveRegionName(List<RegionCode> nodes, String code, Deque<String> path) {
+        if (nodes == null || nodes.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+        for (RegionCode node : nodes) {
+            path.addLast(node.getName());
+            if (code.equals(node.getCode())) {
+                return String.join(SPILT_STR, path);
+            }
+            String childResult = resolveRegionName(node.getChildren(), code, path);
+            if (StringUtils.isNotBlank(childResult)) {
+                return childResult;
+            }
+            path.removeLast();
+        }
+        return StringUtils.EMPTY;
     }
 
     @Override
