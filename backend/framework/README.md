@@ -132,7 +132,7 @@ public void updateUser(User user) {
 - **groups**：分组管理
 - **pager**：分页查询功能
 - **response**：统一响应格式
-- **uid**：生成唯一标识符
+- **uid**：唯一标识符生成
 - **util**：工具类（包含加密、编码等）
 
 ### MyBatis 配置
