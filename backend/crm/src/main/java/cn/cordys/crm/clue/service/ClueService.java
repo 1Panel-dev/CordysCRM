@@ -713,13 +713,13 @@ public class ClueService {
         }
 
         // 关联
-        transformCsAssociate(clue, transitionCs, currentUser, orgId);
+        TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transitionCs, currentUser, orgId);
         clue.setTransitionId(transitionCs.getId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
 
         // 转移线索的计划&记录
-        batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null);
+        batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null, transformCsAssociateDTO.getContactId());
         // 刷新客户的最新跟进时间
         if (clue.getFollowTime() != null && (transitionCs.getFollowTime() == null || transitionCs.getFollowTime() < clue.getFollowTime())) {
             Customer updateCustomer = new Customer();
@@ -796,7 +796,7 @@ public class ClueService {
             transformCustomer.setName(request.getOppName());
             Opportunity transformOpportunity = generateOpportunityByLinkForm(clue, transformCsAssociateDTO.getContactId(), transformCustomer, currentUser, orgId);
             // 转移线索的计划&记录
-            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), transformOpportunity.getId());
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), transformOpportunity.getId(), transformCsAssociateDTO.getContactId());
             paramMap.put("template", Translator.get("message.clue_convert_business_text"));
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
@@ -804,7 +804,7 @@ public class ClueService {
             return transformOpportunity.getId();
         } else {
             // 转移线索的计划&记录
-            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), null);
+            batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), null, transformCsAssociateDTO.getContactId());
             return transformCustomer.getId();
         }
     }
@@ -815,7 +815,7 @@ public class ClueService {
      * @param customerId 客户ID
      * @param opportunityId 商机ID
      */
-    public void batchCopyCluePlanAndRecord(String clueId, String customerId, String opportunityId) {
+    public void batchCopyCluePlanAndRecord(String clueId, String customerId, String opportunityId, String contactId) {
         // 记录
         LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recordLambdaQueryWrapper.eq(FollowUpRecord::getClueId, clueId).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
@@ -827,6 +827,7 @@ public class ClueService {
                 record.setType(FollowUpPlanType.CUSTOMER.name());
                 record.setCustomerId(customerId);
                 record.setOpportunityId(opportunityId);
+                record.setContactId(contactId);
             });
             followUpRecordMapper.batchInsert(followUpRecords);
         }
@@ -841,6 +842,7 @@ public class ClueService {
                 plan.setType(FollowUpPlanType.CUSTOMER.name());
                 plan.setCustomerId(customerId);
                 plan.setOpportunityId(opportunityId);
+                plan.setContactId(contactId);
             });
             followUpPlanMapper.batchInsert(followUpPlans);
         }
