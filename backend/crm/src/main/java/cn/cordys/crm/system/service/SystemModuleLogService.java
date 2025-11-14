@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.ModuleField;
@@ -20,12 +21,14 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
+    public static final String LINK_KEY_SPILT = "-";
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS.forEach(differ -> {
-            if (isLinkFormKey(differ.getColumn())) {
-                differ.setColumnName(Translator.get("log." + differ.getColumn() + ".link"));
+            if (isLinkFormKey(differ.getColumn()) && differ.getColumn().split(LINK_KEY_SPILT).length == 2) {
+                String[] splitKey = differ.getColumn().split(LINK_KEY_SPILT);
+                differ.setColumnName(Translator.get("log." + splitKey[0] + ".link") + "-" + Translator.get(splitKey[1].toLowerCase()));
                 handleLinkFieldsLogDetail(differ);
             }
             if (Strings.CS.equals("module.switch", differ.getColumn())) {
@@ -164,8 +167,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
     }
 
     private boolean isLinkFormKey(String key) {
-        for (FormKey formKey : FormKey.values()) {
-            if (formKey.getKey().equals(key)) {
+        for (LinkScenarioKey linkKey : LinkScenarioKey.values()) {
+            if (key.contains(linkKey.name())) {
                 return true;
             }
         }

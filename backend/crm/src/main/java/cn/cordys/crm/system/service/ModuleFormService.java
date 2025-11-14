@@ -16,6 +16,7 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
@@ -30,7 +31,9 @@ import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
 import cn.cordys.crm.system.dto.form.base.LinkScenario;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
+import cn.cordys.crm.system.dto.response.FormPropLogDTO;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigLogDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -188,8 +191,8 @@ public class ModuleFormService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(Translator.get(saveParam.getFormKey()) + Translator.get("module.form.setting"))
-                        .originalValue(oldConfig)
-                        .modifiedValue(newConfig)
+                        .originalValue(buildModuleFormLogDTO(oldConfig))
+                        .modifiedValue(buildModuleFormLogDTO(newConfig))
                         .build()
         );
 
@@ -235,6 +238,25 @@ public class ModuleFormService {
 
         // 返回表单整体配置
         return getConfig(form.getFormKey(), currentOrgId);
+    }
+
+    public ModuleFormConfigLogDTO buildModuleFormLogDTO(ModuleFormConfigDTO config) {
+        ModuleFormConfigLogDTO logDTO = new ModuleFormConfigLogDTO();
+        FormPropLogDTO formPropLog = BeanUtils.copyBean(new FormPropLogDTO(), config.getFormProp());
+        BeanUtils.copyBean(logDTO, config);
+        logDTO.setFormProp(formPropLog);
+        // 目前只处理联动字段方便日志详情解析
+        Map<String, List<LinkField>> parseLinkFieldMap = new HashMap<>();
+        Map<String, List<LinkScenario>> linkProp = config.getFormProp().getLinkProp();
+        if (linkProp != null && !linkProp.isEmpty()) {
+            linkProp.entrySet().forEach(link -> {
+                link.getValue().forEach(scenario -> {
+                    parseLinkFieldMap.put(link.getKey() + "-" + scenario.getKey(), scenario.getLinkFields());
+                });
+            });
+        }
+        logDTO.getFormProp().setLinkProp(parseLinkFieldMap);
+        return logDTO;
     }
 
     public List<BaseField> getAllFields(String formKey, String orgId) {
