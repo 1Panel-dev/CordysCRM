@@ -91,5 +91,9 @@ public enum FieldType {
     /**
      * 链接
      */
-    LINK
+    LINK,
+    /**
+     * 行业
+     */
+    INDUSTRY
 }

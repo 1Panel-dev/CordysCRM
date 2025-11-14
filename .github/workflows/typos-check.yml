@@ -1,5 +1,13 @@
-name: Typos Check
-on: [push, pull_request]
+name: Typos Checking
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
 
 jobs:
   run:
@@ -11,3 +19,5 @@ jobs:
 
       - name: Check spelling
         uses: crate-ci/typos@master
+        with:
+          config: .github/workflows/typos-extend-exclude.toml

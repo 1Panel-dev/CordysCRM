@@ -719,8 +719,8 @@ public class CustomerService {
                 // record logs
                 logService.batchAdd(logs);
             };
-            CustomFieldImportEventListener<Customer, CustomerField> eventListener = new CustomFieldImportEventListener<>(fields, Customer.class, currentOrg, currentUser,
-                    customerFieldMapper, afterDo, 2000);
+            CustomFieldImportEventListener<Customer> eventListener = new CustomFieldImportEventListener<>(fields, Customer.class, currentOrg, currentUser,
+                    "customer_field", afterDo, 2000);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
@@ -741,7 +741,7 @@ public class CustomerService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CUSTOMER.getKey(), currentOrg);
-            CustomFieldCheckEventListener<CustomerField> eventListener = new CustomFieldCheckEventListener<>(fields, "customer", currentOrg, customerFieldMapper);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer", "customer_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

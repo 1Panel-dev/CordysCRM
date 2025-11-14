@@ -34,6 +34,15 @@ const lead: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'moveToPool',
+      name: ClueRouteEnum.MOVE_TO_POOL,
+      component: () => import('@/views/clue/clue/moveToPool.vue'),
+      meta: {
+        permissions: ['CLUE_MANAGEMENT:READ'],
+        depth: 2,
+      },
+    },
+    {
       path: 'convert',
       name: ClueRouteEnum.CONVERT,
       component: () => import('@/views/clue/clue/convert.vue'),

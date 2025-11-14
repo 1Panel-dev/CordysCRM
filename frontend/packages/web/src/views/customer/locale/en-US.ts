@@ -24,7 +24,7 @@ export default {
   'customer.collectionTime': 'Collection time',
   'customer.remainingVesting': 'Remaining vesting',
   'customer.lastFollowUps': 'Last follow-up personnel',
-  'customer.lastFollowUpDate': 'Last follow-up date',
+  'customer.lastFollowUpDate': 'Last follow-up time',
   'customer.disableReason': 'Disable reason',
   'customer.claimTip': 'Are you sure to claim this account?',
   'customer.batchClaimTip': 'Are you sure to claim {count} accounts?',

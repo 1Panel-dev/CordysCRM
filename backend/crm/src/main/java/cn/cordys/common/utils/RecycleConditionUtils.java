@@ -53,7 +53,7 @@ public class RecycleConditionUtils {
         if (!pickedTime.toLocalTime().equals(LocalDateTime.MIN.toLocalTime())) {
             betweenDays++;
         }
-        return (int) betweenDays;
+        return betweenDays < 0 ? 0 : (int) betweenDays;
 
     }
 
@@ -67,7 +67,8 @@ public class RecycleConditionUtils {
      */
     public static boolean matchTime(RuleConditionDTO condition, Long matchTime) {
         if (matchTime == null) {
-            return false;
+            // 无时间匹配, 也满足回收条件
+            return true;
         }
         boolean match = false;
         if (Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name()) && StringUtils.isNotBlank(condition.getValue())) {

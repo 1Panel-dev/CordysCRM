@@ -43,17 +43,33 @@
         <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
+    <template
+      v-if="
+        activeTab === 'info' &&
+        hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE', 'CUSTOMER_MANAGEMENT:RECYCLE'])
+      "
+      #footer
+    >
+      <CrmActionButtons
+        :show-edit-button="hasAllPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+        :actions="actions"
+        @select="handleMoreSelect"
+      />
+    </template>
   </CrmPageWrapper>
 </template>
 
 <script setup lang="ts">
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmActionButtons, { CrmActionButtonsItem } from '@/components/business/crm-action-buttons/index.vue';
   import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
@@ -61,16 +77,17 @@
   import collaborator from './components/collaborator.vue';
   import relation from './components/relation.vue';
 
-  import { getCustomerHeaderList } from '@/api/modules';
+  import { deleteCustomer, getCustomerHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
-  import { CustomerRouteEnum } from '@/enums/routeEnum';
+  import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
   defineOptions({
     name: CustomerRouteEnum.CUSTOMER_DETAIL,
   });
   const route = useRoute();
+  const router = useRouter();
   const { t } = useI18n();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
@@ -117,6 +134,102 @@
     }
     return fullTabList;
   });
+
+  const actions = ref<CrmActionButtonsItem[]>([
+    {
+      key: 'moveToPool',
+      text: t('customer.moveToOpenSea'),
+      permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+    },
+    {
+      key: 'transfer',
+      text: t('common.transfer'),
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+    },
+    {
+      key: 'delete',
+      text: t('common.delete'),
+      color: 'var(--error-red)',
+      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+    },
+  ]);
+
+  function handleEdit(id: string) {
+    router.push({
+      name: CommonRouteEnum.FORM_CREATE,
+      query: {
+        id,
+        formKey: FormDesignKeyEnum.CUSTOMER,
+        needInitDetail: 'Y',
+      },
+    });
+  }
+
+  function handleTransfer(id: string) {
+    router.push({
+      name: CustomerRouteEnum.CUSTOMER_TRANSFER,
+      query: {
+        id,
+        apiKey: FormDesignKeyEnum.CUSTOMER,
+      },
+    });
+  }
+
+  function handleDelete(id: string) {
+    showConfirmDialog({
+      title: t('customer.deleteTitle'),
+      message: t('customer.deleteTip'),
+      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonColor: 'var(--error-red)',
+      beforeClose: async (action) => {
+        if (action === 'confirm') {
+          try {
+            await deleteCustomer(id);
+            showSuccessToast(t('common.deleteSuccess'));
+            router.back();
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
+  }
+
+  function handleMoveToPool() {
+    router.push({
+      name: ClueRouteEnum.MOVE_TO_POOL,
+      query: {
+        id: sourceId.value,
+        name: sourceName.value,
+        reasonKey: ReasonTypeEnum.CUSTOMER_POOL_RS,
+      },
+    });
+  }
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'edit':
+        handleEdit(sourceId.value);
+        break;
+      case 'transfer':
+        handleTransfer(sourceId.value);
+        break;
+      case 'delete':
+        handleDelete(sourceId.value);
+        break;
+      case 'moveToPool':
+        handleMoveToPool();
+        break;
+      default:
+        break;
+    }
+  }
+
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
   const relationListRef = ref<InstanceType<typeof relation>[]>();
@@ -136,6 +249,8 @@
       relationListRef.value?.[0].initList();
     } else if (activeTab.value === 'collaborator') {
       collaboratorListRef.value?.[0].initList();
+    } else if (activeTab.value === 'info') {
+      initFormDescription();
     }
   });
 </script>

@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
@@ -27,6 +28,7 @@ import cn.cordys.crm.system.dto.field.base.*;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
+import cn.cordys.crm.system.dto.form.base.LinkScenario;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -58,9 +60,12 @@ public class ModuleFormService {
 
     static {
         TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
-                FieldType.DEPARTMENT.name(), "sys_department", FieldSourceType.CUSTOMER.name(), "customer",
-                FieldSourceType.CLUE.name(), "clue", FieldSourceType.CONTACT.name(), "customer_contact",
-                FieldSourceType.OPPORTUNITY.name(), "opportunity", FieldSourceType.PRODUCT.name(), "product");
+                FieldType.DEPARTMENT.name(), "sys_department",
+                FieldSourceType.CUSTOMER.name(), "customer",
+                FieldSourceType.CLUE.name(), "clue",
+                FieldSourceType.CONTACT.name(), "customer_contact",
+                FieldSourceType.OPPORTUNITY.name(), "opportunity",
+                FieldSourceType.PRODUCT.name(), "product");
     }
 
     @Value("classpath:form/form.json")
@@ -671,13 +676,20 @@ public class ModuleFormService {
      * @param orgId            组织ID
      * @param <T>              实体类型
      * @param <S>              数据来源类型
+     * @param scenarioKey      场景Key
      *
      * @return 填充结果
      */
-    public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig, String orgId, String sourceFormKey) throws Exception {
+    public <T, S> FormLinkFill<T> fillFormLinkValue(T target, S source, ModuleFormConfigDTO targetFormConfig,
+                                                    String orgId, String sourceFormKey, String scenarioKey) throws Exception {
         FormLinkFill.FormLinkFillBuilder<T> fillBuilder = FormLinkFill.builder();
-        Map<String, List<LinkField>> linkProp = targetFormConfig.getFormProp().getLinkProp();
+        Map<String, List<LinkScenario>> linkProp = targetFormConfig.getFormProp().getLinkProp();
         if (linkProp == null || CollectionUtils.isEmpty(linkProp.get(sourceFormKey))) {
+            return fillBuilder.entity(target).build();
+        }
+        // 未找到联动场景，直接返回目标对象
+        Optional<LinkScenario> scenarioOptional = linkProp.get(sourceFormKey).stream().filter(scenario -> Strings.CS.equals(scenario.getKey(), scenarioKey)).findFirst();
+        if (scenarioOptional.isEmpty()) {
             return fillBuilder.entity(target).build();
         }
 
@@ -697,7 +709,7 @@ public class ModuleFormService {
         List<BaseModuleFieldValue> targetFieldVals = new ArrayList<>();
         @SuppressWarnings("unchecked")
         List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
-        for (LinkField linkField : linkProp.get(sourceFormKey)) {
+        for (LinkField linkField : scenarioOptional.get().getLinkFields()) {
             BaseField targetField = targetFieldMap.get(linkField.getCurrent());
             BaseField sourceField = sourceFieldMap.get(linkField.getLink());
             if (targetField == null || sourceField == null) {
@@ -929,6 +941,74 @@ public class ModuleFormService {
                 moduleFormBlobMapper.updateById(formBlob);
             }
         }
+    }
+
+    /**
+     * 处理表单联动的旧数据&&支持多场景 (客户&商机)
+     */
+    @SuppressWarnings("unchecked")
+    public void processOldLinkData() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ModuleForm::getFormKey, List.of(FormKey.CUSTOMER.getKey(), FormKey.OPPORTUNITY.getKey()));
+        List<ModuleForm> forms = moduleFormMapper.selectListByLambda(wrapper);
+        Map<String, String> formKeyMap = forms.stream().collect(Collectors.toMap(ModuleForm::getId, ModuleForm::getFormKey));
+        List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formKeyMap.keySet().stream().toList());
+        for (ModuleFormBlob formBlob : moduleFormBlobs) {
+            Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+            Object linkProp = propMap.get("linkProp");
+            Map<String, List<LinkScenario>> dataMap = new HashMap<>(2);
+            String formKey = formKeyMap.get(formBlob.getId());
+            if (linkProp == null) {
+                if (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey())) {
+                    dataMap.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_CUSTOMER.name()).linkFields(new ArrayList<>()).build()));
+                } else if (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey())) {
+                    dataMap.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
+                    dataMap.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()).linkFields(new ArrayList<>()).build()));
+                }
+            } else {
+                Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
+                for (Map.Entry<String, Object> entry : linkPropMap.entrySet()) {
+                    if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
+                        continue;
+                    }
+                    List<Map> fields = (List<Map>) entry.getValue();
+                    List<LinkField> fieldList = fields.stream().map(field -> {
+                        LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
+                        linkField.setEnable(true);
+                        return linkField;
+                    }).toList();
+                    String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                            LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
+                            (Strings.CS.equals(formKey, FormKey.OPPORTUNITY.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
+                                    LinkScenarioKey.CLUE_TO_OPPORTUNITY.name() : LinkScenarioKey.CUSTOMER_TO_OPPORTUNITY.name()));
+                    LinkScenario linkScenario = LinkScenario.builder().key(scenarioKey).linkFields(fieldList).build();
+                    dataMap.put(entry.getKey(), List.of(linkScenario));
+                }
+            }
+            propMap.put("linkProp", dataMap);
+            formBlob.setProp(JSON.toJSONString(propMap));
+            moduleFormBlobMapper.updateById(formBlob);
+        }
+    }
+
+    /**
+     * 初始化跟进记录表单联动场景
+     */
+    @SuppressWarnings("unchecked")
+    public void initFormScenarioProp() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ModuleForm::getFormKey, FormKey.FOLLOW_RECORD.getKey());
+        ModuleForm recordForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+        ModuleFormBlob recordFormBlob = moduleFormBlobMapper.selectByPrimaryKey(recordForm.getId());
+        Map<String, Object> propMap = JSON.parseMap(recordFormBlob.getProp());
+        Map<String, List<LinkScenario>> linkProp = new HashMap<>(4);
+        linkProp.put(FormKey.CLUE.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.CUSTOMER.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CUSTOMER_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.OPPORTUNITY.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.OPPORTUNITY_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        linkProp.put(FormKey.FOLLOW_PLAN.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.PLAN_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
+        propMap.put("linkProp", linkProp);
+        recordFormBlob.setProp(JSON.toJSONString(propMap));
+        moduleFormBlobMapper.updateById(recordFormBlob);
     }
 
     /**

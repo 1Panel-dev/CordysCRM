@@ -55,6 +55,7 @@ export enum FieldTypeEnum {
   SERIAL_NUMBER = 'SERIAL_NUMBER', // 流水号
   LINK = 'LINK', // 链接
   ATTACHMENT = 'ATTACHMENT',
+  INDUSTRY = 'INDUSTRY',
 }
 
 export enum FieldRuleEnum {
@@ -71,4 +72,14 @@ export enum FieldDataSourceTypeEnum {
   CLUE = 'CLUE', // 线索
   CUSTOMER_OPTIONS = 'CUSTOMER_OPTIONS', // 客户选项
   USER_OPTIONS = 'USER_OPTIONS', // 成员选项
+}
+
+export enum FormLinkScenarioEnum {
+  CLUE_TO_CUSTOMER = 'CLUE_TO_CUSTOMER', // 线索转客户
+  CLUE_TO_OPPORTUNITY = 'CLUE_TO_OPPORTUNITY', // 线索转商机
+  CUSTOMER_TO_OPPORTUNITY = 'CUSTOMER_TO_OPPORTUNITY', // 客户转商机
+  CLUE_TO_RECORD = 'CLUE_TO_RECORD', // 线索转跟进记录
+  CUSTOMER_TO_RECORD = 'CUSTOMER_TO_RECORD', // 客户转跟进记录
+  OPPORTUNITY_TO_RECORD = 'OPPORTUNITY_TO_RECORD', // 商机转跟进记录
+  PLAN_TO_RECORD = 'PLAN_TO_RECORD', // 跟进计划转跟进记录
 }

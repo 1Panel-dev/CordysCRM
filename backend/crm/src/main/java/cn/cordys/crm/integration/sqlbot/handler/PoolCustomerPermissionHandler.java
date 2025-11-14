@@ -11,13 +11,14 @@ import cn.cordys.crm.integration.sqlbot.dto.TableHandleParam;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -35,7 +36,8 @@ public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandl
     @Resource
     private UserExtendService userExtendService;
 
-    {
+    @PostConstruct
+    public void registerHandler() {
         TablePermissionHandlerFactory.registerTableHandler(SQLBotTable.POOL_CUSTOMER, this);
     }
 
@@ -77,19 +79,33 @@ public class PoolCustomerPermissionHandler extends DataScopeTablePermissionHandl
     }
 
     private List<String> getClueIds(String currentUser, String currentOrgId) {
-        LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
-        poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, currentOrgId);
-        poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
-        List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
+        // 构建查询条件
+        var poolWrapper = new LambdaQueryWrapper<CustomerPool>()
+                .eq(CustomerPool::getEnable, true)
+                .eq(CustomerPool::getOrganizationId, currentOrgId)
+                .orderByDesc(CustomerPool::getUpdateTime);
 
-        List<String> customerIds = new ArrayList<>();
-        pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
-                customerIds.add(pool.getId());
-            }
-        });
-        return customerIds;
+        var pools = poolMapper.selectListByLambda(poolWrapper);
+        if (pools == null || pools.isEmpty()) {
+            return List.of();
+        }
+
+        // 管理员直接拥有所有客户池
+        boolean isAdmin = Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue());
+
+        return pools.stream()
+                .filter(pool -> {
+                    var scopeIds = Optional.ofNullable(pool.getScopeId())
+                            .map(ids -> userExtendService.getScopeOwnerIds(JSON.parseArray(ids, String.class), currentOrgId))
+                            .orElse(List.of());
+
+                    var ownerIds = Optional.ofNullable(pool.getOwnerId())
+                            .map(ids -> userExtendService.getScopeOwnerIds(JSON.parseArray(ids, String.class), currentOrgId))
+                            .orElse(List.of());
+
+                    return isAdmin || scopeIds.contains(currentUser) || ownerIds.contains(currentUser);
+                })
+                .map(CustomerPool::getId)
+                .toList();
     }
 }

@@ -51,12 +51,19 @@
         />
       </van-tab>
     </van-tabs>
+    <template
+      v-if="activeTab === 'info' && (showEditButton || hasAnyPermission(['OPPORTUNITY_MANAGEMENT:DELETE']))"
+      #footer
+    >
+      <CrmActionButtons :show-edit-button="showEditButton" :actions="actions" @select="handleMoreSelect" />
+    </template>
   </CrmPageWrapper>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -64,22 +71,24 @@
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmActionButtons, { CrmActionButtonsItem } from '@/components/business/crm-action-buttons/index.vue';
   import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { getOpportunityStageConfig } from '@/api/modules';
+  import { deleteOpt, getOpportunityStageConfig } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAllPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
-  import { OpportunityRouteEnum } from '@/enums/routeEnum';
+  import { CommonRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
   defineOptions({
     name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,
   });
   const route = useRoute();
   const { t } = useI18n();
+  const router = useRouter();
 
   const activeTab = ref('info');
   const tabList = [
@@ -140,12 +149,95 @@
     lastFailureReason.value = failureReason;
   }
 
-  const readonly = computed(
+  const isSuccess = computed(
     () =>
-      currentStatus.value ===
-        stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id ||
-      !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
+      currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id
   );
+  const isFail = computed(
+    () => currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id
+  );
+
+  const readonly = computed(() => isSuccess.value || !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
+
+  const showEditButton = computed(() => {
+    if (isFail.value) return false;
+    if (isSuccess.value) return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']);
+    return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']);
+  });
+  const actions = computed<CrmActionButtonsItem[]>(() => {
+    const transferAction: CrmActionButtonsItem[] = [
+      {
+        key: 'transfer',
+        text: t('common.transfer'),
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      },
+    ];
+
+    const deleteAction: CrmActionButtonsItem[] = [
+      {
+        key: 'delete',
+        text: t('common.delete'),
+        color: 'var(--error-red)',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+      },
+    ];
+
+    return isSuccess.value ? [...deleteAction] : [...transferAction, ...deleteAction];
+  });
+
+  function handleTransfer(id: string) {
+    router.push({
+      name: CustomerRouteEnum.CUSTOMER_TRANSFER,
+      query: {
+        id,
+        apiKey: FormDesignKeyEnum.BUSINESS,
+      },
+    });
+  }
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'edit':
+        router.push({
+          name: CommonRouteEnum.FORM_CREATE,
+          query: {
+            id: sourceId.value,
+            formKey: FormDesignKeyEnum.BUSINESS,
+            needInitDetail: 'Y',
+          },
+        });
+        break;
+      case 'transfer':
+        handleTransfer(sourceId.value);
+        break;
+      case 'delete':
+        showConfirmDialog({
+          title: t('opportunity.deleteTitle'),
+          message: t('opportunity.deleteContentTip'),
+          confirmButtonText: t('common.confirmDelete'),
+          confirmButtonColor: 'var(--error-red)',
+          beforeClose: async (action) => {
+            if (action === 'confirm') {
+              try {
+                await deleteOpt(sourceId.value);
+                showSuccessToast(t('common.deleteSuccess'));
+                router.back();
+                return Promise.resolve(true);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+                return Promise.resolve(false);
+              }
+            } else {
+              return Promise.resolve(true);
+            }
+          },
+        });
+        break;
+      default:
+        break;
+    }
+  }
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();

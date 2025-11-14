@@ -14,6 +14,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * @author song-cc-rock
+ */
 public class RegionUtils {
 
     private static final String SPILT_STR = "-";
@@ -54,79 +57,63 @@ public class RegionUtils {
     }
 
     /**
-     * address => code
-     *
-     * @param name address
-     * @return code
+     * 映射地址与编码
+     * @param str 映射字符串
+     * @param nameToCode 是否名称转编码
+     * @return 映射结果
      */
-    public static String nameToCode(String name) {
-        if (StringUtils.isBlank(name)) {
+    public static String mapping(String str, boolean nameToCode) {
+        if (StringUtils.isBlank(str)) {
             return StringUtils.EMPTY;
         }
 
-        StringBuilder code = new StringBuilder(StringUtils.EMPTY);
         Queue<String> queue = new LinkedList<>();
-        CollectionUtils.addAll(queue, name.split(SPILT_STR));
-        List<RegionCode> regionCode = getRegionCodes();
+        CollectionUtils.addAll(queue, str.split(SPILT_STR));
+        List<RegionCode> regionCodes = getRegionCodes();
+        StringBuilder result = new StringBuilder();
 
-        for (RegionCode country : regionCode) {
-            if (!code.isEmpty()) {
-                break;
-            }
-            if (country.getName().equals(queue.peek())) {
-                code = new StringBuilder(country.getCode());
-                queue.poll();
-                if (country.getChildren() != null) {
-                    for (RegionCode province : country.getChildren()) {
-                        if (province.getName().equals(queue.peek())) {
-                            code = new StringBuilder(province.getCode());
-                            queue.poll();
-                        }
-
-                        if (province.getChildren() != null) {
-                            for (RegionCode city : province.getChildren()) {
-                                if (city.getName().equals(queue.peek())) {
-                                    code = new StringBuilder(city.getCode());
-                                    queue.poll();
-                                }
-
-                                if (city.getChildren() != null) {
-                                    for (RegionCode area : city.getChildren()) {
-                                        if (area.getName().equals(queue.peek())) {
-                                            code = new StringBuilder(area.getCode());
-                                            queue.poll();
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
+        RegionCode matched = findMatch(regionCodes, queue.peek(), nameToCode);
+        while (matched != null && !queue.isEmpty()) {
+            result = new StringBuilder(nameToCode ? matched.getCode() : matched.getName());
+            queue.poll();
+            matched = matched.getChildren() == null ? null : findMatch(matched.getChildren(), queue.peek(), nameToCode);
         }
 
-        // Keep spilt for parse
-        code.append(SPILT_STR);
-        // Append detailed address
-        if (!queue.isEmpty()) {
-            for (String s : queue) {
-                code.append(s);
+        // 保留分隔符, 后续取详细地址
+        result.append(SPILT_STR);
+        queue.forEach(result::append);
+
+        return result.toString();
+    }
+
+    /**
+     * find match region code
+     */
+    private static RegionCode findMatch(List<RegionCode> list, String value, boolean nameToCode) {
+        if (StringUtils.isBlank(value) || CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        for (RegionCode item : list) {
+            boolean matched = nameToCode ? Strings.CS.equals(item.getName(), value)
+                    : Strings.CS.equals(item.getCode(), value);
+            if (matched) {
+                return item;
             }
         }
-
-        return code.toString();
+        return null;
     }
 
     /**
      * code => address
      *
-     * @param codeStr
+     * @param codeStr 地址编码
      * @return address
      */
     public static String codeToName(String codeStr) {
         String code = getCode(codeStr);
-        if (code == null) return null;
+        if (code == null) {
+			return null;
+		}
         List<RegionCode> regionCodes = getRegionCodes();
         return getRegionFullName(code, regionCodes);
     }

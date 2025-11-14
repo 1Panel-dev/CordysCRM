@@ -1,17 +1,19 @@
 <template>
   <n-scrollbar
-    class="business"
+    :class="`business ${activeTab === 'syncOrganization' && licenseStore.expiredDuring ? '!h-[calc(100%-64px)]' : ''}`"
     :content-class="`${
       ['pageSettings', 'syncOrganization'].includes(activeTab) ? 'overflow-auto' : 'h-full overflow-hidden'
     }`"
   >
-    <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-    </CrmCard>
-    <PageSettings v-if="activeTab === 'pageSettings'" />
-    <MailSettings v-if="activeTab === 'mailSettings'" />
-    <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
-    <IntegrationList v-if="activeTab === 'syncOrganization'" />
+    <div class="business-container">
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+      </CrmCard>
+      <PageSettings v-if="activeTab === 'pageSettings'" />
+      <MailSettings v-if="activeTab === 'mailSettings'" />
+      <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
+      <IntegrationList v-if="activeTab === 'syncOrganization'" />
+    </div>
   </n-scrollbar>
 </template>
 

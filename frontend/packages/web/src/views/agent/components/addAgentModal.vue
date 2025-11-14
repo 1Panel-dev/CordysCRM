@@ -7,6 +7,7 @@
     size="large"
     :show-continue="!props.agentId"
     :footer="!props.isDetail"
+    class="crm-form-modal"
     @confirm="handleConfirm"
     @cancel="handleCancel"
     @continue="handleConfirm(true)"
@@ -398,7 +399,7 @@
     () => isEnableConfig.value || (!!(props.agentId || props.isDetail) && originType.value !== 'SCRIPT')
   );
 
-  function changeWorkSpace(_: string) {
+  function changeWorkSpace() {
     form.value.applicationId = '';
     form.value.script = '';
   }

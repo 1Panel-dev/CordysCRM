@@ -33,7 +33,9 @@
                 v-if="props.draggable && element.draggable !== false"
                 type="iconicon_move"
                 :size="12"
-                :class="`handle text-[var(--text-n4)] ${disabledDraggable ? 'cursor-not-allowed' : 'cursor-move'}`"
+                :class="`handle  ${
+                  disabledDraggable ? 'cursor-not-allowed text-[var(--text-n6)]' : 'cursor-move text-[var(--text-n4)]'
+                }`"
                 :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
               />
               <div v-if="element.draggable === false" class="w-[42px]"></div>

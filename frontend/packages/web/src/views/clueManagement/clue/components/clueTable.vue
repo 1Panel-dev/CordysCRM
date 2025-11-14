@@ -90,6 +90,9 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="activeRowName"
     :other-save-params="otherFollowRecordSaveParams"
+    :link-form-info="linkFormFieldMap"
+    :link-form-key="FormDesignKeyEnum.CLUE"
+    :link-scenario="formKey === FormDesignKeyEnum.FOLLOW_RECORD_CLUE ? FormLinkScenarioEnum.CLUE_TO_RECORD : undefined"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -136,7 +139,7 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -166,6 +169,7 @@
   import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
   import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
@@ -418,7 +422,18 @@
     showConvertClueModal.value = true;
   }
 
-  function handleActionSelect(row: ClueListItem, actionKey: string, done?: () => void) {
+  const {
+    fieldList: clueFormFields,
+    linkFormFieldMap,
+    initFormConfig,
+    initFormDetail,
+  } = useFormCreateApi({
+    formKey: computed(() => FormDesignKeyEnum.CLUE),
+    sourceId: activeClueId,
+    needInitDetail: computed(() => true),
+  });
+
+  async function handleActionSelect(row: ClueListItem, actionKey: string, done?: () => void) {
     activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
@@ -429,6 +444,10 @@
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
+        if (clueFormFields.value.length === 0) {
+          await initFormConfig();
+        }
+        await initFormDetail(false, true);
         isInitFormCreateDrawer.value = true;
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
         otherFollowRecordSaveParams.value.clueId = row.id;

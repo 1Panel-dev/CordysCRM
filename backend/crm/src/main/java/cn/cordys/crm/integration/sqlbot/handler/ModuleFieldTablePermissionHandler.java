@@ -82,7 +82,7 @@ public class ModuleFieldTablePermissionHandler extends OrgTablePermissionHandler
         return fields.stream()
                 .map(field -> {
                     ModuleFieldParser fieldParser = ModuleFieldParserFactory.getFieldParser(field.getType());
-                    return fieldParser.parse2SQLBotField(field);
+                    return fieldParser.parseToSQLBotField(field);
                 }).collect(Collectors.toList());
     }
 
