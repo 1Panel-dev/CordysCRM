@@ -39,7 +39,7 @@ docker run -d \
 
 你也可以通过 [1Panel 应用商店](https://cordys.cn/docs/installation/1panel_installtion/) 来安装部署 Cordys CRM。
 
-在无法联网的环境中，还可以通过 [离线安装包方式](https://cordys.cn/docs/installation/offline_installtion/) 来安装部署 Cordys CRM。
+在无法联网的环境中，还可以通过 [离线安装包](https://cordys.cn/docs/installation/offline_installtion/) 来安装部署 Cordys CRM。
 
 ### 访问方式
 
@@ -49,9 +49,9 @@ docker run -d \
 
 ### 联系我们
 
-安装完成后，可以参考此 [在线文档](https://cordys.cn/docs/) 来使用 Cordys CRM。
+安装完成后，可以参考 [在线文档](https://cordys.cn/docs/) 来使用 Cordys CRM。
 
-你可以通过以下微信交流群与 Cordys CRM 开源项目组进行交流和反馈。
+你可以通过下方的微信交流群，与 Cordys CRM 开源项目组进行交流和反馈。
 
 <image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
 
