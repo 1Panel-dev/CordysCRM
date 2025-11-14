@@ -75,7 +75,7 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
     @Override
     public PagerWithOption<List<AdvancedClueResponse>> startSearch(CluePageRequest request, String orgId, String userId) {
 
-        /// 查询当前组织下已启用的模块列表
+        // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果客户模块未启用，抛出异常
         if (!enabledModules.contains(ModuleKey.CLUE.getKey())) {
