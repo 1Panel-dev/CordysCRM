@@ -48,7 +48,7 @@ export default {
   'common.removeConfirmTitle': 'Confirm remove {name}?',
   'common.archiveConfirmTitle': 'Confirm archive {name}?',
   'common.deleteConfirmContent': 'After deletion, it cannot be restored. Please operate with caution!',
-  'common.deleteSuccess': 'Delete success',
+  'common.deleteSuccess': 'Deleted successfully',
   'common.deleteFailed': 'Delete failed',
   'common.addSuccess': 'Added successfully',
   'common.addFailed': 'Add failed',
