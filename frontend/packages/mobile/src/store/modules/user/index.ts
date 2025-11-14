@@ -137,7 +137,7 @@ const useUserStore = defineStore('user', {
       try {
         const { t } = useI18n();
         if (!silence) {
-          showToast(t('message.logouting'));
+          showToast(t('message.loggingOut'));
         }
         await signout();
       } finally {
