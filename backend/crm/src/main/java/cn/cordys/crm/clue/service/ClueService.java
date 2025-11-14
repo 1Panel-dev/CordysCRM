@@ -30,6 +30,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.*;
+import cn.cordys.crm.clue.dto.ClueFollowDTO;
 import cn.cordys.crm.clue.dto.TransformCsAssociateDTO;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
@@ -1158,13 +1159,26 @@ public class ClueService {
         LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recordLambdaQueryWrapper.in(FollowUpRecord::getClueId, clueIds).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
         List<FollowUpRecord> clueRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
+        Map<String, ClueFollowDTO> followDTOMap = new HashMap<>();
         clueRecords.forEach(clueRecord -> {
+            String customerId = clueTransferMap.get(clueRecord.getClueId());
             clueRecord.setId(IDGenerator.nextStr());
-            clueRecord.setCustomerId(clueTransferMap.get(clueRecord.getClueId()));
+            clueRecord.setCustomerId(customerId);
             clueRecord.setClueId(null);
             clueRecord.setType(FollowUpPlanType.CUSTOMER.name());
             if (StringUtils.isNotBlank(clueRecord.getCustomerId())) {
                 records.add(clueRecord);
+                ClueFollowDTO clueFollowDTO = followDTOMap.get(customerId);
+                if (clueFollowDTO == null) {
+                    followDTOMap.put(customerId, ClueFollowDTO.builder().follower(clueRecord.getOwner())
+                            .followerTime(clueRecord.getFollowTime()).build());
+                } else {
+                    if (clueRecord.getFollowTime() != null && (clueFollowDTO.getFollowerTime() == null || clueRecord.getFollowTime() > clueFollowDTO.getFollowerTime())) {
+                        clueFollowDTO.setFollower(clueRecord.getOwner());
+                        clueFollowDTO.setFollowerTime(clueRecord.getFollowTime());
+                        followDTOMap.put(customerId, clueFollowDTO);
+                    }
+                }
             }
         });
         // 计划
@@ -1187,5 +1201,15 @@ public class ClueService {
         if (CollectionUtils.isNotEmpty(plans)) {
             followUpPlanMapper.batchInsert(plans);
         }
+        // 更新客户最新跟进人和时间
+        List<String> customerIds = followDTOMap.keySet().stream().toList();
+        List<Customer> customers = customerMapper.selectByIds(customerIds);
+        customers.forEach(customer -> {
+            if (customer.getFollowTime() == null || customer.getFollowTime() < followDTOMap.get(customer.getId()).getFollowerTime()) {
+                customer.setFollower(followDTOMap.get(customer.getId()).getFollower());
+                customer.setFollowTime(followDTOMap.get(customer.getId()).getFollowerTime());
+            }
+            customerMapper.updateById(customer);
+        });
     }
 }
