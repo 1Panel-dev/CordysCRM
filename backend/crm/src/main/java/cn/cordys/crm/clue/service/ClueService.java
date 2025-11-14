@@ -718,6 +718,17 @@ public class ClueService {
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
 
+        // 转移线索的计划&记录
+        batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null);
+        // 刷新客户的最新跟进时间
+        if (clue.getFollowTime() != null && (transitionCs.getFollowTime() == null || transitionCs.getFollowTime() < clue.getFollowTime())) {
+            Customer updateCustomer = new Customer();
+            updateCustomer.setId(transitionCs.getId());
+            updateCustomer.setFollower(clue.getFollower());
+            updateCustomer.setFollowTime(clue.getFollowTime());
+            customerMapper.updateById(updateCustomer);
+        }
+
         // 只通知线索负责人
         Map<String, Object> paramMap = new HashMap<>(8);
         paramMap.put("useTemplate", "true");
