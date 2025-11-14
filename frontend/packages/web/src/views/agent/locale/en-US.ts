@@ -6,7 +6,7 @@ export default {
   'agent.collapseChild': 'Collapse Folder',
   'agent.addAgent': 'Add Agent',
   'agent.updateAgent': 'Update Agent',
-  'agent.deleteAgentTip': 'After deletion, members will not be able to view it, please proceed with caution',
+  'agent.deleteAgentTip': 'After deletion, members will no longer be able to view it. Please proceed with caution.',
   'agent.agentName': 'Agent Name',
   'agent.members': 'Members',
   'agent.folder': 'Folder',
