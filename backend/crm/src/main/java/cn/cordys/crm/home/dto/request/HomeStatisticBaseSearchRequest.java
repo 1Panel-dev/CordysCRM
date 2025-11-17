@@ -23,7 +23,7 @@ public class HomeStatisticBaseSearchRequest {
     private Set<String> deptIds;
 
     @EnumValue(enumClass = TimeFieldEnum.class)
-    @Schema(description = "用于检索的时间字段(CREATE_TIME, EXPECTED_END_TIME)")
+    @Schema(description = "用于检索的时间字段(CREATE_TIME, EXPECTED_END_TIME, ACTUAL_END_TIME)")
     private String timeField;
 
     @EnumValue(enumClass = UserFieldEnum.class)
@@ -35,7 +35,8 @@ public class HomeStatisticBaseSearchRequest {
 
     public enum TimeFieldEnum {
         CREATE_TIME,
-        EXPECTED_END_TIME
+        EXPECTED_END_TIME,
+        ACTUAL_END_TIME
     }
 
     public enum UserFieldEnum {
