@@ -59,7 +59,7 @@ public class PermissionCache {
     }
 
     public Set<String> getPermissionIds(String userId, String orgId) {
-        List<RolePermissionDTO> rolePermissions = getRolePermissions(userId, orgId);
+        List<RolePermissionDTO> rolePermissions = Objects.requireNonNull(CommonBeanFactory.getBean(PermissionCache.class)).getRolePermissions(userId, orgId);
         return rolePermissions.stream()
                 .flatMap(rolePermissionDTO -> rolePermissionDTO.getPermissions().stream())
                 .collect(Collectors.toSet());

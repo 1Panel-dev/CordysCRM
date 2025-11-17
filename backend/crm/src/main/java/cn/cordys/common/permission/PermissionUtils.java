@@ -22,7 +22,7 @@ public class PermissionUtils {
         PermissionCache permissionCache = CommonBeanFactory.getBean(PermissionCache.class);
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        Set<String> permissionIds = permissionCache.getPermissionIds(userId, organizationId);
+        Set<String> permissionIds = Objects.requireNonNull(permissionCache).getPermissionIds(userId, organizationId);
         SessionUser user = Objects.requireNonNull(SessionUtils.getUser());
         if (Strings.CS.equals(InternalUser.ADMIN.getValue(), user.getId())) {
             // admin 用户拥有所有权限
