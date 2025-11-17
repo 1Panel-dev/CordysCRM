@@ -43,11 +43,14 @@ import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.constants.DictModule;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
+import cn.cordys.crm.system.dto.field.SelectField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -259,7 +262,6 @@ public class OpportunityService {
      * @param request
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
@@ -480,7 +482,6 @@ public class OpportunityService {
      *
      * @param id
      * @param orgId
-     *
      * @return
      */
     public OpportunityDetailResponse get(String id, String orgId) {
@@ -669,7 +670,6 @@ public class OpportunityService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -685,7 +685,6 @@ public class OpportunityService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -724,7 +723,6 @@ public class OpportunityService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -795,8 +793,27 @@ public class OpportunityService {
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(getChartFields(orgId));
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         List<ChartResult> chartResults = extOpportunityMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
         return opportunityFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+    }
+
+    public List<BaseField> getChartFields(String orgId) {
+        SelectField stageField = new SelectField();
+        stageField.setType(FieldType.SELECT.name());
+        stageField.setId("stage");
+        stageField.setBusinessKey("stage");
+        List<OptionProp> options = extOpportunityStageConfigMapper.getStageConfigList(orgId)
+                .stream()
+                .map(config -> {
+                    OptionProp optionDTO = new OptionProp();
+                    optionDTO.setLabel(config.getName());
+                    optionDTO.setValue(config.getId());
+                    return optionDTO;
+                }).collect(Collectors.toList());
+        stageField.setOptions(options);
+
+        return List.of(stageField);
     }
 }
