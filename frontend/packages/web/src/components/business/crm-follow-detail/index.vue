@@ -13,7 +13,7 @@
           no-content
           :tab-list="statusTabList"
           type="segment"
-          @change="() => loadFollowList()"
+          @change="() => loadFollowList(true)"
         >
         </CrmTab>
         <CrmSearchInput
@@ -330,14 +330,14 @@
   }
 
   onBeforeMount(() => {
-    loadFollowList();
+    loadFollowList(true);
   });
 
   watch(
     () => props.refreshKey,
     (val) => {
       if (val) {
-        loadFollowList();
+        loadFollowList(true);
       }
     }
   );
