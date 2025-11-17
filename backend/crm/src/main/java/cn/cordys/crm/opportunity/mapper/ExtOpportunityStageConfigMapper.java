@@ -31,4 +31,6 @@ public interface ExtOpportunityStageConfigMapper {
     void moveDown(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId, @Param("defaultPos") Long defaultPos);
 
     void updatePos(@Param("id") String id, @Param("pos") Long pos);
+
+    int countByType(@Param("type") String type,@Param("orgId") String orgId);
 }

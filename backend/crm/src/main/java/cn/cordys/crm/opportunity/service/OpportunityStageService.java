@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
 import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
@@ -43,7 +44,6 @@ public class OpportunityStageService {
      * 商机阶段配置列表
      *
      * @param orgId
-     *
      * @return
      */
     public StageConfigListResponse getStageConfigList(String orgId) {
@@ -134,17 +134,21 @@ public class OpportunityStageService {
      * @param id
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
-        OpportunityStageConfig stageConfig = deletePreCheck(id);
+    public void delete(String id, String orgId) {
+        OpportunityStageConfig stageConfig = deletePreCheck(id, orgId);
         opportunityStageConfigMapper.deleteByPrimaryKey(id);
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("opportunity_stage_setting").concat(":").concat(stageConfig.getName()));
     }
 
-    private OpportunityStageConfig deletePreCheck(String id) {
+    private OpportunityStageConfig deletePreCheck(String id, String orgId) {
         OpportunityStageConfig stageConfig = opportunityStageConfigMapper.selectByPrimaryKey(id);
         if (stageConfig == null) {
             throw new GenericException(Translator.get("opportunity_stage_delete"));
+        }
+
+        if (extOpportunityStageConfigMapper.countByType(OpportunityStageType.AFOOT.name(), orgId) <= 1) {
+            throw new GenericException(Translator.get("opportunity_stage_at_least_one"));
         }
         return stageConfig;
     }

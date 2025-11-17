@@ -71,4 +71,10 @@
     <update id="updatePos">
         update opportunity_stage_config set pos = #{pos} where id = #{id}
     </update>
+
+    <select id="countByType" resultType="java.lang.Integer">
+        select count(id)
+        from opportunity_stage_config
+        where type = #{type} and organization_id = #{orgId}
+    </select>
 </mapper>
