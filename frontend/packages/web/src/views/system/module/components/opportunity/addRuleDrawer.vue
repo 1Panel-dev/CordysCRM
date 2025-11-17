@@ -281,7 +281,6 @@
     () => props.rows,
     async (val?: OpportunityItem) => {
       if (val) {
-        await appStore.initStageConfig();
         const conditions = JSON.parse(val.condition).map((e: any) => {
           return {
             ...e,
@@ -318,6 +317,15 @@
         } else {
           recycleFormItemModel.value = cloneDeep(defaultFormModel);
         }
+      }
+    }
+  );
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        appStore.initStageConfig();
       }
     }
   );

@@ -161,7 +161,7 @@
   });
 
   const innerSlogan = computed(() => {
-    return props.isPreview ? props.slogan : ''; // TODO: GetLoginSlogan();
+    return props.isPreview && props.slogan ? props.slogan : appStore.pageConfig.slogan;
   });
 
   const showDemo = window.location.hostname === 'demo.metersphere.com';
