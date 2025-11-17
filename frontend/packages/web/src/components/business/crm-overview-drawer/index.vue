@@ -43,6 +43,7 @@
             <slot name="rightTop" />
             <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
               <CrmTab
+                :key="cachedListKey"
                 v-if="cachedList.length"
                 v-model:active-tab="activeTab"
                 no-content
@@ -79,6 +80,7 @@
         <slot name="rightTop" />
         <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
           <CrmTab
+            :key="cachedListKey"
             v-if="cachedList.length"
             v-model:active-tab="activeTab"
             no-content
@@ -174,7 +176,7 @@
     }
     emit('buttonSelect', key, done);
   }
-
+  const cachedListKey = computed<string>(() => cachedList.value.map((i) => i.name).join('|'));
   function initTabList(list: TabContentItem[]) {
     cachedList.value = list;
   }
@@ -183,7 +185,10 @@
     () => cachedList.value,
     (val) => {
       nextTick(() => {
-        activeTab.value = (val[0]?.name ?? '') as string;
+        const isActiveTabExist = val.some((item) => item.name === activeTab.value);
+        if (!isActiveTabExist && val.length) {
+          activeTab.value = (val[0]?.name ?? '') as string;
+        }
       });
     }
   );
