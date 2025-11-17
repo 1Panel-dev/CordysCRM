@@ -329,10 +329,6 @@
     }
   }
 
-  onBeforeMount(() => {
-    loadFollowList(true);
-  });
-
   watch(
     () => props.refreshKey,
     (val) => {
@@ -340,6 +336,14 @@
         loadFollowList(true);
       }
     }
+  );
+
+  watch(
+    () => props.activeType,
+    () => {
+      loadFollowList(true);
+    },
+    { immediate: true }
   );
 </script>
 

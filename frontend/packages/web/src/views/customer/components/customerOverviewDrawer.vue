@@ -45,7 +45,7 @@
           :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
         />
         <FollowDetail
-          v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
+          v-else-if="['followRecord', 'followPlan'].includes(activeTab) && show"
           :active-type="(activeTab as 'followRecord'| 'followPlan')"
           wrapper-class="h-[calc(100vh-162px)]"
           virtual-scroll-height="calc(100vh - 254px)"
@@ -109,7 +109,6 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
@@ -124,6 +123,8 @@
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const FollowDetail = defineAsyncComponent(() => import('@/components/business/crm-follow-detail/index.vue'));
 
   const props = defineProps<{
     sourceId: string;
