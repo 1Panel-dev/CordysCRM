@@ -219,6 +219,15 @@
     }
   );
 
+  watch(
+    () => showDrawer.value,
+    (val) => {
+      if (!val) {
+        activeTab.value = cachedList.value[0]?.name as string;
+      }
+    }
+  );
+
   defineExpose({
     layout,
   });

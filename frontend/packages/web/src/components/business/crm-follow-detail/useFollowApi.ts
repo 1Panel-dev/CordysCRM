@@ -270,15 +270,6 @@ export default function useFollowApi(followProps: {
     }
   }
 
-  watch(
-    () => type.value,
-    (val) => {
-      if (['followPlan', 'followRecord'].includes(val)) {
-        loadFollowList(true);
-      }
-    }
-  );
-
   return {
     data,
     loading,
