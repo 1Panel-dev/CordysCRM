@@ -180,7 +180,6 @@ export default function useFollowApi(followProps: {
       loading.value = true;
       if (refresh) {
         pageNation.value.current = 1;
-        data.value = [];
       }
       const params = {
         sourceId: sourceId.value,
@@ -191,6 +190,9 @@ export default function useFollowApi(followProps: {
         myPlan: followApiKey === 'myPlan',
       };
       const res = await apis.list[type.value]?.(params);
+      if (refresh) {
+        data.value = [];
+      }
       if (res) {
         const newList = res.list.map((item: FollowDetailItem) => transformField(item, res?.optionMap));
         data.value = data.value.concat(newList);
@@ -272,7 +274,7 @@ export default function useFollowApi(followProps: {
     () => type.value,
     (val) => {
       if (['followPlan', 'followRecord'].includes(val)) {
-        loadFollowList();
+        loadFollowList(true);
       }
     }
   );
