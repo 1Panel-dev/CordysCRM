@@ -308,6 +308,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
      */
     public FollowUpRecordDetailResponse get(String id, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
+        if (followUpRecord == null) {
+            throw new GenericException(Translator.get("record_not_found"));
+        }
         FollowUpRecordDetailResponse response = BeanUtils.copyBean(new FollowUpRecordDetailResponse(), followUpRecord);
         buildListData(List.of(response), orgId);
 
