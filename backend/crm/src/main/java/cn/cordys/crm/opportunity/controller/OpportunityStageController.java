@@ -44,7 +44,7 @@ public class OpportunityStageController {
     @Operation(summary = "删除商机阶段")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void delete(@PathVariable("id") @Validated String id) {
-        opportunityStageService.delete(id);
+        opportunityStageService.delete(id, OrganizationContext.getOrganizationId());
     }
 
 
