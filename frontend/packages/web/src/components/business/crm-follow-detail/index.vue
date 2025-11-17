@@ -257,8 +257,7 @@
     realFollowSourceId.value = '';
     realFormKey.value =
       followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followRecord ?? realFormKey.value;
-    linkFormKey.value =
-      followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followPlan ?? realFormKey.value;
+    linkFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER;
     needInitDetail.value = false;
     await initFormConfig();
     await initFormDetail(false, true);

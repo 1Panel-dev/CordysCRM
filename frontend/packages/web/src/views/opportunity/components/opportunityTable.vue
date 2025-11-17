@@ -407,7 +407,7 @@
     if (realFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS) {
       return FormLinkScenarioEnum.OPPORTUNITY_TO_RECORD;
     }
-    if (realFormKey.value === FormDesignKeyEnum.CUSTOMER_OPPORTUNITY) {
+    if (props.isCustomerTab) {
       return FormLinkScenarioEnum.CUSTOMER_TO_OPPORTUNITY;
     }
     return undefined;
@@ -980,6 +980,9 @@
         inCustomerPool: route.query.inCustomerPool === 'true',
         poolId: route.query.poolId as string,
       });
+    }
+    if (props.isCustomerTab) {
+      realFormKey.value = FormDesignKeyEnum.CUSTOMER_OPPORTUNITY;
     }
   });
 
