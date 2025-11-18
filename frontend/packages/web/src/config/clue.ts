@@ -33,19 +33,13 @@ export const baseFilterConfigList: FilterFormItem[] = [
 ];
 
 export const getLeadHomeConditions = (dim: string, homeDetailKey: string): FilterResult => {
-  let start;
-  let end;
-  if (dim === 'YEAR') {
-    start = dayjs().startOf('year').valueOf();
-    end = dayjs().endOf('year').valueOf();
-  }
   const depIds = getSessionStorageTempState<Record<string, string[]>>('homeData', true)?.[homeDetailKey];
   return {
     searchMode: 'AND',
     conditions: [
       {
-        value: dim !== 'YEAR' ? dim : [start, end],
-        operator: dim !== 'YEAR' ? OperatorEnum.DYNAMICS : OperatorEnum.BETWEEN,
+        value: dim,
+        operator: OperatorEnum.DYNAMICS,
         name: 'createTime',
         multipleValue: false,
         type: FieldTypeEnum.TIME_RANGE_PICKER,

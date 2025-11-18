@@ -42,15 +42,27 @@
                 <n-radio-button v-for="e in winOrderTypeList" :key="e.value" :value="e.value" :label="e.label" />
               </n-radio-group>
             </div>
-            <div v-if="winOrderType === 'winOrderSet'" class="flex items-center justify-between px-[8px]">
-              <div>{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
-              <n-switch
-                v-model:value="params.priorPeriodEnable"
-                size="small"
-                :rubber-band="false"
-                @update:value="handleChange"
-              />
+            <div v-if="winOrderType === 'winOrderSet'" class="flex flex-col gap-[8px]">
+              <div class="flex items-center justify-between px-[8px]">
+                <div>{{ t('workbench.dataOverview.comparedSamePeriod') }}</div>
+                <n-switch
+                  v-model:value="params.priorPeriodEnable"
+                  size="small"
+                  :rubber-band="false"
+                  @update:value="handleChange"
+                />
+              </div>
+              <div class="flex flex-col gap-[8px] px-[8px]">
+                <div>{{ t('workbench.dataOverview.statisticalDimension') }}</div>
+                <n-select
+                  v-model:value="params.winOrderTimeField"
+                  :options="winOrderTypeOptions"
+                  :placeholder="t('common.pleaseSelect')"
+                  @update:value="handleChange"
+                />
+              </div>
             </div>
+
             <div v-if="winOrderType === 'optSet'" class="flex flex-col gap-[8px] px-[8px]">
               <div>{{ t('workbench.dataOverview.statisticalDimension') }}</div>
               <n-select
@@ -134,6 +146,7 @@
     timeField: 'CREATE_TIME',
     userField: 'CREATE_USER_ID',
     priorPeriodEnable: true,
+    winOrderTimeField: 'EXPECTED_END_TIME',
   });
 
   const activeDeptId = ref('');
@@ -257,7 +270,8 @@
     },
   ];
 
-  const dimTypeOptions = ref<SelectOption[]>([]);
+  // const dimTypeOptions = ref<SelectOption[]>([]);
+  // const winOrderTypeOptions = ref<SelectOption[]>([]);
 
   const userFieldOptions = [
     {
@@ -270,40 +284,53 @@
     },
   ];
 
+  const endTimeFieldName = ref(t('opportunity.endTime'));
+
+  const dimTypeOptions = computed(() => {
+    return [
+      {
+        value: 'CREATE_TIME',
+        label: t('common.createTime'),
+      },
+      {
+        value: 'EXPECTED_END_TIME',
+        label: endTimeFieldName.value,
+      },
+    ];
+  });
+
+  const winOrderTypeOptions = computed(() => {
+    return [
+      {
+        value: 'EXPECTED_END_TIME',
+        label: endTimeFieldName.value,
+      },
+      {
+        value: 'ACTUAL_END_TIME',
+        label: t('opportunity.actualEndTime'),
+      },
+    ];
+  });
   async function initDimType() {
     const config = await overviewStore.loadWinOrderConfig();
-    const { timeField, priorPeriodEnable, userField } = config;
+    const { timeField, priorPeriodEnable, userField, winOrderTimeField } = config;
     params.value = {
       ...params.value,
       timeField,
       priorPeriodEnable,
       userField,
+      winOrderTimeField,
     };
 
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) {
-      dimTypeOptions.value = [
-        {
-          value: 'CREATE_TIME',
-          label: t('common.createTime'),
-        },
-      ];
       params.value.timeField = 'CREATE_TIME';
+      params.value.winOrderTimeField = 'EXPECTED_END_TIME';
       return;
     }
     try {
       const res = await getFormConfigApiMap[FormDesignKeyEnum.BUSINESS]();
-      const endTimeItem = res.fields.find((e) => e.businessKey === 'expectedEndTime');
-
-      dimTypeOptions.value = [
-        {
-          value: 'CREATE_TIME',
-          label: t('common.createTime'),
-        },
-        {
-          value: 'EXPECTED_END_TIME',
-          label: endTimeItem?.name ?? '',
-        },
-      ];
+      endTimeFieldName.value =
+        res.fields.find((e) => e.businessKey === 'expectedEndTime')?.name ?? t('opportunity.endTime');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -315,22 +342,24 @@
   async function handleUpdateShow(show: boolean) {
     if (!show) {
       if (hasChange.value) {
-        const { timeField, priorPeriodEnable, userField } = params.value;
+        const { timeField, priorPeriodEnable, userField, winOrderTimeField } = params.value;
         overviewStore.setWinOrderConfig({
           timeField: timeField ?? 'CREATE_TIME',
           priorPeriodEnable: priorPeriodEnable ?? false,
           userField: userField ?? 'OWNER',
+          winOrderTimeField: winOrderTimeField ?? 'EXPECTED_END_TIME',
         });
         refresh();
       }
     } else {
       const config = await overviewStore.loadWinOrderConfig();
-      const { timeField, priorPeriodEnable, userField } = config;
+      const { timeField, priorPeriodEnable, userField, winOrderTimeField } = config;
       params.value = {
         ...params.value,
         timeField,
         priorPeriodEnable,
         userField,
+        winOrderTimeField,
       };
     }
   }

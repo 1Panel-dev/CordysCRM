@@ -7,6 +7,7 @@ export interface WinOrderConfig {
   priorPeriodEnable: boolean;
   timeField: string;
   userField: string;
+  winOrderTimeField: string;
 }
 
 export interface OverviewState {
@@ -19,10 +20,10 @@ const defaultHomeOverviewConfig: WinOrderConfig = {
   priorPeriodEnable: true,
   timeField: 'CREATE_TIME',
   userField: 'OWNER',
+  winOrderTimeField: 'EXPECTED_END_TIME',
 };
 
 const useOverviewStore = defineStore('overview', {
-  persist: true,
   state: (): OverviewState => ({
     homeOverviewConfig: {},
   }),

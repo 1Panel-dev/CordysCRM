@@ -3,6 +3,7 @@ export interface GetHomeStatisticParams {
   deptIds: string[];
   userField?: string;
   timeField?: string;
+  winOrderTimeField?: string; // 赢单维度字段
   priorPeriodEnable?: boolean;
 }
 
