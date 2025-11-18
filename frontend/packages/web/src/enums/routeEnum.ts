@@ -28,6 +28,13 @@ export enum CustomerRouteEnum {
   CUSTOMER_OPEN_SEA = 'accountOpenSea',
 }
 
+export enum ContractRouteEnum {
+  CONTRACT = 'contract',
+  CONTRACT_INDEX = 'contractIndex',
+  CONTRACT_VOIDED = 'contractVoided',
+  CONTRACT_PAYMENT = 'contractPaymentPlan',
+}
+
 export enum ProductRouteEnum {
   PRODUCT = 'product',
   PRODUCT_PRO = 'productPro',
@@ -72,4 +79,5 @@ export const AppRouteEnum = {
   ...WorkbenchRouteEnum,
   ...DashboardRouteEnum,
   ...AgentRouteEnum,
+  ...ContractRouteEnum,
 };

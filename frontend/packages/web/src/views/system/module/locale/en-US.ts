@@ -105,4 +105,8 @@ export default {
   'module.topNavigationConfig': 'Top Navigation Settings',
   'module.desensitizationSet': 'Desensitization set',
   'module.agent': 'Agent',
+  'module.contract': 'Contract',
+  'module.formSettings': 'Form Settings',
+  'module.voidedAgreement': 'Voided Agreement',
+  'module.paymentPlan': 'Payment Plan',
 };

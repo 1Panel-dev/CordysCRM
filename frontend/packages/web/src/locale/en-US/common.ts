@@ -202,6 +202,7 @@ export default {
   'common.searchByNamePhone': 'Search by name/phone number',
   'common.searchName': 'Search by name',
   'common.archive': 'archive',
+  'common.unarchive': 'Unarchive',
   'common.running': 'Running',
   'common.unExecute': 'Pending',
   'common.executed': 'Executed',
@@ -330,4 +331,5 @@ export default {
   'common.batchVoid': 'Batch void',
   'common.confirmVoid': 'Are you sure to void?',
   'common.voidSuccess': 'Void success',
+  'common.cancelVoid': 'Cancel Void',
 };

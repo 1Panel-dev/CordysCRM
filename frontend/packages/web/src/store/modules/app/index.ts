@@ -79,6 +79,10 @@ const defaultModuleConfig = [
     enable: true,
   },
   {
+    moduleKey: ModuleConfigEnum.CONTRACT,
+    enable: true,
+  },
+  {
     moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
     enable: true,
   },

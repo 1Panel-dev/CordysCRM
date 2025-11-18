@@ -25,6 +25,9 @@ export enum ModuleConfigEnum {
 
   /** 智能体 */
   AGENT = 'agent',
+
+  /** 合同 */
+  CONTRACT = 'contract',
 }
 
 // 添加员工API

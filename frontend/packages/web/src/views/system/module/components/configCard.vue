@@ -71,6 +71,8 @@
     @load-config="() => getGlobalReasonConfig()"
   />
   <stepSettingDrawer v-model:visible="businessManagementStepSetVisible" />
+  <ContractFormFormDrawer v-model:visible="contractFormVisible" />
+  <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -99,6 +101,8 @@
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
+  import ContractFormFormDrawer from './contract/contractFormFormDrawer.vue';
+  import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
   import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
@@ -339,7 +343,23 @@
       ],
       enable: true,
     },
-
+    {
+      label: t('module.contract'),
+      key: ModuleConfigEnum.CONTRACT,
+      // TODO lmy
+      icon: 'iconicon_business_opportunity',
+      enable: true,
+      groupList: [
+        {
+          label: `${t('module.contract')}${t('module.formSettings')}`,
+          key: 'newForm',
+        },
+        {
+          label: `${t('module.paymentPlan')}${t('module.formSettings')}`,
+          key: 'newContractPaymentPlanForm',
+        },
+      ],
+    },
     {
       label: t('module.businessManagement'),
       key: ModuleConfigEnum.BUSINESS_MANAGEMENT,
@@ -460,6 +480,9 @@
 
   const productManagementFormVisible = ref(false);
 
+  const contractFormVisible = ref(false);
+  const contractPaymentPlanFormVisible = ref(false);
+
   function handleSelect(key: string, item: ModuleConfigItem) {
     selectKey.value = item.key;
     switch (item.key) {
@@ -472,6 +495,13 @@
           customerManagementOpenSeaVisible.value = true;
         } else if (key === 'capacitySet') {
           capacitySetVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.CONTRACT:
+        if (key === 'newForm') {
+          contractFormVisible.value = true;
+        } else if (key === 'newContractPaymentPlanForm') {
+          contractPaymentPlanFormVisible.value = true;
         }
         break;
       case ModuleConfigEnum.CLUE_MANAGEMENT:

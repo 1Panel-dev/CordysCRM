@@ -47,6 +47,9 @@ export enum OperationTypeEnum {
   MERGE = 'MERGE',
   APPROVAL = 'APPROVAL', // 审批
   INVALID = 'INVALID', // 作废
+  CANCEL_VOID = 'CANCEL_VOID', // 取消作废
+  ARCHIVE = 'ARCHIVE', // 归档
+  UNARCHIVE = 'UNARCHIVE', // 取消归档
 }
 
 export enum PersonalExportStatusEnum {
