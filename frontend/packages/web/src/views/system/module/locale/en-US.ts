@@ -94,6 +94,7 @@ export default {
   'module.customerFormSetting': 'Account form set',
   'module.clueFormSetting': 'Lead form set',
   'module.opportunityFormSetting': 'Opportunity form set',
+  'module.opportunityQuotationFormSetting': 'Quotation form set',
   'module.productFormSetting': 'Product form set',
   'module.followRecordFormSetting': 'Follow record form set',
   'module.followPlanFormSetting': 'Follow plan form set',

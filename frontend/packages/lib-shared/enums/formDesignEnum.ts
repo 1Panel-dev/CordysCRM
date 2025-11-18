@@ -25,6 +25,7 @@ export enum FormDesignKeyEnum {
   SEARCH_ADVANCED_PUBLIC = 'searchAdvancedPublic', // 公海
   SEARCH_ADVANCED_CLUE_POOL = 'searchAdvancedCluePool', // 线索池
   SEARCH_ADVANCED_OPPORTUNITY = 'searchAdvancedOpportunity', // 商机
+  OPPORTUNITY_QUOTATION = 'opportunityQuotation', // 商机报价单
 }
 
 export enum FieldTypeEnum {

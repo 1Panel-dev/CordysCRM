@@ -58,6 +58,14 @@ export const logTypeOption = [
     value: OperationTypeEnum.REMOVE_USER,
     label: 'common.removeUser',
   },
+  {
+    value: OperationTypeEnum.APPROVAL,
+    label: 'common.approval',
+  },
+  {
+    value: OperationTypeEnum.INVALID,
+    label: 'common.invalid',
+  },
 ];
 
 export const defaultNavList: ActionItem[] = [

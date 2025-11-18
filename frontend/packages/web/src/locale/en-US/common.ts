@@ -324,4 +324,10 @@ export default {
   'common.noEnableApiKey': 'No enabled API Key',
   'common.noEnableApiKeyTip': 'No enabled API Key, please add one now !',
   'common.goAdd': 'Add',
+  'common.approval': 'Approval',
+  'common.batchApproval': 'Batch approval',
+  'common.invalid': 'Invalid',
+  'common.batchVoid': 'Batch void',
+  'common.confirmVoid': 'Are you sure to void?',
+  'common.voidSuccess': 'Void success',
 };

@@ -50,4 +50,10 @@ export default {
   'opportunity.noOpenSeaPermission': 'No permission to view public sea accounts',
   'opportunity.averageAmount': 'Average amount',
   'opportunity.totalAmount': 'Total amount',
+  'opportunity.quotation': 'Quotation',
+  'opportunity.quotation.new': 'New quotation',
+  'opportunity.quotation.voidTitleTip': 'Confirm invalidating the {name} quotation?',
+  'opportunity.quotation.invalidContentTip': 'Once invalidated, it cannot be used again. Please proceed with caution!',
+  'opportunity.quotation.searchPlaceholder': 'Search by quotation name or opportunity name',
+  'opportunity.quotation.batchInvalidTitleTip': 'Confirm invalidating {number} quotation(s)?',
 };

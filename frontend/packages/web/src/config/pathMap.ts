@@ -82,8 +82,20 @@ export const pathMap: PathMapItem[] = [
   },
   {
     key: 'OPPORTUNITY',
-    route: AppRouteEnum.OPPORTUNITY_OPT,
-    locale: 'menu.opportunity',
+    route: AppRouteEnum.OPPORTUNITY,
+    locale: 'module.businessManagement',
+    children: [
+      {
+        key: 'OPPORTUNITY_INDEX',
+        route: AppRouteEnum.OPPORTUNITY_OPT,
+        locale: 'menu.opportunity',
+      },
+      {
+        key: 'OPPORTUNITY_QUOTATION',
+        route: AppRouteEnum.OPPORTUNITY_QUOTATION,
+        locale: 'menu.quotation',
+      },
+    ],
   },
   {
     key: 'FOLLOW_UP_RECORD',

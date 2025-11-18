@@ -26,6 +26,7 @@ export default {
     'menu.settings.permission': 'Roles',
     'menu.settings.moduleSetting': 'Module',
     'menu.opportunity': 'Opportunity',
+    'menu.quotation': 'Quotation',
     'menu.collapsedOpportunity': 'Opportunity',
     'menu.collapsedProduct': 'Product',
     'menu.clue': 'Lead',

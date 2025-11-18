@@ -20,6 +20,7 @@ export enum TableKeyEnum {
   CLUE_POOL = 'cluePool',
   PRODUCT = 'product',
   BUSINESS = 'business',
+  OPPORTUNITY_QUOTATION = 'opportunityQuotation',
   LOG = 'log',
   LOGIN_LOG = 'loginLog',
   FOLLOW_PLAN = 'followPlan',
