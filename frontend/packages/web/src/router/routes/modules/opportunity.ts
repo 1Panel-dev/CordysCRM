@@ -11,6 +11,7 @@ const system: AppRouteRecordRaw = {
   meta: {
     hideChildrenInMenu: true,
     locale: 'menu.opportunity',
+    // TODO 商机报价单权限待确认
     permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
     icon: 'iconicon_business_opportunity',
     collapsedLocale: 'menu.collapsedOpportunity',
@@ -22,7 +23,19 @@ const system: AppRouteRecordRaw = {
       component: () => import('@/views/opportunity/index.vue'),
       meta: {
         locale: 'menu.opportunity',
+        isTopMenu: true,
         permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
+      },
+    },
+    {
+      path: 'quotation',
+      name: OpportunityRouteEnum.OPPORTUNITY_QUOTATION,
+      component: () => import('@/views/opportunity/quotation.vue'),
+      meta: {
+        locale: 'menu.quotation',
+        isTopMenu: true,
+        // TODO 商机报价单权限待确认
+        permissions: [],
       },
     },
   ],

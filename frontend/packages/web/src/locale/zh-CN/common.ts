@@ -334,4 +334,10 @@ export default {
   'common.noEnableApiKey': '暂无开启的 API Key',
   'common.noEnableApiKeyTip': '无开启的 API Key，请立即添加！',
   'common.goAdd': '去添加',
+  'common.approval': '审批',
+  'common.batchApproval': '批量审批',
+  'common.invalid': '作废',
+  'common.batchVoid': '批量作废',
+  'common.confirmVoid': '确认作废',
+  'common.voidSuccess': '作废成功',
 };

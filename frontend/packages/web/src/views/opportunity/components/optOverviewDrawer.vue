@@ -4,11 +4,11 @@
     v-model:show="showOptOverviewDrawer"
     v-model:active-tab="activeTab"
     :tab-list="tabList"
+    show-tab-setting
     :button-list="buttonList"
     :title="titleName"
     :subtitle="subTitleName"
     :form-key="FormDesignKeyEnum.BUSINESS"
-    :show-tab-setting="false"
     :source-id="sourceId"
     @button-select="handleSelect"
     @saved="() => (refreshKey += 1)"
@@ -68,6 +68,10 @@
         readonly
         :source-id="sourceId"
       />
+      <!-- TODO  xinxin 待调整 -->
+      <CrmCard v-else-if="activeTab === 'quotation'" no-content-bottom-padding hide-footer>
+        <quotationTable :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION" :source-id="sourceId" />
+      </CrmCard>
     </template>
 
     <template #transferPopContent>
@@ -84,6 +88,7 @@
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import quotationTable from './quotation/quotationTable.vue';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -93,6 +98,7 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
+  import CrmCard from '@/components/pure/crm-card/index.vue';
 
   import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -221,6 +227,11 @@
     {
       name: 'contact',
       tab: t('opportunity.contactInfo'),
+      enable: true,
+    },
+    {
+      name: 'quotation',
+      tab: t('opportunity.quotation'),
       enable: true,
     },
   ];

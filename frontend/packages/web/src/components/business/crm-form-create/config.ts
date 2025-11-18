@@ -604,6 +604,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: getCustomerFormConfig,
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOptFormConfig,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getOptFormConfig, // TODO:xinxinwu报价单 🏷
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -632,6 +633,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: addOpportunity,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -660,6 +662,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: updateOpportunity,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {

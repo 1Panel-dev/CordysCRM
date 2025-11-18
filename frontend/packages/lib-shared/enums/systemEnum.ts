@@ -45,6 +45,8 @@ export enum OperationTypeEnum {
   ADD_USER = 'ADD_USER',
   REMOVE_USER = 'REMOVE_USER',
   MERGE = 'MERGE',
+  APPROVAL = 'APPROVAL', // 审批
+  INVALID = 'INVALID', // 作废
 }
 
 export enum PersonalExportStatusEnum {

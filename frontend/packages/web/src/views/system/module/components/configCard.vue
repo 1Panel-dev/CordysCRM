@@ -38,6 +38,7 @@
   <customManagementContactFormDrawer v-model:visible="customerManagementContactFormVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
   <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
+  <optQuotationFormDrawer v-model:visible="opportunityQuotationFormVisible" />
   <CapacitySetDrawer
     v-model:visible="capacitySetVisible"
     :type="selectKey"
@@ -98,7 +99,7 @@
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
-
+  import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   // import useLicenseStore from '@/store/modules/setting/license';
@@ -350,6 +351,10 @@
           key: 'newForm',
         },
         {
+          label: t('module.opportunityQuotationFormSetting'),
+          key: 'newFormOpportunityQuotation',
+        },
+        {
           label: t('module.businessManage.businessCloseRule'),
           key: 'businessParamsSet',
         },
@@ -449,6 +454,7 @@
   const clueManagementCluePoolVisible = ref(false);
 
   const businessManagementFormVisible = ref(false);
+  const opportunityQuotationFormVisible = ref(false);
   const businessManagementBusinessParamsSetVisible = ref(false);
   const businessManagementStepSetVisible = ref(false);
 
@@ -480,6 +486,8 @@
       case ModuleConfigEnum.BUSINESS_MANAGEMENT:
         if (key === 'newForm') {
           businessManagementFormVisible.value = true;
+        } else if (key === 'newFormOpportunityQuotation') {
+          opportunityQuotationFormVisible.value = true;
         } else if (key === 'businessParamsSet') {
           businessManagementBusinessParamsSetVisible.value = true;
         } else if (key === 'businessStepSet') {

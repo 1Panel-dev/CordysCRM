@@ -12,6 +12,7 @@ export enum SystemRouteEnum {
 export enum OpportunityRouteEnum {
   OPPORTUNITY = 'opportunity',
   OPPORTUNITY_OPT = 'opportunityOpt',
+  OPPORTUNITY_QUOTATION = 'opportunityQuotation',
 }
 
 export enum ClueRouteEnum {
