@@ -23,6 +23,12 @@ export const getOptHomeConditions = async (
 ): Promise<FilterResult> => {
   const depIds = getSessionStorageTempState<Record<string, string[]>>('homeData', true)?.[homeDetailKey];
   const stageConfig = ref<OpportunityStageConfig>();
+
+  const timeFiledKeyMap: Record<string, string> = {
+    CREATE_TIME: 'createTime',
+    EXPECTED_END_TIME: 'expectedEndTime',
+    ACTUAL_END_TIME: 'actualEndTime',
+  };
   async function initStageConfig() {
     try {
       stageConfig.value = await getOpportunityStageConfig();
@@ -30,15 +36,6 @@ export const getOptHomeConditions = async (
       // eslint-disable-next-line no-console
       console.log(error);
     }
-  }
-
-  let timeFieldKey = 'createTime';
-  if (timeField === 'CREATE_TIME') {
-    timeFieldKey = 'createTime';
-  } else if (timeField === 'EXPECTED_END_TIME') {
-    timeFieldKey = 'expectedEndTime';
-  } else if (timeField === 'ACTUAL_END_TIME') {
-    timeFieldKey = 'actualEndTime';
   }
 
   await initStageConfig();
@@ -51,7 +48,7 @@ export const getOptHomeConditions = async (
       {
         value: dim,
         operator: OperatorEnum.DYNAMICS,
-        name: timeFieldKey,
+        name: timeFiledKeyMap[timeField],
         multipleValue: false,
         type: FieldTypeEnum.TIME_RANGE_PICKER,
       },
