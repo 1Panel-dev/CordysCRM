@@ -144,6 +144,7 @@
   import useViewStore from '@/store/modules/view';
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+  import { ViewItem } from '@lib/shared/models/view';
 
   const props = defineProps<{
     type: TabType;
@@ -174,13 +175,13 @@
       type: 'group',
       name: t('crmViewSelect.systemView'),
       key: 'internal',
-      children: [...viewStore.internalViews].filter((item) => item.enable),
+      children: [...(viewStore.internalViews as ViewItem[])].filter((item) => item.enable),
     },
     {
       type: 'group',
       name: t('crmViewSelect.myView'),
       key: 'custom',
-      children: [...viewStore.customViews].filter((item) => item.enable),
+      children: [...(viewStore.customViews as ViewItem[])].filter((item) => item.enable),
     },
   ]);
 
@@ -199,7 +200,10 @@
     { label: t('crmViewSelect.funnel'), value: ChartTypeEnum.FUNNEL },
   ];
   const groupByOptions = computed(() =>
-    [...(props.customList || []), ...(props.configList || []).filter((e) => e.dataIndex === 'departmentId')]
+    [
+      ...(props.customList || []),
+      ...(props.configList || []).filter((e) => e.dataIndex === 'departmentId' || e.dataIndex === 'stage'),
+    ]
       .filter(
         (e) =>
           ![
