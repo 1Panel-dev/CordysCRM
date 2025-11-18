@@ -20,7 +20,7 @@ public class InputNumberField extends BaseField {
     @Schema(description = "最大值范围")
     private Integer max;
 
-    @Schema(description = "格式", allowableValues = {"percent", "number"})
+    @Schema(description = "格式", allowableValues = {"percent", "number", "currency"})
     private String numberFormat;
 
     @Schema(description = "保留小数点位数")
