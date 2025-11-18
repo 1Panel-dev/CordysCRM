@@ -53,6 +53,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author song-cc-rock
+ */
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ModuleFormService {
@@ -246,14 +249,10 @@ public class ModuleFormService {
         BeanUtils.copyBean(logDTO, config);
         logDTO.setFormProp(formPropLog);
         // 目前只处理联动字段方便日志详情解析
-        Map<String, List<LinkField>> parseLinkFieldMap = new HashMap<>();
+        Map<String, List<LinkField>> parseLinkFieldMap = new HashMap<>(8);
         Map<String, List<LinkScenario>> linkProp = config.getFormProp().getLinkProp();
         if (linkProp != null && !linkProp.isEmpty()) {
-            linkProp.entrySet().forEach(link -> {
-                link.getValue().forEach(scenario -> {
-                    parseLinkFieldMap.put(link.getKey() + "-" + scenario.getKey(), scenario.getLinkFields());
-                });
-            });
+            linkProp.forEach((key, value) -> value.forEach(scenario -> parseLinkFieldMap.put(key + "-" + scenario.getKey(), scenario.getLinkFields())));
         }
         logDTO.getFormProp().setLinkProp(parseLinkFieldMap);
         return logDTO;
@@ -993,11 +992,10 @@ public class ModuleFormService {
                     if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null || !(entry.getValue() instanceof List)) {
                         continue;
                     }
-                    List<Map> fields = (List<Map>) entry.getValue();
+                    List<Map<String, Object>> fields = (List<Map<String, Object>>) entry.getValue();
                     List<LinkField> fieldList = fields.stream().map(field -> {
-                        LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
-                        linkField.setEnable(true);
-                        return linkField;
+                        field.put("enable", true);
+                        return BeanUtils.copyBean(new LinkField(), field);
                     }).toList();
                     String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
                             LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
@@ -1030,7 +1028,7 @@ public class ModuleFormService {
         dataMap.put(FormKey.OPPORTUNITY.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.OPPORTUNITY_TO_RECORD.name()).linkFields(new ArrayList<>()).build()));
         if (linkProp != null) {
             Map<String, Object> linkPropMap = (Map<String, Object>) linkProp;
-            List<Map> fields = (List<Map>) linkPropMap.get(FormKey.FOLLOW_PLAN.getKey());
+            List<Map<String, Object>> fields = (List<Map<String, Object>>) linkPropMap.get(FormKey.FOLLOW_PLAN.getKey());
             List<LinkField> fieldList = fields.stream().map(field -> {
                 LinkField linkField = JSON.parseObject(JSON.toJSONString(field), LinkField.class);
                 linkField.setEnable(true);
