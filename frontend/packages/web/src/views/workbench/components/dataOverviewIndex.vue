@@ -270,9 +270,6 @@
     },
   ];
 
-  // const dimTypeOptions = ref<SelectOption[]>([]);
-  // const winOrderTypeOptions = ref<SelectOption[]>([]);
-
   const userFieldOptions = [
     {
       value: 'CREATE_USER',
@@ -316,17 +313,15 @@
     const { timeField, priorPeriodEnable, userField, winOrderTimeField } = config;
     params.value = {
       ...params.value,
-      timeField,
+      timeField: timeField ?? 'CREATE_TIME',
       priorPeriodEnable,
       userField,
-      winOrderTimeField,
+      winOrderTimeField: winOrderTimeField ?? 'EXPECTED_END_TIME',
     };
 
-    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) {
-      params.value.timeField = 'CREATE_TIME';
-      params.value.winOrderTimeField = 'EXPECTED_END_TIME';
-      return;
-    }
+    endTimeFieldName.value = t('opportunity.endTime');
+
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
     try {
       const res = await getFormConfigApiMap[FormDesignKeyEnum.BUSINESS]();
       endTimeFieldName.value =
