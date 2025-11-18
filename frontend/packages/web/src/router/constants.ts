@@ -3,6 +3,7 @@ import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import {
   AgentRouteEnum,
   ClueRouteEnum,
+  ContractRouteEnum,
   CustomerRouteEnum,
   DashboardRouteEnum,
   OpportunityRouteEnum,
@@ -38,6 +39,7 @@ export const DEFAULT_ROUTE_NAME = 'workbench';
 // 模块（有开关）路由
 export const featureRouteMap: Record<string, any> = {
   [WorkbenchRouteEnum.WORKBENCH]: ModuleConfigEnum.HOME,
+  [ContractRouteEnum.CONTRACT]: ModuleConfigEnum.CONTRACT,
   [CustomerRouteEnum.CUSTOMER]: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
   [OpportunityRouteEnum.OPPORTUNITY]: ModuleConfigEnum.BUSINESS_MANAGEMENT,
   [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,

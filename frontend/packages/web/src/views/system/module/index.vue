@@ -125,6 +125,11 @@
       icon: 'iconicon_customer',
     },
     {
+      label: t('module.contract'),
+      key: ModuleConfigEnum.CONTRACT,
+      icon: 'iconicon_customer', // TODO lmy
+    },
+    {
       label: t('module.clueManagement'),
       key: ModuleConfigEnum.CLUE_MANAGEMENT,
       icon: 'iconicon_clue',

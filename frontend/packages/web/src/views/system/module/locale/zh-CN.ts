@@ -100,4 +100,8 @@ export default {
   'module.topNavigationConfig': '顶部导航配置',
   'module.desensitizationSet': '脱敏设置',
   'module.agent': '智能体',
+  'module.contract': '合同',
+  'module.formSettings': '表单设置',
+  'module.voidedAgreement': '作废协议',
+  'module.paymentPlan': '回款计划',
 };

@@ -66,6 +66,18 @@ export const logTypeOption = [
     value: OperationTypeEnum.INVALID,
     label: 'common.invalid',
   },
+  {
+    value: OperationTypeEnum.CANCEL_VOID,
+    label: 'common.cancelVoid',
+  },
+  {
+    value: OperationTypeEnum.ARCHIVE,
+    label: 'common.archive',
+  },
+  {
+    value: OperationTypeEnum.UNARCHIVE,
+    label: 'common.unarchive',
+  },
 ];
 
 export const defaultNavList: ActionItem[] = [

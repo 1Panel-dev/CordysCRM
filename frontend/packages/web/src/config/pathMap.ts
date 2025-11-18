@@ -64,6 +64,28 @@ export const pathMap: PathMapItem[] = [
     ],
   },
   {
+    key: 'CONTRACT',
+    route: AppRouteEnum.CONTRACT,
+    locale: 'module.contract',
+    children: [
+      {
+        key: 'CONTRACT_INDEX',
+        route: AppRouteEnum.CONTRACT_INDEX,
+        locale: 'module.contract',
+      },
+      {
+        key: 'CONTRACT_VOIDED',
+        route: AppRouteEnum.CONTRACT_VOIDED,
+        locale: 'module.voidedAgreement',
+      },
+      {
+        key: 'CONTRACT_PAYMENT',
+        route: AppRouteEnum.CONTRACT_PAYMENT,
+        locale: 'module.paymentPlan',
+      },
+    ],
+  },
+  {
     key: 'CLUE_MANAGEMENT',
     route: AppRouteEnum.CLUE_MANAGEMENT,
     locale: 'module.clueManagement',
