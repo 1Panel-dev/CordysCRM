@@ -728,7 +728,12 @@
                 rate = 100
             )
             <if test="request.startTime != null and request.endTime != null">
-                and c.expected_end_time &gt;= #{request.startTime} and c.expected_end_time &lt;= #{request.endTime}
+                <if test="request.staticRequest.timeField == 'ACTUAL_END_TIME'">
+                    and c.actual_end_time &gt;= #{request.startTime} and c.actual_end_time &lt;= #{request.endTime}
+                </if>
+                <if test="request.staticRequest.timeField != 'ACTUAL_END_TIME'">
+                    and c.expected_end_time &gt;= #{request.startTime} and c.expected_end_time &lt;= #{request.endTime}
+                </if>
             </if>
         </if>
         <if test="!success">
@@ -738,9 +743,6 @@
                 </if>
                 <if test="request.staticRequest.timeField != 'EXPECTED_END_TIME'">
                     and c.create_time &gt;= #{request.startTime} and c.create_time &lt;= #{request.endTime}
-                </if>
-                <if test="request.staticRequest.timeField != 'ACTUAL_END_TIME'">
-                    and c.expected_end_time &gt;= #{request.startTime} and c.expected_end_time &lt;= #{request.endTime}
                 </if>
             </if>
         </if>
