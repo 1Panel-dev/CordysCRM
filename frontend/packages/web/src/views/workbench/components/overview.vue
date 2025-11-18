@@ -253,7 +253,7 @@
   };
 
   function goDetail(dim: string, item: Record<string, any>) {
-    const { searchType, deptIds, timeField, userField } = props.params;
+    const { searchType, deptIds, timeField, userField, winOrderTimeField } = props.params;
     if (!item.hasPermission || (userField === 'CREATE_USER' && item.routeName === AppRouteEnum.CLUE_MANAGEMENT_CLUE))
       return;
     const homeKey = 'homeData';
@@ -277,7 +277,9 @@
             status: item.status,
           }
         : {}),
-      ...(item.routeName === AppRouteEnum.OPPORTUNITY_OPT ? { timeField } : {}),
+      ...(item.routeName === AppRouteEnum.OPPORTUNITY_OPT
+        ? { timeField: item.status === 'SUCCESS' ? winOrderTimeField : timeField }
+        : {}),
     });
   }
 
@@ -355,11 +357,12 @@
   async function initSuccessOptDetail(params: GetHomeStatisticParams) {
     if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
     try {
-      const { deptIds, searchType, priorPeriodEnable } = params;
+      const { deptIds, searchType, priorPeriodEnable, winOrderTimeField } = params;
       const result = await getHomeSuccessOptStatistic({
         deptIds,
         searchType,
         priorPeriodEnable,
+        timeField: winOrderTimeField,
       });
       Object.keys(defaultWinOrderData.value).forEach((k) => {
         const resultArr: string[] = Object.keys(result);
