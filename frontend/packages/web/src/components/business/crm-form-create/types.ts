@@ -97,6 +97,7 @@ export interface FormCreateField {
   // dataSource属性
   dataSourceType?: FieldDataSourceTypeEnum;
   combineSearch?: DataSourceFilterCombine; // 数据源过滤条件
+  showFields?: string[]; // 数据源显示字段
   // 成员属性
   hasCurrentUser?: boolean;
   // 部门属性

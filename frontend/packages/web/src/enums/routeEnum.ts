@@ -31,7 +31,6 @@ export enum CustomerRouteEnum {
 export enum ContractRouteEnum {
   CONTRACT = 'contract',
   CONTRACT_INDEX = 'contractIndex',
-  CONTRACT_VOIDED = 'contractVoided',
   CONTRACT_PAYMENT = 'contractPaymentPlan',
 }
 

@@ -107,6 +107,5 @@ export default {
   'module.agent': 'Agent',
   'module.contract': 'Contract',
   'module.formSettings': 'Form Settings',
-  'module.voidedAgreement': 'Voided Agreement',
   'module.paymentPlan': 'Payment Plan',
 };

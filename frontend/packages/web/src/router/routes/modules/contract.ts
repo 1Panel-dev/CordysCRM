@@ -27,16 +27,6 @@ const contract: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'contractVoided',
-      name: ContractRouteEnum.CONTRACT_VOIDED,
-      component: () => import('@/views/contract/contractVoided/index.vue'),
-      meta: {
-        locale: 'module.voidedAgreement',
-        isTopMenu: true,
-        permissions: ['CLUE_MANAGEMENT_POOL:READ'], // TODO lmy
-      },
-    },
-    {
       path: 'contractPaymentPlan',
       name: ContractRouteEnum.CONTRACT_PAYMENT,
       component: () => import('@/views/contract/contractPaymentPlan/index.vue'),
