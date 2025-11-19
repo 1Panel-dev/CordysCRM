@@ -51,6 +51,8 @@
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
+  import quotationStatus from './quotationStatus.vue';
+  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 
   const { openModal } = useModal();
   const { t } = useI18n();
@@ -117,21 +119,6 @@
     }
   }
 
-  const groupList = [
-    {
-      label: t('common.edit'),
-      key: 'edit',
-    },
-    {
-      label: t('common.invalid'),
-      key: 'invalid',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-    },
-  ];
-
   async function handleCreate() {}
 
   function handleEdit(id: string) {}
@@ -155,6 +142,7 @@
 
   const showDetailDrawer = ref(false);
   function handleDelete(row: any) {}
+  function handleRevoke(row: any) {}
 
   function handleActionSelect(row: any, actionKey: string, done?: () => void) {
     switch (actionKey) {
@@ -164,11 +152,54 @@
       case 'invalid':
         handleVoid(row);
         break;
+      case 'revoke':
+        handleRevoke(row);
+        break;
       case 'delete':
         handleDelete(row);
         break;
       default:
         break;
+    }
+  }
+
+  const groupList = [
+    {
+      label: t('common.edit'),
+      key: 'edit',
+    },
+    {
+      label: t('common.invalid'),
+      key: 'invalid',
+    },
+    {
+      label: t('common.delete'),
+      key: 'delete',
+    },
+  ];
+
+  const moreGroupList = [
+    { label: t('common.download'), key: 'download' },
+    { label: t('common.revoke'), key: 'revoke' },
+  ];
+
+  function getOperationGroupList(row: any) {
+    const allGroups = [...groupList, ...moreGroupList];
+    const getGroups = (keys: string[]) => allGroups.filter((e) => keys.includes(e.key));
+    const commonGroups = ['invalid', 'delete'];
+
+    switch (row.status) {
+      case QuotationStatusEnum.SUCCESS:
+        return getGroups(['download', ...commonGroups]);
+      case QuotationStatusEnum.FAIL:
+      case QuotationStatusEnum.REVOKE:
+        return getGroups(['edit', ...commonGroups]);
+      case QuotationStatusEnum.REVIEW:
+        return getGroups(['revoke', ...commonGroups]);
+      case QuotationStatusEnum.INVALID:
+        return getGroups(['delete']);
+      default:
+        return [];
     }
   }
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
@@ -179,13 +210,15 @@
       ? undefined
       : {
           key: 'operation',
-          width: 160,
+          width: 200,
           fixed: 'right',
           render: (row: any) =>
-            h(CrmOperationButton, {
-              groupList,
-              onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
-            }),
+            getOperationGroupList(row).length
+              ? h(CrmOperationButton, {
+                  groupList: getOperationGroupList(row),
+                  onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
+                })
+              : '-',
         },
     specialRender: {
       name: (row: any) => {
@@ -201,6 +234,10 @@
           );
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
+      status: (row: any) =>
+        h(quotationStatus, {
+          status: row.status,
+        }),
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
     readonly: props.readonly,
@@ -235,8 +272,7 @@
   }
 
   onBeforeMount(() => {
-    // TODO:  xinxinwu 🏷
-    // searchData();
+    searchData();
   });
 </script>
 

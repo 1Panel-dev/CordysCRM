@@ -342,4 +342,5 @@ export default {
   'common.confirmVoid': '确认作废',
   'common.voidSuccess': '作废成功',
   'common.cancelVoid': '取消作废',
+  'common.review': '提审',
 };
