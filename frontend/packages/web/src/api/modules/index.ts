@@ -545,4 +545,5 @@ export const {
   agentWorkspaceOptions,
   getAgentModuleTreeCount,
   agentApplicationOptions,
+  getMkApplication,
 } = agentApi;
