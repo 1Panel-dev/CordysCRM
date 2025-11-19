@@ -92,6 +92,8 @@ export default {
   'crmFormDesign.dataSourceFilterDataIndexPlaceholder': 'Please select {type} form field',
   'crmFormDesign.dataSourceFilterTip':
     'After adding filter conditions, only data that meets the conditions will be displayed',
+  'crmFormDesign.dataSourceDisplayField': 'Display Field',
+  'crmFormDesign.showFieldCount': '{count} display fields set',
   'crmFormDesign.serialNumber': 'Serial Number',
   'crmFormDesign.selectDataSource': 'Select {type}',
   'crmFormDesign.customer': 'Account',

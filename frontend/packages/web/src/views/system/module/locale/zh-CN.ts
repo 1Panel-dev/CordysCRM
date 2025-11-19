@@ -102,6 +102,5 @@ export default {
   'module.agent': '智能体',
   'module.contract': '合同',
   'module.formSettings': '表单设置',
-  'module.voidedAgreement': '作废协议',
   'module.paymentPlan': '回款计划',
 };

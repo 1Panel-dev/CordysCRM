@@ -143,6 +143,30 @@
             {{ t('common.setting') }}
           </n-button>
         </div>
+        <!-- 显示字段 -->
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <span>{{ t('crmFormDesign.dataSourceDisplayField') }}</span>
+            <n-button
+              type="primary"
+              text
+              :disabled="!fieldConfig.showFields?.length"
+              @click="handleClearDataSourceDisplayField"
+            >
+              {{ t('common.clear') }}
+            </n-button>
+          </div>
+          <n-button
+            :disabled="fieldConfig.disabledProps?.includes('dataSource')"
+            @click="showDataSourceDisplayFieldModal = true"
+          >
+            {{
+              fieldConfig.showFields?.length
+                ? t('crmFormDesign.showFieldCount', { count: fieldConfig.showFields?.length })
+                : t('common.setting')
+            }}
+          </n-button>
+        </div>
       </template>
       <!-- 数据源属性 End -->
       <!-- 选项属性 -->
@@ -945,6 +969,12 @@
     :form-fields="props.list"
     @save="handleDataSourceFilterSave"
   />
+  <DataSourceDisplayFieldModal
+    v-if="fieldConfig"
+    v-model:show="showDataSourceDisplayFieldModal"
+    :field-config="fieldConfig"
+    @save="handleDataSourceDisplayFieldSave"
+  />
   <fieldLinkDrawer
     v-if="fieldConfig"
     v-model:visible="showLinkConfigVisible"
@@ -1000,6 +1030,7 @@
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import fieldLinkDrawer from './fieldLinkDrawer.vue';
+  import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
   import FilterModal from './filterModal.vue';
   import optionConfig from './optionConfig.vue';
 
@@ -1265,6 +1296,14 @@
 
   function handleDataSourceFilter() {
     showDataSourceFilterModal.value = true;
+  }
+
+  const showDataSourceDisplayFieldModal = ref(false);
+  function handleDataSourceDisplayFieldSave(value: any[]) {
+    fieldConfig.value.showFields = value;
+  }
+  function handleClearDataSourceDisplayField() {
+    fieldConfig.value.showFields = [];
   }
 
   function handleDataSourceFilterSave(result: DataSourceFilterCombine) {

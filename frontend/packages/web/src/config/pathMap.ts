@@ -74,11 +74,6 @@ export const pathMap: PathMapItem[] = [
         locale: 'module.contract',
       },
       {
-        key: 'CONTRACT_VOIDED',
-        route: AppRouteEnum.CONTRACT_VOIDED,
-        locale: 'module.voidedAgreement',
-      },
-      {
         key: 'CONTRACT_PAYMENT',
         route: AppRouteEnum.CONTRACT_PAYMENT,
         locale: 'module.paymentPlan',
