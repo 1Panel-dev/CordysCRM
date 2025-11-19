@@ -1,3 +1,4 @@
+import { ConfigSynchronization } from '@lib/shared/models/system/business';
 import type {
   AddAgentModuleParams,
   AddAgentParams,
@@ -30,6 +31,7 @@ import {
   agentScriptUrl,
   agentWorkspaceUrl,
   getMkAgentVersionUrl,
+  getMkApplicationUrl,
   renameAgentUrl,
   unCollectAgentUrl,
   updateAgentUrl,
@@ -143,6 +145,11 @@ export default function useAgentApi(CDR: CordysAxios) {
     return CDR.post({ url: agentPosUrl, data });
   }
 
+  // 获取智能体mk应用配置
+  function getMkApplication() {
+    return CDR.get<ConfigSynchronization>({ url: getMkApplicationUrl });
+  }
+
   return {
     agentModuleRename,
     agentModuleMove,
@@ -165,5 +172,6 @@ export default function useAgentApi(CDR: CordysAxios) {
     getApplicationScript,
     getMkAgentVersion,
     agentPos,
+    getMkApplication,
   };
 }

@@ -165,9 +165,9 @@
     agentWorkspaceOptions,
     getAgentDetail,
     getApplicationScript,
-    getConfigSynchronization,
     getMkAgentVersion,
     updateAgent,
+    getMkApplication,
   } from '@/api/modules';
 
   const props = defineProps<{
@@ -384,10 +384,9 @@
   const isEnableConfig = ref(false);
   async function initAgentStatus() {
     try {
-      const res = await getConfigSynchronization();
+      const res = await getMkApplication();
       if (res) {
-        const mkAgentConfig = res.find((item) => item.type === CompanyTypeEnum.MAXKB);
-        isEnableConfig.value = !!mkAgentConfig && !!mkAgentConfig.mkEnable;
+        isEnableConfig.value = !!res && !!res.mkEnable;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
