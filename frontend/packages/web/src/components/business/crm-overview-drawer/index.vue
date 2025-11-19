@@ -185,10 +185,7 @@
     () => cachedList.value,
     (val) => {
       nextTick(() => {
-        const isActiveTabExist = val.some((item) => item.name === activeTab.value);
-        if (!isActiveTabExist && val.length) {
-          activeTab.value = (val[0]?.name ?? '') as string;
-        }
+        activeTab.value = (val[0]?.name ?? '') as string;
       });
     }
   );
@@ -215,15 +212,6 @@
     async (val) => {
       if (val) {
         await setItem(`active-overview-layout-${props.formKey}`, val);
-      }
-    }
-  );
-
-  watch(
-    () => showDrawer.value,
-    (val) => {
-      if (!val) {
-        activeTab.value = cachedList.value[0]?.name as string;
       }
     }
   );
