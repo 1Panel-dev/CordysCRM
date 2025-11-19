@@ -50,6 +50,7 @@ public class DataInitService {
             initOneTime(moduleFormService::processOldLinkData, "process.old.link.data");
             initOneTime(moduleFormService::initFormScenarioProp, "init.record.form.scenario");
             initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");
+            initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.3.4");
         } finally {
             lock.unlock();
         }

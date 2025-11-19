@@ -925,5 +925,294 @@
       ],
       "mobile": true
     }
+  ],
+  "price": [
+    {
+      "name": "基本信息",
+      "internalKey": "priceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "价格表名称",
+      "internalKey": "priceName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"},
+        {"key":  "unique"}
+      ]
+    },
+    {
+      "name": "状态",
+      "internalKey": "priceStatus",
+      "type": "RADIO",
+      "direction": "horizontal",
+      "defaultValue": "1",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {"label": "启用", "value":  "1"}, {"label": "禁用", "value":  "2"}
+      ],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "产品信息",
+      "internalKey": "priceProducts",
+      "type": "SUB_TABLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "subFields": [
+        {
+          "name": "选择产品",
+          "internalKey": "priceProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "rules": [
+            {"key":  "required"}
+          ],
+          "mobile": true,
+          "disabledProps": ["dataSourceType", "rules.required"]
+        },
+        {
+          "name": "产品SKU",
+          "internalKey": "priceProductSku",
+          "type": "INPUT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1
+        },
+        {
+          "name": "产品定价",
+          "internalKey": "priceProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "currency",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true
+        },
+        {
+          "name": "税点",
+          "internalKey": "priceProductTax",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "percent"
+        },
+        {
+          "name": "重要说明",
+          "internalKey": "priceProductSku",
+          "type": "INPUT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1
+        }
+      ]
+    },
+    {
+      "name": "备注",
+      "internalKey": "priceRemark",
+      "type": "TEXT_AREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    }
+  ],
+  "quotation": [
+    {
+      "name": "基本信息",
+      "internalKey": "quotationBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "报价单名称",
+      "internalKey": "quotationName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"},
+        {"key":  "unique"}
+      ]
+    },
+    {
+      "name": "商机",
+      "internalKey": "quotationOpportunity",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "OPPORTUNITY",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
+      "name": "联系人",
+      "internalKey": "quotationContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
+      "name": "报价日期",
+      "internalKey": "quotationTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "有效期至",
+      "internalKey": "quotationUntilTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "报价产品",
+      "internalKey": "quotationProducts",
+      "type": "SUB_TABLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "sumColumn": "quotationAmount",
+      "fixedColumn": 1,
+      "mobile": true,
+      "subFields": [
+        {
+          "name": "产品",
+          "internalKey": "quotationProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "rules": [
+            {"key":  "required"}
+          ],
+          "disabledProps": ["dataSourceType", "rules.required"]
+        },
+        {
+          "name": "价格表",
+          "internalKey": "quotationPrice",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRICE",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "rules": [
+            {"key":  "required"}
+          ],
+          "disabledProps": ["dataSourceType", "rules.required"]
+        },
+        {
+          "name": "产品定价",
+          "internalKey": "quotationProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "currency",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true
+        },
+        {
+          "name": "折扣",
+          "internalKey": "quotationDiscount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number"
+        },
+        {
+          "name": "税点",
+          "internalKey": "quotationTax",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "percent"
+        },
+        {
+          "name": "金额",
+          "internalKey": "quotationAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "formula": "(quotationProductAmount - quotationDiscount) * (1 + quotationTax)"
+        }
+      ]
+    }
   ]
 }
