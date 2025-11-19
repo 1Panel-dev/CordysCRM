@@ -332,4 +332,5 @@ export default {
   'common.confirmVoid': 'Are you sure to void?',
   'common.voidSuccess': 'Void success',
   'common.cancelVoid': 'Cancel Void',
+  'common.review': 'Review',
 };

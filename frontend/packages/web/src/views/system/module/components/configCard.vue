@@ -268,6 +268,10 @@
 
   const opportunityMoreOptions = computed<ActionsItem[]>(() => [
     {
+      label: t('module.businessManage.businessCloseRule'),
+      key: 'businessParamsSet',
+    },
+    {
       label: t('module.failReasonConfig'),
       key: 'move',
       render: renderOptReasonConfig.value,
@@ -373,10 +377,6 @@
         {
           label: t('module.opportunityQuotationFormSetting'),
           key: 'newFormOpportunityQuotation',
-        },
-        {
-          label: t('module.businessManage.businessCloseRule'),
-          key: 'businessParamsSet',
         },
         {
           label: t('module.businessManage.businessStepSet'),
@@ -518,8 +518,6 @@
           businessManagementFormVisible.value = true;
         } else if (key === 'newFormOpportunityQuotation') {
           opportunityQuotationFormVisible.value = true;
-        } else if (key === 'businessParamsSet') {
-          businessManagementBusinessParamsSetVisible.value = true;
         } else if (key === 'businessStepSet') {
           businessManagementStepSetVisible.value = true;
         }
@@ -539,6 +537,9 @@
       case 'capacitySet':
         selectKey.value = ModuleConfigEnum.CUSTOMER_MANAGEMENT;
         capacitySetVisible.value = true;
+        break;
+      case 'businessParamsSet':
+        businessManagementBusinessParamsSetVisible.value = true;
         break;
       default:
         break;
