@@ -337,10 +337,11 @@
       Message.warning(t('crmViewSelect.orConditionNotAllowJump'));
       return;
     }
+    const systemFields = ['departmentId', 'stage'];
     const groupByField = computed(() => {
       const allFields = [
         ...(props.customList || []),
-        ...(props.configList || []).filter((e) => e.dataIndex === 'departmentId'),
+        ...(props.configList || []).filter((e) => systemFields.includes(e.dataIndex as string)),
       ];
       return allFields.find((e) => e.dataIndex === groupBy.value);
     });
