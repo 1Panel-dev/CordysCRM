@@ -21,3 +21,4 @@ export const agentApplicationUrl = '/agent/application'; // 智能体应用
 export const agentWorkspaceUrl = '/agent/workspace'; // 智能体工作空间
 export const agentScriptUrl = '/agent/script'; // 工作空间应用对应脚本
 export const getMkAgentVersionUrl = '/agent/edition'; // 获取智能体mk版本
+export const getMkApplicationUrl = '/agent/application/config'; // 获取智能体mk应用配置
