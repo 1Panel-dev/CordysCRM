@@ -313,10 +313,10 @@
     const { timeField, priorPeriodEnable, userField, winOrderTimeField } = config;
     params.value = {
       ...params.value,
-      timeField: timeField ?? 'CREATE_TIME',
+      timeField,
       priorPeriodEnable,
       userField,
-      winOrderTimeField: winOrderTimeField ?? 'EXPECTED_END_TIME',
+      winOrderTimeField,
     };
 
     endTimeFieldName.value = t('opportunity.endTime');
