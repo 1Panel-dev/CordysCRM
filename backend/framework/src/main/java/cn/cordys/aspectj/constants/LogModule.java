@@ -93,7 +93,13 @@ public class LogModule {
     /**
      * 商机
      */
-    public static final String OPPORTUNITY = "OPPORTUNITY";
+    public static final String OPPORTUNITY_INDEX = "OPPORTUNITY_INDEX";
+
+     /**
+     * 商机报价
+     */
+    public static final String OPPORTUNITY_QUOTATION = "OPPORTUNITY_QUOTATION";
+
 
     //todo end
 

@@ -20,7 +20,8 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.CUSTOMER_INDEX, CommonBeanFactory.getBean(CustomerLogService.class));
         logServiceMap.put(LogModule.CUSTOMER_POOL, CommonBeanFactory.getBean(CustomerLogService.class));
         logServiceMap.put(LogModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(CustomerContactLogService.class));
-        logServiceMap.put(LogModule.OPPORTUNITY, CommonBeanFactory.getBean(OpportunityLogService.class));
+        logServiceMap.put(LogModule.OPPORTUNITY_INDEX, CommonBeanFactory.getBean(OpportunityLogService.class));
+        logServiceMap.put(LogModule.OPPORTUNITY_QUOTATION, CommonBeanFactory.getBean(OpportunityLogService.class));
         logServiceMap.put(LogModule.SYSTEM_ORGANIZATION, CommonBeanFactory.getBean(OrganizationLogService.class));
         logServiceMap.put(LogModule.PRODUCT_MANAGEMENT, CommonBeanFactory.getBean(ProductLogService.class));
         logServiceMap.put(LogModule.CLUE_INDEX, CommonBeanFactory.getBean(ClueLogService.class));

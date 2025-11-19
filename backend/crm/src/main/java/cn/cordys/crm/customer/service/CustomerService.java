@@ -933,7 +933,7 @@ public class CustomerService {
         List<Opportunity> mergeOpportunities = extOpportunityMapper.getMergeOpportunityList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeOpportunities)) {
             for (Opportunity opportunity : mergeOpportunities) {
-                LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE, LogModule.OPPORTUNITY, opportunity.getName());
+                LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
                 opportunity.setCustomerId(customerMap.get(opportunity.getCustomerId()));
                 logDTO.setOriginalValue(opportunity);
                 Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);

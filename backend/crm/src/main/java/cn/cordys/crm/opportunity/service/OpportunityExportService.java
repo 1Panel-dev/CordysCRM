@@ -94,7 +94,7 @@ public class OpportunityExportService extends BaseExportService {
                 // 从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
                 // 日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY, request.getFileName());
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY_INDEX, request.getFileName());
             }
         });
 
@@ -208,7 +208,7 @@ public class OpportunityExportService extends BaseExportService {
                 //从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
                 //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY, request.getFileName());
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY_INDEX, request.getFileName());
             }
         });
         return exportTask.getId();

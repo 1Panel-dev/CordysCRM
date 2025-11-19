@@ -264,7 +264,7 @@ public class OpportunityService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         productService.checkProductList(request.getProducts());
         List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
@@ -315,7 +315,7 @@ public class OpportunityService {
      * @param userId
      * @param orgId
      */
-    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
@@ -372,7 +372,7 @@ public class OpportunityService {
      *
      * @param id
      */
-    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
@@ -425,7 +425,7 @@ public class OpportunityService {
             originCustomer.setOwner(opportunity.getOwner());
             Customer modifieCustomer = new Customer();
             modifieCustomer.setOwner(request.getOwner());
-            LogDTO logDTO = new LogDTO(orgId, opportunity.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, opportunity.getName());
+            LogDTO logDTO = new LogDTO(orgId, opportunity.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
             logDTO.setOriginalValue(originCustomer);
             logDTO.setModifiedValue(modifieCustomer);
             logs.add(logDTO);
@@ -462,7 +462,7 @@ public class OpportunityService {
         opportunityFieldService.deleteByResourceIds(toDoIds);
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
-            LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, opportunity.getName());
+            LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
             logDTO.setOriginalValue(opportunity);
             logs.add(logDTO);
         });
@@ -562,7 +562,7 @@ public class OpportunityService {
      * @param request
      * @param orgId
      */
-    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStage(OpportunityStageRequest request, String orgId) {
         final Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         if (oldOpportunity == null) {
@@ -699,7 +699,7 @@ public class OpportunityService {
                     Opportunity opportunity = opportunities.get(i);
                     opportunity.setStage(stageConfigList.getFirst().getId());
                     opportunity.setPos(nextPos + i);
-                    logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY, opportunity.getName()));
+                    logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
                 }
                 opportunityMapper.batchInsert(opportunities);
                 opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
@@ -751,7 +751,7 @@ public class OpportunityService {
 
         List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
 
-        opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY, extOpportunityMapper::batchUpdate, userId, organizationId);
+        opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
     }
 
 
