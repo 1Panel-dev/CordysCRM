@@ -1015,4 +1015,25 @@ public class IntegrationConfigService {
     public OrganizationConfig getLatestSyncResource(String organizationId) {
         return extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
+
+    public ThirdConfigurationDTO getApplicationConfig(String organizationId) {
+        // 检查当前类型是否有过配置
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId, OrganizationConfigConstants.ConfigType.THIRD.name()
+        );
+
+        if (organizationConfig == null) {
+            return null;
+        }
+        // 检查当前类型下是否还有数据
+        List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetails(organizationConfig.getId(), null);
+
+        if (CollectionUtils.isEmpty(organizationConfigDetails)) {
+            return null;
+        }
+
+        return getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name());
+
+    }
 }

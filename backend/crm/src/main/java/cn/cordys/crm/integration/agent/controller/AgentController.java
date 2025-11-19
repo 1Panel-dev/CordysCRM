@@ -14,6 +14,8 @@ import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import cn.cordys.crm.integration.agent.dto.response.ScriptResponse;
 import cn.cordys.crm.integration.agent.service.AgentBaseService;
+import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -33,6 +35,9 @@ public class AgentController {
 
     @Resource
     private AgentBaseService agentBaseService;
+
+    @Resource
+    private IntegrationConfigService integrationConfigService;
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.AGENT_ADD)
@@ -155,5 +160,13 @@ public class AgentController {
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     public String getEdition() {
         return agentBaseService.edition(OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/application/config")
+    @Operation(summary = "获取智能体设置")
+    @RequiresPermissions(PermissionConstants.AGENT_READ)
+    public ThirdConfigurationDTO getApplicationConfig() {
+        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId());
     }
 }
