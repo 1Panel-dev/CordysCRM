@@ -49,8 +49,23 @@ const useOverviewStore = defineStore('overview', {
       const savedConfig = await getItem<Record<string, WinOrderConfig>>(WIN_ORDER_CONFIG_KEY);
 
       if (savedConfig && savedConfig[userId]) {
-        this.homeOverviewConfig[userId] = savedConfig[userId];
-        return savedConfig[userId];
+        const oldConfig = savedConfig[userId];
+
+        const fixedConfig: WinOrderConfig = {
+          ...defaultHomeOverviewConfig,
+          ...oldConfig,
+        };
+
+        const needUpdate = JSON.stringify(oldConfig) !== JSON.stringify(fixedConfig);
+        if (needUpdate) {
+          await setItem(WIN_ORDER_CONFIG_KEY, {
+            ...savedConfig,
+            [userId]: fixedConfig,
+          });
+        }
+
+        this.homeOverviewConfig[userId] = fixedConfig;
+        return fixedConfig;
       }
 
       const userDefaultWinConfig = { ...defaultHomeOverviewConfig };
