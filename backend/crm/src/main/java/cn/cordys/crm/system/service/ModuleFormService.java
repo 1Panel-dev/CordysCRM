@@ -447,39 +447,62 @@ public class ModuleFormService {
      * 表单初始化
      */
     public void initForm() {
-        // init form
-        Map<String, String> formKeyMap = new HashMap<>(FormKey.values().length);
-        List<ModuleForm> forms = new ArrayList<>();
-        List<ModuleFormBlob> formBlobs = new ArrayList<>();
-        Arrays.stream(FormKey.values()).forEach(formKey -> {
-            ModuleForm form = new ModuleForm();
-            form.setId(IDGenerator.nextStr());
-            form.setFormKey(formKey.getKey());
-            form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-            form.setCreateUser("admin");
-            form.setCreateTime(System.currentTimeMillis());
-            form.setUpdateUser("admin");
-            form.setUpdateTime(System.currentTimeMillis());
-            forms.add(form);
-            formKeyMap.put(formKey.getKey(), form.getId());
-            ModuleFormBlob formBlob = new ModuleFormBlob();
-            formBlob.setId(form.getId());
-            try {
-                FormProp formProp = JSON.parseObject(formResource.getInputStream(), FormProp.class);
-                formBlob.setProp(JSON.toJSONString(formProp));
-            } catch (IOException e) {
-                throw new GenericException("表单属性初始化失败", e);
-            }
-            formBlobs.add(formBlob);
-        });
-        moduleFormMapper.batchInsert(forms);
-        moduleFormBlobMapper.batchInsert(formBlobs);
-        // init form fields
-        initFormFields(formKeyMap);
+		initFormAndFields(FormKey.allKeys());
     }
 
+	/**
+	 * 初始化升级表单
+	 */
+	public void initUpgradeForm() {
+		List<String> allKeys = FormKey.allKeys();
+		LambdaQueryWrapper<ModuleForm> moduleFormWrapper = new LambdaQueryWrapper<>();
+		moduleFormWrapper.in(ModuleForm::getFormKey, allKeys);
+		List<ModuleForm> oldForms = moduleFormMapper.selectListByLambda(moduleFormWrapper);
+		allKeys.removeAll(oldForms.stream().map(ModuleForm::getFormKey).toList());
+		if (CollectionUtils.isEmpty(allKeys)) {
+			// 初始化完成, 无升级表单.
+			return;
+		}
+		initFormAndFields(allKeys);
+	}
+
+	/**
+	 * 表单及字段初始化 (升级)
+	 * @param initKeys 初始化Key集合
+	 */
+	private void initFormAndFields(List<String> initKeys) {
+		Map<String, String> formKeyMap = new HashMap<>(FormKey.values().length);
+		List<ModuleForm> forms = new ArrayList<>();
+		List<ModuleFormBlob> formBlobs = new ArrayList<>();
+		initKeys.forEach(formKey -> {
+			ModuleForm form = new ModuleForm();
+			form.setId(IDGenerator.nextStr());
+			form.setFormKey(formKey);
+			form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+			form.setCreateUser("admin");
+			form.setCreateTime(System.currentTimeMillis());
+			form.setUpdateUser("admin");
+			form.setUpdateTime(System.currentTimeMillis());
+			forms.add(form);
+			formKeyMap.put(formKey, form.getId());
+			ModuleFormBlob formBlob = new ModuleFormBlob();
+			formBlob.setId(form.getId());
+			try {
+				FormProp formProp = JSON.parseObject(formResource.getInputStream(), FormProp.class);
+				formBlob.setProp(JSON.toJSONString(formProp));
+			} catch (IOException e) {
+				throw new GenericException("表单属性初始化失败", e);
+			}
+			formBlobs.add(formBlob);
+		});
+		moduleFormMapper.batchInsert(forms);
+		moduleFormBlobMapper.batchInsert(formBlobs);
+		// init form fields
+		initFormFields(formKeyMap);
+	}
+
     /**
-     * 字段初始化
+     * 字段初始化 (静态json文件)
      *
      * @param formKeyMap 表单Key映射
      */
@@ -489,7 +512,7 @@ public class ModuleFormService {
         List<ModuleFieldBlob> fieldBlobs = new ArrayList<>();
         try {
             Map<String, List<Map<String, Object>>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
-            fieldMap.keySet().forEach(key -> {
+			formKeyMap.keySet().forEach(key -> {
                 String formId = formKeyMap.get(key);
                 List<Map<String, Object>> initFields = fieldMap.get(key);
                 AtomicLong pos = new AtomicLong(1L);

@@ -2,6 +2,14 @@ package cn.cordys.common.constants;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * @author song-cc-rock
+ */
+
 @Getter
 public enum FormKey {
 
@@ -32,11 +40,23 @@ public enum FormKey {
     /**
      * 产品
      */
-    PRODUCT("product");
+    PRODUCT("product"),
+	/**
+	 * 价格
+	 */
+	PRICE("price"),
+	/**
+	 * 报价单
+	 */
+	QUOTATION("quotation");
 
     private final String key;
 
     FormKey(String key) {
         this.key = key;
     }
+
+	public static List<String> allKeys() {
+		return Arrays.stream(FormKey.values()).map(FormKey::getKey).collect(Collectors.toList());
+	}
 }
