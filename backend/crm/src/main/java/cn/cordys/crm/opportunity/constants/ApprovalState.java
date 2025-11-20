@@ -10,7 +10,7 @@ public enum ApprovalState {
     /**
      * 不通过
      */
-    UN_APPROVED,
+    UNAPPROVED,
 
     /**
      * 提审
@@ -20,7 +20,7 @@ public enum ApprovalState {
     /**
      * 作废
      */
-    INVALID,
+    VOIDED,
 
     /**
      * 撤销
