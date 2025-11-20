@@ -661,7 +661,7 @@ public class OpportunityService {
         // 客户表单字段
         List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.OPPORTUNITY.getKey(), currentOrg);
 
-        new EasyExcelExporter(Objects.class)
+        new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
     }

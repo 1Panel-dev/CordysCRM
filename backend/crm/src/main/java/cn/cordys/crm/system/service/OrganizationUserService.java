@@ -390,16 +390,13 @@ public class OrganizationUserService {
      *
      * @param request
      * @param operatorId
-     *
-     * @return
      */
-    private OrganizationUser updateUserInfo(UserUpdateRequest request, String operatorId, UserResponse user) {
+    private void updateUserInfo(UserUpdateRequest request, String operatorId, UserResponse user) {
         OrganizationUser organizationUser = BeanUtils.copyBean(new OrganizationUser(), user);
         BeanUtils.copyBean(organizationUser, request);
         organizationUser.setUpdateTime(System.currentTimeMillis());
         organizationUser.setUpdateUser(operatorId);
         extOrganizationUserMapper.updateById(organizationUser);
-        return organizationUser;
     }
 
 
@@ -627,13 +624,11 @@ public class OrganizationUserService {
     public void downloadExcelTemplate(HttpServletResponse response) {
         //获取表头字段
         List<List<String>> heads = getTemplateHead();
-        UserExcelData userExcelData = new UserExcelDataFactory().getUserExcelDataLocal();
-
         //表头备注信息
         UserTemplateWriteHandler handler = new UserTemplateWriteHandler(heads);
         List<List<Object>> data = new ArrayList<>();
 
-        new EasyExcelExporter(userExcelData.getClass())
+        new EasyExcelExporter()
                 .exportByCustomWriteHandler(response, heads, data, Translator.get("user_import_template_name"),
                         Translator.get("user_import_template_sheet"), handler);
     }
