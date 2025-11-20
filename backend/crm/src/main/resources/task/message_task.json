@@ -171,6 +171,13 @@
         "emailEnable":false,
         "sysEnable":false,
         "weComEnable":false
+      },
+      {
+        "event": "BUSINESS_QUOTATION_APPROVAL",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false,
+        "weComEnable":false
       }
     ]
   }

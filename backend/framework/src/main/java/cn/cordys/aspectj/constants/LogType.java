@@ -72,6 +72,18 @@ public final class LogType {
      */
     public static final String MERGE = "MERGE";
 
+    /**
+     * 审核
+     */
+    public static final String APPROVAL = "APPROVAL";
+
+    /**
+     * 作废
+     */
+    public static final String INVALID = "INVALID";
+
+
+
     private LogType() {
         // 私有构造函数防止实例化
     }
