@@ -179,7 +179,7 @@
         </include>
         <if test=" (clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0) or
                     (customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0) ">
-            join sys_organization_user sou on fup.owner = sou.user_id
+            join sys_organization_user souu on fup.owner = souu.user_id
         </if>
         WHERE fup.organization_id = #{orgId} and (c.transition_type is null or c.transition_type != 'CUSTOMER')
         <!-- 业务数据权限条件 -->
@@ -195,7 +195,7 @@
                 </if>
                 <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
                     AND (
-                        sou.department_id IN
+                        souu.department_id IN
                         <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>
@@ -218,7 +218,7 @@
 
                 <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
                     AND (
-                        sou.department_id IN
+                        souu.department_id IN
                         <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>

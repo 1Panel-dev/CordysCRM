@@ -144,14 +144,15 @@
         </include>
         <if test=" (clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0) or
                     (customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0) ">
-            join sys_organization_user sou on fur.owner = sou.user_id
+            join sys_organization_user souu on fur.owner = souu.user_id
         </if>
 
         WHERE fur.organization_id = #{orgId} and (c.transition_type is null or c.transition_type != 'CUSTOMER')
         <!-- 业务数据权限条件 -->
 
         AND (
-        <!-- 线索数据 -->(
+        <!-- 线索数据 -->
+            (
                 fur.type = 'CLUE'
                 <if test="request.keyword != null and request.keyword != ''">
                     AND c.name like concat('%', #{request.keyword},'%')
@@ -161,7 +162,7 @@
                 </if>
                 <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
                     AND (
-                        sou.department_id IN
+                        souu.department_id IN
                         <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>
@@ -183,7 +184,7 @@
                 </if>
                 <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
                     AND (
-                        sou.department_id IN
+                        souu.department_id IN
                         <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>
