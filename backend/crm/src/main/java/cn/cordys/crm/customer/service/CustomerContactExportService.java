@@ -7,7 +7,6 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.LogUtils;
@@ -58,34 +57,36 @@ public class CustomerContactExportService extends BaseExportService {
      *
      * @return
      */
-    public String export(String userId, CustomerContactExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
+    public String export(String userId, CustomerContactExportRequest request, String orgId,
+                         DeptDataPermissionDTO deptDataPermission, Locale locale) {
         checkFileName(request.getFileName());
-        // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
-        String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_CONTACT.toString(), request.getFileName());
+        final var fileId = IDGenerator.nextStr();
+        final var exportTask = exportTaskService.saveTask(
+                orgId, fileId, userId,
+                ExportConstants.ExportType.CUSTOMER_CONTACT.toString(),
+                request.getFileName()
+        );
 
         Thread.startVirtualThread(() -> {
             try {
                 LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
 
-                // 表头信息
-                List<List<String>> headList = request.getHeadList().stream()
+                final var headList = request.getHeadList().stream()
                         .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
-
-                //分批查询数据并写入文件
-                batchHandleData(fileId,
+                batchHandleData(
+                        fileId,
                         headList,
                         exportTask,
                         request.getFileName(),
                         request,
-                        t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
+                        t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId())
+                );
 
-                // 更新状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
 
             } catch (InterruptedException e) {
@@ -95,9 +96,7 @@ public class CustomerContactExportService extends BaseExportService {
                 LogUtils.error("导出数据异常", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
-                // 从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
-                // 日志
                 exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_CONTACT, request.getFileName());
             }
         });
@@ -122,7 +121,6 @@ public class CustomerContactExportService extends BaseExportService {
         //获取数据
         List<CustomerContactListResponse> allList = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
         allList = customerContactService.buildListData(allList, orgId);
-        Map<String, List<OptionDTO>> optionMap = customerContactService.getListOptionMap(orgId, allList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
@@ -130,17 +128,17 @@ public class CustomerContactExportService extends BaseExportService {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
+            List<Object> value = buildData(headList, response, fieldConfigMap);
             data.add(value);
         }
 
         return data;
     }
 
-    private List<Object> buildData(List<ExportHeadDTO> headList, CustomerContactListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
+    private List<Object> buildData(List<ExportHeadDTO> headList, CustomerContactListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = CustomerContactFieldUtils.getSystemFieldMap(data, optionMap);
+        LinkedHashMap<String, Object> systemFiledMap = CustomerContactFieldUtils.getSystemFieldMap(data);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
@@ -215,21 +213,20 @@ public class CustomerContactExportService extends BaseExportService {
     }
 
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
-        //获取数据
-        List<CustomerContactListResponse> allList = extCustomerContactMapper.getListByIds(ids);
+        var allList = Optional.ofNullable(extCustomerContactMapper.getListByIds(ids)).orElseGet(Collections::emptyList);
         allList = customerContactService.buildListData(allList, orgId);
-        Map<String, List<OptionDTO>> optionMap = customerContactService.getListOptionMap(orgId, allList);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (CustomerContactListResponse response : allList) {
+        var fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
+
+        // 预估容量，避免频繁扩容
+        var data = new ArrayList<List<Object>>(allList.size());
+        for (var response : allList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
-            data.add(value);
+            data.add(buildData(headList, response, fieldConfigMap));
         }
 
         return data;
     }
+
 }

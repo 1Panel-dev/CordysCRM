@@ -22,28 +22,38 @@ public class CustomerContactLogService extends BaseModuleLogService {
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.CONTACT.getKey());
+        List<JsonDifferenceDTO> result = super.handleModuleLogField(
+                differenceDTOS, orgId, FormKey.CONTACT.getKey()
+        );
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
+        for (JsonDifferenceDTO differ : result) {
+            String column = differ.getColumn();
+
+            // 负责人字段处理
+            if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
+                continue;
             }
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
-                if (differ.getOldValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
-                    if (customer != null) {
-                        differ.setOldValueName(customer.getName());
-                    }
-                }
-                if (differ.getNewValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getNewValue().toString());
-                    if (customer != null) {
-                        differ.setNewValueName(customer.getName());
-                    }
-                }
+
+            // 客户字段处理
+            if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
+                differ.setOldValueName(getCustomerName(differ.getOldValue()));
+                differ.setNewValueName(getCustomerName(differ.getNewValue()));
             }
         }
 
-        return differenceDTOS;
+        return result;
+    }
+
+    /**
+     * 根据客户ID获取客户名称
+     */
+    private String getCustomerName(Object customerId) {
+        if (customerId == null) {
+            return null;
+        }
+
+        Customer customer = customerMapper.selectByPrimaryKey(customerId.toString());
+        return customer != null ? customer.getName() : null;
     }
 }

@@ -1,30 +1,27 @@
 package cn.cordys.crm.customer.utils;
 
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class CustomerContactFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerContactListResponse data, Map<String, List<OptionDTO>> optionMap) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("customerId", data.getCustomerName());
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("phone", data.getPhone());
-        systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("enable", Translator.get("log.enable." + data.getEnable()));
-        systemFiledMap.put("disableReason", data.getDisableReason());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
+    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerContactListResponse data) {
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("customerId", data.getCustomerName());
+        systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("phone", data.getPhone());
+        systemFieldMap.put("owner", data.getOwnerName());
+        systemFieldMap.put("enable", Translator.get("log.enable." + data.getEnable()));
+        systemFieldMap.put("disableReason", data.getDisableReason());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
 
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
-        return systemFiledMap;
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+        return systemFieldMap;
     }
 }

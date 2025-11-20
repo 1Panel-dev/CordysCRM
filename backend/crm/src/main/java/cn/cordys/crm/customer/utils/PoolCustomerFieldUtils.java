@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 public class PoolCustomerFieldUtils {
 
     public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerListResponse data) {
-        LinkedHashMap<String, Object> systemFiledMap = CustomerFieldUtils.getSystemFieldMap(data);
-        systemFiledMap.put("reasonId", data.getReasonName());
-        return systemFiledMap;
+        LinkedHashMap<String, Object> systemFieldMap = CustomerFieldUtils.getSystemFieldMap(data);
+        systemFieldMap.put("reasonId", data.getReasonName());
+        return systemFieldMap;
     }
 
 }
