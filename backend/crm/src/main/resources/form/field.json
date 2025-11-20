@@ -971,7 +971,7 @@
     {
       "name": "产品信息",
       "internalKey": "priceProducts",
-      "type": "SUB_TABLE",
+      "type": "SUB_PRODUCT",
       "showLabel": true,
       "readable": true,
       "editable": true,
@@ -1129,7 +1129,7 @@
     {
       "name": "报价产品",
       "internalKey": "quotationProducts",
-      "type": "SUB_TABLE",
+      "type": "SUB_PRICE",
       "showLabel": true,
       "readable": true,
       "editable": true,
