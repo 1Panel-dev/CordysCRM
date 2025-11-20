@@ -7,7 +7,6 @@ import lombok.Data;
 
 /**
  * 产品价格表
- *
  * @author song-cc-rock
  */
 
