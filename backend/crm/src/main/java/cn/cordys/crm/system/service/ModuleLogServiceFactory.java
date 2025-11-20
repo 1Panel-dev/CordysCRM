@@ -9,6 +9,7 @@ import cn.cordys.crm.customer.service.RoleLogService;
 import cn.cordys.crm.follow.service.FollowUpPlanLogService;
 import cn.cordys.crm.follow.service.FollowUpRecordLogService;
 import cn.cordys.crm.opportunity.service.OpportunityLogService;
+import cn.cordys.crm.product.service.ProductLogService;
 
 import java.util.HashMap;
 

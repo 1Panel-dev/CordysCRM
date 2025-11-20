@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.dto.response.product;
+package cn.cordys.crm.product.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;

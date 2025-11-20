@@ -1,10 +1,10 @@
-package cn.cordys.crm.system.mapper;
+package cn.cordys.crm.product.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.crm.system.domain.Product;
-import cn.cordys.crm.system.dto.request.ProductPageRequest;
-import cn.cordys.crm.system.dto.response.product.ProductListResponse;
+import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.product.dto.request.ProductPageRequest;
+import cn.cordys.crm.product.dto.response.ProductListResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

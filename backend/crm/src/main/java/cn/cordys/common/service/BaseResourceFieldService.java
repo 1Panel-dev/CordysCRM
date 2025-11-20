@@ -220,6 +220,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (fieldValue == null) {
                         return;
                     }
+					
+					// 处理子表格的字段值
 
                     if (field.needRepeatCheck()) {
                         checkUnique(fieldValue, field);
@@ -267,6 +269,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
         }
     }
+
+
 
     /**
      * 校验业务字段，字段值是否重复

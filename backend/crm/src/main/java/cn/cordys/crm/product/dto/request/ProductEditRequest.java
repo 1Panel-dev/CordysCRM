@@ -1,21 +1,25 @@
-package cn.cordys.crm.system.domain;
+package cn.cordys.crm.product.dto.request;
 
-import cn.cordys.common.domain.BaseModel;
-import cn.cordys.common.util.BigDecimalNoTrailingZeroSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+
+/**
+ * @author guoyuqi
+ */
 @Data
-@Table(name = "product")
-public class Product extends BaseModel {
-    @Schema(description = "组织机构id")
-    private String organizationId;
+public class ProductEditRequest {
+
+    @Schema(description = "id")
+    @Size(max = 32)
+    private String id;
 
     @Schema(description = "产品名称")
     private String name;
@@ -23,12 +27,11 @@ public class Product extends BaseModel {
     @Schema(description = "价格")
     @DecimalMin(value = "0.00", inclusive = false, message = "{product.price.min}")
     @DecimalMax(value = "10000000000.00", inclusive = false, message = "{product.price.max}")
-    @JsonSerialize(using = BigDecimalNoTrailingZeroSerializer.class)
     private BigDecimal price;
 
     @Schema(description = "状态")
     private String status;
 
-    @Schema(description = "排序")
-    private Long pos;
+    @Schema(description = "自定义字段")
+    private List<BaseModuleFieldValue> moduleFields;
 }

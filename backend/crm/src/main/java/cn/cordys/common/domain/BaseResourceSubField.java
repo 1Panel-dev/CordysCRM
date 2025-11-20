@@ -5,16 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * @author jianxing
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BaseResourceField extends BaseModuleFieldValue {
-    @Schema(description = "ID")
-    private String id;
+public class BaseResourceSubField extends BaseResourceField{
 
-    @Schema(description = "资源ID")
-    private String resourceId;
+	@Schema(description = "关联子表格ID")
+	private String refSubId;
+
+	@Schema(description = "行ID")
+	private String rowId;
 }

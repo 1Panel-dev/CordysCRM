@@ -1,9 +1,9 @@
-package cn.cordys.crm.system.service;
+package cn.cordys.crm.product.service;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.service.BaseResourceFieldService;
-import cn.cordys.crm.system.domain.ProductField;
-import cn.cordys.crm.system.domain.ProductFieldBlob;
+import cn.cordys.crm.product.domain.ProductField;
+import cn.cordys.crm.product.domain.ProductFieldBlob;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
