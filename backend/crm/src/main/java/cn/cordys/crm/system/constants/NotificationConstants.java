@@ -100,6 +100,9 @@ public class NotificationConstants {
         //跟进计划提醒
         @Schema(description = "message.business_follow_up_plan_due")
         String BUSINESS_FOLLOW_UP_PLAN_DUE = "BUSINESS_FOLLOW_UP_PLAN_DUE";
+
+        @Schema(description = "message.business_quotation_approval")
+        String BUSINESS_QUOTATION_APPROVAL = "BUSINESS_QUOTATION_APPROVAL";
     }
 
     public interface RelatedUser {
@@ -194,6 +197,10 @@ public class NotificationConstants {
         //请注意！您创建的${businessName}商机跟进计划，已到预定时间，请及时跟进！
         @Schema(description = "message.business_follow_up_plan_due_text")
         String BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT = "BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT";
+
+        //请注意！您创建的${businessName}商机跟进计划，已到预定时间，请及时跟进！
+        @Schema(description = "message.business_quotation_approval_text")
+        String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
     }
 
 

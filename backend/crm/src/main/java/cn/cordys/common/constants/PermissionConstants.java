@@ -161,4 +161,21 @@ public class PermissionConstants {
 	public static final String PRICE_ADD = "PRICE:ADD";
 	public static final String PRICE_UPDATE = "PRICE:UPDATE";
 	public static final String PRICE_DELETE = "PRICE:DELETE";
+
+
+    /*------ start: OPPORTUNITY_QUOTATION ------*/
+
+    public static final String OPPORTUNITY_QUOTATION_READ = "OPPORTUNITY_QUOTATION:READ";
+    public static final String OPPORTUNITY_QUOTATION_ADD = "OPPORTUNITY_QUOTATION:ADD";
+    public static final String OPPORTUNITY_QUOTATION_UPDATE = "OPPORTUNITY_QUOTATION:UPDATE";
+    public static final String OPPORTUNITY_QUOTATION_DELETE = "OPPORTUNITY_QUOTATION:DELETE";
+    public static final String OPPORTUNITY_QUOTATION_EXPORT = "OPPORTUNITY_QUOTATION:EXPORT";
+    public static final String OPPORTUNITY_QUOTATION_APPROVAL = "OPPORTUNITY_QUOTATION:APPROVAL";
+    public static final String OPPORTUNITY_QUOTATION_INVALID = "OPPORTUNITY_QUOTATION:INVALID";
+
+    /*------ end: OPPORTUNITY_QUOTATION ------*/
+
+
+
 }
+
