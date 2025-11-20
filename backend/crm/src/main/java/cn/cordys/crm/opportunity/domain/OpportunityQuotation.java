@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 商机报价单;
  */
@@ -18,7 +20,7 @@ public class OpportunityQuotation extends BaseModel {
     private String opportunityId;
 
     @Schema(description = "累计金额")
-    private Double amount;
+    private BigDecimal amount;
 
     @Schema(description = "审核状态")
     private String approvalStatus;
