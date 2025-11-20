@@ -42,6 +42,8 @@ import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse
 import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
+import cn.cordys.crm.product.mapper.ExtProductMapper;
+import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -59,7 +61,6 @@ import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
-import cn.cordys.crm.system.mapper.ExtProductMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;

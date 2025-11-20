@@ -153,4 +153,12 @@ public class PermissionConstants {
     public static final String AGENT_UPDATE = "AGENT:UPDATE";
     public static final String AGENT_DELETE = "AGENT:DELETE";
     /*------ end: AGENT ------*/
+
+	/**
+	 * product price permission
+	 */
+	public static final String PRICE_READ = "PRICE:READ";
+	public static final String PRICE_ADD = "PRICE:ADD";
+	public static final String PRICE_UPDATE = "PRICE:UPDATE";
+	public static final String PRICE_DELETE = "PRICE:DELETE";
 }

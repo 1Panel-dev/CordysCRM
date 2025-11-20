@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.controller;
+package cn.cordys.crm.product.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
@@ -6,16 +6,16 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.system.domain.Product;
-import cn.cordys.crm.system.dto.request.ProductEditRequest;
-import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.product.dto.request.ProductEditRequest;
+import cn.cordys.crm.product.dto.request.ProductPageRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.dto.response.product.ProductGetResponse;
-import cn.cordys.crm.system.dto.response.product.ProductListResponse;
+import cn.cordys.crm.product.dto.response.ProductGetResponse;
+import cn.cordys.crm.product.dto.response.ProductListResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ProductService;
+import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

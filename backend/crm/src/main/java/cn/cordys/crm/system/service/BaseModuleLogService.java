@@ -13,7 +13,7 @@ import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
-import cn.cordys.crm.system.domain.Product;
+import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;

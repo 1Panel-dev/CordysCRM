@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -19,4 +20,8 @@ public class DatasourceField extends BaseField {
     private String dataSourceType;
     @Schema(description = "过滤条件")
     private Map<String, Object> combineSearch;
+	@Schema(description = "显示字段")
+	private List<String> showFields;
+	@Schema(description = "显示列")
+	private List<String> showColumns;
 }

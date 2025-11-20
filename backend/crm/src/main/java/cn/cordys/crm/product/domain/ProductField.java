@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.domain;
+package cn.cordys.crm.product.domain;
 
 import cn.cordys.common.domain.BaseResourceField;
 import jakarta.persistence.Table;

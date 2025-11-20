@@ -7,7 +7,7 @@ import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
-import cn.cordys.crm.system.dto.request.ProductPageRequest;
+import cn.cordys.crm.product.dto.request.ProductPageRequest;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
