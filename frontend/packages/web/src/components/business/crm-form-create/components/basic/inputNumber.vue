@@ -83,6 +83,7 @@
 
   function format(val: number | null) {
     if (val === null) return '';
+    // TODO:  xxw 金额类型的属性待完善 等设计稿 🏷
     if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
       return val.toLocaleString('en-US');
     }

@@ -78,6 +78,8 @@
         >
           <n-radio-button value="number" class="flex-1 text-center">{{ t('crmFormDesign.number') }}</n-radio-button>
           <n-radio-button value="percent" class="flex-1 text-center">{{ t('crmFormDesign.percent') }}</n-radio-button>
+          <!-- TODO 金额 xxw 🏷 -->
+          <n-radio-button value="amount" class="flex-1 text-center">{{ t('crmFormDesign.amount') }}</n-radio-button>
         </n-radio-group>
         <n-checkbox
           v-model:checked="fieldConfig.decimalPlaces"
@@ -598,6 +600,21 @@
         </div>
       </template>
       <!-- 链接 End -->
+      <!-- 公式 -->
+      <template v-else-if="fieldConfig.type === FieldTypeEnum.FORMULA">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <span> {{ t('crmFormDesign.formula') }}</span>
+            <n-button type="primary" text :disabled="!fieldConfig.formula?.length" @click="handleClearFormulaField">
+              {{ t('common.clear') }}
+            </n-button>
+          </div>
+          <n-button type="default" class="outline--secondary" @click="handleCalculateFormula">
+            {{ t('common.setting') }}
+          </n-button>
+        </div>
+      </template>
+      <!-- 公式 End -->
       <!-- 电话 -->
       <template v-else-if="fieldConfig.type === FieldTypeEnum.PHONE">
         <div class="crm-form-design-config-item">
@@ -627,6 +644,7 @@
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.LINK,
             FieldTypeEnum.ATTACHMENT,
+            FieldTypeEnum.FORMULA,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -853,7 +871,7 @@
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
-          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER].includes(fieldConfig.type)"
+          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.FORMULA].includes(fieldConfig.type)"
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable')"
           @update-checked="
@@ -982,6 +1000,14 @@
     :form-fields="props.list"
     @save="handleLinkConfigSave"
   />
+  <!-- TODO  props.list 当前传递的是父表 如果当前在子表则传递的子表的list -->
+  <formulaModal
+    v-if="fieldConfig"
+    v-model:visible="showCalculateFormulaModal"
+    :field-config="fieldConfig"
+    :form-fields="props.list"
+    @save="handleCalculateFormulaConfigSave"
+  />
 </template>
 
 <script setup lang="ts">
@@ -1033,6 +1059,7 @@
   import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
   import FilterModal from './filterModal.vue';
   import optionConfig from './optionConfig.vue';
+  import formulaModal from './formulaModal.vue';
 
   // import useUserStore from '@/store/modules/user';
   import { SelectOption } from 'naive-ui/es/select/src/interface';
@@ -1309,6 +1336,20 @@
   function handleDataSourceFilterSave(result: DataSourceFilterCombine) {
     fieldConfig.value.combineSearch = result;
     showDataSourceFilterModal.value = false;
+  }
+
+  const showCalculateFormulaModal = ref(false);
+  function handleCalculateFormula() {
+    showCalculateFormulaModal.value = true;
+  }
+
+  function handleCalculateFormulaConfigSave(astValue: string) {
+    fieldConfig.value.formula = astValue;
+    showCalculateFormulaModal.value = false;
+  }
+
+  function handleClearFormulaField() {
+    fieldConfig.value.formula = '';
   }
 
   const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || 'Opp');
