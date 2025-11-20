@@ -671,7 +671,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         getResourceFieldMapper().deleteByLambda(wrapper);
 
         LambdaQueryWrapper<V> blobWrapper = new LambdaQueryWrapper<>();
-        wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        blobWrapper.in(BaseResourceField::getResourceId, resourceIds);
         getResourceFieldBlobMapper().deleteByLambda(blobWrapper);
     }
 
