@@ -183,6 +183,9 @@
     if (type === FieldTypeEnum.INDUSTRY) {
       return CrmFormCreateComponents.advancedComponents.industry;
     }
+    if (type === FieldTypeEnum.FORMULA) {
+      return CrmFormCreateComponents.advancedComponents.formula;
+    }
   }
 
   function addItem(item: FormCreateField) {

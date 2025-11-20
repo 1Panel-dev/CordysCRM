@@ -69,7 +69,7 @@ export interface FormCreateField {
   // 数字输入属性
   max?: number;
   min?: number;
-  numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
+  numberFormat?: 'number' | 'percent' | 'amount'; // 数字格式, number: 数字, percent: 百分比 , amount: 金额
   decimalPlaces?: boolean; // 保留小数点位
   precision?: number; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
@@ -121,6 +121,7 @@ export interface FormCreateField {
   openMode?: string;
   // 手机号
   format?: string;
+  formula?: string; // 计算公式
 }
 
 export interface AttachmentInfo {

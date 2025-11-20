@@ -59,6 +59,7 @@ export enum FieldTypeEnum {
   LINK = 'LINK', // 链接
   ATTACHMENT = 'ATTACHMENT',
   INDUSTRY = 'INDUSTRY',
+  FORMULA = 'FORMULA', // 计算公式
 }
 
 export enum FieldRuleEnum {

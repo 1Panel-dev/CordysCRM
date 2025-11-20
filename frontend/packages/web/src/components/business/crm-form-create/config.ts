@@ -520,6 +520,22 @@ export const linkDefaultFieldConfig: FormCreateField = {
   rules: [],
 };
 
+export const formulaDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.FORMULA,
+  icon: 'iconicon_arithmetic',
+  name: 'crmFormDesign.calculation',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: false,
+  mobile: true,
+  rules: [],
+  formula: '',
+  numberFormat: 'amount',
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
@@ -530,6 +546,7 @@ export const advancedFields: FormCreateField[] = [
   linkDefaultFieldConfig,
   fileDefaultFieldConfig,
   industryDefaultFieldConfig,
+  formulaDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -576,6 +593,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.LINK]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.ATTACHMENT]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.INDUSTRY]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.FORMULA]: [],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
