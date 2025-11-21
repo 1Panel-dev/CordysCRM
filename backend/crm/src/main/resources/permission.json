@@ -426,5 +426,50 @@
         ]
       }
     ]
+  },
+  {
+    "id": "CONTRACT_MANAGEMENT",
+    "name": "permission.contract_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "CONTRACT",
+        "name": "permission.contract.name",
+        "permissions": [
+          {
+            "id": "CONTRACT:READ",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:ADD",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:UPDATE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:DELETE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:EXPORT",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:ARCHIVE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:VOIDED",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:REVIEW",
+            "license": false
+          }
+        ]
+      }
+    ]
   }
 ]
