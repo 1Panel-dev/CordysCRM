@@ -10,4 +10,5 @@ export default {
   'crmFormCreate.drawer.planClue': 'Follow-up plan',
   'crmFormCreate.drawer.opportunity': 'Opportunity',
   'crmFormCreate.drawer.product': 'Product',
+  'crmFormCreate.drawer.contract': 'Contract',
 };

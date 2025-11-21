@@ -1,6 +1,7 @@
 import createAxios from '@lib/shared/api/http';
 import useAgentApi from '@lib/shared/api/modules/agent';
 import useClueApi from '@lib/shared/api/modules/clue';
+import useContractApi from '@lib/shared/api/modules/contract';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useDashboard from '@lib/shared/api/modules/dashboard';
 import useFollowApi from '@lib/shared/api/modules/follow';
@@ -43,6 +44,7 @@ const customerApi = useCustomerApi(CDR);
 const businessApi = useBusinessApi(CDR);
 const dashboardApi = useDashboard(CDR);
 const opportunityApi = useOpportunityApi(CDR);
+const contractApi = useContractApi(CDR);
 
 export const {
   getFollowPlanTab,
@@ -340,6 +342,45 @@ export const {
   getCustomerFollowRecordFormConfig,
   getCustomerOpenSeaFollowRecordList,
 } = customerApi;
+
+export const {
+  exportContractAll,
+  exportContractSelected,
+  generateContractChart,
+  getContractDetail,
+  getContractList,
+  getContractTab,
+  getContractViewDetail,
+  getContractViewList,
+  addContractView,
+  updateContractView,
+  fixedContractView,
+  enableContractView,
+  deleteContractView,
+  dragContractView,
+  addContract,
+  updateContract,
+  deleteContract,
+  getContractFormConfig,
+  getPaymentPlanList,
+  addPaymentPlan,
+  updatePaymentPlan,
+  deletePaymentPlan,
+  getPaymentPlanDetail,
+  getPaymentPlanFormConfig,
+  getPaymentPlanTab,
+  exportPaymentPlanAll,
+  exportPaymentPlanSelected,
+  generatePaymentPlanChart,
+  addPaymentPlanView,
+  updatePaymentPlanView,
+  getPaymentPlanViewList,
+  getPaymentPlanViewDetail,
+  fixedPaymentPlanView,
+  enablePaymentPlanView,
+  deletePaymentPlanView,
+  dragPaymentPlanView,
+} = contractApi;
 
 export const {
   syncDE,

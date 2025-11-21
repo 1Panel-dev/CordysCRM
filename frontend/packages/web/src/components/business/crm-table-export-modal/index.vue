@@ -144,17 +144,21 @@
     exportClueSelected,
     exportContactAll,
     exportContactSelected,
+    exportContractAll,
+    exportContractSelected,
     exportCustomerAll,
     exportCustomerOpenSeaAll,
     exportCustomerOpenSeaSelected,
     exportCustomerSelected,
     exportOpportunityAll,
     exportOpportunitySelected,
+    exportPaymentPlanAll,
+    exportPaymentPlanSelected,
   } from '@/api/modules';
 
   const props = defineProps<{
     params: Record<string, any>;
-    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea' | 'contact';
+    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea' | 'contact' | 'contract' | 'contractPaymentPlan';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
   }>();
@@ -177,6 +181,8 @@
     cluePool: t('module.cluePool'),
     openSea: t('module.openSea'),
     contact: t('menu.contact'),
+    contract: t('module.contract'),
+    contractPaymentPlan: t('module.paymentPlan'),
   };
 
   const loading = ref<boolean>(false);
@@ -274,6 +280,8 @@
     opportunity: exportOpportunityAll,
     cluePool: exportCluePoolAll,
     openSea: exportCustomerOpenSeaAll,
+    contract: exportContractAll,
+    contractPaymentPlan: exportPaymentPlanAll,
   };
 
   const exportSelectedApiMap = {
@@ -283,6 +291,8 @@
     opportunity: exportOpportunitySelected,
     cluePool: exportCluePoolSelected,
     openSea: exportCustomerOpenSeaSelected,
+    contract: exportContractSelected,
+    contractPaymentPlan: exportPaymentPlanSelected,
   };
 
   function confirmHandler() {

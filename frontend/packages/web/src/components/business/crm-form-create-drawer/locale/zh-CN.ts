@@ -10,4 +10,5 @@ export default {
   'crmFormCreate.drawer.planClue': '跟进计划',
   'crmFormCreate.drawer.opportunity': '商机',
   'crmFormCreate.drawer.product': '产品',
+  'crmFormCreate.drawer.contract': '合同',
 };

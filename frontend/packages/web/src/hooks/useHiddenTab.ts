@@ -8,11 +8,13 @@ import type { CustomerTabHidden } from '@lib/shared/models/customer';
 
 import {
   getClueTab,
+  getContractTab,
   getCustomerContactTab,
   getCustomerTab,
   getFollowPlanTab,
   getFollowRecordTab,
   getOptTab,
+  getPaymentPlanTab,
   getQuotationTab,
 } from '@/api/modules';
 
@@ -25,6 +27,8 @@ export type TabType =
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.FOLLOW_PLAN
   | FormDesignKeyEnum.FOLLOW_RECORD
+  | FormDesignKeyEnum.CONTRACT
+  | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
@@ -39,6 +43,8 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CLUE]: getClueTab,
     [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanTab,
     [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordTab,
+    [FormDesignKeyEnum.CONTRACT]: getContractTab,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanTab,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationTab,
   };
 
@@ -154,6 +160,21 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allContractTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('contract.all'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('contract.my'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('contract.depart'),
+    },
+  ];
+
   const allQuotationTabList: TabPaneProps[] = [
     {
       name: OpportunitySearchTypeEnum.ALL,
@@ -178,6 +199,8 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: allAccountPoolTabList,
     [FormDesignKeyEnum.FOLLOW_PLAN]: allPlanTabList,
     [FormDesignKeyEnum.FOLLOW_RECORD]: allRecordTabList,
+    [FormDesignKeyEnum.CONTRACT]: allContractTabList,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: allPlanTabList,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: allQuotationTabList,
   };
 
