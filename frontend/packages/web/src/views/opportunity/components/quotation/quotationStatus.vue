@@ -4,11 +4,13 @@
     {{ statusMap[status]?.label }}
   </div>
 </template>
+
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { useMessage } from 'naive-ui';
+
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   const { t } = useI18n();
   const Message = useMessage();
 
@@ -44,4 +46,5 @@
     },
   };
 </script>
+
 <style scoped></style>

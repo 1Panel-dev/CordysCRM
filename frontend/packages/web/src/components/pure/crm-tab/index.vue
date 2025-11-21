@@ -11,7 +11,7 @@
     <n-tab-pane v-for="item of showTabs" :key="item.name" :name="item.name as string" :tab="item.tab">
       <slot :name="item.name" />
     </n-tab-pane>
-    <template #suffix v-if="$slots.suffix">
+    <template v-if="$slots.suffix" #suffix>
       <slot name="suffix" />
     </template>
   </n-tabs>

@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField" class="!my-0" />
     <CrmInputNumber
       v-model:value="value"
       :max="1000000000"
@@ -30,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem } from 'naive-ui';
+  import { NDivider, NFormItem } from 'naive-ui';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
 
@@ -40,6 +41,7 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;

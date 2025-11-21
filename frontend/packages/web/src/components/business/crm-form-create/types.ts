@@ -122,6 +122,8 @@ export interface FormCreateField {
   // 手机号
   format?: string;
   formula?: string; // 计算公式
+  // 子表格
+  subFields?: FormCreateField[];
 }
 
 export interface AttachmentInfo {

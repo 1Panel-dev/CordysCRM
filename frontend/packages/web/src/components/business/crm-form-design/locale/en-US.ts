@@ -202,4 +202,6 @@ export default {
     'When writing follow-up records in the opportunity module, fill the opportunity form field content into the record form fields',
   'crmFormDesign.tip.PLAN_TO_RECORD':
     'When performing plan to record operations, fill the plan form field content into the record form fields',
+  'crmFormDesign.productTable': 'Product Table',
+  'crmFormDesign.priceTable': 'Price Table',
 };

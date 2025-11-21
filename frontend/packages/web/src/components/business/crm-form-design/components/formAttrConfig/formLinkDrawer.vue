@@ -140,15 +140,13 @@
     NIcon,
     NScrollbar,
     NSelect,
-    ScrollbarInst,
-    NTooltip,
     NSwitch,
+    NTooltip,
+    ScrollbarInst,
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import {
@@ -164,7 +162,9 @@
   import { FormConfigLinkProp, FormConfigLinkScenarioItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';

@@ -92,6 +92,8 @@
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
   import MoveLeadReasonDrawer from './clueManagement/moveReasonDrawer.vue';
+  import ContractFormFormDrawer from './contract/contractFormFormDrawer.vue';
+  import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import MoveAccountReasonDrawer from './customManagement/moveReasonDrawer.vue';
@@ -99,11 +101,10 @@
   import OpportunityReasonDrawer from './opportunity/failReasonDrawer.vue';
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
+  import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
   import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
-  import ContractFormFormDrawer from './contract/contractFormFormDrawer.vue';
-  import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
-  import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
+
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   // import useLicenseStore from '@/store/modules/setting/license';

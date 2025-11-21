@@ -43,8 +43,8 @@
             <slot name="rightTop" />
             <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
               <CrmTab
-                :key="cachedListKey"
                 v-if="cachedList.length"
+                :key="cachedListKey"
                 v-model:active-tab="activeTab"
                 no-content
                 :tab-list="cachedList"
@@ -80,8 +80,8 @@
         <slot name="rightTop" />
         <div class="flex justify-between gap-[24px] border-b-[1px] border-[var(--text-n8)] bg-[var(--text-n10)]">
           <CrmTab
-            :key="cachedListKey"
             v-if="cachedList.length"
+            :key="cachedListKey"
             v-model:active-tab="activeTab"
             no-content
             :tab-list="cachedList"
@@ -114,13 +114,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NTooltip, NScrollbar } from 'naive-ui';
+  import { NButton, NScrollbar, NTooltip } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import CrmCard from '@/components/pure/crm-card/index.vue';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -129,6 +129,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
+
   import useLocalForage from '@/hooks/useLocalForage';
 
   const props = defineProps<{

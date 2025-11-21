@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField" class="!my-0" />
     <n-select
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false"
@@ -24,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NSelect } from 'naive-ui';
+  import { NDivider, NFormItem, NSelect } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -35,6 +36,7 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;

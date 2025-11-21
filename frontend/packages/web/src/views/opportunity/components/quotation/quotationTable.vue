@@ -30,10 +30,12 @@
     </template>
   </CrmTable>
 </template>
+
 <script setup lang="ts">
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
 
@@ -46,13 +48,12 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import quotationStatus from './quotationStatus.vue';
 
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
-  import quotationStatus from './quotationStatus.vue';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 
   const { openModal } = useModal();
   const { t } = useI18n();
@@ -119,7 +120,9 @@
     }
   }
 
-  async function handleCreate() {}
+  async function handleCreate() {
+    //
+  }
 
   function handleEdit(id: string) {}
   function handleVoid(row: any) {

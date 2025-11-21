@@ -21,7 +21,7 @@
           {{ t('crmFormDesign.showTitle') }}
         </n-checkbox>
       </div>
-      <div class="crm-form-design-config-item">
+      <div v-if="!isSubTableField" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.desc') }}</div>
         <n-input
           v-model:value="fieldConfig.description"
@@ -44,6 +44,8 @@
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.ATTACHMENT,
+            FieldTypeEnum.PRICE_TABLE,
+            FieldTypeEnum.PRODUCT_TABLE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -645,6 +647,8 @@
             FieldTypeEnum.LINK,
             FieldTypeEnum.ATTACHMENT,
             FieldTypeEnum.FORMULA,
+            FieldTypeEnum.PRICE_TABLE,
+            FieldTypeEnum.PRODUCT_TABLE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -871,7 +875,15 @@
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
-          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.FORMULA].includes(fieldConfig.type)"
+          v-if="
+            ![
+              FieldTypeEnum.DIVIDER,
+              FieldTypeEnum.SERIAL_NUMBER,
+              FieldTypeEnum.PRICE_TABLE,
+              FieldTypeEnum.PRODUCT_TABLE,
+              FieldTypeEnum.FORMULA,
+            ].includes(fieldConfig.type)
+          "
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable')"
           @update-checked="
@@ -906,7 +918,10 @@
         </n-checkbox>
       </div>
       <!-- 移动端 End -->
-      <div class="crm-form-design-config-item">
+      <div
+        v-if="![FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(fieldConfig.type) && !isSubTableField"
+        class="crm-form-design-config-item"
+      >
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}
         </div>
@@ -1055,11 +1070,11 @@
     FormCreateFieldShowControlRule,
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
-  import fieldLinkDrawer from './fieldLinkDrawer.vue';
   import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
+  import fieldLinkDrawer from './fieldLinkDrawer.vue';
   import FilterModal from './filterModal.vue';
-  import optionConfig from './optionConfig.vue';
   import formulaModal from './formulaModal.vue';
+  import optionConfig from './optionConfig.vue';
 
   // import useUserStore from '@/store/modules/user';
   import { SelectOption } from 'naive-ui/es/select/src/interface';
@@ -1107,8 +1122,29 @@
     }
   );
 
+  const isSubTableField = computed(() => {
+    return props.list
+      .filter((item) => item.type === FieldTypeEnum.PRICE_TABLE || item.type === FieldTypeEnum.PRODUCT_TABLE)
+      .some((tableField) => {
+        return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
+      });
+  });
+  const parentField = computed(() => {
+    if (isSubTableField.value) {
+      return props.list
+        .filter((item) => item.type === FieldTypeEnum.PRICE_TABLE || item.type === FieldTypeEnum.PRODUCT_TABLE)
+        .find((tableField) => {
+          return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
+        });
+    }
+    return null;
+  });
   const isNameRepeat = computed(() => {
-    return props.list.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
+    return isSubTableField.value
+      ? parentField.value?.subFields?.some(
+          (item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name
+        )
+      : props.list.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
   });
 
   function handleRuleChange(val: (string | number)[]) {

@@ -86,16 +86,9 @@
       name: t(e.name),
     };
     if (
-      [
-        FieldTypeEnum.DEPARTMENT,
-        FieldTypeEnum.DEPARTMENT_MULTIPLE,
-        FieldTypeEnum.MEMBER,
-        FieldTypeEnum.MEMBER_MULTIPLE,
-        FieldTypeEnum.CHECKBOX,
-        FieldTypeEnum.RADIO,
-        FieldTypeEnum.SELECT,
-        FieldTypeEnum.SELECT_MULTIPLE,
-      ].includes(e.type) &&
+      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+        e.type
+      ) &&
       e.options?.length === 0
     ) {
       res.options = [
