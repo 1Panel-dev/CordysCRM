@@ -31,6 +31,9 @@ public class BaseModuleFieldValue implements Serializable {
     @Schema(description = "自定义属性值")
     private Object fieldValue;
 
+    @Schema(description = "自定义属性扩展值")
+    private Object fieldExtendValue;
+
     public boolean valid() {
         return switch (fieldValue) {
             case null -> false;

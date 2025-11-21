@@ -1,6 +1,15 @@
 -- set innodb lock wait timeout
 SET SESSION innodb_lock_wait_timeout = 7200;
 
+-- 添加字段扩展值
+ALTER TABLE clue_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE customer_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE product_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE opportunity_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE customer_contact_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE follow_up_plan_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+ALTER TABLE follow_up_record_field ADD field_extend_value varchar(255) NULL COMMENT '自定义属性扩展值';
+
 CREATE TABLE opportunity_quotation
 (
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
@@ -28,6 +37,7 @@ CREATE TABLE opportunity_quotation_field
     `resource_id` VARCHAR(32)  NOT NULL COMMENT '报价单id',
     `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
     `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    `field_extend_value` VARCHAR(255)    COMMENT '自定义属性扩展值' ,
     `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
     `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
     PRIMARY KEY (id)

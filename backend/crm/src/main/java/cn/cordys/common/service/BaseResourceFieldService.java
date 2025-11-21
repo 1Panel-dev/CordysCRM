@@ -247,6 +247,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setResourceId(resourceId);
                         resourceField.setFieldId(fieldValue.getFieldId());
                         resourceField.setFieldValue(strValue);
+                        resourceField.setFieldExtendValue(fieldValue.getFieldExtendValue());
                         customerFields.add(resourceField);
                     }
 
