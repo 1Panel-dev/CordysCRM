@@ -327,7 +327,7 @@ export default {
   'common.goAdd': 'Add',
   'common.approval': 'Approval',
   'common.batchApproval': 'Batch approval',
-  'common.invalid': 'Invalid',
+  'common.voided': 'Voided',
   'common.batchVoid': 'Batch void',
   'common.confirmVoid': 'Are you sure to void?',
   'common.voidSuccess': 'Void success',

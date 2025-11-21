@@ -276,6 +276,7 @@
     [FormDesignKeyEnum.CONTACT]: generateCustomerContactChart,
     [FormDesignKeyEnum.FOLLOW_PLAN]: () => Promise.resolve([]),
     [FormDesignKeyEnum.FOLLOW_RECORD]: () => Promise.resolve([]),
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => Promise.resolve([]),
   };
   const loading = ref<boolean>(false);
   const expandNames = ref<string[]>(['1']);

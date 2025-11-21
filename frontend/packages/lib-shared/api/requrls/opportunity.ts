@@ -36,8 +36,9 @@ export const AddOpportunityStageUrl = '/opportunity/stage/add'; // 商机阶段�
 export const GetOpportunityStageConfigUrl = '/opportunity/stage/get'; // 获取商机阶段配置
 export const DeleteOpportunityStageUrl = '/opportunity/stage/delete'; // 删除商机阶段
 export const GenerateOpportunityChartUrl = '/opportunity/chart'; // 生成商机视图
+export const GetQuotationTabUrl = '/opportunity/tab'; // 报价tab显隐 todo xinxinwu /opportunity/quotation/tab
 
-// 视图
+// 商机视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';
 export const GetBusinessViewListUrl = '/opportunity/view/list';
 export const AddBusinessViewUrl = '/opportunity/view/add';
@@ -46,6 +47,16 @@ export const DeleteBusinessViewUrl = '/opportunity/view/delete';
 export const FixedBusinessViewUrl = '/opportunity/view/fixed';
 export const EnableBusinessViewUrl = '/opportunity/view/enable';
 export const DragBusinessViewUrl = '/opportunity/view/edit/pos';
+
+// 报价单视图
+export const GetQuotationViewDetailUrl = '/opportunity/quotation/view/detail';
+export const GetQuotationViewListUrl = '/opportunity/quotation/view/list';
+export const AddQuotationViewUrl = '/opportunity/quotation/view/add';
+export const UpdateQuotationViewUrl = '/opportunity/quotation/view/update';
+export const DeleteQuotationViewUrl = '/opportunity/quotation/view/delete';
+export const FixedQuotationViewUrl = '/opportunity/quotation/view/fixed';
+export const EnableQuotationViewUrl = '/opportunity/quotation/view/enable';
+export const DragQuotationViewUrl = '/opportunity/quotation/view/edit/pos';
 
 // 导入
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';

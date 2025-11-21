@@ -29,6 +29,7 @@ import {
   GetOptFormConfigUrl,
   GetOptStatisticUrl,
   GetOptTabUrl,
+  GetQuotationTabUrl,
   GlobalSearchOptPageUrl,
   ImportOpportunityUrl,
   OptAddUrl,
@@ -49,6 +50,14 @@ import {
   UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
+  GetQuotationViewListUrl,
+  AddQuotationViewUrl,
+  UpdateQuotationViewUrl,
+  DeleteQuotationViewUrl,
+  FixedQuotationViewUrl,
+  EnableQuotationViewUrl,
+  DragQuotationViewUrl,
+  GetQuotationViewDetailUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -199,6 +208,7 @@ export default function useProductApi(CDR: CordysAxios) {
   function getOptTab() {
     return CDR.get<CustomerTabHidden>({ url: GetOptTabUrl });
   }
+ 
 
   // 获取商机联系人列表
   function getOpportunityContactList(data: CustomerContractTableParams) {
@@ -260,7 +270,7 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<ChartResponseDataItem[]>({ url: GenerateOpportunityChartUrl, data });
   }
 
-  // 视图
+  // 商机视图
   function addBusinessView(data: ViewParams) {
     return CDR.post({ url: AddBusinessViewUrl, data });
   }
@@ -328,6 +338,44 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: BatchUpdateOpportunityUrl, data });
   }
 
+   // 获取商机报价单tab显隐藏
+  function getQuotationTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetQuotationTabUrl });
+  }
+
+  // 报价单视图
+  function addQuotationView(data: ViewParams) {
+    return CDR.post({ url: AddQuotationViewUrl, data });
+  }
+
+  function updateQuotationView(data: ViewParams) {
+    return CDR.post({ url: UpdateQuotationViewUrl, data });
+  }
+
+  function getQuotationViewList() {
+    return CDR.get<ViewItem[]>({ url: GetQuotationViewListUrl });
+  }
+
+  function getQuotationViewDetail(id: string) {
+    return CDR.get({ url: `${GetQuotationViewDetailUrl}/${id}` });
+  }
+
+  function fixedQuotationView(id: string) {
+    return CDR.get({ url: `${FixedQuotationViewUrl}/${id}` });
+  }
+
+  function enableQuotationView(id: string) {
+    return CDR.get({ url: `${EnableQuotationViewUrl}/${id}` });
+  }
+
+  function deleteQuotationView(id: string) {
+    return CDR.get({ url: `${DeleteQuotationViewUrl}/${id}` });
+  }
+
+  function dragQuotationView(data: TableDraggedParams) {
+    return CDR.post({ url: DragBusinessViewUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -378,5 +426,14 @@ export default function useProductApi(CDR: CordysAxios) {
     getOpportunityStageConfig,
     deleteOpportunityStage,
     generateOpportunityChart,
+    getQuotationTab,
+    addQuotationView,
+    deleteQuotationView,
+    fixedQuotationView,
+    getQuotationViewDetail,
+    getQuotationViewList,
+    updateQuotationView,
+    enableQuotationView,
+    dragQuotationView,
   };
 }

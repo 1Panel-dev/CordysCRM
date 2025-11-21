@@ -11,8 +11,7 @@ const system: AppRouteRecordRaw = {
   meta: {
     hideChildrenInMenu: true,
     locale: 'menu.opportunity',
-    // TODO 商机报价单权限待确认
-    permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
+    permissions: ['OPPORTUNITY_MANAGEMENT:READ', 'OPPORTUNITY_QUOTATION:READ'],
     icon: 'iconicon_business_opportunity',
     collapsedLocale: 'menu.collapsedOpportunity',
   },
@@ -34,8 +33,7 @@ const system: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.quotation',
         isTopMenu: true,
-        // TODO 商机报价单权限待确认
-        permissions: [],
+        permissions: ['OPPORTUNITY_QUOTATION:READ'],
       },
     },
   ],

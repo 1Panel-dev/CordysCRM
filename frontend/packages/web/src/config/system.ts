@@ -63,8 +63,8 @@ export const logTypeOption = [
     label: 'common.approval',
   },
   {
-    value: OperationTypeEnum.INVALID,
-    label: 'common.invalid',
+    value: OperationTypeEnum.VOIDED,
+    label: 'common.voided',
   },
   {
     value: OperationTypeEnum.CANCEL_VOID,

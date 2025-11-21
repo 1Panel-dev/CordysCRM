@@ -337,7 +337,7 @@ export default {
   'common.goAdd': '去添加',
   'common.approval': '审批',
   'common.batchApproval': '批量审批',
-  'common.invalid': '作废',
+  'common.voided': '作废',
   'common.batchVoid': '批量作废',
   'common.confirmVoid': '确认作废',
   'common.voidSuccess': '作废成功',

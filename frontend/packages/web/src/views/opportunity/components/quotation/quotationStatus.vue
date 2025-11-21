@@ -19,29 +19,29 @@
   }>();
 
   const statusMap = {
-    [QuotationStatusEnum.SUCCESS]: {
+    [QuotationStatusEnum.APPROVED]: {
       label: t('common.pass'),
-      icon: 'icon-icon-icon_succeed_filled',
+      icon: 'iconicon_succeed_filled',
       color: 'var(--success-green)',
     },
-    [QuotationStatusEnum.FAIL]: {
+    [QuotationStatusEnum.UNAPPROVED]: {
       label: t('common.unPass'),
-      icon: 'icon-icon_close_filled',
+      icon: 'iconicon_close_circle_filled',
       color: 'var(--error-red)',
     },
-    [QuotationStatusEnum.REVIEW]: {
+    [QuotationStatusEnum.APPROVING]: {
       label: t('common.review'),
-      icon: 'icon-icon_testing',
+      icon: 'iconicon_wait',
       color: 'var(--info-blue)',
     },
-    [QuotationStatusEnum.INVALID]: {
-      label: t('module.quotationStatusInvalid'),
-      icon: 'icon-icon_block_filled',
+    [QuotationStatusEnum.VOIDED]: {
+      label: t('common.voided'),
+      icon: 'iconicon_block_filled',
       color: 'var(--warning-yellow)',
     },
     [QuotationStatusEnum.REVOKE]: {
       label: t('common.revoke'),
-      icon: 'icon-icon_skip_planarity',
+      icon: 'iconicon_skip_planarity',
       color: 'var(--text-n4)',
     },
   };
