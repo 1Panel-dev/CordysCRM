@@ -132,12 +132,14 @@
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
   import {
+    generateContractChart,
     generateCustomerChart,
     generateCustomerContactChart,
     generateCustomerPoolChart,
     generateLeadChart,
     generateLeadPoolChart,
     generateOpportunityChart,
+    generatePaymentPlanChart,
   } from '@/api/modules';
   import { TabType } from '@/hooks/useHiddenTab';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -276,6 +278,8 @@
     [FormDesignKeyEnum.CONTACT]: generateCustomerContactChart,
     [FormDesignKeyEnum.FOLLOW_PLAN]: () => Promise.resolve([]),
     [FormDesignKeyEnum.FOLLOW_RECORD]: () => Promise.resolve([]),
+    [FormDesignKeyEnum.CONTRACT]: generateContractChart,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: generatePaymentPlanChart,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => Promise.resolve([]),
   };
   const loading = ref<boolean>(false);

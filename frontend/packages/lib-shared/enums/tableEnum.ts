@@ -25,6 +25,8 @@ export enum TableKeyEnum {
   LOGIN_LOG = 'loginLog',
   FOLLOW_PLAN = 'followPlan',
   FOLLOW_RECORD = 'followRecord',
+  CONTRACT = 'contract',
+  CONTRACT_PAYMENT = 'contractPayment',
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

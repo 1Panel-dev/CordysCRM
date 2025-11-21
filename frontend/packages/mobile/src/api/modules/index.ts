@@ -12,6 +12,7 @@ import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
+import useContractApi from '@lib/shared/api/modules/contract';
 
 import checkStatus from '../http/checkStatus';
 
@@ -31,6 +32,7 @@ const businessApi = useBusinessApi(CDR);
 const loginApi = useLoginApi(CDR);
 const licenseApi = useLicenseApi(CDR);
 const followApi = useFollowApi(CDR);
+const contractApi = useContractApi(CDR);
 
 export const {
   getFollowPlanDetail,
@@ -208,6 +210,45 @@ export const {
   getGlobalModuleCount,
   moveCustomerToPool,
 } = customerApi;
+
+export const {
+  exportContractAll,
+  exportContractSelected,
+  generateContractChart,
+  getContractDetail,
+  getContractList,
+  getContractTab,
+  getContractViewDetail,
+  getContractViewList,
+  addContractView,
+  updateContractView,
+  fixedContractView,
+  enableContractView,
+  deleteContractView,
+  dragContractView,
+  addContract,
+  updateContract,
+  deleteContract,
+  getContractFormConfig,
+  getPaymentPlanList,
+  addPaymentPlan,
+  updatePaymentPlan,
+  deletePaymentPlan,
+  getPaymentPlanDetail,
+  getPaymentPlanFormConfig,
+  getPaymentPlanTab,
+  exportPaymentPlanAll,
+  exportPaymentPlanSelected,
+  generatePaymentPlanChart,
+  addPaymentPlanView,
+  updatePaymentPlanView,
+  getPaymentPlanViewList,
+  getPaymentPlanViewDetail,
+  fixedPaymentPlanView,
+  enablePaymentPlanView,
+  deletePaymentPlanView,
+  dragPaymentPlanView,
+} = contractApi;
 
 export const {
   addAnnouncement,

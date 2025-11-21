@@ -42,7 +42,9 @@ export type FormKey =
   | FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC
   | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL
   | FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY
-  | FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+  | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
+  | FormDesignKeyEnum.CONTRACT
+  | FormDesignKeyEnum.CONTRACT_PAYMENT;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -91,6 +93,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: TableKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: TableKeyEnum.SEARCH_ADVANCED_OPPORTUNITY,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: TableKeyEnum.OPPORTUNITY_QUOTATION,
+    [FormDesignKeyEnum.CONTRACT]: TableKeyEnum.CONTRACT,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -660,6 +664,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [],
+    [FormDesignKeyEnum.CONTRACT]: [], // TODO lmy
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: [], // TODO lmy
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

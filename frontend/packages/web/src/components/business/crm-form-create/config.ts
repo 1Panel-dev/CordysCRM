@@ -11,6 +11,7 @@ import {
   addClue,
   addClueFollowPlan,
   addClueFollowRecord,
+  addContract,
   addCustomer,
   addCustomerContact,
   addCustomerFollowPlan,
@@ -18,6 +19,7 @@ import {
   addOpportunity,
   addOptFollowPlan,
   addOptFollowRecord,
+  addPaymentPlan,
   addProduct,
   advancedSearchOptPage,
   ClueTransitionCustomer,
@@ -34,6 +36,9 @@ import {
   getCluePoolList,
   getClueTransitionCustomerList,
   getContactListUnderCustomer,
+  getContractDetail,
+  getContractFormConfig,
+  getContractList,
   getCustomer,
   getCustomerContact,
   getCustomerContactFormConfig,
@@ -57,6 +62,9 @@ import {
   getOptFollowPlan,
   getOptFollowRecord,
   getOptFormConfig,
+  getPaymentPlanDetail,
+  getPaymentPlanFormConfig,
+  getPaymentPlanList,
   getPoolClue,
   getProduct,
   getProductFormConfig,
@@ -64,6 +72,7 @@ import {
   updateClue,
   updateClueFollowPlan,
   updateClueFollowRecord,
+  updateContract,
   updateCustomer,
   updateCustomerContact,
   updateCustomerFollowPlan,
@@ -73,6 +82,7 @@ import {
   updateOpportunity,
   updateOptFollowPlan,
   updateOptFollowRecord,
+  updatePaymentPlan,
   updateProduct,
 } from '@/api/modules';
 
@@ -653,8 +663,8 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOptFormConfig,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getOptFormConfig, // TODO:xinxinwu报价单 🏷
-  [FormDesignKeyEnum.CONTRACT]: getOptFormConfig, // TODO lmy
-  [FormDesignKeyEnum.CONTRACT_PAYMENT]: getOptFormConfig, // TODO lmy
+  [FormDesignKeyEnum.CONTRACT]: getContractFormConfig,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -684,8 +694,8 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: addOpportunity,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
-  [FormDesignKeyEnum.CONTRACT]: async () => ({}), // TODO lmy
-  [FormDesignKeyEnum.CONTRACT_PAYMENT]: async () => ({}), // TODO lmy
+  [FormDesignKeyEnum.CONTRACT]: addContract,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlan,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -715,8 +725,8 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: updateOpportunity,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
-  [FormDesignKeyEnum.CONTRACT]: async () => ({}), // TODO lmy
-  [FormDesignKeyEnum.CONTRACT_PAYMENT]: async () => ({}), // TODO lmy
+  [FormDesignKeyEnum.CONTRACT]: updateContract,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlan,
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -743,6 +753,8 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: getOpenSeaCustomer,
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getPoolClue,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOpportunityDetail,
+  [FormDesignKeyEnum.CONTRACT]: getContractDetail,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -765,6 +777,8 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: getAdvancedOpenSeaCustomerList,
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getAdvancedCluePoolList,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: advancedSearchOptPage,
+  [FormDesignKeyEnum.CONTRACT]: getContractList,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanList,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {

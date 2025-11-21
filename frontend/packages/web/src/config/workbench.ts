@@ -28,6 +28,12 @@ export const quickAccessList = [
     label: t('opportunity.new'),
     permission: ['OPPORTUNITY_MANAGEMENT:ADD'],
   },
+  {
+    key: FormDesignKeyEnum.CONTRACT,
+    icon: 'newOpportunity', // TODO lmy
+    label: t('contract.new'),
+    permission: ['OPPORTUNITY_MANAGEMENT:ADD'], // TODO lmy 等后端
+  },
   // 这版本先不上
   // {
   //   key: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,

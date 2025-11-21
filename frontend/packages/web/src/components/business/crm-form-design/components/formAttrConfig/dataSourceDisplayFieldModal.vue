@@ -29,15 +29,17 @@
     </n-scrollbar>
   </CrmModal>
 </template>
+
 <script lang="ts" setup>
   import { NScrollbar } from 'naive-ui';
-  import { ColumnTypeEnum } from '@lib/shared/enums/commonEnum';
 
+  import { ColumnTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import FieldSection from '@/components/business/crm-table-export-modal/components/fieldSection.vue';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
+
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import FieldSection from '@/components/business/crm-table-export-modal/components/fieldSection.vue';
 
   const { t } = useI18n();
 
@@ -54,7 +56,7 @@
     (e: 'save', selectedList: any[]): void;
   }>();
 
-  // TODO lmy 掉接口获取数据
+  // TODO lmy 等后端 掉接口获取数据
   const allColumns = ref<ExportTableColumnItem[]>([
     {
       key: '176162279849400000',
@@ -117,7 +119,7 @@
   }
 
   function handleCancel() {
-    selectedList.value = props.fieldConfig?.showFields ? [...props.fieldConfig?.showFields] : [];
+    selectedList.value = props.fieldConfig?.showFields ? [...props.fieldConfig.showFields] : [];
     show.value = false;
   }
 
