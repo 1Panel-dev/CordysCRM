@@ -64,7 +64,7 @@
   }
 
   const dashboardList = computed(() => {
-    return fullList.filter((item) => ((item.key === 'DE' && DEConfig.value?.deBoardEnable) || item.key === 'LINK'));
+    return fullList.filter((item) => (item.key === 'DE' && DEConfig.value?.deBoardEnable) || item.key === 'LINK');
   });
   const activeDashboard = ref(dashboardList.value[0].key);
 

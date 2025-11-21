@@ -60,6 +60,8 @@ export enum FieldTypeEnum {
   ATTACHMENT = 'ATTACHMENT',
   INDUSTRY = 'INDUSTRY',
   FORMULA = 'FORMULA', // 计算公式
+  PRODUCT_TABLE = 'PRODUCT_TABLE',
+  PRICE_TABLE = 'PRICE_TABLE',
 }
 
 export enum FieldRuleEnum {

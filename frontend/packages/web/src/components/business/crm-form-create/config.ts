@@ -519,7 +519,6 @@ export const linkDefaultFieldConfig: FormCreateField = {
   linkSource: 'userInput',
   rules: [],
 };
-
 export const formulaDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.FORMULA,
@@ -536,6 +535,36 @@ export const formulaDefaultFieldConfig: FormCreateField = {
   numberFormat: 'amount',
 };
 
+export const productTableDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.PRODUCT_TABLE,
+  icon: 'iconicon_link2',
+  name: 'crmFormDesign.productTable',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  mobile: true,
+  rules: [],
+  subFields: [],
+};
+
+export const priceTableDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.PRICE_TABLE,
+  icon: 'iconicon_link2',
+  name: 'crmFormDesign.priceTable',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  mobile: true,
+  rules: [],
+  subFields: [],
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
@@ -546,7 +575,6 @@ export const advancedFields: FormCreateField[] = [
   linkDefaultFieldConfig,
   fileDefaultFieldConfig,
   industryDefaultFieldConfig,
-  formulaDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -594,6 +622,8 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.ATTACHMENT]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.INDUSTRY]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.FORMULA]: [],
+  [FieldTypeEnum.PRODUCT_TABLE]: [],
+  [FieldTypeEnum.PRICE_TABLE]: [],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

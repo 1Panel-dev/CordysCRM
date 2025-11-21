@@ -121,6 +121,7 @@
 
 <script setup lang="ts">
   import { NButton, NCheckbox, NCheckboxGroup, NDivider, NInput, NRadio, NRadioGroup, NTooltip } from 'naive-ui';
+  import { debounce } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -130,7 +131,6 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
-  import { debounce } from 'lodash-es';
 
   const props = defineProps<{
     disabled?: boolean;

@@ -1,4 +1,5 @@
 import dataSource from './dataSource.vue';
+import dataTable from './dataTable.vue';
 import file from './file.vue';
 import formula from './formula.vue';
 import industry from './industry.vue';
@@ -18,4 +19,5 @@ export default {
   file,
   industry,
   formula,
+  dataTable,
 };

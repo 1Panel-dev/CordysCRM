@@ -10,7 +10,12 @@
         v-model="list"
         :animation="150"
         ghost-class="crm-form-design--composition-item-ghost"
-        group="crmFormDesign"
+        :group="{
+          name: 'crmFormDesignRender',
+          put(to, from) {
+            return typeof from.options.group !== 'string' ? from.options.group?.name === 'crmFormDesign' : false;
+          },
+        }"
         class="crm-form-design--composition-drag-wrapper"
         @start="onStart"
       >
@@ -25,7 +30,11 @@
           >
             <div class="crm-form-design--composition-item-tools">
               <n-tooltip
-                v-if="item.type !== FieldTypeEnum.SERIAL_NUMBER"
+                v-if="
+                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(
+                    item.type
+                  )
+                "
                 :delay="300"
                 :show-arrow="false"
                 class="crm-form-design--composition-item-tools-tip"
@@ -58,8 +67,17 @@
               </n-tooltip>
             </div>
             <div v-if="props.formConfig.labelPos === 'left'" class="h-[30px]"></div>
-            <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
-            <div class="crm-form-design--composition-item-mask"></div>
+            <component
+              :is="getItemComponent(item.type)"
+              v-model:field="activeItem"
+              :field-config="item"
+              :path="item.id"
+              :form-config="props.formConfig"
+            />
+            <div
+              v-if="![FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(item.type)"
+              class="crm-form-design--composition-item-mask"
+            ></div>
           </div>
         </template>
         <div
@@ -99,6 +117,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import dataTable from './dataTable.vue';
 
   const props = defineProps<{
     formConfig: FormConfig;
@@ -185,6 +204,9 @@
     }
     if (type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
+    }
+    if ([FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(type)) {
+      return dataTable;
     }
   }
 
@@ -298,7 +320,7 @@
           gap: 8px;
         }
         .n-form-item-label {
-          @apply items-center;
+          @apply cursor-move items-center;
 
           margin-bottom: 4px;
           padding-bottom: 0;

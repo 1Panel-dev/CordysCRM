@@ -88,8 +88,8 @@
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
-  import quotationTable from './quotation/quotationTable.vue';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
@@ -98,7 +98,7 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
-  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import quotationTable from './quotation/quotationTable.vue';
 
   import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';

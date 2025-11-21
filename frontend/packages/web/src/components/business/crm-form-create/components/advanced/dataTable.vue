@@ -11,20 +11,11 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <n-divider v-if="props.isSubTableField" class="!my-0" />
-    <n-input
-      v-model:value="value"
-      :maxlength="255"
-      :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false"
-      clearable
-      @update-value="($event) => emit('change', $event)"
-    />
   </n-form-item>
 </template>
 
 <script setup lang="ts">
-  import { NDivider, NFormItem, NInput } from 'naive-ui';
+  import { NFormItem } from 'naive-ui';
 
   import { FormCreateField } from '../../types';
 
@@ -32,7 +23,6 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
-    isSubTableField?: boolean; // 是否是子表字段
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
@@ -41,19 +31,6 @@
   const value = defineModel<string>('value', {
     default: '',
   });
-
-  watch(
-    () => props.fieldConfig.defaultValue,
-    (val) => {
-      if (!props.needInitDetail) {
-        value.value = val || value.value;
-        emit('change', value.value);
-      }
-    },
-    {
-      immediate: true,
-    }
-  );
 </script>
 
 <style lang="less" scoped></style>

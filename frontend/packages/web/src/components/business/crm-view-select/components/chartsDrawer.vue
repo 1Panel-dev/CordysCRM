@@ -121,6 +121,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
+  import { ViewItem } from '@lib/shared/models/view';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -144,7 +145,6 @@
   import useViewStore from '@/store/modules/view';
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
-  import { ViewItem } from '@lib/shared/models/view';
 
   const props = defineProps<{
     type: TabType;

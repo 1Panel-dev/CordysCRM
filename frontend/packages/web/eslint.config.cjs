@@ -20,22 +20,23 @@ const path = require('path');
 
 module.exports = defineConfig([
   {
+    files: ['**/*.js', '**/*.ts', '**/*.vue'],
     languageOptions: {
       parser,
-      sourceType: 'module',
-      ecmaVersion: 2020,
-
       parserOptions: {
-        parser: '@typescript-eslint/parser',
-
-        ecmaFeatures: {
-          jsx: true,
-        },
+        parser: '@typescript-eslint/parser', // parse <script lang="ts">
+        extraFileExtensions: ['.vue'],
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        project: path.resolve(__dirname, './tsconfig.json'),
       },
-
       globals: {
         ...globals.browser,
         ...globals.node,
+        defineProps: 'readonly',
+        defineEmits: 'readonly',
+        defineExpose: 'readonly',
+        withDefaults: 'readonly',
         NodeJS: 'readonly',
       },
     },
@@ -79,17 +80,15 @@ module.exports = defineConfig([
       '@typescript-eslint/no-empty-function': 1,
       '@typescript-eslint/no-explicit-any': 0,
       '@typescript-eslint/no-duplicate-enum-values': 0,
+      '@typescript-eslint/no-require-imports': 0,
       'consistent-return': 'off',
       'vue/return-in-computed-property': ['off'],
       'vue/no-side-effects-in-computed-properties': 'off',
-
-      'import/no-unresolved': [
-        'error',
-        {
-          ignore: ['^@lib/shared'],
-        },
-      ],
-
+      'vue/require-default-prop': 0,
+      'vue/singleline-html-element-content-newline': 0,
+      'vue/max-attributes-per-line': 0,
+      'vue/custom-event-name-casing': [2, 'camelCase'],
+      '@typescript-eslint/no-unused-vars': ['off'],
       'import/extensions': [
         2,
         'ignorePackages',
@@ -159,7 +158,6 @@ module.exports = defineConfig([
   },
   {
     files: ['src/enums/**/*.ts'],
-
     rules: {
       'no-shadow': 'off',
     },
