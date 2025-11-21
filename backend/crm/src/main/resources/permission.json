@@ -310,6 +310,30 @@
             "name": "permission.clue_management.clue.resign"
           }
         ]
+      },
+      {
+        "id": "OPPORTUNITY_MANAGEMENT_QUOTATION",
+        "name": "permission.opportunity_management.opportunity_quotation.name",
+        "permissions": [
+          {
+            "id": "OPPORTUNITY_QUOTATION:READ"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:ADD"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:UPDATE"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:DELETE"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:EXPORT"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:APPROVAL"
+          }
+        ]
       }
     ]
   },

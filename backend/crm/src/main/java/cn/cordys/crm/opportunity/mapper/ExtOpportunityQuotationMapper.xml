@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper">
+
+
+    <select id="list" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse">
+        select oq.id, oq.name, oq.opportunity_id, o.opportunity_name as opportunityName, oq.approval_status, oq.amount,
+        oq.organization_id, oq.create_time,
+        oq.update_time, oq.create_user, oq.update_user
+        from opportunity_quotation oq
+        left join opportunity o on oq.opportunity_id = o.id
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where oq.organization_id = #{currentOrg}
+        <if test="request.approvalStatus != null and request.approvalStatus != ''">
+            and oq.approval_status = #{request.approvalStatus}
+        </if>
+        <if test="request.amount != null and request.amount != ''">
+            and oq.amount = #{request.amount}
+        </if>
+        <if test="request.opportunityId != null and request.opportunityId != ''">
+            and o.id = #{request.opportunityId}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            and (oq.name like concat('%', #{request.keyword},'%') or o.name like concat('%', #{request.keyword},'%'))
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <!-- common sql start -->
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'name'
+                and condition.name != 'approvalStatus'
+                and condition.name != 'amount'
+                and condition.name != 'opportunityId'
+                and condition.name != 'updateUser'
+                and condition.name != 'createTime'
+                and condition.name != 'updateTime'
+                and condition.name != 'createUser'
+                and condition.name != 'update_user'
+                and condition.name != 'create_time'
+                and condition.name != 'update_time'
+                and condition.name != 'create_user'
+                ">
+                    <if test="condition.multipleValue">
+                        inner join opportunity_quotation_field_blob ${tablePrefix}_${i}
+                        on oq.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.multipleValue">
+                        inner join opportunity_quotation_field ${tablePrefix}_${i}
+                        on oq.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name'
+                and ${sort}.name != 'approvalStatus'
+                and ${sort}.name != 'amount'
+                and ${sort}.name != 'opportunityId'
+                and ${sort}.name != 'create_user'
+                and ${sort}.name != 'create_time'
+                and ${sort}.name != 'update_time'
+                and ${sort}.name != 'update_user'
+               ">
+            <bind name="sortName" value="${sort}.name"/>
+            left join opportunity_quotation_field sort_table
+            on oq.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        oq.`name` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'approvalStatus'">
+                        oq.`approval_status` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'amount'">
+                        oq.`amount` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'opportunityId'">
+                        o.`id` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        oq.`create_time` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        oq.`update_time` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        oq.`create_user` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        oq.`update_user` ${sortType}, oq.id ASC
+                    </when>
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        oq.id ASC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by oq.pos
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'approvalStatus'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.approval_status"/>
+                </include>
+            </when>
+            <when test="condition.name == 'amount'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.amount"/>
+                </include>
+            </when>
+            <when test="condition.name == 'opportunityId'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.update_user"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+
+</mapper>
