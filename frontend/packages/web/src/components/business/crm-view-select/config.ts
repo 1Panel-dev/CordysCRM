@@ -13,6 +13,7 @@ import {
   addFollowPlanView,
   addFollowRecordView,
   addLeadPoolView,
+  addQuotationView,
   deleteAccountPoolView,
   deleteBusinessView,
   deleteClueView,
@@ -21,6 +22,7 @@ import {
   deleteFollowPlanView,
   deleteFollowRecordView,
   deleteLeadPoolView,
+  deleteQuotationView,
   dragAccountPoolView,
   dragBusinessView,
   dragClueView,
@@ -29,6 +31,7 @@ import {
   dragFollowPlanView,
   dragFollowRecordView,
   dragLeadPoolView,
+  dragQuotationView,
   enableAccountPoolView,
   enableBusinessView,
   enableClueView,
@@ -37,6 +40,7 @@ import {
   enableFollowPlanView,
   enableFollowRecordView,
   enableLeadPoolView,
+  enableQuotationView,
   fixedAccountPoolView,
   fixedBusinessView,
   fixedClueView,
@@ -45,6 +49,7 @@ import {
   fixedFollowPlanView,
   fixedFollowRecordView,
   fixedLeadPoolView,
+  fixedQuotationView,
   getAccountPoolViewDetail,
   getAccountPoolViewList,
   getBusinessViewDetail,
@@ -61,6 +66,8 @@ import {
   getFollowRecordViewList,
   getLeadPoolViewDetail,
   getLeadPoolViewList,
+  getQuotationViewDetail,
+  getQuotationViewList,
   updateAccountPoolView,
   updateBusinessView,
   updateClueView,
@@ -69,6 +76,7 @@ import {
   updateFollowPlanView,
   updateFollowRecordView,
   updateLeadPoolView,
+  updateQuotationView,
 } from '@/api/modules';
 import { TabType } from '@/hooks/useHiddenTab';
 import useUserStore from '@/store/modules/user';
@@ -87,6 +95,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getAccountPoolViewList,
     [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanViewList,
     [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordViewList,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationViewList,
   },
   add: {
     [FormDesignKeyEnum.CLUE]: addClueView,
@@ -97,6 +106,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: addAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: addFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: addFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: addQuotationView,
   },
   update: {
     [FormDesignKeyEnum.CLUE]: updateClueView,
@@ -107,6 +117,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: updateAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: updateFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: updateFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: updateQuotationView,
   },
   delete: {
     [FormDesignKeyEnum.CLUE]: deleteClueView,
@@ -117,6 +128,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: deleteAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: deleteFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: deleteFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: deleteQuotationView,
   },
   detail: {
     [FormDesignKeyEnum.CLUE]: getClueViewDetail,
@@ -127,6 +139,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getAccountPoolViewDetail,
     [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanViewDetail,
     [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordViewDetail,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationViewDetail,
   },
   fixed: {
     [FormDesignKeyEnum.CLUE]: fixedClueView,
@@ -137,6 +150,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: fixedAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: fixedFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: fixedFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: fixedQuotationView,
   },
   enable: {
     [FormDesignKeyEnum.CLUE]: enableClueView,
@@ -147,6 +161,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: enableAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: enableFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: enableFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: enableQuotationView,
   },
   drag: {
     [FormDesignKeyEnum.CLUE]: dragClueView,
@@ -157,6 +172,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: dragAccountPoolView,
     [FormDesignKeyEnum.FOLLOW_PLAN]: dragFollowPlanView,
     [FormDesignKeyEnum.FOLLOW_RECORD]: dragFollowRecordView,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: dragQuotationView,
   },
 };
 

@@ -74,7 +74,13 @@
         </template>
       </n-select>
       <n-button
-        v-if="![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.type)"
+        v-if="
+          ![
+            FormDesignKeyEnum.FOLLOW_PLAN,
+            FormDesignKeyEnum.FOLLOW_RECORD,
+            FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+          ].includes(props.type)
+        "
         type="default"
         class="outline--secondary px-[8px]"
         @click="openViewDrawer"

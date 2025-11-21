@@ -48,14 +48,16 @@
     </n-scrollbar>
   </CrmModal>
 </template>
+
 <script setup lang="ts">
-  import { NScrollbar, NButton } from 'naive-ui';
+  import { NButton, NScrollbar } from 'naive-ui';
+
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   const { t } = useI18n();
   const visible = defineModel<boolean>('visible', { required: true });
@@ -301,6 +303,7 @@
     }
   );
 </script>
+
 <style scoped lang="less">
   .crm-form-design-formula-wrapper {
     position: relative;

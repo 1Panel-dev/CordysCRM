@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
+  import inputNumber from '../basic/inputNumber.vue';
+
   import { FormCreateField } from '../../types';
 
-  import inputNumber from '../basic/inputNumber.vue';
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;

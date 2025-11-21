@@ -140,6 +140,15 @@ export const {
   exportOpportunitySelected,
   getOpportunityStageConfig,
   updateOpportunityStageRollback,
+  getQuotationTab,
+  addQuotationView,
+  deleteQuotationView,
+  fixedQuotationView,
+  getQuotationViewDetail,
+  getQuotationViewList,
+  updateQuotationView,
+  enableQuotationView,
+  dragQuotationView,
 } = opportunityApi;
 
 export const {

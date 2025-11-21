@@ -13,6 +13,7 @@ import {
   getFollowPlanTab,
   getFollowRecordTab,
   getOptTab,
+  getQuotationTab,
 } from '@/api/modules';
 
 export type TabType =
@@ -23,7 +24,8 @@ export type TabType =
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.FOLLOW_PLAN
-  | FormDesignKeyEnum.FOLLOW_RECORD;
+  | FormDesignKeyEnum.FOLLOW_RECORD
+  | FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
 
@@ -37,6 +39,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CLUE]: getClueTab,
     [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanTab,
     [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordTab,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationTab,
   };
 
   const allClueTabList: TabPaneProps[] = [
@@ -151,6 +154,21 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allQuotationTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('opportunity.quotation.all'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('opportunity.quotation.department'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('opportunity.quotation.my'),
+    },
+  ];
+
   const tabListMap: Record<TabType, TabPaneProps[]> = {
     [FormDesignKeyEnum.CUSTOMER]: allCustomerTabList,
     [FormDesignKeyEnum.CONTACT]: allContactTabList,
@@ -160,6 +178,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: allAccountPoolTabList,
     [FormDesignKeyEnum.FOLLOW_PLAN]: allPlanTabList,
     [FormDesignKeyEnum.FOLLOW_RECORD]: allRecordTabList,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: allQuotationTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);

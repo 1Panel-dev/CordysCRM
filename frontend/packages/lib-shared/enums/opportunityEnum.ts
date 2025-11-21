@@ -6,10 +6,10 @@ export enum OpportunitySearchTypeEnum {
 }
 
 export enum QuotationStatusEnum {
-  SUCCESS = 'SUCCESS', // 通过
-  FAIL = 'FAIL', // 未通过
-  REVIEW = 'REVIEW', // 提审
-  INVALID = 'INVALID', // 作废
+  APPROVED = 'APPROVED', // 通过
+  UNAPPROVED = 'UNAPPROVED', // 未通过
+  APPROVING = 'APPROVING', // 提审
+  VOIDED = 'VOIDED', // 作废
   REVOKE = 'REVOKE', // 撤销
 }
 
