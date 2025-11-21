@@ -175,7 +175,6 @@ public class PermissionConstants {
 
     /*------ end: OPPORTUNITY_QUOTATION ------*/
 
-
     /*------ start: CONTRACT ------*/
     public static final String CONTRACT_READ = "CONTRACT:READ";
     public static final String CONTRACT_ADD = "CONTRACT:ADD";
@@ -187,5 +186,12 @@ public class PermissionConstants {
     public static final String CONTRACT_REVIEW = "CONTRACT:REVIEW";
 
     /*------ end: CONTRACT ------*/
+
+    /*------ start: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
+    public static final String CONTRACT_CONTRACT_PAYMENT_PLAN_READ = "CONTRACT_CONTRACT_PAYMENT_PLAN:READ";
+    public static final String CONTRACT_CONTRACT_PAYMENT_PLAN_ADD = "CONTRACT_CONTRACT_PAYMENT_PLAN:ADD";
+    public static final String CONTRACT_CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_CONTRACT_PAYMENT_PLAN:UPDATE";
+    public static final String CONTRACT_CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_CONTRACT_PAYMENT_PLAN:DELETE";
+    /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
 }
 

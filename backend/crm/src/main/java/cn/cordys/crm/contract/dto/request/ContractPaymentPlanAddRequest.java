@@ -1,0 +1,39 @@
+package cn.cordys.crm.contract.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+/**
+ *
+ * @author jianxing
+ * @date 2025-11-21 15:11:29
+ */
+@Data
+public class ContractPaymentPlanAddRequest {
+
+
+    @Size(max = 32)
+    @NotBlank
+    @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String contractId;
+
+    @Size(max = 32)
+    @NotBlank
+    @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String owner;
+
+    @Size(max = 32)
+    @Schema(description = "计划状态", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String planStatus;
+
+    private BigDecimal planAmount;
+
+    private Long planEndTime;
+
+
+
+
+}

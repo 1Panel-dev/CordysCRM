@@ -161,6 +161,7 @@ CREATE TABLE contract_payment_plan(
     `plan_status` VARCHAR(32) NOT NULL   COMMENT '计划状态' ,
     `plan_amount` DECIMAL(20,10)    COMMENT '计划回款金额' ,
     `plan_end_time` BIGINT    COMMENT '计划回款时间' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
