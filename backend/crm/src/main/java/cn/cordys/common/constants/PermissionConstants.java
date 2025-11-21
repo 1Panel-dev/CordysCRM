@@ -171,7 +171,6 @@ public class PermissionConstants {
     public static final String OPPORTUNITY_QUOTATION_DELETE = "OPPORTUNITY_QUOTATION:DELETE";
     public static final String OPPORTUNITY_QUOTATION_EXPORT = "OPPORTUNITY_QUOTATION:EXPORT";
     public static final String OPPORTUNITY_QUOTATION_APPROVAL = "OPPORTUNITY_QUOTATION:APPROVAL";
-    public static final String OPPORTUNITY_QUOTATION_VOIDED = "OPPORTUNITY_QUOTATION:VOIDED";
 
     /*------ end: OPPORTUNITY_QUOTATION ------*/
 
