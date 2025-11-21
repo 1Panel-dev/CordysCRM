@@ -86,6 +86,57 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_quotation_id ON opportunity_quotation_snapshot (quotation_id ASC);
 
 
+-- 回款计划
+CREATE TABLE receivables_plan(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `contract_id` VARCHAR(32) NOT NULL   COMMENT '合同ID' ,
+    `owner` VARCHAR(32) NOT NULL   COMMENT '负责人' ,
+    `plan_status` VARCHAR(32) NOT NULL   COMMENT '计划状态' ,
+    `amount` DECIMAL(20,10)    COMMENT '计划回款金额' ,
+    `amount_extend_value` VARCHAR(20)    COMMENT '计划回款金额扩展值（币种）' ,
+    `end_time` BIGINT    COMMENT '计划回款时间' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '回款计划'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_contract_id ON receivables_plan(contract_id ASC);
+CREATE INDEX idx_create_time ON receivables_plan(create_time ASC);
+CREATE INDEX idx_owner ON receivables_plan(owner ASC);
+
+CREATE TABLE receivables_plan_field(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '回款计划id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
+    `field_extend_value` VARCHAR(255)    COMMENT '自定义属性扩展值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '回款计划自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON receivables_plan_field(resource_id ASC);
+
+CREATE TABLE receivables_plan_field_blob(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '回款计划id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` TEXT NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '回款计划自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON receivables_plan_field_blob(resource_id ASC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
