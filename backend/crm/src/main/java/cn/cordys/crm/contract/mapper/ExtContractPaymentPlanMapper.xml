@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper">
+    <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
+        select *
+        from contract_payment_plan
+        where organization_id = #{orgId}
+    </select>
+</mapper>
