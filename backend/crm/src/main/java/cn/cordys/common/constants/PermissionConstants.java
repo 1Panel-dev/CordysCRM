@@ -176,5 +176,16 @@ public class PermissionConstants {
     /*------ end: OPPORTUNITY_QUOTATION ------*/
 
 
+    /*------ start: CONTRACT ------*/
+    public static final String CONTRACT_READ = "CONTRACT:READ";
+    public static final String CONTRACT_ADD = "CONTRACT:ADD";
+    public static final String CONTRACT_UPDATE = "CONTRACT:UPDATE";
+    public static final String CONTRACT_DELETE = "CONTRACT:DELETE";
+    public static final String CONTRACT_EXPORT = "CONTRACT:EXPORT";
+    public static final String CONTRACT_ARCHIVE = "CONTRACT:ARCHIVE";
+    public static final String CONTRACT_VOIDED = "CONTRACT:VOIDED";
+    public static final String CONTRACT_REVIEW = "CONTRACT:REVIEW";
+
+    /*------ end: CONTRACT ------*/
 }
 
