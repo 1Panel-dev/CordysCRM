@@ -5,11 +5,16 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -62,6 +67,8 @@ public class OpportunityQuotationService {
     private LogService logService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private PermissionCache permissionCache;
     @Resource
     private ExtOpportunityQuotationMapper extOpportunityQuotationMapper;
     @Resource
@@ -406,5 +413,10 @@ public class OpportunityQuotationService {
         }
         opportunityQuotationFieldService.deleteByResourceId(opportunityQuotation.getId());
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, fields, true);
+    }
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.OPPORTUNITY_QUOTATION_READ, rolePermissions);
     }
 }

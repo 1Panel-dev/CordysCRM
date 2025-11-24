@@ -1,6 +1,8 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
@@ -10,6 +12,8 @@ import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,9 +31,19 @@ public class OpportunityQuotationController {
 
     @Resource
     private OpportunityQuotationService opportunityQuotationService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+
+
+    @GetMapping("/module/form")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig() {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), OrganizationContext.getOrganizationId());
+    }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.PRICE_READ)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "价格列表")
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(@Validated @RequestBody OpportunityQuotationPageRequest request) {
         return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId());
@@ -82,11 +96,18 @@ public class OpportunityQuotationController {
     }
 
     //删除报价单
-    @DeleteMapping("/delete/{id}")
+    @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_DELETE)
     @Operation(summary = "删除报价单")
     public void delete(@PathVariable("id") String id) {
         opportunityQuotationService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
+    @Operation(summary = "所有商机报价单和部门商机报价单tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return opportunityQuotationService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
