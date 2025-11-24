@@ -51,7 +51,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         Assertions.assertTrue(CollectionUtils.isEmpty(contractPaymentPlanList));
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
+        requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
     }
 
     @Test
@@ -72,7 +72,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         Assertions.assertEquals(request.getPlanAmount().intValue(), contractPaymentPlan.getPlanAmount().intValue());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_ADD, DEFAULT_ADD, request);
+        requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_ADD, DEFAULT_ADD, request);
     }
 
     @Test
@@ -93,7 +93,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_UPDATE, DEFAULT_UPDATE, request);
+        requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE, DEFAULT_UPDATE, request);
     }
 
     @Test
@@ -108,7 +108,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         Assertions.assertEquals(responseContractPaymentPlan, contractPaymentPlan);
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_READ, DEFAULT_GET, addContractPaymentPlan.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_GET, addContractPaymentPlan.getId());
     }
 
     @Test
@@ -124,7 +124,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // todo
         
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
+        requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
     }
 
     @Test
@@ -133,6 +133,6 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         this.requestGetWithOk(DEFAULT_DELETE, addContractPaymentPlan.getId());
         // todo
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE, addContractPaymentPlan.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE, addContractPaymentPlan.getId());
     }
 }
