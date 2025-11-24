@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author song-cc-rock
+ */
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
@@ -38,7 +41,10 @@ import java.util.Set;
         @JsonSubTypes.Type(value = SerialNumberField.class, name = "SERIAL_NUMBER"),
         @JsonSubTypes.Type(value = AttachmentField.class, name = "ATTACHMENT"),
         @JsonSubTypes.Type(value = LinkField.class, name = "LINK"),
-        @JsonSubTypes.Type(value = IndustryField.class, name = "INDUSTRY")
+        @JsonSubTypes.Type(value = IndustryField.class, name = "INDUSTRY"),
+        @JsonSubTypes.Type(value = ProductSubField.class, name = "SUB_PRODUCT"),
+        @JsonSubTypes.Type(value = PriceSubField.class, name = "SUB_PRICE"),
+        @JsonSubTypes.Type(value = FormulaField.class, name = "FORMULA"),
 })
 public abstract class BaseField {
 
@@ -138,7 +144,7 @@ public abstract class BaseField {
 
     @JsonIgnore
     public boolean canImport() {
-        return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name())
+        return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
                 && !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
     }
 

@@ -361,6 +361,30 @@
             "id": "PRODUCT_MANAGEMENT:IMPORT"
           }
         ]
+      },
+      {
+        "id": "PRODUCT_MANAGEMENT_PRICE",
+        "name": "permission.product_management.price.name",
+        "permissions": [
+          {
+            "id": "PRICE:READ"
+          },
+          {
+            "id": "PRICE:ADD"
+          },
+          {
+            "id": "PRICE:UPDATE"
+          },
+          {
+            "id": "PRICE:DELETE"
+          },
+          {
+            "id": "PRICE:IMPORT"
+          },
+          {
+            "id": "PRICE:EXPORT"
+          }
+        ]
       }
     ]
   },

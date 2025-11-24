@@ -949,7 +949,8 @@
       "rules": [
         {"key":  "required"},
         {"key":  "unique"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "状态",
@@ -966,7 +967,8 @@
       ],
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "产品信息",
@@ -980,7 +982,7 @@
       "fixedColumn": 1,
       "subFields": [
         {
-          "name": "选择产品",
+          "name": "产品名称",
           "internalKey": "priceProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
@@ -991,8 +993,7 @@
           "rules": [
             {"key":  "required"}
           ],
-          "mobile": true,
-          "disabledProps": ["dataSourceType", "rules.required"]
+          "mobile": true
         },
         {
           "name": "产品SKU",
@@ -1014,7 +1015,11 @@
           "numberFormat": "currency",
           "decimalPlaces": true,
           "precision": 2,
-          "showThousandsSeparator": true
+          "showThousandsSeparator": true,
+          "mobile": true,
+          "rules": [
+            {"key":  "required"}
+          ]
         },
         {
           "name": "税点",
@@ -1040,7 +1045,7 @@
     {
       "name": "备注",
       "internalKey": "priceRemark",
-      "type": "TEXT_AREA",
+      "type": "TEXTAREA",
       "showLabel": true,
       "readable": true,
       "editable": true,
@@ -1096,9 +1101,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "rules": [
-        {"key":  "required"}
-      ],
       "mobile": true
     },
     {
@@ -1163,10 +1165,7 @@
           "editable": true,
           "fieldWidth": 1,
           "mobile": true,
-          "rules": [
-            {"key":  "required"}
-          ],
-          "disabledProps": ["dataSourceType", "rules.required"]
+          "disabledProps": ["dataSourceType"]
         },
         {
           "name": "产品定价",
@@ -1208,11 +1207,67 @@
           "showLabel": true,
           "readable": true,
           "editable": true,
-          "fieldWidth": 1,
-          "numberFormat": "number",
-          "formula": "(quotationProductAmount - quotationDiscount) * (1 + quotationTax)"
+          "fieldWidth": 1
         }
       ]
+    }
+  ],
+  "contractPaymentPlan": [
+    {
+      "name": "合同",
+      "internalKey": "contractPaymentPlanContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractPaymentPlanOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "计划回款金额",
+      "internalKey": "contractPaymentPlanPlanAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
+      "name": "计划回款时间",
+      "internalKey": "contractPaymentPlanPlanEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
     }
   ],
   "contract": [

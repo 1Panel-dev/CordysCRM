@@ -193,8 +193,50 @@ public enum BusinessModuleField {
     /*------ start: PRODUCT ------*/
     PRODUCT_NAME("productName", "name", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey()),
     PRODUCT_PRICE("productPrice", "price", Set.of(), FormKey.PRODUCT.getKey()),
-    PRODUCT_STATUS("productStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey());
+    PRODUCT_STATUS("productStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRODUCT.getKey()),
     /*------ end: PRODUCT ------*/
+
+	/**
+	 * 价格表单
+	 */
+	PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
+	PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
+
+	/**
+	 * 报价单表单
+	 */
+	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT("quotationProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
+
+	/**
+	 * 合同回款计划
+	 */
+	/*------ start: CONTRACT_PAYMENT_PLAN ------*/
+	/**
+	 * 负责人
+	 */
+	CONTRACT_PAYMENT_PLAN_OWNER("contractPaymentPlanOwner", "owner", Set.of("rules.required", "mobile"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	/**
+	 * 合同
+	 */
+	CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	/**
+	 * 计划回款金额
+	 */
+	CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "plan_amount", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	/**
+	 * 计划回款时间
+	 */
+	CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "plan_end_time", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey());
+	/*------ end: CONTRACT_PAYMENT_PLAN ------*/
+
+
     /**
      * 业务字段缓存
      */

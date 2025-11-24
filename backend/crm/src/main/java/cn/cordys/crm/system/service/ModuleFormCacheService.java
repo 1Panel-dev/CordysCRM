@@ -63,23 +63,11 @@ public class ModuleFormCacheService {
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
 
-        // 获取特殊的业务字段
-        Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
-                collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
-
-        businessModuleFormConfig.setFields(
-                config.getFields()
-                        .stream()
-                        .peek(moduleFieldDTO -> {
-                            BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(moduleFieldDTO.getInternalKey());
-                            if (businessModuleFieldEnum != null) {
-                                // 设置特殊的业务字段 key
-                                moduleFieldDTO.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
-                                moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
-                            }
-                        })
-                        .collect(Collectors.toList())
-        );
+		// 设置业务字段参数
+		businessModuleFormConfig.setFields(config.getFields().stream()
+				.peek(moduleFormService::setFieldBusinessParam)
+				.collect(Collectors.toList())
+		);
         return businessModuleFormConfig;
     }
 }
