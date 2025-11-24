@@ -88,20 +88,20 @@ CREATE INDEX idx_quotation_id ON opportunity_quotation_snapshot (quotation_id AS
 
 CREATE TABLE contract
 (
-    `id`                  VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`                VARCHAR(255) NOT NULL COMMENT '合同名称',
-    `customer_id`         VARCHAR(32)  NOT NULL COMMENT '客户id',
-    `owner`               VARCHAR(32)  NOT NULL COMMENT '合同负责人',
-    `amount`              DECIMAL(20, 10) COMMENT '金额',
-    `number`              VARCHAR(50)  NOT NULL COMMENT '编号',
-    `review_status`       VARCHAR(50)  NOT NULL COMMENT '审核状态',
-    `archived_status`     VARCHAR(50)  NOT NULL COMMENT '归档状态',
-    `voided_status`       VARCHAR(50)  NOT NULL COMMENT '作废状态',
-    `organization_id`     VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `create_time`         BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`         BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`         VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`         VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '合同名称',
+    `customer_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
+    `owner`           VARCHAR(32)  NOT NULL COMMENT '合同负责人',
+    `amount`          DECIMAL(20, 10) COMMENT '金额',
+    `number`          VARCHAR(50)  NOT NULL COMMENT '编号',
+    `review_status`   VARCHAR(50) COMMENT '审核状态',
+    `archived_status` VARCHAR(50)  NOT NULL COMMENT '归档状态',
+    `status`          VARCHAR(50)  NOT NULL COMMENT '合同状态',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '合同'
 ENGINE = InnoDB
@@ -115,17 +115,17 @@ CREATE INDEX idx_number ON contract (number ASC);
 CREATE INDEX idx_organization_id ON contract (organization_id ASC);
 CREATE INDEX idx_review_status ON contract (review_status ASC);
 CREATE INDEX idx_archived_status ON contract (archived_status ASC);
-CREATE INDEX idx_voided_status ON contract (voided_status ASC);
+CREATE INDEX idx_status ON contract (status ASC);
 
 
 CREATE TABLE contract_field
 (
-    `id`                 VARCHAR(32)  NOT NULL COMMENT 'id',
-    `resource_id`        VARCHAR(32)  NOT NULL COMMENT '合同id',
-    `field_id`           VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
-    `field_value`        VARCHAR(255) NOT NULL COMMENT '自定义属性值',
-    `ref_sub_id`         VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
-    `row_id`             VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '合同id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
+    `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
     PRIMARY KEY (id)
 ) COMMENT = '合同自定义属性'
 ENGINE = InnoDB
@@ -153,54 +153,73 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_resource_id ON contract_field_blob (resource_id ASC);
 CREATE INDEX idx_ref_sub_id ON contract_field_blob (ref_sub_id ASC);
 
+
+CREATE TABLE contract_snapshot
+(
+    `id`             VARCHAR(32) NOT NULL COMMENT 'id',
+    `contract_id`    VARCHAR(32) NOT NULL COMMENT '合同id',
+    `contract_prop`  TEXT(255) COMMENT '表单属性快照',
+    `contract_value` TEXT(255) COMMENT '表单值快照',
+    PRIMARY KEY (id)
+) COMMENT = '合同快照'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
+CREATE INDEX idx_contract_id ON contract_snapshot (contract_id ASC);
+
 -- 回款计划
-CREATE TABLE contract_payment_plan(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `contract_id` VARCHAR(32) NOT NULL   COMMENT '合同ID' ,
-    `owner` VARCHAR(32) NOT NULL   COMMENT '负责人' ,
-    `plan_status` VARCHAR(32) NOT NULL   COMMENT '计划状态' ,
-    `plan_amount` DECIMAL(20,10)    COMMENT '计划回款金额' ,
-    `plan_end_time` BIGINT    COMMENT '计划回款时间' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE contract_payment_plan
+(
+    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `contract_id`     VARCHAR(32) NOT NULL COMMENT '合同ID',
+    `owner`           VARCHAR(32) NOT NULL COMMENT '负责人',
+    `plan_status`     VARCHAR(32) NOT NULL COMMENT '计划状态',
+    `plan_amount`     DECIMAL(20, 10) COMMENT '计划回款金额',
+    `plan_end_time`   BIGINT COMMENT '计划回款时间',
+    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
+    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '合同回款计划'
+) COMMENT = '合同回款计划'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_contract_id ON contract_payment_plan(contract_id ASC);
-CREATE INDEX idx_create_time ON contract_payment_plan(create_time ASC);
-CREATE INDEX idx_owner ON contract_payment_plan(owner ASC);
+CREATE INDEX idx_contract_id ON contract_payment_plan (contract_id ASC);
+CREATE INDEX idx_create_time ON contract_payment_plan (create_time ASC);
+CREATE INDEX idx_owner ON contract_payment_plan (owner ASC);
 
-CREATE TABLE contract_payment_plan_field(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `resource_id` VARCHAR(32) NOT NULL   COMMENT '回款计划id' ,
-    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值',
+CREATE TABLE contract_payment_plan_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '回款计划id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
-)  COMMENT = '回款计划自定义属性'
+) COMMENT = '回款计划自定义属性'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON contract_payment_plan_field(resource_id ASC);
+CREATE INDEX idx_resource_id ON contract_payment_plan_field (resource_id ASC);
 
-CREATE TABLE contract_payment_plan_field_blob(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `resource_id` VARCHAR(32) NOT NULL   COMMENT '回款计划id' ,
-    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-    `field_value` TEXT NOT NULL   COMMENT '自定义属性值' ,
+CREATE TABLE contract_payment_plan_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '回款计划id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
-)  COMMENT = '回款计划自定义属性大文本'
+) COMMENT = '回款计划自定义属性大文本'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON contract_payment_plan_field_blob(resource_id ASC);
+CREATE INDEX idx_resource_id ON contract_payment_plan_field_blob (resource_id ASC);
 
 
 -- set innodb lock wait timeout to default
