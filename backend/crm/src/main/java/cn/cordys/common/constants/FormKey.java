@@ -48,7 +48,11 @@ public enum FormKey {
 	/**
 	 * 报价单
 	 */
-	QUOTATION("quotation");
+	QUOTATION("quotation"),
+    /**
+     * 合同
+     */
+    CONTRACT("contract");
 
     private final String key;
 

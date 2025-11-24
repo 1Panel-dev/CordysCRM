@@ -32,8 +32,8 @@ public class Contract extends BaseModel {
     @Schema(description = "归档状态")
     private String archivedStatus;
 
-    @Schema(description = "作废状态")
-    private String voidedStatus;
+    @Schema(description = "合同状态")
+    private String status;
 
     @Schema(description = "组织id")
     private String organizationId;
