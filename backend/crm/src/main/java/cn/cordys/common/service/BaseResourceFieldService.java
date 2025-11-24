@@ -826,7 +826,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             saveModuleField(customer, orgId, userId, moduleFields, false);
         } else {
             updateModuleField(customer, orgId, userId, moduleFields, true);
-
         }
     }
 
@@ -888,7 +887,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         ).toList();
 
 
-        saveModuleField(resource, orgId, userId, addlist, false);
+        saveModuleField(resource, orgId, userId, addlist, update);
 
         updateData(updateFields, updateBlobFields);
     }
