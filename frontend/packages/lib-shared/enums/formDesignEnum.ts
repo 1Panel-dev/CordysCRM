@@ -20,6 +20,8 @@ export enum FormDesignKeyEnum {
   FOLLOW_RECORD = 'followRecord',
   CONTRACT = 'contract', // 合同
   CONTRACT_PAYMENT = 'contractPaymentPlan', // 回款
+  PRICE = 'price', // 价格表
+  OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户
@@ -27,7 +29,6 @@ export enum FormDesignKeyEnum {
   SEARCH_ADVANCED_PUBLIC = 'searchAdvancedPublic', // 公海
   SEARCH_ADVANCED_CLUE_POOL = 'searchAdvancedCluePool', // 线索池
   SEARCH_ADVANCED_OPPORTUNITY = 'searchAdvancedOpportunity', // 商机
-  OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
 }
 
 export enum FieldTypeEnum {

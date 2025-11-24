@@ -548,7 +548,7 @@ export const formulaDefaultFieldConfig: FormCreateField = {
 export const productTableDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.PRODUCT_TABLE,
-  icon: 'iconicon_link2',
+  icon: 'iconicon_table',
   name: 'crmFormDesign.productTable',
   fieldWidth: 1,
   showLabel: true,
@@ -558,12 +558,13 @@ export const productTableDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   subFields: [],
+  fixedColumn: 1,
 };
 
 export const priceTableDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.PRICE_TABLE,
-  icon: 'iconicon_link2',
+  icon: 'iconicon_table',
   name: 'crmFormDesign.priceTable',
   fieldWidth: 1,
   showLabel: true,
@@ -573,6 +574,7 @@ export const priceTableDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   subFields: [],
+  fixedColumn: 1,
 };
 
 export const advancedFields: FormCreateField[] = [
@@ -585,6 +587,8 @@ export const advancedFields: FormCreateField[] = [
   linkDefaultFieldConfig,
   fileDefaultFieldConfig,
   industryDefaultFieldConfig,
+  productTableDefaultFieldConfig,
+  priceTableDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -665,6 +669,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getOptFormConfig, // TODO:xinxinwu报价单 🏷
   [FormDesignKeyEnum.CONTRACT]: getContractFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
+  [FormDesignKeyEnum.PRICE]: () => Promise.resolve({} as FormDesignConfigDetailParams), // TODO: ba1
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -696,6 +701,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
   [FormDesignKeyEnum.CONTRACT]: addContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlan,
+  [FormDesignKeyEnum.PRICE]: () => Promise.resolve({}), // TODO: ba1
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -727,6 +733,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: async () => ({}), // TODO:xinxinwu报价单 🏷
   [FormDesignKeyEnum.CONTRACT]: updateContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlan,
+  [FormDesignKeyEnum.PRICE]: () => Promise.resolve({}), // TODO: ba1
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {

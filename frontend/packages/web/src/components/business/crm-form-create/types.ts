@@ -124,6 +124,7 @@ export interface FormCreateField {
   formula?: string; // 计算公式
   // 子表格
   subFields?: FormCreateField[];
+  fixedColumn?: number; // 固定列数
 }
 
 export interface AttachmentInfo {

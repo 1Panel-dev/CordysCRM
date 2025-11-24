@@ -195,4 +195,10 @@ export default {
   'crmFormDesign.tip.PLAN_TO_RECORD': '在进行计划转记录操作时，将计划的表单字段内容填充到记录表单字段',
   'crmFormDesign.productTable': '产品表格',
   'crmFormDesign.priceTable': '价格表格',
+  'crmFormDesign.sum': '汇总求和',
+  'crmFormDesign.fixedCol': '固定列',
+  'crmFormDesign.fixedColNum': '固定前',
+  'crmFormDesign.fixedCols': '列',
+  'crmFormDesign.subTableField': '表格字段',
+  'crmFormDesign.addSubField': '添加子字段',
 };

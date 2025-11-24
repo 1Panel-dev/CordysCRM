@@ -1,6 +1,8 @@
 <template>
   <n-scrollbar x-scrollable content-class="flex h-full !w-full bg-[var(--text-n9)]" content-style="min-width: 800px">
-    <div class="crm-form-design--left"><fieldComponents :field-list="list" @select="handleFieldSelect" /></div>
+    <div class="crm-form-design--left">
+      <fieldComponents :field-list="list" :formKey="formKey" @select="handleFieldSelect" />
+    </div>
     <div class="crm-form-design--center">
       <div class="crm-form-design--center-content">
         <formComposition ref="formCompositionRef" v-model:list="list" v-model:field="field" :form-config="formConfig" />

@@ -2,10 +2,10 @@
   <n-form-item :label="fieldConfig.name" :show-label="fieldConfig.showLabel" :path="props.path">
     <div v-if="fieldConfig.description" class="crm-form-create-item-desc" v-html="fieldConfig.description"></div>
     <div class="flex w-full border border-[var(--text-n8)]">
-      <span class="inline-flex h-[96px] w-[40px] flex-col items-center py-[12px]">
-        <div class="h-[30px] px-[4px]"></div>
+      <span class="inline-flex h-[100px] w-[40px] flex-col items-center">
+        <div class="h-[42.5px]"></div>
         <n-divider class="!my-0" />
-        <div class="h-[30px] px-[4px] py-[16px]">1</div>
+        <div class="px-[16px] py-[12px]">1</div>
       </span>
       <VueDraggable
         v-if="fieldConfig.subFields"
@@ -21,13 +21,20 @@
         class="crm-form-design--composition-drag-wrapper crm-form-design-subtable-wrapper"
         @start="onStart"
       >
-        <template v-for="item in fieldConfig.subFields" :key="item.id">
+        <template v-for="(item, index) in fieldConfig.subFields" :key="item.id">
           <div
             v-if="item.show !== false"
             :id="item.id"
             class="crm-form-design--composition-item--subtable"
-            :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--subtable--active' : ''"
-            :style="{ width: `${item.fieldWidth * 100}%` }"
+            :class="[
+              activeItem?.id === item.id ? 'crm-form-design--composition-item--subtable--active' : '',
+              fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? '!sticky z-10' : '',
+            ]"
+            :style="{
+              left: fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? `${index * 160}px` : '',
+              boxShadow:
+                fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? '3px 0 6px rgba(0,0,0,0.12)' : '',
+            }"
             @click.stop="() => handleItemClick(item)"
           >
             <div class="crm-form-design--composition-item-tools--subtable">
@@ -65,6 +72,11 @@
           </div>
         </template>
       </VueDraggable>
+    </div>
+    <div class="flex w-full items-center border border-t-0 border-[var(--text-n8)]">
+      <div class="flex items-center px-[16px] py-[12px]">
+        {{ t('crmFormDesign.sum') }}
+      </div>
     </div>
   </n-form-item>
 </template>
@@ -112,8 +124,8 @@
     if (type === FieldTypeEnum.INPUT) {
       return CrmFormCreateComponents.basicComponents.singleText;
     }
-    if (type === FieldTypeEnum.TEXTAREA) {
-      return CrmFormCreateComponents.basicComponents.textarea;
+    if (type === FieldTypeEnum.SELECT || type === FieldTypeEnum.SELECT_MULTIPLE) {
+      return CrmFormCreateComponents.basicComponents.select;
     }
     if (type === FieldTypeEnum.INPUT_NUMBER) {
       return CrmFormCreateComponents.basicComponents.inputNumber;
@@ -164,18 +176,30 @@
 </script>
 
 <style lang="less">
+  .crm-form-design--composition-item--active {
+    .crm-form-design--composition-item--subtable {
+      background-color: var(--primary-7) !important;
+    }
+  }
+  .crm-form-design--composition-item:hover {
+    .crm-form-design--composition-item--subtable {
+      background-color: var(--text-n9) !important;
+    }
+  }
   .crm-form-design-subtable-wrapper {
     .crm-scroll-bar();
-    @apply !flex-nowrap overflow-x-auto;
+    @apply w-full !flex-nowrap overflow-x-auto overflow-y-hidden;
 
-    min-height: 98px;
+    height: 100px !important;
     .crm-form-design--composition-item--subtable {
       @apply relative;
 
       padding: 0 !important;
-      width: 150px !important;
+      flex: 0 0 160px;
+      width: 160px !important;
       height: 94px !important;
       border: 1px solid transparent;
+      background-color: var(--text-n10);
       .crm-form-design--composition-item-tools--subtable {
         @apply invisible absolute z-20 flex items-center;
 
@@ -196,7 +220,8 @@
         }
         .n-form-item-blank {
           height: 46px;
-          .n-input {
+          .n-input,
+          .n-select {
             margin: 8px 4px;
           }
         }
@@ -216,8 +241,12 @@
       @apply visible;
     }
     .crm-form-design--composition-item-ghost {
-      width: 150px !important;
+      width: 160px !important;
+      flex: 0 0 160px;
       height: 94px !important;
+    }
+    .n-input {
+      width: 150px;
     }
   }
 </style>
