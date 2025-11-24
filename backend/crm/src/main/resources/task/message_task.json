@@ -7,65 +7,65 @@
       {
         "event": "CUSTOMER_ADD",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_CONCAT_ADD",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_COLLABORATION_ADD",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_TRANSFERRED_CUSTOMER",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_MOVED_HIGH_SEAS",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_DELETED",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "HIGH_SEAS_CUSTOMER_DISTRIBUTED",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CUSTOMER_FOLLOW_UP_PLAN_DUE",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   },
@@ -77,65 +77,65 @@
       {
         "event": "CLUE_AUTOMATIC_MOVE_POOL",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_MOVED_POOL",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_CONVERT_CUSTOMER",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_CONVERT_BUSINESS",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "TRANSFER_CLUE",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_DELETED",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_DISTRIBUTED",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_IMPORT",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "CLUE_FOLLOW_UP_PLAN_DUE",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   },
@@ -147,37 +147,44 @@
       {
         "event": "BUSINESS_DELETED",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "BUSINESS_TRANSFER",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "BUSINESS_IMPORT",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "BUSINESS_FOLLOW_UP_PLAN_DUE",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       },
       {
         "event": "BUSINESS_QUOTATION_APPROVAL",
         "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false,
-        "weComEnable":false
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "BUSINESS_QUOTATION_DELETED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   }

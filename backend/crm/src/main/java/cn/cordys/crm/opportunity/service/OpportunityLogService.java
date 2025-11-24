@@ -92,6 +92,16 @@ public class OpportunityLogService extends BaseModuleLogService {
                     differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
                 }
             }
+
+            if (Strings.CS.equals(differ.getColumn(), "approvalStatus")) {
+                differ.setColumnName(Translator.get("log.approvalStatus"));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get("log.approvalStatus." + differ.getOldValueName().toString()));
+                }
+                if (differ.getNewValue() != null) {
+                    differ.setNewValueName(Translator.get("log.approvalStatus." + differ.getNewValueName().toString()));
+                }
+            }
         }
         return differenceDTOS;
     }

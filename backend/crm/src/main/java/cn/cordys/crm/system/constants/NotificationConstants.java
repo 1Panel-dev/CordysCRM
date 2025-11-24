@@ -103,6 +103,9 @@ public class NotificationConstants {
 
         @Schema(description = "message.business_quotation_approval")
         String BUSINESS_QUOTATION_APPROVAL = "BUSINESS_QUOTATION_APPROVAL";
+
+        @Schema(description = "message.business_quotation_deleted")
+        String BUSINESS_QUOTATION_DELETED = "BUSINESS_QUOTATION_DELETED";
     }
 
     public interface RelatedUser {
@@ -198,9 +201,13 @@ public class NotificationConstants {
         @Schema(description = "message.business_follow_up_plan_due_text")
         String BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT = "BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT";
 
-        //请注意！您创建的${businessName}商机跟进计划，已到预定时间，请及时跟进！
+        //${OPERATOR}审批了${name}报价单，审批结果为${state}
         @Schema(description = "message.business_quotation_approval_text")
         String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
+
+        //${OPERATOR}删除了${name}报价单
+        @Schema(description = "message.business_quotation_deleted_text")
+        String BUSINESS_QUOTATION_DELETED_TEXT = "BUSINESS_QUOTATION_DELETED_TEXT";
     }
 
 
