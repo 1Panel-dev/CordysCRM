@@ -2,6 +2,7 @@ import { showFailToast } from 'vant';
 
 import createAxios from '@lib/shared/api/http';
 import useClueApi from '@lib/shared/api/modules/clue';
+import useContractApi from '@lib/shared/api/modules/contract';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useFollowApi from '@lib/shared/api/modules/follow';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
@@ -12,7 +13,6 @@ import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
-import useContractApi from '@lib/shared/api/modules/contract';
 
 import checkStatus from '../http/checkStatus';
 
@@ -87,6 +87,15 @@ export const {
   advancedSearchOptPage,
   globalSearchOptPage,
   getOpportunityStageConfig,
+  getQuotationList,
+  addQuotation,
+  updateQuotation,
+  getQuotationDetail,
+  getQuotationFormConfig,
+  deleteQuotation,
+  approvalQuotation,
+  voidQuotation,
+  revokeQuotation,
 } = opportunityApi;
 
 export const {

@@ -151,6 +151,15 @@ export const {
   updateQuotationView,
   enableQuotationView,
   dragQuotationView,
+  getQuotationList,
+  addQuotation,
+  updateQuotation,
+  getQuotationDetail,
+  getQuotationFormConfig,
+  deleteQuotation,
+  approvalQuotation,
+  voidQuotation,
+  revokeQuotation,
 } = opportunityApi;
 
 export const {
