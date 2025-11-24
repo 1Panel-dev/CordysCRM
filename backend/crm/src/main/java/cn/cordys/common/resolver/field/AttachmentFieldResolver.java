@@ -11,12 +11,12 @@ public class AttachmentFieldResolver extends AbstractModuleFieldResolver<Attachm
     }
 
     @Override
-    public String parse2String(AttachmentField attachmentField, Object value) {
+    public String convertToString(AttachmentField attachmentField, Object value) {
         return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(AttachmentField attachmentField, String value) {
+    public Object convertToValue(AttachmentField attachmentField, String value) {
         return parse2Array(value);
     }
 }

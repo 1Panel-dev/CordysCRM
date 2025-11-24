@@ -26,17 +26,17 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
     }
 
     @Override
-    public String parse2String(DepartmentMultipleField departmentField, Object value) {
+    public String convertToString(DepartmentMultipleField departmentField, Object value) {
         return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(DepartmentMultipleField departmentField, String value) {
+    public Object convertToValue(DepartmentMultipleField departmentField, String value) {
         return parse2Array(value);
     }
 
     @Override
-    public Object trans2Value(DepartmentMultipleField departmentMultipleField, String value) {
+    public Object transformToValue(DepartmentMultipleField departmentMultipleField, String value) {
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
@@ -52,7 +52,7 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
     }
 
     @Override
-    public Object text2Value(DepartmentMultipleField field, String text) {
+    public Object textToValue(DepartmentMultipleField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }

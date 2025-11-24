@@ -25,17 +25,17 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     }
 
     @Override
-    public String parse2String(SelectField selectField, Object value) {
+    public String convertToString(SelectField selectField, Object value) {
         return getStringValue(value);
     }
 
     @Override
-    public Object parse2Value(SelectField selectField, String value) {
-        return super.parse2Value(selectField, value);
+    public Object convertToValue(SelectField selectField, String value) {
+        return super.convertToValue(selectField, value);
     }
 
     @Override
-    public Object trans2Value(SelectField selectField, String value) {
+    public Object transformToValue(SelectField selectField, String value) {
         return selectField.getOptions().stream()
                 .filter(option -> Strings.CI.equals(option.getValue(), value))
                 .findFirst()
@@ -44,7 +44,7 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     }
 
     @Override
-    public Object text2Value(SelectField field, String text) {
+    public Object textToValue(SelectField field, String text) {
         return field.getOptions().stream()
                 .filter(option -> Strings.CI.equals(option.getLabel(), text))
                 .findFirst()

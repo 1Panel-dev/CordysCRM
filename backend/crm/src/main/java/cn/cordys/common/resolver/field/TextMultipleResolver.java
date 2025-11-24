@@ -23,18 +23,18 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
     }
 
     @Override
-    public String parse2String(InputMultipleField inputMultipleField, Object value) {
+    public String convertToString(InputMultipleField inputMultipleField, Object value) {
         return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(InputMultipleField inputMultipleField, String value) {
+    public Object convertToValue(InputMultipleField inputMultipleField, String value) {
         return parse2Array(value);
     }
 
 
     @Override
-    public Object trans2Value(InputMultipleField inputMultipleField, String value) {
+    public Object transformToValue(InputMultipleField inputMultipleField, String value) {
         if (StringUtils.isEmpty(value)) {
             return StringUtils.EMPTY;
         }
@@ -42,7 +42,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
     }
 
     @Override
-    public Object text2Value(InputMultipleField field, String text) {
+    public Object textToValue(InputMultipleField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, ARR_SQUARE)) {
             return null;
         }

@@ -31,18 +31,18 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
     }
 
     @Override
-    public String parse2String(MemberMultipleField memberField, Object value) {
+    public String convertToString(MemberMultipleField memberField, Object value) {
         return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(MemberMultipleField memberField, String value) {
+    public Object convertToValue(MemberMultipleField memberField, String value) {
         return parse2Array(value);
     }
 
 
     @Override
-    public Object trans2Value(MemberMultipleField memberMultipleField, String value) {
+    public Object transformToValue(MemberMultipleField memberMultipleField, String value) {
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
@@ -58,7 +58,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
     }
 
     @Override
-    public Object text2Value(MemberMultipleField field, String text) {
+    public Object textToValue(MemberMultipleField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }

@@ -33,12 +33,12 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
     }
 
     @Override
-    public Object parse2Value(DateTimeField dateTimeField, String value) {
+    public Object convertToValue(DateTimeField dateTimeField, String value) {
         return parse2Long(value);
     }
 
     @Override
-    public Object trans2Value(DateTimeField dateTimeField, String value) {
+    public Object transformToValue(DateTimeField dateTimeField, String value) {
         if (Strings.CI.equals(dateTimeField.getDateType(), DATE)) {
             return TimeUtils.getDataStr(Long.valueOf(value));
         }
@@ -52,7 +52,7 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
     }
 
     @Override
-    public Object text2Value(DateTimeField field, String text) {
+    public Object textToValue(DateTimeField field, String text) {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d H:m:s"))
                 .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d H:m:s"))

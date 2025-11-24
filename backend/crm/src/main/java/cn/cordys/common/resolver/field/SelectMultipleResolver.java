@@ -27,17 +27,17 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
     }
 
     @Override
-    public String parse2String(SelectMultipleField selectField, Object value) {
+    public String convertToString(SelectMultipleField selectField, Object value) {
         return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(SelectMultipleField selectField, String value) {
+    public Object convertToValue(SelectMultipleField selectField, String value) {
         return parse2Array(value);
     }
 
     @Override
-    public Object trans2Value(SelectMultipleField selectMultipleField, String value) {
+    public Object transformToValue(SelectMultipleField selectMultipleField, String value) {
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
@@ -63,7 +63,7 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
     }
 
     @Override
-    public Object text2Value(SelectMultipleField field, String text) {
+    public Object textToValue(SelectMultipleField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }

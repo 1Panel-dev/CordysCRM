@@ -42,7 +42,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 
 
     @Override
-    public Object trans2Value(DatasourceField datasourceField, String value) {
+    public Object transformToValue(DatasourceField datasourceField, String value) {
         if (StringUtils.isBlank(value)) {
             return StringUtils.EMPTY;
         }
@@ -71,7 +71,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
     }
 
     @Override
-    public Object text2Value(DatasourceField field, String text) {
+    public Object textToValue(DatasourceField field, String text) {
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }

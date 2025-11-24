@@ -35,7 +35,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      *
      * @return
      */
-    public Object parse2Value(T selectField, String value) {
+    public Object convertToValue(T selectField, String value) {
         return value;
     }
 
@@ -46,7 +46,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      *
      * @return
      */
-    public Object trans2Value(T selectField, String value) {
+    public Object transformToValue(T selectField, String value) {
         return value;
     }
 
@@ -58,7 +58,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      *
      * @return 字段值
      */
-    public Object text2Value(T field, String text) {
+    public Object textToValue(T field, String text) {
         return text;
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      *
      * @return
      */
-    public String parse2String(T selectField, Object value) {
+    public String convertToString(T selectField, Object value) {
         return value == null ? null : value.toString();
     }
 
@@ -86,8 +86,8 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         if (value == null) {
             return;
         }
-        if (value instanceof List) {
-            ((List) value).forEach(v -> validateString(name, v));
+        if (value instanceof List<?> list) {
+            list.forEach(v -> validateString(name, v));
         } else {
             throwValidateException(name);
         }

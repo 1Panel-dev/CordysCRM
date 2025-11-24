@@ -12,7 +12,7 @@ public class PhoneResolver extends AbstractModuleFieldResolver<PhoneField> {
     }
 
     @Override
-    public Object text2Value(PhoneField field, String text) {
+    public Object textToValue(PhoneField field, String text) {
         if (StringUtils.isEmpty(text)) {
             return text;
         }

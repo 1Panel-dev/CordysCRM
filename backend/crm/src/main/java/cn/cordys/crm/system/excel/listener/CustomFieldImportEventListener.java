@@ -296,7 +296,7 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
         }
         try {
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-            return customFieldResolver.text2Value(field, text);
+            return customFieldResolver.textToValue(field, text);
         } catch (Exception e) {
             LogUtils.error(String.format("parse field %s error, %s cannot be transfer, error: %s", field.getName(), text, e.getMessage()));
         }

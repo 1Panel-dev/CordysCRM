@@ -25,18 +25,18 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
     }
 
     @Override
-    public String parse2String(DepartmentField selectField, Object value) {
+    public String convertToString(DepartmentField selectField, Object value) {
         return getStringValue(value);
     }
 
     @Override
-    public Object parse2Value(DepartmentField selectField, String value) {
+    public Object convertToValue(DepartmentField selectField, String value) {
         return getStringValue(value);
     }
 
 
     @Override
-    public Object trans2Value(DepartmentField departmentField, String value) {
+    public Object transformToValue(DepartmentField departmentField, String value) {
         if (StringUtils.isBlank(value)) {
             return StringUtils.EMPTY;
         }
@@ -50,7 +50,7 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
     }
 
     @Override
-    public Object text2Value(DepartmentField field, String text) {
+    public Object textToValue(DepartmentField field, String text) {
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }

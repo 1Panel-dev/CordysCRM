@@ -157,7 +157,7 @@ public abstract class BaseExportService {
             // 获取字段解析器
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
             // 将数据库中的字符串值,转换为对应的对象值
-            Object objectValue = customFieldResolver.trans2Value(fieldConfig, value instanceof List ? JSON.toJSONString(value) : value.toString());
+            Object objectValue = customFieldResolver.transformToValue(fieldConfig, value instanceof List ? JSON.toJSONString(value) : value.toString());
             dataList.add(objectValue);
         });
     }
