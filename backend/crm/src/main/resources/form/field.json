@@ -1214,5 +1214,58 @@
         }
       ]
     }
+  ],
+  "contract": [
+    {
+      "name": "基本信息",
+      "internalKey": "contractBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "合同",
+      "internalKey": "contractName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"},
+        {"key":  "unique"}
+      ]
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "contractOpportunity",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {"key":  "required"}
+      ]
+    }
   ]
 }

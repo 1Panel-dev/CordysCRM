@@ -125,4 +125,6 @@ public class LogModule {
      */
     public static final String DASHBOARD = "DASHBOARD";
     public static final String AGENT = "AGENT";
+
+    public static final String CONTRACT_INDEX = "CONTRACT_INDEX";
 }
