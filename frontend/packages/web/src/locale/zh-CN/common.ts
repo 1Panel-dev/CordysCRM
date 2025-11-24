@@ -343,4 +343,7 @@ export default {
   'common.voidSuccess': '作废成功',
   'common.cancelVoid': '取消作废',
   'common.review': '提审',
+  'common.revokeSuccess': '撤销成功',
+  'common.approvedSuccess': '审批通过',
+  'common.unApprovedSuccess': '审批不通过',
 };

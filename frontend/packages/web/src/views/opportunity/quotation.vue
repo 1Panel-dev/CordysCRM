@@ -1,7 +1,7 @@
 <template>
   <CrmCard hide-footer no-content-padding>
     <div class="h-full px-[16px] pt-[16px]">
-      <quotationTable :formKey="FormDesignKeyEnum.BUSINESS" />
+      <quotationTable :formKey="FormDesignKeyEnum.OPPORTUNITY_QUOTATION" />
     </div>
   </CrmCard>
 </template>

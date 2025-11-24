@@ -36,7 +36,7 @@ export const AddOpportunityStageUrl = '/opportunity/stage/add'; // 商机阶段�
 export const GetOpportunityStageConfigUrl = '/opportunity/stage/get'; // 获取商机阶段配置
 export const DeleteOpportunityStageUrl = '/opportunity/stage/delete'; // 删除商机阶段
 export const GenerateOpportunityChartUrl = '/opportunity/chart'; // 生成商机视图
-export const GetQuotationTabUrl = '/opportunity/tab'; // 报价tab显隐 todo xinxinwu /opportunity/quotation/tab
+export const GetQuotationTabUrl = '/opportunity/quotation/tab'; // 报价tab显隐
 
 // 商机视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';
@@ -57,6 +57,17 @@ export const DeleteQuotationViewUrl = '/opportunity/quotation/view/delete';
 export const FixedQuotationViewUrl = '/opportunity/quotation/view/fixed';
 export const EnableQuotationViewUrl = '/opportunity/quotation/view/enable';
 export const DragQuotationViewUrl = '/opportunity/quotation/view/edit/pos';
+
+// 报价单
+export const QuotationPageUrl = '/opportunity/quotation/page'; 
+export const AddQuotationUrl = '/opportunity/quotation/add';
+export const UpdateQuotationUrl = '/opportunity/quotation/update'; 
+export const GetQuotationFormConfigUrl = '/opportunity/quotation/module/form';
+export const GetQuotationDetailUrl = '/opportunity/quotation/get'; 
+export const ApprovalQuotationUrl = '/opportunity/quotation/approve'; 
+export const VoidQuotationUrl = '/opportunity/quotation/voided'; 
+export const DeleteQuotationUrl = '/opportunity/quotation/delete'; 
+export const RevokeQuotationUrl = '/opportunity/quotation/revoke'; 
 
 // 导入
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';

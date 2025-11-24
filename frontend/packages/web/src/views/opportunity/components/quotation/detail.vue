@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="'title'">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <quotationStatus :status="props.detail.approvalStatus" />
+        <quotationStatus v-if="props.detail?.approvalStatus" :status="props.detail?.approvalStatus" />
       </div>
     </template>
     <template #titleRight>
@@ -57,6 +57,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import { QuotationItem } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -65,6 +66,7 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import quotationStatus from './quotationStatus.vue';
 
+  import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -77,18 +79,19 @@
 
   const props = defineProps<{
     refreshId?: number;
-    detail: any;
+    detail?: Partial<QuotationItem>;
   }>();
 
   const emit = defineEmits<{
     (e: 'edit', sourceId: string): void;
+    (e: 'refresh'): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const sourceId = computed(() => props.detail.id ?? '');
+  const sourceId = computed(() => props.detail?.id ?? '');
 
   const title = ref('');
   function handleInit(type?: CollaborationType, name?: string) {
@@ -98,7 +101,7 @@
   const isShowApproval = computed(
     () =>
       hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL']) &&
-      props.detail.approvalStatus === QuotationStatusEnum.APPROVING
+      props.detail?.approvalStatus === QuotationStatusEnum.APPROVING
   );
 
   function handleDownload() {}
@@ -148,10 +151,26 @@
     },
   ];
 
-  function handleApproval(approval = false) {}
+  async function handleApproval(approval = false) {
+    const approvalStatus = approval ? QuotationStatusEnum.APPROVED : QuotationStatusEnum.UNAPPROVED;
+    try {
+      await approvalQuotation({
+        id: sourceId.value,
+        name: props.detail?.name ?? '',
+        approvalStatus,
+        opportunityId: props.detail?.opportunityId ?? '',
+      });
+      Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
+      visible.value = false;
+      emit('refresh');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
 
   function handleVoid() {
-    const { hasContract, name } = props.detail;
+    const { hasContract, name } = props.detail ?? {};
     const content = hasContract
       ? t('opportunity.quotation.invalidHasContractContentTip')
       : t('opportunity.quotation.invalidContentTip');
@@ -168,8 +187,10 @@
           return;
         }
         try {
-          // TODO:  xinxinwu 🏷
+          await voidQuotation(sourceId.value);
           Message.success(t('common.voidSuccess'));
+          visible.value = false;
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -178,10 +199,20 @@
     });
   }
 
-  function handleRevoke() {}
+  async function handleRevoke() {
+    try {
+      await revokeQuotation(sourceId.value);
+      Message.success(t('common.revokeSuccess'));
+      visible.value = false;
+      emit('refresh');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
 
   function handleDelete() {
-    const { hasContract, name } = props.detail;
+    const { hasContract, name } = props.detail ?? {};
     const content = hasContract
       ? t('opportunity.quotation.deleteHasContractContentTip')
       : t('opportunity.quotation.deleteContentTip');
@@ -198,8 +229,10 @@
           return;
         }
         try {
-          // TODO:  xinxinwu 🏷
+          await deleteQuotation(sourceId.value);
           Message.success(t('common.deleteSuccess'));
+          visible.value = false;
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -237,7 +270,7 @@
   }
 
   const buttonList = computed<ActionsItem[]>(() => {
-    const { approvalStatus } = props.detail;
+    const { approvalStatus } = props.detail ?? {};
     switch (approvalStatus) {
       case QuotationStatusEnum.APPROVING:
         return isShowApproval.value ? commonActions.filter((item) => ['pass', 'unPass'].includes(item.key)) : [];
@@ -256,7 +289,7 @@
   const buttonMoreList = computed(() => {
     const allActions = [...commonActions, ...moreActions, ...deleteActions];
     const commonActionsKeys = ['voided', 'delete'];
-    const { approvalStatus, createUser } = props.detail;
+    const { approvalStatus, createUser } = props.detail ?? {};
     const getActions = (keys: string[]) => allActions.filter((e) => keys.includes(e.key));
     switch (approvalStatus) {
       case QuotationStatusEnum.APPROVED:

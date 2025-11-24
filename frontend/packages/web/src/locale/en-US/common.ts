@@ -333,4 +333,7 @@ export default {
   'common.voidSuccess': 'Void success',
   'common.cancelVoid': 'Cancel Void',
   'common.review': 'Review',
+  'common.revokeSuccess': 'Revoke success',
+  'common.approvedSuccess': 'Approval passed',
+  'common.unApprovedSuccess': 'Approval not passed',
 };

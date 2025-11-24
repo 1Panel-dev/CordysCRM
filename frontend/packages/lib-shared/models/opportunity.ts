@@ -1,3 +1,4 @@
+import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import type { TableQueryParams } from './common';
 import { ModuleField } from '@lib/shared/models/customer';
 
@@ -114,3 +115,45 @@ export interface OpportunityStageConfig {
   endRollBack: boolean;
   stageHasData: boolean;
 }
+
+export interface QuotationQueryParams extends TableQueryParams {
+  board?: boolean; // 是否是看板模式
+}
+
+export interface QuotationItem {
+  id: string; 
+  name: string;
+  approvalStatus: QuotationStatusEnum;
+  hasContract: boolean;
+  opportunityId: string;
+  opportunityName: string;
+  amount: number;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  createUserName: string;
+  updateUserName: string;
+  moduleFields: ModuleField[]; 
+}
+
+export interface SaveQuotationParams {
+  name: string;
+  opportunityId: string;
+  amount: number;
+  moduleFields: ModuleField[]; // 自定义字段
+}
+
+export interface UpdateQuotationParams extends SaveQuotationParams {
+  id: string;
+  approvalStatus: QuotationStatusEnum;
+}
+
+export interface ApproveQuotation { 
+  id: string;
+  name: string;
+  opportunityId: string;
+  approvalStatus: QuotationStatusEnum;
+}
+
+

@@ -58,6 +58,15 @@ import {
   EnableQuotationViewUrl,
   DragQuotationViewUrl,
   GetQuotationViewDetailUrl,
+  QuotationPageUrl,
+  AddQuotationUrl,
+  UpdateQuotationUrl,
+  GetQuotationDetailUrl,
+  GetQuotationFormConfigUrl,
+  ApprovalQuotationUrl,
+  VoidQuotationUrl,
+  DeleteQuotationUrl,
+  RevokeQuotationUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -84,15 +93,20 @@ import type {
 } from '@lib/shared/models/customer';
 import type {
   AddOpportunityStageParams,
+  ApproveQuotation,
   OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
   OpportunityPageQueryParams,
   OpportunityStageConfig,
+  QuotationItem,
+  QuotationQueryParams,
   SaveOpportunityParams,
+  SaveQuotationParams,
   UpdateOpportunityParams,
   UpdateOpportunityStageParams,
   UpdateOpportunityStageRollbackParams,
+  UpdateQuotationParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
@@ -373,7 +387,54 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function dragQuotationView(data: TableDraggedParams) {
-    return CDR.post({ url: DragBusinessViewUrl, data });
+    return CDR.post({ url: DragQuotationViewUrl, data });
+  }
+
+
+  // 报价单
+  // 报价列表
+  function getQuotationList(data: QuotationQueryParams) {
+    return CDR.post<CommonList<QuotationItem>>({ url: QuotationPageUrl, data });
+  }
+
+  // 添加报价
+  function addQuotation(data: SaveQuotationParams) {
+    return CDR.post({ url: AddQuotationUrl, data });
+  }
+
+  // 更新报价
+  function updateQuotation(data: UpdateQuotationParams) {
+    return CDR.post({ url: UpdateQuotationUrl, data });
+  }
+
+  // 报价详情
+  function getQuotationDetail(id: string) {
+    return CDR.get<QuotationItem>({ url: `${GetQuotationDetailUrl}/${id}` });
+  }
+
+  // 获取报价表单配置
+  function getQuotationFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetQuotationFormConfigUrl });
+  }
+
+  // 删除报价
+  function deleteQuotation(id: string) {
+    return CDR.get({ url: `${DeleteQuotationUrl}/${id}` });
+  }
+
+   // 作废报价
+  function voidQuotation(id: string) {
+    return CDR.get({ url: `${VoidQuotationUrl}/${id}` });
+  }
+
+    // 审批报价
+  function approvalQuotation(data: ApproveQuotation) {
+    return CDR.post({ url: ApprovalQuotationUrl,data });
+  }
+
+    // 撤销报价
+  function revokeQuotation(id: string) {
+    return CDR.get({ url: `${RevokeQuotationUrl}/${id}` });
   }
 
   return {
@@ -435,5 +496,14 @@ export default function useProductApi(CDR: CordysAxios) {
     updateQuotationView,
     enableQuotationView,
     dragQuotationView,
+    getQuotationList,
+    addQuotation,
+    updateQuotation,
+    getQuotationDetail,
+    getQuotationFormConfig,
+    deleteQuotation,
+    approvalQuotation,
+    voidQuotation,
+    revokeQuotation,
   };
 }

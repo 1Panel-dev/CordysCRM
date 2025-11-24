@@ -50,6 +50,17 @@
     :detail="activeRow"
     :refresh-id="tableRefreshId"
     @edit="handleEdit"
+    @refresh="handleRefresh"
+  />
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="activeFormKey"
+    :source-id="activeSourceId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="initialSourceName"
+    :other-save-params="otherSaveParams"
+    :link-form-key="FormDesignKeyEnum.CONTRACT"
+    @saved="searchData"
   />
 </template>
 
@@ -61,6 +72,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
+  import { QuotationItem } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -76,6 +88,7 @@
   import detailDrawer from './detail.vue';
   import quotationStatus from './quotationStatus.vue';
 
+  import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -98,6 +111,12 @@
   }>();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const formCreateDrawerVisible = ref(false);
+  const activeSourceId = ref('');
+  const initialSourceName = ref('');
+  const needInitDetail = ref(false);
+  const activeFormKey = ref(FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
+
   const activeTab = ref();
   const keyword = ref('');
   const activeQuotationId = ref('');
@@ -161,12 +180,26 @@
     }
   }
 
+  const otherSaveParams = ref({
+    type: 'QUOTATION',
+    id: '',
+  });
+
   async function handleCreate() {
-    //
+    needInitDetail.value = false;
+    activeFormKey.value = FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+    activeSourceId.value = '';
+    formCreateDrawerVisible.value = true;
   }
 
-  function handleEdit(id: string) {}
-  function handleVoid(row: any) {
+  function handleEdit(id: string) {
+    activeFormKey.value = FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    otherSaveParams.value.id = id;
+    formCreateDrawerVisible.value = true;
+  }
+  function handleVoid(row: QuotationItem) {
     const { hasContract } = row;
     const content = hasContract
       ? t('opportunity.quotation.invalidHasContractContentTip')
@@ -184,7 +217,7 @@
           return;
         }
         try {
-          // TODO:  xinxinwu 🏷
+          await voidQuotation(row.id);
           Message.success(t('common.voidSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -196,8 +229,8 @@
   }
 
   const showDetailDrawer = ref(false);
-  const activeRow = ref<any>();
-  function handleDelete(row: any) {
+  const activeRow = ref<Partial<QuotationItem>>();
+  function handleDelete(row: QuotationItem) {
     const { hasContract } = row;
     const content = hasContract
       ? t('opportunity.quotation.deleteHasContractContentTip')
@@ -215,7 +248,7 @@
           return;
         }
         try {
-          // TODO:  xinxinwu 🏷
+          await deleteQuotation(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -226,9 +259,18 @@
     });
   }
 
-  function handleRevoke(row: any) {}
+  async function handleRevoke(row: QuotationItem) {
+    try {
+      await revokeQuotation(row.id);
+      Message.success(t('common.revokeSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
 
-  function handleActionSelect(row: any, actionKey: string, done?: () => void) {
+  function handleActionSelect(row: QuotationItem, actionKey: string, done?: () => void) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
@@ -277,12 +319,12 @@
     },
   ];
 
-  function getOperationGroupList(row: any) {
+  function getOperationGroupList(row: QuotationItem) {
     const allGroups = [...groupList, ...moreGroupList];
     const getGroups = (keys: string[]) => allGroups.filter((e) => keys.includes(e.key));
     const commonGroups = ['voided', 'delete'];
 
-    switch (row.status) {
+    switch (row.approvalStatus) {
       case QuotationStatusEnum.APPROVED:
         return getGroups(['download', ...commonGroups]);
       case QuotationStatusEnum.UNAPPROVED:
@@ -300,15 +342,14 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
-    excludeFieldIds: ['customerId'],
-    containerClass: `.crm-opportunity-table-${props.formKey}`,
+    containerClass: `.crm-quotation-table-${props.formKey}`,
     operationColumn: props.readonly
       ? undefined
       : {
           key: 'operation',
           width: 200,
           fixed: 'right',
-          render: (row: any) =>
+          render: (row: QuotationItem) =>
             getOperationGroupList(row).length
               ? h(CrmOperationButton, {
                   groupList: getOperationGroupList(row),
@@ -317,7 +358,7 @@
               : '-',
         },
     specialRender: {
-      name: (row: any) => {
+      name: (row: QuotationItem) => {
         const createNameButton = () =>
           h(
             CrmTableButton,
@@ -336,7 +377,7 @@
           );
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
-      status: (row: any) =>
+      status: (row: QuotationItem) =>
         h(quotationStatus, {
           status: row.approvalStatus,
         }),
@@ -418,7 +459,7 @@
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       viewId: activeTab.value,
-      sourceId: props.sourceId,
+      opportunityId: props.sourceId,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -445,7 +486,7 @@
         setLoadListParams({
           keyword: keyword.value,
           viewId: activeTab.value,
-          sourceId: props.sourceId,
+          opportunityId: props.sourceId,
         });
         crmTableRef.value?.setColumnSort(val);
       }

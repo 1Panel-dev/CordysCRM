@@ -46,6 +46,7 @@
             FieldTypeEnum.ATTACHMENT,
             FieldTypeEnum.PRICE_TABLE,
             FieldTypeEnum.PRODUCT_TABLE,
+            FieldTypeEnum.FORMULA,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
