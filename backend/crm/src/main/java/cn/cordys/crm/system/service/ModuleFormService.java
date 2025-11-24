@@ -63,6 +63,7 @@ public class ModuleFormService {
     public static final Map<String, String> TYPE_SOURCE_MAP;
     private static final String DEFAULT_ORGANIZATION_ID = "100001";
     private static final String CONTROL_RULES_KEY = "showControlRules";
+    private static final String SUB_FIELDS = "subFields";
 
     static {
         TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
@@ -132,23 +133,10 @@ public class ModuleFormService {
         ModuleFormConfigDTO config = getConfig(formKey, organizationId);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
-
-        // 获取特殊的业务字段
-        Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
-                collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
-
-        businessModuleFormConfig.setFields(
-                config.getFields()
-                        .stream()
-                        .peek(moduleFieldDTO -> {
-                            BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(moduleFieldDTO.getInternalKey());
-                            if (businessModuleFieldEnum != null) {
-                                // 设置特殊的业务字段 key
-                                moduleFieldDTO.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
-                                moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
-                            }
-                        })
-                        .toList()
+		// 设置业务字段参数
+        businessModuleFormConfig.setFields(config.getFields().stream()
+				.peek(this::setFieldBusinessParam)
+				.collect(Collectors.toList())
         );
         return businessModuleFormConfig;
     }
@@ -424,6 +412,25 @@ public class ModuleFormService {
         return extModuleFieldMapper.resolveIdsByName(TYPE_SOURCE_MAP.get(type), nameList);
     }
 
+	/**
+	 * 设置自定义字段业务参数
+	 * @param field 自定义字段
+	 */
+	public void setFieldBusinessParam(BaseField field) {
+		// 获取特殊的业务字段
+		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
+				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+		if (field instanceof SubField subField) {
+			subField.getSubFields().forEach(this::setFieldBusinessParam);
+		}
+		BusinessModuleField businessEnum = businessModuleFieldMap.get(field.getInternalKey());
+		if (businessEnum != null) {
+			// 设置特殊的业务字段 key
+			field.setBusinessKey(businessEnum.getBusinessKey());
+			field.setDisabledProps(businessEnum.getDisabledProps());
+		}
+	}
+
     /**
      * OptionProp转OptionDTO
      *
@@ -547,6 +554,11 @@ public class ModuleFormService {
                         });
                         initField.put(CONTROL_RULES_KEY, controlRules);
                     }
+					if (initField.containsKey(SUB_FIELDS)) {
+						List<BaseField> subFields = JSON.parseArray(JSON.toJSONString(initField.get(SUB_FIELDS)), BaseField.class);
+						subFields.forEach(subField -> subField.setId(IDGenerator.nextStr()));
+						initField.put(SUB_FIELDS, subFields);
+					}
                     ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
                     fieldBlob.setId(field.getId());
                     fieldBlob.setProp(JSON.toJSONString(initField));
@@ -556,6 +568,7 @@ public class ModuleFormService {
             moduleFieldMapper.batchInsert(fields);
             moduleFieldBlobMapper.batchInsert(fieldBlobs);
         } catch (Exception e) {
+			LogUtils.error("表单字段初始化失败: {}", e.getMessage());
             throw new GenericException("表单字段初始化失败", e);
         }
     }

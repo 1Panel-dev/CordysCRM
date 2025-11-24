@@ -1,5 +1,6 @@
 package cn.cordys.crm.product.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
@@ -10,6 +11,8 @@ import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +33,15 @@ public class ProductPriceController {
 
 	@Resource
 	private ProductPriceService priceService;
+	@Resource
+	private ModuleFormCacheService moduleFormCacheService;
+
+	@GetMapping("/module/form")
+	@RequiresPermissions(PermissionConstants.PRICE_READ)
+	@Operation(summary = "获取表单配置")
+	public ModuleFormConfigDTO getModuleFormConfig() {
+		return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
+	}
 
 	@PostMapping("/page")
 	@RequiresPermissions(PermissionConstants.PRICE_READ)
