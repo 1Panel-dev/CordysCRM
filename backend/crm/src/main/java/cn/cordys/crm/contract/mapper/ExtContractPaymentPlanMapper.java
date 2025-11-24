@@ -1,9 +1,9 @@
 package cn.cordys.crm.contract.mapper;
 
-import cn.cordys.crm.contract.dto.request.*;
-import cn.cordys.crm.contract.dto.response.*;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
+import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import org.apache.ibatis.annotations.Param;
-import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 
 import java.util.List;
 
@@ -13,10 +13,7 @@ import java.util.List;
  * @date 2025-11-21 15:11:29
  */
 public interface ExtContractPaymentPlanMapper {
+    List<ContractPaymentPlanListResponse> list(@Param("request") ContractPaymentPlanPageRequest request, @Param("userId") String userId,
+                                               @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    List<ContractPaymentPlanListResponse> list(@Param("request") ContractPaymentPlanPageRequest request, @Param("orgId") String orgId);
-
-    boolean checkAddExist(@Param("contractPaymentPlan") ContractPaymentPlan contractPaymentPlan);
-
-    boolean checkUpdateExist(@Param("contractPaymentPlan") ContractPaymentPlan ContractPaymentPlan);
 }
