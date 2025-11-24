@@ -19,6 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author song-cc-rock
+ */
 public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
     private final Map<String, BaseField> fieldMap;
@@ -68,7 +71,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 fieldLenLimit.put(field.getName(), 255);
             }
             if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-                fieldLenLimit.put(field.getName(), 1000);
+                fieldLenLimit.put(field.getName(), 3000);
             }
         });
         this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
