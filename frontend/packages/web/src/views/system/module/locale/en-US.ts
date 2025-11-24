@@ -108,4 +108,5 @@ export default {
   'module.contract': 'Contract',
   'module.formSettings': 'Form Settings',
   'module.paymentPlan': 'Payment Plan',
+  'module.priceTableFormSetting': 'Price Table Form Setting',
 };

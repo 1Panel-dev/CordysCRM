@@ -948,6 +948,41 @@
           {{ t('crmFormDesign.onlyFull') }}
         </n-tooltip>
       </div>
+      <!-- 子表格 -->
+      <template v-if="[FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(fieldConfig.type)">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.subTableField') }}
+          </div>
+          <subTableFields v-model:field="fieldConfig" />
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.fixedCol') }}
+          </div>
+          <n-input-group>
+            <n-input-group-label>{{ t('crmFormDesign.fixedColNum') }}</n-input-group-label>
+            <n-select
+              v-model:value="fieldConfig.fixedColumn"
+              :options="[
+                {
+                  label: `1${t('crmFormDesign.fixedCols')}`,
+                  value: 1,
+                },
+                {
+                  label: `2${t('crmFormDesign.fixedCols')}`,
+                  value: 2,
+                },
+                {
+                  label: `3${t('crmFormDesign.fixedCols')}`,
+                  value: 3,
+                },
+              ]"
+            />
+          </n-input-group>
+        </div>
+      </template>
+      <!-- 子表格 End -->
     </div>
     <div v-else class="flex justify-center py-[44px] text-[var(--text-n4)]">
       {{ t('crmFormDesign.fieldConfigEmptyTip') }}
@@ -1033,6 +1068,7 @@
     NDatePicker,
     NInput,
     NInputGroup,
+    NInputGroupLabel,
     NInputNumber,
     NPopover,
     NRadioButton,
@@ -1075,6 +1111,7 @@
   import FilterModal from './filterModal.vue';
   import formulaModal from './formulaModal.vue';
   import optionConfig from './optionConfig.vue';
+  import subTableFields from './subTableFields.vue';
 
   // import useUserStore from '@/store/modules/user';
   import { SelectOption } from 'naive-ui/es/select/src/interface';

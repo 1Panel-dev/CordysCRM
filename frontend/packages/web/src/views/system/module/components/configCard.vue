@@ -52,6 +52,7 @@
   <clueFormDrawer v-model:visible="clueManagementFormVisible" />
   <OpenSeaDrawer v-model:visible="customerManagementOpenSeaVisible" :type="selectKey" />
   <ProductFromDrawer v-model:visible="productManagementFormVisible" />
+  <priceTableFormDrawer v-model:visible="priceTableFormVisible" />
   <MoveAccountReasonDrawer
     v-model:visible="showAccountReasonDrawer"
     v-model:config="isHasConfigAccountReason"
@@ -104,6 +105,7 @@
   import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
   import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
+  import priceTableFormDrawer from './productManagement/priceTableFormDrawer.vue';
 
   import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
@@ -406,6 +408,10 @@
           label: t('module.productFormSetting'),
           key: 'newForm',
         },
+        {
+          label: t('module.priceTableFormSetting'),
+          key: 'newPriceForm',
+        },
       ],
       enable: true,
     },
@@ -480,6 +486,7 @@
   const businessManagementStepSetVisible = ref(false);
 
   const productManagementFormVisible = ref(false);
+  const priceTableFormVisible = ref(false);
 
   const contractFormVisible = ref(false);
   const contractPaymentPlanFormVisible = ref(false);
@@ -526,6 +533,8 @@
       case ModuleConfigEnum.PRODUCT_MANAGEMENT:
         if (key === 'newForm') {
           productManagementFormVisible.value = true;
+        } else if (key === 'newPriceForm') {
+          priceTableFormVisible.value = true;
         }
         break;
       default:

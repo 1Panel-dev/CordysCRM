@@ -9,6 +9,7 @@
       :clone="clone"
       :sort="false"
       class="crm-form-design-field-wrapper mb-[24px]"
+      @move="handleMove"
     >
       <div
         v-for="field of basicFields"
@@ -23,7 +24,7 @@
     </VueDraggable>
     <div class="crm-form-design-field-title">{{ t('crmFormDesign.advancedField') }}</div>
     <VueDraggable
-      v-model="advancedFields"
+      v-model="realAdvancedFields"
       :animation="150"
       ghost-class="crm-form-design--composition-item-ghost"
       :group="{ name: 'crmFormDesign', pull: 'clone', put: false }"
@@ -33,7 +34,7 @@
       @move="handleMove"
     >
       <div
-        v-for="field of advancedFields"
+        v-for="field of realAdvancedFields"
         :key="field.type"
         class="crm-form-design-field-item"
         :class="getFieldDisable(field) ? 'crm-form-design-field-item--disabled' : ''"
@@ -51,7 +52,7 @@
   import { NScrollbar } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getGenerateId } from '@lib/shared/method';
 
@@ -61,12 +62,34 @@
 
   const props = defineProps<{
     fieldList: FormCreateField[];
+    formKey: FormDesignKeyEnum;
   }>();
   const emit = defineEmits<{
     (e: 'select', field: FormCreateField): void;
   }>();
 
   const { t } = useI18n();
+
+  const realAdvancedFields: FormCreateField[] = [];
+  if (props.formKey === FormDesignKeyEnum.PRICE) {
+    advancedFields.forEach((field) => {
+      if (field.type !== FieldTypeEnum.PRICE_TABLE) {
+        realAdvancedFields.push(field);
+      }
+    });
+  } else if (props.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
+    advancedFields.forEach((field) => {
+      if (field.type !== FieldTypeEnum.PRODUCT_TABLE) {
+        realAdvancedFields.push(field);
+      }
+    });
+  } else {
+    advancedFields.forEach((field) => {
+      if (![FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(field.type)) {
+        realAdvancedFields.push(field);
+      }
+    });
+  }
 
   function getFieldDisable(item: FormCreateField) {
     if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
@@ -76,7 +99,11 @@
   }
 
   function handleMove(e: any) {
-    return !getFieldDisable(e.data);
+    return !getFieldDisable(e.data) && e.to.className.includes('crm-form-design-subtable-wrapper')
+      ? [FieldTypeEnum.INPUT, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+          e.data.type
+        )
+      : true;
   }
 
   function clone(e: FormCreateField) {
