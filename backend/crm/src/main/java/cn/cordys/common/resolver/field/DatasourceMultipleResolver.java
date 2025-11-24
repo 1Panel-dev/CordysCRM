@@ -42,18 +42,18 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
     }
 
     @Override
-    public Object parse2Value(DatasourceMultipleField customField, String value) {
+    public Object convertToValue(DatasourceMultipleField customField, String value) {
         return parse2Array(value);
     }
 
     @Override
-    public String parse2String(DatasourceMultipleField customField, Object value) {
+    public String convertToString(DatasourceMultipleField customField, Object value) {
         return getJsonString(value);
     }
 
 
     @Override
-    public Object trans2Value(DatasourceMultipleField datasourceMultipleField, String value) {
+    public Object transformToValue(DatasourceMultipleField datasourceMultipleField, String value) {
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
@@ -83,7 +83,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
     }
 
     @Override
-    public Object text2Value(DatasourceMultipleField field, String text) {
+    public Object textToValue(DatasourceMultipleField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }

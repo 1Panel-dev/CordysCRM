@@ -14,7 +14,7 @@ public class PictureResolver extends AbstractModuleFieldResolver<PictureField> {
     }
 
     @Override
-    public Object parse2Value(PictureField selectField, String value) {
+    public Object convertToValue(PictureField selectField, String value) {
         return JSON.parseArray(value, String.class);
     }
 }

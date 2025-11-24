@@ -28,17 +28,17 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
     }
 
     @Override
-    public String parse2String(CheckBoxField checkBoxField, Object value) {
+    public String convertToString(CheckBoxField checkBoxField, Object value) {
         return JSON.toJSONString(value);
     }
 
     @Override
-    public Object parse2Value(CheckBoxField checkBoxField, String value) {
+    public Object convertToValue(CheckBoxField checkBoxField, String value) {
         return parse2Array(value);
     }
 
     @Override
-    public Object trans2Value(CheckBoxField checkBoxField, String value) {
+    public Object transformToValue(CheckBoxField checkBoxField, String value) {
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
@@ -54,7 +54,7 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
     }
 
     @Override
-    public Object text2Value(CheckBoxField field, String text) {
+    public Object textToValue(CheckBoxField field, String text) {
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }

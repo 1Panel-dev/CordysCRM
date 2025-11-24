@@ -59,8 +59,6 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationUserService {
 
-    private static final String DEFAULT_USER_PASSWORD = "CordysCRM";
-
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
     @Resource
@@ -491,7 +489,7 @@ public class OrganizationUserService {
             throw new GenericException(Translator.get("user_phone_not_exist"));
         }
 
-        List<LogDTO> logDTOS = new ArrayList<>();
+        List<LogDTO> logs = new ArrayList<>();
         User originPasswdUser = new User();
         originPasswdUser.setPassword("############");
         User newPasswdUser = new User();
@@ -505,12 +503,12 @@ public class OrganizationUserService {
             LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
             logDTO.setOriginalValue(originPasswdUser);
             logDTO.setModifiedValue(newPasswdUser);
-            logDTOS.add(logDTO);
+            logs.add(logDTO);
             // 踢出该用户
             SessionUtils.kickOutUser(operatorId, user.getId());
         });
         extUserMapper.batchUpdatePassword(userList);
-        logService.batchAdd(logDTOS);
+        logService.batchAdd(logs);
 
     }
 

@@ -30,17 +30,17 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
     }
 
     @Override
-    public String parse2String(MemberField memberField, Object value) {
+    public String convertToString(MemberField memberField, Object value) {
         return getStringValue(value);
     }
 
     @Override
-    public Object parse2Value(MemberField memberField, String value) {
+    public Object convertToValue(MemberField memberField, String value) {
         return getStringValue(value);
     }
 
     @Override
-    public Object trans2Value(MemberField memberField, String value) {
+    public Object transformToValue(MemberField memberField, String value) {
         if (StringUtils.isBlank(value)) {
             return StringUtils.EMPTY;
         }
@@ -55,7 +55,7 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
     }
 
     @Override
-    public Object text2Value(MemberField field, String text) {
+    public Object textToValue(MemberField field, String text) {
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }

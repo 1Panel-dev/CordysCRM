@@ -20,12 +20,12 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
 
     @Override
-    public Object trans2Value(LocationField locationField, String value) {
+    public Object transformToValue(LocationField locationField, String value) {
         return RegionUtils.mapping(value, false);
     }
 
     @Override
-    public Object text2Value(LocationField field, String text) {
+    public Object textToValue(LocationField field, String text) {
         return RegionUtils.mapping(text, true);
     }
 }

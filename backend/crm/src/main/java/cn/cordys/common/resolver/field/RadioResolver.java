@@ -25,17 +25,17 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     }
 
     @Override
-    public String parse2String(RadioField radioField, Object value) {
+    public String convertToString(RadioField radioField, Object value) {
         return getStringValue(value);
     }
 
     @Override
-    public Object parse2Value(RadioField selectField, String value) {
-        return super.parse2Value(selectField, value);
+    public Object convertToValue(RadioField selectField, String value) {
+        return super.convertToValue(selectField, value);
     }
 
     @Override
-    public Object trans2Value(RadioField radioField, String value) {
+    public Object transformToValue(RadioField radioField, String value) {
         return radioField.getOptions().stream()
                 .filter(option -> Strings.CI.equals(option.getValue(), value))
                 .map(OptionProp::getLabel)
@@ -44,7 +44,7 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     }
 
     @Override
-    public Object text2Value(RadioField field, String text) {
+    public Object textToValue(RadioField field, String text) {
         return field.getOptions().stream()
                 .filter(option -> Strings.CI.equals(option.getLabel(), text))
                 .map(OptionProp::getValue)

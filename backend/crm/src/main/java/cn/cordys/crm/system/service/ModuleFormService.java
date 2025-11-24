@@ -921,7 +921,7 @@ public class ModuleFormService {
         }
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(sourceField.getType());
         // 将数据库中的字符串值,转换为对应的对象值
-        return customFieldResolver.trans2Value(sourceField, actualVal instanceof List ? JSON.toJSONString(actualVal) : actualVal.toString());
+        return customFieldResolver.transformToValue(sourceField, actualVal instanceof List ? JSON.toJSONString(actualVal) : actualVal.toString());
     }
 
     /**

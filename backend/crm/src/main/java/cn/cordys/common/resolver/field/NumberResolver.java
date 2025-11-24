@@ -25,17 +25,17 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     }
 
     @Override
-    public Object parse2Value(InputNumberField numberField, String value) {
+    public Object convertToValue(InputNumberField numberField, String value) {
         return value == null ? null : new BigDecimal(value);
     }
 
     @Override
-    public Object trans2Value(InputNumberField numberField, String value) {
+    public Object transformToValue(InputNumberField numberField, String value) {
         return value == null ? null : new BigDecimal(value);
     }
 
     @Override
-    public Object text2Value(InputNumberField field, String text) {
+    public Object textToValue(InputNumberField field, String text) {
         if (Strings.CS.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
             text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
         }

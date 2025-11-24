@@ -232,7 +232,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 校验参数值
                     customFieldResolver.validate(field, fieldValue.getFieldValue());
                     // 将参数值转换成字符串入库
-                    String strValue = customFieldResolver.parse2String(field, fieldValue.getFieldValue());
+                    String strValue = customFieldResolver.convertToString(field, fieldValue.getFieldValue());
 
                     if (field.isBlob()) {
                         V resourceField = newResourceFieldBlob();
@@ -479,7 +479,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         // 获取字段解析器
                         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
                         // 将数据库中的字符串值,转换为对应的对象值
-                        Object objectValue = customFieldResolver.parse2Value(field, baseResourceField.getFieldValue().toString());
+                        Object objectValue = customFieldResolver.convertToValue(field, baseResourceField.getFieldValue().toString());
                         baseResourceField.setFieldValue(objectValue);
                         originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
                     }
@@ -586,7 +586,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 // 获取字段解析器
                 AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
                 // 将数据库中的字符串值,转换为对应的对象值
-                Object objectValue = customFieldResolver.parse2Value(fieldConfig, resourceField.getFieldValue().toString());
+                Object objectValue = customFieldResolver.convertToValue(fieldConfig, resourceField.getFieldValue().toString());
                 resourceField.setFieldValue(objectValue);
 
                 String resourceId = resourceField.getResourceId();
@@ -608,7 +608,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     return;
                 }
                 AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-                Object objectValue = customFieldResolver.parse2Value(fieldConfig, resourceFieldBlob.getFieldValue().toString());
+                Object objectValue = customFieldResolver.convertToValue(fieldConfig, resourceFieldBlob.getFieldValue().toString());
 
                 String resourceId = resourceFieldBlob.getResourceId();
                 resourceMap.putIfAbsent(resourceId, new ArrayList<>());
@@ -705,7 +705,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 校验参数值
                     customFieldResolver.validate(fieldConfig, fieldValue.getFieldValue());
                     // 将参数值转换成字符串入库
-                    String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
+                    String strValue = customFieldResolver.convertToString(fieldConfig, fieldValue.getFieldValue());
                     for (String resourceId : resourceIds) {
                         if (fieldConfig.isBlob()) {
                             V resourceField = newResourceFieldBlob();
@@ -767,7 +767,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         // 校验参数值
         customFieldResolver.validate(field, request.getFieldValue());
         // 将参数值转换成字符串入库
-        String strValue = customFieldResolver.parse2String(field, request.getFieldValue());
+        String strValue = customFieldResolver.convertToString(field, request.getFieldValue());
         if (moduleField == null) {
             throw new GenericException(Translator.get("module.field.not_exist"));
         }
@@ -863,7 +863,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 校验参数值
                     customFieldResolver.validate(base, fieldValue.getFieldValue());
                     // 将参数值转换成字符串入库
-                    String strValue = customFieldResolver.parse2String(base, fieldValue.getFieldValue());
+                    String strValue = customFieldResolver.convertToString(base, fieldValue.getFieldValue());
                     if (base.isBlob()) {
                         V fieldBlob = newResourceFieldBlob();
                         fieldBlob.setId(resourceField.getId());

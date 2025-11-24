@@ -16,7 +16,7 @@ public class DefaultModuleFieldResolver extends AbstractModuleFieldResolver {
     }
 
     @Override
-    public String parse2String(BaseField selectField, Object value) {
+    public String convertToString(BaseField selectField, Object value) {
         if (value instanceof List) {
             return getJsonString(value);
         }
