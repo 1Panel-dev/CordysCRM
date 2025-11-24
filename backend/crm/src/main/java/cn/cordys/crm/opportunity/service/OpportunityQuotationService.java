@@ -25,6 +25,7 @@ import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationBatchRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationEditRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
@@ -32,6 +33,8 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
@@ -39,17 +42,22 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -71,6 +79,8 @@ public class OpportunityQuotationService {
     private PermissionCache permissionCache;
     @Resource
     private ExtOpportunityQuotationMapper extOpportunityQuotationMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
     @Resource
     private BaseMapper<OpportunityQuotation> opportunityQuotationMapper;
     @Resource
@@ -205,12 +215,19 @@ public class OpportunityQuotationService {
      * @param userId 用户ID
      */
     public String voidQuotation(String id, String userId, String orgId) {
-        OpportunityQuotation opportunityQuotation = updateApprovalState(id, ApprovalState.VOIDED.toString(), userId, "opportunity.quotation.status.voided", orgId);
+        OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
+        if (oldOpportunityQuotation == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
+        }
+        String oldApprovalStatus = oldOpportunityQuotation.getApprovalStatus();
+        OpportunityQuotation opportunityQuotation = updateApprovalState(oldOpportunityQuotation, ApprovalState.VOIDED.toString(), userId);
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
         checkQuotationLinked(id, "opportunity.quotation.no.voided");
-        saveSateChangeLog(orgId, id, userId, LogType.VOIDED, opportunityQuotation);
+        saveSateChangeLog(orgId, oldApprovalStatus, userId, LogType.VOIDED, opportunityQuotation);
+        //增加通知
+        sendNotice(Translator.get("opportunity.quotation.status.voided"), opportunityQuotation, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL);
         return opportunityQuotation.getApprovalStatus();
     }
 
@@ -238,11 +255,15 @@ public class OpportunityQuotationService {
     public String approve(OpportunityQuotationEditRequest request, String userId, String orgId) {
         String noticeKey = Strings.CI.equals(request.getApprovalStatus(), ApprovalState.APPROVED.toString()) ?
                 "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved";
-        OpportunityQuotation opportunityQuotation = updateApprovalState(request.getId(), request.getApprovalStatus(), userId, noticeKey, orgId);
-        if (opportunityQuotation == null) {
+        OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(request.getId());
+        if (oldOpportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-
+        String oldApprovalStatus = oldOpportunityQuotation.getApprovalStatus();
+        OpportunityQuotation opportunityQuotation = updateApprovalState(oldOpportunityQuotation, request.getApprovalStatus(), userId);
+        if (opportunityQuotation == null) {
+            return request.getApprovalStatus();
+        }
         //删除快照
         String id = request.getId();
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
@@ -253,25 +274,20 @@ public class OpportunityQuotationService {
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, request.getModuleFields(), request.getModuleFormConfigDTO());
         saveSnapshot(opportunityQuotation, request.getModuleFormConfigDTO(), response);
 
-        saveSateChangeLog(orgId, id, userId, LogType.APPROVAL, opportunityQuotation);
+        saveSateChangeLog(orgId, oldApprovalStatus, userId, LogType.APPROVAL, opportunityQuotation);
+        sendNotice(noticeKey, opportunityQuotation, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL);
         return opportunityQuotation.getApprovalStatus();
     }
 
     /**
      * 更新审批状态
      *
-     * @param id             报价单ID
-     * @param approvalStatus 审批状态
-     * @param userId         用户ID
-     * @param key            审批状态key
-     * @param orgId          组织ID
+     * @param opportunityQuotation 报价单实体
+     * @param approvalStatus       审批状态
+     * @param userId               用户ID
      * @return 报价单
      */
-    private OpportunityQuotation updateApprovalState(String id, String approvalStatus, String userId, String key, String orgId) {
-        OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
-        if (opportunityQuotation == null) {
-            return null;
-        }
+    private OpportunityQuotation updateApprovalState(OpportunityQuotation opportunityQuotation, String approvalStatus, String userId) {
         if ((Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) || Strings.CI.equals(approvalStatus, ApprovalState.UNAPPROVED.toString())) && !Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
             return null;
         }
@@ -279,28 +295,45 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotationMapper.updateById(opportunityQuotation);
-        //增加通知
-        Map<String, Object> paramMap = new HashMap<>(8);
-        paramMap.put("state", Translator.get(key));
-        paramMap.put("name", opportunityQuotation.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL,
-                paramMap, userId, orgId, List.of(opportunityQuotation.getCreateUser()), true);
-
         return opportunityQuotation;
+    }
+
+    /**
+     * 发送通知
+     *
+     * @param key                  通知内容key
+     * @param opportunityQuotation 报价单实体
+     * @param userId               用户ID
+     * @param orgId                组织ID
+     * @param event                事件类型
+     */
+    private void sendNotice(String key, OpportunityQuotation opportunityQuotation, String userId, String orgId, String event) {
+        Map<String, Object> paramMap = new HashMap<>();
+        if (StringUtils.isNotBlank(key)) {
+            paramMap.put("state", key);
+        }
+        paramMap.put("name", opportunityQuotation.getName());
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY, event,
+                paramMap, userId, orgId, List.of(opportunityQuotation.getCreateUser()), true);
     }
 
     /**
      * 保存状态变更日志
      *
      * @param orgId                组织ID
-     * @param id                   报价单ID
+     * @param state                审批状态
      * @param userId               用户ID
      * @param logType              日志类型
      * @param opportunityQuotation 报价单实体
      */
-    private void saveSateChangeLog(String orgId, String id, String userId, String logType, OpportunityQuotation opportunityQuotation) {
-        LogDTO logDTO = new LogDTO(orgId, id, userId, logType, LogModule.OPPORTUNITY_QUOTATION, opportunityQuotation.getName());
-        logDTO.setOriginalValue(opportunityQuotation.getName());
+    private void saveSateChangeLog(String orgId, String state, String userId, String logType, OpportunityQuotation opportunityQuotation) {
+        LogDTO logDTO = new LogDTO(orgId, opportunityQuotation.getId(), userId, logType, LogModule.OPPORTUNITY_QUOTATION, opportunityQuotation.getName());
+        if (state == null) {
+            logDTO.setOriginalValue(opportunityQuotation.getName());
+        } else {
+            logDTO.setOriginalValue(Translator.get("log.approvalStatus." + state));
+            logDTO.setModifiedValue(Translator.get("log.approvalStatus." + opportunityQuotation.getApprovalStatus()));
+        }
         logService.add(logDTO);
     }
 
@@ -326,7 +359,10 @@ public class OpportunityQuotationService {
         snapshotBaseMapper.deleteByLambda(wrapper);
 
         //记录日志
-        saveSateChangeLog(organizationId, id, userId, LogType.DELETE, opportunityQuotation);
+        saveSateChangeLog(organizationId, null, userId, LogType.DELETE, opportunityQuotation);
+
+        //发送通知
+        sendNotice(null, opportunityQuotation, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_DELETED);
     }
 
     /**
@@ -415,8 +451,170 @@ public class OpportunityQuotationService {
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, fields, true);
     }
 
+    /**
+     * 获取商机报价单模块标签页启用配置
+     *
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     * @return 模块标签页启用配置
+     */
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.OPPORTUNITY_QUOTATION_READ, rolePermissions);
     }
+
+
+    /**
+     * 批量审批商机报价单
+     *
+     * @param request 批量审批请求参数
+     * @param userId  用户ID
+     * @param orgId   组织ID
+     * @return 审批状态
+     */
+    public BatchAffectResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
+        List<String> ids = request.getIds();
+        String approvalStatus = request.getApprovalStatus();
+        LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OpportunityQuotation::getId, ids);
+        wrapper.eq(OpportunityQuotation::getApprovalStatus, approvalStatus);
+        List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return BatchAffectResponse.builder().success(0).fail(0).build();
+        }
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
+
+        List<LogDTO> logs = new ArrayList<>();
+        List<String> approvingIds = new ArrayList<>();
+        list.forEach(item -> {
+            approvingIds.add(item.getId());
+            LogDTO logDTO = new LogDTO(orgId, item.getId(), userId, LogType.APPROVAL, LogModule.OPPORTUNITY_QUOTATION, item.getName());
+            logDTO.setOriginalValue(item.getApprovalStatus());
+            logDTO.setModifiedValue(approvalStatus);
+            logs.add(logDTO);
+
+        });
+        batchUpdateMapper.batchUpdateApprovalStatus(approvingIds, approvalStatus, userId, System.currentTimeMillis());
+        logService.batchAdd(logs);
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+        list.forEach(
+                item -> sendNotice(Translator.get(Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
+                        "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved"), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
+        );
+        return BatchAffectResponse.builder().success(list.size()).fail(0).build();
+    }
+
+
+    /**
+     * 批量作废商机报价单
+     *
+     * @param request        批量作废请求参数
+     * @param userId         用户ID
+     * @param organizationId 组织ID
+     * @return 批量作废响应参数
+     */
+    public BatchAffectReasonResponse batchVoidQuotation(OpportunityQuotationBatchRequest request, String userId, String organizationId) {
+        List<String> ids = request.getIds();
+        LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OpportunityQuotation::getId, ids);
+        List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).errorMessages("opportunity.quotation.not.exist").build();
+        }
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
+
+
+        // 校验商机报价单是否可以作废
+        List<OpportunityQuotation> successList = validateVoidQuotation(list);
+        if (CollectionUtils.isEmpty(successList)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).errorMessages("opportunity.quotation.batch.no.voided").build();
+        }
+
+        List<LogDTO> logs = new ArrayList<>();
+        List<String> successIds = new ArrayList<>();
+        successList.forEach(item -> {
+            successIds.add(item.getId());
+            LogDTO logDTO = new LogDTO(organizationId, item.getId(), userId, LogType.VOIDED, LogModule.OPPORTUNITY_QUOTATION, item.getName());
+            logDTO.setOriginalValue(item.getApprovalStatus());
+            logDTO.setModifiedValue(ApprovalState.VOIDED.toString());
+            logs.add(logDTO);
+
+        });
+        batchUpdateMapper.batchUpdateApprovalStatus(successIds, ApprovalState.VOIDED.toString(), userId, System.currentTimeMillis());
+        logService.batchAdd(logs);
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+        successList.forEach(
+                item -> sendNotice(Translator.get("opportunity.quotation.status.voided"), item, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
+        );
+        return BatchAffectReasonResponse.builder().success(successList.size()).fail(list.size() - successList.size()).errorMessages("opportunity.quotation.batch.no.voided").build();
+    }
+
+
+    /**
+     * 验证不可作废的报价单
+     *
+     * @param list 报价单列表
+     * @return 不可作废的报价单列表
+     */
+    private List<OpportunityQuotation> validateVoidQuotation(List<OpportunityQuotation> list) {
+        List<ContractField> contractFields = contractFieldMapper.selectAll(null);
+
+        Set<String> existingIdSet = new HashSet<>();
+        contractFields.forEach(cf ->
+                existingIdSet.addAll(extractIdsFromFieldValue(cf.getFieldValue()))
+        );
+
+        return list.stream()
+                .filter(item -> !existingIdSet.contains(item.getId())).toList();
+
+    }
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * 从字段值中提取ID集合
+     *
+     * @param fieldValue 字段值
+     * @return ID集合
+     */
+    private Set<String> extractIdsFromFieldValue(Object fieldValue) {
+        if (fieldValue == null) {
+            return Collections.emptySet();
+        }
+        String text = String.valueOf(fieldValue).trim();
+        Set<String> result = new HashSet<>();
+        // 尝试数组
+        if (text.startsWith("[") && text.endsWith("]")) {
+            try {
+                // 修复 ['123','456'] → ["123","456"]
+                text = text.replace('\'', '"');
+
+                JsonNode node = mapper.readTree(text);
+                if (node.isArray()) {
+                    for (JsonNode item : node) {
+                        result.add(item.asText());
+                    }
+                    return result;
+                }
+            } catch (Exception ignore) {
+            }
+        }
+        // 尝试 CSV，例如 "123,456"
+        if (text.contains(",")) {
+            for (String part : text.split(",")) {
+                result.add(part.trim());
+            }
+            return result;
+        }
+        // 单值
+        result.add(text);
+        return result;
+    }
+
+
 }

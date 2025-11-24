@@ -7,11 +7,14 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationBatchRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationEditRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -75,6 +78,7 @@ public class OpportunityQuotationController {
 
     //撤销审批
     @GetMapping("/revoke/{id}")
+    @Operation(summary = "撤销报价单审批")
     public String revoke(@PathVariable("id") String id) {
         return opportunityQuotationService.revoke(id, SessionUtils.getUserId());
     }
@@ -87,12 +91,29 @@ public class OpportunityQuotationController {
         return opportunityQuotationService.voidQuotation(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    //批量作废报价单
+    @PostMapping("/batch/voided")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
+    @Operation(summary = "批量作废报价单")
+    public BatchAffectReasonResponse batchVoidQuotation(@RequestBody OpportunityQuotationBatchRequest request) {
+        return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
     //审批
     @PostMapping("/approve")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
     @Operation(summary = "审批报价单")
     public String approve(@RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.approve(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    //批量审批
+    @PostMapping("/batch/approve")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
+    @Operation(summary = "批量审批报价单")
+    public BatchAffectResponse batchApprove(@RequestBody OpportunityQuotationBatchRequest request) {
+        return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     //删除报价单

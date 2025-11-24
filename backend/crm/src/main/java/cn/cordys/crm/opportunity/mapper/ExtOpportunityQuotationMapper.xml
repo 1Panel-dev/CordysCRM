@@ -3,6 +3,17 @@
 
 <mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper">
 
+    <update id="batchUpdateApprovalStatus">
+        update opportunity_quotation
+        set approval_status = #{approvalStatus},
+        update_user = #{userId},
+        update_time = #{updateTime}
+        where id in
+        <foreach collection="approvingIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
 
     <select id="list" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse">
         select oq.id, oq.name, oq.opportunity_id, o.opportunity_name as opportunityName, oq.approval_status, oq.amount,
@@ -18,14 +29,7 @@
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
-
-        where oq.organization_id = #{currentOrg}
-        <if test="request.approvalStatus != null and request.approvalStatus != ''">
-            and oq.approval_status = #{request.approvalStatus}
-        </if>
-        <if test="request.amount != null and request.amount != ''">
-            and oq.amount = #{request.amount}
-        </if>
+        where oq.organization_id = #{orgId}
         <if test="request.opportunityId != null and request.opportunityId != ''">
             and o.id = #{request.opportunityId}
         </if>

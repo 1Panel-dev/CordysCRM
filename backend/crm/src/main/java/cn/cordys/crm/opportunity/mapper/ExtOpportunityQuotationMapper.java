@@ -11,4 +11,6 @@ import java.util.List;
 public interface ExtOpportunityQuotationMapper {
 
     List<OpportunityQuotationListResponse> list(@Param("request") OpportunityQuotationPageRequest request, @Param("orgId") String orgId);
+
+    void batchUpdateApprovalStatus(List<String> approvingIds, String approvalStatus, String userId, long updateTime);
 }
