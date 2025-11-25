@@ -141,6 +141,19 @@ public class ModuleFormService {
         return businessModuleFormConfig;
     }
 
+	public ModuleFormConfigDTO getSourceDisplayFields(String formKey, String organizationId) {
+		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
+		ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
+		businessModuleFormConfig.setFormProp(config.getFormProp());
+		// 设置业务字段参数
+		businessModuleFormConfig.setFields(config.getFields().stream()
+				.peek(this::setFieldBusinessParam)
+				.filter(BaseField::canDisplay)
+				.collect(Collectors.toList())
+		);
+		return businessModuleFormConfig;
+	}
+
     /**
      * 保存表单配置
      *
