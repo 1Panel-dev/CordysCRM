@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName("SUB_PRICE")
+@JsonTypeName("PRICE_TABLE")
 @EqualsAndHashCode(callSuper = true)
 public class PriceSubField extends SubField {
 

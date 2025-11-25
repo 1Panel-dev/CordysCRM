@@ -14,7 +14,7 @@ import java.util.List;
  * @author song-cc-rock
  */
 @Data
-@JsonTypeName(value = "SUB_PRODUCT")
+@JsonTypeName(value = "PRODUCT_TABLE")
 @EqualsAndHashCode(callSuper = true)
 public class ProductSubField extends SubField {
 
