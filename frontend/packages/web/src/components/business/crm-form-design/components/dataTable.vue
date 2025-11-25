@@ -28,12 +28,16 @@
             class="crm-form-design--composition-item--subtable"
             :class="[
               activeItem?.id === item.id ? 'crm-form-design--composition-item--subtable--active' : '',
-              fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? '!sticky z-10' : '',
+              fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1
+                ? 'crm-form-design--composition-item--subtable--shadow !sticky z-10'
+                : '',
             ]"
             :style="{
               left: fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? `${index * 160}px` : '',
               boxShadow:
-                fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1 ? '3px 0 6px rgba(0,0,0,0.12)' : '',
+                fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1
+                  ? '3px 0 6px -3px rgba(0,0,0,0.12)'
+                  : '',
             }"
             @click.stop="() => handleItemClick(item)"
           >
@@ -129,6 +133,9 @@
     }
     if (type === FieldTypeEnum.INPUT_NUMBER) {
       return CrmFormCreateComponents.basicComponents.inputNumber;
+    }
+    if (type === FieldTypeEnum.FORMULA) {
+      return CrmFormCreateComponents.advancedComponents.formula;
     }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
@@ -244,6 +251,16 @@
       width: 160px !important;
       flex: 0 0 160px;
       height: 94px !important;
+    }
+    .crm-form-design--composition-item--subtable--shadow::after {
+      position: absolute;
+      top: 0;
+      right: -3px; /* 在元素右侧外露 3px */
+      bottom: 0;
+      width: 3px; /* 精确 3px 宽度 */
+      background: linear-gradient(to right, rgb(0 0 0 / 12%), rgb(0 0 0 / 0%));
+      content: '';
+      pointer-events: none;
     }
     .n-input {
       width: 150px;

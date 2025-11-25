@@ -1,16 +1,17 @@
 <template>
   <n-form-item
     :label="props.fieldConfig.name"
-    :show-label="props.fieldConfig.showLabel"
+    :show-label="props.fieldConfig.showLabel && !props.isSubTableRender"
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
-      v-if="props.fieldConfig.description"
+      v-if="props.fieldConfig.description && !props.isSubTableRender"
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <CrmDataSource
       v-model:value="value"
       :rows="props.fieldConfig.initialOptions"
@@ -24,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem } from 'naive-ui';
+  import { NDivider, NFormItem } from 'naive-ui';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -40,6 +41,8 @@
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     formDetail?: Record<string, any>;
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;

@@ -1,35 +1,41 @@
 <template>
-  <n-form-item
-    :label="props.fieldConfig.name"
-    :show-label="props.fieldConfig.showLabel"
-    :path="props.path"
-    :rule="props.fieldConfig.rules"
-    :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-  >
+  <n-form-item :label="props.fieldConfig.name" :show-label="props.fieldConfig.showLabel">
     <div
       v-if="props.fieldConfig.description"
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <CrmSubTable
+      v-model:value="value"
+      :sub-fields="fieldConfig.subFields || []"
+      :need-init-detail="props.needInitDetail"
+      :parent-id="fieldConfig.id"
+      :readonly="false"
+      :form-detail="props.formDetail"
+      :fixed-column="fieldConfig.fixedColumn"
+    />
   </n-form-item>
 </template>
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
+  import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
+
   import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+    formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
   }>();
 
-  const value = defineModel<string>('value', {
-    default: '',
+  const value = defineModel<Record<string, any>[]>('value', {
+    default: [],
   });
 </script>
 

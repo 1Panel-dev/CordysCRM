@@ -551,7 +551,7 @@ export const formulaDefaultFieldConfig: FormCreateField = {
 
 export const productTableDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.PRODUCT_TABLE,
+  type: FieldTypeEnum.SUB_PRODUCT,
   icon: 'iconicon_table',
   name: 'crmFormDesign.productTable',
   fieldWidth: 1,
@@ -567,7 +567,7 @@ export const productTableDefaultFieldConfig: FormCreateField = {
 
 export const priceTableDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.PRICE_TABLE,
+  type: FieldTypeEnum.SUB_PRICE,
   icon: 'iconicon_table',
   name: 'crmFormDesign.priceTable',
   fieldWidth: 1,
@@ -641,8 +641,8 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.ATTACHMENT]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.INDUSTRY]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.FORMULA]: [],
-  [FieldTypeEnum.PRODUCT_TABLE]: [],
-  [FieldTypeEnum.PRICE_TABLE]: [],
+  [FieldTypeEnum.SUB_PRODUCT]: [],
+  [FieldTypeEnum.SUB_PRICE]: [],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

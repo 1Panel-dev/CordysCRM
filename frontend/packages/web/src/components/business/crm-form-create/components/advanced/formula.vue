@@ -1,5 +1,12 @@
 <template>
-  <inputNumber v-model:value="value" path="fieldValue" :field-config="fieldConfig" @change="handleChange" />
+  <inputNumber
+    v-model:value="value"
+    path="fieldValue"
+    :field-config="fieldConfig"
+    :is-sub-table-field="props.isSubTableField"
+    :is-sub-table-render="props.isSubTableRender"
+    @change="handleChange"
+  />
 </template>
 
 <script setup lang="ts">
@@ -11,6 +18,8 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
 
   const emit = defineEmits<{

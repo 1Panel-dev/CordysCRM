@@ -73,19 +73,19 @@
   const realAdvancedFields: FormCreateField[] = [];
   if (props.formKey === FormDesignKeyEnum.PRICE) {
     advancedFields.forEach((field) => {
-      if (field.type !== FieldTypeEnum.PRICE_TABLE) {
+      if (field.type !== FieldTypeEnum.SUB_PRICE) {
         realAdvancedFields.push(field);
       }
     });
   } else if (props.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
     advancedFields.forEach((field) => {
-      if (field.type !== FieldTypeEnum.PRODUCT_TABLE) {
+      if (field.type !== FieldTypeEnum.SUB_PRODUCT) {
         realAdvancedFields.push(field);
       }
     });
   } else {
     advancedFields.forEach((field) => {
-      if (![FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(field.type)) {
+      if (![FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(field.type)) {
         realAdvancedFields.push(field);
       }
     });
@@ -94,6 +94,12 @@
   function getFieldDisable(item: FormCreateField) {
     if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SERIAL_NUMBER);
+    }
+    if (item.type === FieldTypeEnum.SUB_PRICE) {
+      return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRICE);
+    }
+    if (item.type === FieldTypeEnum.SUB_PRODUCT) {
+      return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
     }
     return false;
   }

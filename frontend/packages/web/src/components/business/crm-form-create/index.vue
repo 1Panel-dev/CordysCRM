@@ -182,6 +182,12 @@
     if (type === FieldTypeEnum.INDUSTRY) {
       return CrmFormCreateComponents.advancedComponents.industry;
     }
+    if (type === FieldTypeEnum.FORMULA) {
+      return CrmFormCreateComponents.advancedComponents.formula;
+    }
+    if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(type)) {
+      return CrmFormCreateComponents.advancedComponents.dataTable;
+    }
   }
 
   function applyFieldLink(item: FormCreateField) {

@@ -44,9 +44,9 @@
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.ATTACHMENT,
-            FieldTypeEnum.PRICE_TABLE,
-            FieldTypeEnum.PRODUCT_TABLE,
             FieldTypeEnum.FORMULA,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -646,8 +646,8 @@
             FieldTypeEnum.LINK,
             FieldTypeEnum.ATTACHMENT,
             FieldTypeEnum.FORMULA,
-            FieldTypeEnum.PRICE_TABLE,
-            FieldTypeEnum.PRODUCT_TABLE,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -878,8 +878,8 @@
             ![
               FieldTypeEnum.DIVIDER,
               FieldTypeEnum.SERIAL_NUMBER,
-              FieldTypeEnum.PRICE_TABLE,
-              FieldTypeEnum.PRODUCT_TABLE,
+              FieldTypeEnum.SUB_PRICE,
+              FieldTypeEnum.SUB_PRODUCT,
               FieldTypeEnum.FORMULA,
             ].includes(fieldConfig.type)
           "
@@ -918,7 +918,7 @@
       </div>
       <!-- 移动端 End -->
       <div
-        v-if="![FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(fieldConfig.type) && !isSubTableField"
+        v-if="![FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(fieldConfig.type) && !isSubTableField"
         class="crm-form-design-config-item"
       >
         <div class="crm-form-design-config-item-title">
@@ -948,7 +948,7 @@
         </n-tooltip>
       </div>
       <!-- 子表格 -->
-      <template v-if="[FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(fieldConfig.type)">
+      <template v-if="[FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(fieldConfig.type)">
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.subTableField') }}
@@ -1160,7 +1160,7 @@
 
   const isSubTableField = computed(() => {
     return props.list
-      .filter((item) => item.type === FieldTypeEnum.PRICE_TABLE || item.type === FieldTypeEnum.PRODUCT_TABLE)
+      .filter((item) => item.type === FieldTypeEnum.SUB_PRICE || item.type === FieldTypeEnum.SUB_PRODUCT)
       .some((tableField) => {
         return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
       });
@@ -1168,7 +1168,7 @@
   const parentField = computed(() => {
     if (isSubTableField.value) {
       return props.list
-        .filter((item) => item.type === FieldTypeEnum.PRICE_TABLE || item.type === FieldTypeEnum.PRODUCT_TABLE)
+        .filter((item) => item.type === FieldTypeEnum.SUB_PRICE || item.type === FieldTypeEnum.SUB_PRODUCT)
         .find((tableField) => {
           return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
         });
@@ -1327,7 +1327,10 @@
   const showRuleConfigVisible = ref(false);
   const tempShowRules = ref<FormCreateFieldShowControlRule[]>([]);
   const isShowRuleField = computed(() => {
-    return fieldConfig.value.type === FieldTypeEnum.RADIO || fieldConfig.value.type === FieldTypeEnum.SELECT;
+    return (
+      !isSubTableField.value &&
+      (fieldConfig.value.type === FieldTypeEnum.RADIO || fieldConfig.value.type === FieldTypeEnum.SELECT)
+    );
   });
   // 显隐规则可选字段
   const showRuleFields = computed(() => {

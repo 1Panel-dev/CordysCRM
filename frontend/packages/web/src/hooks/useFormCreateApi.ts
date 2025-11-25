@@ -948,8 +948,81 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  function replaceRule(item: FormCreateField) {
+    const fullRules: FormCreateFieldRule[] = [];
+    (item.rules || []).forEach((rule) => {
+      // 遍历规则集合，将全量的规则配置载入
+      const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
+      if (staticRule) {
+        // 重复校验
+        if (staticRule.key === FieldRuleEnum.UNIQUE) {
+          staticRule.validator = async (_rule: any, value: string) => {
+            if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+              return Promise.resolve();
+            }
+
+            try {
+              const info = await checkRepeat({
+                id: item.id,
+                value,
+                formKey: props.formKey.value,
+              });
+              if (info.repeat) {
+                return Promise.reject(
+                  new Error(
+                    info.name.length
+                      ? t('crmFormCreate.repeatTip', { name: info.name })
+                      : t('crmFormCreate.repeatTipWithoutName')
+                  )
+                );
+              }
+              return Promise.resolve();
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error);
+            }
+          };
+        } else {
+          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+          staticRule.message = t(staticRule.message as string, { value: t(item.name) });
+          staticRule.type = getRuleType(item);
+          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+            staticRule.trigger = 'none';
+          }
+        }
+        fullRules.push(staticRule);
+      }
+    });
+    item.rules = fullRules;
+  }
+
+  function subFieldInit(field: FormCreateField) {
+    let defaultValue = field.defaultValue || '';
+    if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+      defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+    } else if (getRuleType(field) === 'array') {
+      defaultValue =
+        field.type === FieldTypeEnum.DATA_SOURCE && typeof field.defaultValue === 'string'
+          ? [defaultValue]
+          : defaultValue || [];
+    }
+    field.defaultValue = defaultValue;
+  }
+
   function initForm(linkScenario?: FormLinkScenarioEnum) {
     fieldList.value.forEach((item) => {
+      const initLine: Record<string, any> = {};
+      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
+        item.subFields?.forEach((subField) => {
+          subFieldInit(subField);
+          replaceRule(subField);
+          initLine[subField.id] = subField.defaultValue;
+        });
+        if (!formDetail.value[item.id]) {
+          formDetail.value[item.id] = [initLine];
+        }
+        return;
+      }
       if (props.needInitDetail?.value) {
         // 详情页编辑时，从详情获取值，不需要默认值
         item.defaultValue = undefined;
@@ -969,51 +1042,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!formDetail.value[item.id]) {
         formDetail.value[item.id] = defaultValue;
       }
-      const fullRules: FormCreateFieldRule[] = [];
-      (item.rules || []).forEach((rule) => {
-        // 遍历规则集合，将全量的规则配置载入
-        const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
-        if (staticRule) {
-          // 重复校验
-          if (staticRule.key === FieldRuleEnum.UNIQUE) {
-            staticRule.validator = async (_rule: any, value: string) => {
-              if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
-                return Promise.resolve();
-              }
-
-              try {
-                const info = await checkRepeat({
-                  id: item.id,
-                  value,
-                  formKey: props.formKey.value,
-                });
-                if (info.repeat) {
-                  return Promise.reject(
-                    new Error(
-                      info.name.length
-                        ? t('crmFormCreate.repeatTip', { name: info.name })
-                        : t('crmFormCreate.repeatTipWithoutName')
-                    )
-                  );
-                }
-                return Promise.resolve();
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.log(error);
-              }
-            };
-          } else {
-            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-            staticRule.message = t(staticRule.message as string, { value: t(item.name) });
-            staticRule.type = getRuleType(item);
-            if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
-              staticRule.trigger = 'none';
-            }
-          }
-          fullRules.push(staticRule);
-        }
-      });
-      item.rules = fullRules;
+      replaceRule(item);
       if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
         item.defaultValue = userStore.userInfo.id;
         item.initialOptions = [

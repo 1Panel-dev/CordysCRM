@@ -1,17 +1,17 @@
 <template>
   <n-form-item
     :label="props.fieldConfig.name"
-    :show-label="props.fieldConfig.showLabel"
+    :show-label="props.fieldConfig.showLabel && !props.isSubTableRender"
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
-      v-if="props.fieldConfig.description"
+      v-if="props.fieldConfig.description && !props.isSubTableRender"
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <n-divider v-if="props.isSubTableField" class="!my-0" />
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-input
       v-model:value="value"
       :maxlength="255"
@@ -33,6 +33,7 @@
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
