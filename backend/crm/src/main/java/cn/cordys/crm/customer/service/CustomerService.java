@@ -28,6 +28,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -66,6 +67,7 @@ import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -162,12 +164,13 @@ public class CustomerService {
 
     public PagerWithOption<List<CustomerListResponse>> transitionList(CustomerPageRequest request, String userId, String orgId) {
         /*
-         * 数据范围: 当前用户所在公海&所有私海客户
+         * 数据范围: 当前用户所在公海&私海客户(协作客户&&数据权限客户)
          */
         List<String> scopeIds = userExtendService.getUserScopeIds(userId, orgId);
         List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, orgId);
         request.setTransitionPoolIds(pools.stream().map(CustomerPool::getId).toList());
         request.setTransition(true);
+		request.setTransitionDataPermission(dataScopeService.getDeptDataPermission(userId, orgId, null, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
         return list(request, userId, orgId, null);
     }
 
