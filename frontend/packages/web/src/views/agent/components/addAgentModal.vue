@@ -166,8 +166,8 @@
     getAgentDetail,
     getApplicationScript,
     getMkAgentVersion,
-    updateAgent,
     getMkApplication,
+    updateAgent,
   } from '@/api/modules';
 
   const props = defineProps<{
