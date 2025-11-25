@@ -19,15 +19,16 @@ import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.product.dto.request.ProductPageRequest;
+import cn.cordys.crm.product.dto.response.ProductListResponse;
+import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.request.FieldResolveRequest;
-import cn.cordys.crm.product.dto.request.ProductPageRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
-import cn.cordys.crm.product.dto.response.ProductListResponse;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFieldService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.ModuleService;
-import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -132,4 +133,10 @@ public class ModuleFieldController {
     public List<String> resolveBusinessId(@Valid @RequestBody FieldResolveRequest request) {
         return moduleFormService.resolveSourceNames(request.getSourceType(), request.getNames());
     }
+
+	@GetMapping("/display/{formKey}")
+	@Operation(summary = "获取表单配置")
+	public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
+		return moduleFormService.getSourceDisplayFields(formKey, OrganizationContext.getOrganizationId());
+	}
 }
