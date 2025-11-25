@@ -151,8 +151,9 @@ public abstract class BaseField {
 
 	@JsonIgnore
 	public boolean canDisplay() {
-		// 公式、附件、图片、分割线, 不可见字段等这些, 不支持在子列表等场景展示.
+		// 公式、附件、图片、分割线, 子表格, 不可见字段等这些, 不支持在子列表等场景展示.
 		return !Strings.CS.equalsAny(type, FieldType.FORMULA.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
+				&& !Strings.CS.equalsAny(type, FieldType.PRICE_TABLE.name()) && !Strings.CS.equalsAny(type, FieldType.PRODUCT_TABLE.name())
 				&& !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
 	}
 
