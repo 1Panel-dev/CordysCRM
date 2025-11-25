@@ -1,16 +1,24 @@
 package cn.cordys.crm.contract.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
@@ -18,7 +26,9 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentPlanUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -26,6 +36,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,22 +55,24 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ContractPaymentPlanService {
-
+    @Resource
+    private BaseMapper<Contract> contractMapper;
     @Resource
     private BaseMapper<ContractPaymentPlan> contractPaymentPlanMapper;
-
     @Resource
     private ExtContractPaymentPlanMapper extContractPaymentPlanMapper;
-
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
-
     @Resource
     private ModuleFormService moduleFormService;
-
     @Resource
     private ContractPaymentPlanFieldService contractPaymentPlanFieldService;
-
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private PermissionCache permissionCache;
+    @Resource
+    private DataScopeService dataScopeService;
     @Resource
     private BaseService baseService;
 
@@ -122,8 +136,8 @@ public class ContractPaymentPlanService {
 
         list.forEach(planListResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(planListResponse.getId());
-            planListResponse.setModuleFields(customerFields);
+            List<BaseModuleFieldValue> contractPaymentPlanFields = caseCustomFiledMap.get(planListResponse.getId());
+            planListResponse.setModuleFields(contractPaymentPlanFields);
 
             UserDeptDTO userDeptDTO = userDeptMap.get(planListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -141,34 +155,130 @@ public class ContractPaymentPlanService {
         return list;
     }
 
-    public ContractPaymentPlanGetResponse get(String id) {
-        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
-        ContractPaymentPlanGetResponse contractPaymentPlanGetResponse = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
-        // todo
-        return baseService.setCreateAndUpdateUserName(contractPaymentPlanGetResponse);
+    public ContractPaymentPlanGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
+        ContractPaymentPlanGetResponse getResponse = get(id, orgId);
+        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        return getResponse;
     }
 
+    public ContractPaymentPlanGetResponse get(String id, String orgId) {
+        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
+        ContractPaymentPlanGetResponse contractPaymentPlanGetResponse = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
+        contractPaymentPlanGetResponse = baseService.setCreateUpdateOwnerUserName(contractPaymentPlanGetResponse);
+        // 获取模块字段
+        List<BaseModuleFieldValue> contractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
+        ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(orgId);
+
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractPaymentPlanFormConfig, contractPaymentPlanFields);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(contractPaymentPlanGetResponse,
+                ContractPaymentPlanGetResponse::getOwner, ContractPaymentPlanGetResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        contractPaymentPlanGetResponse.setOptionMap(optionMap);
+        contractPaymentPlanGetResponse.setModuleFields(contractPaymentPlanFields);
+
+        if (contractPaymentPlanGetResponse.getOwner() != null) {
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractPaymentPlanGetResponse.getOwner(), orgId);
+            if (userDeptDTO != null) {
+                contractPaymentPlanGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+                contractPaymentPlanGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+        }
+
+        return contractPaymentPlanGetResponse;
+    }
+
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.ADD)
     public ContractPaymentPlan add(ContractPaymentPlanAddRequest request, String userId, String orgId) {
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
+        if (StringUtils.isBlank(request.getOwner())) {
+            contractPaymentPlan.setOwner(userId);
+        }
         contractPaymentPlan.setCreateTime(System.currentTimeMillis());
         contractPaymentPlan.setUpdateTime(System.currentTimeMillis());
         contractPaymentPlan.setUpdateUser(userId);
         contractPaymentPlan.setCreateUser(userId);
         contractPaymentPlan.setOrganizationId(orgId);
         contractPaymentPlan.setId(IDGenerator.nextStr());
+
+        //保存自定义字段
+        contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, request.getModuleFields(), false);
+
         contractPaymentPlanMapper.insert(contractPaymentPlan);
+
+        Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlan.getContractId());
+
+        String resourceName = contract == null ? contractPaymentPlan.getContractId() : contract.getName();
+
+        baseService.handleAddLog(contractPaymentPlan, request.getModuleFields());
+        OperationLogContext.setResourceName(resourceName);
+
+        // 通知
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_PAYMENT_PLAN, resourceName, userId,
+                orgId, List.of(contractPaymentPlan.getOwner()), true);
         return contractPaymentPlan;
     }
 
-    public ContractPaymentPlan update(ContractPaymentPlanUpdateRequest request, String userId) {
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
+    public ContractPaymentPlan update(ContractPaymentPlanUpdateRequest request, String userId, String orgId) {
+        ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
+        dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE);
+
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
         contractPaymentPlan.setUpdateTime(System.currentTimeMillis());
         contractPaymentPlan.setUpdateUser(userId);
+
+        // 获取模块字段
+        List<BaseModuleFieldValue> originContractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
+
+        if (BooleanUtils.isTrue(request.getAgentInvoke())) {
+            contractPaymentPlanFieldService.updateModuleFieldByAgent(contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), orgId, userId);
+        } else {
+            // 更新模块字段
+            updateModuleField(contractPaymentPlan, request.getModuleFields(), orgId, userId);
+        }
+
         contractPaymentPlanMapper.update(contractPaymentPlan);
-        return contractPaymentPlanMapper.selectByPrimaryKey(contractPaymentPlan.getId());
+
+        contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
+        Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlan.getContractId());
+
+        String resourceName = contract == null ? originContractPaymentPlan.getContractId() : contract.getName();
+
+        baseService.handleUpdateLog(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), originContractPaymentPlan.getId(), resourceName);
+        return contractPaymentPlan;
     }
 
-    public void delete(String id) {
+    private void updateModuleField(ContractPaymentPlan contractPaymentPlan, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+        // 先删除
+        contractPaymentPlanFieldService.deleteByResourceId(contractPaymentPlan.getId());
+        // 再保存
+        contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, moduleFields, true);
+    }
+
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id, String userId, String orgId) {
+        ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
+        dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
+
+        Contract contract = contractMapper.selectByPrimaryKey(originContractPaymentPlan.getContractId());
+
+        String resourceName = contract == null ? originContractPaymentPlan.getContractId() : contract.getName();
+
         contractPaymentPlanMapper.deleteByPrimaryKey(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(resourceName);
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_PAYMENT_PLAN_DELETE, resourceName, userId,
+                orgId, List.of(originContractPaymentPlan.getOwner()), true);
     }
 }

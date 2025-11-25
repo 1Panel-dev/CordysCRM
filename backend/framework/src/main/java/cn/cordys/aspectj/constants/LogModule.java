@@ -127,4 +127,9 @@ public class LogModule {
     public static final String AGENT = "AGENT";
 
     public static final String CONTRACT_INDEX = "CONTRACT_INDEX";
+    /**
+     * 合同回款计划
+     */
+    public static final String CONTRACT_PAYMENT_PLAN = "CONTRACT_PAYMENT_PLAN";
+
 }

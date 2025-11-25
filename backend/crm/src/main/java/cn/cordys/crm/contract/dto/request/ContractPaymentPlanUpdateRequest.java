@@ -1,10 +1,12 @@
 package cn.cordys.crm.contract.dto.request;
 
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  *
@@ -34,4 +36,9 @@ public class ContractPaymentPlanUpdateRequest {
     @Schema(description = "计划回款时间")
     private Long planEndTime;
 
+    @Schema(description = "模块字段值")
+    private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "是否是AI调用")
+    private Boolean agentInvoke = false;
 }

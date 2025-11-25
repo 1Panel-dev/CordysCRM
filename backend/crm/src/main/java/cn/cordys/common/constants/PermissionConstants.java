@@ -187,10 +187,10 @@ public class PermissionConstants {
     /*------ end: CONTRACT ------*/
 
     /*------ start: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
-    public static final String CONTRACT_PAYMENT_PLAN_READ = "CONTRACT_CONTRACT_PAYMENT_PLAN:READ";
-    public static final String CONTRACT_PAYMENT_PLAN_ADD = "CONTRACT_CONTRACT_PAYMENT_PLAN:ADD";
-    public static final String CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_CONTRACT_PAYMENT_PLAN:UPDATE";
-    public static final String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_CONTRACT_PAYMENT_PLAN:DELETE";
+    public static final String CONTRACT_PAYMENT_PLAN_READ = "CONTRACT_PAYMENT_PLAN:READ";
+    public static final String CONTRACT_PAYMENT_PLAN_ADD = "CONTRACT_PAYMENT_PLAN:ADD";
+    public static final String CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_PAYMENT_PLAN:UPDATE";
+    public static final String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN:DELETE";
     /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
 }
 

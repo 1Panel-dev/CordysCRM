@@ -30,6 +30,9 @@ public class NotificationConstants {
         //公告
         @Schema(description = "message.announcement")
         String ANNOUNCEMENT = "ANNOUNCEMENT";
+        //合同管理
+        @Schema(description = "message.contract")
+        String CONTRACT = "CONTRACT";
     }
 
     public interface Event {
@@ -106,6 +109,18 @@ public class NotificationConstants {
 
         @Schema(description = "message.business_quotation_deleted")
         String BUSINESS_QUOTATION_DELETED = "BUSINESS_QUOTATION_DELETED";
+
+        @Schema(description = "message.contract_add")
+        String CONTRACT_ADD = "CONTRACT_ADD";
+
+        @Schema(description = "message.contract_delete")
+        String CONTRACT_ADD_DELETE = "CONTRACT_ADD_DELETE";
+
+        @Schema(description = "message.contract_payment_plan_add")
+        String CONTRACT_PAYMENT_PLAN = "CONTRACT_PAYMENT_PLAN";
+
+        @Schema(description = "message.contract_payment_plan_delete")
+        String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN_DELETE";
     }
 
     public interface RelatedUser {
