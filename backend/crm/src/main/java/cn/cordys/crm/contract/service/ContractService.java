@@ -4,9 +4,14 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.pager.PageUtils;
+import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -17,17 +22,22 @@ import cn.cordys.crm.contract.constants.ContractStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
+import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractResponse;
+import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -50,6 +61,10 @@ public class ContractService {
     private ModuleFormService moduleFormService;
     @Resource
     private BaseMapper<ContractSnapshot> snapshotBaseMapper;
+    @Resource
+    private ExtContractMapper extContractMapper;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     /**
      * 新建合同
@@ -95,6 +110,7 @@ public class ContractService {
 
     /**
      * 保存合同快照
+     *
      * @param contract
      * @param moduleFormConfigDTO
      * @param response
@@ -112,6 +128,7 @@ public class ContractService {
 
     /**
      * 获取合同详情
+     *
      * @param contract
      * @param moduleFields
      * @param moduleFormConfigDTO
@@ -174,6 +191,7 @@ public class ContractService {
 
     /**
      * 更新自定义字段
+     *
      * @param moduleFields
      * @param contract
      * @param orgId
@@ -190,12 +208,13 @@ public class ContractService {
 
     /**
      * 删除合同
+     *
      * @param id
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
-        if(contract == null){
+        if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
         if (Strings.CI.equals(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
@@ -211,5 +230,166 @@ public class ContractService {
         snapshotBaseMapper.deleteByLambda(wrapper);
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
+    }
+
+
+    /**
+     * 合同详情
+     *
+     * @param id
+     * @return
+     */
+    public ContractResponse get(String id) {
+        ContractResponse response = new ContractResponse();
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContractSnapshot::getContractId, id);
+        ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getContractValue(), ContractResponse.class);
+        }
+
+        return response;
+    }
+
+
+    /**
+     * 合同列表
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param deptDataPermission
+     * @return
+     */
+    public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
+        List<ContractListResponse> results = buildList(list);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results);
+
+        return PageUtils.setPageInfoWithOption(page, results, optionMap);
+    }
+
+    private Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ContractListResponse> list, List<ContractListResponse> buildList) {
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                ContractListResponse::getOwner, ContractListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+        return optionMap;
+    }
+
+    private ModuleFormConfigDTO getFormConfig(String orgId) {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
+    }
+
+    private List<ContractListResponse> buildList(List<ContractListResponse> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return list;
+        }
+
+        List<String> opportunityIds = list.stream().map(ContractListResponse::getId)
+                .collect(Collectors.toList());
+        Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(opportunityIds, true);
+
+        List<String> ownerIds = list.stream()
+                .map(ContractListResponse::getOwner)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(ownerIds);
+
+        list.forEach(item -> {
+            item.setOwnerName(userNameMap.get(item.getOwner()));
+            // 获取自定义字段
+            List<BaseModuleFieldValue> contractFields = contractFiledMap.get(item.getId());
+            item.setModuleFields(contractFields);
+        });
+        return baseService.setCreateAndUpdateUserName(list);
+    }
+
+
+    /**
+     * 作废
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
+    public void voidContract(String id, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+
+        if (Strings.CI.contains(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
+            throw new GenericException(Translator.get("contract.archived.cannot.voided"));
+        }
+
+        contract.setStatus(ContractStatus.VOID.name());
+        contract.setUpdateTime(System.currentTimeMillis());
+        contract.setUpdateUser(userId);
+        contractMapper.updateById(contract);
+
+        // 添加日志上下文
+        OperationLogContext.setResourceName(contract.getName());
+    }
+
+
+    /**
+     * 归档
+     *
+     * @param id
+     * @param userId
+     */
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ARCHIVED, resourceId = "{#id}")
+    public void archivedContract(String id, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+        //todo 审核通过才能归档 （目前没有审核
+        contract.setArchivedStatus(ArchivedStatus.ARCHIVED.name());
+        contract.setUpdateTime(System.currentTimeMillis());
+        contract.setUpdateUser(userId);
+        contractMapper.updateById(contract);
+
+        // 添加日志上下文
+        OperationLogContext.setResourceName(contract.getName());
+    }
+
+    /**
+     * 获取表单快照
+     *
+     * @param id
+     * @param orgId
+     * @return
+     */
+    public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
+        ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContractSnapshot::getContractId, id);
+        ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            moduleFormConfigDTO = JSON.parseObject(snapshot.getContractProp(), ModuleFormConfigDTO.class);
+        } else {
+            moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
+        }
+        return moduleFormConfigDTO;
+
     }
 }
