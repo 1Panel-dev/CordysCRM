@@ -9,5 +9,6 @@ public enum UserViewResourceType {
     CUSTOMER_POOL,
     CLUE_POOL,
     FOLLOW_PLAN,
-    FOLLOW_RECORD
+    FOLLOW_RECORD,
+    CONTRACT
 }
