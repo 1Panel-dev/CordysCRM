@@ -55,6 +55,33 @@
             and cc.user_id = #{userId}
         </if>
 
+        <if test="request.transition and !request.transitionDataPermission.all">
+            join (
+                select c.id from customer c
+                left join customer_collaboration cc on c.id = cc.customer_id
+                left join sys_organization_user sou on c.owner = sou.user_id
+                where cc.user_id = #{userId}
+                <if test="request.transitionDataPermission != null and request.transitionDataPermission.deptIds.size() > 0">
+                    or sou.department_id in
+                    <foreach collection="request.transitionDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                        #{deptId}
+                    </foreach>
+                </if>
+                <if test="request.transitionDataPermission != null and request.transitionDataPermission.self">
+                    or c.owner = #{userId}
+                </if>
+                <if test="request.transitionPoolIds != null and request.transitionPoolIds.size()> 0">
+                    or (
+                    c.in_shared_pool is true and c.pool_id in
+                    <foreach collection="request.transitionPoolIds" item="poolId" open="(" close=")" separator=",">
+                        #{poolId}
+                    </foreach>
+                    )
+                </if>
+                group by c.id
+            ) t on c.id = t.id
+        </if>
+
         where c.organization_id = #{orgId}
 
         <if test="request.poolId == null and !request.transition">
@@ -63,18 +90,6 @@
 
         <if test="request.poolId != null and !request.transition">
             and c.in_shared_pool is true and c.pool_id = #{request.poolId}
-        </if>
-
-        <if test="request.transition">
-            and (c.in_shared_pool is false
-            <if test="request.transitionPoolIds != null and request.transitionPoolIds.size()> 0">
-                or (c.in_shared_pool is true and c.pool_id in
-                <foreach collection="request.transitionPoolIds" item="poolId" open="(" close=")" separator=",">
-                    #{poolId}
-                </foreach>
-                )
-            </if>
-            )
         </if>
 
         <if test="dataPermission != null and dataPermission.self">
