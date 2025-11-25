@@ -42,8 +42,8 @@ import java.util.Set;
         @JsonSubTypes.Type(value = AttachmentField.class, name = "ATTACHMENT"),
         @JsonSubTypes.Type(value = LinkField.class, name = "LINK"),
         @JsonSubTypes.Type(value = IndustryField.class, name = "INDUSTRY"),
-        @JsonSubTypes.Type(value = ProductSubField.class, name = "PRODUCT_TABLE"),
-        @JsonSubTypes.Type(value = PriceSubField.class, name = "PRICE_TABLE"),
+        @JsonSubTypes.Type(value = ProductSubField.class, name = "SUB_PRODUCT"),
+        @JsonSubTypes.Type(value = PriceSubField.class, name = "SUB_PRICE"),
         @JsonSubTypes.Type(value = FormulaField.class, name = "FORMULA"),
 })
 public abstract class BaseField {
@@ -153,7 +153,7 @@ public abstract class BaseField {
 	public boolean canDisplay() {
 		// 公式、附件、图片、分割线, 子表格, 不可见字段等这些, 不支持在子列表等场景展示.
 		return !Strings.CS.equalsAny(type, FieldType.FORMULA.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
-				&& !Strings.CS.equalsAny(type, FieldType.PRICE_TABLE.name()) && !Strings.CS.equalsAny(type, FieldType.PRODUCT_TABLE.name())
+				&& !Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name()) && !Strings.CS.equalsAny(type, FieldType.SUB_PRODUCT.name())
 				&& !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
 	}
 
