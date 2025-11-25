@@ -54,7 +54,7 @@ public class DataScopeService {
             deptDataPermission.setViewId(viewId);
             if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
                 // 数据权限是全部,但是查询条件是部门,则按照部门查询
-                return getDeptDataPermissionForAllPermission(userId, orgId);
+				return getDeptDataPermissionForAllPermission(userId, orgId);
             }
         }
 
