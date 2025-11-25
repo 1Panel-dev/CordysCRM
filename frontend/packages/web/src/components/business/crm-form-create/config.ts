@@ -547,7 +547,6 @@ export const formulaDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   formula: '',
-  numberFormat: 'amount',
 };
 
 export const productTableDefaultFieldConfig: FormCreateField = {

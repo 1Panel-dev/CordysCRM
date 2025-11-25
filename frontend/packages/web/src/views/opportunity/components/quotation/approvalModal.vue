@@ -36,8 +36,11 @@
 
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+
+  import { batchApprove } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -52,7 +55,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'refresh'): void;
+    (e: 'refresh', val: BatchOperationResult): void;
   }>();
 
   const form = ref<{
@@ -79,10 +82,12 @@
       if (!error) {
         try {
           loading.value = true;
-          // TODO:  xinxinwu 🏷
-          emit('refresh');
+          const result = await batchApprove({
+            ids: props.quotationIds,
+            approvalStatus: form.value.approvalStatus as QuotationStatusEnum,
+          });
+          emit('refresh', result);
           handleCancel();
-          Message.success(t('org.setupSuccess'));
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);

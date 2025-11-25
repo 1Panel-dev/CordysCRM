@@ -68,4 +68,8 @@ export default {
   'opportunity.quotation.all': 'All quotations',
   'opportunity.quotation.department': 'Department quotations',
   'opportunity.quotation.my': 'My quotations',
+  'opportunity.partialFailed': 'Partial operation failed',
+  'opportunity.allSuccessful': 'All operation successful',
+  'opportunity.allError': 'All operation failed',
+  'opportunity.operationResult': 'Result',
 };

@@ -81,8 +81,6 @@
         >
           <n-radio-button value="number" class="flex-1 text-center">{{ t('crmFormDesign.number') }}</n-radio-button>
           <n-radio-button value="percent" class="flex-1 text-center">{{ t('crmFormDesign.percent') }}</n-radio-button>
-          <!-- TODO 金额 xxw 🏷 -->
-          <n-radio-button value="amount" class="flex-1 text-center">{{ t('crmFormDesign.amount') }}</n-radio-button>
         </n-radio-group>
         <n-checkbox
           v-model:checked="fieldConfig.decimalPlaces"

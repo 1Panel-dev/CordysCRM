@@ -44,7 +44,7 @@
       />
     </template>
   </CrmTable>
-  <approvalModal v-model:show="showApprovalModal" :quotationIds="checkedRowKeys" @refresh="handleRefresh" />
+  <approvalModal v-model:show="showApprovalModal" :quotationIds="checkedRowKeys" @refresh="handleApprovalSuccess" />
   <detailDrawer
     v-model:visible="showDetailDrawer"
     :detail="activeRow"
@@ -62,6 +62,7 @@
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     @saved="searchData"
   />
+  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="t('common.batchVoid')" />
 </template>
 
 <script setup lang="ts">
@@ -72,7 +73,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
-  import { QuotationItem } from '@lib/shared/models/opportunity';
+  import { BatchOperationResult, QuotationItem } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -85,10 +86,11 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import approvalModal from './approvalModal.vue';
+  import batchOperationResultModal from './batchOperationResultModal.vue';
   import detailDrawer from './detail.vue';
   import quotationStatus from './quotationStatus.vue';
 
-  import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
+  import { batchVoided, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -103,14 +105,20 @@
   const useStore = useUserStore();
 
   const props = defineProps<{
-    // TODO 商机详情预留 TODO
-    formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION | FormDesignKeyEnum.BUSINESS;
-    sourceId?: string; // 客户详情下时传入客户 ID
+    formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+    sourceId?: string;
     readonly?: boolean;
     openseaHiddenColumns?: string[];
   }>();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const resultVisible = ref(false);
+  const batchResult = ref<BatchOperationResult>({
+    success: 0,
+    fail: 0,
+    errorMessage: '',
+  });
+  const batchOperationName = ref(t('common.batchVoid'));
   const formCreateDrawerVisible = ref(false);
   const activeSourceId = ref('');
   const initialSourceName = ref('');
@@ -139,6 +147,7 @@
   const showApprovalModal = ref(false);
   function handleBatchApproval() {
     showApprovalModal.value = true;
+    batchOperationName.value = t('common.batchApproval');
   }
 
   function handleRefresh() {
@@ -146,8 +155,17 @@
     tableRefreshId.value += 1;
   }
 
+  function handleApprovalSuccess(val: BatchOperationResult) {
+    if (val.success > 0 || val.fail > 0) {
+      resultVisible.value = true;
+    }
+    batchResult.value = val;
+    handleRefresh();
+  }
+
   // 批量作废
-  function handleBatchInvalid() {
+  function handleBatchVoid() {
+    batchOperationName.value = t('common.batchVoid');
     openModal({
       type: 'error',
       title: t('opportunity.quotation.batchInvalidTitleTip', { number: checkedRowKeys.value.length }),
@@ -156,8 +174,10 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO:  xinxinwu 🏷
-          Message.success(t('common.voidSuccess'));
+          const result = await batchVoided(checkedRowKeys.value);
+          if (result.success > 0 || result.fail > 0) {
+            resultVisible.value = true;
+          }
           handleRefresh();
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -173,7 +193,7 @@
         handleBatchApproval();
         break;
       case 'voided':
-        handleBatchInvalid();
+        handleBatchVoid();
         break;
       default:
         break;
