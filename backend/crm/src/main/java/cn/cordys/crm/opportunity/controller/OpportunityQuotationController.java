@@ -76,6 +76,13 @@ public class OpportunityQuotationController {
         return opportunityQuotationService.get(id);
     }
 
+    @GetMapping("/module/form/snapshot/{id}")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
+    @Operation(summary = "获取表单快照配置")
+    public ModuleFormConfigDTO getFormSnapshot(@PathVariable("id") String id) {
+        return opportunityQuotationService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
+    }
+
     //撤销审批
     @GetMapping("/revoke/{id}")
     @Operation(summary = "撤销报价单审批")

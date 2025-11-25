@@ -617,4 +617,31 @@ public class OpportunityQuotationService {
     }
 
 
+    /**
+     * 获取表单快照
+     *
+     * @param id    报价单ID
+     * @param orgId 组织ID
+     * @return 表单配置DTO
+     */
+    public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
+        ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
+        OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
+        if (opportunityQuotation == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
+        }
+        if (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
+            LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+            OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+            if (snapshot != null) {
+                moduleFormConfigDTO = JSON.parseObject(snapshot.getQuotationProp(), ModuleFormConfigDTO.class);
+            } else {
+                moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
+            }
+        } else {
+            moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
+        }
+        return moduleFormConfigDTO;
+    }
 }
