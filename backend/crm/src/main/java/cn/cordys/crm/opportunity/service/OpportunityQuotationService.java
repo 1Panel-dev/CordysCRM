@@ -23,6 +23,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationBatchRequest;
@@ -87,6 +88,8 @@ public class OpportunityQuotationService {
     private BaseMapper<OpportunityQuotationSnapshot> snapshotBaseMapper;
     @Resource
     private BaseMapper<ContractField> contractFieldMapper;
+    @Resource
+    private BaseMapper<OpportunityQuotationApproval> approvalBaseMapper;
 
 
     /**
@@ -119,8 +122,29 @@ public class OpportunityQuotationService {
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
         saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
+        //保存报价单审批表
+        addQuotationApproval(userId, opportunityQuotation.getId());
+
         return opportunityQuotation;
 
+    }
+
+    /**
+     * 新增报价单审批表
+     *
+     * @param userId      用户ID
+     * @param quotationId 报价单ID
+     */
+    private void addQuotationApproval(String userId, String quotationId) {
+        OpportunityQuotationApproval opportunityQuotationApproval = new OpportunityQuotationApproval();
+        opportunityQuotationApproval.setId(IDGenerator.nextStr());
+        opportunityQuotationApproval.setQuotationId(quotationId);
+        opportunityQuotationApproval.setApprovalStatus(ApprovalState.APPROVING.toString());
+        opportunityQuotationApproval.setCreateUser(userId);
+        opportunityQuotationApproval.setUpdateUser(userId);
+        opportunityQuotationApproval.setCreateTime(System.currentTimeMillis());
+        opportunityQuotationApproval.setUpdateTime(System.currentTimeMillis());
+        approvalBaseMapper.insert(opportunityQuotationApproval);
     }
 
     /**
@@ -169,7 +193,9 @@ public class OpportunityQuotationService {
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-        if (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
+        //获取ApprovalState中所有状态的id属性(以后改成获取自定义的审批状态)
+        List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).toList();
+        if (approvalStatusList.contains(opportunityQuotation.getApprovalStatus()) && (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString()))) {
             // 已审核，查询最新快照
             LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
@@ -205,6 +231,11 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotationMapper.updateById(opportunityQuotation);
+
+        //更新报价单审批表
+        updateQuotationApproval(userId, id, ApprovalState.REVOKED.toString());
+
+
         return opportunityQuotation.getApprovalStatus();
     }
 
@@ -220,7 +251,7 @@ public class OpportunityQuotationService {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
         String oldApprovalStatus = oldOpportunityQuotation.getApprovalStatus();
-        OpportunityQuotation opportunityQuotation = updateApprovalState(oldOpportunityQuotation, ApprovalState.VOIDED.toString(), userId);
+        OpportunityQuotation opportunityQuotation = updateApprovalState(oldOpportunityQuotation, LogType.VOIDED, userId);
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
@@ -253,7 +284,9 @@ public class OpportunityQuotationService {
      * @param userId  用户ID
      */
     public String approve(OpportunityQuotationEditRequest request, String userId, String orgId) {
-        String noticeKey = Strings.CI.equals(request.getApprovalStatus(), ApprovalState.APPROVED.toString()) ?
+        //获取ApprovalState中APPROVED状态的id属性(以后改成获取自定义的审批状态)
+        List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).filter(status -> ApprovalState.APPROVED.toString().equals(status)).toList();
+        String noticeKey = approvalStatusList.contains(request.getApprovalStatus()) ?
                 "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved";
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(request.getId());
         if (oldOpportunityQuotation == null) {
@@ -358,6 +391,11 @@ public class OpportunityQuotationService {
         wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
 
+        //删除审批记录
+        LambdaQueryWrapper<OpportunityQuotationApproval> approvalWrapper = new LambdaQueryWrapper<>();
+        approvalWrapper.eq(OpportunityQuotationApproval::getQuotationId, id);
+        approvalBaseMapper.deleteByLambda(approvalWrapper);
+
         //记录日志
         saveSateChangeLog(organizationId, null, userId, LogType.DELETE, opportunityQuotation);
 
@@ -421,6 +459,10 @@ public class OpportunityQuotationService {
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
         opportunityQuotationMapper.update(opportunityQuotation);
+
+        //更新报价单审批表
+        updateQuotationApproval(userId, id, ApprovalState.APPROVING.toString());
+
         // 处理日志上下文
         baseService.handleUpdateLog(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName());
 
@@ -433,6 +475,37 @@ public class OpportunityQuotationService {
         saveSnapshot(opportunityQuotation, request.getModuleFormConfigDTO(), response);
 
         return opportunityQuotationMapper.selectByPrimaryKey(id);
+    }
+
+    /**
+     * 更新报价单审批状态
+     *
+     * @param userId      更新用户ID
+     * @param quotationId 报价单ID
+     */
+    private void updateQuotationApproval(String userId, String quotationId, String approvalStatus) {
+        LambdaQueryWrapper<OpportunityQuotationApproval> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityQuotationApproval::getQuotationId, quotationId);
+        List<OpportunityQuotationApproval> approvalList = approvalBaseMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(approvalList)) {
+            addQuotationApproval(userId, quotationId);
+        } else {
+            updateQuotationApprovalState(userId, approvalList.getFirst(), approvalStatus);
+        }
+    }
+
+    /**
+     * 更新报价单审批状态
+     *
+     * @param userId            更新用户ID
+     * @param quotationApproval 报价单审批实体
+     * @param approvalStatus    审批状态
+     */
+    private void updateQuotationApprovalState(String userId, OpportunityQuotationApproval quotationApproval, String approvalStatus) {
+        quotationApproval.setApprovalStatus(approvalStatus);
+        quotationApproval.setUpdateTime(System.currentTimeMillis());
+        quotationApproval.setUpdateUser(userId);
+        approvalBaseMapper.update(quotationApproval);
     }
 
     /**
@@ -539,11 +612,11 @@ public class OpportunityQuotationService {
             successIds.add(item.getId());
             LogDTO logDTO = new LogDTO(organizationId, item.getId(), userId, LogType.VOIDED, LogModule.OPPORTUNITY_QUOTATION, item.getName());
             logDTO.setOriginalValue(item.getApprovalStatus());
-            logDTO.setModifiedValue(ApprovalState.VOIDED.toString());
+            logDTO.setModifiedValue(LogType.VOIDED);
             logs.add(logDTO);
 
         });
-        batchUpdateMapper.batchUpdateApprovalStatus(successIds, ApprovalState.VOIDED.toString(), userId, System.currentTimeMillis());
+        batchUpdateMapper.batchUpdateApprovalStatus(successIds, LogType.VOIDED, userId, System.currentTimeMillis());
         logService.batchAdd(logs);
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
@@ -630,7 +703,9 @@ public class OpportunityQuotationService {
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-        if (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
+        //获取ApprovalState中所有状态的id属性(以后改成获取自定义的审批状态)
+        List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).toList();
+        if (approvalStatusList.contains(opportunityQuotation.getApprovalStatus()) && (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString()))) {
             LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
             OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);

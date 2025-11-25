@@ -7,6 +7,7 @@ INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:DELETE');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:EXPORT');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:APPROVAL');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:VOIDED');
 
 -- init price permissions
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'PRICE:READ');
