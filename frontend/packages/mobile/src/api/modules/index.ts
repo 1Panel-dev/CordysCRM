@@ -96,6 +96,8 @@ export const {
   approvalQuotation,
   voidQuotation,
   revokeQuotation,
+  batchApprove,
+  batchVoided,
 } = opportunityApi;
 
 export const {

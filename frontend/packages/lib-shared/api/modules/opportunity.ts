@@ -67,6 +67,8 @@ import {
   VoidQuotationUrl,
   DeleteQuotationUrl,
   RevokeQuotationUrl,
+  BatchApproveUrl,
+  BatchVoidedUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -94,6 +96,7 @@ import type {
 import type {
   AddOpportunityStageParams,
   ApproveQuotation,
+  BatchApproveParams,
   OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
@@ -107,6 +110,7 @@ import type {
   UpdateOpportunityStageParams,
   UpdateOpportunityStageRollbackParams,
   UpdateQuotationParams,
+  BatchOperationResult,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
@@ -437,6 +441,14 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${RevokeQuotationUrl}/${id}` });
   }
 
+  function batchApprove(data: BatchApproveParams) {
+    return CDR.post<BatchOperationResult>({ url: BatchApproveUrl,data});
+  }
+
+  function batchVoided(data: (string|number)[]) {
+    return CDR.post<BatchOperationResult>({ url: BatchVoidedUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -505,5 +517,7 @@ export default function useProductApi(CDR: CordysAxios) {
     approvalQuotation,
     voidQuotation,
     revokeQuotation,
+    batchApprove,
+    batchVoided,
   };
 }

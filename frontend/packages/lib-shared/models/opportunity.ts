@@ -156,4 +156,16 @@ export interface ApproveQuotation {
   approvalStatus: QuotationStatusEnum;
 }
 
+export interface BatchApproveParams{
+  ids: (string | number)[];
+  approvalStatus: QuotationStatusEnum;
+}
+
+export interface BatchOperationResult {
+  success: number;
+  fail: number;
+  errorMessage?: string;
+}
+
+
 

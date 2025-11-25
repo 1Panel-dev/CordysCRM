@@ -68,6 +68,8 @@ export const ApprovalQuotationUrl = '/opportunity/quotation/approve';
 export const VoidQuotationUrl = '/opportunity/quotation/voided'; 
 export const DeleteQuotationUrl = '/opportunity/quotation/delete'; 
 export const RevokeQuotationUrl = '/opportunity/quotation/revoke'; 
+export const BatchApproveUrl = '/opportunity/quotation/batch/approve'; 
+export const BatchVoidedUrl = '/opportunity/quotation/batch/voided'; 
 
 // 导入
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';

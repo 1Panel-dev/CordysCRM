@@ -64,4 +64,8 @@ export default {
   'opportunity.quotation.all': '全部报价单',
   'opportunity.quotation.department': '部门报价单',
   'opportunity.quotation.my': '我的报价单',
+  'opportunity.partialFailed': '部分操作失败',
+  'opportunity.allSuccessful': '全部操作成功',
+  'opportunity.allError': '全部操作失败',
+  'opportunity.operationResult': '结果',
 };
