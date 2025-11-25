@@ -38,7 +38,9 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.CUSTOMER.getKey(), "customer");
         FORM_TABLE.put(FormKey.CONTACT.getKey(), "customer_contact");
         FORM_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity");
+        FORM_TABLE.put(FormKey.QUOTATION.getKey(), "quotation");
         FORM_TABLE.put(FormKey.PRODUCT.getKey(), "product");
+        FORM_TABLE.put(FormKey.PRICE.getKey(), "price");
         FORM_TABLE.put(FormKey.FOLLOW_RECORD.getKey(), "follow_up_record");
         FORM_TABLE.put(FormKey.FOLLOW_PLAN.getKey(), "follow_up_plan");
         FORM_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
@@ -89,7 +91,6 @@ public class ModuleFieldService {
      * 校验字段值是否唯一
      *
      * @param request 请求参数
-     *
      * @return 是否唯一
      */
     public FieldRepeatCheckResponse checkRepeat(FieldRepeatCheckRequest request, String currentOrg) {
