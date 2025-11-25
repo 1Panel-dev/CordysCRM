@@ -1,18 +1,24 @@
 package cn.cordys.crm.contract.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -37,6 +43,8 @@ public class ContractController {
     private ContractService contractService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ContractPaymentPlanService contractPaymentPlanService;
 
 
     @GetMapping("/module/form")
@@ -112,4 +120,18 @@ public class ContractController {
         contractService.archivedContract(id, SessionUtils.getUserId());
     }
 
+
+    @PostMapping("/{id}/payment-plan/page")
+    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
+    @Operation(summary = "合同详情-回款列表")
+    public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(@PathVariable("id") String id,
+                                                                                  @Validated @RequestBody ContractPaymentPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        ContractDetailPaymentPlanPageRequest contractPaymentPlanPageRequest = BeanUtils.copyBean(new ContractDetailPaymentPlanPageRequest(), request);
+        contractPaymentPlanPageRequest.setContractId(id);
+        return contractPaymentPlanService.list(contractPaymentPlanPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 }

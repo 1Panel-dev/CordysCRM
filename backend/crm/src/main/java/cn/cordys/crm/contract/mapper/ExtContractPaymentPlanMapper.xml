@@ -44,6 +44,10 @@
             and cpp.owner = #{userId}
         </if>
 
+        <if test="request.contractId != null and request.contractId != ''">
+            and o.contract_id = #{request.contractId}
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')
         </if>

@@ -3,7 +3,6 @@ package cn.cordys.crm.contract.dto.request;
 import lombok.Data;
 import cn.cordys.common.dto.BasePageRequest;
 
-import java.math.BigDecimal;
 
 /**
  *
@@ -13,4 +12,5 @@ import java.math.BigDecimal;
 @Data
 public class ContractPaymentPlanPageRequest extends BasePageRequest {
 
+    public String getContractId() {return null;}
 }
