@@ -818,6 +818,7 @@
   );
 
   function searchData(_keyword?: string) {
+    if (!activeTab.value) return;
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       viewId: activeTab.value,
