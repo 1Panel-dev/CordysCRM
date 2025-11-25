@@ -332,6 +332,9 @@
           },
           {
             "id": "OPPORTUNITY_QUOTATION:APPROVAL"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:VOIDED"
           }
         ]
       }

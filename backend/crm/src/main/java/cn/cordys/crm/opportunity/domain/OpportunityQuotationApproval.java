@@ -1,6 +1,5 @@
 package cn.cordys.crm.opportunity.domain;
 
-import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -25,4 +24,16 @@ public class OpportunityQuotationApproval implements Serializable {
 
     @Schema(description = "审核状态")
     private String approvalStatus;
+
+    @Schema(description = "创建人")
+    private String createUser;
+
+    @Schema(description = "修改人")
+    private String updateUser;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
+
+    @Schema(description = "更新时间")
+    private Long updateTime;
 }

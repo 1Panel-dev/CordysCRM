@@ -92,7 +92,7 @@ public class OpportunityQuotationController {
 
     //作废
     @GetMapping("/voided/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED)
     @Operation(summary = "作废报价单")
     public String voidQuotation(@PathVariable("id") String id) {
         return opportunityQuotationService.voidQuotation(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
