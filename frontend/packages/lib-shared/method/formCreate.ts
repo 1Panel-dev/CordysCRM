@@ -10,6 +10,8 @@ export const needSameTypes = [
   FieldTypeEnum.DATE_TIME,
   FieldTypeEnum.INPUT_NUMBER,
   FieldTypeEnum.INDUSTRY,
+  FieldTypeEnum.SUB_PRICE,
+  FieldTypeEnum.SUB_PRODUCT,
 ];
 export const multipleTypes = [FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.INPUT_MULTIPLE];
 export const memberTypes = [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE];

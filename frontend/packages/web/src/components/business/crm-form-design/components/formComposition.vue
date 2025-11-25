@@ -31,9 +31,7 @@
             <div class="crm-form-design--composition-item-tools">
               <n-tooltip
                 v-if="
-                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.PRICE_TABLE, FieldTypeEnum.PRODUCT_TABLE].includes(
-                    item.type
-                  )
+                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)
                 "
                 :delay="300"
                 :show-arrow="false"
@@ -75,7 +73,7 @@
               :form-config="props.formConfig"
             />
             <div
-              v-if="![FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(item.type)"
+              v-if="![FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(item.type)"
               class="crm-form-design--composition-item-mask"
             ></div>
           </div>
@@ -205,7 +203,7 @@
     if (type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
     }
-    if ([FieldTypeEnum.PRODUCT_TABLE, FieldTypeEnum.PRICE_TABLE].includes(type)) {
+    if ([FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(type)) {
       return dataTable;
     }
   }
