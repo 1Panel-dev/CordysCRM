@@ -82,6 +82,11 @@ public final class LogType {
      */
     public static final String VOIDED = "VOIDED";
 
+    /**
+     * 归档
+     */
+    public static final String ARCHIVED = "ARCHIVED";
+
 
     private LogType() {
         // 私有构造函数防止实例化
