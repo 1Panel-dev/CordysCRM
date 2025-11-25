@@ -8264,10 +8264,6 @@ export const COUNTRIES_TREE: CascaderOption[] = [
     value: 'TUV',
   },
   {
-    label: '阿联酋',
-    value: 'UAE',
-  },
-  {
     label: '乌干达',
     value: 'UGA',
     children: [
