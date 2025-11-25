@@ -121,7 +121,6 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult, ContractPaymentPlanListResponse.class);
         List<ContractPaymentPlanListResponse> contractPaymentPlanList = pageResult.getList();
-        // todo
         
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
