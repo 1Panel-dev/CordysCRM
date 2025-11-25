@@ -36,9 +36,10 @@
   import dashboardModule from './module.vue';
 
   import { getThirdPartyConfig } from '@/api/modules';
+  import useLocalForage from '@/hooks/useLocalForage';
 
   const { t } = useI18n();
-
+  const { setItem, getItem } = useLocalForage();
   const fullList = [
     {
       key: 'LINK',
@@ -67,13 +68,25 @@
     return fullList.filter((item) => (item.key === 'DE' && DEConfig.value?.deBoardEnable) || item.key === 'LINK');
   });
   const activeDashboard = ref(dashboardList.value[0].key);
-
-  function clickTag(key: string) {
+  const activeDashboardKey = 'dashboard-active-tab';
+  async function clickTag(key: string) {
     activeDashboard.value = key;
+    await setItem(activeDashboardKey, key);
   }
 
-  onBeforeMount(() => {
-    init();
+  async function loadActiveDashboard() {
+    const currentActiveKey = await getItem(activeDashboardKey);
+    if (typeof currentActiveKey === 'string' && dashboardList.value.some((item) => item.key === currentActiveKey)) {
+      activeDashboard.value = currentActiveKey;
+    } else {
+      activeDashboard.value = dashboardList.value[0]?.key ?? '';
+      await setItem(activeDashboardKey, activeDashboard.value);
+    }
+  }
+
+  onBeforeMount(async () => {
+    await init();
+    loadActiveDashboard();
   });
 </script>
 
