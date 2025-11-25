@@ -1,10 +1,12 @@
 package cn.cordys.crm.contract.dto.request;
 
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  *
@@ -13,8 +15,6 @@ import java.math.BigDecimal;
  */
 @Data
 public class ContractPaymentPlanAddRequest {
-
-
     @Size(max = 32)
     @NotBlank
     @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -33,7 +33,6 @@ public class ContractPaymentPlanAddRequest {
 
     private Long planEndTime;
 
-
-
-
+    @Schema(description = "模块字段值")
+    private List<BaseModuleFieldValue> moduleFields;
 }
