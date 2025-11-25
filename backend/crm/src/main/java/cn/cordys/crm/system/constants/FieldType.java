@@ -103,6 +103,6 @@ public enum FieldType {
 	/**
 	 * 子表-产品, 子表-价格
 	 */
-	PRODUCT_TABLE,
-	PRICE_TABLE;
+	SUB_PRODUCT,
+	SUB_PRICE;
 }
