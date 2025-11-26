@@ -68,9 +68,12 @@
         readonly
         :source-id="sourceId"
       />
-      <!-- TODO  xinxin 待调整 -->
       <CrmCard v-else-if="activeTab === 'quotation'" no-content-bottom-padding hide-footer>
-        <quotationTable :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION" :source-id="sourceId" />
+        <quotationTable
+          :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+          :source-id="sourceId"
+          :source-name="titleName"
+        />
       </CrmCard>
     </template>
 

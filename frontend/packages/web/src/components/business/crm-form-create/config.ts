@@ -77,6 +77,7 @@ import {
   getQuotationDetail,
   getQuotationFormConfig,
   getQuotationList,
+  getQuotationSnapshotFormConfig,
   updateClue,
   updateClueFollowPlan,
   updateClueFollowRecord,
@@ -677,6 +678,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOptFormConfig,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationFormConfig,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationSnapshotFormConfig,
   [FormDesignKeyEnum.CONTRACT]: getContractFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
@@ -709,6 +711,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: addOpportunity,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: addQuotation,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: addQuotation,
   [FormDesignKeyEnum.CONTRACT]: addContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlan,
   [FormDesignKeyEnum.PRICE]: addProductPrice,
@@ -741,6 +744,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: updateOpportunity,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: updateQuotation,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: updateQuotation,
   [FormDesignKeyEnum.CONTRACT]: updateContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlan,
   [FormDesignKeyEnum.PRICE]: updateProductPrice,
@@ -774,6 +778,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanDetail,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationDetail,
   [FormDesignKeyEnum.PRICE]: getProductPrice,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {

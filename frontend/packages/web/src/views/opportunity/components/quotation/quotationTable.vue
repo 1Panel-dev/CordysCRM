@@ -15,6 +15,7 @@
         <n-button
           v-if="!props.readonly && hasAnyPermission(['OPPORTUNITY_QUOTATION:ADD'])"
           type="primary"
+          :loading="createLoading"
           @click="handleCreate"
         >
           {{ t('opportunity.quotation.new') }}
@@ -59,7 +60,8 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :other-save-params="otherSaveParams"
-    :link-form-key="FormDesignKeyEnum.CONTRACT"
+    :link-form-info="linkFormInfo"
+    :link-form-key="linkFormKey"
     @saved="searchData"
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="t('common.batchVoid')" />
@@ -92,6 +94,8 @@
 
   import { batchVoided, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { quotationStatusOptions } from '@/config/opportunity';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
@@ -106,6 +110,7 @@
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+    sourceName?: string;
     sourceId?: string;
     readonly?: boolean;
     openseaHiddenColumns?: string[];
@@ -205,11 +210,34 @@
     id: '',
   });
 
+  const createLoading = ref(false);
+  const linkFormKey = ref(FormDesignKeyEnum.BUSINESS);
+  const linkFormInfo = ref();
+  const sourceId = ref(props.sourceId || '');
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: computed(() => linkFormKey.value),
+    sourceId,
+  });
   async function handleCreate() {
-    needInitDetail.value = false;
-    activeFormKey.value = FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
-    activeSourceId.value = '';
-    formCreateDrawerVisible.value = true;
+    try {
+      createLoading.value = true;
+      activeFormKey.value = FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+      activeSourceId.value = props.sourceId ?? '';
+      initialSourceName.value = props.sourceId ? props.sourceName ?? '' : '';
+      needInitDetail.value = false;
+      if (props.sourceId) {
+        linkFormKey.value = FormDesignKeyEnum.BUSINESS;
+        await initFormConfig();
+        await initFormDetail(false, true);
+      }
+      linkFormInfo.value = linkFormFieldMap.value;
+      formCreateDrawerVisible.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      createLoading.value = false;
+    }
   }
 
   function handleEdit(id: string) {
@@ -217,6 +245,7 @@
     activeSourceId.value = id;
     needInitDetail.value = true;
     otherSaveParams.value.id = id;
+    linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
   function handleVoid(row: QuotationItem) {
@@ -384,11 +413,7 @@
             CrmTableButton,
             {
               onClick: () => {
-                // TODO:  xinxinwu 🏷
-                activeRow.value = {
-                  ...row,
-                  approvalStatus: QuotationStatusEnum.APPROVING,
-                };
+                activeRow.value = row;
                 activeQuotationId.value = row.id;
                 showDetailDrawer.value = true;
               },
@@ -397,7 +422,7 @@
           );
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
-      status: (row: QuotationItem) =>
+      approvalStatus: (row: QuotationItem) =>
         h(quotationStatus, {
           status: row.approvalStatus,
         }),
@@ -416,29 +441,6 @@
   const isAdvancedSearchMode = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
-  const statusOptions = [
-    {
-      value: QuotationStatusEnum.APPROVED,
-      label: t('common.pass'),
-    },
-    {
-      value: QuotationStatusEnum.UNAPPROVED,
-      label: t('common.unPass'),
-    },
-    {
-      value: QuotationStatusEnum.APPROVING,
-      label: t('common.review'),
-    },
-    {
-      value: QuotationStatusEnum.VOIDED,
-      label: t('common.voided'),
-    },
-    {
-      value: QuotationStatusEnum.REVOKE,
-      label: t('common.revoke'),
-    },
-  ];
-
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
       {
@@ -446,7 +448,7 @@
         dataIndex: 'approvalStatus',
         type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
-          options: statusOptions,
+          options: quotationStatusOptions,
         },
       },
       {

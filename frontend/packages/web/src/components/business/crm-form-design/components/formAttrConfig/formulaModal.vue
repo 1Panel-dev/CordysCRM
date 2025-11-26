@@ -120,6 +120,8 @@
       placeCursorAtEnd(editor.value);
     }
 
+    handleFocus();
+
     // 创建包裹节点
     const wrapper = document.createElement('span');
     wrapper.className = 'formula-tag-wrapper';

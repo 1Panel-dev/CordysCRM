@@ -72,4 +72,5 @@ export default {
   'opportunity.allSuccessful': 'All operation successful',
   'opportunity.allError': 'All operation failed',
   'opportunity.operationResult': 'Result',
+  'opportunity.quotation.amount': 'Total amount',
 };

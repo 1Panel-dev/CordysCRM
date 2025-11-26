@@ -55,7 +55,7 @@ export default {
   'opportunity.quotation.voidTitleTip': '确认作废{name}报价单吗？',
   'opportunity.quotation.invalidContentTip': '作废后，报价单不可恢复，请谨慎操作！',
   'opportunity.quotation.invalidHasContractContentTip': '当前报价表存在关联合同，禁止作废！',
-  'opportunity.quotation.searchPlaceholder': '通过报价单名称和商机名称搜索',
+  'opportunity.quotation.searchPlaceholder': '通过报价单名称/商机名称搜索',
   'opportunity.quotation.batchInvalidTitleTip': '确认作废{number}个报价单吗？',
   'opportunity.quotation.deleteTitleTip': '确认删除{name}报价单吗？',
   'opportunity.quotation.deleteContentTip': '删除后，报价单不可恢复，请谨慎操作！',
@@ -68,4 +68,5 @@ export default {
   'opportunity.allSuccessful': '全部操作成功',
   'opportunity.allError': '全部操作失败',
   'opportunity.operationResult': '结果',
+  'opportunity.quotation.amount': '累计金额',
 };

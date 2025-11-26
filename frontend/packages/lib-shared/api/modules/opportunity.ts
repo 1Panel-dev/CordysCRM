@@ -69,6 +69,7 @@ import {
   RevokeQuotationUrl,
   BatchApproveUrl,
   BatchVoidedUrl,
+  GetQuotationSnapshotFormConfigUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -415,10 +416,15 @@ export default function useProductApi(CDR: CordysAxios) {
   function getQuotationDetail(id: string) {
     return CDR.get<QuotationItem>({ url: `${GetQuotationDetailUrl}/${id}` });
   }
-
+  
   // 获取报价表单配置
   function getQuotationFormConfig() {
     return CDR.get<FormDesignConfigDetailParams>({ url: GetQuotationFormConfigUrl });
+  }
+
+  // 获取报价表单快照配置
+  function getQuotationSnapshotFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetQuotationSnapshotFormConfigUrl });
   }
 
   // 删除报价
@@ -513,6 +519,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateQuotation,
     getQuotationDetail,
     getQuotationFormConfig,
+    getQuotationSnapshotFormConfig,
     deleteQuotation,
     approvalQuotation,
     voidQuotation,

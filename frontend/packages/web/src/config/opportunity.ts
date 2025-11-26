@@ -2,6 +2,8 @@ import dayjs from 'dayjs';
 
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSessionStorageTempState } from '@lib/shared/method/local-storage';
 import type { TransferParams } from '@lib/shared/models/customer/index';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
@@ -9,6 +11,8 @@ import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 import { FilterResult } from '@/components/pure/crm-advance-filter/type';
 
 import { getOpportunityStageConfig } from '@/api/modules';
+
+const { t } = useI18n();
 
 export const defaultTransferForm: TransferParams = {
   ids: [],
@@ -77,3 +81,26 @@ export const getOptHomeConditions = async (
     ],
   };
 };
+
+export const quotationStatusOptions = [
+  {
+    value: QuotationStatusEnum.APPROVED,
+    label: t('common.pass'),
+  },
+  {
+    value: QuotationStatusEnum.UNAPPROVED,
+    label: t('common.unPass'),
+  },
+  {
+    value: QuotationStatusEnum.APPROVING,
+    label: t('common.review'),
+  },
+  {
+    value: QuotationStatusEnum.VOIDED,
+    label: t('common.voided'),
+  },
+  {
+    value: QuotationStatusEnum.REVOKE,
+    label: t('common.revoke'),
+  },
+];

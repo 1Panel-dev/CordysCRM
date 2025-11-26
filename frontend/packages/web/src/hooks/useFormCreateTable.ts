@@ -19,6 +19,7 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
+import { quotationStatusOptions } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
 import { hasAnyPermission } from '@/utils/permission';
@@ -666,7 +667,25 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityInternalColumns,
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [],
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'approvalStatus',
+        filterOptions: quotationStatusOptions,
+        sortOrder: false,
+        sorter: true,
+        filter: true,
+        render: props.specialRender?.approvalStatus,
+      },
+      {
+        title: t('opportunity.quotation.amount'),
+        width: 120,
+        key: 'amount',
+        sortOrder: false,
+        sorter: true,
+      },
+    ],
     [FormDesignKeyEnum.CONTRACT]: [], // TODO lmy
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [], // TODO lmy
     [FormDesignKeyEnum.PRICE]: [],

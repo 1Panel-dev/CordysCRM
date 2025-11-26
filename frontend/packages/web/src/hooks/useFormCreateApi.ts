@@ -881,6 +881,21 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
+
+    if (props.formKey.value === FormDesignKeyEnum.OPPORTUNITY_QUOTATION && props.sourceId?.value) {
+      if (field.businessKey === 'opportunityId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value || props.initialSourceName?.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
       // 数据源类型的字段，默认值需要转为数组
       return {
@@ -1019,7 +1034,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function subFieldInit(field: FormCreateField) {
     let defaultValue = field.defaultValue || '';
-    if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+    if ((field.type === FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA)) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
     } else if (getRuleType(field) === 'array') {
       defaultValue =

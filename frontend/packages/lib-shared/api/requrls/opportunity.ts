@@ -70,6 +70,7 @@ export const DeleteQuotationUrl = '/opportunity/quotation/delete';
 export const RevokeQuotationUrl = '/opportunity/quotation/revoke'; 
 export const BatchApproveUrl = '/opportunity/quotation/batch/approve'; 
 export const BatchVoidedUrl = '/opportunity/quotation/batch/voided'; 
+export const GetQuotationSnapshotFormConfigUrl = '/opportunity/quotation/module/form/snapshot'; 
 
 // 导入
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';
