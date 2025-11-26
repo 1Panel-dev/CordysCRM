@@ -1,9 +1,9 @@
 package cn.cordys.crm.contract.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import lombok.Data;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 import java.util.List;
 

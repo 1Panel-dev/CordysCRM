@@ -10,7 +10,10 @@ import org.apache.commons.lang3.Strings;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * @author song-cc-rock

@@ -1,7 +1,7 @@
 package cn.cordys.crm.contract.dto.request;
 
-import lombok.Data;
 import cn.cordys.common.dto.BasePageRequest;
+import lombok.Data;
 
 
 /**

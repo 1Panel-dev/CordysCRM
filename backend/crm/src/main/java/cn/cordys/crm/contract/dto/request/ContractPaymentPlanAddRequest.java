@@ -2,7 +2,8 @@ package cn.cordys.crm.contract.dto.request;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;

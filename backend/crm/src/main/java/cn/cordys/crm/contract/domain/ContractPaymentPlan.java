@@ -1,10 +1,8 @@
 package cn.cordys.crm.contract.domain;
 
-import jakarta.persistence.Table;
-
 import cn.cordys.common.domain.BaseModel;
-
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.math.BigDecimal;
