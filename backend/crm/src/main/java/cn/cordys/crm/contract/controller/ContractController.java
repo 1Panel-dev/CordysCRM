@@ -111,7 +111,7 @@ public class ContractController {
     }
 
 
-    @GetMapping("/archived/{id}")
+    @GetMapping("/archived")
     @RequiresPermissions(PermissionConstants.CONTRACT_ARCHIVE)
     @Operation(summary = "归档/取消归档")
     public void archived(@Validated @RequestBody ContractArchivedRequest request) {
