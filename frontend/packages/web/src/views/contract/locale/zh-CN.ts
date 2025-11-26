@@ -4,4 +4,12 @@ export default {
   'contract.my': '我的合同',
   'contract.depart': '部门合同',
   'contract.newPlan': '新建计划',
+  'contract.signed': '已签署',
+  'contract.inProgress': '履行中',
+  'contract.completedPerformance': '履行完毕',
+  'contract.void': '作废',
+  'contract.uncompleted': '未完成',
+  'contract.partialCompleted': '部分完成',
+  'contract.voidedConfirmContent': '作废后，不可恢复，请谨慎操作！',
+  'contract.voidedConfirmTitle': '确认作废 {name} 吗？',
 };

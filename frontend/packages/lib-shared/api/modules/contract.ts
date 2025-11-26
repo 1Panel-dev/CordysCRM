@@ -1,5 +1,6 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { TableQueryParams } from '@lib/shared/models/common';
 
 import {
   ContractPageUrl,
@@ -9,6 +10,9 @@ import {
   GetContractDetailUrl,
   GetContractFormConfigUrl,
   GetContractTabUrl,
+  ContractVoidedUrl,
+  ContractArchivedUrl,
+  GetContractFormSnapshotConfigUrl,
   ExportContractAllUrl,
   ExportContractSelectedUrl,
   GenerateContractChartUrl,
@@ -52,18 +56,16 @@ import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 import type {
   ContractDetail,
   ContractItem,
-  ContractPageQueryParams,
   SaveContractParams,
   UpdateContractParams,
   PaymentPlanItem,
   PaymentPlanDetail,
-  PaymentPlanPageQueryParams,
   SavePaymentPlanParams,
   UpdatePaymentPlanParams,
 } from '@lib/shared/models/contract';
 export default function useContractApi(CDR: CordysAxios) {
   // 合同列表
-  function getContractList(data: ContractPageQueryParams) {
+  function getContractList(data: TableQueryParams) {
     return CDR.post<CommonList<ContractItem>>({ url: ContractPageUrl, data }, { ignoreCancelToken: true });
   }
 
@@ -82,6 +84,16 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${ContractDeleteUrl}/${id}` });
   }
 
+  // 作废合同
+  function voidedContract(id: string) {
+    return CDR.get({ url: `${ContractVoidedUrl}/${id}` });
+  }
+
+  // 归档合同
+  function archivedContract(id: string, archivedStatus: string) {
+    return CDR.get({ url: `${ContractArchivedUrl}`, params: { archivedStatus, id } });
+  }
+
   // 合同详情
   function getContractDetail(id: string) {
     return CDR.get<ContractDetail>({ url: `${GetContractDetailUrl}/${id}` });
@@ -91,6 +103,12 @@ export default function useContractApi(CDR: CordysAxios) {
   function getContractFormConfig() {
     return CDR.get<FormDesignConfigDetailParams>({
       url: GetContractFormConfigUrl,
+    });
+  }
+
+  function getContractFormSnapshotConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: GetContractFormSnapshotConfigUrl,
     });
   }
 
@@ -151,7 +169,7 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 回款计划列表
-  function getPaymentPlanList(data: PaymentPlanPageQueryParams) {
+  function getPaymentPlanList(data: TableQueryParams) {
     return CDR.post<CommonList<PaymentPlanItem>>({ url: PaymentPlanPageUrl, data }, { ignoreCancelToken: true });
   }
 
@@ -264,6 +282,9 @@ export default function useContractApi(CDR: CordysAxios) {
     updateContract,
     deleteContract,
     getContractFormConfig,
+    voidedContract,
+    archivedContract,
+    getContractFormSnapshotConfig,
     // 回款计划
     getPaymentPlanList,
     addPaymentPlan,

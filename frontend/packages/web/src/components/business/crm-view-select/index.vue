@@ -79,6 +79,8 @@
             FormDesignKeyEnum.FOLLOW_PLAN,
             FormDesignKeyEnum.FOLLOW_RECORD,
             FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+            FormDesignKeyEnum.CONTRACT,
+            FormDesignKeyEnum.CONTRACT_PAYMENT,
           ].includes(props.type)
         "
         type="default"
