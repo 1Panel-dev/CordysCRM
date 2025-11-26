@@ -146,6 +146,7 @@
     [FieldDataSourceTypeEnum.CLUE]: 'formCreate.clue',
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.PRICE]: 'formCreate.price',
   };
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
@@ -156,6 +157,7 @@
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
+    [FieldDataSourceTypeEnum.PRICE]: () => Promise.resolve({} as any), // TODO:
   };
 
   function onConfirm() {

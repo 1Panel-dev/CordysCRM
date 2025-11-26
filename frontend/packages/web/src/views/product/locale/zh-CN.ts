@@ -8,4 +8,5 @@ export default {
   'product.batchUpSuccess': '上架成功',
   'product.batchDownSuccess': '下架成功',
   'product.detail': '产品详情',
+  'product.newPrice': '新建价格表',
 };

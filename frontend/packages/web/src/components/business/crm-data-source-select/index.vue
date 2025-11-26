@@ -73,6 +73,7 @@
     [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: 'crmFormDesign.customer',
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.PRICE]: 'crmFormCreate.drawer.price',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {
@@ -92,8 +93,10 @@
     const newRows = selectedRows.value;
     rows.value = newRows;
     value.value = newRows.map((e) => e.id) as RowKey[];
+    nextTick(() => {
+      emit('change', value.value);
+    });
     dataSourcesModalVisible.value = false;
-    emit('change', value.value);
   }
 
   function handleDataSourceCancel() {

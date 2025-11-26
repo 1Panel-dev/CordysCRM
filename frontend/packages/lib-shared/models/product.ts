@@ -22,3 +22,12 @@ export interface SaveProductParams {
 export interface UpdateProductParams extends SaveProductParams {
   id: string;
 }
+
+export interface UpdatePriceParams extends SaveProductParams {
+  id: string;
+  status: boolean;
+}
+
+export interface AddPriceParams extends SaveProductParams {
+  status: boolean;
+}

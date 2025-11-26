@@ -90,6 +90,12 @@ export const {
   getProductFormConfig,
   preCheckImportProduct,
   downloadProductTemplate,
+  getProductPrice,
+  updateProductPrice,
+  getProductPriceList,
+  addProductPrice,
+  deleteProductPrice,
+  getProductPriceFormConfig,
 } = productApi;
 
 export const {

@@ -58,6 +58,13 @@ export const {
   batchDeleteProduct,
   batchUpdateProduct,
   dragSortProduct,
+  getProductOptions,
+  addProductPrice,
+  updateProductPrice,
+  getProductPriceList,
+  getProductPrice,
+  deleteProductPrice,
+  getProductPriceFormConfig,
 } = productApi;
 
 export const {

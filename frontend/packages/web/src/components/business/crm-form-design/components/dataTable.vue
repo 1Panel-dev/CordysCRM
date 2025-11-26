@@ -137,7 +137,7 @@
     if (type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
     }
-    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
+    if (type === FieldTypeEnum.DATA_SOURCE) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
     }
   }

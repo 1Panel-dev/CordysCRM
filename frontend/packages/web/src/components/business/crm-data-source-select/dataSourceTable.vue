@@ -127,6 +127,7 @@
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
+    [FieldDataSourceTypeEnum.PRICE]: getFieldProductList, // TODO:
   };
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

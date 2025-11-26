@@ -8,4 +8,5 @@ export default {
   'product.batchUpSuccess': 'Batch up success',
   'product.batchDownSuccess': 'Batch down success',
   'product.detail': 'Product Details',
+  'product.newPrice': 'New Price Table',
 };

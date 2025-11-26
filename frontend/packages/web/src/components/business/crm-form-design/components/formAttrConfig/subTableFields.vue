@@ -25,44 +25,39 @@
           <CrmIcon :type="item.icon" />
         </template>
       </n-input>
-      <n-tooltip
-        v-if="!item.businessKey"
-        :delay="300"
-        :show-arrow="false"
-        class="crm-form-design--composition-item-tools-tip"
-      >
-        <template #trigger>
-          <n-button
-            quaternary
-            type="primary"
-            size="small"
-            class="text-btn-error p-[4px] text-[var(--text-n1)]"
-            @click="handleFieldCopy(i)"
-          >
-            <CrmIcon type="iconicon_file_copy" :size="14" />
-          </n-button>
-        </template>
-        {{ t('common.copy') }}
-      </n-tooltip>
-      <n-tooltip
-        v-if="!item.businessKey"
-        :delay="300"
-        :show-arrow="false"
-        class="crm-form-design--composition-item-tools-tip"
-      >
-        <template #trigger>
-          <n-button
-            quaternary
-            type="error"
-            size="small"
-            class="text-btn-error p-[4px] text-[var(--text-n1)]"
-            @click="handleFieldDelete(i)"
-          >
-            <CrmIcon type="iconicon_delete" :size="14" />
-          </n-button>
-        </template>
-        {{ t('common.delete') }}
-      </n-tooltip>
+      <template v-if="!item.businessKey">
+        <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+          <template #trigger>
+            <n-button
+              quaternary
+              type="primary"
+              size="small"
+              class="text-btn-error p-[4px] text-[var(--text-n1)]"
+              @click="handleFieldCopy(i)"
+            >
+              <CrmIcon type="iconicon_file_copy" :size="14" />
+            </n-button>
+          </template>
+          {{ t('common.copy') }}
+        </n-tooltip>
+        <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+          <template #trigger>
+            <n-button
+              quaternary
+              type="error"
+              size="small"
+              class="text-btn-error p-[4px] text-[var(--text-n1)]"
+              @click="handleFieldDelete(i)"
+            >
+              <CrmIcon type="iconicon_delete" :size="14" />
+            </n-button>
+          </template>
+          {{ t('common.delete') }}
+        </n-tooltip>
+      </template>
+      <template v-else>
+        <div class="w-[52px]"></div>
+      </template>
       <div
         v-if="fieldConfig.subFields.some((e) => e.id !== item.id && e.name === item.name)"
         class="ml-[48px] w-full text-[12px] text-[var(--error-red)]"

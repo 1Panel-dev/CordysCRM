@@ -81,6 +81,9 @@
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
+              onChange: (val: any) => {
+                row[field.id] = val;
+              },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
@@ -99,6 +102,9 @@
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
+              onChange: (val: any) => {
+                row[field.id] = val;
+              },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
@@ -116,6 +122,9 @@
               path: `${props.parentId}[${rowIndex}].${field.id}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
+              onChange: (val: any) => {
+                row[field.id] = val;
+              },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
@@ -132,6 +141,9 @@
             path: `${props.parentId}[${rowIndex}].${field.id}`,
             isSubTableRender: true,
             needInitDetail: props.needInitDetail,
+            onChange: (val: any) => {
+              row[field.id] = val;
+            },
           }),
         fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         filedType: field.type,

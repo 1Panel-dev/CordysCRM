@@ -12,3 +12,10 @@ export const GetProductOptionsUrl = '/product/list/option'; // 获取当前组�
 export const PreCheckProductImportUrl = '/product/import/pre-check';
 export const DownloadProductTemplateUrl = '/product/template/download';
 export const ImportProductUrl = '/product/import';
+
+export const UpdateProductPriceUrl = '/price/update'; // 更新价格表
+export const GetProductPriceListUrl = '/price/page'; // 价格表列表
+export const AddProductPriceUrl = '/price/add'; // 添加价格表
+export const GetProductPriceFormConfigUrl = '/price/module/form'; // 获取价格表单配置
+export const GetProductPriceUrl = '/price/get'; // 获取价格表详情
+export const DeleteProductPriceUrl = '/price/delete'; // 删除价格表
