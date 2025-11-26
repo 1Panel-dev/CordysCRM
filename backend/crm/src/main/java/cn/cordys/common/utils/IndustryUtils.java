@@ -10,10 +10,7 @@ import org.apache.commons.lang3.Strings;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * @author song-cc-rock
@@ -107,5 +104,50 @@ public class IndustryUtils {
             }
         }
         return false;
+    }
+
+
+    public static List<String> getValues(List<IndustryDict> tree, List<String> targetValues) {
+        List<String> result = new ArrayList<>();
+
+        for (String target : targetValues) {
+            List<String> values = getValuesForSingle(tree, target);
+            if (values != null) {
+                result.addAll(values);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 查找单个 value，并返回其所有子节点 value
+     */
+    private static List<String> getValuesForSingle(List<IndustryDict> tree, String targetValue) {
+        for (IndustryDict node : tree) {
+            if (node.getValue().equals(targetValue)) {
+                List<String> result = new ArrayList<>();
+                collectValues(node, result);
+                return result;
+            }
+
+            if (node.getChildren() != null) {
+                List<String> res = getValuesForSingle(node.getChildren(), targetValue);
+                if (res != null) return res;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 收集节点自身和所有子节点的 value
+     */
+    private static void collectValues(IndustryDict node, List<String> result) {
+        result.add(node.getValue());
+
+        if (node.getChildren() != null) {
+            for (IndustryDict child : node.getChildren()) {
+                collectValues(child, result);
+            }
+        }
     }
 }
