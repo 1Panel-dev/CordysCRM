@@ -106,7 +106,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by pp.pos
+                order by pp.create_time desc
             </otherwise>
         </choose>
     </sql>
