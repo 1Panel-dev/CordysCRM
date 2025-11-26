@@ -11,6 +11,9 @@ import lombok.EqualsAndHashCode;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author song-cc-rock
+ */
 @Data
 @JsonTypeName(value = "DATA_SOURCE")
 @EqualsAndHashCode(callSuper = true)

@@ -66,6 +66,7 @@ public class ModuleFormCacheService {
 		// 设置业务字段参数
 		businessModuleFormConfig.setFields(config.getFields().stream()
 				.peek(moduleFormService::setFieldBusinessParam)
+				.peek(moduleFormService::reloadPropOfSubRefFields)
 				.collect(Collectors.toList())
 		);
         return businessModuleFormConfig;
