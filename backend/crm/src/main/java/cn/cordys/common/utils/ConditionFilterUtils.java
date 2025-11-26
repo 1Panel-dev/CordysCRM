@@ -28,8 +28,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static cn.cordys.common.utils.IndustryUtils.getIndustries;
 
 /**
  * @Author: jianxing
@@ -151,6 +155,20 @@ public class ConditionFilterUtils {
                 ExtAttachmentMapper attachmentMapper = CommonBeanFactory.getBean(ExtAttachmentMapper.class);
                 List<String> attachmentIds = Objects.requireNonNull(attachmentMapper).getAttachmentIdsByNames(attachmentNames);
                 item.setValue(CollectionUtils.isEmpty(attachmentIds) ? attachmentNames : attachmentIds);
+            }
+
+
+            if (item.getValue() != null && Strings.CS.equals(item.getType(), FieldType.INDUSTRY.name())) {
+                String str = item.getValue().toString()
+                        .replace("[", "")
+                        .replace("]", "");
+
+                List<String> list = Arrays.stream(str.split(","))
+                        .map(String::trim)
+                        .collect(Collectors.toList());
+                List<String> values = IndustryUtils.getValues(getIndustries(), list);
+                values.addAll(list);
+                item.setValue(values.stream().distinct().toList());
             }
         });
         replaceCurrentUser(validConditions);
