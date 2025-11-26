@@ -77,6 +77,7 @@
     :form-key="FormDesignKeyEnum.PRICE"
     @refresh="handleRefresh"
   />
+  <priceDetailDrawer :id="activeSourceId" v-model:show="showPriceDetailDrawer" @edit="handleEdit" />
 </template>
 
 <script setup lang="ts">
@@ -99,6 +100,7 @@
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
+  import priceDetailDrawer from './components/priceDetailDrawer.vue';
 
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -208,7 +210,7 @@
     }
   }
 
-  const showOverviewDrawer = ref(false);
+  const showPriceDetailDrawer = ref(false);
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.PRICE,
@@ -242,7 +244,7 @@
           {
             onClick: () => {
               activeSourceId.value = row.id;
-              showOverviewDrawer.value = true;
+              showPriceDetailDrawer.value = true;
             },
           },
           { default: () => row.name, trigger: () => row.name }
