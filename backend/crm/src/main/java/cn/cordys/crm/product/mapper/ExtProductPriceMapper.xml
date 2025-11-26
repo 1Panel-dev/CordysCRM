@@ -16,9 +16,6 @@
         </include>
 
         where pp.organization_id = #{currentOrg}
-        <if test="request.status != null and request.status != ''">
-            and pp.status = #{request.status}
-        </if>
         <if test="request.keyword != null and request.keyword != ''">
             and pp.name like concat('%', #{request.keyword},'%')
         </if>
