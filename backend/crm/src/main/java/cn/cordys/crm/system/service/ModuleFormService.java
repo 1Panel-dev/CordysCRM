@@ -136,6 +136,7 @@ public class ModuleFormService {
 		// 设置业务字段参数
         businessModuleFormConfig.setFields(config.getFields().stream()
 				.peek(this::setFieldBusinessParam)
+				.peek(this::reloadPropOfSubRefFields)
 				.collect(Collectors.toList())
         );
         return businessModuleFormConfig;
@@ -441,6 +442,34 @@ public class ModuleFormService {
 			// 设置特殊的业务字段 key
 			field.setBusinessKey(businessEnum.getBusinessKey());
 			field.setDisabledProps(businessEnum.getDisabledProps());
+		}
+	}
+
+	/**
+	 * 重新加载子表引用字段最新的属性
+	 * @param field 自定义字段
+	 */
+	public void reloadPropOfSubRefFields(BaseField field) {
+		if (field instanceof SubField subField) {
+			if (CollectionUtils.isEmpty(subField.getSubFields())) {
+				return;
+			}
+			List<String> subRefIds = subField.getSubFields().stream()
+					.filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
+					.flatMap(f -> ((DatasourceField) f).getShowFields().stream()).distinct().toList();
+			if (CollectionUtils.isEmpty(subRefIds)) {
+				return;
+			}
+			List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(subRefIds);
+			Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
+			ListIterator<BaseField> it = subField.getSubFields().listIterator();
+			while (it.hasNext()) {
+				BaseField oldField = it.next();
+				if (subRefIds.contains(oldField.getId())) {
+					// 属于引用字段
+					it.set(JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class));
+				}
+			}
 		}
 	}
 

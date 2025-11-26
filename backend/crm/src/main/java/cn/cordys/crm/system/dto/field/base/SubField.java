@@ -12,13 +12,13 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SubField extends BaseField{
+public class SubField extends BaseField {
 
 	@Schema(description = "固定宽度")
 	private Integer fixedColumn;
 
 	@Schema(description = "表格子字段")
-	private List<? extends BaseField> subFields;
+	private List<BaseField> subFields;
 
 	@Schema(description = "汇总列")
 	private String sumColumn;

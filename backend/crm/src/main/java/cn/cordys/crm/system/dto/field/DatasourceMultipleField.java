@@ -11,15 +11,12 @@ import lombok.EqualsAndHashCode;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author song-cc-rock
+ */
 @Data
 @JsonTypeName(value = "DATA_SOURCE_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class DatasourceMultipleField extends BaseField {
-    @EnumValue(enumClass = FieldSourceType.class)
-    @Schema(description = "数据源类型")
-    private String dataSourceType;
-    @Schema(description = "过滤条件")
-    private Map<String, Object> combineSearch;
-	@Schema(description = "显示字段")
-	private List<String> showFields;
+public class DatasourceMultipleField extends DatasourceField {
+
 }
