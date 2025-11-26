@@ -41,13 +41,14 @@
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields.map((field, index) => {
+        const key = field.businessKey || field.id;
         if (field.type === FieldTypeEnum.INPUT_NUMBER) {
           return {
             title: field.name,
             width: 150,
-            key: field.id,
-            fieldId: field.id,
-            render: (row: any) => formatNumberValue(row[field.id], field),
+            key,
+            fieldId: key,
+            render: (row: any) => formatNumberValue(row[key], field),
             filedType: field.type,
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };
@@ -55,31 +56,32 @@
         return {
           title: field.name,
           width: 150,
-          key: field.id,
-          fieldId: field.id,
-          render: (row: any) => row[field.id],
+          key,
+          fieldId: key,
+          render: (row: any) => row[key],
           filedType: field.type,
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
       });
     }
     return props.subFields.map((field, index) => {
+      const key = field.businessKey || field.id;
       if (field.type === FieldTypeEnum.DATA_SOURCE) {
         return {
           title: field.name,
           width: 150,
-          key: field.id,
-          fieldId: field.id,
+          key,
+          fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(dataSource, {
-              value: row[field.id],
+              value: row[key],
               fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${field.id}`,
+              path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
               onChange: (val: any) => {
-                row[field.id] = val;
+                row[key] = val;
               },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -89,18 +91,18 @@
         return {
           title: field.name,
           width: 150,
-          key: field.id,
-          fieldId: field.id,
+          key,
+          fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(formula, {
-              value: row[field.id],
+              value: row[key],
               fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${field.id}`,
+              path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
               onChange: (val: any) => {
-                row[field.id] = val;
+                row[key] = val;
               },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -110,17 +112,17 @@
         return {
           title: field.name,
           width: 150,
-          key: field.id,
-          fieldId: field.id,
+          key,
+          fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(inputNumber, {
-              value: row[field.id],
+              value: row[key],
               fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${field.id}`,
+              path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               onChange: (val: any) => {
-                row[field.id] = val;
+                row[key] = val;
               },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -129,17 +131,17 @@
       return {
         title: field.name,
         width: 150,
-        key: field.id,
-        fieldId: field.id,
+        key,
+        fieldId: key,
         render: (row: any, rowIndex: number) =>
           h(singleText, {
-            value: row[field.id],
+            value: row[key],
             fieldConfig: field,
-            path: `${props.parentId}[${rowIndex}].${field.id}`,
+            path: `${props.parentId}[${rowIndex}].${key}`,
             isSubTableRender: true,
             needInitDetail: props.needInitDetail,
             onChange: (val: any) => {
-              row[field.id] = val;
+              row[key] = val;
             },
           }),
         fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,

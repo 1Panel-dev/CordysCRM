@@ -669,6 +669,83 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  function transformFormDetailValue(item: FormCreateField, res: FormDetail) {
+    if (item.businessKey) {
+      // 业务标准字段读取最外层
+      formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
+      const options = res.optionMap?.[item.businessKey];
+      if (
+        [
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        ].includes(item.type)
+      ) {
+        // 处理成员和数据源类型的字段
+        item.initialOptions = options
+          ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
+          .map((e) => ({
+            ...e,
+            name: e.name || t('common.optionNotExist'),
+          }));
+      }
+    } else {
+      // 其他的字段读取moduleFields
+      const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+      if (field) {
+        formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+      }
+      const options = res.optionMap?.[item.id];
+      if (
+        [
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        ].includes(item.type)
+      ) {
+        // 处理成员和数据源类型的字段
+        item.initialOptions = options
+          ?.filter((e) => formDetail.value[item.id].includes(e.id))
+          .map((e) => ({
+            ...e,
+            name: e.name || t('common.optionNotExist'),
+          }));
+      }
+    }
+  }
+
+  function makeSubFieldInitialOptions(subField: FormCreateField, res: FormDetail) {
+    if (subField.businessKey) {
+      const options = res.optionMap?.[subField.businessKey];
+      if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
+        // 处理成员和数据源类型的字段
+        subField.initialOptions = options
+          ?.filter((e) => formDetail.value[subField.id]?.includes(e.id))
+          .map((e) => ({
+            ...e,
+            name: e.name || t('common.optionNotExist'),
+          }));
+      }
+    } else {
+      const options = res.optionMap?.[subField.id];
+      if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
+        // 处理成员和数据源类型的字段
+        subField.initialOptions = options
+          ?.filter((e) => formDetail.value[subField.id].includes(e.id))
+          .map((e) => ({
+            ...e,
+            name: e.name || t('common.optionNotExist'),
+          }));
+      }
+    }
+  }
+
   /**
    * 初始化表单详情
    * @param needInitFormDescription 是否需要初始化表单描述列表
@@ -685,54 +762,24 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
       fieldList.value.forEach((item) => {
-        if (item.businessKey) {
-          // 业务标准字段读取最外层
-          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
-          const options = res.optionMap?.[item.businessKey];
-          if (
-            [
-              FieldTypeEnum.MEMBER,
-              FieldTypeEnum.MEMBER_MULTIPLE,
-              FieldTypeEnum.DEPARTMENT,
-              FieldTypeEnum.DEPARTMENT_MULTIPLE,
-              FieldTypeEnum.DATA_SOURCE,
-              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-            ].includes(item.type)
-          ) {
-            // 处理成员和数据源类型的字段
-            item.initialOptions = options
-              ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
-              .map((e) => ({
-                ...e,
-                name: e.name || t('common.optionNotExist'),
-              }));
+        if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && item.subFields?.length) {
+          // 子表字段处理
+          if (item.businessKey) {
+            // 业务标准字段读取最外层
+            formDetail.value[item.id] = res[item.businessKey];
+          } else {
+            // 其他的字段读取moduleFields
+            const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+            if (field) {
+              formDetail.value[item.id] = field.fieldValue;
+            }
           }
-        } else {
-          // 其他的字段读取moduleFields
-          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-          if (field) {
-            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
-          }
-          const options = res.optionMap?.[item.id];
-          if (
-            [
-              FieldTypeEnum.MEMBER,
-              FieldTypeEnum.MEMBER_MULTIPLE,
-              FieldTypeEnum.DEPARTMENT,
-              FieldTypeEnum.DEPARTMENT_MULTIPLE,
-              FieldTypeEnum.DATA_SOURCE,
-              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-            ].includes(item.type)
-          ) {
-            // 处理成员和数据源类型的字段
-            item.initialOptions = options
-              ?.filter((e) => formDetail.value[item.id].includes(e.id))
-              .map((e) => ({
-                ...e,
-                name: e.name || t('common.optionNotExist'),
-              }));
-          }
+          item.subFields.forEach((subField) => {
+            makeSubFieldInitialOptions(subField, res);
+          });
+          return;
         }
+        transformFormDetailValue(item, res);
         if (item.type === FieldTypeEnum.DATE_TIME) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : null;
@@ -1063,11 +1110,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
           subFieldInit(subField);
-          replaceRule(subField, item.id);
-          initLine[subField.id] = subField.defaultValue;
+          replaceRule(subField, item.businessKey || item.id);
+          initLine[subField.businessKey || subField.id] = subField.defaultValue;
         });
-        if (!formDetail.value[item.id]) {
-          formDetail.value[item.id] = [initLine];
+        if (!formDetail.value[item.businessKey || item.id]) {
+          formDetail.value[item.businessKey || item.id] = [initLine];
         }
         return;
       }
@@ -1087,8 +1134,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(item.type)) {
         defaultValue = defaultValue || [];
       }
-      if (!formDetail.value[item.id]) {
-        formDetail.value[item.id] = defaultValue;
+      if (!formDetail.value[item.businessKey || item.id]) {
+        formDetail.value[item.businessKey || item.id] = defaultValue;
       }
       replaceRule(item);
       if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
