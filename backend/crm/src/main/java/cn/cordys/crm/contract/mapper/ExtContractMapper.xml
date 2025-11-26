@@ -12,7 +12,8 @@
         ct.archived_status,
         ct.`status`,
         ct.`owner`,
-        ct.create_user ct.create_time,
+        ct.create_user,
+        ct.create_time,
         ct.update_user,
         ct.update_time
         FROM
