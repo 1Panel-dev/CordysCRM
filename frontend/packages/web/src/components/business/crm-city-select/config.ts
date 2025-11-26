@@ -62,7 +62,7 @@ export const GAT = [
           },
         ],
         label: '台北市',
-        value: '710100',
+        value: '7101',
       },
       {
         children: [
@@ -116,7 +116,7 @@ export const GAT = [
           },
         ],
         label: '高雄市',
-        value: '710200',
+        value: '7102',
       },
       {
         children: [
@@ -150,7 +150,7 @@ export const GAT = [
           },
         ],
         label: '台南市',
-        value: '710300',
+        value: '7103',
       },
       {
         children: [
@@ -192,15 +192,15 @@ export const GAT = [
           },
         ],
         label: '台中市',
-        value: '710400',
+        value: '7104',
       },
       {
         label: '金门县',
-        value: '710500',
+        value: '7105',
       },
       {
         label: '南投县',
-        value: '710600',
+        value: '7106',
       },
       {
         children: [
@@ -238,7 +238,7 @@ export const GAT = [
           },
         ],
         label: '基隆市',
-        value: '710700',
+        value: '7107',
       },
       {
         children: [
@@ -260,7 +260,7 @@ export const GAT = [
           },
         ],
         label: '新竹市',
-        value: '710800',
+        value: '7108',
       },
       {
         children: [
@@ -278,59 +278,59 @@ export const GAT = [
           },
         ],
         label: '嘉义市',
-        value: '710900',
+        value: '7109',
       },
       {
         label: '新北市',
-        value: '711100',
+        value: '7111',
       },
       {
         label: '宜兰县',
-        value: '711200',
+        value: '7112',
       },
       {
         label: '新竹县',
-        value: '711300',
+        value: '7113',
       },
       {
         label: '桃园县',
-        value: '711400',
+        value: '7114',
       },
       {
         label: '苗栗县',
-        value: '711500',
+        value: '7115',
       },
       {
         label: '彰化县',
-        value: '711700',
+        value: '7117',
       },
       {
         label: '嘉义县',
-        value: '711900',
+        value: '7119',
       },
       {
         label: '云林县',
-        value: '712100',
+        value: '7121',
       },
       {
         label: '屏东县',
-        value: '712400',
+        value: '7124',
       },
       {
         label: '台东县',
-        value: '712500',
+        value: '7125',
       },
       {
         label: '花莲县',
-        value: '712600',
+        value: '7126',
       },
       {
         label: '澎湖县',
-        value: '712700',
+        value: '7127',
       },
     ],
     label: '台湾省',
-    value: '710000',
+    value: '71',
   },
   {
     children: [
@@ -354,7 +354,7 @@ export const GAT = [
           },
         ],
         label: '香港岛',
-        value: '810100',
+        value: '8101',
       },
       {
         children: [
@@ -380,7 +380,7 @@ export const GAT = [
           },
         ],
         label: '九龙',
-        value: '810200',
+        value: '8102',
       },
       {
         children: [
@@ -422,11 +422,11 @@ export const GAT = [
           },
         ],
         label: '新界',
-        value: '810300',
+        value: '8103',
       },
     ],
     label: '香港特别行政区',
-    value: '810000',
+    value: '81',
   },
   {
     children: [
@@ -458,7 +458,7 @@ export const GAT = [
           },
         ],
         label: '澳门半岛',
-        value: '820100',
+        value: '8201',
       },
       {
         children: [
@@ -480,11 +480,11 @@ export const GAT = [
           },
         ],
         label: '离岛',
-        value: '820200',
+        value: '8202',
       },
     ],
     label: '澳门特别行政区',
-    value: '820000',
+    value: '82',
   },
 ];
 
