@@ -54,7 +54,6 @@
               :advanced-original-form="advancedOriginalForm"
               :route-name="ContractRouteEnum.CONTRACT_PAYMENT"
               @refresh-table-data="searchData"
-              @generated-chart="handleGeneratedChart"
             />
           </template>
         </CrmTable>
@@ -65,7 +64,6 @@
           :source-id="activeSourceId"
           :need-init-detail="needInitDetail"
           :initial-source-name="initialSourceName"
-          :other-save-params="otherFollowRecordSaveParams"
           :link-form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
           @saved="searchData"
         />
@@ -79,15 +77,19 @@
         />
       </div>
     </CrmCard>
+
+    <DetailDrawer v-model:visible="showDetailDrawer" :sourceId="activeSourceId" @refresh="searchData" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
+  import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -96,14 +98,20 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import DetailDrawer from './components/detail.vue';
+  import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
 
+  import { deletePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
+  import useModal from '@/hooks/useModal';
+  // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
@@ -111,6 +119,7 @@
   const { t } = useI18n();
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
+  const { openModal } = useModal();
 
   const activeTab = ref();
   const keyword = ref('');
@@ -123,10 +132,6 @@
   const initialSourceName = ref('');
   const needInitDetail = ref(false);
   const activeFormKey = ref(FormDesignKeyEnum.CONTRACT_PAYMENT);
-  const otherFollowRecordSaveParams = ref({
-    type: 'CONTRACT_PAYMENT',
-    id: '',
-  });
 
   function handleNewClick() {
     needInitDetail.value = false;
@@ -169,7 +174,6 @@
 
   // 表格
   const filterConfigList = computed<FilterFormItem[]>(() => [
-    // TODO lmy 部门 计划状态
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
@@ -185,14 +189,18 @@
         containChildIds: [],
       },
     },
+    {
+      title: t('common.status'),
+      dataIndex: 'planStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: contractPaymentPlanStatusOptions,
+      },
+    },
     ...baseFilterConfigList,
   ]);
 
   const operationGroupList: ActionsItem[] = [
-    {
-      label: t('common.detail'),
-      key: 'detail',
-    },
     {
       label: t('common.edit'),
       key: 'edit',
@@ -205,17 +213,43 @@
     },
   ];
 
-  // TODO lmy
+  const tableRefreshId = ref(0);
+  const showDetailDrawer = ref(false);
+
+  function handleDelete(row: any) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deletePaymentPlan(row.id);
+          Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleEdit(id: string) {
+    activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    formCreateDrawerVisible.value = true;
+  }
+
   async function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
-        activeSourceId.value = row.id;
-        needInitDetail.value = true;
-        otherFollowRecordSaveParams.value.id = row.id;
-        formCreateDrawerVisible.value = true;
+        handleEdit(row.id);
         break;
       case 'delete':
+        handleDelete(row);
         break;
       default:
         break;
@@ -232,6 +266,24 @@
         h(CrmOperationButton, {
           groupList: operationGroupList,
           onSelect: (key: string) => handleActionSelect(row, key),
+        }),
+    },
+    specialRender: {
+      name: (row: any) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              activeSourceId.value = row.id;
+              showDetailDrawer.value = true;
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+      status: (row: any) =>
+        h(ContractStatus, {
+          status: row.planStatus as ContractPaymentPlanEnum,
         }),
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'], // TODO lmy
@@ -270,35 +322,44 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
-    advancedOriginalForm.value = form;
-    setAdvanceFilter(res);
-    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
-    searchData();
-  }
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      checkedRowKeys.value = [];
+      searchData();
+    }
+  );
 
-  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+  // 先不上
+  // function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+  //   advancedOriginalForm.value = form;
+  //   setAdvanceFilter(res);
+  //   tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+  //   searchData();
+  // }
 
-  function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModel, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
-    setAdvanceFilter(filterResult);
-    activeTab.value = viewId;
-  }
+  // const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+
+  // function viewChartCallBack(params: ViewChartResult) {
+  //   const { viewId, formModel, filterResult } = params;
+  //   tableAdvanceFilterRef.value?.initFormModal(formModel, true);
+  //   setAdvanceFilter(filterResult);
+  //   activeTab.value = viewId;
+  // }
 
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: getChartViewId() ?? activeTab.value });
-        initTableViewChartParams(viewChartCallBack);
+        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        // initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
     }
   );
 
-  onBeforeUnmount(() => {
-    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
-  });
+  // onBeforeUnmount(() => {
+  //   sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
+  // });
 </script>

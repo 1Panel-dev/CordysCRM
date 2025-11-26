@@ -54,7 +54,6 @@
               :advanced-original-form="advancedOriginalForm"
               :route-name="ContractRouteEnum.CONTRACT_INDEX"
               @refresh-table-data="searchData"
-              @generated-chart="handleGeneratedChart"
             />
           </template>
         </CrmTable>
@@ -65,7 +64,6 @@
           :source-id="activeSourceId"
           :need-init-detail="needInitDetail"
           :initial-source-name="initialSourceName"
-          :other-save-params="otherFollowRecordSaveParams"
           :link-form-key="FormDesignKeyEnum.CONTRACT"
           @saved="searchData"
         />
@@ -79,16 +77,21 @@
         />
       </div>
     </CrmCard>
+
+    <DetailDrawer v-model:visible="showDetailDrawer" :sourceId="activeSourceId" @refresh="searchData" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
+  import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import type { ContractItem } from '@lib/shared/models/contract';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -96,14 +99,20 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import ContractStatus from './components/contractStatus.vue';
+  import DetailDrawer from './components/detail.vue';
 
+  import { archivedContract, deleteContract, voidedContract } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { contractStatusOptions } from '@/config/contract';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
+  import useModal from '@/hooks/useModal';
+  // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
@@ -111,6 +120,7 @@
   const { t } = useI18n();
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
+  const { openModal } = useModal();
 
   const activeTab = ref();
   const keyword = ref('');
@@ -123,10 +133,6 @@
   const initialSourceName = ref('');
   const needInitDetail = ref(false);
   const activeFormKey = ref(FormDesignKeyEnum.CONTRACT);
-  const otherFollowRecordSaveParams = ref({
-    type: 'CONTRACT',
-    id: '',
-  });
 
   function handleNewClick() {
     needInitDetail.value = false;
@@ -185,37 +191,136 @@
         containChildIds: [],
       },
     },
+    {
+      title: t('common.status'),
+      dataIndex: 'status',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: contractStatusOptions,
+      },
+    },
     ...baseFilterConfigList,
   ]);
 
-  const operationGroupList: ActionsItem[] = [
-    {
-      label: t('common.detail'),
-      key: 'detail',
-    },
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'], // TODO lmy
-    },
-    {
-      label: 'more',
-      key: 'more',
-      slotName: 'more',
-    },
-  ];
+  // TODO lmy permission
+  function getOperationGroupList(row: ContractItem) {
+    if (row.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
+      return [
+        {
+          key: 'unarchive',
+          label: 'common.unarchive',
+          permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+        },
+      ];
+    }
+    if (row.status === ContractStatusEnum.VOID) {
+      return [];
+    }
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+      },
+      {
+        key: 'archive',
+        label: 'common.archive',
+        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+      },
+      {
+        key: 'voided',
+        label: 'common.voided',
+        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+      },
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CLUE_MANAGEMENT:DELETE'],
+      },
+    ];
+  }
 
-  // TODO lmy
-  async function handleActionSelect(row: any, actionKey: string) {
+  const tableRefreshId = ref(0);
+  const showDetailDrawer = ref(false);
+
+  function handleEdit(id: string) {
+    activeFormKey.value = FormDesignKeyEnum.CONTRACT;
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    formCreateDrawerVisible.value = true;
+  }
+
+  function handleDelete(row: ContractItem) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteContract(row.id);
+          Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleVoided(row: ContractItem) {
+    openModal({
+      type: 'error',
+      title: t('contract.voidedConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('contract.voidedConfirmContent'),
+      positiveText: t('common.confirmVoid'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await voidedContract(row.id);
+          Message.success(t('common.voidSuccess'));
+          tableRefreshId.value += 1;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  async function handleArchive(id: string, status: string) {
+    try {
+      await archivedContract(id, status);
+      if (status === ArchiveStatusEnum.UN_ARCHIVED) {
+        Message.success(t('common.batchArchiveSuccess'));
+      } else {
+        Message.success(`${t('common.unArchive')}${t('common.success')}`);
+      }
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        activeFormKey.value = FormDesignKeyEnum.CONTRACT;
-        activeSourceId.value = row.id;
-        needInitDetail.value = true;
-        otherFollowRecordSaveParams.value.id = row.id;
-        formCreateDrawerVisible.value = true;
+        handleEdit(row.id);
+        break;
+      case 'unarchive':
+        handleArchive(row.id, row.archivedStatus);
+        break;
+      case 'archive':
+        handleArchive(row.id, row.archivedStatus);
+        break;
+      case 'voided':
+        handleVoided(row);
         break;
       case 'delete':
+        handleDelete(row);
         break;
       default:
         break;
@@ -228,38 +333,43 @@
       key: 'operation',
       width: currentLocale.value === 'en-US' ? 250 : 200,
       fixed: 'right',
-      render: (row: any) =>
-        h(CrmOperationButton, {
-          groupList: operationGroupList,
-          moreList: [
-            // TODO lmy 根据状态显示操作？ 【查看 编辑 更多（回款计划 回款 归档 取消归档 作废 取消作废 开票 删除）】
-            {
-              label: t('module.paymentPlan'),
-              key: 'paymentPlan',
-              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-            },
-            {
-              label: t('customer.moveToOpenSea'),
-              key: 'moveToOpenSea',
-              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-            },
-            {
-              label: t('customer.moveToOpenSea'),
-              key: 'moveToOpenSea',
-              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-            },
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              danger: true,
-              permission: ['CUSTOMER_MANAGEMENT:DELETE'],
-            },
-          ],
-          onSelect: (key: string) => handleActionSelect(row, key),
-        }),
+      render: (row: ContractItem) =>
+        getOperationGroupList(row).length
+          ? h(CrmOperationButton, {
+              groupList: getOperationGroupList(row),
+              onSelect: (key: string) => handleActionSelect(row, key),
+            })
+          : '-',
     },
     specialRender: {
-      // TODO lmy 状态？
+      // TODO lmy 关联
+      name: (row: ContractItem) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              activeSourceId.value = row.id;
+              showDetailDrawer.value = true;
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
+      customerId: (row: ContractItem) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              // TODO lmy 跳转
+            },
+          },
+          { default: () => row.customerName, trigger: () => row.customerName }
+        );
+      },
+      status: (row: ContractItem) =>
+        h(ContractStatus, {
+          status: row.status as ContractStatusEnum,
+        }),
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'], // TODO lmy
     containerClass: '.crm-contract-table',
@@ -296,35 +406,36 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
-    advancedOriginalForm.value = form;
-    setAdvanceFilter(res);
-    tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
-    searchData();
-  }
+  // 先不上
+  // function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+  //   advancedOriginalForm.value = form;
+  //   setAdvanceFilter(res);
+  //   tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
+  //   searchData();
+  // }
 
-  const { initTableViewChartParams, getChartViewId } = useViewChartParams();
+  // const { initTableViewChartParams, getChartViewId } = useViewChartParams();
 
-  function viewChartCallBack(params: ViewChartResult) {
-    const { viewId, formModel, filterResult } = params;
-    tableAdvanceFilterRef.value?.initFormModal(formModel, true);
-    setAdvanceFilter(filterResult);
-    activeTab.value = viewId;
-  }
+  // function viewChartCallBack(params: ViewChartResult) {
+  //   const { viewId, formModel, filterResult } = params;
+  //   tableAdvanceFilterRef.value?.initFormModal(formModel, true);
+  //   setAdvanceFilter(filterResult);
+  //   activeTab.value = viewId;
+  // }
 
   watch(
     () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: getChartViewId() ?? activeTab.value });
-        initTableViewChartParams(viewChartCallBack);
+        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        // initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
     }
   );
 
-  onBeforeUnmount(() => {
-    sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
-  });
+  // onBeforeUnmount(() => {
+  //   sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
+  // });
 </script>

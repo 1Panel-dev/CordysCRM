@@ -4,4 +4,12 @@ export default {
   'contract.my': 'My Contracts',
   'contract.depart': 'Department Contracts',
   'contract.newPlan': 'New plan',
+  'contract.signed': 'Signed',
+  'contract.inProgress': 'In Progress',
+  'contract.completedPerformance': 'Completed',
+  'contract.void': 'Void',
+  'contract.uncompleted': 'Incomplete',
+  'contract.partialCompleted': 'Partially Completed',
+  'contract.voidedConfirmContent': 'This action cannot be undone. Please proceed with caution!',
+  'contract.voidedConfirmTitle': 'Are you sure you want to void {name}?',
 };
