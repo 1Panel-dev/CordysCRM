@@ -48,6 +48,10 @@
         </if>
         where ct.organization_id = #{orgId}
 
+        <if test="request.customerId != null and request.customerId != ''">
+            and ct.customer_id = #{request.customerId}
+        </if>
+
         <if test="dataPermission != null and dataPermission.self">
             and o.owner = #{userId}
         </if>
