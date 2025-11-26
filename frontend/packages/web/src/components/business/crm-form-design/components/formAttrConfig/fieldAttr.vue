@@ -1049,12 +1049,11 @@
     :form-fields="props.list"
     @save="handleLinkConfigSave"
   />
-  <!-- TODO  props.list 当前传递的是父表 如果当前在子表则传递的子表的list -->
   <formulaModal
     v-if="fieldConfig"
     v-model:visible="showCalculateFormulaModal"
     :field-config="fieldConfig"
-    :form-fields="props.list"
+    :form-fields="formulaScopedFields"
     @save="handleCalculateFormulaConfigSave"
   />
 </template>
@@ -1182,6 +1181,8 @@
         )
       : props.list.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
   });
+
+  const formulaScopedFields = computed(() => (isSubTableField.value ? parentField.value?.subFields ?? [] : props.list));
 
   function handleRuleChange(val: (string | number)[]) {
     fieldConfig.value.rules = val

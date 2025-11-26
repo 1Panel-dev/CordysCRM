@@ -11,4 +11,5 @@ export default {
   'crmFormCreate.drawer.opportunity': '商机',
   'crmFormCreate.drawer.product': '产品',
   'crmFormCreate.drawer.contract': '合同',
+  'crmFormCreate.drawer.quotation': '报价单',
 };

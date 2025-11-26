@@ -98,6 +98,7 @@
               path: `${props.parentId}[${rowIndex}].${field.id}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
+              formDetail: props.formDetail,
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
