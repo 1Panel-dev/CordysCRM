@@ -1028,7 +1028,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         item.defaultValue = undefined;
       }
       let defaultValue = item.defaultValue || '';
-      if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
+      if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type)) {
         defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
       } else if (getRuleType(item) === 'array') {
         defaultValue =
