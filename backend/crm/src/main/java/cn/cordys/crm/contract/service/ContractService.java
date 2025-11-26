@@ -6,12 +6,17 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -22,6 +27,7 @@ import cn.cordys.crm.contract.constants.ContractStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractArchivedRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
@@ -65,6 +71,8 @@ public class ContractService {
     private ExtContractMapper extContractMapper;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private PermissionCache permissionCache;
 
     /**
      * 新建合同
@@ -347,19 +355,19 @@ public class ContractService {
 
 
     /**
-     * 归档
+     * 归档/取消归档
      *
-     * @param id
+     * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ARCHIVED, resourceId = "{#id}")
-    public void archivedContract(String id, String userId) {
-        Contract contract = contractMapper.selectByPrimaryKey(id);
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ARCHIVED, resourceId = "{#request.id}")
+    public void archivedContract(ContractArchivedRequest request, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
         //todo 审核通过才能归档 （目前没有审核
-        contract.setArchivedStatus(ArchivedStatus.ARCHIVED.name());
+        contract.setArchivedStatus(request.getArchivedStatus());
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(userId);
         contractMapper.updateById(contract);
@@ -391,5 +399,11 @@ public class ContractService {
         }
         return moduleFormConfigDTO;
 
+    }
+
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_READ, rolePermissions);
     }
 }

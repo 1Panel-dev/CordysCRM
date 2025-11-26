@@ -4,6 +4,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
@@ -11,10 +12,7 @@ import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
 import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.dto.request.ContractAddRequest;
-import cn.cordys.crm.contract.dto.request.ContractPageRequest;
-import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
-import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
+import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
@@ -115,9 +113,9 @@ public class ContractController {
 
     @GetMapping("/archived/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_ARCHIVE)
-    @Operation(summary = "归档")
-    public void archived(@PathVariable("id") String id) {
-        contractService.archivedContract(id, SessionUtils.getUserId());
+    @Operation(summary = "归档/取消归档")
+    public void archived(@Validated @RequestBody ContractArchivedRequest request) {
+        contractService.archivedContract(request, SessionUtils.getUserId());
     }
 
 
@@ -133,5 +131,13 @@ public class ContractController {
         ContractDetailPaymentPlanPageRequest contractPaymentPlanPageRequest = BeanUtils.copyBean(new ContractDetailPaymentPlanPageRequest(), request);
         contractPaymentPlanPageRequest.setContractId(id);
         return contractPaymentPlanService.list(contractPaymentPlanPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
+    @Operation(summary = "tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return contractService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
