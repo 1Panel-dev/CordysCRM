@@ -1,6 +1,8 @@
 package cn.cordys.crm.contract.dto.request;
 
+import cn.cordys.common.constants.EnumValue;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -28,6 +30,7 @@ public class ContractPaymentPlanAddRequest {
 
     @Size(max = 32)
     @Schema(description = "计划状态", requiredMode = Schema.RequiredMode.REQUIRED)
+    @EnumValue(enumClass = ContractPaymentPlanStatus.class)
     private String planStatus;
 
     private BigDecimal planAmount;

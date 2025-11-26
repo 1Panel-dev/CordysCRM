@@ -18,6 +18,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanAddRequest;
@@ -195,6 +196,9 @@ public class ContractPaymentPlanService {
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
         if (StringUtils.isBlank(request.getOwner())) {
             contractPaymentPlan.setOwner(userId);
+        }
+        if (StringUtils.isBlank(request.getPlanStatus())) {
+            contractPaymentPlan.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
         }
         contractPaymentPlan.setCreateTime(System.currentTimeMillis());
         contractPaymentPlan.setUpdateTime(System.currentTimeMillis());

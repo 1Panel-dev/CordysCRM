@@ -4,6 +4,7 @@ import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
@@ -61,7 +62,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         ContractPaymentPlanAddRequest request = new ContractPaymentPlanAddRequest();
         request.setPlanAmount(BigDecimal.valueOf(111));
         request.setOwner(InternalUser.ADMIN.getValue());
-        request.setPlanStatus("test");
+        request.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
         request.setContractId("test");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         ContractPaymentPlan resultData = getResultData(mvcResult, ContractPaymentPlan.class);

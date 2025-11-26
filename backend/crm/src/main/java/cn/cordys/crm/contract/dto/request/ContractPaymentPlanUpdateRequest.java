@@ -1,6 +1,8 @@
 package cn.cordys.crm.contract.dto.request;
 
+import cn.cordys.common.constants.EnumValue;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -29,6 +31,7 @@ public class ContractPaymentPlanUpdateRequest {
     private String owner;
 
     @Schema(description = "计划状态")
+    @EnumValue(enumClass = ContractPaymentPlanStatus.class)
     private String planStatus;
 
     @Schema(description = "计划回款金额")
