@@ -435,7 +435,7 @@
 
     <select id="countByOwner" resultType="java.lang.Integer">
         select count(id) from `clue`
-        where owner = #{owner}
+        where owner = #{owner} and (transition_type != 'CUSTOMER' or transition_type is null)
     </select>
 
     <update id="moveToPool" parameterType="cn.cordys.crm.clue.domain.Clue">
