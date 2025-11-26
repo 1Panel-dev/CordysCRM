@@ -38,9 +38,9 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.CUSTOMER.getKey(), "customer");
         FORM_TABLE.put(FormKey.CONTACT.getKey(), "customer_contact");
         FORM_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity");
-        FORM_TABLE.put(FormKey.QUOTATION.getKey(), "quotation");
+        FORM_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
         FORM_TABLE.put(FormKey.PRODUCT.getKey(), "product");
-        FORM_TABLE.put(FormKey.PRICE.getKey(), "price");
+        FORM_TABLE.put(FormKey.PRICE.getKey(), "product_price");
         FORM_TABLE.put(FormKey.FOLLOW_RECORD.getKey(), "follow_up_record");
         FORM_TABLE.put(FormKey.FOLLOW_PLAN.getKey(), "follow_up_plan");
         FORM_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
