@@ -33,7 +33,7 @@
       <CrmCard hide-footer>
         <div class="flex-1">
           <CrmFormDescription
-            :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+            :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
             :source-id="sourceId"
             :column="2"
             :refresh-key="props.refreshId"
@@ -104,6 +104,7 @@
       props.detail?.approvalStatus === QuotationStatusEnum.APPROVING
   );
 
+  // TODO: 还没有研究 xinxinwu
   function handleDownload() {}
 
   const commonActions = [

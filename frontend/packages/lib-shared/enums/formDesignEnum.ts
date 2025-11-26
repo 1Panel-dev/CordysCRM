@@ -22,6 +22,7 @@ export enum FormDesignKeyEnum {
   CONTRACT_PAYMENT = 'contractPaymentPlan', // 回款
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
+  OPPORTUNITY_QUOTATION_SNAPSHOT= 'quotationSnapshot', // 商机快照报价单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

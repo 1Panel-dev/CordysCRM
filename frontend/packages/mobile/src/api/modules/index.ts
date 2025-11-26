@@ -99,6 +99,7 @@ export const {
   updateQuotation,
   getQuotationDetail,
   getQuotationFormConfig,
+  getQuotationSnapshotFormConfig,
   deleteQuotation,
   approvalQuotation,
   voidQuotation,
