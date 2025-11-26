@@ -92,6 +92,22 @@
           <div v-else>-</div>
         </div>
       </template>
+      <template #[FieldTypeEnum.SUB_PRICE]="{ item }">
+        <CrmSubTable
+          :parent-id="item.key || ''"
+          :value="item.value as Record<string, any>[]"
+          :sub-fields="item.fieldInfo.subFields"
+          :fixed-column="item.fieldInfo.fixedColumn"
+        />
+      </template>
+      <template #[FieldTypeEnum.SUB_PRODUCT]="{ item }">
+        <CrmSubTable
+          :parent-id="item.key || ''"
+          :value="item.value as Record<string, any>[]"
+          :sub-fields="item.fieldInfo.subFields"
+          :fixed-column="item.fieldInfo.fixedColumn"
+        />
+      </template>
     </CrmDescription>
   </n-spin>
   <CrmFileListModal v-model:show="showFileListModal" :files="activeFileList" @delete-file="handleDeleteFile" />
@@ -109,6 +125,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
+  import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
   import dateTime from '../crm-form-create/components/basic/dateTime.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -171,7 +188,11 @@
       .filter((item) => !props.hiddenFields?.includes(item.fieldInfo.id))
       .map((item) => {
         // 独占一行
-        if ([FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER].includes(item.fieldInfo.type)) {
+        if (
+          [FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
+            item.fieldInfo.type
+          )
+        ) {
           const extraClass = props.column && props.column > 1 ? '!w-full' : '';
           return {
             ...item,

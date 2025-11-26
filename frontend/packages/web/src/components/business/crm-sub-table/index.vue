@@ -14,7 +14,6 @@
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
-  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -34,8 +33,6 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     readonly?: boolean;
   }>();
-
-  const { t } = useI18n();
 
   const data = defineModel<Record<string, any>[]>('value', {
     default: [],
