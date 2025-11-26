@@ -220,8 +220,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (fieldValue == null) {
                         return;
                     }
-					
-					// 处理子表格的字段值
+
+                    // 处理子表格的字段值
 
                     if (field.needRepeatCheck()) {
                         checkUnique(fieldValue, field);
@@ -269,7 +269,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
         }
     }
-
 
 
     /**
@@ -977,37 +976,45 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return chartResults;
     }
 
-    private Map<String, List<OptionDTO>> getChartOptionMap(ModuleFormConfigDTO formConfig, List<ChartResult> chartResults,
-                                                           ChartCategoryAxisDbParam categoryAxisParam,
-                                                           ChartCategoryAxisDbParam subCategoryAxisParam) {
-        BaseField categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
-        List<BaseModuleFieldValue> moduleFieldValues = new ArrayList<>();
-        for (ChartResult chartResult : chartResults) {
-            if (categoryAxisField.hasOptions()) {
-                BaseModuleFieldValue categoryFieldValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
-                categoryFieldValue.setFieldValue(chartResult.getCategoryAxis());
-                moduleFieldValues.add(categoryFieldValue);
-            }
+    private Map<String, List<OptionDTO>> getChartOptionMap(
+            ModuleFormConfigDTO formConfig,
+            List<ChartResult> chartResults,
+            ChartCategoryAxisDbParam categoryAxisParam,
+            ChartCategoryAxisDbParam subCategoryAxisParam) {
 
-            if (subCategoryAxisParam != null) {
-                BaseField subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
-                if (subCategoryAxisField.hasOptions()) {
-                    BaseModuleFieldValue subCategoryValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
-                    subCategoryValue.setFieldValue(chartResult.getSubCategoryAxis());
-                    moduleFieldValues.add(subCategoryValue);
-                }
-            }
-        }
+        var categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
+        var subCategoryAxisField = subCategoryAxisParam != null
+                ? getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId())
+                : null;
 
-        moduleFieldValues = moduleFieldValues.stream()
+        // 收集所有需要转换为 Option 的字段值
+        var moduleFieldValues = chartResults.stream()
+                .flatMap(chartResult -> {
+                    List<BaseModuleFieldValue> values = new ArrayList<>(2);
+
+                    if (categoryAxisField != null && categoryAxisField.hasOptions()) {
+                        var categoryValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
+                        categoryValue.setFieldValue(chartResult.getCategoryAxis());
+                        values.add(categoryValue);
+                    }
+
+                    if (subCategoryAxisField != null && subCategoryAxisField.hasOptions()) {
+                        var subValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
+                        subValue.setFieldValue(chartResult.getSubCategoryAxis());
+                        values.add(subValue);
+                    }
+
+                    return values.stream();
+                })
                 .filter(BaseModuleFieldValue::valid)
-                .distinct().toList();
+                .distinct()
+                .toList();
 
-        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+        if (moduleFieldValues.isEmpty()) {
             return Map.of();
         }
 
-        // 获取选项值对应的 option
         return moduleFormService.getOptionMap(formConfig, moduleFieldValues);
     }
+
 }
