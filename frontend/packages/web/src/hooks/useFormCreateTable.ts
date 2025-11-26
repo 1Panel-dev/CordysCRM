@@ -1,4 +1,4 @@
-import { NImage, NImageGroup } from 'naive-ui';
+import { NImage, NImageGroup, NSwitch } from 'naive-ui';
 import dayjs from 'dayjs';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
@@ -21,6 +21,7 @@ import type { FormCreateField } from '@/components/business/crm-form-create/type
 
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
+import { hasAnyPermission } from '@/utils/permission';
 
 export type FormKey =
   | FormDesignKeyEnum.CUSTOMER
@@ -44,7 +45,8 @@ export type FormKey =
   | FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
   | FormDesignKeyEnum.CONTRACT
-  | FormDesignKeyEnum.CONTRACT_PAYMENT;
+  | FormDesignKeyEnum.CONTRACT_PAYMENT
+  | FormDesignKeyEnum.PRICE;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -95,6 +97,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: TableKeyEnum.OPPORTUNITY_QUOTATION,
     [FormDesignKeyEnum.CONTRACT]: TableKeyEnum.CONTRACT,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
+    [FormDesignKeyEnum.PRICE]: TableKeyEnum.PRICE,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -666,6 +669,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [],
     [FormDesignKeyEnum.CONTRACT]: [], // TODO lmy
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [], // TODO lmy
+    [FormDesignKeyEnum.PRICE]: [],
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

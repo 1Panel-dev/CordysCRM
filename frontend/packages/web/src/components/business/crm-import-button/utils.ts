@@ -24,7 +24,8 @@ export type ImportApiType =
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CUSTOMER
   | FormDesignKeyEnum.CONTACT
-  | FormDesignKeyEnum.PRODUCT;
+  | FormDesignKeyEnum.PRODUCT
+  | FormDesignKeyEnum.PRICE;
 
 export interface importRequestType {
   preCheck: (file: File) => Promise<{ data: ValidateInfo }>;
@@ -57,5 +58,11 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: preCheckImportProduct,
     save: importProduct,
     download: downloadProductTemplate,
+  },
+  [FormDesignKeyEnum.PRICE]: {
+    // TODO:
+    preCheck: () => Promise.resolve({ data: {} as ValidateInfo }),
+    save: () => Promise.resolve(),
+    download: () => Promise.resolve(new File([], '')),
   },
 };

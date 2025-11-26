@@ -5,6 +5,7 @@ export default {
   'module.businessManagement': 'Opportunity',
   'module.dataManagement': 'Data',
   'module.productManagement': 'Product',
+  'module.productManagementPrice': 'Price Table',
   'module.newContactForm': 'Contact form settings',
   'module.autoRecycle': 'Auto recycle',
   'module.expirationReminder': 'Expiration reminder',

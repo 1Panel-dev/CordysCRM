@@ -106,9 +106,13 @@
 
   function handleMove(e: any) {
     return !getFieldDisable(e.data) && e.to.className.includes('crm-form-design-subtable-wrapper')
-      ? [FieldTypeEnum.INPUT, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
-          e.data.type
-        )
+      ? [
+          FieldTypeEnum.INPUT,
+          FieldTypeEnum.INPUT_NUMBER,
+          FieldTypeEnum.SELECT,
+          FieldTypeEnum.SELECT_MULTIPLE,
+          FieldTypeEnum.DATA_SOURCE,
+        ].includes(e.data.type)
       : true;
   }
 

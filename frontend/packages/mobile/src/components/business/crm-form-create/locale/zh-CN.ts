@@ -8,6 +8,7 @@ export default {
   'formCreate.clue': '线索',
   'formCreate.member': '成员',
   'formCreate.department': '部门',
+  'formCreate.price': '价格表',
   'formCreate.pickDate': '选择日期',
   'formCreate.pickTime': '选择时间',
   'formCreate.next': '下一步',

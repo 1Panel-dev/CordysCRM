@@ -193,7 +193,8 @@
       | FormDesignKeyEnum.CLUE
       | FormDesignKeyEnum.CUSTOMER
       | FormDesignKeyEnum.PRODUCT
-      | FormDesignKeyEnum.CUSTOMER_CONTACT;
+      | FormDesignKeyEnum.CUSTOMER_CONTACT
+      | FormDesignKeyEnum.PRICE;
   }>();
 
   const emit = defineEmits<{

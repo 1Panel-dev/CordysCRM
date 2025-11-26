@@ -158,7 +158,16 @@
 
   const props = defineProps<{
     params: Record<string, any>;
-    type: 'customer' | 'clue' | 'opportunity' | 'cluePool' | 'openSea' | 'contact' | 'contract' | 'contractPaymentPlan';
+    type:
+      | 'customer'
+      | 'clue'
+      | 'opportunity'
+      | 'cluePool'
+      | 'openSea'
+      | 'contact'
+      | 'contract'
+      | 'contractPaymentPlan'
+      | 'price';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
   }>();
@@ -183,6 +192,7 @@
     contact: t('menu.contact'),
     contract: t('module.contract'),
     contractPaymentPlan: t('module.paymentPlan'),
+    price: t('module.productManagementPrice'),
   };
 
   const loading = ref<boolean>(false);
@@ -282,6 +292,7 @@
     openSea: exportCustomerOpenSeaAll,
     contract: exportContractAll,
     contractPaymentPlan: exportPaymentPlanAll,
+    price: () => Promise.resolve(), // TODO:
   };
 
   const exportSelectedApiMap = {
@@ -293,6 +304,7 @@
     openSea: exportCustomerOpenSeaSelected,
     contract: exportContractSelected,
     contractPaymentPlan: exportPaymentPlanSelected,
+    price: () => Promise.resolve(), // TODO:
   };
 
   function confirmHandler() {

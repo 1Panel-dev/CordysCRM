@@ -23,6 +23,17 @@ const product: AppRouteRecordRaw = {
       meta: {
         locale: 'module.productManagement',
         permissions: ['PRODUCT_MANAGEMENT:READ'],
+        isTopMenu: true,
+      },
+    },
+    {
+      path: 'price',
+      name: ProductRouteEnum.PRODUCT_PRICE,
+      component: () => import('@/views/product/price.vue'),
+      meta: {
+        locale: 'module.productManagementPrice',
+        permissions: ['PRODUCT_MANAGEMENT:READ'],
+        isTopMenu: true,
       },
     },
   ],

@@ -1302,28 +1302,51 @@
     dividerStyleShow.value = false;
   }
 
-  const dataSourceOptions: SelectOption[] = [
-    {
-      label: t('crmFormDesign.customer'),
-      value: FieldDataSourceTypeEnum.CUSTOMER,
+  const dataSourceOptions = computed<SelectOption[]>(() => {
+    const fullList = [
+      {
+        label: t('crmFormDesign.customer'),
+        value: FieldDataSourceTypeEnum.CUSTOMER,
+      },
+      {
+        label: t('crmFormDesign.contract'),
+        value: FieldDataSourceTypeEnum.CONTACT,
+      },
+      {
+        label: t('crmFormDesign.opportunity'),
+        value: FieldDataSourceTypeEnum.BUSINESS,
+      },
+      {
+        label: t('crmFormDesign.product'),
+        value: FieldDataSourceTypeEnum.PRODUCT,
+      },
+      {
+        label: t('crmFormDesign.clue'),
+        value: FieldDataSourceTypeEnum.CLUE,
+      },
+      {
+        label: t('crmFormCreate.drawer.price'),
+        value: FieldDataSourceTypeEnum.PRICE,
+      },
+    ];
+    if (isSubTableField.value) {
+      return fullList.filter((item) =>
+        [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.PRICE].includes(item.value)
+      );
+    }
+    return fullList;
+  });
+
+  watch(
+    () => dataSourceOptions.value,
+    (options) => {
+      if (fieldConfig.value && !options.some((item) => item.value === fieldConfig.value.dataSourceType)) {
+        fieldConfig.value.dataSourceType =
+          (options[0]?.value as FieldDataSourceTypeEnum) || FieldDataSourceTypeEnum.CUSTOMER;
+      }
     },
-    {
-      label: t('crmFormDesign.contract'),
-      value: FieldDataSourceTypeEnum.CONTACT,
-    },
-    {
-      label: t('crmFormDesign.opportunity'),
-      value: FieldDataSourceTypeEnum.BUSINESS,
-    },
-    {
-      label: t('crmFormDesign.product'),
-      value: FieldDataSourceTypeEnum.PRODUCT,
-    },
-    {
-      label: t('crmFormDesign.clue'),
-      value: FieldDataSourceTypeEnum.CLUE,
-    },
-  ];
+    { immediate: true }
+  );
 
   const showRuleConfigVisible = ref(false);
   const tempShowRules = ref<FormCreateFieldShowControlRule[]>([]);

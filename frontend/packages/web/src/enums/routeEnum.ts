@@ -37,6 +37,7 @@ export enum ContractRouteEnum {
 export enum ProductRouteEnum {
   PRODUCT = 'product',
   PRODUCT_PRO = 'productPro',
+  PRODUCT_PRICE = 'productPrice',
 }
 
 export enum PersonalRouteEnum {

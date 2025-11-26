@@ -5,6 +5,7 @@ export default {
   'module.businessManagement': '商机',
   'module.dataManagement': '数据',
   'module.productManagement': '产品',
+  'module.productManagementPrice': '价格表',
   'module.newContactForm': '联系人表单设置',
   'module.autoRecycle': '自动回收',
   'module.expirationReminder': '到期提醒',

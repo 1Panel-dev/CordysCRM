@@ -948,7 +948,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function replaceRule(item: FormCreateField) {
+  function replaceRule(item: FormCreateField, parentFieldId?: string) {
     const fullRules: FormCreateFieldRule[] = [];
     (item.rules || []).forEach((rule) => {
       // 遍历规则集合，将全量的规则配置载入
@@ -956,32 +956,53 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (staticRule) {
         // 重复校验
         if (staticRule.key === FieldRuleEnum.UNIQUE) {
-          staticRule.validator = async (_rule: any, value: string) => {
-            if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
-              return Promise.resolve();
-            }
-
-            try {
-              const info = await checkRepeat({
-                id: item.id,
-                value,
-                formKey: props.formKey.value,
-              });
-              if (info.repeat) {
+          if (parentFieldId) {
+            staticRule.validator = async (_rule: any, value: string) => {
+              if (!value.length) {
+                return Promise.resolve();
+              }
+              const subFieldValues = formDetail.value[parentFieldId].map(
+                (subItem: Record<string, any>) => subItem[item.id]
+              );
+              const valueCount = subFieldValues.filter((v: string) => v === value).length;
+              if (valueCount > 1) {
                 return Promise.reject(
                   new Error(
-                    info.name.length
-                      ? t('crmFormCreate.repeatTip', { name: info.name })
+                    item.name.length
+                      ? t('crmFormCreate.repeatTip', { name: item.name })
                       : t('crmFormCreate.repeatTipWithoutName')
                   )
                 );
               }
-              return Promise.resolve();
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error);
-            }
-          };
+            };
+          } else {
+            staticRule.validator = async (_rule: any, value: string) => {
+              if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+                return Promise.resolve();
+              }
+
+              try {
+                const info = await checkRepeat({
+                  id: item.id,
+                  value,
+                  formKey: props.formKey.value,
+                });
+                if (info.repeat) {
+                  return Promise.reject(
+                    new Error(
+                      info.name.length
+                        ? t('crmFormCreate.repeatTip', { name: info.name })
+                        : t('crmFormCreate.repeatTipWithoutName')
+                    )
+                  );
+                }
+                return Promise.resolve();
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+              }
+            };
+          }
         } else {
           staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
           staticRule.message = t(staticRule.message as string, { value: t(item.name) });
@@ -1015,7 +1036,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
           subFieldInit(subField);
-          replaceRule(subField);
+          replaceRule(subField, item.id);
           initLine[subField.id] = subField.defaultValue;
         });
         if (!formDetail.value[item.id]) {

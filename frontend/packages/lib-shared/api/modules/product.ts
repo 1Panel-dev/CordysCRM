@@ -1,22 +1,34 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddProductPriceUrl,
   AddProductUrl,
   BatchDeleteProductUrl,
   BatchUpdateProductUrl,
+  DeleteProductPriceUrl,
   DeleteProductUrl,
   DownloadProductTemplateUrl,
   DragSortProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
   GetProductOptionsUrl,
+  GetProductPriceFormConfigUrl,
+  GetProductPriceListUrl,
+  GetProductPriceUrl,
   GetProductUrl,
   ImportProductUrl,
   PreCheckProductImportUrl,
+  UpdateProductPriceUrl,
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
 import type { CommonList, TableDraggedParams, TableQueryParams } from '@lib/shared/models/common';
 import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
-import type { ProductListItem, SaveProductParams, UpdateProductParams } from '@lib/shared/models/product';
+import type {
+  AddPriceParams,
+  ProductListItem,
+  SaveProductParams,
+  UpdatePriceParams,
+  UpdateProductParams,
+} from '@lib/shared/models/product';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 
@@ -88,6 +100,36 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<{ id: string; name: string }[]>({ url: GetProductOptionsUrl });
   }
 
+  // 更新价格表
+  function updateProductPrice(data: UpdatePriceParams) {
+    return CDR.post({ url: UpdateProductPriceUrl, data });
+  }
+
+  // 获取价格表列表
+  function getProductPriceList(data: TableQueryParams) {
+    return CDR.post({ url: GetProductPriceListUrl, data });
+  }
+
+  // 添加价格表
+  function addProductPrice(data: AddPriceParams) {
+    return CDR.post({ url: AddProductPriceUrl, data });
+  }
+
+  // 获取价格表详情
+  function getProductPrice(id: string) {
+    return CDR.get<ProductListItem>({ url: `${GetProductPriceUrl}/${id}` });
+  }
+
+  // 删除价格表
+  function deleteProductPrice(id: string) {
+    return CDR.get({ url: `${DeleteProductPriceUrl}/${id}` });
+  }
+
+  // 获取价格表单配置
+  function getProductPriceFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetProductPriceFormConfigUrl });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -102,5 +144,11 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadProductTemplate,
     importProduct,
     getProductOptions,
+    updateProductPrice,
+    getProductPriceList,
+    addProductPrice,
+    getProductPrice,
+    deleteProductPrice,
+    getProductPriceFormConfig,
   };
 }

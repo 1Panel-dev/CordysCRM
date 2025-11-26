@@ -8,6 +8,7 @@ export default {
   'formCreate.clue': 'Lead',
   'formCreate.member': 'Member',
   'formCreate.department': 'Department',
+  'formCreate.price': 'Price Table',
   'formCreate.pickDate': 'Pick Date',
   'formCreate.pickTime': 'Pick Time',
   'formCreate.next': 'Next',
