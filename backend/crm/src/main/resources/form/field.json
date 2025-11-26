@@ -1297,7 +1297,7 @@
     },
     {
       "name": "客户名称",
-      "internalKey": "contractOpportunity",
+      "internalKey": "contractCustomer",
       "type": "DATA_SOURCE",
       "dataSourceType": "CUSTOMER",
       "showLabel": true,
@@ -1308,6 +1308,60 @@
         {"key":  "required"}
       ],
       "mobile": true
+    },
+    {
+      "name": "合同报价信息",
+      "internalKey": "contractProducts",
+      "type": "SUB_PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "subFields": [
+        {
+          "name": "产品名称",
+          "internalKey": "contractProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "rules": [
+            {"key":  "required"}
+          ],
+          "mobile": true
+        },
+        {
+          "name": "产品单价",
+          "internalKey": "contractProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "currency",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true,
+          "mobile": true,
+          "rules": [
+            {"key":  "required"}
+          ]
+        },
+        {
+          "name": "数量",
+          "internalKey": "contractProductNumber",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "currency"
+        }
+      ]
     },
     {
       "name": "负责人",
