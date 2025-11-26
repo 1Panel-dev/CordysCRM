@@ -1,6 +1,7 @@
 package cn.cordys.common.constants;
 
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
@@ -304,8 +305,28 @@ public enum BusinessModuleField {
         }
         return formBusinessFields.stream()
                 .anyMatch(businessField ->
-                        fields.stream().noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey())));
+                        fields.stream().noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey()))
+						&& businessField.noneMatchOfSubFields(fields)
+				);
     }
+
+	/**
+	 * 判断子表字段中是否存在业务字段
+	 * @param fields 字段集合
+	 * @return 是否存在业务字段
+	 */
+	private boolean noneMatchOfSubFields(List<BaseField> fields) {
+		boolean noneMatch = true;
+		for (BaseField field : fields) {
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				noneMatch = subField.getSubFields().stream().noneMatch(sub -> Strings.CS.equals(this.getKey(), sub.getInternalKey()));
+				if (!noneMatch) {
+					break;
+				}
+			}
+		}
+		return noneMatch;
+	}
 
     /**
      * 判断是否有重复的字段
