@@ -4,7 +4,7 @@
 <mapper namespace="cn.cordys.crm.product.mapper.ExtProductPriceMapper">
 
     <select id="list" resultType="cn.cordys.crm.product.dto.response.ProductPriceResponse">
-        select pp.id, pp.name, pp.status, pp.pos, pp.organization_id, pp.create_time, pp.update_time, pp.create_user, pp.update_user
+        select pp.id, pp.name, pp.status, pp.organization_id, pp.create_time, pp.update_time, pp.create_user, pp.update_user
         from product_price pp
 
         <include refid="fieldConditionJoin">
