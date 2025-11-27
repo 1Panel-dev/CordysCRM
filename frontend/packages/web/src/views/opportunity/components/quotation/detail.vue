@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="props.detail?.name ?? ''">
+  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="props.detail?.name ?? ''">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <quotationStatus v-if="props.detail?.approvalStatus" :status="props.detail?.approvalStatus" />
@@ -29,22 +29,17 @@
         </CrmMoreAction>
       </div>
     </template>
-    <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmCard hide-footer>
-        <div class="flex-1">
-          <CrmFormDescription
-            :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
-            :source-id="sourceId"
-            :column="2"
-            :refresh-key="props.refreshId"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            @init="handleInit"
-          />
-        </div>
-      </CrmCard>
-    </div>
+    <CrmFormDescription
+      :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
+      :source-id="sourceId"
+      :column="2"
+      :refresh-key="props.refreshId"
+      label-width="auto"
+      value-align="start"
+      tooltip-position="top-start"
+      class="p-[8px]"
+      @init="handleInit"
+    />
   </CrmDrawer>
 </template>
 

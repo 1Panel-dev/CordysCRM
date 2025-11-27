@@ -211,7 +211,6 @@
   }
 
   const otherSaveParams = ref({
-    type: 'QUOTATION',
     id: '',
   });
 
