@@ -8,6 +8,8 @@
         ct.NAME,
         ct.customer_id,
         c.`name` AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id,
         ct.amount,
         ct.archived_status,
         ct.`status`,

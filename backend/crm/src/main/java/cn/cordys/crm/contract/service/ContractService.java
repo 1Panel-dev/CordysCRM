@@ -297,7 +297,7 @@ public class ContractService {
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 ContractListResponse::getOwner, ContractListResponse::getOwnerName);
-        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+        optionMap.put(BusinessModuleField.CONTRACT_OWNER.getBusinessKey(), ownerFieldOption);
         return optionMap;
     }
 
@@ -310,9 +310,9 @@ public class ContractService {
             return list;
         }
 
-        List<String> opportunityIds = list.stream().map(ContractListResponse::getId)
+        List<String> contractIds = list.stream().map(ContractListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(opportunityIds, true);
+        Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(contractIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(ContractListResponse::getOwner)
@@ -399,7 +399,7 @@ public class ContractService {
         if (snapshot != null) {
             moduleFormConfigDTO = JSON.parseObject(snapshot.getContractProp(), ModuleFormConfigDTO.class);
         } else {
-            moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
+            moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
         }
         return moduleFormConfigDTO;
 
