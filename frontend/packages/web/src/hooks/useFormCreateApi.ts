@@ -1032,7 +1032,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (staticRule.key === FieldRuleEnum.UNIQUE) {
           if (parentFieldId) {
             staticRule.validator = async (_rule: any, value: string) => {
-              if (!value.length) {
+              if (!value || !value.length) {
                 return Promise.resolve();
               }
               const subFieldValues = formDetail.value[parentFieldId].map(
@@ -1051,7 +1051,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             };
           } else {
             staticRule.validator = async (_rule: any, value: string) => {
-              if (!value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
+              if (!value || !value.length || formDetail.value[item.id] === originFormDetail.value[item.id]) {
                 return Promise.resolve();
               }
 
@@ -1110,11 +1110,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
           subFieldInit(subField);
-          replaceRule(subField, item.businessKey || item.id);
+          replaceRule(subField, item.id);
           initLine[subField.businessKey || subField.id] = subField.defaultValue;
         });
-        if (!formDetail.value[item.businessKey || item.id]) {
-          formDetail.value[item.businessKey || item.id] = [initLine];
+        if (!formDetail.value[item.id]) {
+          formDetail.value[item.id] = [initLine];
         }
         return;
       }
@@ -1134,8 +1134,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(item.type)) {
         defaultValue = defaultValue || [];
       }
-      if (!formDetail.value[item.businessKey || item.id]) {
-        formDetail.value[item.businessKey || item.id] = defaultValue;
+      if (!formDetail.value[item.id]) {
+        formDetail.value[item.id] = defaultValue;
       }
       replaceRule(item);
       if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {

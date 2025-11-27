@@ -95,17 +95,19 @@
       <template #[FieldTypeEnum.SUB_PRICE]="{ item }">
         <CrmSubTable
           :parent-id="item.key || ''"
-          :value="item.value as Record<string, any>[]"
+          :value="item.value as Record<string, any>[] || []"
           :sub-fields="item.fieldInfo.subFields"
           :fixed-column="item.fieldInfo.fixedColumn"
+          readonly
         />
       </template>
       <template #[FieldTypeEnum.SUB_PRODUCT]="{ item }">
         <CrmSubTable
           :parent-id="item.key || ''"
-          :value="item.value as Record<string, any>[]"
+          :value="item.value as Record<string, any>[] || []"
           :sub-fields="item.fieldInfo.subFields"
           :fixed-column="item.fieldInfo.fixedColumn"
+          readonly
         />
       </template>
     </CrmDescription>

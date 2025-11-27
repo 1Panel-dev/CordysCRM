@@ -957,6 +957,26 @@
         </div>
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.sum') }}
+          </div>
+          <n-checkbox :default-checked="fieldConfig.sumColumn?.length">
+            {{ t('crmFormDesign.show') }}
+          </n-checkbox>
+          <n-select
+            v-model:value="fieldConfig.sumColumn"
+            multiple
+            :options="
+              fieldConfig.subFields
+                ?.filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
+                .map((e) => ({
+                  label: e.name,
+                  value: e.id,
+                }))
+            "
+          />
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.fixedCol') }}
           </div>
           <n-input-group>

@@ -85,7 +85,6 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
@@ -110,7 +109,6 @@
 
   const { t } = useI18n();
   const Message = useMessage();
-  const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
 
   const priceCardRef = ref<HTMLElement | null>(null);
@@ -131,11 +129,6 @@
         label: t('common.batchEdit'),
         key: 'batchEdit',
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.batchDelete'),
-        key: 'batchDelete',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
       },
     ],
   };
@@ -218,7 +211,7 @@
     containerClass: 'crm-price-table',
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 250 : 200,
+      width: 120,
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {

@@ -5,17 +5,24 @@
     :paging="false"
     :pagination="false"
     :scroll-x="scrollXWidth"
+    :summary="props.showSummary ? summary : undefined"
     class="crm-sub-table"
   />
+  <n-button v-if="!props.readonly" type="primary" text class="mt-[8px]" @click="addLine">
+    <CrmIcon type="iconicon_add" class="mr-[8px]" />
+    {{ t('crm.subTable.addLine') }}
+  </n-button>
 </template>
 
 <script setup lang="ts">
-  import { NDataTable } from 'naive-ui';
+  import { DataTableCreateSummary, NButton, NDataTable } from 'naive-ui';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
   import formula from '@/components/business/crm-form-create/components/advanced/formula.vue';
@@ -23,20 +30,30 @@
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
   import { FormCreateField } from '../crm-form-create/types';
-  import { TableColumns } from 'naive-ui/es/data-table/src/interface';
+  import { RowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
     parentId: string;
     subFields: FormCreateField[];
     fixedColumn?: number;
+    showSummary?: boolean;
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
     readonly?: boolean;
   }>();
 
+  const { t } = useI18n();
+
   const data = defineModel<Record<string, any>[]>('value', {
-    default: [],
+    required: true,
   });
+
+  function makeRequiredTitle(title: string) {
+    return h('div', { class: 'flex items-center' }, [
+      h('span', {}, title),
+      h('span', { class: 'text-[var(--error-red)] ml-[4px]' }, '*'),
+    ]);
+  }
 
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
@@ -45,7 +62,6 @@
         if (field.type === FieldTypeEnum.INPUT_NUMBER) {
           return {
             title: field.name,
-            width: 150,
             key,
             fieldId: key,
             render: (row: any) => formatNumberValue(row[key], field),
@@ -55,7 +71,6 @@
         }
         return {
           title: field.name,
-          width: 150,
           key,
           fieldId: key,
           render: (row: any) => row[key],
@@ -68,13 +83,15 @@
       const key = field.businessKey || field.id;
       if (field.type === FieldTypeEnum.DATA_SOURCE) {
         return {
-          title: field.name,
-          width: 150,
+          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+            ? () => makeRequiredTitle(field.name)
+            : field.name,
+          width: 250,
           key,
           fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(dataSource, {
-              value: row[key],
+              value: row[key] || [],
               fieldConfig: field,
               path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
@@ -89,8 +106,10 @@
       }
       if (field.type === FieldTypeEnum.FORMULA) {
         return {
-          title: field.name,
-          width: 150,
+          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+            ? () => makeRequiredTitle(field.name)
+            : field.name,
+          width: 200,
           key,
           fieldId: key,
           render: (row: any, rowIndex: number) =>
@@ -110,8 +129,10 @@
       }
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
         return {
-          title: field.name,
-          width: 150,
+          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+            ? () => makeRequiredTitle(field.name)
+            : field.name,
+          width: 200,
           key,
           fieldId: key,
           render: (row: any, rowIndex: number) =>
@@ -129,8 +150,10 @@
         };
       }
       return {
-        title: field.name,
-        width: 150,
+        title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+          ? () => makeRequiredTitle(field.name)
+          : field.name,
+        width: 200,
         key,
         fieldId: key,
         render: (row: any, rowIndex: number) =>
@@ -163,6 +186,27 @@
       },
       ...renderColumns.value,
     ];
+    if (!props.readonly) {
+      cols.push({
+        title: '',
+        key: 'operation',
+        fixed: 'right',
+        width: 40,
+        render: (row: any, rowIndex: number) => {
+          return h(
+            NButton,
+            {
+              ghost: true,
+              class: 'p-[8px_9px]',
+              onClick: () => {
+                data.value.splice(rowIndex, 1);
+              },
+            },
+            { default: () => h(CrmIcon, { type: 'iconicon_minus_circle1' }) }
+          );
+        },
+      });
+    }
     return cols as TableColumns;
   });
   const scrollXWidth = computed(() =>
@@ -171,10 +215,40 @@
       return prev + width;
     }, 0)
   );
+
+  const summary: DataTableCreateSummary = (pageData) => {
+    const summaryRes: Record<string, any> = {
+      [SpecialColumnEnum.ORDER]: {
+        value: h('div', { class: 'flex items-center justify-center' }, t('crmFormDesign.sum')),
+      },
+    };
+    renderColumns.value.forEach((col) => {
+      summaryRes[col.key || ''] = {
+        value: h(
+          'div',
+          { class: 'flex items-center ml-[4px]' },
+          (pageData as unknown as RowData[]).reduce((prevValue, row) => prevValue + row[col.key as keyof RowData], 0)
+        ),
+      };
+    });
+    return summaryRes;
+  };
+
+  function addLine() {
+    const newRow: Record<string, any> = {};
+    props.subFields.forEach((field) => {
+      const key = field.businessKey || field.id;
+      newRow[key] = field.type === FieldTypeEnum.INPUT_NUMBER ? null : '';
+    });
+    data.value.push(newRow);
+  }
 </script>
 
 <style lang="less">
   .crm-sub-table {
+    .n-data-table-th {
+      padding: 12px 4px;
+    }
     .n-data-table-td {
       padding: 8px 4px;
     }
