@@ -95,7 +95,7 @@ public class ProductPriceService {
         productPriceFieldService.saveModuleField(productPrice, currentOrg, currentUser, request.getModuleFields(), false);
         productPriceMapper.insert(productPrice);
         // 处理日志上下文
-        baseService.handleAddLog(productPrice, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), "products", Translator.get("products_info"));
         return productPrice;
     }
 

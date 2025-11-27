@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -22,10 +21,6 @@ public class OpportunityQuotationAddRequest {
     @NotBlank
     @Schema(description = "商机id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String opportunityId;
-
-    @NotNull
-    @Schema(description = "累计金额", requiredMode = Schema.RequiredMode.REQUIRED)
-    private BigDecimal amount;
 
     @NotEmpty
     @Schema(description = "自定义字段值", requiredMode = Schema.RequiredMode.REQUIRED)

@@ -58,6 +58,8 @@ import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -108,17 +110,19 @@ public class OpportunityQuotationService {
         opportunityQuotation.setOrganizationId(orgId);
         opportunityQuotation.setName(request.getName());
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
-        opportunityQuotation.setAmount(request.getAmount());
         opportunityQuotation.setOpportunityId(request.getOpportunityId());
         opportunityQuotation.setCreateUser(userId);
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
+        //计算子产品总金额
+        setAmount(request.getProducts(), opportunityQuotation);
         // 设置子表格字段值
         request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, moduleFields, false);
         opportunityQuotationMapper.insert(opportunityQuotation);
-        baseService.handleAddLog(opportunityQuotation, moduleFields);
+        baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, "products", Translator.get("products_info"));
 
         // 保存表单配置快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
@@ -129,6 +133,19 @@ public class OpportunityQuotationService {
 
         return opportunityQuotation;
 
+    }
+
+    /**
+     * 计算子产品总金额
+     *
+     * @param products             子产品列表
+     * @param opportunityQuotation 报价单实体
+     */
+    private void setAmount(List<Map<String, Object>> products, OpportunityQuotation opportunityQuotation) {
+        BigDecimal totalAmount = products.stream()
+                .map(product -> (BigDecimal) product.get("amount"))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        opportunityQuotation.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
     }
 
     /**
@@ -462,6 +479,7 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
+        setAmount(request.getProducts(), opportunityQuotation);
         // 设置子表格字段值
         request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
