@@ -374,10 +374,9 @@ export function desensitize(str: string): string {
  */
 export function characterLimit(str?: string, length?: number): string {
   if (!str) return '';
-  if (str.length <= (length || 20)) {
-    return str;
-  }
-  return `${str.slice(0, length || 20 - 3)}...`;
+  const limit = length ?? 20;
+  if (str.length <= limit) return str;
+  return `${str.slice(0, limit - 3)}...`;
 }
 
 /**
