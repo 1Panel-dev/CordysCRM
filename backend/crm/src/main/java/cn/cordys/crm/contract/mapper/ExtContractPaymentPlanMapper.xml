@@ -48,6 +48,10 @@
             and o.contract_id = #{request.contractId}
         </if>
 
+        <if test="request.customerId != null and request.customerId != ''">
+            and c.customer_id = #{request.customerId}
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')
         </if>

@@ -13,4 +13,8 @@ import lombok.Data;
 public class ContractPaymentPlanPageRequest extends BasePageRequest {
 
     public String getContractId() {return null;}
+
+    public String getCustomerId() {
+        return null;
+    }
 }
