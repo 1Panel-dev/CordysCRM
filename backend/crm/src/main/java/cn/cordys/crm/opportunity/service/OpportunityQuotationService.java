@@ -114,8 +114,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
-		// 设置子表格字段值
-		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+        // 设置子表格字段值
+        request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, moduleFields, false);
         opportunityQuotationMapper.insert(opportunityQuotation);
         baseService.handleAddLog(opportunityQuotation, moduleFields);
@@ -459,8 +459,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
-		// 设置子表格字段值
-		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+        // 设置子表格字段值
+        request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
         opportunityQuotationMapper.update(opportunityQuotation);
 
@@ -468,7 +468,7 @@ public class OpportunityQuotationService {
         updateQuotationApproval(userId, id, ApprovalState.APPROVING.toString());
 
         // 处理日志上下文
-        baseService.handleUpdateLog(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName());
+        baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), "products", Translator.get("products_info"));
 
         //删除快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
@@ -702,7 +702,7 @@ public class OpportunityQuotationService {
      * @return 表单配置DTO
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
-        ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
+        ModuleFormConfigDTO moduleFormConfigDTO;
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));

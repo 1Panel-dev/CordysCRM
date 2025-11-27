@@ -183,7 +183,7 @@ public class ContractService {
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
             // 处理日志上下文
-            baseService.handleUpdateLog(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName());
+            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"));
 
             //删除快照
             LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
