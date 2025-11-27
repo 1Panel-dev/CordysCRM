@@ -8,12 +8,11 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.dto.UserDeptDTO;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -284,5 +283,10 @@ public class ContractPaymentPlanService {
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
                 NotificationConstants.Event.CONTRACT_PAYMENT_PLAN_DELETE, resourceName, userId,
                 orgId, List.of(originContractPaymentPlan.getOwner()), true);
+    }
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, rolePermissions);
     }
 }
