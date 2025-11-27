@@ -28,6 +28,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ContractPaymentPlanControllerTests extends BaseTest {
     private static final String BASE_PATH = "/contract/payment-plan/";
+    private static final String TAB = "tab";
 
     private static ContractPaymentPlan addContractPaymentPlan;
 
@@ -53,6 +54,14 @@ class ContractPaymentPlanControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(0)
+    void testTab() throws Exception {
+        this.requestGetWithOkAndReturn(TAB);
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, TAB);
     }
 
     @Test

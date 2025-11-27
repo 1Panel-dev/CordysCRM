@@ -2,6 +2,7 @@ package cn.cordys.crm.contract.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -73,5 +74,12 @@ public class ContractPaymentPlanController {
     @Operation(summary = "删除合同回款计划")
     public void delete(@PathVariable String id) {
 		contractPaymentPlanService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
+    @Operation(summary = "tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return contractPaymentPlanService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
