@@ -146,7 +146,7 @@ public class ContractService {
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
-        response.setModuleFields(moduleFields);
+		moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
@@ -281,19 +281,19 @@ public class ContractService {
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
-        List<ContractListResponse> results = buildList(list);
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results);
+		ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        List<ContractListResponse> results = buildList(list, customerFormConfig);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results, customerFormConfig);
 
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
     }
 
-    private Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ContractListResponse> list, List<ContractListResponse> buildList) {
-        // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+    private Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ContractListResponse> list, List<ContractListResponse> buildList,
+														ModuleFormConfigDTO formConfig) {
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractListResponse::getModuleFields);
         // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 ContractListResponse::getOwner, ContractListResponse::getOwnerName);
@@ -305,7 +305,7 @@ public class ContractService {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
     }
 
-    private List<ContractListResponse> buildList(List<ContractListResponse> list) {
+    private List<ContractListResponse> buildList(List<ContractListResponse> list, ModuleFormConfigDTO formConfig) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -324,7 +324,7 @@ public class ContractService {
             item.setOwnerName(userNameMap.get(item.getOwner()));
             // 获取自定义字段
             List<BaseModuleFieldValue> contractFields = contractFiledMap.get(item.getId());
-            item.setModuleFields(contractFields);
+			moduleFormService.processBusinessFieldValues(item, contractFields, formConfig);
         });
         return baseService.setCreateAndUpdateUserName(list);
     }

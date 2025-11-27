@@ -43,10 +43,12 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -268,6 +270,7 @@ public class ModuleFormService {
 		List<BaseField> allFields = getAllFields(moduleForm.getId());
 		return allFields.stream()
 				.peek(this::setFieldBusinessParam)
+				.peek(this::reloadPropOfSubRefFields)
 				.collect(Collectors.toList());
     }
 
@@ -342,6 +345,9 @@ public class ModuleFormService {
             if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
                 idTypeMap.put(field.getId(), FieldType.DEPARTMENT.name());
             }
+			if (field.isSubField()) {
+
+			}
         });
 
         Map<String, List<String>> typeIdsMap = new HashMap<>(8);
@@ -428,6 +434,34 @@ public class ModuleFormService {
         }
         return extModuleFieldMapper.resolveIdsByName(TYPE_SOURCE_MAP.get(type), nameList);
     }
+
+	/**
+	 * 处理自定义字段中业务子表单值
+	 * @param resource 资源详情
+	 * @param fieldValues 自定义字段值
+	 * @param formConfig 表单配置
+	 */
+	public void processBusinessFieldValues(Object resource, List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
+		List<BaseField> subFields = formConfig.getFields().stream().filter(f -> f instanceof SubField && StringUtils.isNotEmpty(f.getBusinessKey())).toList();
+		Map<String, String> subFieldBusinessMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, BaseField::getBusinessKey));
+		List<BaseModuleFieldValue> businessFieldValues = fieldValues.stream().filter(fv -> subFieldBusinessMap.containsKey(fv.getFieldId())).toList();
+		try {
+			businessFieldValues.forEach(bfv -> {
+				String businessKey = subFieldBusinessMap.get(bfv.getFieldId());
+				try {
+					Field field = resource.getClass().getDeclaredField(businessKey);
+					ReflectionUtils.setField(field, resource, bfv.getFieldValue());
+				} catch (Exception e) {
+					LogUtils.error("Cannot set business field value, err is {}", e.getMessage());
+				}
+			});
+			fieldValues.removeIf(fv -> subFieldBusinessMap.containsKey(fv.getFieldId()));
+			Field moduleFields = resource.getClass().getDeclaredField("moduleFields");
+			ReflectionUtils.setField(moduleFields, resource, fieldValues);
+		} catch (Exception e) {
+			LogUtils.error("Cannot set module field values, err is {}", e.getMessage());
+		}
+	}
 
 	/**
 	 * 设置自定义字段业务参数
