@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ContractAddRequest {
@@ -34,4 +35,7 @@ public class ContractAddRequest {
 
     @Schema(description = "表单配置")
     private ModuleFormConfigDTO moduleFormConfigDTO;
+
+	@Schema(description = "子产品信息")
+	private List<Map<String, Object>> products;
 }

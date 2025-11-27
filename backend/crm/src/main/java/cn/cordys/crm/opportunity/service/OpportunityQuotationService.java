@@ -114,6 +114,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
+		// 设置子表格字段值
+		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, moduleFields, false);
         opportunityQuotationMapper.insert(opportunityQuotation);
         baseService.handleAddLog(opportunityQuotation, moduleFields);
@@ -457,6 +459,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
+		// 设置子表格字段值
+		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
         opportunityQuotationMapper.update(opportunityQuotation);
 

@@ -265,7 +265,10 @@ public class ModuleFormService {
         example.setFormKey(formKey);
         example.setOrganizationId(orgId);
         ModuleForm moduleForm = moduleFormMapper.selectOne(example);
-        return getAllFields(moduleForm.getId());
+		List<BaseField> allFields = getAllFields(moduleForm.getId());
+		return allFields.stream()
+				.peek(this::setFieldBusinessParam)
+				.collect(Collectors.toList());
     }
 
     /**
