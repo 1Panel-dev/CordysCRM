@@ -96,6 +96,7 @@ public class ContractService {
         //todo number
         contract.setNumber(id);
         contract.setStatus(ContractStatus.SIGNED.name());
+        contract.setOrganizationId(orgId);
         contract.setArchivedStatus(ArchivedStatus.UN_ARCHIVED.name());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setCreateUser(operatorId);
