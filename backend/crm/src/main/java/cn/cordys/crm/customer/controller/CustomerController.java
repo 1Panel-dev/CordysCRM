@@ -11,8 +11,9 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.*;
@@ -68,7 +69,8 @@ public class CustomerController {
     private CustomerExportService customerExportService;
     @Resource
     private ContractService contractService;
-
+    @Resource
+    private ContractPaymentPlanService contractPaymentPlanService;
 
     @GetMapping("/module/form")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
@@ -244,11 +246,22 @@ public class CustomerController {
     @PostMapping("/contract/page")
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ})
     @Operation(summary = "客户详情-合同列表")
-    public PagerWithOption<List<ContractListResponse>> contractList(@Validated @RequestBody ContractPageRequest request) {
+    public PagerWithOption<List<ContractListResponse>> contractList(@Validated @RequestBody CustomerContractPageRequest request) {
         ConditionFilterUtils.parseCondition(request);
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
         return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/contract/payment-plan/page")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
+    @Operation(summary = "客户详情-合同回款计划列表")
+    public PagerWithOption<List<ContractPaymentPlanListResponse>> contractList(@Validated @RequestBody CustomerContractPaymentPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }

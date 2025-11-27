@@ -61,6 +61,8 @@ class CustomerControllerTests extends BaseTest {
     protected static final String EXPORT_SELECT = "export-select";
     protected static final String MERGE = "merge";
     protected static final String CHART = "chart";
+    protected static final String CONTRACT_PAGE = "contract/page";
+    protected static final String CONTRACT_PAYMENT_PLAN_PAGE = "contract/payment-plan/page";
     private static final String BASE_PATH = "/account/";
     private static final List<String> batchIds = new ArrayList<>();
     private static Customer addCustomer;
@@ -250,6 +252,36 @@ class CustomerControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(3)
+    void testContractPage() throws Exception {
+        CustomerContractPageRequest request = new CustomerContractPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setCustomerId(addCustomer.getId());
+
+        request.setViewId(InternalUserView.ALL.name());
+        this.requestPostWithOkAndReturn(CONTRACT_PAGE, request);
+
+        // 校验权限
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ), CONTRACT_PAGE, request);
+    }
+
+    @Test
+    @Order(3)
+    void testContractPaymentPlanPage() throws Exception {
+        CustomerContractPaymentPlanPageRequest request = new CustomerContractPaymentPlanPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setCustomerId(addCustomer.getId());
+
+        request.setViewId(InternalUserView.ALL.name());
+        this.requestPostWithOkAndReturn(CONTRACT_PAYMENT_PLAN_PAGE, request);
+
+        // 校验权限
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ), CONTRACT_PAYMENT_PLAN_PAGE, request);
     }
 
     @Test
