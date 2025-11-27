@@ -7,6 +7,7 @@ import {
   DeleteProductPriceUrl,
   DeleteProductUrl,
   DownloadProductTemplateUrl,
+  DragSortProductPriceUrl,
   DragSortProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
@@ -130,6 +131,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<FormDesignConfigDetailParams>({ url: GetProductPriceFormConfigUrl });
   }
 
+  // 拖拽排序价格表
+  function dragSortProductPrice(data: TableDraggedParams) {
+    return CDR.post({ url: DragSortProductPriceUrl, data });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -150,5 +156,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getProductPrice,
     deleteProductPrice,
     getProductPriceFormConfig,
+    dragSortProductPrice,
   };
 }

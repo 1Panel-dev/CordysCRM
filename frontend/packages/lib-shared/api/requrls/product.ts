@@ -19,3 +19,4 @@ export const AddProductPriceUrl = '/price/add'; // 添加价格表
 export const GetProductPriceFormConfigUrl = '/price/module/form'; // 获取价格表单配置
 export const GetProductPriceUrl = '/price/get'; // 获取价格表详情
 export const DeleteProductPriceUrl = '/price/delete'; // 删除价格表
+export const DragSortProductPriceUrl = '/price/edit/pos'; // 排序拖拽价格表
