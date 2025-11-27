@@ -96,6 +96,7 @@ export const {
   addProductPrice,
   deleteProductPrice,
   getProductPriceFormConfig,
+  dragSortProductPrice,
 } = productApi;
 
 export const {

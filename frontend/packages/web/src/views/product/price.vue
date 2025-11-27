@@ -8,12 +8,14 @@
           v-bind="propsRes"
           :action-config="actionConfig"
           :fullscreen-target-ref="priceCardRef"
+          :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
           class="crm-price-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="filterChange"
           @batch-action="handleBatchAction"
+          @drag="dragHandler"
           @refresh="searchData"
         >
           <template #actionLeft>
@@ -86,7 +88,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import { ExportTableColumnItem, TableDraggedParams } from '@lib/shared/models/common';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -101,6 +103,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import priceDetailDrawer from './components/priceDetailDrawer.vue';
 
+  import { dragSortProductPrice } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -276,6 +279,18 @@
     });
   }
 
+  // 拖拽
+  async function dragHandler(params: TableDraggedParams) {
+    try {
+      await dragSortProductPrice(params);
+      Message.success(t('common.operationSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   const showEditModal = ref(false);
   function handleBatchEdit() {
     showEditModal.value = true;
@@ -316,6 +331,14 @@
     needInitDetail.value = false;
     formCreateDrawerVisible.value = true;
   }
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData();
+    }
+  );
 
   onBeforeMount(() => {
     searchData();
