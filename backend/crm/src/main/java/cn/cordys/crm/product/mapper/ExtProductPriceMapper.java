@@ -11,11 +11,16 @@ import java.util.List;
  */
 public interface ExtProductPriceMapper {
 
-	/**
-	 * 查询价格列表
-	 * @param request 请求参数
-	 * @param currentOrg 当前组织
-	 * @return 价格列表
-	 */
+    /**
+     * 查询价格列表
+     *
+     * @param request    请求参数
+     * @param currentOrg 当前组织
+     * @return 价格列表
+     */
     List<ProductPriceResponse> list(@Param("request") ProductPricePageRequest request, @Param("currentOrg") String currentOrg);
+
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
 }
