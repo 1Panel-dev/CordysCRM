@@ -47,6 +47,8 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -90,7 +92,6 @@ public class ContractService {
         contract.setId(id);
         contract.setName(request.getName());
         contract.setCustomerId(request.getCustomerId());
-        contract.setAmount(request.getAmount());
         contract.setOwner(request.getOwner());
         //todo number
         contract.setNumber(id);
@@ -102,13 +103,16 @@ public class ContractService {
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(operatorId);
 
+        //计算子产品总金额
+        setAmount(request.getProducts(), contract);
+
         // 设置子表格字段值
         request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         //自定义字段
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
 
-        baseService.handleAddLog(contract, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(contract, request.getModuleFields(), "products", Translator.get("products_info"));
 
         // 保存表单配置快照
         ContractResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
@@ -156,6 +160,20 @@ public class ContractService {
 
 
     /**
+     * 计算子产品总金额
+     *
+     * @param products 子产品列表
+     * @param contract 合同对象
+     */
+    private void setAmount(List<Map<String, Object>> products, Contract contract) {
+        BigDecimal totalAmount = products.stream()
+                .map(product -> (BigDecimal) product.get("amount"))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        contract.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
+    }
+
+
+    /**
      * 编辑合同
      *
      * @param request
@@ -178,6 +196,8 @@ public class ContractService {
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
+            //计算子产品总金额
+            setAmount(request.getProducts(), contract);
             // 设置子表格字段值
             request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
