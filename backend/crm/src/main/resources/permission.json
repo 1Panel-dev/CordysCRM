@@ -520,6 +520,24 @@
             "license": false
           }
         ]
+      },
+      {
+        "id": "CONTRACT_PAYMENT_PLAN",
+        "name": "permission.contract_payment_plan.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:READ"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:ADD"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:UPDATE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:DELETE"
+          }
+        ]
       }
     ]
   }
