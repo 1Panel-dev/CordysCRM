@@ -67,10 +67,24 @@
 
   function getFieldValue(fieldId: string) {
     // 父级字段
-    if (!props.isSubTableField) {
+    if (!props.isSubTableRender) {
       return props.formDetail?.[fieldId];
     }
-    // 子表字段 todo
+
+    const pathMatch = props.path.match(/^([^[]+)\[(\d+)\]\.(.+)$/);
+    if (pathMatch) {
+      const [, tableKey, rowIndexStr, currentFieldId] = pathMatch;
+      const rowIndex = parseInt(rowIndexStr, 10);
+
+      if (fieldId === currentFieldId) {
+        const row = props.formDetail?.[tableKey]?.[rowIndex];
+        return row?.[fieldId];
+      }
+
+      const row = props.formDetail?.[tableKey]?.[rowIndex];
+      return row?.[fieldId];
+    }
+
     const paths = props.path.split('.');
     const tableKey = paths[0];
     const rowIndex = Number(paths[1]);
@@ -84,7 +98,7 @@
     const { formula } = props.fieldConfig;
     if (!formula) return;
     const result = calcFormula(formula, getFieldValue);
-    value.value = result ?? 0;
+    value.value = result !== null ? Number(result.toFixed(2)) : 0;
     emit('change', value.value);
   }, 300);
 
