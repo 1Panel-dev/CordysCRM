@@ -226,6 +226,7 @@ CREATE TABLE product_price(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `name` VARCHAR(255) NOT NULL   COMMENT '价格表名称' ,
     `status` VARCHAR(32) NOT NULL   COMMENT '状态' ,
+    `pos` BIGINT NOT NULL   COMMENT '自定义排序' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,

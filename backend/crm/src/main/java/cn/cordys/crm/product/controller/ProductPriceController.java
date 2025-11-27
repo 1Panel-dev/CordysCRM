@@ -2,6 +2,7 @@ package cn.cordys.crm.product.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.ProductPrice;
@@ -31,50 +32,58 @@ import java.util.List;
 @RequestMapping("/price")
 public class ProductPriceController {
 
-	@Resource
-	private ProductPriceService priceService;
-	@Resource
-	private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ProductPriceService priceService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
-	@GetMapping("/module/form")
-	@RequiresPermissions(PermissionConstants.PRICE_READ)
-	@Operation(summary = "获取表单配置")
-	public ModuleFormConfigDTO getModuleFormConfig() {
-		return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/module/form")
+    @RequiresPermissions(PermissionConstants.PRICE_READ)
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig() {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/page")
-	@RequiresPermissions(PermissionConstants.PRICE_READ)
-	@Operation(summary = "价格列表")
-	public PagerWithOption<List<ProductPriceResponse>> list(@Validated @RequestBody ProductPricePageRequest request) {
-		return priceService.list(request, OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/page")
+    @RequiresPermissions(PermissionConstants.PRICE_READ)
+    @Operation(summary = "价格列表")
+    public PagerWithOption<List<ProductPriceResponse>> list(@Validated @RequestBody ProductPricePageRequest request) {
+        return priceService.list(request, OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/add")
-	@RequiresPermissions(PermissionConstants.PRICE_ADD)
-	@Operation(summary = "添加价格表")
-	public ProductPrice add(@Validated @RequestBody ProductPriceAddRequest request) {
-		return priceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/add")
+    @RequiresPermissions(PermissionConstants.PRICE_ADD)
+    @Operation(summary = "添加价格表")
+    public ProductPrice add(@Validated @RequestBody ProductPriceAddRequest request) {
+        return priceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/update")
-	@RequiresPermissions(PermissionConstants.PRICE_UPDATE)
-	@Operation(summary = "修改价格表")
-	public ProductPrice update(@Validated @RequestBody ProductPriceEditRequest request) {
-		return priceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+    @Operation(summary = "修改价格表")
+    public ProductPrice update(@Validated @RequestBody ProductPriceEditRequest request) {
+        return priceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@GetMapping("/get/{id}")
-	@RequiresPermissions(PermissionConstants.PRICE_READ)
-	@Operation(summary = "价格表详情")
-	public ProductPriceGetResponse get(@PathVariable String id) {
-		return priceService.get(id);
-	}
+    @GetMapping("/get/{id}")
+    @RequiresPermissions(PermissionConstants.PRICE_READ)
+    @Operation(summary = "价格表详情")
+    public ProductPriceGetResponse get(@PathVariable String id) {
+        return priceService.get(id);
+    }
 
-	@GetMapping("/delete/{id}")
-	@RequiresPermissions(PermissionConstants.PRICE_DELETE)
-	@Operation(summary = "删除价格表")
-	public void delete(@PathVariable String id) {
-		priceService.delete(id);
-	}
+    @GetMapping("/delete/{id}")
+    @RequiresPermissions(PermissionConstants.PRICE_DELETE)
+    @Operation(summary = "删除价格表")
+    public void delete(@PathVariable String id) {
+        priceService.delete(id);
+    }
+
+
+    @PostMapping("/edit/pos")
+    @Operation(summary = "拖拽排序")
+    @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+    public void editPos(@Validated @RequestBody PosRequest request) {
+        priceService.editPos(request);
+    }
 }

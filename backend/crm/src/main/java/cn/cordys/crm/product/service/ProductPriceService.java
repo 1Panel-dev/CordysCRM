@@ -7,12 +7,14 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.dto.request.ProductPriceAddRequest;
@@ -39,145 +41,168 @@ import java.util.Map;
 @Service
 public class ProductPriceService {
 
-	@Resource
-	private BaseService baseService;
-	@Resource
-	private ModuleFormService moduleFormService;
-	@Resource
-	private ModuleFormCacheService moduleFormCacheService;
-	@Resource
-	private BaseMapper<ProductPrice> productPriceMapper;
-	@Resource
-	private ProductPriceFieldService productPriceFieldService;
-	@Resource
-	private ExtProductPriceMapper extProductPriceMapper;
+    @Resource
+    private BaseService baseService;
+    @Resource
+    private ModuleFormService moduleFormService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private BaseMapper<ProductPrice> productPriceMapper;
+    @Resource
+    private ProductPriceFieldService productPriceFieldService;
+    @Resource
+    private ExtProductPriceMapper extProductPriceMapper;
 
-	/**
-	 * 价格列表
-	 * @param request 请求参数
-	 * @param currentOrg 当前组织
-	 * @return 价格列表
-	 */
-	public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		List<ProductPriceResponse> list = extProductPriceMapper.list(request, currentOrg);
-		List<ProductPriceResponse> results = buildList(list);
-		// 处理自定义字段选项
-		ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
-		List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, ProductPriceResponse::getModuleFields);
-		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConfig, moduleFieldValues);
-		return PageUtils.setPageInfoWithOption(page, results, optionMap);
-	}
+    /**
+     * 价格列表
+     *
+     * @param request    请求参数
+     * @param currentOrg 当前组织
+     * @return 价格列表
+     */
+    public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<ProductPriceResponse> list = extProductPriceMapper.list(request, currentOrg);
+        List<ProductPriceResponse> results = buildList(list);
+        // 处理自定义字段选项
+        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, ProductPriceResponse::getModuleFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConfig, moduleFieldValues);
+        return PageUtils.setPageInfoWithOption(page, results, optionMap);
+    }
 
-	/**
-	 * 新增价格表
-	 * @param request 请求参数
-	 * @param currentUser 当前用户
-	 * @param currentOrg 当前组织
-	 * @return 价格表
-	 */
-	@OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
-	public ProductPrice add(ProductPriceAddRequest request, String currentUser, String currentOrg) {
-		ProductPrice productPrice = BeanUtils.copyBean(new ProductPrice(), request);
-		productPrice.setId(IDGenerator.nextStr());
-		productPrice.setOrganizationId(currentOrg);
-		productPrice.setCreateTime(System.currentTimeMillis());
-		productPrice.setUpdateTime(System.currentTimeMillis());
-		productPrice.setCreateUser(currentUser);
-		productPrice.setUpdateUser(currentUser);
-		productPriceFieldService.saveModuleField(productPrice, currentOrg, currentUser, request.getModuleFields(), false);
-		productPriceMapper.insert(productPrice);
-		// 处理日志上下文
-		baseService.handleAddLog(productPrice, request.getModuleFields());
-		return productPrice;
-	}
+    /**
+     * 新增价格表
+     *
+     * @param request     请求参数
+     * @param currentUser 当前用户
+     * @param currentOrg  当前组织
+     * @return 价格表
+     */
+    @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
+    public ProductPrice add(ProductPriceAddRequest request, String currentUser, String currentOrg) {
+        ProductPrice productPrice = BeanUtils.copyBean(new ProductPrice(), request);
+        productPrice.setId(IDGenerator.nextStr());
+        productPrice.setOrganizationId(currentOrg);
+        productPrice.setCreateTime(System.currentTimeMillis());
+        productPrice.setUpdateTime(System.currentTimeMillis());
+        productPrice.setCreateUser(currentUser);
+        productPrice.setUpdateUser(currentUser);
+        productPriceFieldService.saveModuleField(productPrice, currentOrg, currentUser, request.getModuleFields(), false);
+        productPriceMapper.insert(productPrice);
+        // 处理日志上下文
+        baseService.handleAddLog(productPrice, request.getModuleFields());
+        return productPrice;
+    }
 
-	/**
-	 * 修改价格表
-	 * @param request 请求参数
-	 * @param currentUser 当前用户
-	 * @param currentOrg 当前组织
-	 * @return 价格表
-	 */
-	@OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.UPDATE, operator = "{#currentUser}")
-	public ProductPrice update(ProductPriceEditRequest request, String currentUser, String currentOrg) {
-		ProductPrice oldPrice = productPriceMapper.selectByPrimaryKey(request.getId());
-		if (oldPrice == null) {
-			throw new GenericException(Translator.get("product.price.not.exist"));
-		}
-		List<BaseModuleFieldValue> originFields = productPriceFieldService.getModuleFieldValuesByResourceId(request.getId());
-		ProductPrice productPrice = BeanUtils.copyBean(new ProductPrice(), request);
-		productPrice.setUpdateTime(System.currentTimeMillis());
-		productPrice.setUpdateUser(currentUser);
-		updateFields(request.getModuleFields(), productPrice, currentOrg, currentUser);
-		productPriceMapper.update(productPrice);
-		// 处理日志上下文
-		baseService.handleUpdateLog(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName());
-		return productPriceMapper.selectByPrimaryKey(request.getId());
-	}
+    /**
+     * 修改价格表
+     *
+     * @param request     请求参数
+     * @param currentUser 当前用户
+     * @param currentOrg  当前组织
+     * @return 价格表
+     */
+    @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.UPDATE, operator = "{#currentUser}")
+    public ProductPrice update(ProductPriceEditRequest request, String currentUser, String currentOrg) {
+        ProductPrice oldPrice = productPriceMapper.selectByPrimaryKey(request.getId());
+        if (oldPrice == null) {
+            throw new GenericException(Translator.get("product.price.not.exist"));
+        }
+        List<BaseModuleFieldValue> originFields = productPriceFieldService.getModuleFieldValuesByResourceId(request.getId());
+        ProductPrice productPrice = BeanUtils.copyBean(new ProductPrice(), request);
+        productPrice.setUpdateTime(System.currentTimeMillis());
+        productPrice.setUpdateUser(currentUser);
+        updateFields(request.getModuleFields(), productPrice, currentOrg, currentUser);
+        productPriceMapper.update(productPrice);
+        // 处理日志上下文
+        baseService.handleUpdateLog(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName());
+        return productPriceMapper.selectByPrimaryKey(request.getId());
+    }
 
-	/**
-	 * 价格表详情
-	 * @param id 价格表ID
-	 * @return 价格表详情
-	 */
-	public ProductPriceGetResponse get(String id) {
-		ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
-		if (price == null) {
-			throw new GenericException(Translator.get("product.price.not.exist"));
-		}
-		ProductPriceGetResponse priceDetail = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
-		// 处理自定义字段(包括详情附件)
-		priceDetail.setModuleFields(productPriceFieldService.getModuleFieldValuesByResourceId(id));
-		ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
-		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConf, priceDetail.getModuleFields());
-		priceDetail.setOptionMap(optionMap);
-		priceDetail.setAttachmentMap(moduleFormService.getAttachmentMap(priceFormConf, priceDetail.getModuleFields()));
-		return baseService.setCreateAndUpdateUserName(priceDetail);
-	}
+    /**
+     * 价格表详情
+     *
+     * @param id 价格表ID
+     * @return 价格表详情
+     */
+    public ProductPriceGetResponse get(String id) {
+        ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
+        if (price == null) {
+            throw new GenericException(Translator.get("product.price.not.exist"));
+        }
+        ProductPriceGetResponse priceDetail = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
+        // 处理自定义字段(包括详情附件)
+        priceDetail.setModuleFields(productPriceFieldService.getModuleFieldValuesByResourceId(id));
+        ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConf, priceDetail.getModuleFields());
+        priceDetail.setOptionMap(optionMap);
+        priceDetail.setAttachmentMap(moduleFormService.getAttachmentMap(priceFormConf, priceDetail.getModuleFields()));
+        return baseService.setCreateAndUpdateUserName(priceDetail);
+    }
 
-	/**
-	 * 删除价格表
-	 * @param id 价格表ID
-	 */
-	@OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
-	public void delete(String id) {
-		ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
-		if (price == null) {
-			throw new GenericException(Translator.get("product.price.not.exist"));
-		}
-		productPriceMapper.deleteByPrimaryKey(id);
-		productPriceFieldService.deleteByResourceId(id);
-		// 添加日志上下文
-		OperationLogContext.setResourceName(price.getName());
-	}
+    /**
+     * 删除价格表
+     *
+     * @param id 价格表ID
+     */
+    @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
+        ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
+        if (price == null) {
+            throw new GenericException(Translator.get("product.price.not.exist"));
+        }
+        productPriceMapper.deleteByPrimaryKey(id);
+        productPriceFieldService.deleteByResourceId(id);
+        // 添加日志上下文
+        OperationLogContext.setResourceName(price.getName());
+    }
 
-	/**
-	 * 构建列表数据
-	 * @param listData 列表数据
-	 * @return 列表数据
-	 */
-	private List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
-		// 查询列表数据的自定义字段
-		Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
-				listData.stream().map(ProductPriceResponse::getId).toList(), true);
-		// 列表项设置自定义字段&&用户名
-		listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
-		return baseService.setCreateAndUpdateUserName(listData);
-	}
+    /**
+     * 构建列表数据
+     *
+     * @param listData 列表数据
+     * @return 列表数据
+     */
+    private List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
+        // 查询列表数据的自定义字段
+        Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
+                listData.stream().map(ProductPriceResponse::getId).toList(), true);
+        // 列表项设置自定义字段&&用户名
+        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
+        return baseService.setCreateAndUpdateUserName(listData);
+    }
 
-	/**
-	 * 更新自定义字段
-	 * @param fields 自定义字段集合
-	 * @param price 价格表
-	 * @param currentOrg 当前组织
-	 * @param currentUser 当前用户
-	 */
-	private void updateFields(List<BaseModuleFieldValue> fields, ProductPrice price, String currentOrg, String currentUser) {
-		if (fields == null) {
-			return;
-		}
-		productPriceFieldService.deleteByResourceId(price.getId());
-		productPriceFieldService.saveModuleField(price, currentOrg, currentUser, fields, true);
-	}
+    /**
+     * 更新自定义字段
+     *
+     * @param fields      自定义字段集合
+     * @param price       价格表
+     * @param currentOrg  当前组织
+     * @param currentUser 当前用户
+     */
+    private void updateFields(List<BaseModuleFieldValue> fields, ProductPrice price, String currentOrg, String currentUser) {
+        if (fields == null) {
+            return;
+        }
+        productPriceFieldService.deleteByResourceId(price.getId());
+        productPriceFieldService.saveModuleField(price, currentOrg, currentUser, fields, true);
+    }
+
+    /**
+     * 拖拽排序
+     *
+     * @param request 请求参数
+     */
+    public void editPos(PosRequest request) {
+        ServiceUtils.updatePosFieldByAsc(request,
+                ProductPrice.class,
+                null,
+                null,
+                productPriceMapper::selectByPrimaryKey,
+                extProductPriceMapper::getPrePos,
+                extProductPriceMapper::getLastPos,
+                productPriceMapper::update);
+    }
 }

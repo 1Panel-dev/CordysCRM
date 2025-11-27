@@ -4,7 +4,8 @@
 <mapper namespace="cn.cordys.crm.product.mapper.ExtProductPriceMapper">
 
     <select id="list" resultType="cn.cordys.crm.product.dto.response.ProductPriceResponse">
-        select pp.id, pp.name, pp.status, pp.organization_id, pp.create_time, pp.update_time, pp.create_user, pp.update_user
+        select pp.id, pp.name, pp.status, pp.pos, pp.organization_id, pp.create_time, pp.update_time, pp.create_user,
+        pp.update_user
         from product_price pp
 
         <include refid="fieldConditionJoin">
@@ -74,26 +75,26 @@
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
-                <bind name="sortType" value="${sort}.type" />
+                <bind name="sortType" value="${sort}.type"/>
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        pp.`name` ${sortType},  pp.id ASC
+                        pp.`name` ${sortType}, pp.id ASC
                     </when>
                     <when test="${sort}.name == 'status'">
-                        pp.`status` ${sortType},  pp.id ASC
+                        pp.`status` ${sortType}, pp.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
-                        pp.`create_time` ${sortType},  pp.id ASC
+                        pp.`create_time` ${sortType}, pp.id ASC
                     </when>
                     <when test="${sort}.name == 'update_time'">
-                        pp.`update_time` ${sortType},  pp.id ASC
+                        pp.`update_time` ${sortType}, pp.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
-                        pp.`create_user` ${sortType},  pp.id ASC
+                        pp.`create_user` ${sortType}, pp.id ASC
                     </when>
                     <when test="${sort}.name == 'update_user'">
-                        pp.`update_user` ${sortType},  pp.id ASC
+                        pp.`update_user` ${sortType}, pp.id ASC
                     </when>
                     <otherwise>
                         CASE
@@ -159,4 +160,19 @@
         </choose>
     </sql>
     <!-- common sql end -->
+
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
 </mapper>
