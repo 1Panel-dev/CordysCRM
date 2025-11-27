@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
@@ -14,6 +15,8 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentPlanUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +40,15 @@ public class ContractPaymentPlanController {
     private ContractPaymentPlanService contractPaymentPlanService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+
+    @GetMapping("/module/form")
+    @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig() {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), OrganizationContext.getOrganizationId());
+    }
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
