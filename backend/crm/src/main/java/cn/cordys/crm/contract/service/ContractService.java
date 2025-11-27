@@ -33,7 +33,6 @@ import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
-import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -103,8 +102,8 @@ public class ContractService {
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(operatorId);
 
-		// 设置子表格字段值
-		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+        // 设置子表格字段值
+        request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         //自定义字段
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
@@ -112,7 +111,7 @@ public class ContractService {
         baseService.handleAddLog(contract, request.getModuleFields());
 
         // 保存表单配置快照
-        OpportunityQuotationGetResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
+        ContractResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
         saveSnapshot(contract, moduleFormConfigDTO, response);
 
         return contract;
@@ -126,7 +125,7 @@ public class ContractService {
      * @param moduleFormConfigDTO
      * @param response
      */
-    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, OpportunityQuotationGetResponse response) {
+    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, ContractResponse response) {
         ContractSnapshot snapshot = new ContractSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setContractId(contract.getId());
@@ -145,8 +144,8 @@ public class ContractService {
      * @param moduleFormConfigDTO
      * @return
      */
-    private OpportunityQuotationGetResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
-        OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), contract);
+    private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
+        ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
         response.setModuleFields(moduleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         response.setOptionMap(optionMap);
@@ -179,8 +178,8 @@ public class ContractService {
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
-			// 设置子表格字段值
-			request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+            // 设置子表格字段值
+            request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
             // 处理日志上下文
@@ -191,7 +190,7 @@ public class ContractService {
             delWrapper.eq(ContractSnapshot::getContractId, request.getId());
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            OpportunityQuotationGetResponse response = getContractResponse(contract, moduleFields, request.getModuleFormConfigDTO());
+            ContractResponse response = getContractResponse(contract, moduleFields, request.getModuleFormConfigDTO());
             saveSnapshot(contract, request.getModuleFormConfigDTO(), response);
 
 
