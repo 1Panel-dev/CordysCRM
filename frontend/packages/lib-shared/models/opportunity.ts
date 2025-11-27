@@ -124,7 +124,6 @@ export interface QuotationItem {
   id: string; 
   name: string;
   approvalStatus: QuotationStatusEnum;
-  hasContract: boolean;
   opportunityId: string;
   opportunityName: string;
   amount: number;

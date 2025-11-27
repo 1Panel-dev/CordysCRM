@@ -55,15 +55,11 @@ export default {
   'opportunity.quotation.voidTitleTip': 'Confirm invalidating the {name} quotation?',
   'opportunity.quotation.invalidContentTip':
     'After the cancellation, the quotation can not be restored, please operate carefully!',
-  'opportunity.quotation.invalidHasContractContentTip':
-    'The current quotation table has associated contracts, prohibited to cancel!',
   'opportunity.quotation.searchPlaceholder': 'Search by quotation name or opportunity name',
   'opportunity.quotation.batchInvalidTitleTip': 'Confirm invalidating {number} quotation(s)?',
   'opportunity.quotation.deleteTitleTip': 'Confirm delete the {name} quotation?',
   'opportunity.quotation.deleteContentTip':
     'After deletion, the quotation cannot be restored, please operate carefully!',
-  'opportunity.quotation.deleteHasContractContentTip':
-    'The current quotation table has associated contracts, prohibited to delete!',
   'opportunity.quotation.approvalResult': 'Approval result',
   'opportunity.quotation.all': 'All quotations',
   'opportunity.quotation.department': 'Department quotations',
@@ -73,4 +69,7 @@ export default {
   'opportunity.allError': 'All operation failed',
   'opportunity.operationResult': 'Result',
   'opportunity.quotation.amount': 'Total amount',
+  'opportunity.quotation.exportingPdf': 'Quotation PDF exporting...',
+  'opportunity.quotation.productInfo': 'Product info',
+  'opportunity.quotation.exportPdfSuccess': 'PDF exported successfully',
 };

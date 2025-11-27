@@ -67,6 +67,7 @@ export enum DashboardRouteEnum {
 export enum FullPageEnum {
   FULL_PAGE = 'fullPage',
   FULL_PAGE_DASHBOARD = 'fullPageDashboard',
+  FULL_PAGE_EXPORT_QUOTATION = 'fullPageExportQuotation',
 }
 
 export const AppRouteEnum = {

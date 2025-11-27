@@ -1,5 +1,5 @@
 <template>
-  <n-spin :show="loading" class="h-full">
+  <n-spin :show="loading" class="h-full" :description="props.loadingDescription">
     <CrmDescription
       :descriptions="realDescriptions"
       :value-align="props.valueAlign ?? 'end'"
@@ -158,6 +158,7 @@
       | 'left'
       | 'left-end'
       | undefined;
+    loadingDescription?: string;
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
