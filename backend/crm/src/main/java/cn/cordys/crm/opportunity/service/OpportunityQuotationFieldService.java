@@ -23,7 +23,7 @@ public class OpportunityQuotationFieldService extends BaseResourceFieldService<O
 
     @Override
     protected String getFormKey() {
-        return FormKey.PRICE.getKey();
+        return FormKey.QUOTATION.getKey();
     }
 
     @Override

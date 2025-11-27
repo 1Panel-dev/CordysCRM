@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -41,4 +42,6 @@ public class ProductPriceResponse {
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
+
+	private List<Map<String, Object>> products;
 }

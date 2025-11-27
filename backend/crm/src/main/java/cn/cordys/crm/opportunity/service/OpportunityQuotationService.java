@@ -175,7 +175,7 @@ public class OpportunityQuotationService {
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
-        response.setModuleFields(moduleFields);
+		moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
@@ -415,9 +415,9 @@ public class OpportunityQuotationService {
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId);
-        List<OpportunityQuotationListResponse> results = buildList(list);
+		ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
+		List<OpportunityQuotationListResponse> results = buildList(list, moduleFormConfigDTO);
         // 处理自定义字段选项
-        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, OpportunityQuotationListResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -429,12 +429,15 @@ public class OpportunityQuotationService {
      * @param listData 列表数据
      * @return 列表数据
      */
-    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData) {
+    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData, ModuleFormConfigDTO formConfig) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = opportunityQuotationFieldService.getResourceFieldMap(
                 listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
-        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
+        listData.forEach(item -> {
+			List<BaseModuleFieldValue> fieldValues = dataFieldMap.get(item.getId());
+			moduleFormService.processBusinessFieldValues(item, fieldValues, formConfig);
+		});
         return baseService.setCreateAndUpdateUserName(listData);
     }
 

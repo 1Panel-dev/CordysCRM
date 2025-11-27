@@ -64,9 +64,9 @@ public class ProductPriceService {
     public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ProductPriceResponse> list = extProductPriceMapper.list(request, currentOrg);
-        List<ProductPriceResponse> results = buildList(list);
+		ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        List<ProductPriceResponse> results = buildList(list, priceFormConfig);
         // 处理自定义字段选项
-        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, ProductPriceResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConfig, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -138,9 +138,10 @@ public class ProductPriceService {
             throw new GenericException(Translator.get("product.price.not.exist"));
         }
         ProductPriceGetResponse priceDetail = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
+		ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
         // 处理自定义字段(包括详情附件)
-        priceDetail.setModuleFields(productPriceFieldService.getModuleFieldValuesByResourceId(id));
-        ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
+		List<BaseModuleFieldValue> fieldValues = productPriceFieldService.getModuleFieldValuesByResourceId(id);
+		moduleFormService.processBusinessFieldValues(priceDetail, fieldValues, priceFormConf);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConf, priceDetail.getModuleFields());
         priceDetail.setOptionMap(optionMap);
         priceDetail.setAttachmentMap(moduleFormService.getAttachmentMap(priceFormConf, priceDetail.getModuleFields()));
@@ -170,12 +171,15 @@ public class ProductPriceService {
      * @param listData 列表数据
      * @return 列表数据
      */
-    private List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
+    private List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData, ModuleFormConfigDTO priceFormConfig) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
                 listData.stream().map(ProductPriceResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
-        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
+		listData.forEach(item -> {
+			List<BaseModuleFieldValue> fieldValues = dataFieldMap.get(item.getId());
+			moduleFormService.processBusinessFieldValues(item, fieldValues, priceFormConfig);
+		});
         return baseService.setCreateAndUpdateUserName(listData);
     }
 

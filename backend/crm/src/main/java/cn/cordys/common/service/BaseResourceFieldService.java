@@ -5,6 +5,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.OptionDTO;
@@ -37,6 +38,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import jodd.util.MapEntry;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -662,11 +664,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             }
         });
 
+		// 提前获取大文本字段值
+		List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
+		// 处理子表格字段值
+		setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs));
+
         if (!withBlob) {
             return resourceMap;
         }
 
-        List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
         resourceFieldBlobs.forEach(resourceFieldBlob -> {
             // 处理大文本
             if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() != null) {
@@ -685,6 +691,64 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         return resourceMap;
     }
+
+	/**
+	 * 设置子表格字段值
+	 * @param resourceMap 返回的资源字段值
+	 * @param fieldConfigMap 字段配置
+	 * @param resourceFields 值集合
+	 */
+	@SuppressWarnings("unchecked")
+	public void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap,
+										 Map<String, BaseField> fieldConfigMap, List<? extends BaseResourceField> resourceFields) {
+		Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
+		if (!subFieldMap.isEmpty()) {
+			Set<String> refSubSet = subFieldMap.keySet();
+			List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
+			Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(
+					f -> f.getBusinessKey() != null ? f.getBusinessKey() : f.getId(), f -> f, (f1, f2) -> f1));
+
+			Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
+					.filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
+					.collect(Collectors.groupingBy(BaseResourceField::getResourceId));
+			subResourceMap.forEach((resourceId, subResources) -> {
+				Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>();
+				subResources.forEach(resource -> {
+					if (resource.getFieldValue() != null) {
+						BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
+						if (fieldConfig == null) {
+							return;
+						}
+						AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+						Object objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
+
+						BaseResourceSubField subResource = (BaseResourceSubField) resource;
+						subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
+						int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
+						if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
+							subFieldValueMap.get(subResource.getRefSubId()).add(new HashMap<>());
+						}
+						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
+						if (rowMap == null) {
+							rowMap = new HashMap<>();
+						}
+
+						rowMap.put(subResource.getFieldId(), objectValue);
+						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
+					}
+				});
+				List<BaseModuleFieldValue> subTableFieldValues = new ArrayList<>();
+				subFieldValueMap.forEach((subFieldId, subFieldValues) -> {
+					BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+					fieldValue.setFieldId(subFieldId);
+					fieldValue.setFieldValue(subFieldValues);
+					subTableFieldValues.add(fieldValue);
+				});
+				resourceMap.putIfAbsent(resourceId, new ArrayList<>());
+				resourceMap.get(resourceId).addAll(subTableFieldValues);
+			});
+		}
+	}
 
     private List<T> getResourceField(List<String> resourceIds) {
         LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
