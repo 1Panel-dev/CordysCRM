@@ -216,6 +216,7 @@
     [FormDesignKeyEnum.PRODUCT]: batchUpdateProduct,
     [FormDesignKeyEnum.CUSTOMER]: batchUpdateAccount,
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: batchUpdateContact,
+    [FormDesignKeyEnum.PRICE]: batchUpdateProduct, // TODO:
   };
 
   const initForm = {

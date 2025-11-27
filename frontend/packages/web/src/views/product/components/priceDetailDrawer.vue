@@ -1,5 +1,10 @@
 <template>
-  <CrmDrawer v-model:show="show" :title="sourceName">
+  <CrmDrawer v-model:show="show" :title="sourceName" :width="800" :footer="false">
+    <template #titleLeft>
+      <CrmTag class="font-normal" theme="light" :type="`${enabled ? 'success' : 'default'}`">
+        {{ enabled ? t('common.activated') : t('common.disabled') }}
+      </CrmTag>
+    </template>
     <template #titleRight>
       <n-button type="primary" ghost class="n-btn-outline-primary ml-[12px]" @click="handleEdit">
         {{ t('common.edit') }}
@@ -9,7 +14,7 @@
       ref="descriptionRef"
       :form-key="FormDesignKeyEnum.PRICE"
       :source-id="props.id"
-      class="p-[16px_24px]"
+      class="p-[8px]"
       @init="handleDescriptionInit"
     />
   </CrmDrawer>
@@ -23,6 +28,7 @@
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
 
   const props = defineProps<{
@@ -39,9 +45,15 @@
   });
 
   const sourceName = ref<string>('');
+  const enabled = ref<boolean>(false);
 
-  function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
+  function handleDescriptionInit(
+    _collaborationType?: CollaborationType,
+    _sourceName?: string,
+    detail?: Record<string, any>
+  ) {
     sourceName.value = _sourceName || '';
+    enabled.value = !!detail?.optionMap.status?.find((item: any) => item.id === detail?.status);
   }
 
   function handleEdit() {

@@ -13,6 +13,7 @@
       :readonly="false"
       :form-detail="props.formDetail"
       :fixed-column="fieldConfig.fixedColumn"
+      :show-summary="!!fieldConfig.sumColumn?.length"
     />
   </n-form-item>
 </template>
@@ -31,12 +32,19 @@
     needInitDetail?: boolean; // 判断是否编辑情况
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: string): void;
+    (e: 'change', value: Record<string, any>[]): void;
   }>();
 
   const value = defineModel<Record<string, any>[]>('value', {
     default: [],
   });
+
+  watch(
+    () => value.value,
+    (newVal) => {
+      emit('change', newVal);
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>
