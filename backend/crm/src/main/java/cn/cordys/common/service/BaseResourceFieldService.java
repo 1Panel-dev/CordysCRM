@@ -24,6 +24,7 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -34,6 +35,7 @@ import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import jodd.util.MapEntry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -42,6 +44,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -205,23 +208,18 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         allFields.stream()
                 .filter(field -> {
                     BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber();
+                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField();
                 })
                 .forEach(field -> {
-                    BaseModuleFieldValue fieldValue;
-                    if (field.isSerialNumber() && !update) {
-                        fieldValue = new BaseModuleFieldValue();
-                        fieldValue.setFieldId(field.getId());
-                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(), orgId, getFormKey());
-                        fieldValue.setFieldValue(serialNo);
-                    } else {
-                        fieldValue = fieldValueMap.get(field.getId());
-                    }
+                    BaseModuleFieldValue fieldValue = processFieldValue(resource, field, fieldValueMap, update, orgId);
                     if (fieldValue == null) {
                         return;
                     }
-
-                    // 处理子表格的字段值
+					// 处理子表格值
+					if (field.isSubField() && fieldValue.getFieldValue() != null) {
+						saveSubFieldValue(resourceId, (SubField) field, fieldValue, customerFields, customerFieldBlobs);
+						return;
+					}
 
                     if (field.needRepeatCheck()) {
                         checkUnique(fieldValue, field);
@@ -270,6 +268,76 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
+	public <K> BaseModuleFieldValue processFieldValue(K resource, BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
+		// 流水号
+		if (field.isSerialNumber() && !update) {
+			BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+			fieldValue.setFieldId(field.getId());
+			String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(), orgId, getFormKey());
+			fieldValue.setFieldValue(serialNo);
+			return fieldValue;
+		}
+		// 子表格 {业务字段来源resource, 字段值来源fieldValueMap}
+		if (field.isSubField()) {
+			BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+			fieldValue.setFieldId(field.getId());
+			String businessKey = field.getBusinessKey();
+			if (StringUtils.isNotEmpty(businessKey)) {
+				fieldValue.setFieldValue(fieldValueMap.get(businessKey).getFieldValue());
+			} else {
+				fieldValue = fieldValueMap.get(field.getId());
+			}
+			return fieldValue;
+		}
+		// 其他字段直接返回
+		return fieldValueMap.get(field.getId());
+	}
+
+	@SuppressWarnings("unchecked")
+	public void saveSubFieldValue(String resourceId, SubField subField, BaseModuleFieldValue fieldValue,
+								  List<T> fields, List<V> fieldBlobs) {
+		List<Map<String, Object>> subValues = (List) fieldValue.getFieldValue();
+		if (CollectionUtils.isEmpty(subValues)) {
+			return;
+		}
+		Map<String, BaseField> subFieldMap = new HashMap<>(subField.getSubFields().size());
+		subField.getSubFields().forEach(f -> {
+			if (StringUtils.isNotEmpty(f.getBusinessKey())) {
+				subFieldMap.put(f.getBusinessKey(), f);
+			} else {
+				subFieldMap.put(f.getId(), f);
+			}
+		});
+		int rowId = 1;
+		for (Map<String, Object> subValue : subValues) {
+			for (Map.Entry<String, Object> kv : subValue.entrySet()) {
+				BaseField field = subFieldMap.get(kv.getKey());
+				AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+				customFieldResolver.validate(field, kv.getValue());
+				String strValue = customFieldResolver.convertToString(field, kv.getValue());
+				if (field.isBlob()) {
+					V resourceField = newResourceFieldBlob();
+					resourceField.setId(IDGenerator.nextStr());
+					resourceField.setResourceId(resourceId);
+					resourceField.setFieldId(kv.getKey());
+					resourceField.setFieldValue(strValue);
+					setResourceFieldValue(resourceField, "rowId", String.valueOf(rowId));
+					setResourceFieldValue(resourceField, "refSubId", subField.getId());
+					fieldBlobs.add(resourceField);
+				} else {
+					T resourceField = newResourceField();
+					resourceField.setId(IDGenerator.nextStr());
+					resourceField.setResourceId(resourceId);
+					resourceField.setFieldId(kv.getKey());
+					resourceField.setFieldValue(strValue);
+					setResourceFieldValue(resourceField, "rowId", String.valueOf(rowId));
+					setResourceFieldValue(resourceField, "refSubId", subField.getId());
+					fields.add(resourceField);
+				}
+			}
+			rowId++;
+		}
+	}
 
     /**
      * 校验业务字段，字段值是否重复

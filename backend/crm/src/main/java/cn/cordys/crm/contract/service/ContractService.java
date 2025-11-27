@@ -103,6 +103,8 @@ public class ContractService {
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(operatorId);
 
+		// 设置子表格字段值
+		request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         //自定义字段
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
@@ -177,6 +179,8 @@ public class ContractService {
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
+			// 设置子表格字段值
+			request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
             // 处理日志上下文

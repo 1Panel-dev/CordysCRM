@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author song-cc-rock
@@ -27,4 +28,7 @@ public class ProductPriceAddRequest {
 
 	@Schema(description = "自定义字段值")
 	private List<BaseModuleFieldValue> moduleFields;
+
+	@Schema(description = "子产品信息")
+	private List<Map<String, Object>> products;
 }

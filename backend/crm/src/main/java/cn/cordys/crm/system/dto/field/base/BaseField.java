@@ -118,6 +118,11 @@ public abstract class BaseField {
         return Strings.CS.equals(type, FieldType.SERIAL_NUMBER.name());
     }
 
+	@JsonIgnore
+	public boolean isSubField() {
+		return Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name(), FieldType.SUB_PRODUCT.name());
+	}
+
     @JsonIgnore
     public boolean needRepeatCheck() {
         return Strings.CS.equalsAny(type, FieldType.INPUT.name(), FieldType.PHONE.name())

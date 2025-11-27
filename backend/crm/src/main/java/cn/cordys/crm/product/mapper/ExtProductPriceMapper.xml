@@ -161,6 +161,10 @@
     </sql>
     <!-- common sql end -->
 
+    <select id="getPos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId} order by pos desc limit 1;
+    </select>
+
     <select id="getPrePos" resultType="java.lang.Long">
         select `pos` from product_price where organization_id = #{orgId}
         <if test="basePos != null">
@@ -168,6 +172,7 @@
         </if>
         order by `pos` desc limit 1;
     </select>
+
     <select id="getLastPos" resultType="java.lang.Long">
         select `pos` from product_price where organization_id = #{orgId}
         <if test="basePos != null">
