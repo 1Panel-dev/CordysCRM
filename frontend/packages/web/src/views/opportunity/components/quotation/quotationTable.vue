@@ -8,6 +8,7 @@
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
+    @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
   >
     <template #actionLeft>
@@ -98,8 +99,11 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { FullPageEnum } from '@/enums/routeEnum';
 
   const { openModal } = useModal();
   const { t } = useI18n();
@@ -107,6 +111,7 @@
   const { currentLocale } = useLocale(Message.loading);
 
   const useStore = useUserStore();
+  const { openNewPage } = useOpenNewPage();
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
@@ -249,22 +254,13 @@
     formCreateDrawerVisible.value = true;
   }
   function handleVoid(row: QuotationItem) {
-    const { hasContract } = row;
-    const content = hasContract
-      ? t('opportunity.quotation.invalidHasContractContentTip')
-      : t('opportunity.quotation.invalidContentTip');
-
-    const positiveText = hasContract ? t('common.gotIt') : t('common.confirmVoid');
     openModal({
-      type: hasContract ? 'default' : 'error',
+      type: 'error',
       title: t('opportunity.quotation.voidTitleTip', { name: characterLimit(row.name) }),
-      content,
-      positiveText,
+      content: t('opportunity.quotation.invalidContentTip'),
+      positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
-        if (hasContract) {
-          return;
-        }
         try {
           await voidQuotation(row.id);
           Message.success(t('common.voidSuccess'));
@@ -280,22 +276,13 @@
   const showDetailDrawer = ref(false);
   const activeRow = ref<Partial<QuotationItem>>();
   function handleDelete(row: QuotationItem) {
-    const { hasContract } = row;
-    const content = hasContract
-      ? t('opportunity.quotation.deleteHasContractContentTip')
-      : t('opportunity.quotation.deleteContentTip');
-
-    const positiveText = hasContract ? t('common.gotIt') : t('common.confirmVoid');
     openModal({
-      type: hasContract ? 'default' : 'error',
+      type: 'error',
       title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(row.name) }),
-      content,
-      positiveText,
+      content: t('opportunity.quotation.deleteContentTip'),
+      positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
-        if (hasContract) {
-          return;
-        }
         try {
           await deleteQuotation(row.id);
           Message.success(t('common.deleteSuccess'));
@@ -319,6 +306,10 @@
     }
   }
 
+  function handleDownload(id: string) {
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
+  }
+
   function handleActionSelect(row: QuotationItem, actionKey: string, done?: () => void) {
     switch (actionKey) {
       case 'edit':
@@ -332,6 +323,9 @@
         break;
       case 'delete':
         handleDelete(row);
+        break;
+      case 'download':
+        handleDownload(row.id);
         break;
       default:
         break;

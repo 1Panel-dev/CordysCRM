@@ -10,7 +10,7 @@ const FullPage: AppRouteRecordRaw = {
   component: FULL_PAGE_LAYOUT,
   meta: {
     hideInMenu: true,
-    permissions: ['DASHBOARD:READ'],
+    permissions: ['DASHBOARD:READ', 'OPPORTUNITY_QUOTATION:READ'],
   },
   children: [
     {
@@ -19,6 +19,14 @@ const FullPage: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/fullPage.vue'),
       meta: {
         permissions: ['DASHBOARD:READ'],
+      },
+    },
+    {
+      path: 'fullExportQuotation',
+      name: FullPageEnum.FULL_PAGE_EXPORT_QUOTATION,
+      component: () => import('@/views/opportunity/components/quotation/exportQuotationPdf.vue'),
+      meta: {
+        permissions: ['OPPORTUNITY_QUOTATION:READ'],
       },
     },
   ],

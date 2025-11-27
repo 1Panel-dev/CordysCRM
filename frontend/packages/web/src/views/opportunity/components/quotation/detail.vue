@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="'title'">
+  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="props.detail?.name ?? ''">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <quotationStatus v-if="props.detail?.approvalStatus" :status="props.detail?.approvalStatus" />
@@ -68,10 +68,14 @@
 
   import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
+  import { FullPageEnum } from '@/enums/routeEnum';
+
   const { openModal } = useModal();
+  const { openNewPage } = useOpenNewPage();
 
   const useStore = useUserStore();
   const { t } = useI18n();
@@ -104,8 +108,9 @@
       props.detail?.approvalStatus === QuotationStatusEnum.APPROVING
   );
 
-  // TODO: 还没有研究 xinxinwu
-  function handleDownload() {}
+  function handleDownload() {
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id: sourceId.value });
+  }
 
   const commonActions = [
     {
@@ -171,22 +176,14 @@
   }
 
   function handleVoid() {
-    const { hasContract, name } = props.detail ?? {};
-    const content = hasContract
-      ? t('opportunity.quotation.invalidHasContractContentTip')
-      : t('opportunity.quotation.invalidContentTip');
-
-    const positiveText = hasContract ? t('common.gotIt') : t('common.confirmVoid');
+    const { name } = props.detail ?? {};
     openModal({
-      type: hasContract ? 'default' : 'error',
+      type: 'error',
       title: t('opportunity.quotation.voidTitleTip', { name: characterLimit(name) }),
-      content,
-      positiveText,
+      content: t('opportunity.quotation.invalidContentTip'),
+      positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
-        if (hasContract) {
-          return;
-        }
         try {
           await voidQuotation(sourceId.value);
           Message.success(t('common.voidSuccess'));
@@ -213,22 +210,14 @@
   }
 
   function handleDelete() {
-    const { hasContract, name } = props.detail ?? {};
-    const content = hasContract
-      ? t('opportunity.quotation.deleteHasContractContentTip')
-      : t('opportunity.quotation.deleteContentTip');
-
-    const positiveText = hasContract ? t('common.gotIt') : t('common.confirmVoid');
+    const { name } = props.detail ?? {};
     openModal({
-      type: hasContract ? 'default' : 'error',
+      type: 'error',
       title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(name) }),
-      content,
-      positiveText,
+      content: t('opportunity.quotation.deleteContentTip'),
+      positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
-        if (hasContract) {
-          return;
-        }
         try {
           await deleteQuotation(sourceId.value);
           Message.success(t('common.deleteSuccess'));
