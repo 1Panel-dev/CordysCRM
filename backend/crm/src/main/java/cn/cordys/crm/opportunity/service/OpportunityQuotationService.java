@@ -588,7 +588,7 @@ public class OpportunityQuotationService {
         String approvalStatus = request.getApprovalStatus();
         LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(OpportunityQuotation::getId, ids);
-        wrapper.eq(OpportunityQuotation::getApprovalStatus, approvalStatus);
+        wrapper.eq(OpportunityQuotation::getApprovalStatus, ApprovalState.APPROVING.toString());
         List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(list)) {
             return BatchAffectResponse.builder().success(0).fail(0).build();
