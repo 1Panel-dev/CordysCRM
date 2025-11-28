@@ -28,6 +28,7 @@ import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -45,11 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -75,6 +74,8 @@ public class ContractService {
     private BaseMapper<Customer> customerBaseMapper;
     @Resource
     private BaseMapper<User> userBaseMapper;
+    @Resource
+    private ExtProductMapper extProductMapper;
 
     /**
      * 新建合同
@@ -297,19 +298,41 @@ public class ContractService {
      * @param id
      * @return
      */
-    public ContractResponse get(String id) {
-        ContractResponse response = new ContractResponse();
-        Contract contract = contractMapper.selectByPrimaryKey(id);
-        if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
+    public ContractResponse get(String id, String orgId) {
+        ContractResponse response = extContractMapper.getDetail(id);
+        List<BaseModuleFieldValue> fieldValueList = contractFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fieldValueList);
+        List<String> userIds = Stream.of(Arrays.asList(response.getCreateUser(), response.getUpdateUser(), response.getOwner()))
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(response.getOwner()), orgId);
+
+        response.setCreateUserName(userNameMap.get(response.getCreateUser()));
+        response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
+        response.setOwnerName(userNameMap.get(response.getOwner()));
+        UserDeptDTO userDeptDTO = userDeptMap.get(response.getOwner());
+        if (userDeptDTO != null) {
+            response.setDepartmentId(userDeptDTO.getDeptId());
+            response.setDepartmentName(userDeptDTO.getDeptName());
         }
 
-        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ContractSnapshot::getContractId, id);
-        ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
-        if (snapshot != null) {
-            response = JSON.parseObject(snapshot.getContractValue(), ContractResponse.class);
-        }
+        ModuleFormConfigDTO formSnapshot = getFormSnapshot(id, orgId);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formSnapshot, fieldValueList);
+
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(response,
+                ContractResponse::getOwner, ContractResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CONTRACT_OWNER.getBusinessKey(), ownerFieldOption);
+
+        List<OptionDTO> customerOption = moduleFormService.getBusinessFieldOption(response,
+                ContractResponse::getCustomerId, ContractResponse::getCustomerName);
+        optionMap.put(BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey(), customerOption);
+
+        response.setOptionMap(optionMap);
+
+        // 附件信息
+        response.setAttachmentMap(moduleFormService.getAttachmentMap(formSnapshot, fieldValueList));
 
         return response;
     }
