@@ -16,6 +16,9 @@ import java.util.Map;
  */
 @Data
 public class ContractPaymentPlanGetResponse extends ContractPaymentPlan {
+    @Schema(description = "合同名称")
+    private String contractName;
+
     @Schema(description = "创建人名称")
     private String createUserName;
 
