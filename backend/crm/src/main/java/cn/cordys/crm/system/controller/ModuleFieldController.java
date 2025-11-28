@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.controller;
 
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -10,6 +11,9 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.ClueService;
+import cn.cordys.crm.contract.dto.request.ContractPageRequest;
+import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
@@ -61,6 +65,8 @@ public class ModuleFieldController {
     @Resource
     private OpportunityService opportunityService;
     @Resource
+    private ContractService contractService;
+    @Resource
     private ProductService productService;
     @Resource
     private DataScopeService dataScopeService;
@@ -111,6 +117,15 @@ public class ModuleFieldController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/source/contract")
+    @Operation(summary = "分页获取合同")
+    public Pager<List<ContractListResponse>> sourceContractPage(@Valid @RequestBody ContractPageRequest request) {
+        request.setCombineSearch(request.getCombineSearch().convert());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+                PermissionConstants.CONTRACT_READ);
+        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/source/product")
