@@ -161,7 +161,7 @@ public class ContractService {
      */
     private void setAmount(List<Map<String, Object>> products, Contract contract) {
         BigDecimal totalAmount = products.stream()
-                .map(product -> (BigDecimal) product.get("amount"))
+                .map(product -> new BigDecimal(product.get("amount").toString()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         contract.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
     }
