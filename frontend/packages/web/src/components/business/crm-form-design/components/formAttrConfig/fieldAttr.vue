@@ -959,11 +959,12 @@
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.sum') }}
           </div>
-          <n-checkbox :default-checked="fieldConfig.sumColumn?.length">
+          <n-checkbox v-model:checked="showSumColumn" :default-checked="fieldConfig.sumColumns?.length">
             {{ t('crmFormDesign.show') }}
           </n-checkbox>
           <n-select
-            v-model:value="fieldConfig.sumColumn"
+            v-if="showSumColumn"
+            v-model:value="fieldConfig.sumColumns"
             multiple
             :options="
               fieldConfig.subFields
@@ -1502,6 +1503,8 @@
       currentFieldLimitSizeUnit.value = fieldConfig.value?.limitSize?.slice(-2) || 'KB';
     }
   );
+
+  const showSumColumn = ref(false);
 </script>
 
 <style lang="less" scoped>

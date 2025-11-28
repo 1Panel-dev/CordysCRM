@@ -28,7 +28,14 @@
             :style="{ width: `${item.fieldWidth * 100}%` }"
             @click="() => handleItemClick(item)"
           >
-            <div class="crm-form-design--composition-item-tools">
+            <div
+              v-if="
+                ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
+                  item.type
+                ) || !item.businessKey
+              "
+              class="crm-form-design--composition-item-tools"
+            >
               <n-tooltip
                 v-if="
                   ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)

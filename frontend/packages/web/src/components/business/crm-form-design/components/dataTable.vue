@@ -78,7 +78,7 @@
       </VueDraggable>
     </div>
     <div
-      v-if="fieldConfig.sumColumn?.length"
+      v-if="fieldConfig.sumColumns?.length"
       class="flex w-full items-center border border-t-0 border-[var(--text-n8)]"
     >
       <div class="flex items-center px-[16px] py-[12px]">
