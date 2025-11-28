@@ -219,6 +219,14 @@ public class JSON {
         }
     }
 
+    public static Map<String, Object> parseToMap(String jsonObject) {
+        try {
+            return objectMapper.readValue(jsonObject, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON 反序列化失败", e);
+        }
+    }
 
     public static <T> T parseObject(InputStream src, TypeReference<T> valueType) {
         try {

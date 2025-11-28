@@ -61,6 +61,7 @@ public class BaseService {
      *
      * @param object
      * @param <T>
+     *
      * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
@@ -72,6 +73,7 @@ public class BaseService {
      *
      * @param list
      * @param <T>
+     *
      * @return
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
@@ -94,8 +96,12 @@ public class BaseService {
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
             for (T item : list) {
-                String createUserName = getAndCheckOptionName(userNameMap.get(getCreateUser.invoke(item)));
-                String updateUserName = getAndCheckOptionName(userNameMap.get(getUpdateUser.invoke(item)));
+                String createUserId = (String) getCreateUser.invoke(item);
+                String updateUserId = (String) getUpdateUser.invoke(item);
+
+                String createUserName = getAndCheckOptionName(userNameMap.get(createUserId));
+                String updateUserName = getAndCheckOptionName(userNameMap.get(updateUserId));
+
                 setCreateUserName.invoke(item, createUserName);
                 setUpdateUserName.invoke(item, updateUserName);
             }
@@ -110,6 +116,7 @@ public class BaseService {
      *
      * @param object
      * @param <T>
+     *
      * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
@@ -121,6 +128,7 @@ public class BaseService {
      *
      * @param list
      * @param <T>
+     *
      * @return
      */
     public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
@@ -146,9 +154,14 @@ public class BaseService {
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
             for (T item : list) {
-                String createUserName = getAndCheckOptionName(userNameMap.get(getCreateUser.invoke(item)));
-                String updateUserName = getAndCheckOptionName(userNameMap.get(getUpdateUser.invoke(item)));
-                String ownerName = getAndCheckOptionName(userNameMap.get(getOwner.invoke(item)));
+
+                String createUserId = (String) getCreateUser.invoke(item);
+                String updateUserId = (String) getUpdateUser.invoke(item);
+                String ownerId = (String) getOwner.invoke(item);
+
+                String createUserName = getAndCheckOptionName(userNameMap.get(createUserId));
+                String updateUserName = getAndCheckOptionName(userNameMap.get(updateUserId));
+                String ownerName = getAndCheckOptionName(userNameMap.get(ownerId));
 
                 setCreateUserName.invoke(item, createUserName);
                 setUpdateUserName.invoke(item, updateUserName);
@@ -164,6 +177,7 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
+     *
      * @return
      */
     public Map<String, String> getUserNameMap(List<String> userIds) {
@@ -190,6 +204,7 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
+     *
      * @return
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
@@ -219,6 +234,7 @@ public class BaseService {
      * 获取联系人ID和名称的映射
      *
      * @param contactIds
+     *
      * @return
      */
     public Map<String, String> getContactMap(List<String> contactIds) {
@@ -240,61 +256,44 @@ public class BaseService {
     }
 
     public <T> void handleAddLog(T resource, List<BaseModuleFieldValue> moduleFields) {
-        Map originCustomer = JSON.parseMap(JSON.toJSONString(resource));
+        Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
+
         if (moduleFields != null) {
             moduleFields.forEach(field ->
-                    originCustomer.put(field.getFieldId(), field.getFieldValue()));
-        }
-
-        try {
-
-            Class<?> clazz = resource.getClass();
-            Method getId = clazz.getMethod("getId");
-            OperationLogContext.setContext(
-                    LogContextInfo.builder()
-                            .resourceId((String) getId.invoke(resource))
-                            .modifiedValue(originCustomer)
-                            .build()
+                    resourceLog.put(field.getFieldId(), field.getFieldValue())
             );
-        } catch (Exception e) {
-            throw new GenericException(e);
         }
+
+        writeAddLogContext(resource, resourceLog);
     }
 
-    public <T> void handleAddLogWithSubTable(T resource, List<BaseModuleFieldValue> moduleFields, String subTableKey, String subTableKeyName) {
-        Map originCustomer = JSON.parseMap(JSON.toJSONString(resource));
+    public <T> void handleAddLogWithSubTable(
+            T resource,
+            List<BaseModuleFieldValue> moduleFields,
+            String subTableKey,
+            String subTableKeyName) {
+
+        Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
+
         if (moduleFields != null) {
             Map<String, String> fieldNameMap = getFieldNameMap(moduleFields);
-            moduleFields.forEach(field ->
-
-            {
-                if (!Strings.CI.equals(field.getFieldId(), subTableKey)) {
-                    originCustomer.put(field.getFieldId(), field.getFieldValue());
-                } else {
-                    //将 field.getFieldValue() 转 List<Map<String, Object>>
-                    List<Map<String, Object>> subTableList = JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
-                    });
-                    // 处理子表,根据field.getFieldId()获取字段名称，拼接在subTableKeyName后面
-                    // 子表字段名称 = 子表字段id + 子表字段名称
-                    for (Map<String, Object> stringObjectMap : subTableList) {
-                        //遍历map的key，将key替换为 子表字段id + 子表字段的自定义字段名称
-                        Set<String> keys = new HashSet<>(stringObjectMap.keySet());
-                        for (String key : keys) {
-                            originCustomer.put(subTableKeyName + fieldNameMap.get(key), stringObjectMap.get(key));
-                        }
-                    }
-                }
-            });
+            fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyName);
         }
 
-        try {
+        writeAddLogContext(resource, resourceLog);
+    }
 
-            Class<?> clazz = resource.getClass();
-            Method getId = clazz.getMethod("getId");
+
+    /**
+     * 写入操作日志上下文
+     */
+    private <T> void writeAddLogContext(T resource, Map<String, Object> resourceLog) {
+        try {
+            Method getId = resource.getClass().getMethod("getId");
             OperationLogContext.setContext(
                     LogContextInfo.builder()
                             .resourceId((String) getId.invoke(resource))
-                            .modifiedValue(originCustomer)
+                            .modifiedValue(resourceLog)
                             .build()
             );
         } catch (Exception e) {
@@ -302,29 +301,66 @@ public class BaseService {
         }
     }
 
-    public <T> void handleUpdateLog(T originResource,
-                                    T modifiedResource,
-                                    List<BaseModuleFieldValue> originResourceFields,
-                                    List<BaseModuleFieldValue> modifiedResourceFields,
-                                    String id,
-                                    String name) {
 
-        Map originResourceLog = JSON.parseMap(JSON.toJSONString(originResource));
-        if (modifiedResourceFields != null && originResourceFields != null) {
+    /**
+     * 子表逻辑处理抽取成公共函数
+     */
+    private void fillLogWithSubTable(
+            Map<String, Object> resourceLog,
+            List<BaseModuleFieldValue> moduleFields,
+            Map<String, String> fieldNameMap,
+            String subTableKey,
+            String subTableKeyName) {
+        moduleFields.forEach(field -> {
+            String fieldId = field.getFieldId();
+
+            // 普通字段
+            if (!Strings.CI.equals(fieldId, subTableKey)) {
+                resourceLog.put(fieldId, field.getFieldValue());
+                return;
+            }
+
+            // 子表字段
+            List<Map<String, Object>> rows =
+                    JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
+                    });
+
+            rows.forEach(row ->
+                    row.forEach((key, value) ->
+                            resourceLog.put(subTableKeyName + fieldNameMap.get(key), value)
+                    )
+            );
+        });
+    }
+
+    public <T> void handleUpdateLog(
+            T originResource,
+            T modifiedResource,
+            List<BaseModuleFieldValue> originResourceFields,
+            List<BaseModuleFieldValue> modifiedResourceFields,
+            String id,
+            String name) {
+
+        Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
+        Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
+
+        // 添加原始字段值
+        if (originResourceFields != null) {
             originResourceFields.forEach(field ->
-                    originResourceLog.put(field.getFieldId(), field.getFieldValue()));
+                    originResourceLog.put(field.getFieldId(), field.getFieldValue())
+            );
         }
 
-        Map modifiedResourceLog = JSON.parseMap(JSON.toJSONString(modifiedResource));
+        // 添加修改后的字段值（过滤无效字段）
         if (modifiedResourceFields != null) {
             modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .forEach(field ->
-                            modifiedResourceLog.put(field.getFieldId(), field.getFieldValue()));
+                            modifiedResourceLog.put(field.getFieldId(), field.getFieldValue())
+                    );
         }
 
         try {
-
             OperationLogContext.setContext(
                     LogContextInfo.builder()
                             .resourceId(id)
@@ -339,68 +375,34 @@ public class BaseService {
     }
 
 
-    public <T> void handleUpdateLogWithSubTable(T originResource,
-                                                T modifiedResource,
-                                                List<BaseModuleFieldValue> originResourceFields,
-                                                List<BaseModuleFieldValue> modifiedResourceFields,
-                                                String id,
-                                                String name,
-                                                String subTableKey,
-                                                String subTableKeyName
-    ) {
-        Map originResourceLog = JSON.parseMap(JSON.toJSONString(originResource));
-        if (modifiedResourceFields != null && originResourceFields != null) {
-            //获取originResourceFields中所有fieldId的集合
+    public <T> void handleUpdateLogWithSubTable(
+            T originResource,
+            T modifiedResource,
+            List<BaseModuleFieldValue> originResourceFields,
+            List<BaseModuleFieldValue> modifiedResourceFields,
+            String id,
+            String name,
+            String subTableKey,
+            String subTableKeyName) {
+
+        Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
+        Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
+
+        if (originResourceFields != null) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields);
-            originResourceFields.forEach(field ->
-            {
-                if (!Strings.CI.equals(field.getFieldId(), subTableKey)) {
-                    originResourceLog.put(field.getFieldId(), field.getFieldValue());
-                } else {
-                    //将 field.getFieldValue() 转 List<Map<String, Object>>
-                    List<Map<String, Object>> subTableList = JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
-                    });
-                    // 处理子表,根据field.getFieldId()获取字段名称，拼接在subTableKeyName后面
-                    // 子表字段名称 = 子表字段id + 子表字段名称
-                    for (Map<String, Object> stringObjectMap : subTableList) {
-                        //遍历map的key，将key替换为 子表字段id + 子表字段的自定义字段名称
-                        Set<String> keys = new HashSet<>(stringObjectMap.keySet());
-                        for (String key : keys) {
-                            originResourceLog.put(subTableKeyName + oldFieldNameMap.get(key), stringObjectMap.get(key));
-                        }
-                    }
-                }
-            });
+            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyName);
         }
 
-        Map modifiedResourceLog = JSON.parseMap(JSON.toJSONString(modifiedResource));
         if (modifiedResourceFields != null) {
-            //获取modifiedResourceFields中所有fieldId的集合
             Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields);
-            modifiedResourceFields.stream()
+            List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
-                    .forEach(field -> {
-                        if (!Strings.CI.equals(field.getFieldId(), subTableKey)) {
-                            modifiedResourceLog.put(field.getFieldId(), field.getFieldValue());
-                        } else {
-                            //将 field.getFieldValue() 转 List<Map<String, Object>>
-                            List<Map<String, Object>> subTableList = JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
-                            });
-                            // 处理子表,根据field.getFieldId()获取字段名称，拼接在subTableKeyName后面
-                            // 子表字段名称 = 子表字段id + 子表字段名称
-                            for (Map<String, Object> stringObjectMap : subTableList) {
-                                //遍历map的key，将key替换为 子表字段id + 子表字段的自定义字段名称
-                                Set<String> keys = new HashSet<>(stringObjectMap.keySet());
-                                for (String key : keys) {
-                                    modifiedResourceLog.put(subTableKeyName + newFieldNameMap.get(key), stringObjectMap.get(key));
-                                }
-                            }
-                        }
-                    });
+                    .toList();
+
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableKey, subTableKeyName);
         }
 
         try {
-
             OperationLogContext.setContext(
                     LogContextInfo.builder()
                             .resourceId(id)
@@ -414,10 +416,51 @@ public class BaseService {
         }
     }
 
-    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> modifiedResourceFields) {
-        List<String> modifiedResourceFieldIds = modifiedResourceFields.stream().map(BaseModuleFieldValue::getFieldId).distinct().toList();
-        List<OptionDTO> newFieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", modifiedResourceFieldIds);
-        return newFieldOptions.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    /**
+     * 处理普通字段 + 子表字段
+     */
+    private void fillResourceLog(
+            Map<String, Object> resourceLog,
+            List<BaseModuleFieldValue> fields,
+            Map<String, String> fieldNameMap,
+            String subTableKey,
+            String subTableKeyName) {
+        fields.forEach(field -> {
+            String fieldId = field.getFieldId();
+
+            // 普通字段
+            if (!Strings.CI.equals(fieldId, subTableKey)) {
+                resourceLog.put(fieldId, field.getFieldValue());
+                return;
+            }
+
+            // 子表字段
+            List<Map<String, Object>> subTableList =
+                    JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
+                    });
+
+            for (Map<String, Object> row : subTableList) {
+                row.forEach((key, value) ->
+                        resourceLog.put(subTableKeyName + fieldNameMap.get(key), value)
+                );
+            }
+        });
+    }
+
+
+    /**
+     * 字段 ID → 字段名称 映射表
+     */
+    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields) {
+        List<String> fieldIds = fields.stream()
+                .map(BaseModuleFieldValue::getFieldId)
+                .distinct()
+                .toList();
+
+        List<OptionDTO> fieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", fieldIds);
+
+        return fieldOptions.stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
     }
 
 
@@ -425,6 +468,7 @@ public class BaseService {
      * 客户id与名称映射
      *
      * @param customerIds
+     *
      * @return
      */
     public Map<String, String> getCustomerMap(List<String> customerIds) {
@@ -440,6 +484,7 @@ public class BaseService {
      * 商机id与名称映射
      *
      * @param opportunityIds
+     *
      * @return
      */
     public Map<String, String> getOpportunityMap(List<String> opportunityIds) {
@@ -456,6 +501,7 @@ public class BaseService {
      * 线索id与名称映射
      *
      * @param clueIds
+     *
      * @return
      */
     public Map<String, String> getClueMap(List<String> clueIds) {
@@ -472,6 +518,7 @@ public class BaseService {
      * 联系人id和电话映射
      *
      * @param contactIds
+     *
      * @return
      */
     public Map<String, String> getContactPhone(List<String> contactIds) {
