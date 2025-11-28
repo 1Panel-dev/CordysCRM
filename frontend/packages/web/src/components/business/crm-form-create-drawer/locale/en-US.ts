@@ -11,6 +11,7 @@ export default {
   'crmFormCreate.drawer.opportunity': 'Opportunity',
   'crmFormCreate.drawer.product': 'Product',
   'crmFormCreate.drawer.contract': 'Contract',
+  'crmFormCreate.drawer.contractPaymentPlan': 'Payment plan',
   'crmFormCreate.drawer.quotation': 'Quotation',
   'crmFormCreate.drawer.price': 'Price Table',
 };

@@ -10,8 +10,8 @@ const contract: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'module.contract',
-    permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'], // TODO lmy
-    icon: 'iconicon_clue', // TODO lmy
+    permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'], // TODO lmy permission
+    icon: 'iconicon_clue', // TODO lmy icon
     hideChildrenInMenu: true,
     collapsedLocale: 'module.contract',
   },
@@ -23,7 +23,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.contract',
         isTopMenu: true,
-        permissions: ['CLUE_MANAGEMENT:READ'], // TODO lmy
+        permissions: ['CLUE_MANAGEMENT:READ'], // TODO lmy permission
       },
     },
     {
@@ -33,7 +33,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.paymentPlan',
         isTopMenu: true,
-        permissions: ['CLUE_MANAGEMENT_POOL:READ'], // TODO lmy
+        permissions: ['CLUE_MANAGEMENT_POOL:READ'], // TODO lmy permission
       },
     },
   ],

@@ -85,13 +85,13 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 作废合同
-  function voidedContract(id: string) {
-    return CDR.get({ url: `${ContractVoidedUrl}/${id}` });
+  function voidedContract(id: string, reason: string) {
+    return CDR.post({ url: `${ContractVoidedUrl}`, data: { reason, id } });
   }
 
   // 归档合同
   function archivedContract(id: string, archivedStatus: string) {
-    return CDR.get({ url: `${ContractArchivedUrl}`, params: { archivedStatus, id } });
+    return CDR.post({ url: `${ContractArchivedUrl}`, data: { archivedStatus, id } });
   }
 
   // 合同详情

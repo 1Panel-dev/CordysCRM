@@ -235,6 +235,30 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalFields,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalFields,
+    [FormDesignKeyEnum.CONTRACT]: [
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+      {
+        title: t('contract.voidReason'),
+        key: 'voidReason',
+      },
+      {
+        title: t('opportunity.quotation.amount'),
+        key: 'amount',
+      },
+      {
+        title: t('contract.archivedStatus'),
+        key: 'archivedStatus',
+      },
+    ],
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+    ],
   };
   const staticFields = [
     {
@@ -255,7 +279,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     },
   ];
   // 用于快照保存表单配置
-  const needModuleFormConfigParamsType = [FormDesignKeyEnum.OPPORTUNITY_QUOTATION];
+  const needModuleFormConfigParamsType = [FormDesignKeyEnum.OPPORTUNITY_QUOTATION, FormDesignKeyEnum.CONTRACT];
 
   function initFormShowControl() {
     // 读取整个显隐控制映射

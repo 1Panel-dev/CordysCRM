@@ -200,6 +200,7 @@ export default {
   'common.searchByNamePhone': '通过名称/手机号搜索',
   'common.searchName': '通过姓名搜索',
   'common.archive': '归档',
+  'common.notArchived': '未归档',
   'common.unarchive': '取消归档',
   'common.running': '执行中',
   'common.unExecute': '未执行',
