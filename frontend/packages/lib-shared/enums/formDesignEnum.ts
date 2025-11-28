@@ -19,10 +19,11 @@ export enum FormDesignKeyEnum {
   FOLLOW_PLAN = 'followPlan',
   FOLLOW_RECORD = 'followRecord',
   CONTRACT = 'contract', // 合同
+  CONTRACT_SNAPSHOT = 'contractSnapshot', // 合同快照
   CONTRACT_PAYMENT = 'contractPaymentPlan', // 回款
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
-  OPPORTUNITY_QUOTATION_SNAPSHOT= 'quotationSnapshot', // 商机快照报价单
+  OPPORTUNITY_QUOTATION_SNAPSHOT = 'quotationSnapshot', // 商机快照报价单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户
@@ -81,6 +82,7 @@ export enum FieldDataSourceTypeEnum {
   CUSTOMER_OPTIONS = 'CUSTOMER_OPTIONS', // 客户选项
   USER_OPTIONS = 'USER_OPTIONS', // 成员选项
   PRICE = 'PRICE', // 价格表
+  CONTRACT = 'CONTRACT',
 }
 
 export enum FormLinkScenarioEnum {

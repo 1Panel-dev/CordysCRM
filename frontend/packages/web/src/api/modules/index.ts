@@ -485,6 +485,7 @@ export const {
   getSearchConfig,
   getFieldDeptTree,
   getFieldClueList,
+  getFieldContractList,
   deleteReasonItem,
   deleteAttachment,
   moduleNavListSort,

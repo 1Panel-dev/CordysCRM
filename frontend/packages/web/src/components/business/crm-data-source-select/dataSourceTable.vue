@@ -52,6 +52,7 @@
     getCustomerOptions,
     getFieldClueList,
     getFieldContactList,
+    getFieldContractList,
     getFieldCustomerList,
     getFieldOpportunityList,
     getFieldProductList,
@@ -127,6 +128,7 @@
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
+    [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
     [FieldDataSourceTypeEnum.PRICE]: getFieldProductList, // TODO:
   };
 

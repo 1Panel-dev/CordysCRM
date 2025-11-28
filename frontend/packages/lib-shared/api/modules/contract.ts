@@ -106,9 +106,9 @@ export default function useContractApi(CDR: CordysAxios) {
     });
   }
 
-  function getContractFormSnapshotConfig() {
+  function getContractFormSnapshotConfig(id?: string) {
     return CDR.get<FormDesignConfigDetailParams>({
-      url: GetContractFormSnapshotConfigUrl,
+      url: `${GetContractFormSnapshotConfigUrl}/${id}`,
     });
   }
 

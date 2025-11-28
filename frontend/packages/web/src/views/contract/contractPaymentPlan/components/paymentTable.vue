@@ -17,7 +17,12 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <!-- TODO lmy permission -->
-        <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" type="primary" @click="handleNewClick">
+        <n-button
+          v-if="!props.readonly"
+          v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          type="primary"
+          @click="handleNewClick"
+        >
           {{ t('contract.newPlan') }}
         </n-button>
         <!-- TODO lmy permission -->
@@ -63,7 +68,7 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
-    @saved="searchData"
+    @saved="() => searchData()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -74,7 +79,13 @@
     @create-success="handleExportCreateSuccess"
   />
 
-  <DetailDrawer v-model:visible="showDetailDrawer" :sourceId="activeSourceId" @refresh="searchData" />
+  <DetailDrawer
+    v-model:visible="showDetailDrawer"
+    :sourceId="activeSourceId"
+    :readonly="props.readonly"
+    @refresh="searchData"
+    @open-contract-drawer="showContractDrawer"
+  />
 </template>
 
 <script setup lang="ts">
@@ -90,6 +101,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -117,6 +129,10 @@
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
+    isContractTab?: boolean;
+    sourceId?: string; // 合同详情下
+    sourceName?: string;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
@@ -135,9 +151,10 @@
   const activeFormKey = ref(FormDesignKeyEnum.CONTRACT_PAYMENT);
 
   function handleNewClick() {
+    activeSourceId.value = props.isContractTab ? props.sourceId || '' : '';
+    initialSourceName.value = props.isContractTab ? props.sourceName || '' : '';
     needInitDetail.value = false;
     activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
-    activeSourceId.value = '';
     formCreateDrawerVisible.value = true;
   }
 
@@ -201,22 +218,28 @@
     ...baseFilterConfigList,
   ]);
 
-  const operationGroupList: ActionsItem[] = [
-    {
-      label: t('common.detail'),
-      key: 'detail',
-    },
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'], // TODO lmy permission
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'], // TODO lmy permission
-    },
-  ];
+  const operationGroupList = computed<ActionsItem[]>(() => {
+    return [
+      {
+        label: t('common.detail'),
+        key: 'detail',
+      },
+      ...(!props.readonly
+        ? [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'], // TODO lmy permission
+            },
+            {
+              label: t('common.delete'),
+              key: 'delete',
+              permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'], // TODO lmy permission
+            },
+          ]
+        : []),
+    ];
+  });
 
   const tableRefreshId = ref(0);
   const showDetailDrawer = ref(false);
@@ -269,35 +292,47 @@
     }
   }
 
-  function showContractDrawer(row: PaymentPlanItem) {
-    emit('openContractDrawer', {
-      id: row.contractId,
-    });
+  function showContractDrawer(params: { id: string }) {
+    if (props.isContractTab) {
+      showDetailDrawer.value = false;
+    } else {
+      emit('openContractDrawer', {
+        id: params.id,
+      });
+    }
   }
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 250 : 200,
+      width: currentLocale.value === 'en-US' ? 250 : 140,
       fixed: 'right',
       render: (row: PaymentPlanItem) =>
         h(CrmOperationButton, {
-          groupList: operationGroupList,
+          groupList: operationGroupList.value,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
     specialRender: {
       contractId: (row: PaymentPlanItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showContractDrawer(row);
-            },
-          },
-          { default: () => row.contractId, trigger: () => row.contractId }
-        );
+        return props.isContractTab
+          ? h(
+              CrmNameTooltip,
+              { text: row.contractName },
+              {
+                default: () => row.contractName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showContractDrawer({ id: row.contractId });
+                },
+              },
+              { default: () => row.contractName, trigger: () => row.contractName }
+            );
       },
       status: (row: PaymentPlanItem) =>
         h(ContractStatus, {
@@ -317,6 +352,7 @@
     return {
       ...tableQueryParams.value,
       ids: checkedRowKeys.value,
+      contractId: props.sourceId,
     };
   });
 
@@ -335,7 +371,7 @@
   }
 
   function searchData(val?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
+    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value, contractId: props.sourceId });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
@@ -370,7 +406,7 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, contractId: props.sourceId });
         // initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }

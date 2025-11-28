@@ -8,12 +8,13 @@
         />
       </div>
     </CrmCard>
-    <!-- TODO lmy 合同抽屉 -->
+    <ContractDetailDrawer v-model:visible="showContractDetailDrawer" :sourceId="activeSourceId" />
   </div>
 </template>
 
 <script setup lang="ts">
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import ContractDetailDrawer from '../contract/components/detail.vue';
   import PaymentTable from './components/paymentTable.vue';
 
   const contractPaymentCardRef = ref<HTMLElement | null>(null);

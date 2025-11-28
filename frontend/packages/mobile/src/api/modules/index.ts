@@ -308,6 +308,7 @@ export const {
   getFieldContactList,
   getFieldCustomerList,
   getFieldOpportunityList,
+  getFieldContractList,
   getFieldProductList,
   checkRepeat,
   uploadTempFile,

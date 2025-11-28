@@ -101,6 +101,7 @@
     getFieldContactList,
     getFieldCustomerList,
     getFieldOpportunityList,
+    getFieldContractList,
     getFieldProductList,
     getUserOptions,
   } from '@/api/modules';
@@ -147,6 +148,7 @@
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
     [FieldDataSourceTypeEnum.PRICE]: 'formCreate.price',
+    [FieldDataSourceTypeEnum.CONTRACT]: '',
   };
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
@@ -157,6 +159,7 @@
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
+    [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
     [FieldDataSourceTypeEnum.PRICE]: () => Promise.resolve({} as any), // TODO:
   };
 
