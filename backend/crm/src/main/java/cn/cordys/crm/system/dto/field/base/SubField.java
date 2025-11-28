@@ -21,5 +21,5 @@ public class SubField extends BaseField {
 	private List<BaseField> subFields;
 
 	@Schema(description = "汇总列")
-	private String sumColumn;
+	private List<String> sumColumns;
 }
