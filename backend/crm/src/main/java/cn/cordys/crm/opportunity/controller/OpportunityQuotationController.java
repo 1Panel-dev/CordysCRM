@@ -2,8 +2,11 @@ package cn.cordys.crm.opportunity.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
@@ -14,7 +17,7 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
-import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -36,6 +39,8 @@ public class OpportunityQuotationController {
     private OpportunityQuotationService opportunityQuotationService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private DataScopeService dataScopeService;
 
 
     @GetMapping("/module/form")
@@ -47,9 +52,12 @@ public class OpportunityQuotationController {
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
-    @Operation(summary = "价格列表")
+    @Operation(summary = "报价单列表")
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(@Validated @RequestBody OpportunityQuotationPageRequest request) {
-        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId());
+        ConditionFilterUtils.parseCondition(request);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission);
     }
 
     //新增
@@ -119,7 +127,7 @@ public class OpportunityQuotationController {
     @PostMapping("/batch/approve")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
     @Operation(summary = "批量审批报价单")
-    public BatchAffectResponse batchApprove(@RequestBody OpportunityQuotationBatchRequest request) {
+    public BatchAffectSkipResponse batchApprove(@RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

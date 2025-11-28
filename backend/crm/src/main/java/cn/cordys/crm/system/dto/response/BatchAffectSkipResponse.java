@@ -6,18 +6,12 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BatchAffectReasonResponse {
+public class BatchAffectSkipResponse {
 
-    @Schema(description = "成功数量")
+    @Schema(description = "成功条数")
     private Integer success;
-
-    @Schema(description = "失败数量")
+    @Schema(description = "失败条数")
     private Integer fail;
-
     @Schema(description = "跳过数量")
     private Integer skip;
-
-    @Schema(description = "失败原因")
-    private String errorMessages;
-
 }

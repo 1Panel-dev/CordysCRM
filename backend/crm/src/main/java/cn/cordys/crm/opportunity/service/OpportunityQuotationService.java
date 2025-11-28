@@ -7,6 +7,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
@@ -35,7 +36,7 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
-import cn.cordys.crm.system.dto.response.BatchAffectResponse;
+import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
@@ -61,6 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -435,12 +437,12 @@ public class OpportunityQuotationService {
      * @param organizationId 组织ID
      * @return 商机报价单列表
      */
-    public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId) {
+    public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId, String userId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId);
-		List<OpportunityQuotationListResponse> results = buildList(list);
+        List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId, userId, deptDataPermission);
+        List<OpportunityQuotationListResponse> results = buildList(list);
         // 处理自定义字段选项
-		ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, OpportunityQuotationListResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -580,7 +582,7 @@ public class OpportunityQuotationService {
      * @param orgId   组织ID
      * @return 审批状态
      */
-    public BatchAffectResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
+    public BatchAffectSkipResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
         List<String> ids = request.getIds();
         String approvalStatus = request.getApprovalStatus();
         LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();
@@ -588,19 +590,33 @@ public class OpportunityQuotationService {
         wrapper.eq(OpportunityQuotation::getApprovalStatus, ApprovalState.APPROVING.toString());
         List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(list)) {
-            return BatchAffectResponse.builder().success(0).fail(0).build();
+            return BatchAffectSkipResponse.builder().success(0).fail(0).skip(0).build();
         }
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
 
         List<LogDTO> logs = new ArrayList<>();
         List<String> approvingIds = new ArrayList<>();
-        list.forEach(item -> {
+        AtomicInteger skipCount = new AtomicInteger(0);
+        list.stream().filter(item -> {
+            if (Strings.CI.equals(item.getApprovalStatus(), ApprovalState.APPROVED.toString())) {
+                skipCount.getAndIncrement();
+                return false;
+            }
+            return true;
+        }).forEach(item -> {
             approvingIds.add(item.getId());
-            LogDTO logDTO = new LogDTO(orgId, item.getId(), userId, LogType.APPROVAL, LogModule.OPPORTUNITY_QUOTATION, item.getName());
-            logDTO.setOriginalValue(item.getApprovalStatus());
-            logDTO.setModifiedValue(approvalStatus);
-            logs.add(logDTO);
+            var log = new LogDTO(
+                    orgId,
+                    item.getId(),
+                    userId,
+                    LogType.APPROVAL,
+                    LogModule.OPPORTUNITY_QUOTATION,
+                    item.getName()
+            );
+            log.setOriginalValue(item.getApprovalStatus());
+            log.setModifiedValue(approvalStatus);
+            logs.add(log);
 
         });
         batchUpdateMapper.batchUpdateApprovalStatus(approvingIds, approvalStatus, userId, System.currentTimeMillis());
@@ -611,7 +627,7 @@ public class OpportunityQuotationService {
                 item -> sendNotice(Translator.get(Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
                         "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved"), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
-        return BatchAffectResponse.builder().success(list.size()).fail(0).build();
+        return BatchAffectSkipResponse.builder().success(list.size() - skipCount.get()).fail(0).skip(skipCount.get()).build();
     }
 
 
@@ -629,7 +645,7 @@ public class OpportunityQuotationService {
         wrapper.in(OpportunityQuotation::getId, ids);
         List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(list)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(0).errorMessages("opportunity.quotation.not.exist").build();
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages("opportunity.quotation.not.exist").build();
         }
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
@@ -638,17 +654,33 @@ public class OpportunityQuotationService {
         // 校验商机报价单是否可以作废
         List<OpportunityQuotation> successList = validateVoidQuotation(list);
         if (CollectionUtils.isEmpty(successList)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).errorMessages("opportunity.quotation.batch.no.voided").build();
+            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).skip(0).errorMessages("opportunity.quotation.batch.no.voided").build();
         }
 
         List<LogDTO> logs = new ArrayList<>();
         List<String> successIds = new ArrayList<>();
-        successList.forEach(item -> {
+        AtomicInteger skipCount = new AtomicInteger();
+        successList.stream().filter(
+                item -> {
+                    if (Strings.CI.equals(item.getApprovalStatus(), LogType.VOIDED)) {
+                        skipCount.getAndIncrement();
+                        return false;
+                    }
+                    return true;
+                }
+        ).forEach(item -> {
             successIds.add(item.getId());
-            LogDTO logDTO = new LogDTO(organizationId, item.getId(), userId, LogType.VOIDED, LogModule.OPPORTUNITY_QUOTATION, item.getName());
-            logDTO.setOriginalValue(item.getApprovalStatus());
-            logDTO.setModifiedValue(LogType.VOIDED);
-            logs.add(logDTO);
+            var log = new LogDTO(
+                    organizationId,
+                    item.getId(),
+                    userId,
+                    LogType.VOIDED,
+                    LogModule.OPPORTUNITY_QUOTATION,
+                    item.getName()
+            );
+            log.setOriginalValue(item.getApprovalStatus());
+            log.setModifiedValue(LogType.VOIDED);
+            logs.add(log);
 
         });
         batchUpdateMapper.batchUpdateApprovalStatus(successIds, LogType.VOIDED, userId, System.currentTimeMillis());
@@ -659,7 +691,7 @@ public class OpportunityQuotationService {
         successList.forEach(
                 item -> sendNotice(Translator.get("opportunity.quotation.status.voided"), item, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
-        return BatchAffectReasonResponse.builder().success(successList.size()).fail(list.size() - successList.size()).errorMessages("opportunity.quotation.batch.no.voided").build();
+        return BatchAffectReasonResponse.builder().success(successList.size() - skipCount.get()).fail(list.size() - successList.size()).skip(skipCount.get()).errorMessages("opportunity.quotation.batch.no.voided").build();
     }
 
 
