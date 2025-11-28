@@ -262,7 +262,7 @@
       case QuotationStatusEnum.APPROVED:
         return commonActions.filter((item) => ['download'].includes(item.key));
       case QuotationStatusEnum.UNAPPROVED:
-      case QuotationStatusEnum.REVOKE:
+      case QuotationStatusEnum.REVOKED:
         return commonActions.filter((item) => ['edit'].includes(item.key));
       case QuotationStatusEnum.VOIDED:
         return deleteActions;
@@ -281,7 +281,7 @@
         const successStatusGroups = isShowApproval ? commonActionsKeys : ['download', ...commonActionsKeys];
         return getActions(successStatusGroups);
       case QuotationStatusEnum.UNAPPROVED:
-      case QuotationStatusEnum.REVOKE:
+      case QuotationStatusEnum.REVOKED:
         const revokeStatusGroups = isShowApproval ? commonActionsKeys : ['edit', 'download', ...commonActionsKeys];
         return getActions(revokeStatusGroups);
       case QuotationStatusEnum.APPROVING:

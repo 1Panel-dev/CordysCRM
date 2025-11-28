@@ -23,7 +23,7 @@ import {
   singleTypes,
 } from '@lib/shared/method/formCreate';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
-import type { FormConfig } from '@lib/shared/models/system/module';
+import type { FormConfig, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-description/index.vue';
 import {
@@ -85,6 +85,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }); // 表单属性配置
   const formDetail = ref<Record<string, any>>({});
   const originFormDetail = ref<Record<string, any>>({});
+  const moduleFormConfig = ref<FormDesignConfigDetailParams>();
 
   // 详情
   const detail = ref<Record<string, any>>({});
@@ -253,6 +254,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       key: 'updateTime',
     },
   ];
+  // 用于快照保存表单配置
+  const needModuleFormConfigParamsType = [FormDesignKeyEnum.OPPORTUNITY_QUOTATION];
 
   function initFormShowControl() {
     // 读取整个显隐控制映射
@@ -1009,6 +1012,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey.value]();
+      moduleFormConfig.value = res;
       initFormFieldConfig(res.fields);
       formConfig.value = res.formProp;
       nextTick(() => {
@@ -1204,6 +1208,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
+
+      if (needModuleFormConfigParamsType.includes(props.formKey.value)) {
+        params.moduleFormConfigDTO = moduleFormConfig.value;
+      }
       let res;
       if (props.sourceId?.value && props.needInitDetail?.value) {
         res = await updateFormApi[props.formKey.value](params);

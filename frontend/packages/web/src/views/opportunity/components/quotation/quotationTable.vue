@@ -370,7 +370,7 @@
       case QuotationStatusEnum.APPROVED:
         return getGroups(['download', ...commonGroups]);
       case QuotationStatusEnum.UNAPPROVED:
-      case QuotationStatusEnum.REVOKE:
+      case QuotationStatusEnum.REVOKED:
         return getGroups(['edit', ...commonGroups]);
       case QuotationStatusEnum.APPROVING:
         const operationGroups = row.createUser === useStore.userInfo.id ? ['revoke', ...commonGroups] : commonGroups;
