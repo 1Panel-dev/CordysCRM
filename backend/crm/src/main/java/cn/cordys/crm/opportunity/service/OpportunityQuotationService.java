@@ -23,6 +23,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
@@ -94,6 +95,8 @@ public class OpportunityQuotationService {
     private BaseMapper<ContractField> contractFieldMapper;
     @Resource
     private BaseMapper<OpportunityQuotationApproval> approvalBaseMapper;
+    @Resource
+    private BaseMapper<Opportunity> opportunityBaseMapper;
 
 
     /**
@@ -134,6 +137,8 @@ public class OpportunityQuotationService {
 
         // 保存表单配置快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
+        response.setOpportunityName(opportunity.getName());
         saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
         //保存报价单审批表
@@ -509,6 +514,8 @@ public class OpportunityQuotationService {
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
+        response.setOpportunityName(opportunity.getName());
         saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
         return opportunityQuotationMapper.selectByPrimaryKey(id);
