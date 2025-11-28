@@ -1,5 +1,6 @@
 package cn.cordys.crm.product.mapper;
 
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import org.apache.ibatis.annotations.Param;
@@ -46,4 +47,10 @@ public interface ExtProductPriceMapper {
 	 * @return 位置值
 	 */
     Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+
+	/**
+	 * 批量更新
+	 * @param request 请求参数
+	 */
+	void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }
