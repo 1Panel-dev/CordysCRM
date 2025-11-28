@@ -40,7 +40,7 @@ export const contractStatusMap = {
     color: 'var(--text-n4)',
   },
   [ContractStatusEnum.VOID]: {
-    label: t('contract.void'),
+    label: t('common.voided'),
     icon: 'iconicon_minus_circle_filled1',
     color: 'var(--warning-yellow)',
   },

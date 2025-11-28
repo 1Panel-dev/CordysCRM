@@ -127,7 +127,7 @@
     {
       label: t('module.contract'),
       key: ModuleConfigEnum.CONTRACT,
-      icon: 'iconicon_customer', // TODO lmy
+      icon: 'iconicon_customer', // TODO lmy icon
     },
     {
       label: t('module.clueManagement'),

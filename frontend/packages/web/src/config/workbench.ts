@@ -30,9 +30,9 @@ export const quickAccessList = [
   },
   {
     key: FormDesignKeyEnum.CONTRACT,
-    icon: 'newOpportunity', // TODO lmy
+    icon: 'newOpportunity', // TODO lmy icon
     label: t('contract.new'),
-    permission: ['OPPORTUNITY_MANAGEMENT:ADD'], // TODO lmy 等后端
+    permission: ['OPPORTUNITY_MANAGEMENT:ADD'], // TODO lmy permission
   },
   // 这版本先不上
   // {

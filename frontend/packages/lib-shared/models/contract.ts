@@ -19,6 +19,8 @@ export interface ContractItem {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[]; // 自定义字段
+  inCustomerPool: boolean;
+  poolId: string;
 }
 
 // 合同详情

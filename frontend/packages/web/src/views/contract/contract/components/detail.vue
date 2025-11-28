@@ -2,15 +2,18 @@
   <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="title">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <ContractStatus :status="detailInfo.status" />
+        <ContractStatus :status="detailInfo?.status" />
       </div>
     </template>
-    <template v-if="detailInfo.status !== ContractStatusEnum.VOID" #titleRight>
-      <CrmButtonGroup :list="buttonList" not-show-divider @select="handleButtonClick" />
+    <template v-if="detailInfo?.status !== ContractStatusEnum.VOID" #titleRight>
+      <CrmButtonGroup class="gap-[12px]" :list="buttonList" not-show-divider @select="handleButtonClick" />
     </template>
+    <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    </CrmCard>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmCard hide-footer>
-        <div class="flex-1">
+        <div v-if="activeTab === 'contract'" class="flex-1">
           <CrmFormDescription
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
@@ -21,6 +24,7 @@
             tooltip-position="top-start"
             @init="handleInit"
           />
+          <!-- TODO lmy 回款计划 -->
         </div>
       </CrmCard>
     </div>
@@ -31,6 +35,13 @@
       need-init-detail
       :link-form-key="FormDesignKeyEnum.CONTRACT"
       @saved="handleSaved"
+    />
+
+    <VoidReasonModal
+      v-model:visible="showVoidReasonModal"
+      :name="detailInfo.value?.name"
+      :sourceId="props.sourceId"
+      @refresh="handleSaved"
     />
   </CrmDrawer>
 </template>
@@ -48,8 +59,10 @@
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import VoidReasonModal from './voidReasonModal.vue';
   import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
 
   import { archivedContract, deleteContract, voidedContract } from '@/api/modules';
@@ -72,10 +85,20 @@
   const title = ref('');
   const detailInfo = ref();
 
+  const activeTab = ref('contract');
+  const tabList = [
+    {
+      name: 'contract',
+      title: t('module.contract'),
+    },
+    {
+      name: 'payment',
+      title: t('module.paymentPlan'),
+    },
+  ];
+
   const buttonList = computed(() => {
-    const info = detailInfo.value;
-    const isArchived = info.archivedStatus === ArchiveStatusEnum.ARCHIVED;
-    if (isArchived) {
+    if (detailInfo.value?.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
       return [
         {
           key: 'unarchive',
@@ -161,24 +184,9 @@
     });
   }
 
-  function handleVoided(row: ContractItem) {
-    openModal({
-      type: 'error',
-      title: t('contract.voidedConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('contract.voidedConfirmContent'),
-      positiveText: t('common.confirmVoid'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await voidedContract(row.id);
-          Message.success(t('common.voidSuccess'));
-          handleSaved();
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
+  const showVoidReasonModal = ref(false);
+  function handleVoided() {
+    showVoidReasonModal.value = true;
   }
 
   async function handleArchive(id: string, status: string) {
@@ -208,7 +216,7 @@
         handleArchive(props.sourceId, detailInfo.value.archivedStatus);
         break;
       case 'voided':
-        handleVoided(detailInfo.value);
+        handleVoided();
         break;
       case 'delete':
         handleDelete(detailInfo.value);
