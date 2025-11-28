@@ -101,6 +101,11 @@ public class ContractPaymentPlanService {
                 ContractPaymentPlanListResponse::getOwner, ContractPaymentPlanListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_PLAN_OWNER.getBusinessKey(), ownerFieldOption);
 
+        // 合同
+        List<OptionDTO> contractFieldOption = moduleFormService.getBusinessFieldOption(list,
+                ContractPaymentPlanListResponse::getContractId, ContractPaymentPlanListResponse::getContractName);
+        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_PLAN_CONTRACT.getBusinessKey(), contractFieldOption);
+
         return optionMap;
     }
 
@@ -165,6 +170,7 @@ public class ContractPaymentPlanService {
         ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
         ContractPaymentPlanGetResponse contractPaymentPlanGetResponse = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
         contractPaymentPlanGetResponse = baseService.setCreateUpdateOwnerUserName(contractPaymentPlanGetResponse);
+        Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlanGetResponse.getContractId());
         // 获取模块字段
         List<BaseModuleFieldValue> contractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(orgId);
@@ -175,6 +181,14 @@ public class ContractPaymentPlanService {
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(contractPaymentPlanGetResponse,
                 ContractPaymentPlanGetResponse::getOwner, ContractPaymentPlanGetResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        if (contract != null) {
+            contractPaymentPlanGetResponse.setContractName(contract.getName());
+            // 合同
+            List<OptionDTO> contractFieldOption = moduleFormService.getBusinessFieldOption(contractPaymentPlanGetResponse,
+                    ContractPaymentPlanGetResponse::getContractId, ContractPaymentPlanGetResponse::getContractName);
+            optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_PLAN_CONTRACT.getBusinessKey(), contractFieldOption);
+        }
 
         contractPaymentPlanGetResponse.setOptionMap(optionMap);
         contractPaymentPlanGetResponse.setModuleFields(contractPaymentPlanFields);
