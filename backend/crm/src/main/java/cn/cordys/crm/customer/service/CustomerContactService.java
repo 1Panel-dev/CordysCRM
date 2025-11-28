@@ -8,7 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.*;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
@@ -565,7 +565,7 @@ public class CustomerContactService {
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTACT.getKey(), currentOrg);
-            CustomImportAfterDoConsumer<CustomerContact, BaseResourceField> afterDo = (contacts, contactFields, contactFieldBlobs) -> {
+            CustomImportAfterDoConsumer<CustomerContact, BaseResourceSubField> afterDo = (contacts, contactFields, contactFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 contacts.forEach(contact -> {
                     contact.setEnable(true);
@@ -599,7 +599,7 @@ public class CustomerContactService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact", "customer_contact_field", currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact", "customer_contact_field", currentOrg, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

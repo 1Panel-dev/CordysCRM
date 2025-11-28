@@ -13,6 +13,7 @@ import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -20,10 +21,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -101,5 +103,19 @@ public class ProductPriceController {
 	@Operation(summary = "下载导入模板")
 	public void downloadImportTpl(HttpServletResponse response) {
 		priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/import/pre-check")
+	@Operation(summary = "导入检查")
+	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+	public ImportResponse preCheck(@RequestPart(value = "file") @NotNull MultipartFile file) {
+		return priceService.importPreCheck(file, OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/import")
+	@Operation(summary = "导入")
+	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+		return priceService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 }

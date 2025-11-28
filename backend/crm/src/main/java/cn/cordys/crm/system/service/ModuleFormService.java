@@ -42,7 +42,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
@@ -318,7 +317,7 @@ public class ModuleFormService {
      */
     public Map<String, List<OptionDTO>> getOptionMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
 		if (CollectionUtils.isEmpty(allDataFields)) {
-			return new HashMap<>();
+			return new HashMap<>(2);
 		}
         Map<String, List<OptionDTO>> optionMap = new HashMap<>(4);
         Map<String, String> idTypeMap = new HashMap<>(8);
@@ -519,6 +518,7 @@ public class ModuleFormService {
 			}
 			ReflectionUtils.setField(field, resource, bfv.getFieldValue());
 		});
+		fieldValues = new ArrayList<>(fieldValues);
 		fieldValues.removeIf(fv -> subFieldBusinessMap.containsKey(fv.getFieldId()));
 		Field moduleFields = ReflectionUtils.findField(resource.getClass(), f -> Strings.CS.equals(f.getName(), "moduleFields"));
 		if (moduleFields == null) {
@@ -833,6 +833,18 @@ public class ModuleFormService {
 			return null;
 		}
 		return allFields.stream().filter(BaseField::canImport).collect(Collectors.toList());
+	}
+
+	/**
+	 * 支持子表头
+	 * @param headFields 表头字段集合
+	 * @return 是否支持
+	 */
+	public boolean supportSubHead(List<BaseField> headFields) {
+		if (CollectionUtils.isEmpty(headFields)) {
+			return false;
+		}
+		return headFields.stream().anyMatch(field -> field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields()));
 	}
 
     /**
