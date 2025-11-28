@@ -21,7 +21,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useRoute } from 'vue-router';
-  import { NSpin, useMessage } from 'naive-ui';
+  import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -41,10 +41,13 @@
   const title = ref('');
   const quotationDetail = ref<Record<string, any>>();
 
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  const formLoading = ref(true);
+  async function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
     quotationDetail.value = detail;
-    exportPDF(detail?.name ?? t('opportunity.quotation'), 'quotation-detail', () => {
+    formLoading.value = false;
+    await nextTick();
+    exportPDF(quotationDetail.value?.name ?? t('opportunity.quotation'), 'quotation-detail', () => {
       loading.value = false;
       Message.success(t('opportunity.quotation.exportPdfSuccess'));
     });
