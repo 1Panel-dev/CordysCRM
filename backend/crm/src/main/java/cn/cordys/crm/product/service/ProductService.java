@@ -284,12 +284,10 @@ public class ProductService {
      * @param response 响应
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
-        // 产品表单字段
-        List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.PRODUCT.getKey(), currentOrg);
-
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
-                        Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeads(FormKey.PRODUCT.getKey(), currentOrg),
+                        Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+						new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -352,7 +350,7 @@ public class ProductService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.PRODUCT.getKey(), currentOrg);
+            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg);
             CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product", "product_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())

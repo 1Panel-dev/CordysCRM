@@ -4,7 +4,6 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
-import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
@@ -24,20 +23,22 @@ import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.mapper.ExtProductPriceMapper;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +60,6 @@ public class ProductPriceService {
     private ProductPriceFieldService productPriceFieldService;
     @Resource
     private ExtProductPriceMapper extProductPriceMapper;
-	@Resource
-	private LogService logService;
 
     /**
      * 价格列表
@@ -187,23 +186,17 @@ public class ProductPriceService {
 	}
 
 	/**
-	 * 批量删除产品
-	 * @param ids    产品id集合
-	 * @param userId 操作人id
+	 * 下载导入的模板
+	 * @param response 响应
 	 */
-	public void batchDelete(List<String> ids, String userId) {
-		LambdaQueryWrapper<ProductPrice> wrapper = new LambdaQueryWrapper<>();
-		wrapper.in(ProductPrice::getId, ids);
-		List<ProductPrice> prices = productPriceMapper.selectListByLambda(wrapper);
-		productPriceMapper.deleteByIds(ids);
-		productPriceFieldService.deleteByResourceIds(ids);
-		List<LogDTO> logs = new ArrayList<>();
-		prices.forEach(price -> {
-			LogDTO logDTO = new LogDTO(price.getOrganizationId(), price.getId(), userId, LogType.DELETE, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName());
-			logDTO.setOriginalValue(price.getName());
-			logs.add(logDTO);
-		});
-		logService.batchAdd(logs);
+	public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+		new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
+				moduleFormService.getCustomImportHeads(FormKey.PRICE.getKey(), currentOrg),
+				Translator.get("product.price.import_tpl.name"),
+				Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+				new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),
+				new CustomHeadColWidthStyleStrategy()
+		);
 	}
 
     /**

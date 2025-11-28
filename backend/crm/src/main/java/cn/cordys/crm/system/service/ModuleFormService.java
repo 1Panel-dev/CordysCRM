@@ -42,6 +42,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
@@ -798,13 +799,41 @@ public class ModuleFormService {
      *
      * @return 自定义导入表头集合
      */
-    public List<BaseField> getCustomImportHeads(String formKey, String currentOrg) {
+    public List<List<String>> getCustomImportHeads(String formKey, String currentOrg) {
         List<BaseField> allFields = getAllFields(formKey, currentOrg);
         if (CollectionUtils.isEmpty(allFields)) {
             return null;
         }
-        return allFields.stream().filter(BaseField::canImport).toList();
+		List<BaseField> fields = allFields.stream().filter(BaseField::canImport).toList();
+		List<List<String>> heads = new ArrayList<>();
+		fields.forEach(field -> {
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				subField.getSubFields().forEach(f -> {
+					List<String> head = new ArrayList<>();
+					head.add(field.getName());
+					head.add(f.getName());
+					heads.add(head);
+				});
+			} else {
+				heads.add(new ArrayList<>(Collections.singletonList(field.getName())));
+			}
+		});
+		return heads;
     }
+
+	/**
+	 * 获取自定义导出字段集合
+	 * @param formKey   表单Key
+	 * @param currentOrg 当前组织
+	 * @return 字段集合
+	 */
+	public List<BaseField> getCustomImportFields(String formKey, String currentOrg) {
+		List<BaseField> allFields = getAllFields(formKey, currentOrg);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return null;
+		}
+		return allFields.stream().filter(BaseField::canImport).collect(Collectors.toList());
+	}
 
     /**
      * 字段保存预检查

@@ -19,6 +19,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
@@ -88,17 +89,17 @@ public class ProductPriceController {
 		priceService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
-	@PostMapping("/batch/delete")
-	@RequiresPermissions(PermissionConstants.PRICE_DELETE)
-	@Operation(summary = "批量删除价格表")
-	public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
-		priceService.batchDelete(ids, SessionUtils.getUserId());
-	}
-
     @PostMapping("/edit/pos")
     @Operation(summary = "拖拽排序")
     @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
     public void editPos(@Validated @RequestBody PosRequest request) {
         priceService.editPos(request);
     }
+
+	@GetMapping("/template/download")
+	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+	@Operation(summary = "下载导入模板")
+	public void downloadImportTpl(HttpServletResponse response) {
+		priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+	}
 }
