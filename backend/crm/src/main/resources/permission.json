@@ -514,10 +514,6 @@
           {
             "id": "CONTRACT:VOIDED",
             "license": false
-          },
-          {
-            "id": "CONTRACT:REVIEW",
-            "license": false
           }
         ]
       },
