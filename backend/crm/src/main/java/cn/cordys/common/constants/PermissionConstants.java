@@ -183,7 +183,6 @@ public class PermissionConstants {
     public static final String CONTRACT_EXPORT = "CONTRACT:EXPORT";
     public static final String CONTRACT_ARCHIVE = "CONTRACT:ARCHIVE";
     public static final String CONTRACT_VOIDED = "CONTRACT:VOIDED";
-    public static final String CONTRACT_REVIEW = "CONTRACT:REVIEW";
 
     /*------ end: CONTRACT ------*/
 

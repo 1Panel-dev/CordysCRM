@@ -54,4 +54,40 @@ VALUES (UUID_SHORT(), 'org_admin', 'PRICE:IMPORT');
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'org_admin', 'PRICE:EXPORT');
 
+
+-- contract
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:UPDATE');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:EXPORT');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:ARCHIVE');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:VOIDED');
+
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:UPDATE');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:EXPORT');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:VOIDED');
+
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:UPDATE');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:EXPORT');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:VOIDED');
+
+-- contract_payment_plan
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT_PAYMENT_PLAN:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT_PAYMENT_PLAN:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT_PAYMENT_PLAN:UPDATE');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT_PAYMENT_PLAN:DELETE');
+
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT_PAYMENT_PLAN:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT_PAYMENT_PLAN:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT_PAYMENT_PLAN:UPDATE');
+
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT_PAYMENT_PLAN:READ');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT_PAYMENT_PLAN:ADD');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT_PAYMENT_PLAN:UPDATE');
+
+
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
