@@ -1136,7 +1136,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "sumColumn": "quotationAmount",
+      "sumColumns": ["quotationAmount"],
       "fixedColumn": 1,
       "mobile": true,
       "subFields": [
@@ -1312,13 +1312,14 @@
     {
       "name": "合同报价信息",
       "internalKey": "contractProducts",
-      "type": "SUB_PRODUCT",
+      "type": "SUB_PRICE",
       "showLabel": true,
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
       "mobile": true,
       "fixedColumn": 1,
+      "sumColumns": ["contractProductAmount", "contractProductNumber"],
       "subFields": [
         {
           "name": "选择产品",

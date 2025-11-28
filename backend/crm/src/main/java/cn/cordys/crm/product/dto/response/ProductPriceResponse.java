@@ -4,6 +4,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,5 +45,5 @@ public class ProductPriceResponse {
     private List<BaseModuleFieldValue> moduleFields;
 
 	@Schema(description = "产品子列表")
-	private List<Map<String, Object>> products;
+	private List<Map<String, Object>> products = new ArrayList<>();
 }

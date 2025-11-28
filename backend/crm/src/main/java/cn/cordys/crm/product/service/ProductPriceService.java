@@ -4,8 +4,11 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.exception.GenericException;
@@ -14,9 +17,12 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.product.domain.ProductPrice;
+import cn.cordys.crm.product.domain.ProductPriceField;
+import cn.cordys.crm.product.domain.ProductPriceFieldBlob;
 import cn.cordys.crm.product.dto.request.ProductPriceAddRequest;
 import cn.cordys.crm.product.dto.request.ProductPriceEditRequest;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
@@ -26,19 +32,29 @@ import cn.cordys.crm.product.mapper.ExtProductPriceMapper;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
+import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,10 +72,16 @@ public class ProductPriceService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private BaseMapper<ProductPrice> productPriceMapper;
+	@Resource
+	private BaseMapper<ProductPriceField> productPriceFieldMapper;
+	@Resource
+	private BaseMapper<ProductPriceFieldBlob> productPriceFieldBlobMapper;
     @Resource
     private ProductPriceFieldService productPriceFieldService;
     @Resource
     private ExtProductPriceMapper extProductPriceMapper;
+	@Resource
+	private LogService logService;
 
     /**
      * 价格列表
@@ -199,7 +221,93 @@ public class ProductPriceService {
 		);
 	}
 
-    /**
+	/**
+	 * 导入检查
+	 *
+	 * @param file       导入文件
+	 * @param currentOrg 当前组织
+	 *
+	 * @return 导入检查信息
+	 */
+	public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+		if (file == null) {
+			throw new GenericException(Translator.get("file_cannot_be_null"));
+		}
+		return checkImportExcel(file, currentOrg);
+	}
+
+	/**
+	 * 检查导入的文件
+	 *
+	 * @param file       文件
+	 * @param currentOrg 当前组织
+	 *
+	 * @return 检查信息
+	 */
+	private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+		try {
+			List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+			CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
+			FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
+					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+			CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product_price", "product_price_field", currentOrg,
+					mergeCellEventListener.getMergeCellMap());
+			FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+			return ImportResponse.builder().errorMessages(eventListener.getErrList())
+					.successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+		} catch (Exception e) {
+			LogUtils.error("price import pre-check error: {}", e.getMessage());
+			throw new GenericException(e.getMessage());
+		}
+	}
+
+	/**
+	 * 价格表导入
+	 *
+	 * @param file        导入文件
+	 * @param currentOrg  当前组织
+	 * @param currentUser 当前用户
+	 *
+	 * @return 导入返回信息
+	 */
+	public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+		try {
+			List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+			CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields);
+			FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
+					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+			return ImportResponse.builder().errorMessages(eventListener.getErrList())
+					.successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+		} catch (Exception e) {
+			LogUtils.error("product price import error: ", e.getMessage());
+			throw new GenericException(e.getMessage());
+		}
+	}
+
+	/**
+	 * 价格表导入监听器
+	 * @param currentOrg 当前组织
+	 * @param currentUser 当前用户
+	 * @param fields 自定义字段集合
+	 * @return 导入监听器
+	 */
+	private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields) {
+		CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
+			List<LogDTO> logs = new ArrayList<>();
+			prices.forEach(price -> {
+				price.setPos(getNextOrder(currentOrg));
+				logs.add(new LogDTO(currentOrg, price.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName()));
+			});
+			productPriceMapper.batchInsert(prices);
+			productPriceFieldMapper.batchInsert(priceFields.stream().map(field -> BeanUtils.copyBean(new ProductPriceField(), field)).toList());
+			productPriceFieldBlobMapper.batchInsert(priceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductPriceFieldBlob(), field)).toList());
+			// record logs
+			logService.batchAdd(logs);
+		};
+		return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000);
+	}
+
+	/**
      * 构建列表数据
      *
      * @param listData 列表数据

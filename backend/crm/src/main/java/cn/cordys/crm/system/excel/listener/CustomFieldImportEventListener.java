@@ -1,38 +1,29 @@
 package cn.cordys.crm.system.excel.listener;
 
-import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.*;
-import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
-import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.context.AnalysisContext;
-import cn.idev.excel.event.AnalysisEventListener;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 自定义字段导入处理器
  * @param <T> 业务实体
  * @author song-cc-rock
  */
-public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map<Integer, String>> {
+public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventListener {
 
     /**
      * 主表数据
@@ -42,8 +33,8 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
     /**
      * 自定义字段集合&Blob字段集合
      */
-    private final List<BaseResourceField> fields;
-    private final List<BaseResourceField> blobFields;
+    private final List<BaseResourceSubField> fields;
+    private final List<BaseResourceSubField> blobFields;
     /**
      * 批次限制
      */
@@ -52,89 +43,41 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
      * 业务实体
      */
     private final Class<T> entityClass;
-    /**
-     * 自定义字段表
-     */
-    private final String fieldTable;
-    /**
-     * setter cache
-     */
-    private final Map<String, Method> setterCache = new HashMap<>();
-    /**
-     * 系统参数 {当前组织, 操作人}
-     */
-    private final String currentOrg;
+	/**
+	 * setter cache
+	 */
+	private final Map<String, Method> setterCache = new HashMap<>();
+	/**
+	 * 操作人
+	 */
     private final String operator;
-    private final Map<String, BaseField> fieldMap;
     /**
-     * 校验属性 {必填, 唯一}
+     * 后置处理函数(入库)
      */
-    private final List<String> requires = new ArrayList<>();
-    private final Map<String, BaseField> uniques = new HashMap<>();
-    private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
-    /**
-     * 值缓存(校验Excel字段值唯一)
-     */
-    private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
-    /**
-     * 限制数据长度的字段
-     */
-    private final Map<String, Integer> fieldLenLimit = new HashMap<>();
-    /**
-     * 数据库Mapper(校验数据库值唯一)
-     */
-    private final CommonMapper commonMapper;
-    /**
-     * 后置处理函数
-     */
-    private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
-    private final SerialNumGenerator serialNumGenerator;
-    /**
-     * 校验错误信息
-     */
-    @Getter
-    protected List<ExcelErrData> errList = new ArrayList<>();
-    /**
-     * 初始化集合参数 {表头, 字段, 内置业务字段}
-     */
-    private Map<Integer, String> headMap;
-    private Map<String, BusinessModuleField> businessFieldMap;
+    private final CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer;
     /**
      * 序列化字段及生成器
      */
     private BaseField serialField;
+	private final SerialNumGenerator serialNumGenerator;
     /**
      * 成功条数
      */
     private int successCount;
+	/**
+	 * 子表格ID
+	 */
+	private int subRowId;
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
-                                          String fieldTable, CustomImportAfterDoConsumer<T, BaseResourceField> consumer, int batchSize) {
-        fields.forEach(field -> {
-            if (field.needRequireCheck()) {
-                requires.add(field.getName());
-            }
-            if (field.needRepeatCheck()) {
-                uniques.put(field.getName(), field);
-            }
-            if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
-                    FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
-                    FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
-                fieldLenLimit.put(field.getName(), 255);
-            }
-            if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-                fieldLenLimit.put(field.getName(), 3000);
-            }
-        });
-        this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
+                                          String fieldTable, CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize) {
+		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, null);
         this.entityClass = clazz;
-        this.currentOrg = currentOrg;
         this.operator = operator;
-        this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
-        this.fieldTable = fieldTable;
         this.consumer = consumer;
         this.batchSize = batchSize > 0 ? batchSize : 2000;
+		this.subRowId = 1;
         // 初始化大小,扩容有开销
         this.dataList = new ArrayList<>(batchSize);
         this.fields = new ArrayList<>(batchSize);
@@ -145,32 +88,22 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
 
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-        if (headMap == null) {
-            throw new GenericException(Translator.get("user_import_table_header_missing"));
-        }
-        String errHead = checkIllegalHead(headMap);
-        if (StringUtils.isNotEmpty(errHead)) {
-            throw new GenericException(Translator.getWithArgs("illegal_header", errHead));
-        }
-        this.headMap = headMap;
-        this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
-                collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+		super.invokeHeadMap(headMap, context);
         Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
         anySerial.ifPresent(field -> serialField = field);
-        cacheUniqueSet();
     }
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
+		super.invoke(data, analysisContext);
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-        // build entity by row-data
-        boolean skip = checkAndSkip(rowIndex, data);
-        if (!skip) {
-            buildEntityFromRow(rowIndex, data);
-            if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
-                batchProcessData();
-            }
-        }
+		if (!this.errRows.contains(rowIndex)) {
+			// build entity by row-data
+			buildEntityFromRow(rowIndex, data);
+			if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+				batchProcessData();
+			}
+		}
     }
 
     @Override
@@ -179,26 +112,6 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
             batchProcessData();
         }
         LogUtils.info("线索导入完成, 总行数: {}", successCount);
-    }
-
-
-    /**
-     * 缓存一些比对值
-     */
-    private void cacheUniqueSet() {
-        if (!uniques.isEmpty()) {
-            uniques.values().forEach(field -> {
-                if (businessFieldMap.containsKey(field.getInternalKey())) {
-                    BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
-                    String fieldName = businessModuleField.getBusinessKey();
-                    List<String> valList = commonMapper.getCheckValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldName, currentOrg);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
-                } else {
-                    List<String> valList = commonMapper.getCheckFieldValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldTable, field.getId(), currentOrg);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));
-                }
-            });
-        }
     }
 
     /**
@@ -213,7 +126,7 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
             LogUtils.error("批量插入异常: {}", e.getCause().getMessage());
             throw new GenericException(e.getCause());
         } finally {
-            // 批次插入成功统计
+            // 批次插入成功, 统计&&清理
             successCount += this.dataList.size();
             this.dataList.clear();
             this.fields.clear();
@@ -241,7 +154,7 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
                 if (val == null) {
                     return;
                 }
-                if (businessFieldMap.containsKey(field.getInternalKey())) {
+                if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
                     try {
                         setPropertyValue(entity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
                     } catch (Exception e) {
@@ -249,11 +162,15 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
                         throw new GenericException(e);
                     }
                 } else {
-                    BaseResourceField resourceField = new BaseResourceField();
+					BaseResourceSubField resourceField = new BaseResourceSubField();
                     resourceField.setId(IDGenerator.nextStr());
                     resourceField.setResourceId(rowKey);
                     resourceField.setFieldId(field.getId());
                     resourceField.setFieldValue(val);
+					if (refSubMap.containsKey(field.getName())) {
+						resourceField.setRefSubId(refSubMap.get(field.getName()));
+						resourceField.setRowId(String.valueOf(subRowId));
+					}
                     if (field.isBlob()) {
                         if (val instanceof List<?> valList) {
                             resourceField.setFieldValue(JSON.toJSONString(valList));
@@ -265,7 +182,7 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
                 }
             });
             if (serialField != null) {
-                BaseResourceField serialResource = new BaseResourceField();
+				BaseResourceSubField serialResource = new BaseResourceSubField();
                 serialResource.setId(IDGenerator.nextStr());
                 serialResource.setResourceId(rowKey);
                 serialResource.setFieldId(serialField.getId());
@@ -289,8 +206,8 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
      *
      * @return 值
      */
-    @SuppressWarnings("unchecked")
-    private Object convertValue(String text, BaseField field) {
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private Object convertValue(String text, BaseField field) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -301,58 +218,6 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
             LogUtils.error(String.format("parse field %s error, %s cannot be transfer, error: %s", field.getName(), text, e.getMessage()));
         }
         return null;
-    }
-
-    /**
-     * 校验行数据
-     *
-     * @param rowIndex 行索引
-     * @param rowData  行数据
-     */
-    private boolean checkAndSkip(Integer rowIndex, Map<Integer, String> rowData) {
-        StringBuilder errText = new StringBuilder();
-        headMap.forEach((k, v) -> {
-            if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
-                errText.append(v).append(Translator.get("cannot_be_null")).append(";");
-            }
-            if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), fieldMap.get(v))) {
-                errText.append(v).append(Translator.get("cell.not.unique")).append(";");
-            }
-            if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
-                    rowData.get(k).length() > fieldLenLimit.get(v)) {
-                errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
-            }
-        });
-        if (StringUtils.isNotEmpty(errText)) {
-            ExcelErrData excelErrData = new ExcelErrData(rowIndex,
-                    Translator.getWithArgs("row.error.tip", rowIndex + 1).concat(" " + errText));
-            //错误信息
-            errList.add(excelErrData);
-        }
-        return StringUtils.isNotEmpty(errText);
-    }
-
-    /**
-     * 检查字段值唯一
-     *
-     * @param val   值
-     * @param field 字段
-     *
-     * @return 是否唯一
-     */
-    private boolean checkFieldValUnique(String val, BaseField field) {
-        if (StringUtils.isEmpty(val)) {
-            return true;
-        }
-        // Excel 唯一性校验
-        excelValueCache.putIfAbsent(field.getId(), ConcurrentHashMap.newKeySet());
-        Set<String> valueSet = excelValueCache.get(field.getId());
-        if (!valueSet.add(val)) {
-            return false;
-        }
-        // 数据库唯一性校验
-        Set<String> uniqueCheck = uniqueCheckSet.get(field.getName());
-        return !uniqueCheck.contains(val);
     }
 
     /**
@@ -399,25 +264,5 @@ public class CustomFieldImportEventListener<T> extends AnalysisEventListener<Map
         if (setter != null) {
             setter.invoke(instance, value);
         }
-    }
-
-    /**
-     * 表头是否非法
-     *
-     * @param headMap 表头集合
-     *
-     * @return 是否非法
-     */
-    private String checkIllegalHead(Map<Integer, String> headMap) {
-        Collection<String> values = headMap.values();
-        for (BaseField field : fieldMap.values()) {
-            if (!field.canImport() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-                continue;
-            }
-            if (!values.contains(field.getName())) {
-                return field.getName();
-            }
-        }
-        return null;
     }
 }
