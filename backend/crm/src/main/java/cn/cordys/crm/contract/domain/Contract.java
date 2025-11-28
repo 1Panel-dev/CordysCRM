@@ -35,6 +35,9 @@ public class Contract extends BaseModel {
     @Schema(description = "合同状态")
     private String status;
 
+    @Schema(description = "作废原因")
+    private String voidReason;
+
     @Schema(description = "组织id")
     private String organizationId;
 }

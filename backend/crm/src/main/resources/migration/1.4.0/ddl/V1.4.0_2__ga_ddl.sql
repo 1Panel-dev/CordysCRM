@@ -98,6 +98,7 @@ CREATE TABLE contract
     `archived_status` VARCHAR(50)  NOT NULL COMMENT '归档状态',
     `status`          VARCHAR(50)  NOT NULL COMMENT '合同状态',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `void_reason`     VARCHAR(255) COMMENT '作废原因',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
@@ -222,55 +223,58 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_resource_id ON contract_payment_plan_field_blob (resource_id ASC);
 
 -- 产品价格表
-CREATE TABLE product_price(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '价格表名称' ,
-    `status` VARCHAR(32) NOT NULL   COMMENT '状态' ,
-    `pos` BIGINT NOT NULL   COMMENT '自定义排序' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE product_price
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'ID',
+    `name`            VARCHAR(255) NOT NULL COMMENT '价格表名称',
+    `status`          VARCHAR(32)  NOT NULL COMMENT '状态',
+    `pos`             BIGINT       NOT NULL COMMENT '自定义排序',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '价格'
+) COMMENT = '价格'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_org_id ON product_price(organization_id ASC);
+CREATE INDEX idx_org_id ON product_price (organization_id ASC);
 
-CREATE TABLE product_price_field(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `resource_id` VARCHAR(32) NOT NULL   COMMENT '价格表ID' ,
-    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性ID' ,
-    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
-    `ref_sub_id` VARCHAR(32)    COMMENT '引用子表格ID;关联的子表格字段ID' ,
-    `row_id` VARCHAR(32)    COMMENT '子表格行实例ID;行实例数据ID' ,
+CREATE TABLE product_price_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'ID',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '价格表ID',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性ID',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
+    `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
     PRIMARY KEY (id)
-)  COMMENT = '价格自定义属性'
+) COMMENT = '价格自定义属性'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON product_price_field(resource_id ASC);
-CREATE INDEX idx_ref_sub_id ON product_price_field(ref_sub_id ASC);
+CREATE INDEX idx_resource_id ON product_price_field (resource_id ASC);
+CREATE INDEX idx_ref_sub_id ON product_price_field (ref_sub_id ASC);
 
-CREATE TABLE product_price_field_blob(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `resource_id` VARCHAR(32) NOT NULL   COMMENT '价格id' ,
-    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-    `field_value` TEXT NOT NULL   COMMENT '自定义属性值' ,
-    `ref_sub_id` VARCHAR(32)    COMMENT '引用子表格ID;关联的子表格字段ID' ,
-    `row_id` VARCHAR(32)    COMMENT '子表格行实例ID;行实例数据ID' ,
+CREATE TABLE product_price_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '价格id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
+    `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
+    `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
     PRIMARY KEY (id)
-)  COMMENT = '价格表自定义属性大文本'
+) COMMENT = '价格表自定义属性大文本'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON product_price_field_blob(resource_id ASC);
-CREATE INDEX idx_ref_sub_id ON product_price_field_blob(ref_sub_id ASC);
+CREATE INDEX idx_resource_id ON product_price_field_blob (resource_id ASC);
+CREATE INDEX idx_ref_sub_id ON product_price_field_blob (ref_sub_id ASC);
 
 
 -- set innodb lock wait timeout to default

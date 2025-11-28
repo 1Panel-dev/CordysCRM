@@ -103,15 +103,15 @@ public class ContractController {
     }
 
 
-    @GetMapping("/voided/{id}")
+    @PostMapping("/voided/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_VOIDED)
     @Operation(summary = "作废")
-    public void voided(@PathVariable("id") String id) {
-        contractService.voidContract(id, SessionUtils.getUserId());
+    public void voided(@Validated @RequestBody ContractVoidRequest request) {
+        contractService.voidContract(request, SessionUtils.getUserId());
     }
 
 
-    @GetMapping("/archived")
+    @PostMapping("/archived")
     @RequiresPermissions(PermissionConstants.CONTRACT_ARCHIVE)
     @Operation(summary = "归档/取消归档")
     public void archived(@Validated @RequestBody ContractArchivedRequest request) {

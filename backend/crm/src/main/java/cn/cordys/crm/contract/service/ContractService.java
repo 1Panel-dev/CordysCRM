@@ -8,10 +8,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.common.dto.RolePermissionDTO;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -26,10 +23,7 @@ import cn.cordys.crm.contract.constants.ArchivedStatus;
 import cn.cordys.crm.contract.constants.ContractStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
-import cn.cordys.crm.contract.dto.request.ContractAddRequest;
-import cn.cordys.crm.contract.dto.request.ContractArchivedRequest;
-import cn.cordys.crm.contract.dto.request.ContractPageRequest;
-import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
+import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
@@ -150,7 +144,7 @@ public class ContractService {
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
-		moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
+        moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
@@ -301,15 +295,15 @@ public class ContractService {
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
-		ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
-        List<ContractListResponse> results = buildList(list, customerFormConfig);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        List<ContractListResponse> results = buildList(list, customerFormConfig, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results, customerFormConfig);
 
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ContractListResponse> list, List<ContractListResponse> buildList,
-														ModuleFormConfigDTO formConfig) {
+                                                        ModuleFormConfigDTO formConfig) {
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractListResponse::getModuleFields);
         // 获取选项值对应的 option
@@ -325,7 +319,7 @@ public class ContractService {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
     }
 
-    private List<ContractListResponse> buildList(List<ContractListResponse> list, ModuleFormConfigDTO formConfig) {
+    private List<ContractListResponse> buildList(List<ContractListResponse> list, ModuleFormConfigDTO formConfig, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -339,12 +333,18 @@ public class ContractService {
                 .distinct()
                 .toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(ownerIds);
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         list.forEach(item -> {
             item.setOwnerName(userNameMap.get(item.getOwner()));
+            UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
+            if (userDeptDTO != null) {
+                item.setDepartmentId(userDeptDTO.getDeptId());
+                item.setDepartmentName(userDeptDTO.getDeptName());
+            }
             // 获取自定义字段
             List<BaseModuleFieldValue> contractFields = contractFiledMap.get(item.getId());
-			moduleFormService.processBusinessFieldValues(item, contractFields, formConfig);
+            moduleFormService.processBusinessFieldValues(item, contractFields, formConfig);
         });
         return baseService.setCreateAndUpdateUserName(list);
     }
@@ -353,13 +353,13 @@ public class ContractService {
     /**
      * 作废
      *
-     * @param id
+     * @param request
      * @param userId
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
-    public void voidContract(String id, String userId) {
-        Contract contract = contractMapper.selectByPrimaryKey(id);
+    public void voidContract(ContractVoidRequest request, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
@@ -369,6 +369,7 @@ public class ContractService {
         }
 
         contract.setStatus(ContractStatus.VOID.name());
+        contract.setVoidReason(request.getVoidReason());
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(userId);
         contractMapper.updateById(contract);
