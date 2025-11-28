@@ -347,4 +347,5 @@ export default {
   'common.revokeSuccess': '撤销成功',
   'common.approvedSuccess': '审批通过',
   'common.unApprovedSuccess': '审批不通过',
+  'common.skipped': '跳过',
 };

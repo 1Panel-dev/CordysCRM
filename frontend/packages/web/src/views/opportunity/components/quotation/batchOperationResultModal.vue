@@ -22,9 +22,14 @@
           <span class="mx-1 font-medium text-[var(--error-red)]">{{ props.result.fail }}</span>
           {{ t('crmImportButton.countNumber') }}；
         </span>
+        <span v-if="props.result.skip">
+          {{ t('common.skipped') }}
+          <span class="mx-1 text-[var(--info-blue)]"> {{ props.result?.skip ?? 0 }} </span>
+          {{ t('crmImportButton.countNumber') }}；
+        </span>
       </div>
       <div v-if="props.result.fail" class="text-[var(--text-n4)]">
-        <span>{{ t('opportunity.failureReason') }}：</span> <span>{{ props.result.errorMessage }}</span>
+        <span>{{ t('opportunity.failureReason') }}：</span> <span>{{ t(props.result?.errorMessages ?? '') }}</span>
       </div>
     </div>
     <template #footer>
@@ -85,9 +90,15 @@
 
   const getTipType = computed(() => {
     const { success, fail } = props.result;
-    if (success > 0 && fail > 0) return resultStatusMap.value.partial;
-    if (success > 0) return resultStatusMap.value.success;
-    if (fail > 0) return resultStatusMap.value.error;
+    if (fail && success) {
+      return resultStatusMap.value.partial;
+    }
+    if (!fail) {
+      return resultStatusMap.value.success;
+    }
+    if (!success) {
+      return resultStatusMap.value.error;
+    }
   });
 
   function handleCancel() {

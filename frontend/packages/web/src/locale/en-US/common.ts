@@ -337,4 +337,5 @@ export default {
   'common.revokeSuccess': 'Revoke success',
   'common.approvedSuccess': 'Approval passed',
   'common.unApprovedSuccess': 'Approval not passed',
+  'common.skipped': 'Skipped',
 };

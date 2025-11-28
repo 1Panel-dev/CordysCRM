@@ -176,6 +176,7 @@
     sourceName,
     detail,
     formDetail,
+    moduleFormConfig,
     initFormDetail,
     initFormConfig,
     initFormDescription,
@@ -284,6 +285,7 @@
 
   defineExpose({
     initFormDescription,
+    moduleFormConfig,
   });
 </script>
 

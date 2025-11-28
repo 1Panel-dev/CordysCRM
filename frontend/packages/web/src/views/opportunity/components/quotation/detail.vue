@@ -30,6 +30,7 @@
       </div>
     </template>
     <CrmFormDescription
+      ref="formDescriptionRef"
       :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
       :source-id="sourceId"
       :column="2"
@@ -37,7 +38,7 @@
       label-width="auto"
       value-align="start"
       tooltip-position="top-start"
-      class="p-[8px]"
+      class="p-[16px]"
       @init="handleInit"
     />
   </CrmDrawer>
@@ -54,7 +55,6 @@
   import { CollaborationType } from '@lib/shared/models/customer';
   import { QuotationItem } from '@lib/shared/models/opportunity';
 
-  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -152,14 +152,19 @@
     },
   ];
 
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription> | null>(null);
   async function handleApproval(approval = false) {
     const approvalStatus = approval ? QuotationStatusEnum.APPROVED : QuotationStatusEnum.UNAPPROVED;
+    const { name, opportunityId, moduleFields = [], products = [] } = props.detail || {};
     try {
       await approvalQuotation({
         id: sourceId.value,
-        name: props.detail?.name ?? '',
+        name: name ?? '',
         approvalStatus,
-        opportunityId: props.detail?.opportunityId ?? '',
+        opportunityId: opportunityId ?? '',
+        moduleFormConfigDTO: formDescriptionRef.value?.moduleFormConfig,
+        moduleFields,
+        products,
       });
       Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
       visible.value = false;
@@ -210,7 +215,7 @@
       type: 'error',
       title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(name) }),
       content: t('opportunity.quotation.deleteContentTip'),
-      positiveText: t('common.confirmVoid'),
+      positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {

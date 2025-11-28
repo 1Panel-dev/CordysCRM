@@ -97,7 +97,7 @@ import type {
 import type {
   AddOpportunityStageParams,
   ApproveQuotation,
-  BatchApproveParams,
+  BatchUpdateQuotationStatusParams,
   OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
@@ -423,8 +423,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取报价表单快照配置
-  function getQuotationSnapshotFormConfig() {
-    return CDR.get<FormDesignConfigDetailParams>({ url: GetQuotationSnapshotFormConfigUrl });
+  function getQuotationSnapshotFormConfig(id?:string) {
+    return CDR.get<FormDesignConfigDetailParams>({ url: `${GetQuotationSnapshotFormConfigUrl}/${id}` });
   }
 
   // 删除报价
@@ -447,11 +447,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${RevokeQuotationUrl}/${id}` });
   }
 
-  function batchApprove(data: BatchApproveParams) {
+  function batchApprove(data: BatchUpdateQuotationStatusParams) {
     return CDR.post<BatchOperationResult>({ url: BatchApproveUrl,data});
   }
 
-  function batchVoided(data: (string|number)[]) {
+  function batchVoided(data: BatchUpdateQuotationStatusParams) {
     return CDR.post<BatchOperationResult>({ url: BatchVoidedUrl, data });
   }
 

@@ -29,7 +29,7 @@
         v-model:keyword="keyword"
         :search-placeholder="t('opportunity.quotation.searchPlaceholder')"
         :custom-fields-config-list="customFieldsFilterConfig"
-        :filter-config-list="[]"
+        :filter-config-list="filterConfigList"
         @adv-search="handleAdvSearch"
         @keyword-search="searchByKeyword"
       />
@@ -63,9 +63,29 @@
     :other-save-params="otherSaveParams"
     :link-form-info="linkFormInfo"
     :link-form-key="linkFormKey"
-    @saved="searchData"
+    @saved="() => searchData()"
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="t('common.batchVoid')" />
+
+  <OptOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :detail="activeOpportunity"
+    @refresh="handleRefresh"
+    @open-customer-drawer="handleShowCustomerDrawer"
+  />
+
+  <customerOverviewDrawer
+    v-model:show="showCustomerOverviewDrawer"
+    :source-id="activeSourceCustomerId"
+    :readonly="isCustomerReadonly"
+  />
+  <openSeaOverviewDrawer
+    v-model:show="showCustomerOpenseaOverviewDrawer"
+    :source-id="activeSourceCustomerId"
+    :readonly="isCustomerReadonly"
+    :pool-id="poolId"
+    :hidden-columns="hiddenColumns"
+  />
 </template>
 
 <script setup lang="ts">
@@ -76,7 +96,9 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
+  import { formatNumberValue } from '@lib/shared/method/formCreate';
   import { BatchOperationResult, QuotationItem } from '@lib/shared/models/opportunity';
+  import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -85,15 +107,19 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import { inputNumberDefaultFieldConfig } from '@/components/business/crm-form-create/config';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import OptOverviewDrawer from '../optOverviewDrawer.vue';
   import approvalModal from './approvalModal.vue';
   import batchOperationResultModal from './batchOperationResultModal.vue';
   import detailDrawer from './detail.vue';
   import quotationStatus from './quotationStatus.vue';
+  import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchVoided, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
+  import { batchVoided, deleteQuotation, getOpenSeaOptions, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { quotationStatusOptions } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -126,7 +152,7 @@
   const batchResult = ref<BatchOperationResult>({
     success: 0,
     fail: 0,
-    errorMessage: '',
+    errorMessages: '',
   });
   const batchOperationName = ref(t('common.batchVoid'));
   const formCreateDrawerVisible = ref(false);
@@ -166,10 +192,10 @@
   }
 
   function handleApprovalSuccess(val: BatchOperationResult) {
+    batchResult.value = val;
     if (val.success > 0 || val.fail > 0) {
       resultVisible.value = true;
     }
-    batchResult.value = val;
     handleRefresh();
   }
 
@@ -184,7 +210,11 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          const result = await batchVoided(checkedRowKeys.value);
+          const result = await batchVoided({
+            ids: checkedRowKeys.value,
+            approvalStatus: QuotationStatusEnum.VOIDED,
+          });
+          batchResult.value = result;
           if (result.success > 0 || result.fail > 0) {
             resultVisible.value = true;
           }
@@ -279,7 +309,7 @@
       type: 'error',
       title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(row.name) }),
       content: t('opportunity.quotation.deleteContentTip'),
-      positiveText: t('common.confirmVoid'),
+      positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -363,7 +393,9 @@
 
   function getOperationGroupList(row: QuotationItem) {
     const allGroups = [...groupList, ...moreGroupList];
-    const getGroups = (keys: string[]) => allGroups.filter((e) => keys.includes(e.key));
+    const getGroups = (keys: string[]) => {
+      return keys.map((key) => allGroups.find((e) => e.key === key)).filter(Boolean) as typeof groupList;
+    };
     const commonGroups = ['voided', 'delete'];
 
     switch (row.approvalStatus) {
@@ -381,6 +413,59 @@
         return [];
     }
   }
+  const showOverviewDrawer = ref<boolean>(false);
+  const activeOpportunity = ref();
+  function showOpportunityDrawer(row: QuotationItem) {
+    showOverviewDrawer.value = true;
+    activeOpportunity.value = {
+      id: row.opportunityId,
+      name: row.opportunityName,
+    };
+  }
+  const showCustomerOverviewDrawer = ref(false);
+  const showCustomerOpenseaOverviewDrawer = ref(false);
+  const poolId = ref<string>('');
+  const activeSourceCustomerId = ref<string>('');
+  const isCustomerReadonly = ref(false);
+
+  const openSeaOptions = ref<CluePoolItem[]>([]);
+  function handleOpenCustomerDrawer(
+    params: { customerId: string; inCustomerPool: boolean; poolId: string },
+    readonly = false
+  ) {
+    activeSourceCustomerId.value = params.customerId;
+    if (params.inCustomerPool) {
+      if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+        showCustomerOpenseaOverviewDrawer.value = true;
+        poolId.value = params.poolId;
+      } else {
+        Message.warning(t('opportunity.noOpenSeaPermission'));
+      }
+    } else {
+      showCustomerOverviewDrawer.value = true;
+    }
+    isCustomerReadonly.value = readonly;
+  }
+
+  function handleShowCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    handleOpenCustomerDrawer(params, true);
+  }
+
+  async function initOpenSeaOptions() {
+    if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+      const res = await getOpenSeaOptions();
+      openSeaOptions.value = res;
+    }
+  }
+
+  const hiddenColumns = computed<string[]>(() => {
+    const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
+    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+
+  onBeforeMount(() => {
+    initOpenSeaOptions();
+  });
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
@@ -389,7 +474,7 @@
       ? undefined
       : {
           key: 'operation',
-          width: 200,
+          width: currentLocale.value === 'zh-CN' ? 140 : 200,
           fixed: 'right',
           render: (row: QuotationItem) =>
             getOperationGroupList(row).length
@@ -415,10 +500,27 @@
           );
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
+      opportunityId: (row: QuotationItem) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              showOpportunityDrawer(row);
+            },
+          },
+          { default: () => row.opportunityName, trigger: () => row.opportunityName }
+        );
+      },
       approvalStatus: (row: QuotationItem) =>
         h(quotationStatus, {
           status: row.approvalStatus,
         }),
+      amount: (row: QuotationItem) => {
+        return formatNumberValue(row.amount ?? 0, {
+          ...inputNumberDefaultFieldConfig,
+          showThousandsSeparator: true,
+        });
+      },
     },
     permission: [
       'OPPORTUNITY_QUOTATION:UPDATE',

@@ -651,7 +651,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.SUB_PRICE]: [],
 };
 
-export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
+export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Promise<FormDesignConfigDetailParams>> = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS]: getOptFormConfig,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
@@ -678,7 +678,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOptFormConfig,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationFormConfig,
-  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationSnapshotFormConfig,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: (id) => getQuotationSnapshotFormConfig(id),
   [FormDesignKeyEnum.CONTRACT]: getContractFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
