@@ -25,5 +25,6 @@ public class OpportunityQuotationGetResponse extends OpportunityQuotationListRes
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
 
-
+	@Schema(description = "产品子列表")
+	private List<Map<String, Object>> products;
 }
