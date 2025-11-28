@@ -61,6 +61,15 @@ public class ContractListResponse {
     @Schema(description = "客户公海id")
     private String poolId;
 
+    @Schema(description = "作废原因")
+    private String voidReason;
+
+    @Schema(description = "部门id")
+    private String departmentId;
+
+    @Schema(description = "部门名称")
+    private String departmentName;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 }
