@@ -105,6 +105,12 @@ public class OpportunityQuotationService {
     public OpportunityQuotation add(OpportunityQuotationAddRequest request, String orgId, String userId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
+        if (CollectionUtils.isEmpty(moduleFields)) {
+            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
+        }
+        if (moduleFormConfigDTO == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
+        }
         OpportunityQuotation opportunityQuotation = new OpportunityQuotation();
         opportunityQuotation.setId(IDGenerator.nextStr());
         opportunityQuotation.setOrganizationId(orgId);
@@ -143,7 +149,7 @@ public class OpportunityQuotationService {
      */
     private void setAmount(List<Map<String, Object>> products, OpportunityQuotation opportunityQuotation) {
         BigDecimal totalAmount = products.stream()
-                .map(product -> (BigDecimal) product.get("amount"))
+                .map(product -> new BigDecimal(product.get("amount").toString()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         opportunityQuotation.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
     }
@@ -192,7 +198,7 @@ public class OpportunityQuotationService {
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
-		moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
+        moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
@@ -432,8 +438,8 @@ public class OpportunityQuotationService {
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId);
-		ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
-		List<OpportunityQuotationListResponse> results = buildList(list, moduleFormConfigDTO);
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
+        List<OpportunityQuotationListResponse> results = buildList(list, moduleFormConfigDTO);
         // 处理自定义字段选项
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, OpportunityQuotationListResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFieldValues);
@@ -452,9 +458,9 @@ public class OpportunityQuotationService {
                 listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
         listData.forEach(item -> {
-			List<BaseModuleFieldValue> fieldValues = dataFieldMap.get(item.getId());
-			moduleFormService.processBusinessFieldValues(item, fieldValues, formConfig);
-		});
+            List<BaseModuleFieldValue> fieldValues = dataFieldMap.get(item.getId());
+            moduleFormService.processBusinessFieldValues(item, fieldValues, formConfig);
+        });
         return baseService.setCreateAndUpdateUserName(listData);
     }
 
@@ -470,6 +476,13 @@ public class OpportunityQuotationService {
     public OpportunityQuotation update(OpportunityQuotationEditRequest request, String userId, String orgId) {
         String id = request.getId();
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
+        ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
+        if (CollectionUtils.isEmpty(moduleFields)) {
+            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
+        }
+        if (moduleFormConfigDTO == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
+        }
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (oldOpportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
@@ -496,8 +509,8 @@ public class OpportunityQuotationService {
         delWrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
-        OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, request.getModuleFormConfigDTO());
-        saveSnapshot(opportunityQuotation, request.getModuleFormConfigDTO(), response);
+        OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+        saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
         return opportunityQuotationMapper.selectByPrimaryKey(id);
     }
