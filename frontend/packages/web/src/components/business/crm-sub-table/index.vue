@@ -5,7 +5,7 @@
     :paging="false"
     :pagination="false"
     :scroll-x="scrollXWidth"
-    :summary="props.showSummary ? summary : undefined"
+    :summary="props.sumColumns?.length ? summary : undefined"
     class="crm-sub-table"
   />
   <n-button v-if="!props.readonly" type="primary" text class="mt-[8px]" @click="addLine">
@@ -36,7 +36,7 @@
     parentId: string;
     subFields: FormCreateField[];
     fixedColumn?: number;
-    showSummary?: boolean;
+    sumColumns?: string[];
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
     readonly?: boolean;
@@ -223,13 +223,15 @@
       },
     };
     renderColumns.value.forEach((col) => {
-      summaryRes[col.key || ''] = {
-        value: h(
-          'div',
-          { class: 'flex items-center ml-[4px]' },
-          (pageData as unknown as RowData[]).reduce((prevValue, row) => prevValue + row[col.key as keyof RowData], 0)
-        ),
-      };
+      if (props.sumColumns?.includes(col.key as string)) {
+        summaryRes[col.key || ''] = {
+          value: h(
+            'div',
+            { class: 'flex items-center ml-[4px]' },
+            (pageData as unknown as RowData[]).reduce((prevValue, row) => prevValue + row[col.key as keyof RowData], 0)
+          ),
+        };
+      }
     });
     return summaryRes;
   };

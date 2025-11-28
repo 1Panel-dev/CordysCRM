@@ -13,7 +13,7 @@
       :readonly="false"
       :form-detail="props.formDetail"
       :fixed-column="fieldConfig.fixedColumn"
-      :show-summary="!!fieldConfig.sumColumn?.length"
+      :sum-columns="fieldConfig.sumColumns"
     />
   </n-form-item>
 </template>
