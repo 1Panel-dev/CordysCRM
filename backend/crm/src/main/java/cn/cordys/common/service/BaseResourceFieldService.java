@@ -22,6 +22,7 @@ import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -629,11 +630,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 查询指定资源的模块字段值
-     *
-     * @param resourceIds
-     *
-     * @return
+     * @param resourceIds 资源ID集合
+     * @return 字段集合
      */
+	@SuppressWarnings("unchecked")
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
@@ -707,6 +707,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 			List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
 			Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(
 					f -> f.getBusinessKey() != null ? f.getBusinessKey() : f.getId(), f -> f, (f1, f2) -> f1));
+			Map<String, BaseField> subFieldIdConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 
 			Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
 					.filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
@@ -729,11 +730,17 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 							subFieldValueMap.get(subResource.getRefSubId()).add(new HashMap<>());
 						}
 						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
-						if (rowMap == null) {
-							rowMap = new HashMap<>();
-						}
-
 						rowMap.put(subResource.getFieldId(), objectValue);
+						if (fieldConfig instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
+							// 处理展示列
+							sourceField.getShowFields().forEach(id -> {
+								BaseField showFieldConfig = subFieldIdConfigMap.get(id);
+								if (showFieldConfig == null) {
+									return;
+								}
+								rowMap.put(moduleFormService.idOrBusinessKey(showFieldConfig), null);
+							});
+						}
 						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
 					}
 				});

@@ -982,7 +982,7 @@
       "fixedColumn": 1,
       "subFields": [
         {
-          "name": "产品名称",
+          "name": "选择产品",
           "internalKey": "priceProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
@@ -1141,7 +1141,7 @@
       "mobile": true,
       "subFields": [
         {
-          "name": "产品",
+          "name": "选择产品",
           "internalKey": "quotationProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
@@ -1321,7 +1321,7 @@
       "fixedColumn": 1,
       "subFields": [
         {
-          "name": "产品名称",
+          "name": "选择产品",
           "internalKey": "contractProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",

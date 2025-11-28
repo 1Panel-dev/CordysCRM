@@ -43,5 +43,6 @@ public class ProductPriceResponse {
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 
+	@Schema(description = "产品子列表")
 	private List<Map<String, Object>> products;
 }

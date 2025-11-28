@@ -295,8 +295,8 @@ public class ContractService {
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
-        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
-        List<ContractListResponse> results = buildList(list, customerFormConfig, orgId);
+        List<ContractListResponse> results = buildList(list, orgId);
+		ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results, customerFormConfig);
 
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -319,7 +319,7 @@ public class ContractService {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
     }
 
-    private List<ContractListResponse> buildList(List<ContractListResponse> list, ModuleFormConfigDTO formConfig, String orgId) {
+    private List<ContractListResponse> buildList(List<ContractListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -344,7 +344,7 @@ public class ContractService {
             }
             // 获取自定义字段
             List<BaseModuleFieldValue> contractFields = contractFiledMap.get(item.getId());
-            moduleFormService.processBusinessFieldValues(item, contractFields, formConfig);
+			item.setModuleFields(contractFields);
         });
         return baseService.setCreateAndUpdateUserName(list);
     }

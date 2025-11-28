@@ -438,9 +438,9 @@ public class OpportunityQuotationService {
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId);
-        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
-        List<OpportunityQuotationListResponse> results = buildList(list, moduleFormConfigDTO);
+		List<OpportunityQuotationListResponse> results = buildList(list);
         // 处理自定义字段选项
+		ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, OpportunityQuotationListResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -452,15 +452,12 @@ public class OpportunityQuotationService {
      * @param listData 列表数据
      * @return 列表数据
      */
-    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData, ModuleFormConfigDTO formConfig) {
+    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = opportunityQuotationFieldService.getResourceFieldMap(
                 listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
-        listData.forEach(item -> {
-            List<BaseModuleFieldValue> fieldValues = dataFieldMap.get(item.getId());
-            moduleFormService.processBusinessFieldValues(item, fieldValues, formConfig);
-        });
+        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
         return baseService.setCreateAndUpdateUserName(listData);
     }
 
