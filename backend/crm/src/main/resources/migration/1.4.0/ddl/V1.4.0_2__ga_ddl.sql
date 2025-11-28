@@ -21,6 +21,7 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_opportunity_id ON opportunity_quotation (opportunity_id ASC);
 CREATE INDEX idx_organization_id ON opportunity_quotation (organization_id ASC);
+CREATE INDEX idx_approval_status ON opportunity_quotation (approval_status);
 
 CREATE TABLE opportunity_quotation_field
 (
@@ -40,12 +41,12 @@ CREATE INDEX idx_resource_id ON opportunity_quotation_field (resource_id ASC);
 
 CREATE TABLE opportunity_quotation_field_blob
 (
-    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
-    `resource_id`     VARCHAR(32) NOT NULL COMMENT '报价单id',
-    `field_id`        VARCHAR(32) NOT NULL COMMENT '自定义属性id',
-    `field_value`     TEXT        NOT NULL COMMENT '自定义属性值',
-    `ref_sub_id`   VARCHAR(32) COMMENT '父引用ID;关联的子表格字段ID',
-    `row_id` VARCHAR(32) COMMENT '行实例ID;行实例数据ID',
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '报价单id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
+    `ref_sub_id`  VARCHAR(32) COMMENT '父引用ID;关联的子表格字段ID',
+    `row_id`      VARCHAR(32) COMMENT '行实例ID;行实例数据ID',
     PRIMARY KEY (id)
 ) COMMENT = '商机报价单自定义属性大文本'
 ENGINE = InnoDB
@@ -114,9 +115,9 @@ CREATE INDEX idx_customer_id ON contract (customer_id ASC);
 CREATE INDEX idx_owner ON contract (owner ASC);
 CREATE INDEX idx_number ON contract (number ASC);
 CREATE INDEX idx_organization_id ON contract (organization_id ASC);
-CREATE INDEX idx_review_status ON contract (review_status ASC);
-CREATE INDEX idx_archived_status ON contract (archived_status ASC);
-CREATE INDEX idx_status ON contract (status ASC);
+CREATE INDEX idx_review_status ON contract (review_status);
+CREATE INDEX idx_archived_status ON contract (archived_status);
+CREATE INDEX idx_status ON contract (status);
 
 
 CREATE TABLE contract_field
@@ -241,6 +242,7 @@ CREATE TABLE product_price
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_org_id ON product_price (organization_id ASC);
+CREATE INDEX idx_status ON product_price (status);
 
 CREATE TABLE product_price_field
 (
