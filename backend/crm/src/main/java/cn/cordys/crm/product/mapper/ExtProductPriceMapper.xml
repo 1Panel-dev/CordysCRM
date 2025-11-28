@@ -107,7 +107,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by pp.create_time desc
+                order by pp.pos
             </otherwise>
         </choose>
     </sql>
@@ -180,4 +180,25 @@
         </if>
         order by `pos` desc limit 1;
     </select>
+
+    <update id="batchUpdate">
+        update product_price
+        <set>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'status'">
+                `status` = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'pos'">
+                pos = #{request.fieldvalue},
+            </if>
+            update_time = #{request.updatetime},
+            update_user = #{request.updateuser},
+        </set>
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

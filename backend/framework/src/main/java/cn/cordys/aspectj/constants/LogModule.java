@@ -111,7 +111,7 @@ public class LogModule {
     public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT";
 
 	/**
-	 * 产品价格管理
+	 * 产品价格表
 	 */
 	public static final String PRODUCT_PRICE_MANAGEMENT = "PRODUCT_PRICE_MANAGEMENT";
 

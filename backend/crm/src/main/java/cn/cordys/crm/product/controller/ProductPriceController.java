@@ -12,12 +12,14 @@ import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +81,19 @@ public class ProductPriceController {
         priceService.delete(id);
     }
 
+	@PostMapping("/batch/update")
+	@RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+	@Operation(summary = "批量更新价格表")
+	public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+		priceService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/batch/delete")
+	@RequiresPermissions(PermissionConstants.PRICE_DELETE)
+	@Operation(summary = "批量删除价格表")
+	public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+		priceService.batchDelete(ids, SessionUtils.getUserId());
+	}
 
     @PostMapping("/edit/pos")
     @Operation(summary = "拖拽排序")
