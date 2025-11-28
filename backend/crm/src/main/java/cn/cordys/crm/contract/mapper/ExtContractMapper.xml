@@ -298,4 +298,27 @@
             </otherwise>
         </choose>
     </sql>
+
+    <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractResponse">
+        SELECT
+            ct.id,
+            ct.NAME,
+            ct.customer_id,
+            c.`name` AS customerName,
+            c.in_shared_pool AS inCustomerPool,
+            c.pool_id,
+            ct.amount,
+            ct.archived_status,
+            ct.`status`,
+            ct.`owner`,
+            ct.void_reason,
+            ct.create_user,
+            ct.create_time,
+            ct.update_user,
+            ct.update_time
+        FROM
+            contract ct
+                LEFT JOIN customer c ON ct.customer_id = c.id
+        where ct.id = #{id}
+    </select>
 </mapper>
