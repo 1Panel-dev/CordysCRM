@@ -44,8 +44,8 @@ CREATE TABLE opportunity_quotation_field_blob
     `resource_id`     VARCHAR(32) NOT NULL COMMENT '报价单id',
     `field_id`        VARCHAR(32) NOT NULL COMMENT '自定义属性id',
     `field_value`     TEXT        NOT NULL COMMENT '自定义属性值',
-    `parent_ref_id`   VARCHAR(32) COMMENT '父引用ID;关联的子表格字段ID',
-    `row_instance_id` VARCHAR(32) COMMENT '行实例ID;行实例数据ID',
+    `ref_sub_id`   VARCHAR(32) COMMENT '父引用ID;关联的子表格字段ID',
+    `row_id` VARCHAR(32) COMMENT '行实例ID;行实例数据ID',
     PRIMARY KEY (id)
 ) COMMENT = '商机报价单自定义属性大文本'
 ENGINE = InnoDB
