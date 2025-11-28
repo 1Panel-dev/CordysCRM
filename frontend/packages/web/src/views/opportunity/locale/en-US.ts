@@ -56,7 +56,7 @@ export default {
   'opportunity.quotation.invalidContentTip':
     'After the cancellation, the quotation can not be restored, please operate carefully!',
   'opportunity.quotation.searchPlaceholder': 'Search by quotation name or opportunity name',
-  'opportunity.quotation.batchInvalidTitleTip': 'Confirm invalidating {number} quotation(s)?',
+  'opportunity.quotation.batchInvalidTitleTip': 'Confirm invalidating {number} quotations?',
   'opportunity.quotation.deleteTitleTip': 'Confirm delete the {name} quotation?',
   'opportunity.quotation.deleteContentTip':
     'After deletion, the quotation cannot be restored, please operate carefully!',
@@ -67,7 +67,7 @@ export default {
   'opportunity.partialFailed': 'Partial operation failed',
   'opportunity.allSuccessful': 'All operation successful',
   'opportunity.allError': 'All operation failed',
-  'opportunity.operationResult': 'Result',
+  'opportunity.operationResult': 'Result of {name}',
   'opportunity.quotation.amount': 'Total amount',
   'opportunity.quotation.exportingPdf': 'Quotation PDF exporting...',
   'opportunity.quotation.productInfo': 'Product info',

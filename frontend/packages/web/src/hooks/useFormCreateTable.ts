@@ -686,6 +686,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         key: 'amount',
         sortOrder: false,
         sorter: true,
+        ellipsis: {
+          tooltip: true,
+        },
+        render: props.specialRender?.amount,
       },
     ],
     [FormDesignKeyEnum.CONTRACT]: [
@@ -995,6 +999,25 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 tooltip: true,
               },
               render: (row: any) => row.opportunityName ?? '-',
+            };
+          }
+
+          if (
+            [FormDesignKeyEnum.OPPORTUNITY_QUOTATION].includes(props.formKey) &&
+            field.businessKey === 'opportunityId'
+          ) {
+            return {
+              title: field.name,
+              width: 200,
+              key: field.businessKey,
+              fieldId: field.id,
+              sortOrder: false,
+              sorter,
+              filedType: field.type,
+              ellipsis: {
+                tooltip: true,
+              },
+              render: props.specialRender?.[field.businessKey],
             };
           }
 

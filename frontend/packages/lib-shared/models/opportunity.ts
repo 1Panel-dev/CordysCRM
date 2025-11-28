@@ -135,6 +135,7 @@ export interface QuotationItem {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[]; 
+  products?:any[];
 }
 
 export interface SaveQuotationParams {
@@ -155,9 +156,12 @@ export interface ApproveQuotation {
   name: string;
   opportunityId: string;
   approvalStatus: QuotationStatusEnum;
+  moduleFormConfigDTO?: FormDesignConfigDetailParams;
+  moduleFields: ModuleField[];
+  products: any[];
 }
 
-export interface BatchApproveParams{
+export interface BatchUpdateQuotationStatusParams{
   ids: (string | number)[];
   approvalStatus: QuotationStatusEnum;
 }
@@ -165,7 +169,8 @@ export interface BatchApproveParams{
 export interface BatchOperationResult {
   success: number;
   fail: number;
-  errorMessage?: string;
+  skip?: number;
+  errorMessages?: string;
 }
 
 

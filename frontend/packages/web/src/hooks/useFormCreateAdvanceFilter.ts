@@ -33,7 +33,16 @@ export default function useFormCreateFilter() {
       return {};
     };
     return (res.fields || []).reduce((acc: FilterFormItem[], field: FormCreateField) => {
-      if (![FieldTypeEnum.TEXTAREA, FieldTypeEnum.PICTURE, FieldTypeEnum.DIVIDER].includes(field.type)) {
+      if (
+        ![
+          FieldTypeEnum.TEXTAREA,
+          FieldTypeEnum.PICTURE,
+          FieldTypeEnum.DIVIDER,
+          FieldTypeEnum.FORMULA,
+          FieldTypeEnum.SUB_PRICE,
+          FieldTypeEnum.SUB_PRODUCT,
+        ].includes(field.type)
+      ) {
         acc.push({
           title: field.name,
           dataIndex: field.businessKey ?? field.id,
