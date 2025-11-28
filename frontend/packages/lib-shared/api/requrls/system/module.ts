@@ -52,6 +52,7 @@ export const GetFieldOpportunityListUrl = '/field/source/opportunity'; // 获取
 export const GetFieldCustomerListUrl = '/field/source/account'; // 获取客户列表
 export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
 export const GetFieldClueListUrl = '/field/source/lead'; // 获取线索列表
+export const GetFieldContractListUrl = '/field/source/contract'; // 获取合同列表
 export const CheckRepeatUrl = '/field/check/repeat'; // 查重
 
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片

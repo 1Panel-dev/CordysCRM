@@ -21,6 +21,7 @@ import {
   GetCustomerCapacityPageUrl,
   GetCustomerPoolPageUrl,
   GetFieldClueListUrl,
+  GetFieldContractListUrl,
   GetFieldContactListUrl,
   GetFieldCustomerListUrl,
   GetFieldDeptTreeUrl,
@@ -252,6 +253,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ClueListItem>>({ url: GetFieldClueListUrl, data });
   }
 
+  function getFieldContractList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetFieldContractListUrl, data });
+  }
+
   function getFieldContactList(data: FormDesignDataSourceTableQueryParams) {
     return CDR.post<CommonList<CustomerContractListItem>>({ url: GetFieldContactListUrl, data });
   }
@@ -381,6 +386,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldDeptUerTree,
     getFieldDeptTree,
     getFieldClueList,
+    getFieldContractList,
     getFieldContactList,
     getFieldCustomerList,
     getFieldOpportunityList,

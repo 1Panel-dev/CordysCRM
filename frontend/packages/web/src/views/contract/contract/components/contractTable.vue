@@ -62,7 +62,7 @@
     :source-id="activeSourceId"
     :need-init-detail="needInitDetail"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
-    @saved="searchData"
+    @saved="() => searchData()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -244,7 +244,7 @@
       return [
         {
           key: 'unarchive',
-          label: 'common.unarchive',
+          label: t('common.unarchive'),
           permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
         },
       ];
@@ -315,11 +315,12 @@
 
   async function handleArchive(id: string, status: string) {
     try {
-      await archivedContract(id, status);
-      if (status === ArchiveStatusEnum.UN_ARCHIVED) {
+      const isArchived = status === ArchiveStatusEnum.ARCHIVED;
+      await archivedContract(id, isArchived ? ArchiveStatusEnum.UN_ARCHIVED : ArchiveStatusEnum.ARCHIVED);
+      if (!isArchived) {
         Message.success(t('common.batchArchiveSuccess'));
       } else {
-        Message.success(`${t('common.unArchive')}${t('common.success')}`);
+        Message.success(`${t('common.unarchive')}${t('common.success')}`);
       }
       tableRefreshId.value += 1;
     } catch (error) {

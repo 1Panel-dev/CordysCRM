@@ -973,7 +973,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
-          if (field.businessKey === 'customerId') {
+          if (field.businessKey === 'customerId' || field.businessKey === 'contractId') {
             return {
               title: field.name,
               width: 200,

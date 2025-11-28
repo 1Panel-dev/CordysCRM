@@ -64,6 +64,19 @@
           </CrmTableButton>
         </div>
       </template>
+      <template #[FieldDataSourceTypeEnum.CONTRACT]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmTableButton @click="openContractDetail(formDetail[item.fieldInfo.id])">
+            <template #trigger>
+              {{ item.value }}
+            </template>
+            {{ item.value }}
+          </CrmTableButton>
+        </div>
+      </template>
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
         <div class="field-line flex w-full items-center">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
@@ -163,6 +176,7 @@
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
+    (e: 'openContractDetail', params: { id: string }): void;
   }>();
 
   const { t } = useI18n();
@@ -234,6 +248,12 @@
       customerId: Array.isArray(customerId) ? customerId[0] : customerId,
       inCustomerPool: detail.value.inCustomerPool,
       poolId: detail.value.poolId,
+    });
+  }
+
+  function openContractDetail(id: string | string[]) {
+    emit('openContractDetail', {
+      id: Array.isArray(id) ? id[0] : id,
     });
   }
 

@@ -1,11 +1,11 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false" :title="title">
+  <CrmDrawer v-model:show="visible" resizable no-padding width="800" :footer="false">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <ContractStatus :status="detailInfo.planStatus" />
+        <ContractStatus :status="detailInfo?.planStatus ?? ContractPaymentPlanEnum.PENDING" />
       </div>
     </template>
-    <template #titleRight>
+    <template v-if="!props.readonly" #titleRight>
       <n-button
         v-permission="['PRODUCT_MANAGEMENT:UPDATE']"
         type="primary"
@@ -20,7 +20,7 @@
         type="primary"
         danger
         ghost
-        class="n-btn-outline-primary"
+        class="n-btn-outline-primary ml-[12px]"
         @click="handleDelete(detailInfo)"
       >
         {{ t('common.delete') }}
@@ -38,6 +38,7 @@
             value-align="start"
             tooltip-position="top-start"
             @init="handleInit"
+            @open-contract-detail="emit('openContractDrawer', $event)"
           />
         </div>
       </CrmCard>
@@ -49,7 +50,7 @@
       :source-id="props.sourceId"
       need-init-detail
       :link-form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
-      @saved="handleSaved"
+      @saved="() => handleSaved()"
     />
   </CrmDrawer>
 </template>
@@ -57,9 +58,9 @@
 <script lang="ts" setup>
   import { NButton, useMessage } from 'naive-ui';
 
+  import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -74,9 +75,11 @@
   const props = defineProps<{
     sourceId: string;
     refreshId?: number;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'openContractDrawer', params: { id: string }): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -86,11 +89,9 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
-  const title = ref('');
   const detailInfo = ref();
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
-    title.value = name || '';
     detailInfo.value = detail;
   }
 
@@ -103,7 +104,7 @@
   function handleDelete(row: any) {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      title: t('system.personal.confirmDelete'),
       content: t('common.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),

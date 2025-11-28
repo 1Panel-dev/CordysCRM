@@ -395,6 +395,18 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           fieldInfo: item,
           tooltipPosition: 'top-end',
         });
+      } else if (
+        item.type === FieldTypeEnum.DATA_SOURCE &&
+        item.dataSourceType === FieldDataSourceTypeEnum.CONTRACT &&
+        [FormDesignKeyEnum.CONTRACT_PAYMENT].includes(props.formKey.value)
+      ) {
+        descriptions.value.push({
+          label: item.name,
+          value: name || form[item.businessKey],
+          slotName: FieldDataSourceTypeEnum.CONTRACT,
+          fieldInfo: item,
+          tooltipPosition: 'top-end',
+        });
       } else if (item.type === FieldTypeEnum.DATE_TIME) {
         descriptions.value.push({
           label: item.name,

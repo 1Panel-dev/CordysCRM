@@ -74,6 +74,7 @@
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: 'crmFormDesign.customer',
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
     [FieldDataSourceTypeEnum.PRICE]: 'crmFormCreate.drawer.price',
+    [FieldDataSourceTypeEnum.CONTRACT]: 'crmFormCreate.drawer.contract',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {
