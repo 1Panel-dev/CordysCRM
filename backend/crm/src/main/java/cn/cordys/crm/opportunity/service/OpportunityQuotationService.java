@@ -64,6 +64,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -129,7 +130,7 @@ public class OpportunityQuotationService {
         //计算子产品总金额
         setAmount(request.getProducts(), opportunityQuotation);
         // 设置子表格字段值
-        request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+        moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
 
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, moduleFields, false);
         opportunityQuotationMapper.insert(opportunityQuotation);
@@ -137,8 +138,7 @@ public class OpportunityQuotationService {
 
         // 保存表单配置快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
-        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
-        response.setOpportunityName(opportunity.getName());
+
         saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
         //保存报价单审批表
@@ -187,6 +187,10 @@ public class OpportunityQuotationService {
      * @param response             报价单详情响应类
      */
     private void saveSnapshot(OpportunityQuotation opportunityQuotation, ModuleFormConfigDTO moduleFormConfigDTO, OpportunityQuotationGetResponse response) {
+        //移除response中moduleFields 集合里 的 BaseModuleFieldValue 的 fieldId="products"的数据，避免快照数据过大
+        response.setModuleFields(response.getModuleFields().stream()
+                .filter(field -> !"products".equals(field.getFieldId()))
+                .collect(Collectors.toList()));
         OpportunityQuotationSnapshot snapshot = new OpportunityQuotationSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setQuotationId(opportunityQuotation.getId());
@@ -206,8 +210,11 @@ public class OpportunityQuotationService {
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
         moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
+        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
+        optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
         response.setOptionMap(optionMap);
+        response.setOpportunityName(opportunity.getName());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
         return baseService.setCreateAndUpdateUserName(response);
@@ -498,9 +505,9 @@ public class OpportunityQuotationService {
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
         setAmount(request.getProducts(), opportunityQuotation);
         // 设置子表格字段值
-        request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
+        moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
-        opportunityQuotationMapper.update(opportunityQuotation);
+        opportunityQuotationMapper.updateById(opportunityQuotation);
 
         //更新报价单审批表
         updateQuotationApproval(userId, id, ApprovalState.APPROVING.toString());
@@ -514,8 +521,6 @@ public class OpportunityQuotationService {
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
-        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
-        response.setOpportunityName(opportunity.getName());
         saveSnapshot(opportunityQuotation, moduleFormConfigDTO, response);
 
         return opportunityQuotationMapper.selectByPrimaryKey(id);
@@ -549,7 +554,7 @@ public class OpportunityQuotationService {
         quotationApproval.setApprovalStatus(approvalStatus);
         quotationApproval.setUpdateTime(System.currentTimeMillis());
         quotationApproval.setUpdateUser(userId);
-        approvalBaseMapper.update(quotationApproval);
+        approvalBaseMapper.updateById(quotationApproval);
     }
 
     /**

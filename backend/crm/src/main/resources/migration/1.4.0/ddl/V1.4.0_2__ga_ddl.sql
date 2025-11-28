@@ -6,7 +6,7 @@ CREATE TABLE opportunity_quotation
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
     `name`            VARCHAR(255) NOT NULL COMMENT '名称',
     `opportunity_id`  VARCHAR(32)  NOT NULL COMMENT '商机id',
-    `amount`          DECIMAL      NOT NULL COMMENT '累计金额',
+    `amount`          DECIMAL(14, 2) NOT NULL COMMENT '累计金额',
     `approval_status` VARCHAR(50)  NOT NULL COMMENT '审核状态',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
