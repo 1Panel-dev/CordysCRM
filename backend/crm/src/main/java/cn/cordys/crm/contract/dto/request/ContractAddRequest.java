@@ -23,9 +23,6 @@ public class ContractAddRequest {
     @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 
-    @Schema(description = "金额")
-    private BigDecimal amount;
-
     @Size(max = 32)
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
