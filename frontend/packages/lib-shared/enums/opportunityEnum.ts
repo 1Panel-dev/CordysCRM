@@ -10,7 +10,7 @@ export enum QuotationStatusEnum {
   UNAPPROVED = 'UNAPPROVED', // 未通过
   APPROVING = 'APPROVING', // 提审
   VOIDED = 'VOIDED', // 作废
-  REVOKE = 'REVOKE', // 撤销
+  REVOKED = 'REVOKED', // 撤销
 }
 
 export default {};

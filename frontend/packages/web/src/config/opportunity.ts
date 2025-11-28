@@ -100,7 +100,7 @@ export const quotationStatusOptions = [
     label: t('common.voided'),
   },
   {
-    value: QuotationStatusEnum.REVOKE,
+    value: QuotationStatusEnum.REVOKED,
     label: t('common.revoke'),
   },
 ];

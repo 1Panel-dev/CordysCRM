@@ -39,7 +39,7 @@
       icon: 'iconicon_block_filled',
       color: 'var(--warning-yellow)',
     },
-    [QuotationStatusEnum.REVOKE]: {
+    [QuotationStatusEnum.REVOKED]: {
       label: t('common.revoke'),
       icon: 'iconicon_skip_planarity',
       color: 'var(--text-n4)',

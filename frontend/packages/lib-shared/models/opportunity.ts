@@ -1,6 +1,7 @@
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import type { TableQueryParams } from './common';
 import { ModuleField } from '@lib/shared/models/customer';
+import type {  FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 export interface OpportunityItem {
   id: string; // 商机ID
@@ -141,6 +142,7 @@ export interface SaveQuotationParams {
   opportunityId: string;
   amount: number;
   moduleFields: ModuleField[]; // 自定义字段
+  moduleFormConfigDTO?: FormDesignConfigDetailParams;
 }
 
 export interface UpdateQuotationParams extends SaveQuotationParams {
