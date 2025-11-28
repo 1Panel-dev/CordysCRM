@@ -11,6 +11,7 @@ import cn.cordys.crm.system.dto.field.LocationField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.idev.excel.metadata.Head;
 import cn.idev.excel.metadata.data.WriteCellData;
 import cn.idev.excel.util.BooleanUtils;
@@ -38,6 +39,7 @@ import java.util.Map;
 
 /**
  * 自定义模板处理器
+ * @author song-cc-rock
  */
 public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler, CellWriteHandler {
 
@@ -49,27 +51,44 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     private final int totalColumns;
     private Sheet mainSheet;
     private Drawing<?> drawingPatriarch;
+	/**
+	 * 多级表格需要记录偏移位置
+	 */
+	private final List<Integer> downOffSet = new ArrayList<>();
+	private final List<String> centerCells = new ArrayList<>();
 
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
         for (BaseField field : fields) {
-            fieldIndexMap.put(field, index++);
-            if (field.needRequireCheck()) {
-                requires.add(field.getName());
-            }
-            if (field.needRepeatCheck()) {
-                uniques.add(field.getName());
-            }
-            if (field.multiple()) {
-                multiples.add(field.getName());
-            }
-            if (field instanceof HasOption optionField && CollectionUtils.isNotEmpty(optionField.getOptions())) {
-                // set options for data validation
-                validationOptionMap.put(index, optionField.getOptions().stream().map(OptionProp::getLabel).toList());
-            }
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				for (BaseField f : subField.getSubFields()) {
+					setExtra(f, index++);
+					downOffSet.add(index);
+				}
+				centerCells.add(subField.getName());
+				continue;
+			}
+			setExtra(field, index++);
         }
         totalColumns = index;
     }
+
+	private void setExtra(BaseField field, int index) {
+		fieldIndexMap.put(field, index++);
+		if (field.needRequireCheck()) {
+			requires.add(field.getName());
+		}
+		if (field.needRepeatCheck()) {
+			uniques.add(field.getName());
+		}
+		if (field.multiple()) {
+			multiples.add(field.getName());
+		}
+		if (field instanceof HasOption optionField && CollectionUtils.isNotEmpty(optionField.getOptions())) {
+			// set options for data validation
+			validationOptionMap.put(index, optionField.getOptions().stream().map(OptionProp::getLabel).toList());
+		}
+	}
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
@@ -101,7 +120,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     @Override
     public void afterRowDispose(RowWriteHandlerContext context) {
         Sheet sheet = context.getWriteSheetHolder().getSheet();
-        if (BooleanUtils.isTrue(context.getHead()) && Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
+		int maxHeadRow = context.getWriteSheetHolder().getExcelWriteHeadProperty().getHeadRowNumber();
+        if (BooleanUtils.isTrue(context.getHead()) && context.getRow().getRowNum() == maxHeadRow - 1
+				&& Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
             mainSheet = sheet;
             drawingPatriarch = sheet.createDrawingPatriarch();
             fieldIndexMap.forEach((k, v) -> {
@@ -128,6 +149,10 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             if (multiples.contains(cell.getStringCellValue())) {
                 font.setUnderline(Font.U_SINGLE);
             }
+			if (centerCells.contains(cell.getStringCellValue())) {
+				headStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+				headStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+			}
         }
         font.setFontHeightInPoints((short) 12);
         headStyle.setWriteFont(font);
@@ -141,7 +166,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
         if (index == null) {
             return;
         }
-        Comment comment = drawingPatriarch.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, index, 0, index + 3, 1));
+        Comment comment = drawingPatriarch.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, index, downOffSet.contains(index) ? 1 : 0, index + 3, 1));
         comment.setString(new XSSFRichTextString(text));
         mainSheet.getRow(0).getCell(0).setCellComment(comment);
     }
