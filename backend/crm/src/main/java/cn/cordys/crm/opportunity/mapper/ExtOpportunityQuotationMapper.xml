@@ -16,7 +16,7 @@
 
 
     <select id="list" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse">
-        select oq.id, oq.name, oq.opportunity_id, o.opportunity_name as opportunityName, oq.approval_status, oq.amount,
+        select oq.id, oq.name, oq.opportunity_id, o.name as opportunityName, oq.approval_status, oq.amount,
         oq.organization_id, oq.create_time,
         oq.update_time, oq.create_user, oq.update_user
         from opportunity_quotation oq
@@ -133,7 +133,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by oq.pos
+                order by oq.create_time
             </otherwise>
         </choose>
     </sql>
