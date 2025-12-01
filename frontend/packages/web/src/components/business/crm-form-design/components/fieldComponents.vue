@@ -115,6 +115,7 @@
           FieldTypeEnum.SELECT,
           FieldTypeEnum.SELECT_MULTIPLE,
           FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.FORMULA,
         ].includes(e.data.type)
       : true;
   }

@@ -29,7 +29,7 @@
             :class="[
               activeItem?.id === item.id ? 'crm-form-design--composition-item--subtable--active' : '',
               fieldConfig.fixedColumn && fieldConfig.fixedColumn >= index + 1
-                ? 'crm-form-design--composition-item--subtable--shadow !sticky z-10'
+                ? 'crm-form-design--composition-item--subtable--shadow !sticky z-50'
                 : '',
             ]"
             :style="{

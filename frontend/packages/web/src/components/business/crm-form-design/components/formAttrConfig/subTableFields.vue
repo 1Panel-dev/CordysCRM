@@ -86,6 +86,8 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
+    dataSourceDefaultFieldConfig,
+    formulaDefaultFieldConfig,
     inputDefaultFieldConfig,
     inputNumberDefaultFieldConfig,
     selectDefaultFieldConfig,
@@ -108,6 +110,8 @@
     inputNumberDefaultFieldConfig,
     selectDefaultFieldConfig,
     selectMultipleDefaultFieldConfig,
+    dataSourceDefaultFieldConfig,
+    formulaDefaultFieldConfig,
   ].map((field) => ({
     ...field,
     label: t(field.name),
