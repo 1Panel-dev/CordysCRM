@@ -236,6 +236,7 @@
       name: 'quotation',
       tab: t('opportunity.quotation'),
       enable: true,
+      permission: ['OPPORTUNITY_QUOTATION:READ'],
     },
   ];
 

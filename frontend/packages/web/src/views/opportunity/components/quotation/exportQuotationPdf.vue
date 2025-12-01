@@ -25,6 +25,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
   import exportPDF from '@lib/shared/method/exportPdf';
   import { CollaborationType } from '@lib/shared/models/customer';
 
@@ -47,6 +48,7 @@
     quotationDetail.value = detail;
     formLoading.value = false;
     await nextTick();
+    await sleep(300);
     exportPDF(quotationDetail.value?.name ?? t('opportunity.quotation'), 'quotation-detail', () => {
       loading.value = false;
       Message.success(t('opportunity.quotation.exportPdfSuccess'));
