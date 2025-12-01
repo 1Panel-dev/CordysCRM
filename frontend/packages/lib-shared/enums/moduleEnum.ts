@@ -28,6 +28,9 @@ export enum ModuleConfigEnum {
 
   /** 合同 */
   CONTRACT = 'contract',
+
+  /** 招标 */
+  TENDER = 'tender',
 }
 
 // 添加员工API
