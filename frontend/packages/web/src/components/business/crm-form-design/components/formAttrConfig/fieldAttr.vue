@@ -146,8 +146,8 @@
             {{ t('common.setting') }}
           </n-button>
         </div>
-        <!-- 显示字段 -->
-        <div class="crm-form-design-config-item">
+        <!-- 显示字段 仅支持表格中的数据源字段 -->
+        <div v-if="isSubTableField" class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             <span>{{ t('crmFormDesign.dataSourceDisplayField') }}</span>
             <n-button
@@ -1446,8 +1446,9 @@
   }
 
   const showDataSourceDisplayFieldModal = ref(false);
-  function handleDataSourceDisplayFieldSave(value: any[]) {
+  function handleDataSourceDisplayFieldSave(value: string[], selectedList: any[]) {
     fieldConfig.value.showFields = value;
+    // TODO bai 表格回显
   }
   function handleClearDataSourceDisplayField() {
     fieldConfig.value.showFields = [];

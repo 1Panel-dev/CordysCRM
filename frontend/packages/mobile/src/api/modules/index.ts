@@ -292,6 +292,7 @@ export const {
 } = messageApi;
 
 export const {
+  getFieldDisplayList,
   getModuleNavConfigList,
   getModuleUserDeptTree,
   getModuleRoleTree,

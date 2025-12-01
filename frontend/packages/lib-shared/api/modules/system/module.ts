@@ -56,6 +56,7 @@ import {
   switchOpportunityStatusUrl,
   toggleModuleNavStatusUrl,
   UpdateClueCapacityUrl,
+  GetFieldDisplayListUrl,
   UpdateCluePoolUrl,
   UpdateCustomerCapacityUrl,
   UpdateCustomerPoolUrl,
@@ -66,6 +67,7 @@ import {
   UploadTempFileUrl,
   GetFieldPriceListUrl,
 } from '@lib/shared/api/requrls/system/module';
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
@@ -95,6 +97,7 @@ import type {
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
+import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块列表
@@ -359,7 +362,12 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ClueListItem>>({ url: GetFieldPriceListUrl, data });
   }
 
+  function getFieldDisplayList(formKey: FormDesignKeyEnum) {
+    return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFieldDisplayListUrl}/${formKey}` });
+  }
+
   return {
+    getFieldDisplayList,
     getModuleNavConfigList,
     moduleNavListSort,
     toggleModuleNavStatus,
