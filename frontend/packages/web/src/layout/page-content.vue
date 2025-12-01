@@ -6,7 +6,12 @@
         <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
           <div
             class="page-content"
-            :class="route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) ? '!pt-0' : ''"
+            :class="
+              route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) ||
+              route.name?.toString().includes(TenderRouteEnum.TENDER)
+                ? '!pt-0'
+                : ''
+            "
           >
             <CrmExpireAlert v-if="route.path.includes(SystemRouteEnum.SYSTEM)" />
             <n-breadcrumb v-if="route.meta?.breadcrumbs" class="mb-[8px]">
@@ -41,7 +46,7 @@
   import router from '@/router';
   import { BreadcrumbItem } from '@/router/routes/types';
 
-  import { DashboardRouteEnum, SystemRouteEnum } from '@/enums/routeEnum';
+  import { DashboardRouteEnum, SystemRouteEnum, TenderRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
 
