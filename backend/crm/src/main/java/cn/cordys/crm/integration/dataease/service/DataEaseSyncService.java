@@ -319,6 +319,10 @@ public class DataEaseSyncService {
         enableUsers.stream()
                 .filter(crmUser -> crmUser.getEnable() && !deTempResourceDTO.getDeUserIds().contains(crmUser.getId()))
                 .forEach(crmUser -> {
+                    if (StringUtils.isBlank(crmUser.getEmail())) {
+                        LogUtils.error("同步用户到 DataEase 失败，用户[ {} ]邮箱为空", crmUser.getName());
+                        return;
+                    }
                     List<RoleListResponse> userCrmRoles = getUserCrmRoles(userRoleMap, crmRoleMap, crmUser.getId());
                     UserVariableTempDTO userVariableTempDTO = getUserVariableTempDTO(userCrmRoles, customDeptRoleDeptMap,
                             tree, rolePermissionMap, crmUser);
@@ -341,16 +345,6 @@ public class DataEaseSyncService {
                         LogUtils.error(e);
                     }
                 });
-    }
-
-
-    private List<String> getRoleIds(List<RoleListResponse> userCrmRoles) {
-        if (CollectionUtils.isNotEmpty(userCrmRoles)) {
-            return userCrmRoles.stream()
-                    .map(RoleListResponse::getId)
-                    .toList();
-        }
-        return List.of();
     }
 
     private List<UserCreateRequest.Variable> getCreateVariables(DeTempResourceDTO deTempResourceDTO, UserVariableTempDTO userVariableTempDTO) {
