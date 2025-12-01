@@ -27,6 +27,7 @@
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
   import formula from '@/components/business/crm-form-create/components/advanced/formula.vue';
   import inputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
+  import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
   import { FormCreateField } from '../crm-form-create/types';
@@ -40,6 +41,7 @@
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
     readonly?: boolean;
+    optionMap?: Record<string, any[]>;
   }>();
 
   const { t } = useI18n();
@@ -62,15 +64,48 @@
         if (field.type === FieldTypeEnum.INPUT_NUMBER) {
           return {
             title: field.name,
+            width: 150,
             key,
             fieldId: key,
+            filedType: field.type,
+            fieldConfig: field,
             render: (row: any) => formatNumberValue(row[key], field),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (field.type === FieldTypeEnum.DATA_SOURCE) {
+          return {
+            title: field.name,
+            width: 200,
+            key,
+            fieldId: key,
+            render: (row: any) => props.optionMap?.[key].find((e) => e.id === row[key])?.name || '',
+            filedType: field.type,
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
+          return {
+            title: field.name,
+            width: 150,
+            key,
+            fieldId: key,
+            render: (row: any) =>
+              field.options
+                ?.filter((option) =>
+                  field.type === FieldTypeEnum.SELECT
+                    ? option.value === row[key]
+                    : (row[key] || []).includes(option.value)
+                )
+                .map((option) => option.label)
+                .join(', '),
             filedType: field.type,
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };
         }
         return {
           title: field.name,
+          width: 150,
           key,
           fieldId: key,
           render: (row: any) => row[key],
@@ -137,6 +172,28 @@
           fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(inputNumber, {
+              value: row[key],
+              fieldConfig: field,
+              path: `${props.parentId}[${rowIndex}].${key}`,
+              isSubTableRender: true,
+              needInitDetail: props.needInitDetail,
+              onChange: (val: any) => {
+                row[key] = val;
+              },
+            }),
+          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+        };
+      }
+      if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
+        return {
+          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+            ? () => makeRequiredTitle(field.name)
+            : field.name,
+          width: 200,
+          key,
+          fieldId: key,
+          render: (row: any, rowIndex: number) =>
+            h(select, {
               value: row[key],
               fieldConfig: field,
               path: `${props.parentId}[${rowIndex}].${key}`,
@@ -228,7 +285,18 @@
           value: h(
             'div',
             { class: 'flex items-center ml-[4px]' },
-            (pageData as unknown as RowData[]).reduce((prevValue, row) => prevValue + row[col.key as keyof RowData], 0)
+            {
+              default: () => {
+                const sum = (pageData as unknown as RowData[]).reduce(
+                  (prevValue, row) => prevValue + row[col.key as keyof RowData],
+                  0
+                );
+                if (col.filedType === FieldTypeEnum.INPUT_NUMBER && col.fieldConfig) {
+                  return formatNumberValue(sum, col.fieldConfig);
+                }
+                return sum;
+              },
+            }
           ),
         };
       }

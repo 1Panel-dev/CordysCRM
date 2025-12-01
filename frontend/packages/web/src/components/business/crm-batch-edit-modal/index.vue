@@ -240,6 +240,8 @@
           FieldTypeEnum.LINK,
           FieldTypeEnum.SERIAL_NUMBER,
           FieldTypeEnum.ATTACHMENT,
+          FieldTypeEnum.SUB_PRICE,
+          FieldTypeEnum.SUB_PRODUCT,
         ].includes(e.type);
 
         if (props.formKey === FormDesignKeyEnum.CLUE_POOL || props.formKey === FormDesignKeyEnum.CUSTOMER_OPEN_SEA) {

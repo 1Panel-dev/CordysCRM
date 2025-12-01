@@ -959,7 +959,7 @@
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.sum') }}
           </div>
-          <n-checkbox v-model:checked="showSumColumn" :default-checked="fieldConfig.sumColumns?.length">
+          <n-checkbox v-model:checked="showSumColumn">
             {{ t('crmFormDesign.show') }}
           </n-checkbox>
           <n-select
@@ -971,7 +971,7 @@
                 ?.filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
                 .map((e) => ({
                   label: e.name,
-                  value: e.id,
+                  value: e.businessKey || e.id,
                 }))
             "
           />
@@ -1494,6 +1494,7 @@
     }
   );
 
+  const showSumColumn = ref(false);
   watch(
     () => fieldConfig.value?.id,
     () => {
@@ -1501,10 +1502,9 @@
       currentFieldHasLimitSize.value = !!fieldConfig.value?.limitSize;
       currentFieldLimitSize.value = parseInt(fieldConfig.value?.limitSize || '', 10) || null;
       currentFieldLimitSizeUnit.value = fieldConfig.value?.limitSize?.slice(-2) || 'KB';
+      showSumColumn.value = !!(fieldConfig.value?.sumColumns && fieldConfig.value.sumColumns.length > 0);
     }
   );
-
-  const showSumColumn = ref(false);
 </script>
 
 <style lang="less" scoped>

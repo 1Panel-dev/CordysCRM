@@ -129,6 +129,27 @@
       name: option.label,
       icon: option._icon,
     };
+    if (
+      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+        newField.type
+      ) &&
+      newField.options?.length === 0
+    ) {
+      newField.options = [
+        {
+          label: t('crmFormDesign.option', { i: 1 }),
+          value: getGenerateId(),
+        },
+        {
+          label: t('crmFormDesign.option', { i: 2 }),
+          value: getGenerateId(),
+        },
+        {
+          label: t('crmFormDesign.option', { i: 3 }),
+          value: getGenerateId(),
+        },
+      ];
+    }
     if (!fieldConfig.value.subFields) {
       fieldConfig.value.subFields = [];
     }

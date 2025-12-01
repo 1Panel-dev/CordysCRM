@@ -548,6 +548,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             value: form[item.businessKey || item.id],
             slotName: item.type,
             fieldInfo: item,
+            optionMap: form.optionMap,
           });
         } else {
           makeDescriptionItem(item, form);
