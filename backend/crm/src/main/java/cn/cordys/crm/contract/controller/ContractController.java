@@ -10,7 +10,6 @@ import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
-import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
@@ -127,20 +126,16 @@ public class ContractController {
     }
 
 
-    @PostMapping("/{id}/payment-plan/page")
+    @PostMapping("/contract-payment-plan/page")
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
     @Operation(summary = "合同详情-回款列表")
-    public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(@PathVariable("id") String id,
-                                                                                  @Validated @RequestBody ContractPaymentPlanPageRequest request) {
+    public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(@Validated @RequestBody ContractDetailPaymentPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request);
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        ContractDetailPaymentPlanPageRequest contractPaymentPlanPageRequest = BeanUtils.copyBean(new ContractDetailPaymentPlanPageRequest(), request);
-        contractPaymentPlanPageRequest.setContractId(id);
-        return contractPaymentPlanService.list(contractPaymentPlanPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
-
 
     @GetMapping("/tab")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
