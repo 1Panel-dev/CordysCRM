@@ -95,7 +95,7 @@ public class ProductPriceService {
         List<ProductPriceResponse> list = extProductPriceMapper.list(request, currentOrg);
         List<ProductPriceResponse> results = buildList(list);
         // 处理自定义字段选项
-		ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, ProductPriceResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConfig, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
@@ -124,7 +124,8 @@ public class ProductPriceService {
         productPriceFieldService.saveModuleField(productPrice, currentOrg, currentUser, request.getModuleFields(), false);
         productPriceMapper.insert(productPrice);
         // 处理日志上下文
-        baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), "products", Translator.get("products_info"));
+        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), "products", Translator.get("products_info"), priceFormConfig);
         return productPrice;
     }
 
@@ -151,7 +152,8 @@ public class ProductPriceService {
         updateFields(request.getModuleFields(), productPrice, currentOrg, currentUser);
         productPriceMapper.update(productPrice);
         // 处理日志上下文
-        baseService.handleUpdateLogWithSubTable(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName(), "products", Translator.get("products_info"));
+        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        baseService.handleUpdateLogWithSubTable(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName(), "products", Translator.get("products_info"), priceFormConfig);
         return productPriceMapper.selectByPrimaryKey(request.getId());
     }
 
@@ -168,11 +170,11 @@ public class ProductPriceService {
         }
         ProductPriceGetResponse priceDetail = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
         // 处理自定义字段(包括详情附件)
-		List<BaseModuleFieldValue> fieldValues = productPriceFieldService.getModuleFieldValuesByResourceId(id);
-		ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
-		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConf, fieldValues);
-		priceDetail.setOptionMap(optionMap);
-		moduleFormService.processBusinessFieldValues(priceDetail, fieldValues, priceFormConf);
+        List<BaseModuleFieldValue> fieldValues = productPriceFieldService.getModuleFieldValuesByResourceId(id);
+        ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConf, fieldValues);
+        priceDetail.setOptionMap(optionMap);
+        moduleFormService.processBusinessFieldValues(priceDetail, fieldValues, priceFormConf);
         priceDetail.setAttachmentMap(moduleFormService.getAttachmentMap(priceFormConf, priceDetail.getModuleFields()));
         return baseService.setCreateAndUpdateUserName(priceDetail);
     }
@@ -194,32 +196,34 @@ public class ProductPriceService {
         OperationLogContext.setResourceName(price.getName());
     }
 
-	/**
-	 * 批量更新价格表
-	 * @param request 请求参数
-	 * @param currentUser 当前用户
-	 * @param currentOrg 当前组织
-	 */
-	public void batchUpdate(ResourceBatchEditRequest request, String currentUser, String currentOrg) {
-		BaseField field = productPriceFieldService.getAndCheckField(request.getFieldId(), currentOrg);
-		List<ProductPrice> prices = productPriceMapper.selectByIds(request.getIds());
-		productPriceFieldService.batchUpdate(request, field, prices, ProductPrice.class,
-				LogModule.PRODUCT_PRICE_MANAGEMENT, extProductPriceMapper::batchUpdate, currentUser, currentOrg);
-	}
+    /**
+     * 批量更新价格表
+     *
+     * @param request     请求参数
+     * @param currentUser 当前用户
+     * @param currentOrg  当前组织
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String currentUser, String currentOrg) {
+        BaseField field = productPriceFieldService.getAndCheckField(request.getFieldId(), currentOrg);
+        List<ProductPrice> prices = productPriceMapper.selectByIds(request.getIds());
+        productPriceFieldService.batchUpdate(request, field, prices, ProductPrice.class,
+                LogModule.PRODUCT_PRICE_MANAGEMENT, extProductPriceMapper::batchUpdate, currentUser, currentOrg);
+    }
 
-	/**
-	 * 下载导入的模板
-	 * @param response 响应
-	 */
-	public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
-		new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-				moduleFormService.getCustomImportHeads(FormKey.PRICE.getKey(), currentOrg),
-				Translator.get("product.price.import_tpl.name"),
-				Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-				new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),
-				new CustomHeadColWidthStyleStrategy()
-		);
-	}
+    /**
+     * 下载导入的模板
+     *
+     * @param response 响应
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
+                moduleFormService.getCustomImportHeads(FormKey.PRICE.getKey(), currentOrg),
+                Translator.get("product.price.import_tpl.name"),
+                Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),
+                new CustomHeadColWidthStyleStrategy()
+        );
+    }
 
 	/**
 	 * 导入检查
@@ -318,7 +322,7 @@ public class ProductPriceService {
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
                 listData.stream().map(ProductPriceResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
-		listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
+        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
         return baseService.setCreateAndUpdateUserName(listData);
     }
 

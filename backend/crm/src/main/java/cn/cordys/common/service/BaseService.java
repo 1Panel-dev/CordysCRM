@@ -13,6 +13,9 @@ import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.field.PriceSubField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -264,12 +267,13 @@ public class BaseService {
             T resource,
             List<BaseModuleFieldValue> moduleFields,
             String subTableKey,
-            String subTableKeyName) {
+            String subTableKeyName,
+            ModuleFormConfigDTO moduleFormConfigDTO) {
 
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
 
         if (moduleFields != null) {
-            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, subTableKey);
+            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, subTableKey, moduleFormConfigDTO);
             fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyName);
         }
 
@@ -376,18 +380,19 @@ public class BaseService {
             String id,
             String name,
             String subTableKey,
-            String subTableKeyName) {
+            String subTableKeyName,
+            ModuleFormConfigDTO moduleFormConfigDTO) {
 
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
 
         if (originResourceFields != null) {
-            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, subTableKey);
+            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, subTableKey, moduleFormConfigDTO);
             fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyName);
         }
 
         if (modifiedResourceFields != null) {
-            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, subTableKey);
+            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, subTableKey, moduleFormConfigDTO);
             List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
@@ -444,31 +449,28 @@ public class BaseService {
     /**
      * 字段 ID → 字段名称 映射表
      */
-    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, String subTableKey) {
-        List<String> subFieldIds = new ArrayList<>();
-        String subTableKeyId;
+    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, String subTableKey, ModuleFormConfigDTO moduleFormConfigDTO) {
         List<String> fieldIds = new ArrayList<>(fields.stream()
-                .filter(item -> {
-                    if (Strings.CI.equals(item.getFieldId(), subTableKey)) {
-                        List<Map<String, Object>> subTableList =
-                                JSON.parseArray(JSON.toJSONString(item.getFieldValue()), new TypeReference<>() {
-                                });
-                        for (Map<String, Object> row : subTableList) {
-
-                            subFieldIds.addAll(row.keySet());
-                        }
-                        return false;
-                    }
-                    return true;
-                }).map(BaseModuleFieldValue::getFieldId)
+                .map(BaseModuleFieldValue::getFieldId)
                 .distinct()
                 .toList());
-
-
         List<OptionDTO> fieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", fieldIds);
-
-        return fieldOptions.stream()
+        Map<String, String> nameMap = fieldOptions.stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+        if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
+            for (BaseField field : moduleFormConfigDTO.getFields()) {
+                if (Strings.CI.equals(field.getBusinessKey(), subTableKey)) {
+                    if (field instanceof PriceSubField priceSubField) {
+                        priceSubField.getSubFields().forEach(subField -> {
+                            nameMap.put(StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId(), subField.getName());
+                        });
+                    }
+                }
+
+            }
+        }
+        return nameMap;
     }
 
 

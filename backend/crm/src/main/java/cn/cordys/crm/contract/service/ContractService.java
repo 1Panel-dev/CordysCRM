@@ -122,7 +122,7 @@ public class ContractService {
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
 
-        baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"));
+        baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
         ContractResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
@@ -231,7 +231,7 @@ public class ContractService {
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"));
+            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
 
             //删除快照
             LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
