@@ -166,6 +166,7 @@
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
+        <appender-ref ref="console"/>
     </logger>
 
     <!-- cn.cordys.Application 单独 INFO 输出 -->
@@ -177,7 +178,7 @@
     <logger name="org.eclipse.jetty.ee10.servlet.ServletChannel" level="ERROR"/>
 
     <!-- ===================== Root ===================== -->
-    <root level="${logger.sql.level:INFO}">
+    <root level="INFO">
         <appender-ref ref="console"/>
     </root>
 
