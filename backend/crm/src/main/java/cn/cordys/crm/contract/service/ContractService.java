@@ -374,7 +374,7 @@ public class ContractService {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
     }
 
-    private List<ContractListResponse> buildList(List<ContractListResponse> list, String orgId) {
+    public List<ContractListResponse> buildList(List<ContractListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }

@@ -81,7 +81,50 @@
         </include>
     </select>
 
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractListResponse">
+        SELECT
+        ct.id,
+        ct.NAME,
+        ct.customer_id,
+        c.`name` AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id,
+        ct.amount,
+        ct.archived_status,
+        ct.`status`,
+        ct.`owner`,
+        ct.void_reason,
+        ct.create_user,
+        ct.create_time,
+        ct.update_user,
+        ct.update_time
+        FROM
+        contract ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
 
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where ct.organization_id = #{orgId}
+        and ct.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and o.owner = #{userId}
+        </if>
+    </select>
 
     <!-- common sql start -->
     <sql id="fieldConditionJoin">
