@@ -1,6 +1,7 @@
 package cn.cordys.crm.integration.agent.controller;
 
 
+import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionDTO;
@@ -167,6 +168,6 @@ public class AgentController {
     @Operation(summary = "获取智能体设置")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     public ThirdConfigurationDTO getApplicationConfig() {
-        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId());
+        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), DepartmentConstants.MAXKB.name());
     }
 }
