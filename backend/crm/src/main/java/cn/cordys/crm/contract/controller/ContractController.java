@@ -21,6 +21,7 @@ import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.service.ContractExportService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -72,6 +73,13 @@ public class ContractController {
     @Operation(summary = "更新")
     public Contract update(@Validated @RequestBody ContractUpdateRequest request) {
         return contractService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/status/update")
+    @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
+    @Operation(summary = "更新合同状态")
+    public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        contractService.updateStatus(request, SessionUtils.getUserId());
     }
 
 
