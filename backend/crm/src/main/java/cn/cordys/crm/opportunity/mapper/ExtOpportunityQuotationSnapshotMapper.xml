@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper">
+
+    <update id="update">
+        update opportunity_quotation_snapshot
+        set quotation_id    = #{snapshot.quotationId},
+            quotation_prop  = #{snapshot.quotationProp},
+            quotation_value = #{snapshot.quotationValue}
+        where id = #{snapshot.id}
+
+    </update>
+
+</mapper>

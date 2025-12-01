@@ -95,9 +95,9 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.name != 'name'
-                and ${sort}.name != 'approvalStatus'
+                and ${sort}.name != 'approval_status'
                 and ${sort}.name != 'amount'
-                and ${sort}.name != 'opportunityId'
+                and ${sort}.name != 'opportunity_id'
                 and ${sort}.name != 'create_user'
                 and ${sort}.name != 'create_time'
                 and ${sort}.name != 'update_time'
@@ -119,13 +119,13 @@
                     <when test="${sort}.name == 'name'">
                         oq.`name` ${sortType}, oq.id ASC
                     </when>
-                    <when test="${sort}.name == 'approvalStatus'">
+                    <when test="${sort}.name == 'approval_status'">
                         oq.`approval_status` ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'amount'">
                         oq.`amount` ${sortType}, oq.id ASC
                     </when>
-                    <when test="${sort}.name == 'opportunityId'">
+                    <when test="${sort}.name == 'opportunity_id'">
                         o.`id` ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
