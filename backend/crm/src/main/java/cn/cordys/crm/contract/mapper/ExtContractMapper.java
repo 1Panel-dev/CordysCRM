@@ -15,4 +15,6 @@ public interface ExtContractMapper {
                                     @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     ContractResponse getDetail(@Param("id") String id);
+
+    List<ContractListResponse> getListByIds(@Param("ids") List<String> ids, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 }
