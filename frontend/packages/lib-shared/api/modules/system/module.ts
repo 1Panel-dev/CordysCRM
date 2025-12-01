@@ -64,6 +64,7 @@ import {
   UpdateReasonUrl,
   UploadTempAttachmentUrl,
   UploadTempFileUrl,
+  GetFieldPriceListUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
@@ -354,6 +355,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<Pick<DefaultSearchSetFormModel, 'searchFields'>>({ url: GetModuleMaskSearchConfigUrl });
   }
 
+  function getFieldPriceList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetFieldPriceListUrl, data });
+  }
+
   return {
     getModuleNavConfigList,
     moduleNavListSort,
@@ -413,5 +418,6 @@ export default function useProductApi(CDR: CordysAxios) {
     previewAttachment,
     deleteAttachment,
     downloadAttachment,
+    getFieldPriceList,
   };
 }

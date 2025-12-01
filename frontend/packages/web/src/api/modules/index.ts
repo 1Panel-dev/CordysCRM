@@ -97,6 +97,8 @@ export const {
   deleteProductPrice,
   getProductPriceFormConfig,
   dragSortProductPrice,
+  batchUpdateProductPrice,
+  downloadProductPriceTemplate,
 } = productApi;
 
 export const {
@@ -521,6 +523,7 @@ export const {
   getFieldOpportunityList,
   switchCustomerPoolStatus,
   getModuleSearchMaskConfig,
+  getFieldPriceList,
 } = moduleApi;
 
 export const {

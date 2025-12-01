@@ -79,7 +79,7 @@
             width: 200,
             key,
             fieldId: key,
-            render: (row: any) => props.optionMap?.[key].find((e) => e.id === row[key])?.name || '',
+            render: (row: any) => props.optionMap?.[key]?.find((e) => e.id === row[key])?.name || '',
             filedType: field.type,
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };

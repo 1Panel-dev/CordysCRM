@@ -104,6 +104,7 @@
     getFieldContractList,
     getFieldProductList,
     getUserOptions,
+    getFieldPriceList,
   } from '@/api/modules';
 
   const props = defineProps<{
@@ -160,7 +161,7 @@
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
     [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
-    [FieldDataSourceTypeEnum.PRICE]: () => Promise.resolve({} as any), // TODO:
+    [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
   };
 
   function onConfirm() {

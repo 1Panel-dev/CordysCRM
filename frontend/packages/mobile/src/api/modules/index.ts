@@ -320,6 +320,7 @@ export const {
   previewAttachment,
   downloadAttachment,
   deleteAttachment,
+  getFieldPriceList,
 } = moduleApi;
 
 export const {
