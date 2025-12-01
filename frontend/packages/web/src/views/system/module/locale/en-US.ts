@@ -110,4 +110,5 @@ export default {
   'module.formSettings': 'Form Settings',
   'module.paymentPlan': 'Payment Plan',
   'module.priceTableFormSetting': 'Price Table Form Setting',
+  'module.tender': 'Tender',
 };

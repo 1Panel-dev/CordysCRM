@@ -165,6 +165,11 @@
       key: ModuleConfigEnum.AGENT,
       icon: 'iconicon_bot',
     },
+    {
+      label: t('module.tender'),
+      key: ModuleConfigEnum.TENDER,
+      icon: 'iconicon_target',
+    },
   ]);
 
   const moduleNavList = ref<ModuleNavItem[]>([]);

@@ -94,6 +94,10 @@ const defaultModuleConfig = [
     moduleKey: ModuleConfigEnum.PRODUCT_MANAGEMENT,
     enable: true,
   },
+  {
+    moduleKey: ModuleConfigEnum.TENDER,
+    enable: true,
+  },
 ];
 
 const useAppStore = defineStore('app', {

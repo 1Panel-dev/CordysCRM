@@ -105,4 +105,5 @@ export default {
   'module.formSettings': '表单设置',
   'module.paymentPlan': '回款计划',
   'module.priceTableFormSetting': '价格表表单设置',
+  'module.tender': '标讯',
 };
