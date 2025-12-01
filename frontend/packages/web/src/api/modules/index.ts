@@ -524,6 +524,7 @@ export const {
   switchCustomerPoolStatus,
   getModuleSearchMaskConfig,
   getFieldPriceList,
+  getFieldDisplayList,
 } = moduleApi;
 
 export const {

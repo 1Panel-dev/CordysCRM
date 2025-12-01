@@ -16,13 +16,11 @@
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <!-- TODO lmy permission -->
-        <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" type="primary" @click="handleNewClick">
+        <n-button v-permission="['CONTRACT:ADD']" type="primary" @click="handleNewClick">
           {{ t('contract.new') }}
         </n-button>
-        <!-- TODO lmy permission -->
         <n-button
-          v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          v-permission="['CONTRACT:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -167,7 +165,7 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['CUSTOMER_MANAGEMENT:EXPORT'], // TODO lmy permission
+        permission: ['CONTRACT:EXPORT'],
       },
     ],
   };
@@ -238,14 +236,13 @@
     ...baseFilterConfigList,
   ]);
 
-  // TODO lmy permission
   function getOperationGroupList(row: ContractItem) {
     if (row.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
       return [
         {
           key: 'unarchive',
           label: t('common.unarchive'),
-          permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+          permission: ['CONTRACT:ARCHIVE'],
         },
       ];
     }
@@ -256,22 +253,22 @@
       {
         label: t('common.edit'),
         key: 'edit',
-        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+        permission: ['CONTRACT:UPDATE'],
       },
       {
         key: 'archive',
         label: t('common.archive'),
-        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+        permission: ['CONTRACT:ARCHIVE'],
       },
       {
         key: 'voided',
         label: t('common.voided'),
-        permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
+        permission: ['CONTRACT:VOIDED'],
       },
       {
         label: t('common.delete'),
         key: 'delete',
-        permission: ['CLUE_MANAGEMENT:DELETE'],
+        permission: ['CONTRACT:DELETE'],
       },
     ];
   }
@@ -407,7 +404,7 @@
           status: row.status as ContractStatusEnum,
         }),
     },
-    permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'], // TODO lmy permission
+    permission: ['CONTRACT:ARCHIVE', 'CONTRACT:UPDATE', 'CONTRACT:VOIDED', 'CONTRACT:DELETE'],
     containerClass: '.crm-contract-table',
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
