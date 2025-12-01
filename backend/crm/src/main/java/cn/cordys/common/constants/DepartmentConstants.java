@@ -32,5 +32,9 @@ public enum DepartmentConstants {
     /**
      * maxKB
      */
-    MAXKB
+    MAXKB,
+    /**
+     * tender
+     */
+    TENDER
 }

@@ -18,6 +18,7 @@ import cn.cordys.crm.integration.lark.dto.LarkBaseParamDTO;
 import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkToken;
 import cn.cordys.crm.integration.lark.dto.LarkTokenParamDTO;
+import cn.cordys.crm.integration.tender.constant.TenderApiPaths;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComSendDTO;
 import cn.cordys.crm.integration.wecom.dto.WeComToken;
@@ -328,5 +329,22 @@ public class TokenService {
         );
         MaxKBResponseEntity entity = JSON.parseObject(body, MaxKBResponseEntity.class);
         return entity != null && entity.getCode() == 200;
+    }
+
+
+    public Boolean getTender() {
+        try {
+            URL url = URI.create(TenderApiPaths.TENDER_API).toURL();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
+            connection.connect();
+            return true;
+        } catch (Exception e) {
+            LogUtils.error(e);
+            return false;
+        }
+
     }
 }
