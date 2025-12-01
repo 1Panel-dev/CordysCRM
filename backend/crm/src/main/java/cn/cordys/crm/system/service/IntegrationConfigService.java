@@ -27,6 +27,8 @@ import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdSwitchLogDTO;
+import cn.cordys.crm.integration.tender.constant.TenderApiPaths;
+import cn.cordys.crm.integration.tender.dto.TenderDetailDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -98,6 +100,8 @@ public class IntegrationConfigService {
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.DINGTALK.name()));
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name()));
 
+        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.TENDER.name()));
+
         // 添加数据看板配置
         ThirdConfigurationDTO deEmbeddedConfig = getThirdConfigurationDTOByType(
                 organizationConfigDetails, ThirdConstants.ThirdDetailType.DE_BOARD.toString());
@@ -125,7 +129,6 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
-     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
@@ -152,6 +155,8 @@ public class IntegrationConfigService {
                 enableDTO.setChatEnable(isEnabled);
             } else if (detailType.contains("MAXKB")) {
                 enableDTO.setMkEnable(isEnabled);
+            } else if (detailType.contains("TENDER")) {
+                enableDTO.setTenderEnable(isEnabled);
             }
         }
 
@@ -172,6 +177,7 @@ public class IntegrationConfigService {
         configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setMkEnable(thirdEnableDTO.isMkEnable());
+        configDTO.setTenderEnable(thirdEnableDTO.isTenderEnable());
 
         return configDTO;
     }
@@ -317,6 +323,12 @@ public class IntegrationConfigService {
             mkConfig.setVerify(configDTO.getVerify());
             jsonContent = JSON.toJSONString(mkConfig);
             verify = mkConfig.getVerify();
+        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
+            TenderDetailDTO tenderConfig = new TenderDetailDTO();
+            tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
+            tenderConfig.setVerify(configDTO.getVerify());
+            jsonContent = JSON.toJSONString(tenderConfig);
+            verify = tenderConfig.getVerify();
         } else {
             return;
         }
@@ -500,6 +512,19 @@ public class IntegrationConfigService {
             oldConfig.setMkEnable(detail.getEnable());
             jsonContent = JSON.toJSONString(mkConfig);
             openEnable = enable;
+        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
+            TenderDetailDTO tenderConfig = new TenderDetailDTO();
+            tenderConfig.setVerify(configDTO.getVerify());
+            tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
+            if (Boolean.TRUE.equals(configDTO.getTenderEnable())) {
+                verifyTender(token, tenderConfig);
+                configDTO.setVerify(tenderConfig.getVerify());
+            } else {
+                tenderConfig.setVerify(configDTO.getVerify());
+            }
+            oldConfig.setTenderEnable(detail.getEnable());
+            jsonContent = JSON.toJSONString(tenderConfig);
+            openEnable = enable;
         } else {
             return;
         }
@@ -576,6 +601,10 @@ public class IntegrationConfigService {
         mkConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
+    private void verifyTender(String token, TenderDetailDTO tenderConfig) {
+        tenderConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
+    }
+
     /**
      * 根据配置类型获取详情类型列表
      */
@@ -640,6 +669,8 @@ public class IntegrationConfigService {
             map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), configDTO.getSqlBotBoardEnable());
         } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
             map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), configDTO.getMkEnable());
+        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
+            map.put(ThirdConstants.ThirdDetailType.TENDER.toString(), configDTO.getTenderEnable());
         }
 
         return map;
@@ -664,6 +695,8 @@ public class IntegrationConfigService {
             return tokenService.getSqlBotSrc(configDTO.getAppSecret()) ? "true" : null;
         } else if (DepartmentConstants.MAXKB.name().equals(type)) {
             return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret()) ? "true" : null;
+        } else if (DepartmentConstants.TENDER.name().equals(type)) {
+            return tokenService.getTender() ? "true" : null;
         }
 
         return null;

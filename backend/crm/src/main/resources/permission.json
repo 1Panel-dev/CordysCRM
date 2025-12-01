@@ -479,6 +479,23 @@
     ]
   },
   {
+    "id": "TENDER_MANAGEMENT",
+    "name": "permission.tender_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "TENDER",
+        "name": "permission.tender.name",
+        "permissions": [
+          {
+            "id": "TENDER:READ",
+            "license": false
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "CONTRACT_MANAGEMENT",
     "name": "permission.contract_management.name",
     "license": false,

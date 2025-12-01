@@ -194,5 +194,11 @@ public class PermissionConstants {
     public static final String CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_PAYMENT_PLAN:UPDATE";
     public static final String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN:DELETE";
     /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
+
+
+
+    /*------ start: TENDER ------*/
+    public static final String TENDER_READ = "TENDER:READ";
+    /*------ end: TENDER ------*/
 }
 

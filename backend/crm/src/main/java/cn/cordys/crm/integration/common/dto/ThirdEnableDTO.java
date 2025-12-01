@@ -8,4 +8,5 @@ public class ThirdEnableDTO {
     private boolean boardEnable;
     private boolean chatEnable;
     private boolean mkEnable;
+    private boolean tenderEnable;
 }
