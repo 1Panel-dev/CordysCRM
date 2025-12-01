@@ -9,6 +9,7 @@ import cn.cordys.crm.customer.service.RoleLogService;
 import cn.cordys.crm.follow.service.FollowUpPlanLogService;
 import cn.cordys.crm.follow.service.FollowUpRecordLogService;
 import cn.cordys.crm.opportunity.service.OpportunityLogService;
+import cn.cordys.crm.opportunity.service.OpportunityQuotationalLogService;
 import cn.cordys.crm.product.service.ProductLogService;
 
 import java.util.HashMap;
@@ -22,7 +23,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.CUSTOMER_POOL, CommonBeanFactory.getBean(CustomerLogService.class));
         logServiceMap.put(LogModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(CustomerContactLogService.class));
         logServiceMap.put(LogModule.OPPORTUNITY_INDEX, CommonBeanFactory.getBean(OpportunityLogService.class));
-        logServiceMap.put(LogModule.OPPORTUNITY_QUOTATION, CommonBeanFactory.getBean(OpportunityLogService.class));
+        logServiceMap.put(LogModule.OPPORTUNITY_QUOTATION, CommonBeanFactory.getBean(OpportunityQuotationalLogService.class));
         logServiceMap.put(LogModule.SYSTEM_ORGANIZATION, CommonBeanFactory.getBean(OrganizationLogService.class));
         logServiceMap.put(LogModule.PRODUCT_MANAGEMENT, CommonBeanFactory.getBean(ProductLogService.class));
         logServiceMap.put(LogModule.CLUE_INDEX, CommonBeanFactory.getBean(ClueLogService.class));

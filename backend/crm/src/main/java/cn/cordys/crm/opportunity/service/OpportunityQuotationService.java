@@ -141,9 +141,9 @@ public class OpportunityQuotationService {
         // 保存表单配置快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
 
-        baseService.handleAddLogWithSubTable(opportunityQuotation, response.getModuleFields(), "products", Translator.get("products_info"));
+        baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
-        saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response, request.getModuleFields(), request.getProducts());
+        saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response, request.getProducts());
 
         //保存报价单审批表
         addQuotationApproval(userId, opportunityQuotation.getId());
@@ -190,9 +190,9 @@ public class OpportunityQuotationService {
      * @param moduleFormConfigDTO  报价单表单配置
      * @param response             报价单详情响应类
      */
-    private void saveSnapshot(OpportunityQuotation opportunityQuotation, ModuleFormConfigDTO moduleFormConfigDTO, OpportunityQuotationGetResponse response, List<BaseModuleFieldValue> moduleFields, List<Map<String, Object>> products) {
+    private void saveSnapshot(OpportunityQuotation opportunityQuotation, ModuleFormConfigDTO moduleFormConfigDTO, OpportunityQuotationGetResponse response, List<Map<String, Object>> products) {
         response.setModuleFields(response.getModuleFields().stream()
-                .filter(field -> !"products".equals(field.getFieldId())).toList());
+                .filter(field -> (!"products".equals(field.getFieldId()) && field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
         response.setProducts(products);
         OpportunityQuotationSnapshot snapshot = new OpportunityQuotationSnapshot();
         snapshot.setId(IDGenerator.nextStr());
@@ -507,7 +507,7 @@ public class OpportunityQuotationService {
         if (oldOpportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-        List<BaseModuleFieldValue> originFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
+        List<BaseModuleFieldValue> originFields = new ArrayList<>();
         OpportunityQuotation opportunityQuotation = BeanUtils.copyBean(new OpportunityQuotation(), request);
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateUser(userId);
@@ -524,12 +524,22 @@ public class OpportunityQuotationService {
         //删除快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+        List<OpportunityQuotationSnapshot> opportunityQuotationSnapshots = snapshotBaseMapper.selectListByLambda(delWrapper);
+        if (CollectionUtils.isNotEmpty(opportunityQuotationSnapshots)) {
+            OpportunityQuotationSnapshot first = opportunityQuotationSnapshots.getFirst();
+            if (first != null) {
+                OpportunityQuotationGetResponse response = JSON.parseObject(first.getQuotationValue(), OpportunityQuotationGetResponse.class);
+                List<BaseModuleFieldValue> moduleFields1 = response.getModuleFields();
+                moduleFields1.add(new BaseModuleFieldValue("products", response.getProducts()));
+                originFields.addAll(moduleFields1);
+            }
+        }
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
-        saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response, request.getModuleFields(), request.getProducts());
+        saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response, request.getProducts());
         // 处理日志上下文
-        baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, response.getModuleFields(), id, opportunityQuotation.getName(), "products", Translator.get("products_info"));
+        baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
         return opportunityQuotationMapper.selectByPrimaryKey(id);
     }
 
