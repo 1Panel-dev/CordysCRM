@@ -72,6 +72,37 @@
         </include>
     </select>
 
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
+        select cpp.id, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
+            cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
+            c.name as contract_name
+        from contract_payment_plan cpp
+        join contract c on c.id = cpp.contract_id
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cpp.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sou.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where cpp.organization_id = #{orgId}
+        and cpp.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cpp.owner = #{userId}
+        </if>
+    </select>
+
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">

@@ -1,17 +1,21 @@
 package cn.cordys.common.service;
 
+import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.context.CustomFunction;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
-import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.*;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.service.ExportTaskService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.file.engine.DefaultRepositoryDir;
@@ -22,12 +26,11 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,8 @@ public abstract class BaseExportService {
     public static final int EXPORT_MAX_COUNT = 2000;
     @Resource
     private LogService logService;
+    @Resource
+    private ExportTaskService exportTaskService;
 
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
@@ -121,7 +126,7 @@ public abstract class BaseExportService {
      * @param dataList
      * @param fieldConfigMap
      */
-    public void transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+    public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
         headList.forEach(head -> {
             if (systemFiledMap.containsKey(head.getKey())) {
                 //固定字段
@@ -138,6 +143,7 @@ public abstract class BaseExportService {
             }
 
         });
+        return dataList;
     }
 
 
@@ -183,5 +189,139 @@ public abstract class BaseExportService {
         if (fileName.contains("/")) {
             throw new GenericException(Translator.get("file_name_illegal"));
         }
+    }
+
+    public String export(ExportDTO exportDTO) {
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        String exportType = exportDTO.getExportType();
+        String fileName = exportDTO.getFileName();
+        checkFileName(exportDTO.getFileName());
+        //用户导出数量 限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportType, fileName);
+        Thread.startVirtualThread(() -> {
+            try {
+                this.exportCustomerData(exportTask, exportDTO);
+            } catch (InterruptedException e) {
+                LogUtils.error("任务停止中断", e);
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
+            } catch (Exception e) {
+                //更新任务
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
+            } finally {
+                //从注册中心移除
+                ExportThreadRegistry.remove(exportTask.getId());
+                //日志
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, exportDTO.getLogModule(), fileName);
+            }
+        });
+        return exportTask.getId();
+    }
+
+    public void exportCustomerData(ExportTask exportTask, ExportDTO exportDTO) throws Exception {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        //分批查询数据并写入文件
+        batchHandleData(exportTask.getFileId(),
+                headList,
+                exportTask,
+                exportDTO.getFileName(),
+                exportDTO.getPageRequest(),
+                t -> getExportData(exportTask.getId(), exportDTO));
+        //更新状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
+    /**
+     * 构建全部导出数据
+     * @return 导出数据列表
+     * @throws InterruptedException
+     */
+    protected List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {return null;}
+
+    /**
+     * 构建选择的导出数据
+     *
+     * @return 导出数据列表
+     * @throws InterruptedException
+     */
+    protected List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {return null;}
+
+    /**
+     * 导出选择数据
+     *
+     * @return 导出任务ID
+     */
+    public String exportSelect(ExportDTO exportDTO) {
+        String fileName = exportDTO.getFileName();
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        checkFileName(fileName);
+        // 用户导出数量限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportDTO.getExportType(), fileName);
+        Thread.startVirtualThread(() -> {
+            try {
+                this.exportSelectData(exportTask, exportDTO);
+            } catch (Exception e) {
+                LogUtils.error("导出回款计划异常", e);
+                //更新任务
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
+            } finally {
+                //从注册中心移除
+                ExportThreadRegistry.remove(exportTask.getId());
+                //日志
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, exportDTO.getLogModule(), fileName);
+            }
+        });
+        return exportTask.getId();
+    }
+
+    public void exportSelectData(ExportTask exportTask, ExportDTO exportDTO) {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        // 准备导出文件
+        File file = prepareExportFile(exportTask.getFileId(), exportDTO.getFileName(), exportTask.getOrganizationId());
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            SubListUtils.dealForSubList(exportDTO.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
+                List<List<Object>> data = null;
+                try {
+                    data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
+                } catch (InterruptedException e) {
+                    LogUtils.error("任务停止中断", e);
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), exportDTO.getUserId());
+                }
+                writer.write(data, sheet);
+            });
+        }
+
+        //更新导出任务状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
+    protected Map<String, Object> getFieldIdValueMap(List<BaseModuleFieldValue> fieldValues) {
+        AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
+        Optional.ofNullable(fieldValues).ifPresent(moduleFields -> {
+            moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)));
+        });
+        return moduleFieldMap.get();
     }
 }

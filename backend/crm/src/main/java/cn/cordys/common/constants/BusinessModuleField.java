@@ -230,11 +230,11 @@ public enum BusinessModuleField {
 	/**
 	 * 计划回款金额
 	 */
-	CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "plan_amount", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
 	/**
 	 * 计划回款时间
 	 */
-	CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "plan_end_time", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
 	/*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 
