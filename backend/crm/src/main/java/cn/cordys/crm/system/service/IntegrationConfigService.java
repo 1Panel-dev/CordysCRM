@@ -35,6 +35,7 @@ import cn.cordys.crm.system.domain.OrganizationConfigDetail;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -74,22 +75,8 @@ public class IntegrationConfigService {
      * 获取同步的组织配置
      */
     public List<ThirdConfigurationDTO> getThirdConfig(String organizationId) {
-        // 检查当前类型是否有过配置
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
-                organizationId, OrganizationConfigConstants.ConfigType.THIRD.name()
-        );
+        List<OrganizationConfigDetail> organizationConfigDetails = initConfig(organizationId, SessionUtils.getUserId());
 
-        if (organizationConfig == null) {
-            return new ArrayList<>();
-        }
-
-        // 检查当前类型下是否还有数据
-        List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper
-                .getOrganizationConfigDetails(organizationConfig.getId(), null);
-
-        if (CollectionUtils.isEmpty(organizationConfigDetails)) {
-            return new ArrayList<>();
-        }
 
         // 构建第三方配置列表
         List<ThirdConfigurationDTO> configDTOs = new ArrayList<>();
@@ -113,6 +100,37 @@ public class IntegrationConfigService {
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.SQLBOT.name()));
 
         return configDTOs;
+    }
+
+    private List<OrganizationConfigDetail> initConfig(String organizationId, String userId) {
+        // 获取或创建组织配置
+        OrganizationConfig organizationConfig = getOrCreateOrganizationConfig(organizationId, userId);
+
+
+        // 检查当前类型下是否还有数据
+        List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetails(organizationConfig.getId(), null);
+
+        OrganizationConfigDetail tenderConfig = organizationConfigDetails.stream().filter(detail -> Strings.CI.contains(detail.getType(), DepartmentConstants.TENDER.name()))
+                .findFirst().orElse(null);
+        if (tenderConfig == null) {
+            initTender(userId, organizationConfig);
+        }
+
+        organizationConfigDetails = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetails(organizationConfig.getId(), null);
+        return organizationConfigDetails;
+    }
+
+    private void initTender(String userId, OrganizationConfig organizationConfig) {
+        TenderDetailDTO tenderConfig = new TenderDetailDTO();
+        tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
+        tenderConfig.setVerify(true);
+        OrganizationConfigDetail detail = createConfigDetail(userId, organizationConfig, JSON.toJSONString(tenderConfig));
+        detail.setType(DepartmentConstants.TENDER.name());
+        detail.setEnable(true);
+        detail.setName(Translator.get("third.setting"));
+        organizationConfigDetailBaseMapper.insert(detail);
     }
 
     /**
@@ -1049,24 +1067,9 @@ public class IntegrationConfigService {
         return extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
 
-    public ThirdConfigurationDTO getApplicationConfig(String organizationId) {
-        // 检查当前类型是否有过配置
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
-                organizationId, OrganizationConfigConstants.ConfigType.THIRD.name()
-        );
-
-        if (organizationConfig == null) {
-            return null;
-        }
-        // 检查当前类型下是否还有数据
-        List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper
-                .getOrganizationConfigDetails(organizationConfig.getId(), null);
-
-        if (CollectionUtils.isEmpty(organizationConfigDetails)) {
-            return null;
-        }
-
-        return getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name());
+    public ThirdConfigurationDTO getApplicationConfig(String organizationId, String userId, String type) {
+        List<OrganizationConfigDetail> organizationConfigDetails = initConfig(organizationId, userId);
+        return getThirdConfigurationDTOByType(organizationConfigDetails, type);
 
     }
 }
