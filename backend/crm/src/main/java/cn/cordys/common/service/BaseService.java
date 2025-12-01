@@ -61,7 +61,6 @@ public class BaseService {
      *
      * @param object
      * @param <T>
-     *
      * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
@@ -73,7 +72,6 @@ public class BaseService {
      *
      * @param list
      * @param <T>
-     *
      * @return
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
@@ -116,7 +114,6 @@ public class BaseService {
      *
      * @param object
      * @param <T>
-     *
      * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
@@ -128,7 +125,6 @@ public class BaseService {
      *
      * @param list
      * @param <T>
-     *
      * @return
      */
     public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
@@ -177,7 +173,6 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
-     *
      * @return
      */
     public Map<String, String> getUserNameMap(List<String> userIds) {
@@ -204,7 +199,6 @@ public class BaseService {
      * 根据用户ID列表，获取用户ID和名称的映射
      *
      * @param userIds
-     *
      * @return
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
@@ -234,7 +228,6 @@ public class BaseService {
      * 获取联系人ID和名称的映射
      *
      * @param contactIds
-     *
      * @return
      */
     public Map<String, String> getContactMap(List<String> contactIds) {
@@ -276,7 +269,7 @@ public class BaseService {
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
 
         if (moduleFields != null) {
-            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields);
+            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, subTableKey);
             fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyName);
         }
 
@@ -389,12 +382,12 @@ public class BaseService {
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
 
         if (originResourceFields != null) {
-            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields);
+            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, subTableKey);
             fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyName);
         }
 
         if (modifiedResourceFields != null) {
-            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields);
+            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, subTableKey);
             List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
@@ -451,11 +444,26 @@ public class BaseService {
     /**
      * 字段 ID → 字段名称 映射表
      */
-    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields) {
-        List<String> fieldIds = fields.stream()
-                .map(BaseModuleFieldValue::getFieldId)
+    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, String subTableKey) {
+        List<String> subFieldIds = new ArrayList<>();
+        String subTableKeyId;
+        List<String> fieldIds = new ArrayList<>(fields.stream()
+                .filter(item -> {
+                    if (Strings.CI.equals(item.getFieldId(), subTableKey)) {
+                        List<Map<String, Object>> subTableList =
+                                JSON.parseArray(JSON.toJSONString(item.getFieldValue()), new TypeReference<>() {
+                                });
+                        for (Map<String, Object> row : subTableList) {
+
+                            subFieldIds.addAll(row.keySet());
+                        }
+                        return false;
+                    }
+                    return true;
+                }).map(BaseModuleFieldValue::getFieldId)
                 .distinct()
-                .toList();
+                .toList());
+
 
         List<OptionDTO> fieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", fieldIds);
 
@@ -468,7 +476,6 @@ public class BaseService {
      * 客户id与名称映射
      *
      * @param customerIds
-     *
      * @return
      */
     public Map<String, String> getCustomerMap(List<String> customerIds) {
@@ -484,7 +491,6 @@ public class BaseService {
      * 商机id与名称映射
      *
      * @param opportunityIds
-     *
      * @return
      */
     public Map<String, String> getOpportunityMap(List<String> opportunityIds) {
@@ -501,7 +507,6 @@ public class BaseService {
      * 线索id与名称映射
      *
      * @param clueIds
-     *
      * @return
      */
     public Map<String, String> getClueMap(List<String> clueIds) {
@@ -518,7 +523,6 @@ public class BaseService {
      * 联系人id和电话映射
      *
      * @param contactIds
-     *
      * @return
      */
     public Map<String, String> getContactPhone(List<String> contactIds) {
