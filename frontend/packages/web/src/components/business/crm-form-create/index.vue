@@ -236,18 +236,32 @@
     unsaved.value = true;
   }
 
-  function transformFieldValue(item: FormCreateField, result: Record<string, any>) {
+  function transformFieldValue(item: FormCreateField, result: Record<string, any>, key: string) {
     if (
       [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
-      Array.isArray(result[item.id])
+      Array.isArray(result[key])
     ) {
       // 处理数据源字段，单选传单个值
-      result[item.id] = result[item.id]?.[0];
+      result[key] = result[key]?.[0];
     }
     if (item.type === FieldTypeEnum.PHONE) {
       // 去空格
-      result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
+      result[key] = result[key]?.replace(/[\s\uFEFF\xA0]+/g, '');
     }
+  }
+
+  function transformSubFieldsValue(item: FormCreateField, result: Record<string, any>[]) {
+    const currentFieldValues = result.map((res) => res[item.businessKey || item.id]);
+    currentFieldValues.forEach((fieldValue, index) => {
+      if ([FieldTypeEnum.DATA_SOURCE].includes(item.type) && Array.isArray(fieldValue)) {
+        // 处理数据源字段，单选传单个值
+        result[index][item.businessKey || item.id] = fieldValue?.[0];
+      }
+      if (item.type === FieldTypeEnum.PHONE) {
+        // 去空格
+        result[index][item.businessKey || item.id] = fieldValue?.replace(/[\s\uFEFF\xA0]+/g, '');
+      }
+    });
   }
 
   function handleSave(isContinue = false) {
@@ -257,10 +271,10 @@
         fieldList.value.forEach((item) => {
           if ([FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(item.type) && item.subFields?.length) {
             item.subFields.forEach((subField) => {
-              transformFieldValue(subField, result);
+              transformSubFieldsValue(subField, result[item.id]);
             });
           } else {
-            transformFieldValue(item, result);
+            transformFieldValue(item, result, item.id);
           }
         });
         saveForm(result, isContinue, (_isContinue, res) => {

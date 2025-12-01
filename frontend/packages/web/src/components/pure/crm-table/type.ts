@@ -5,6 +5,7 @@ import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 import type { CrmPaginationProps } from '../crm-pagination/index.vue';
 import type { DataTableColumnKey, DataTableProps, DataTableRowData, DataTableRowKey, PaginationProps } from 'naive-ui';
@@ -53,6 +54,7 @@ export type CrmDataTableColumn<T = any> = (
   };
   filedType?: FieldTypeEnum; // 字段类型
   fieldId?: string; // 字段ID
+  fieldConfig?: FormCreateField; // 字段配置
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
