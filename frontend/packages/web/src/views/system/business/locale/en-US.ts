@@ -186,8 +186,8 @@ export default {
   'system.personal.addNewExport': 'Added My Export menu',
   'system.personal.addNewExportPopContent': 'To view the export task schedule',
   'system.personal.noExportTask': 'No task is deduced',
-
   'system.business.agent.agentTitle': 'Agent platform',
   'system.business.agent.agentMaxKBDescription': 'Enterprise agent platform',
   'system.business.agent.agentMaxKBUrl': 'MaxKB URL',
+  'system.business.tender': 'Tender platform',
 };

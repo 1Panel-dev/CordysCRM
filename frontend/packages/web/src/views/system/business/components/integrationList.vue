@@ -258,7 +258,7 @@
       </div>
     </div>
   </CrmCard>
-  <CrmCard hide-footer auto-height>
+  <CrmCard class="my-[16px]" hide-footer auto-height>
     <div class="content-title mb-[16px]">{{ t('system.business.agent.agentTitle') }}</div>
     <div v-if="agentIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
       <div
@@ -349,7 +349,73 @@
       </div>
     </div>
   </CrmCard>
-
+  <CrmCard hide-footer auto-height>
+    <div class="content-title mb-[16px]">{{ t('system.business.tender') }}</div>
+    <div v-if="tenderIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
+      <div
+        v-for="item of tenderIntegrationList"
+        :key="item.type"
+        class="flex h-[140px] flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
+      >
+        <div class="flex">
+          <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
+            <CrmSvgIcon :name="item.logo" width="24px" height="24px" />
+          </div>
+          <div class="flex-1">
+            <div class="flex justify-between gap-[8px]">
+              <div>
+                <span class="mr-[8px] font-medium">{{ item.title }}</span>
+                <CrmTag
+                  v-if="item.hasConfig && item.response.verify === false"
+                  theme="light"
+                  type="error"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.fail') }}
+                </CrmTag>
+                <CrmTag
+                  v-else-if="item.hasConfig && item.response.verify === null"
+                  theme="light"
+                  type="warning"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.unVerify') }}
+                </CrmTag>
+                <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
+                  {{ t('common.success') }}
+                </CrmTag>
+              </div>
+              <div>
+                <n-button size="small" type="default" class="outline--secondary px-[8px]" @click="testLink(item)">
+                  {{ t('system.business.mailSettings.testLink') }}
+                </n-button>
+              </div>
+            </div>
+            <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
+          </div>
+        </div>
+        <div class="flex justify-between gap-[8px]">
+          <div class="flex items-center gap-[8px]">
+            <n-tooltip :disabled="item.response.verify">
+              <template #trigger>
+                <n-switch
+                  size="small"
+                  :rubber-band="false"
+                  :value="item.response.mkEnable"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'mkEnable')"
+                />
+              </template>
+              {{ t('system.business.notConfiguredTip') }}
+            </n-tooltip>
+            <div class="text-[12px]">大单网</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </CrmCard>
   <EditIntegrationModal
     v-model:show="showEditIntegrationModal"
     :title="currentTitle"
@@ -382,12 +448,10 @@
   import { platformType } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import { useAppStore } from '@/store';
-  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
-  const licenseStore = useLicenseStore();
   const appStore = useAppStore();
   const { openModal } = useModal();
   const activePlatformTab = ref<CompanyTypeEnum>(CompanyTypeEnum.WECOM);
@@ -419,12 +483,6 @@
       logo: 'iconlogo_lark',
     },
     {
-      type: CompanyTypeEnum.INTERNAL,
-      title: t('system.business.LARK_SUITE'),
-      description: t('system.business.LARK.description'),
-      logo: 'iconlogo_lark',
-    },
-    {
       type: CompanyTypeEnum.DATA_EASE,
       title: 'DataEase',
       description: t('system.business.DE.description'),
@@ -442,6 +500,12 @@
       description: t('system.business.agent.agentMaxKBDescription'),
       logo: 'maxKB',
     },
+    {
+      type: CompanyTypeEnum.TENDER,
+      title: '大单网',
+      description: '上大单中大单',
+      logo: 'dadan',
+    },
   ];
 
   const originIntegrationList = ref<IntegrationItem[]>([]);
@@ -455,6 +519,10 @@
     originIntegrationList.value.filter((e) => e.type === CompanyTypeEnum.MAXKB)
   );
 
+  const tenderIntegrationList = computed<IntegrationItem[]>(() =>
+    originIntegrationList.value.filter((e) => e.type === CompanyTypeEnum.TENDER)
+  );
+
   const loading = ref(false);
   async function initSyncList() {
     try {
@@ -463,9 +531,13 @@
       const configMap = new Map(res.map((item) => [item.type, item]));
       originIntegrationList.value = allIntegrations
         .filter((item) =>
-          [...platformType, CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot, CompanyTypeEnum.MAXKB].includes(
-            item.type
-          )
+          [
+            ...platformType,
+            CompanyTypeEnum.DATA_EASE,
+            CompanyTypeEnum.SQLBot,
+            CompanyTypeEnum.MAXKB,
+            CompanyTypeEnum.TENDER,
+          ].includes(item.type)
         )
         .map((item) => {
           const config = configMap.get(item.type);
@@ -477,6 +549,7 @@
               sqlBotChatEnable: config?.sqlBotChatEnable ?? false,
               startEnable: config?.startEnable ?? false,
               mkEnable: config?.mkEnable ?? false,
+              tenderEnable: config?.tenderEnable ?? false,
               type: item.type,
               ...config,
             },
@@ -484,7 +557,7 @@
         });
 
       integrationList.value = originIntegrationList.value.filter(
-        (e) => ![...platformType, CompanyTypeEnum.MAXKB].includes(e.type as CompanyTypeEnum)
+        (e) => ![...platformType, CompanyTypeEnum.MAXKB, CompanyTypeEnum.TENDER].includes(e.type as CompanyTypeEnum)
       );
     } catch (error) {
       // eslint-disable-next-line no-console

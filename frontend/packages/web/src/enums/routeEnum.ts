@@ -64,6 +64,11 @@ export enum DashboardRouteEnum {
   DASHBOARD_MODULE = 'dashboardModule',
 }
 
+export enum TenderRouteEnum {
+  TENDER = 'tender',
+  TENDER_INDEX = 'tenderIndex',
+}
+
 export enum FullPageEnum {
   FULL_PAGE = 'fullPage',
   FULL_PAGE_DASHBOARD = 'fullPageDashboard',
@@ -81,4 +86,5 @@ export const AppRouteEnum = {
   ...DashboardRouteEnum,
   ...AgentRouteEnum,
   ...ContractRouteEnum,
+  ...TenderRouteEnum,
 };

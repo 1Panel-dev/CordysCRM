@@ -1,7 +1,10 @@
 <template>
   <n-layout class="default-layout">
     <LayoutHeader
-      v-if="!route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)"
+      v-if="
+        !route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) &&
+        !route.name?.toString().includes(TenderRouteEnum.TENDER)
+      "
       :is-preview="innerProps.isPreview"
       :logo="innerLogo"
     />
@@ -26,7 +29,7 @@
 
   import { defaultPlatformLogo } from '@/config/business';
 
-  import { DashboardRouteEnum } from '@/enums/routeEnum';
+  import { DashboardRouteEnum, TenderRouteEnum } from '@/enums/routeEnum';
 
   const route = useRoute();
 

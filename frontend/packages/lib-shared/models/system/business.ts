@@ -30,6 +30,8 @@ export interface ConfigSynchronization {
   deAccessKey?: string; // DE访问密钥
   deSecretKey?: string; // DE密钥
   deOrgID?: string; // DE组织ID
+  tenderEnable?: boolean; // 大单网是否开启
+  tenderAddress?: string; // 大单网地址
   // 前端渲染参数
   startEnable?: boolean; // 同步用户
   mkEnable?: boolean; // 智能体

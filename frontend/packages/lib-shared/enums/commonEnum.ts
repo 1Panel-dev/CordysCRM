@@ -9,6 +9,7 @@ export enum CompanyTypeEnum {
   DINGTALK_OAUTH2 = 'DINGTALK_OAUTH2', // 钉钉OAUTH2认证
   LARK_OAUTH2 = 'LARK_OAUTH2', // 飞书OAUTH2认证
   MAXKB = 'MAXKB',
+  TENDER = 'TENDER', // 招标信息
 }
 
 // 操作符号
