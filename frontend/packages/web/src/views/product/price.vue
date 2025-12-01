@@ -103,7 +103,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import priceDetailDrawer from './components/priceDetailDrawer.vue';
 
-  import { dragSortProductPrice } from '@/api/modules';
+  import { deleteProductPrice, dragSortProductPrice } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -182,6 +182,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await deleteProductPrice(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {

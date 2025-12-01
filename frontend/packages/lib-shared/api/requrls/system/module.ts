@@ -54,6 +54,7 @@ export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系�
 export const GetFieldClueListUrl = '/field/source/lead'; // 获取线索列表
 export const GetFieldContractListUrl = '/field/source/contract'; // 获取合同列表
 export const CheckRepeatUrl = '/field/check/repeat'; // 查重
+export const GetFieldPriceListUrl = '/field/source/price'; // 获取价格列表
 
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
 export const PreviewPictureUrl = '/pic/preview'; // 预览图片

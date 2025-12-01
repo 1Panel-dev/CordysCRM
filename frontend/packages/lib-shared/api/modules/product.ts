@@ -3,9 +3,11 @@ import {
   AddProductPriceUrl,
   AddProductUrl,
   BatchDeleteProductUrl,
+  BatchUpdateProductPriceUrl,
   BatchUpdateProductUrl,
   DeleteProductPriceUrl,
   DeleteProductUrl,
+  DownloadProductPriceTemplateUrl,
   DownloadProductTemplateUrl,
   DragSortProductPriceUrl,
   DragSortProductUrl,
@@ -106,6 +108,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateProductPriceUrl, data });
   }
 
+  // 批量更新价格表
+  function batchUpdateProductPrice(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateProductPriceUrl, data });
+  }
+
   // 获取价格表列表
   function getProductPriceList(data: TableQueryParams) {
     return CDR.post({ url: GetProductPriceListUrl, data });
@@ -136,6 +143,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragSortProductPriceUrl, data });
   }
 
+  // 下载价格表模板
+  function downloadProductPriceTemplate() {
+    return CDR.get({ url: DownloadProductPriceTemplateUrl });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -157,5 +169,7 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteProductPrice,
     getProductPriceFormConfig,
     dragSortProductPrice,
+    batchUpdateProductPrice,
+    downloadProductPriceTemplate,
   };
 }

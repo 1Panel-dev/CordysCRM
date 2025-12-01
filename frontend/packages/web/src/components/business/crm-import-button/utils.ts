@@ -6,6 +6,7 @@ import {
   downloadContactTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
+  downloadProductPriceTemplate,
   downloadProductTemplate,
   importAccount,
   importContact,
@@ -63,6 +64,6 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     // TODO:
     preCheck: () => Promise.resolve({ data: {} as ValidateInfo }),
     save: () => Promise.resolve(),
-    download: () => Promise.resolve(new File([], '')),
+    download: downloadProductPriceTemplate,
   },
 };

@@ -19,6 +19,7 @@
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
+      max-tag-count="responsive"
       clearable
     />
   </n-form-item>
