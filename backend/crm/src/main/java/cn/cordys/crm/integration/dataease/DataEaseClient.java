@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.dataease;
 
-
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.LogUtils;
@@ -9,7 +8,6 @@ import cn.cordys.crm.integration.dataease.dto.*;
 import cn.cordys.crm.integration.dataease.dto.request.*;
 import cn.cordys.crm.integration.dataease.dto.response.*;
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -17,227 +15,230 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class DataEaseClient {
 
-    protected static RestTemplate restTemplate;
+    private static final RestTemplate REST_TEMPLATE = new RestTemplate();
 
-    static {
-        restTemplate = new RestTemplate();
-    }
+    private static final String HEADER_ACCESS_KEY = "accessKey";
+    private static final String HEADER_SIGNATURE = "signature";
+    private static final String HEADER_TOKEN = "x-de-ask-token";
 
     private final String accessKey;
     private final String secretKey;
-    protected String endpoint;
-    protected String prefix = "/de2api/";
+    private final String endpoint;
 
-    public DataEaseClient(ThirdConfigurationDTO thirdConfiguration) {
-        this.accessKey = thirdConfiguration.getDeAccessKey();
-        this.secretKey = thirdConfiguration.getDeSecretKey();
-        this.endpoint = thirdConfiguration.getRedirectUrl();
-        if (this.endpoint != null && this.endpoint.endsWith("/")) {
-            this.endpoint = this.endpoint.substring(0, this.endpoint.length() - 1);
-        }
+    public DataEaseClient(ThirdConfigurationDTO cfg) {
+        this.accessKey = cfg.getDeAccessKey();
+        this.secretKey = cfg.getDeSecretKey();
+        this.endpoint = trimEnd(cfg.getRedirectUrl());
     }
+
+    /**
+     * 去掉 URL 尾部 "/"
+     */
+    private String trimEnd(String url) {
+        if (url == null || !url.endsWith("/")) return url;
+        return url.substring(0, url.length() - 1);
+    }
+
+    /**
+     * ========== 公共方法区域 ==========
+     */
 
     public boolean validate() {
         try {
             get("user/personInfo");
+            return true;
         } catch (Exception e) {
             LogUtils.error(e);
             return false;
         }
-        return true;
     }
+
+    /**
+     * ========== 批量封装的方法 ==========
+     */
+
+    public <T extends DataEaseBaseResponse> T post(String path, Object body, Class<T> cls, Object... vars) {
+        return exchange(path, HttpMethod.POST, body, cls, vars);
+    }
+
+    public DataEaseBaseResponse post(String path, Object body, Object... vars) {
+        return post(path, body, DataEaseBaseResponse.class, vars);
+    }
+
+    public DataEaseBaseResponse post(String path, String... vars) {
+        return post(path, Collections.emptyMap(), (Object) vars);
+    }
+
+    public <T extends DataEaseBaseResponse> T post(String path, Class<T> cls, Object... vars) {
+        return post(path, Collections.emptyMap(), cls, vars);
+    }
+
+    public DataEaseBaseResponse get(String path, Object... vars) {
+        return get(path, DataEaseBaseResponse.class, vars);
+    }
+
+    public <T extends DataEaseBaseResponse> T get(String path, Class<T> cls, Object... vars) {
+        return exchange(path, HttpMethod.GET, null, cls, vars);
+    }
+
+    private <T extends DataEaseBaseResponse> T exchange(
+            String path,
+            HttpMethod method,
+            Object body,
+            Class<T> cls,
+            Object... vars
+    ) {
+        String url = getUrl(path);
+
+        HttpEntity<?> entity = (body == null)
+                ? new HttpEntity<>(buildHeaders())
+                : new HttpEntity<>(body, buildHeaders());
+
+        T result = REST_TEMPLATE.exchange(url, method, entity, cls, vars).getBody();
+
+        if (result != null && result.getCode() != 0) {
+            throw new GenericException(result.getMsg());
+        }
+        return result;
+    }
+
+    /**
+     * ========== 业务方法 ==========
+     */
 
     public List<SysVariableDTO> listSysVariable() {
         return post("sysVariable/query", SysVariableListResponse.class).getData();
     }
 
-    public boolean validateEmbeddedToken(String token) {
-        try {
-            String url = getUrl("sysParameter/shareBase");
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("x-embedded-token", token);
-            HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
-            new RestTemplate().exchange(url, HttpMethod.GET, httpEntity, String.class);
-        } catch (Exception e) {
-            LogUtils.error(e);
-            return false;
-        }
-        return true;
-    }
-
     public List<SysVariableValueDTO> listSysVariableValue(String sysVariableId) {
-        return post("sysVariable/value/selected/1/10000", Map.of("sysVariableId", sysVariableId), SysVariableValueListResponse.class).getData()
-                .getRecords();
+        return post(
+                "sysVariable/value/selected/1/10000",
+                Map.of("sysVariableId", sysVariableId),
+                SysVariableValueListResponse.class
+        ).getData().getRecords();
     }
 
-    public SysVariableDTO editSysVariable(SysVariableUpdateRequest request) {
-        return post("sysVariable/edit", request, SysVariableCreateResponse.class).getData();
+    public SysVariableDTO createSysVariable(SysVariableCreateRequest req) {
+        return post("sysVariable/create", req, SysVariableCreateResponse.class).getData();
     }
 
-    public void deleteSysVariable(String id) {
-        get("sysVariable/delete/{id}", id);
-    }
-
-    public SysVariableDTO createSysVariable(SysVariableCreateRequest request) {
-        return post("sysVariable/create", request, SysVariableCreateResponse.class).getData();
-    }
-
-    public Long createRole(RoleCreateRequest request) {
-        return (Long) post("role/create", request, DataEaseResponse.class).getData();
+    public Long createRole(RoleCreateRequest req) {
+        return (Long) post("role/create", req, DataEaseResponse.class).getData();
     }
 
     public void switchOrg(String orgId) {
         post("user/switch/{orgId}", orgId);
     }
 
-    public void roleMountUser(RoleMountUserRequest request) {
-        post("role/mountUser", request);
+    public void roleMountUser(RoleMountUserRequest req) {
+        post("role/mountUser", req);
     }
 
     public List<RoleDTO> listRole() {
         return post("role/query", RoleListResponse.class).getData();
     }
 
-    public void editRole(RoleUpdateRequest request) {
-        post("role/edit", request);
+    public SysVariableValueDTO createSysVariableValue(SysVariableValueCreateRequest req) {
+        return post("sysVariable/value/create", req, SysVariableValueCreateResponse.class).getData();
     }
 
-    public void deleteRole(String id) {
-        post("role/delete/{id}", Map.of(), DataEaseResponse.class, id);
-    }
-
-    public SysVariableValueDTO createSysVariableValue(SysVariableValueCreateRequest request) {
-        return post("sysVariable/value/create", request, SysVariableValueCreateResponse.class).getData();
-    }
-
-    public void batchDelSysVariableValue(List<String> valueIds) {
-        post("sysVariable/value/batchDel", valueIds);
+    public void batchDelSysVariableValue(List<String> ids) {
+        post("sysVariable/value/batchDel", ids);
     }
 
     public PageDTO<UserPageDTO> listUserPage(Integer pageNum, Integer pageSize) {
-        return post("user/pager/{pageNum}/{pageSize}", UserListResponse.class, pageNum.toString(), pageSize.toString()).getData();
+        return post("user/pager/{pageNum}/{pageSize}", UserListResponse.class,
+                pageNum.toString(), pageSize.toString()
+        ).getData();
     }
 
-    public void createUser(UserCreateRequest request) {
-        post("user/create", request, DataEaseBaseResponse.class);
+    public void createUser(UserCreateRequest req) {
+        post("user/create", req, DataEaseBaseResponse.class);
     }
 
-    public DataEaseBaseResponse post(String path, Object body, String... uriVariables) {
-        return post(path, body, DataEaseBaseResponse.class, uriVariables);
-    }
-
-    public DataEaseBaseResponse post(String path, String... uriVariables) {
-        return post(path, Map.of(), DataEaseBaseResponse.class, uriVariables);
-    }
-
-    public <V extends DataEaseBaseResponse> V post(String path, Class<V> responseClass, String... uriVariables) {
-        return post(path, Map.of(), responseClass, uriVariables);
-    }
-
-    public <V extends DataEaseBaseResponse> V post(String path, Object body, Class<V> responseClass, String... uriVariables) {
-        String url = getUrl(path);
-        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, uriVariables)
-                .getBody();
-        if (dataEaseResponse.getCode() != 0) {
-            throw new GenericException(dataEaseResponse.getMsg());
-        }
-        return dataEaseResponse;
-    }
-
-    public DataEaseBaseResponse get(String path, Object... uriVariables) {
-        return get(path, DataEaseBaseResponse.class, uriVariables);
-    }
-
-    public <V extends DataEaseBaseResponse> V get(String path, Class<V> responseClass, Object... uriVariables) {
-        String url = getUrl(path);
-        V dataEaseResponse = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), responseClass, uriVariables)
-                .getBody();
-        if (dataEaseResponse.getCode() != 0) {
-            throw new GenericException(dataEaseResponse.getMsg());
-        }
-        return dataEaseResponse;
-    }
-
-    public void editUser(UserUpdateRequest request) {
-        post("user/edit", request);
+    public void editUser(UserUpdateRequest req) {
+        post("user/edit", req);
     }
 
     public void deleteUser(String id) {
         post("user/delete/{id}", id);
     }
 
+    public List<OptionDTO> listOrg() {
+        return post("org/page/lazyTree", OrgListResponse.class).getData().getNodes();
+    }
+
+    /**
+     * ========== 私有方法 ==========
+     */
+
     private String getUrl(String path) {
-        return this.endpoint + prefix + path;
+        String prefix = "/de2api/";
+        return endpoint + prefix + path;
     }
 
-    private String getSignature() {
-        return aesDecrypt(accessKey + "|" + UUID.randomUUID() + "|" + System.currentTimeMillis(),
-                secretKey, accessKey);
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        headers.set(HEADER_ACCESS_KEY, accessKey);
+
+        String signature = generateSignature();
+        headers.set(HEADER_SIGNATURE, signature);
+        headers.set(HEADER_TOKEN, generateJWT(signature));
+
+        return headers;
     }
 
-    protected HttpEntity<MultiValueMap> getHttpEntity() {
-        return new HttpEntity<>(getHeader());
+    private String generateSignature() {
+        return aesEncrypt(
+                accessKey + "|" + UUID.randomUUID() + "|" + System.currentTimeMillis(),
+                secretKey,
+                accessKey
+        );
     }
 
-    protected HttpEntity<Object> getHttpEntity(Object object) {
-        return new HttpEntity<>(object, getHeader());
+    private String generateJWT(String signature) {
+        return JWT.create()
+                .withClaim("accessKey", accessKey)
+                .withClaim("signature", signature)
+                .sign(Algorithm.HMAC256(secretKey));
     }
 
-    protected HttpEntity<Object> getHttpEntity(Object object, MultiValueMap<String, String> headers) {
-        return new HttpEntity<>(object, headers);
-    }
-
-    protected HttpHeaders getHeader() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        httpHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        httpHeaders.set("accessKey", accessKey);
-        String signature = getSignature();
-        httpHeaders.set("signature", signature);
-        httpHeaders.set("x-de-ask-token", getJWTToken(signature));
-        return httpHeaders;
-    }
-
-    private String getJWTToken(String signature) {
-        Algorithm algorithm = Algorithm.HMAC256(secretKey);
-        JWTCreator.Builder builder = JWT.create();
-        builder.withClaim("accessKey", accessKey).withClaim("signature", signature);
-        return builder.sign(algorithm);
-    }
-
-    public String aesDecrypt(String src, String secretKey, String iv) {
-        if (StringUtils.isBlank(src) || StringUtils.isBlank(secretKey)) {
-            throw new IllegalArgumentException("Input or secretKey cannot be null or empty");
+    /**
+     * AES 加密（原命名 aesDecrypt 实际逻辑为加密 → 仅重命名）
+     */
+    private String aesEncrypt(String src, String key, String iv) {
+        if (StringUtils.isBlank(src) || StringUtils.isBlank(key)) {
+            throw new IllegalArgumentException("Input or secretKey cannot be empty");
         }
 
         try {
-            byte[] raw = secretKey.getBytes(StandardCharsets.UTF_8);
-            SecretKeySpec secretKeySpec = new SecretKeySpec(raw, "AES");
+            SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec iv1 = new IvParameterSpec(iv.getBytes());
-            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv1);
-            byte[] encrypted = cipher.doFinal(src.getBytes(StandardCharsets.UTF_8));
-            return Base64.encodeBase64String(encrypted);
-        } catch (Exception e) {
-            throw new RuntimeException("AES-GCM decrypt error:", e);
-        }
-    }
+            cipher.init(
+                    Cipher.ENCRYPT_MODE,
+                    keySpec,
+                    new IvParameterSpec(iv.getBytes(StandardCharsets.UTF_8))
+            );
 
-    public List<OptionDTO> listOrg() {
-        return post("org/page/lazyTree", OrgListResponse.class).getData()
-                .getNodes();
+            return Base64.encodeBase64String(cipher.doFinal(src.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new RuntimeException("AES encrypt error:", e);
+        }
     }
 }
