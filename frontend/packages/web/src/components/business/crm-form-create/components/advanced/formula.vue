@@ -41,10 +41,15 @@
 
     // 替换变量
     express = express.replace(/\$\{(.+?)\}/g, (_, fieldId) => {
-      const rawVal = getter(fieldId);
+      const fieldIdMatch = fieldId.match(/^\(?(\d+)\)?/);
+      if (!fieldIdMatch) return '0';
+      const realId = fieldIdMatch[1];
+      const rawVal = getter(realId);
       // 转换为数字，如果无效则默认为 0
       const num = parseFloat(String(rawVal));
-      return Number.isNaN(num) ? '0' : String(num);
+      if (Number.isNaN(num)) return '0';
+      // 把表达式里原来 ID 替换成实际数值
+      return fieldId.replace(realId, String(num));
     });
 
     try {

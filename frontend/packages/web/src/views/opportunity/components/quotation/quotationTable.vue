@@ -65,7 +65,7 @@
     :link-form-key="linkFormKey"
     @saved="() => searchData()"
   />
-  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="t('common.batchVoid')" />
+  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
 
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
@@ -193,9 +193,7 @@
 
   function handleApprovalSuccess(val: BatchOperationResult) {
     batchResult.value = val;
-    if (val.success > 0 || val.fail > 0) {
-      resultVisible.value = true;
-    }
+    resultVisible.value = true;
     handleRefresh();
   }
 
@@ -215,9 +213,7 @@
             approvalStatus: QuotationStatusEnum.VOIDED,
           });
           batchResult.value = result;
-          if (result.success > 0 || result.fail > 0) {
-            resultVisible.value = true;
-          }
+          resultVisible.value = true;
           handleRefresh();
         } catch (error) {
           // eslint-disable-next-line no-console

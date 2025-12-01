@@ -72,7 +72,14 @@
   }>();
 
   const calTagList = computed<FormCreateField[]>(() =>
-    props.formFields.filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
+    props.formFields
+      .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
+      .map((e) => {
+        return {
+          ...e,
+          id: e.numberFormat === 'percent' ? `(${e.id} / 100)` : e.id,
+        };
+      })
   );
 
   const cursorRange = ref<Range | null>(null);

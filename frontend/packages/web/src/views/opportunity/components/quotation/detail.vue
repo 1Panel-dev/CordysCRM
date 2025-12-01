@@ -235,6 +235,7 @@
     switch (key) {
       case 'edit':
         emit('edit', sourceId.value);
+        visible.value = false;
         break;
       case 'pass':
         handleApproval(true);
