@@ -549,6 +549,9 @@
           },
           {
             "id": "CONTRACT_PAYMENT_PLAN:DELETE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:EXPORT"
           }
         ]
       }
