@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "46226266",
+      "name": "icon_target",
+      "font_class": "icon_target",
+      "unicode": "e7ee",
+      "unicode_decimal": 59374
+    },
+    {
+      "icon_id": "46180001",
+      "name": "icon_pie",
+      "font_class": "icon_pie",
+      "unicode": "e7ed",
+      "unicode_decimal": 59373
+    },
+    {
       "icon_id": "46130676",
       "name": "icon_contract",
       "font_class": "icon_contract",

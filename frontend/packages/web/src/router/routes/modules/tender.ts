@@ -11,7 +11,7 @@ const tender: AppRouteRecordRaw = {
   meta: {
     locale: 'menu.tender',
     permissions: ['TENDER:READ'],
-    icon: 'iconicon_dashboard1',
+    icon: 'iconicon_target',
     hideChildrenInMenu: true,
     collapsedLocale: 'menu.tender',
   },
