@@ -9,7 +9,13 @@
     @update-collapsed="appStore.setMenuCollapsed"
   >
     <div class="flex h-full flex-col justify-between">
-      <div v-if="route.name?.toString().includes(DashboardRouteEnum.DASHBOARD)" class="flex px-[8px] py-[14px]">
+      <div
+        v-if="
+          route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) ||
+          route.name?.toString().includes(TenderRouteEnum.TENDER)
+        "
+        class="flex px-[8px] py-[14px]"
+      >
         <CrmSvg v-if="appStore.menuCollapsed" name="CORDYS" height="40px" width="40px" />
         <CrmSvg v-else name="logo_CORDYS" height="28px" width="130px" />
       </div>
@@ -111,6 +117,7 @@
     CustomerRouteEnum,
     DashboardRouteEnum,
     OpportunityRouteEnum,
+    TenderRouteEnum,
   } from '@/enums/routeEnum';
 
   import { MenuGroupOption, MenuOption } from 'naive-ui/es/menu/src/interface';
