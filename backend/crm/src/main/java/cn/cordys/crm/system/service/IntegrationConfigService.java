@@ -21,7 +21,6 @@ import cn.cordys.crm.integration.common.dto.ThirdEnableDTO;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
-import cn.cordys.crm.integration.dataease.service.DataEaseService;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
@@ -65,8 +64,6 @@ public class IntegrationConfigService {
 
     @Resource
     private TokenService tokenService;
-    @Resource
-    private DataEaseService dataEaseService;
 
     @Resource
     private AgentService agentService;
@@ -147,6 +144,7 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
+     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
@@ -224,11 +222,9 @@ public class IntegrationConfigService {
         if (lastSyncType != null && !Strings.CI.equals(lastSyncType, configDTO.getType()) && configDTO.getStartEnable()) {
             // 关闭其他平台按钮
             List<String> detailTypes = getDetailTypes(lastSyncType);
-            detailTypes.forEach(detailType -> {
-                extOrganizationConfigDetailMapper.updateStatus(
-                        false, detailType, organizationConfig.getId()
-                );
-            });
+            detailTypes.forEach(detailType -> extOrganizationConfigDetailMapper.updateStatus(
+                    false, detailType, organizationConfig.getId()
+            ));
         }
 
         if (CollectionUtils.isEmpty(existingDetails)) {
@@ -841,9 +837,9 @@ public class IntegrationConfigService {
     /**
      * 测试连接
      */
-    public boolean testConnection(ThirdConfigurationDTO configDTO, String organizationId, String userId) {
+    public boolean testConnection(ThirdConfigurationDTO configDTO) {
 
-        if(Strings.CI.contains(configDTO.getType(), DepartmentConstants.TENDER.name())){
+        if (Strings.CI.contains(configDTO.getType(), DepartmentConstants.TENDER.name())) {
             String token = getToken(configDTO);
             return StringUtils.isNotBlank(token);
         }
@@ -855,7 +851,6 @@ public class IntegrationConfigService {
 
         String type = configDTO.getType();
         String token = getToken(configDTO);
-        List<String> types = getDetailTypes(type);
 
         // 验证token
         if (DepartmentConstants.WECOM.name().equals(type) && StringUtils.isNotBlank(token)) {
@@ -866,40 +861,6 @@ public class IntegrationConfigService {
         }
 
         return StringUtils.isNotBlank(token);
-    }
-
-    /**
-     * 如果存在配置，更新它
-     */
-    private void updateExistingConfigIfNeeded(ThirdConfigurationDTO configDTO, String organizationId, String userId, String token, List<String> types, boolean result) {
-        OrganizationConfig config = extOrganizationConfigMapper
-                .getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
-
-        if (config == null) {
-            return;
-        }
-
-        List<OrganizationConfigDetail> details = extOrganizationConfigDetailMapper
-                .getOrgConfigDetailByType(config.getId(), null, types);
-
-        if (CollectionUtils.isEmpty(details)) {
-            return;
-        }
-
-        // 获取原有配置
-        ThirdConfigurationDTO oldConfig = JSON.parseObject(
-                new String(details.getFirst().getContent()), ThirdConfigurationDTO.class
-        );
-        oldConfig.setType(configDTO.getType());
-        configDTO.setVerify(result);
-
-        // 更新所有详情
-        for (OrganizationConfigDetail detail : details) {
-            updateExistingDetail(configDTO, userId, token, oldConfig, detail, detail.getEnable());
-        }
-
-        // 添加日志上下文
-        logOperation(oldConfig, configDTO, config.getId());
     }
 
     /**
@@ -1061,11 +1022,9 @@ public class IntegrationConfigService {
         //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，则关闭其他平台按钮
         // 关闭其他平台按钮
         List<String> detailTypes = getDetailTypes(oldType);
-        detailTypes.forEach(detailType -> {
-            extOrganizationConfigDetailMapper.updateStatus(
-                    false, detailType, organizationConfig.getId()
-            );
-        });
+        detailTypes.forEach(detailType -> extOrganizationConfigDetailMapper.updateStatus(
+                false, detailType, organizationConfig.getId()
+        ));
         extOrganizationConfigMapper.updateSyncFlag(organizationId, type, OrganizationConfigConstants.ConfigType.THIRD.name(), false);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .resourceName(Translator.get("third.setting"))

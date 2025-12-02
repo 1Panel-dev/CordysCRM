@@ -93,7 +93,7 @@ public class OrganizationSettingsController {
     @Operation(summary = "校验配置是否链接成功")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public boolean validate(@RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
-        return integrationConfigService.testConnection(thirdConfigurationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        return integrationConfigService.testConnection(thirdConfigurationDTO);
     }
 
     @GetMapping(value = "/de-token")
