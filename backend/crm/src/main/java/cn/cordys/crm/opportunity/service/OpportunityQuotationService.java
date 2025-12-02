@@ -616,7 +616,6 @@ public class OpportunityQuotationService {
         String approvalStatus = request.getApprovalStatus();
         LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(OpportunityQuotation::getId, ids);
-        wrapper.eq(OpportunityQuotation::getApprovalStatus, ApprovalState.APPROVING.toString());
         List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(list)) {
             return BatchAffectSkipResponse.builder().success(0).fail(0).skip(0).build();
@@ -734,7 +733,7 @@ public class OpportunityQuotationService {
             );
         }
 
-        return BatchAffectReasonResponse.builder().success(successIds.size()).fail(list.size() - successIds.size()).skip(skipCount.get()).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
+        return BatchAffectReasonResponse.builder().success(successIds.size()).fail(list.size() - validateList.size()).skip(skipCount.get()).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
     }
 
 
