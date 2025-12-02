@@ -96,6 +96,9 @@ public abstract class BaseField {
     @Schema(description = "禁止修改的参数")
     private Set<String> disabledProps;
 
+	@Schema(description = "引用的数据源字段ID")
+	private String resourceFieldId;
+
     @JsonIgnore
     public static boolean isBlob(String type) {
         return Strings.CS.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),
