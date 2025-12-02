@@ -18,6 +18,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.*;
+import cn.cordys.common.utils.IndustryUtils;
 import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
@@ -1099,6 +1100,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
                 chartResult.setSubCategoryAxisName(RegionUtils.codeToName(chartResult.getSubCategoryAxis()));
                 chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
+            }
+
+            if (categoryAxisField.isIndustry()) {
+                chartResult.setCategoryAxisName(IndustryUtils.mapping(chartResult.getCategoryAxis(), false));
+            }
+
+            if (subCategoryAxisField != null && subCategoryAxisField.isIndustry()) {
+                chartResult.setSubCategoryAxisName(IndustryUtils.mapping(chartResult.getSubCategoryAxis(), false));
             }
         }
 

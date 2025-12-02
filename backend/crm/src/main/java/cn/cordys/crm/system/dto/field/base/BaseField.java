@@ -183,4 +183,9 @@ public abstract class BaseField {
     public boolean isLocation() {
         return Strings.CS.equals(type, FieldType.LOCATION.name());
     }
+
+    @JsonIgnore
+    public boolean isIndustry() {
+        return Strings.CS.equals(type, FieldType.INDUSTRY.name());
+    }
 }

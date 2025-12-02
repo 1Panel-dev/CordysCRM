@@ -102,8 +102,11 @@ public class IndustryUtils {
                 if (findQueue.isEmpty()) {
                     return true;
                 }
-                // 递归查找下一级
-                return findRecursive(industry.getChildren(), findQueue, path, nameToCode);
+            }
+            // 递归查找下一级
+            boolean childResult = findRecursive(industry.getChildren(), findQueue, path, nameToCode);
+            if (childResult) {
+                return true;
             }
         }
         return false;
