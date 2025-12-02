@@ -85,6 +85,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
@@ -134,6 +135,7 @@
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
+  const route = useRoute();
 
   const activeTab = ref();
   const keyword = ref('');
@@ -481,6 +483,13 @@
       }
     }
   );
+
+  onMounted(async () => {
+    if (route.query.id) {
+      activeSourceId.value = route.query.id as string;
+      showDetailDrawer.value = true;
+    }
+  });
 
   // onBeforeUnmount(() => {
   //   sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);

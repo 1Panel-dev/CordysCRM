@@ -7,7 +7,7 @@
     </template>
     <template v-if="!props.readonly" #titleRight>
       <n-button
-        v-permission="['PRODUCT_MANAGEMENT:UPDATE']"
+        v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
         type="primary"
         ghost
         class="n-btn-outline-primary"
@@ -16,7 +16,7 @@
         {{ t('common.edit') }}
       </n-button>
       <n-button
-        v-permission="['PRODUCT_MANAGEMENT:UPDATE']"
+        v-permission="['CONTRACT_PAYMENT_PLAN:DELETE']"
         type="primary"
         danger
         ghost

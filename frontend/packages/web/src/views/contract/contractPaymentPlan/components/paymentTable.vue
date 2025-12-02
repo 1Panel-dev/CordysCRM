@@ -16,19 +16,17 @@
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <!-- TODO lmy permission -->
         <n-button
           v-if="!props.readonly"
-          v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          v-permission="['CONTRACT_PAYMENT_PLAN:ADD']"
           :loading="createLoading"
           type="primary"
           @click="handleNewClick"
         >
           {{ t('contract.newPlan') }}
         </n-button>
-        <!-- TODO lmy permission -->
         <n-button
-          v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -200,7 +198,7 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['CUSTOMER_MANAGEMENT:EXPORT'], // TODO lmy permission
+        permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'],
       },
     ],
   };
@@ -255,12 +253,12 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'], // TODO lmy permission
+              permission: ['CONTRACT_PAYMENT_PLAN:UPDATE'],
             },
             {
               label: t('common.delete'),
               key: 'delete',
-              permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'], // TODO lmy permission
+              permission: ['CONTRACT_PAYMENT_PLAN:DELETE'],
             },
           ]
         : []),
@@ -366,7 +364,7 @@
           status: row.planStatus as ContractPaymentPlanEnum,
         }),
     },
-    permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'], // TODO lmy permission
+    permission: ['CONTRACT_PAYMENT_PLAN:UPDATE', 'CONTRACT_PAYMENT_PLAN:DELETE'],
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

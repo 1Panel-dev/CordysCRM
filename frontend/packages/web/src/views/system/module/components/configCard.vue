@@ -353,8 +353,7 @@
     {
       label: t('module.contract'),
       key: ModuleConfigEnum.CONTRACT,
-      // TODO lmy icon
-      icon: 'iconicon_business_opportunity',
+      icon: 'iconicon_contract',
       enable: true,
       groupList: [
         {

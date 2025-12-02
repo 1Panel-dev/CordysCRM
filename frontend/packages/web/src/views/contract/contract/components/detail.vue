@@ -116,7 +116,7 @@
           text: false,
           ghost: true,
           class: 'n-btn-outline-primary',
-          permission: ['PRODUCT_MANAGEMENT:UPDATE'],
+          permission: ['CONTRACT:ARCHIVE'],
         },
       ];
     }
@@ -124,7 +124,7 @@
       {
         key: 'edit',
         label: t('common.edit'),
-        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
+        permission: ['CONTRACT:UPDATE'],
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
@@ -132,7 +132,7 @@
       {
         key: 'archive',
         label: t('common.archive'),
-        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
+        permission: ['CONTRACT:ARCHIVE'],
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
@@ -140,7 +140,7 @@
       {
         key: 'voided',
         label: t('common.voided'),
-        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
+        permission: ['CONTRACT:VOIDED'],
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
@@ -152,7 +152,7 @@
         ghost: true,
         danger: true,
         class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+        permission: ['CONTRACT:DELETE'],
       },
     ];
   });

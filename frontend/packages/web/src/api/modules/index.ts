@@ -362,6 +362,7 @@ export const {
   batchDeleteCustomerCollaboration,
   getCustomerFollowRecordFormConfig,
   getCustomerOpenSeaFollowRecordList,
+  getAccountContract,
 } = customerApi;
 
 export const {
