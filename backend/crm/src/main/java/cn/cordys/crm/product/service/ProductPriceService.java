@@ -52,6 +52,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author song-cc-rock
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ProductPriceService {
 
     @Resource

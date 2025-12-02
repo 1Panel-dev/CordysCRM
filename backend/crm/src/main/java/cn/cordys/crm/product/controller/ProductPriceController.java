@@ -2,15 +2,19 @@ package cn.cordys.crm.product.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.dto.request.ProductPriceAddRequest;
 import cn.cordys.crm.product.dto.request.ProductPriceEditRequest;
+import cn.cordys.crm.product.dto.request.ProductPriceExportRequest;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
+import cn.cordys.crm.product.service.ProductPriceExportService;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -23,6 +27,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +44,8 @@ public class ProductPriceController {
 
     @Resource
     private ProductPriceService priceService;
+	@Resource
+	private ProductPriceExportService priceExportService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
@@ -117,5 +124,20 @@ public class ProductPriceController {
 	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
 	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
 		return priceService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+	}
+
+	@PostMapping("/export")
+	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+	@Operation(summary = "导出全部")
+	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
+		ConditionFilterUtils.parseCondition(request);
+		return priceExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+	}
+
+	@PostMapping("/export-select")
+	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+	@Operation(summary = "导出选中")
+	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+		return priceExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
 	}
 }
