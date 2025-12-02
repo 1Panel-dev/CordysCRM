@@ -108,12 +108,12 @@ public class LogModule {
     /**
      * 产品
      */
-    public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT";
+    public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT_PRO";
 
 	/**
 	 * 产品价格表
 	 */
-	public static final String PRODUCT_PRICE_MANAGEMENT = "PRODUCT_PRICE_MANAGEMENT";
+	public static final String PRODUCT_PRICE_MANAGEMENT = "PRODUCT_MANAGEMENT_PRICE";
 
     /**
      * 客户公海
