@@ -581,7 +581,7 @@ public class CustomerContactService {
                     "customer_contact_field", afterDo, 2000, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             LogUtils.error("contact import error: ", e.getMessage());
             throw new GenericException(e.getMessage());

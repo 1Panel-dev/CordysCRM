@@ -65,6 +65,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     /**
      * 成功条数
      */
+	@Getter
     private int successCount;
 	/**
 	 * 临时合并实体
@@ -147,7 +148,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private void buildEntityFromRow(Integer rowIndex, Map<Integer, String> rowData) {
         try {
-			if (isMergeFirstRow(rowIndex) || isNormalRow(rowIndex)) {
+			if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
 				// 非合并行才创建实体
 				String rowKey = IDGenerator.nextStr();
 				mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
@@ -210,7 +211,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 				}
                 fields.add(serialResource);
             }
-			if (isMergedLastRow(rowIndex) || isNormalRow(rowIndex)) {
+			if (isNormalRow(rowIndex) || isMergedLastRow(rowIndex)) {
 				// 合并最后行, 添加并清除实体
 				dataList.add(mergedTmpEntity);
 				mergedTmpEntity = null;
@@ -264,6 +265,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 	 * @return 是否为合并首行
 	 */
 	private boolean isMergeFirstRow(int rowIndex) {
+		if (mergeCellMap == null) {
+			return false;
+		}
 		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
 		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
 	}
@@ -274,6 +278,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 	 * @return 是否为合并尾行
 	 */
 	private boolean isMergedLastRow(int rowIndex) {
+		if (mergeCellMap == null) {
+			return false;
+		}
 		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
 		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
 	}
@@ -284,7 +291,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 	 * @return 是否为正常行
 	 */
 	private boolean isNormalRow(int rowIndex) {
-		return !mergeCellMap.containsKey(rowIndex);
+		return mergeCellMap == null || !mergeCellMap.containsKey(rowIndex);
 	}
 
     /**

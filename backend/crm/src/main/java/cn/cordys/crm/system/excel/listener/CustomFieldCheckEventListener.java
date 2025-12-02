@@ -201,6 +201,9 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 	 * @return 是否需要校验
 	 */
 	private boolean isValidateCell(int rowIndex, int colIndex) {
+		if (mergeCellMap == null) {
+			return true;
+		}
 		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
 		if (cellExtras != null) {
 			for (CellExtra extra : cellExtras) {
