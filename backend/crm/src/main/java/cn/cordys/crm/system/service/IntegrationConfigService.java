@@ -836,6 +836,12 @@ public class IntegrationConfigService {
      * 测试连接
      */
     public boolean testConnection(ThirdConfigurationDTO configDTO, String organizationId, String userId) {
+
+        if(Strings.CI.contains(configDTO.getType(), DepartmentConstants.TENDER.name())){
+            String token = getToken(configDTO);
+            return StringUtils.isNotBlank(token);
+        }
+
         // 参数验证
         if (StringUtils.isBlank(configDTO.getAppSecret())) {
             throw new GenericException(Translator.get("sync.organization.test.error"));
