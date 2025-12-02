@@ -578,7 +578,7 @@ public class CustomerContactService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<CustomerContact> eventListener = new CustomFieldImportEventListener<>(fields, CustomerContact.class, currentOrg, currentUser,
-                    "customer_contact_field", afterDo, 2000);
+                    "customer_contact_field", afterDo, 2000, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();

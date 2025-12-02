@@ -21,5 +21,9 @@ public enum FieldSourceType {
     /**
      * 产品来源
      */
-    PRODUCT
+    PRODUCT,
+	/**
+	 * 价格来源
+	 */
+	PRICE,
 }

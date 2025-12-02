@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
  */
 public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
+	/**
+	 * 表头字段集合
+	 */
     protected final Map<String, BaseField> fieldMap = new HashMap<>();
     /**
      * 源数据表
@@ -35,27 +38,30 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private final String fieldTable;
 	protected final String currentOrg;
     /**
-     * 必填
+     * 必填校验
      */
     private final List<String> requires = new ArrayList<>();
     /**
-     * 数据库唯一属性缓存
+     * 唯一校验&&数据库属性值缓存&&Excel列值缓存
      */
     private final Map<String, BaseField> uniques = new HashMap<>();
     private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
-    private final CommonMapper commonMapper;
-    /**
-     * 值缓存, 用来校验Excel字段值是否唯一
-     */
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
+	private final CommonMapper commonMapper;
     /**
-     * 限制数据长度的字段
+     * 长度校验
      */
     private final Map<String, Integer> fieldLenLimit = new HashMap<>();
+	/**
+	 * 错误, 成功信息
+	 */
     @Getter
     protected Integer success = 0;
     @Getter
     protected List<ExcelErrData> errList = new ArrayList<>();
+	/**
+	 * 表头字段集合 && 业务字段集合映射
+	 */
 	protected Map<Integer, String> headMap;
 	protected Map<String, BusinessModuleField> businessFieldMap;
 	/**
@@ -63,12 +69,18 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 	 */
 	@Getter
 	protected List<Integer> errRows = new ArrayList<>();
+	/**
+	 * 子字段引用映射(子字段名称 -> 子表格字段ID)
+	 */
 	protected final Map<String, String> refSubMap = new HashMap<>();
 	/**
-	 * 所有行数据 && 合并单元格信息
+	 * 合并单元格信息
+	 */
+	protected final Map<Integer, List<CellExtra>> mergeCellMap;
+	/**
+	 * 是否至少有一行数据 && 表头行数
 	 */
 	protected boolean atLeastOne = false;
-	private final Map<Integer, List<CellExtra>> mergeCellMap;
 	protected int maxHeadRow;
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg,

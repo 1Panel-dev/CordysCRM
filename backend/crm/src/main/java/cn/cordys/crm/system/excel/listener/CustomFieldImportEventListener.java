@@ -11,9 +11,11 @@ import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.idev.excel.context.AnalysisContext;
+import cn.idev.excel.metadata.CellExtra;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -44,9 +46,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private final Class<T> entityClass;
 	/**
-	 * setter cache
+	 * method cache
 	 */
-	private final Map<String, Method> setterCache = new HashMap<>();
+	private final Map<String, Method> methodCache = new HashMap<>();
 	/**
 	 * 操作人
 	 */
@@ -65,19 +67,20 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private int successCount;
 	/**
-	 * 子表格ID
+	 * 临时合并实体
 	 */
+	private T mergedTmpEntity;
 	private int subRowId;
 
-    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
-                                          String fieldTable, CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize) {
-		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, null);
+    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
+										  CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
+										  Map<Integer, List<CellExtra>> mergeCellMap) {
+		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
         this.consumer = consumer;
         this.batchSize = batchSize > 0 ? batchSize : 2000;
-		this.subRowId = 1;
         // 初始化大小,扩容有开销
         this.dataList = new ArrayList<>(batchSize);
         this.fields = new ArrayList<>(batchSize);
@@ -97,12 +100,14 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
 		super.invoke(data, analysisContext);
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-		if (!this.errRows.contains(rowIndex)) {
-			// build entity by row-data
-			buildEntityFromRow(rowIndex, data);
-			if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
-				batchProcessData();
-			}
+		if (this.errRows.contains(rowIndex)) {
+			// 有错误跳过该行
+			return;
+		}
+		// build entity by row-data
+		buildEntityFromRow(rowIndex, data);
+		if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+			batchProcessData();
 		}
     }
 
@@ -111,7 +116,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         if (CollectionUtils.isNotEmpty(this.dataList) || CollectionUtils.isNotEmpty(this.fields) || CollectionUtils.isNotEmpty(this.blobFields)) {
             batchProcessData();
         }
-        LogUtils.info("线索导入完成, 总行数: {}", successCount);
+        LogUtils.info("数据导入完成, 总行数: {}", successCount);
     }
 
     /**
@@ -141,11 +146,21 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @param rowData  行数据
      */
     private void buildEntityFromRow(Integer rowIndex, Map<Integer, String> rowData) {
-        String rowKey = IDGenerator.nextStr();
         try {
-            T entity = entityClass.getDeclaredConstructor().newInstance();
-            setInternal(entity, rowKey);
-            headMap.forEach((k, v) -> {
+			if (isMergeFirstRow(rowIndex) || isNormalRow(rowIndex)) {
+				// 非合并行才创建实体
+				String rowKey = IDGenerator.nextStr();
+				mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
+				setInternal(mergedTmpEntity, rowKey);
+				subRowId = 1;
+			} else {
+				subRowId++;
+			}
+			Optional<Object> id = Optional.ofNullable(getResourceId(mergedTmpEntity));
+			if (id.isEmpty()) {
+				return;
+			}
+			headMap.forEach((k, v) -> {
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
                     return;
@@ -156,7 +171,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 }
                 if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
                     try {
-                        setPropertyValue(entity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
+                        setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
                     } catch (Exception e) {
                         LogUtils.error("import error, cannot set property. {}", e.getMessage());
                         throw new GenericException(e);
@@ -164,8 +179,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 } else {
 					BaseResourceSubField resourceField = new BaseResourceSubField();
                     resourceField.setId(IDGenerator.nextStr());
-                    resourceField.setResourceId(rowKey);
-                    resourceField.setFieldId(field.getId());
+                    resourceField.setResourceId(id.get().toString());
+                    resourceField.setFieldId(field.idOrBusinessKey());
                     resourceField.setFieldValue(val);
 					if (refSubMap.containsKey(field.getName())) {
 						resourceField.setRefSubId(refSubMap.get(field.getName()));
@@ -184,14 +199,22 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             if (serialField != null) {
 				BaseResourceSubField serialResource = new BaseResourceSubField();
                 serialResource.setId(IDGenerator.nextStr());
-                serialResource.setResourceId(rowKey);
-                serialResource.setFieldId(serialField.getId());
+                serialResource.setResourceId(id.get().toString());
+                serialResource.setFieldId(serialField.idOrBusinessKey());
                 String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
                         currentOrg, entityClass.getSimpleName().toLowerCase());
                 serialResource.setFieldValue(serialNo);
+				if (refSubMap.containsKey(serialField.getName())) {
+					serialResource.setRefSubId(refSubMap.get(serialField.getName()));
+					serialResource.setRowId(String.valueOf(subRowId));
+				}
                 fields.add(serialResource);
             }
-            dataList.add(entity);
+			if (isMergedLastRow(rowIndex) || isNormalRow(rowIndex)) {
+				// 合并最后行, 添加并清除实体
+				dataList.add(mergedTmpEntity);
+				mergedTmpEntity = null;
+			}
         } catch (Exception e) {
             LogUtils.error("import error: {}", e.getMessage());
             throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
@@ -228,10 +251,41 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             if (method.getName().startsWith("set") && method.getParameterCount() == 1) {
                 String fieldName = method.getName().substring(3);
                 String property = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-                setterCache.put(property, method);
-            }
+				methodCache.put("set:" + property, method);
+            } else if (method.getParameterCount() == 0 && Strings.CS.equals(method.getName(), "getId")) {
+				methodCache.put("get:id", method);
+			}
         }
     }
+
+	/**
+	 * 判断是否合并首行
+	 * @param rowIndex 行号
+	 * @return 是否为合并首行
+	 */
+	private boolean isMergeFirstRow(int rowIndex) {
+		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
+	}
+
+	/**
+	 * 判断当前行是否为合并尾行
+	 * @param rowIndex 行号
+	 * @return 是否为合并尾行
+	 */
+	private boolean isMergedLastRow(int rowIndex) {
+		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
+	}
+
+	/**
+	 * 非合并行
+	 * @param rowIndex 行号
+	 * @return 是否为正常行
+	 */
+	private boolean isNormalRow(int rowIndex) {
+		return !mergeCellMap.containsKey(rowIndex);
+	}
 
     /**
      * 设置entity内部字段
@@ -242,12 +296,12 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @throws Exception 异常
      */
     private void setInternal(T instance, String rowKey) throws Exception {
-        setterCache.get("id").invoke(instance, rowKey);
-        setterCache.get("createUser").invoke(instance, operator);
-        setterCache.get("createTime").invoke(instance, System.currentTimeMillis());
-        setterCache.get("updateUser").invoke(instance, operator);
-        setterCache.get("updateTime").invoke(instance, System.currentTimeMillis());
-        setterCache.get("organizationId").invoke(instance, currentOrg);
+		methodCache.get("set:id").invoke(instance, rowKey);
+		methodCache.get("set:createUser").invoke(instance, operator);
+		methodCache.get("set:createTime").invoke(instance, System.currentTimeMillis());
+		methodCache.get("set:updateUser").invoke(instance, operator);
+		methodCache.get("set:updateTime").invoke(instance, System.currentTimeMillis());
+		methodCache.get("set:organizationId").invoke(instance, currentOrg);
     }
 
     /**
@@ -260,9 +314,23 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @throws Exception 异常
      */
     private void setPropertyValue(T instance, String fieldName, Object value) throws Exception {
-        Method setter = setterCache.get(fieldName);
+        Method setter = methodCache.get("set:" + fieldName);
         if (setter != null) {
             setter.invoke(instance, value);
         }
     }
+
+	/**
+	 * 获取资源ID
+	 * @param instance 实例对象
+	 * @return 资源ID
+	 * @throws Exception 异常信息
+	 */
+	private Object getResourceId(T instance) throws Exception {
+		Method getter = methodCache.get("get:id");
+		if (getter != null) {
+			return getter.invoke(instance);
+		}
+		return null;
+	}
 }
