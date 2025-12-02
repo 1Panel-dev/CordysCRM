@@ -38,7 +38,7 @@
   import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  import { getThirdPartyConfig } from '@/api/modules';
+  import { getTenderConfig } from '@/api/modules';
   import useLocalForage from '@/hooks/useLocalForage';
 
   const { t } = useI18n();
@@ -58,7 +58,7 @@
     try {
       isError.value = false;
       loading.value = true;
-      tenderConfig.value = await getThirdPartyConfig('TENDER');
+      tenderConfig.value = await getTenderConfig();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

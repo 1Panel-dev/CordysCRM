@@ -19,6 +19,7 @@ export const CreateAuthUrl = '/system/auth-sources/add'; // 认证设置-新增
 export const UpdateAuthStatusUrl = '/system/auth-sources/update/status'; // 认证设置-更新状态
 export const UpdateAuthNameUrl = '/system/auth-sources/update/name'; // 认证设置-更新名称
 export const DeleteAuthUrl = '/system/auth-sources/delete'; // 认证设置-删除
+export const GetTenderConfigUrl = '/tender/application/config'; // 招投标-获取配置项
 
 // 个人中心
 export const GetPersonalUrl = '/personal/center/info';

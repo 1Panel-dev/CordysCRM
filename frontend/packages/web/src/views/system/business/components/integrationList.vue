@@ -403,9 +403,9 @@
                 <n-switch
                   size="small"
                   :rubber-band="false"
-                  :value="item.response.mkEnable"
-                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
-                  @update:value="handleChangeEnable(item, 'mkEnable')"
+                  :value="item.response.tenderEnable"
+                  :disabled="!item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'tenderEnable')"
                 />
               </template>
               {{ t('system.business.notConfiguredTip') }}
@@ -593,7 +593,7 @@
 
   async function handleChangeEnable(
     item: IntegrationItem,
-    key: 'deBoardEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable' | 'startEnable' | 'mkEnable'
+    key: 'deBoardEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable' | 'startEnable' | 'mkEnable' | 'tenderEnable'
   ) {
     try {
       loading.value = true;
@@ -613,6 +613,7 @@
           item.response.deBoardEnable = true;
           item.response.startEnable = false;
           item.response.mkEnable = false;
+          item.response.tenderEnable = false;
         })
         .finally(() => {
           loading.value = false;
@@ -640,6 +641,7 @@
           item.response.deBoardEnable = true;
           item.response.startEnable = false;
           item.response.mkEnable = false;
+          item.response.tenderEnable = false;
         });
     } catch (error) {
       // eslint-disable-next-line no-console

@@ -70,8 +70,8 @@
         </CrmCard>
       </div>
       <div class="right-box">
-        <CrmCard hide-footer>
-          <div class="h-full">
+        <CrmCard :content-height="null" no-content-padding hide-footer>
+          <div class="p-[24px]">
             <ConfigCard :list="moduleNavList" @load-module-list="initModuleNavList()" />
           </div>
         </CrmCard>

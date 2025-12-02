@@ -145,7 +145,13 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 下载价格表模板
   function downloadProductPriceTemplate() {
-    return CDR.get({ url: DownloadProductPriceTemplateUrl });
+    return CDR.get(
+      {
+        url: DownloadProductPriceTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
   }
 
   return {

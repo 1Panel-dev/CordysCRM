@@ -36,7 +36,7 @@
       <n-scrollbar
         :content-style="{
           'max-height': props.contentMaxHeight || undefined,
-          'height': props.autoHeight ? 'auto' : '100%',
+          'height': props.autoHeight ? 'auto' : props.contentHeight,
         }"
       >
         <slot></slot>
@@ -98,6 +98,7 @@
       bordered?: boolean;
       autoHeight?: boolean;
       specialHeight?: number; // 特殊高度，例如某些页面有面包屑，autoHeight 时无效
+      contentHeight?: string | null;
     }>(),
     {
       noContentPadding: false,
@@ -105,6 +106,7 @@
       hideFooter: false,
       hideContinue: false,
       specialHeight: 0,
+      contentHeight: '100%',
     }
   );
   const emit = defineEmits(['cancel', 'save', 'saveAndContinue']);
