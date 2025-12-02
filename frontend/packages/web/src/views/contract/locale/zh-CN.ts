@@ -15,4 +15,8 @@ export default {
   'contract.partialCompleted': '部分完成',
   'contract.voidedConfirmContent': '作废后，不可恢复，请谨慎操作！',
   'contract.voidedConfirmTitle': '确认作废 {name} 吗？',
+  'contract.applicant': '申请人',
+  'contract.invoicedContract': '开票合同',
+  'contract.contractAmount': '合同金额',
+  'contract.applicationTime': '申请时间',
 };

@@ -86,6 +86,8 @@ export const GetGlobalModuleCountUrl = '/global/search/module/count'; // 数量�
 export const ExportContactAllUrl = '/account/contact/export-all'; // 导出所有联系人
 export const ExportContactSelectedUrl = '/account/contact/export-select'; // 导出选中联系人
 
+export const GetAccountContractListUrl = '/account/contract/page'; // 客户详情-合同列表
+
 // 视图
 export const GetCustomerViewDetailUrl = '/account/view/detail';
 export const GetCustomerViewListUrl = '/account/view/list';

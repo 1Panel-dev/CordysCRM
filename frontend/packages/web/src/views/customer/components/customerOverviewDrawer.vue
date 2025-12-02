@@ -86,6 +86,7 @@
           :source-id="props.sourceId"
           :readonly="collaborationType === 'READ_ONLY' || props.readonly"
         />
+        <ContractTimeline v-else-if="activeTab === 'contract'" :source-id="props.sourceId" />
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -118,6 +119,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
+  import ContractTimeline from '@/views/contract/contract/components/contractTimeline.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
@@ -236,6 +238,12 @@
         name: 'collaborator',
         tab: t('customer.collaborator'),
         enable: true,
+      },
+      {
+        name: 'contract',
+        tab: t('module.contract'),
+        enable: true,
+        permission: ['CONTRACT:READ'],
       },
     ];
     if (collaborationType.value) {

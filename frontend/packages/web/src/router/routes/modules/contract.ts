@@ -10,8 +10,8 @@ const contract: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'module.contract',
-    permissions: ['CONTRACT:READ', 'CLUE_MANAGEMENT_POOL:READ'], // TODO lmy permission
-    icon: 'iconicon_clue', // TODO lmy icon
+    permissions: ['CONTRACT:READ', 'CONTRACT_PAYMENT_PLAN:READ'],
+    icon: 'iconicon_contract',
     hideChildrenInMenu: true,
     collapsedLocale: 'module.contract',
   },
@@ -33,7 +33,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.paymentPlan',
         isTopMenu: true,
-        permissions: ['CLUE_MANAGEMENT_POOL:READ'], // TODO lmy permission
+        permissions: ['CONTRACT_PAYMENT_PLAN:READ'],
       },
     },
   ],

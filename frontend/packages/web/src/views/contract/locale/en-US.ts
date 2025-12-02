@@ -15,4 +15,8 @@ export default {
   'contract.partialCompleted': 'Partially Completed',
   'contract.voidedConfirmContent': 'This action cannot be undone. Please proceed with caution!',
   'contract.voidedConfirmTitle': 'Are you sure you want to void {name}?',
+  'contract.applicant': 'Applicant',
+  'contract.invoicedContract': 'Invoiced Contract',
+  'contract.contractAmount': 'Contract Amount',
+  'contract.applicationTime': 'Application Time',
 };

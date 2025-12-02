@@ -116,6 +116,7 @@ import {
   UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
   UpdateCustomerViewUrl,
+  GetAccountContractListUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   ChartResponseDataItem,
@@ -174,7 +175,7 @@ import type {
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
-
+import type { ContractItem } from '@lib/shared/models/contract';
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
   function addCustomer(data: SaveCustomerParams) {
@@ -750,6 +751,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: MergeAccountPageUrl, data });
   }
 
+  function getAccountContract(data: TableQueryParams) {
+    return CDR.post<CommonList<ContractItem>>({ url: GetAccountContractListUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -867,5 +872,6 @@ export default function useProductApi(CDR: CordysAxios) {
     generateCustomerChart,
     generateCustomerPoolChart,
     generateCustomerContactChart,
+    getAccountContract,
   };
 }
