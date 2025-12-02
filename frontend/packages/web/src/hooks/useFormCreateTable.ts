@@ -49,6 +49,7 @@ export type FormKey =
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.CONTRACT_PAYMENT
+  | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT
   | FormDesignKeyEnum.PRICE;
 
 export interface FormCreateTableProps {
@@ -100,6 +101,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: TableKeyEnum.OPPORTUNITY_QUOTATION,
     [FormDesignKeyEnum.CONTRACT]: TableKeyEnum.CONTRACT,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
+    [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
     [FormDesignKeyEnum.PRICE]: TableKeyEnum.PRICE,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
@@ -381,6 +383,30 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       ellipsis: {
         tooltip: true,
       },
+    },
+  ];
+
+  const paymentInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+    {
+      title: t('contract.planStatus'),
+      width: 120,
+      key: 'planStatus',
+      filterOptions: contractPaymentPlanStatusOptions,
+      sortOrder: false,
+      sorter: true,
+      filter: true,
+      render: props.specialRender?.status,
     },
   ];
 
@@ -739,29 +765,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           row.archivedStatus === ArchiveStatusEnum.ARCHIVED ? t('common.archive') : t('common.notArchived'),
       },
     ],
-    [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
-      {
-        title: t('org.department'),
-        width: 120,
-        key: 'departmentId',
-        ellipsis: {
-          tooltip: true,
-        },
-        sortOrder: false,
-        sorter: true,
-        render: (row: any) => row.departmentName || '-',
-      },
-      {
-        title: t('contract.planStatus'),
-        width: 120,
-        key: 'planStatus',
-        filterOptions: contractPaymentPlanStatusOptions,
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: props.specialRender?.status,
-      },
-    ],
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,
+    [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: paymentInternalColumns,
     [FormDesignKeyEnum.PRICE]: [],
   };
   const staticColumns: CrmDataTableColumn[] = [

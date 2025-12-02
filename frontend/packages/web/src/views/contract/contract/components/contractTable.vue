@@ -76,7 +76,12 @@
     :sourceId="activeSourceId"
     @refresh="searchData"
   />
-  <DetailDrawer v-model:visible="showDetailDrawer" :sourceId="activeSourceId" @refresh="searchData" />
+  <DetailDrawer
+    v-model:visible="showDetailDrawer"
+    :sourceId="activeSourceId"
+    @refresh="searchData"
+    @showCustomerDrawer="showCustomerDrawer"
+  />
 </template>
 
 <script setup lang="ts">
@@ -146,6 +151,7 @@
     needInitDetail.value = false;
     activeFormKey.value = FormDesignKeyEnum.CONTRACT;
     activeSourceId.value = '';
+    activeSourceName.value = '';
     formCreateDrawerVisible.value = true;
   }
 

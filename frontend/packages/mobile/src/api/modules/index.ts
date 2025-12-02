@@ -254,6 +254,7 @@ export const {
   deleteContract,
   getContractFormConfig,
   getPaymentPlanList,
+  getContractPaymentPlanList,
   addPaymentPlan,
   updatePaymentPlan,
   deletePaymentPlan,
