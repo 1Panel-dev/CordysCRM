@@ -560,8 +560,10 @@ public class ModuleFormService {
 			while (it.hasNext()) {
 				BaseField oldField = it.next();
 				if (subRefIds.contains(oldField.getId())) {
-					// 属于引用字段
-					it.set(JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class));
+					// 属于引用字段 (保留数据源引用ID)
+					BaseField refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
+					refField.setResourceFieldId(oldField.getResourceFieldId());
+					it.set(refField);
 				}
 			}
 		}
