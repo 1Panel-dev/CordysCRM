@@ -284,7 +284,7 @@ public class ProductPriceService {
 			FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
 					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
 			return ImportResponse.builder().errorMessages(eventListener.getErrList())
-					.successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+					.successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
 		} catch (Exception e) {
 			LogUtils.error("product price import error: ", e.getMessage());
 			throw new GenericException(e.getMessage());
