@@ -30,9 +30,9 @@ import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
-import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -77,8 +77,6 @@ public class ContractService {
     private BaseMapper<Customer> customerBaseMapper;
     @Resource
     private BaseMapper<User> userBaseMapper;
-    @Resource
-    private ExtProductMapper extProductMapper;
     @Resource
     private LogService logService;
 
@@ -129,8 +127,9 @@ public class ContractService {
         baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
-        ContractResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
-        saveSnapshot(contract, moduleFormConfigDTO, response, request.getProducts());
+        List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+        ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
+        saveSnapshot(contract, moduleFormConfigDTO, response);
 
         return contract;
     }
@@ -143,11 +142,10 @@ public class ContractService {
      * @param moduleFormConfigDTO
      * @param response
      */
-    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, ContractResponse response, List<Map<String, Object>> products) {
+    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, ContractResponse response) {
         //移除response中moduleFields 集合里 的 BaseModuleFieldValue 的 fieldId="products"的数据，避免快照数据过大
         response.setModuleFields(response.getModuleFields().stream()
-                .filter(field -> (!"products".equals(field.getFieldId()) && field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
-        response.setProducts(products);
+                .filter(field -> (field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
         ContractSnapshot snapshot = new ContractSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setContractId(contract.getId());
@@ -252,8 +250,9 @@ public class ContractService {
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            ContractResponse response = getContractResponse(contract, moduleFields, moduleFormConfigDTO);
-            saveSnapshot(contract, moduleFormConfigDTO, response, request.getProducts());
+            List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+            ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
+            saveSnapshot(contract, moduleFormConfigDTO, response);
 
 
         }, () -> {
@@ -530,5 +529,19 @@ public class ContractService {
             first.setContractValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(first);
         }
+    }
+
+
+    private List<BaseModuleFieldValue> resolveSubBusiness(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
+        Map<String, BaseField> fieldMap = formConfig.getFields().stream().filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
+                .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
+        List<BaseModuleFieldValue> subFieldValues = new ArrayList<>();
+        fieldValues.stream().filter(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField())
+                .forEach(fv -> subFieldValues.add(new BaseModuleFieldValue(fieldMap.get(fv.getFieldId()).getId(), fv.getFieldValue())));
+        fieldValues.removeIf(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField());
+        if (CollectionUtils.isNotEmpty(subFieldValues)) {
+            fieldValues.addAll(subFieldValues);
+        }
+        return fieldValues;
     }
 }
