@@ -17,6 +17,7 @@ import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -32,6 +33,7 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
@@ -79,6 +81,8 @@ public class ContractService {
     private BaseMapper<User> userBaseMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
 
     /**
      * 新建合同
@@ -105,8 +109,7 @@ public class ContractService {
         contract.setName(request.getName());
         contract.setCustomerId(request.getCustomerId());
         contract.setOwner(request.getOwner());
-        //todo number
-        contract.setNumber(id);
+        contract.setNumber(createContractNumber(moduleFormConfigDTO, orgId));
         contract.setStatus(ContractStatus.SIGNED.name());
         contract.setOrganizationId(orgId);
         contract.setArchivedStatus(ArchivedStatus.UN_ARCHIVED.name());
@@ -132,6 +135,20 @@ public class ContractService {
         saveSnapshot(contract, moduleFormConfigDTO, response);
 
         return contract;
+    }
+
+
+    private String createContractNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId) {
+        BaseField numberField = moduleFormConfigDTO.getFields().stream()
+                .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
+
+        if (numberField != null) {
+            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+            fieldValue.setFieldId(numberField.getId());
+            String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.CONTRACT.getKey());
+            return serialNo;
+        }
+        return null;
     }
 
 
