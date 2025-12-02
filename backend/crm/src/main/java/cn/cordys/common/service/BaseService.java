@@ -274,7 +274,8 @@ public class BaseService {
 
         if (moduleFields != null) {
             Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, subTableKey, moduleFormConfigDTO);
-            fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyName);
+            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
+            fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -307,12 +308,13 @@ public class BaseService {
             List<BaseModuleFieldValue> moduleFields,
             Map<String, String> fieldNameMap,
             String subTableKey,
+            String subTableKeyId,
             String subTableKeyName) {
         moduleFields.forEach(field -> {
             String fieldId = field.getFieldId();
 
             // 普通字段
-            if (!Strings.CI.equals(fieldId, subTableKey)) {
+            if (!Strings.CI.equals(fieldId, subTableKey) && !Strings.CI.equals(fieldId, subTableKeyId)) {
                 resourceLog.put(fieldId, field.getFieldValue());
                 return;
             }
@@ -324,7 +326,7 @@ public class BaseService {
 
             rows.forEach(row ->
                     row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + fieldNameMap.get(key), value)
+                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key), value)
                     )
             );
         });
@@ -388,7 +390,8 @@ public class BaseService {
 
         if (originResourceFields != null) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, subTableKey, moduleFormConfigDTO);
-            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyName);
+            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
+            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
         }
 
         if (modifiedResourceFields != null) {
@@ -396,8 +399,8 @@ public class BaseService {
             List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
-
-            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableKey, subTableKeyName);
+            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
         }
 
         try {
@@ -422,12 +425,13 @@ public class BaseService {
             List<BaseModuleFieldValue> fields,
             Map<String, String> fieldNameMap,
             String subTableKey,
+            String subTableKeyId,
             String subTableKeyName) {
         fields.forEach(field -> {
             String fieldId = field.getFieldId();
 
             // 普通字段
-            if (!Strings.CI.equals(fieldId, subTableKey)) {
+            if (!Strings.CI.equals(fieldId, subTableKey) && !Strings.CI.equals(fieldId, subTableKeyId)) {
                 resourceLog.put(fieldId, field.getFieldValue());
                 return;
             }
@@ -471,6 +475,18 @@ public class BaseService {
             }
         }
         return nameMap;
+    }
+
+    public String getSubTableKeyId(ModuleFormConfigDTO moduleFormConfigDTO, String subTableKey) {
+        if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
+            for (BaseField field : moduleFormConfigDTO.getFields()) {
+                if (Strings.CI.equals(field.getBusinessKey(), subTableKey)) {
+                    return field.getId();
+                }
+            }
+        }
+        return null;
+
     }
 
 
