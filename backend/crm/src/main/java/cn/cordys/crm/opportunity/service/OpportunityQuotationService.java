@@ -139,7 +139,8 @@ public class OpportunityQuotationService {
         opportunityQuotationMapper.insert(opportunityQuotation);
 
         // 保存表单配置快照
-        OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+		List<BaseModuleFieldValue> allFieldValues = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(opportunityQuotation.getId());
+		OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, allFieldValues, moduleFormConfigDTO);
 
         baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
@@ -191,9 +192,6 @@ public class OpportunityQuotationService {
      * @param response             报价单详情响应类
      */
     private void saveSnapshot(OpportunityQuotation opportunityQuotation, ModuleFormConfigDTO moduleFormConfigDTO, OpportunityQuotationGetResponse response, List<Map<String, Object>> products) {
-        response.setModuleFields(response.getModuleFields().stream()
-                .filter(field -> (!"products".equals(field.getFieldId()) && field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
-        response.setProducts(products);
         OpportunityQuotationSnapshot snapshot = new OpportunityQuotationSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setQuotationId(opportunityQuotation.getId());
@@ -212,7 +210,6 @@ public class OpportunityQuotationService {
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
-        moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
         optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
@@ -220,6 +217,7 @@ public class OpportunityQuotationService {
         response.setOpportunityName(opportunity.getName());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
+		moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
         return baseService.setCreateAndUpdateUserName(response);
     }
 
@@ -536,7 +534,8 @@ public class OpportunityQuotationService {
         }
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
-        OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+		List<BaseModuleFieldValue> allFieldValues = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(opportunityQuotation.getId());
+        OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, allFieldValues, moduleFormConfigDTO);
         saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response, request.getProducts());
         // 处理日志上下文
         baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
