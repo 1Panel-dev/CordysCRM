@@ -4,7 +4,7 @@
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     :fullscreen-target-ref="props.fullscreenTargetRef"
-    class="crm-contract-payment-table"
+    :class="`crm-contract-payment-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     @page-change="propsEvent.pageChange"
@@ -20,6 +20,7 @@
         <n-button
           v-if="!props.readonly"
           v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          :loading="createLoading"
           type="primary"
           @click="handleNewClick"
         >
@@ -67,7 +68,8 @@
     :source-id="activeSourceId"
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
-    :link-form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
+    :link-form-key="FormDesignKeyEnum.CONTRACT"
+    :link-form-info="linkFormInfo"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -115,6 +117,7 @@
   import { deletePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
@@ -133,6 +136,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
@@ -145,17 +149,39 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
 
   const formCreateDrawerVisible = ref(false);
-  const activeSourceId = ref('');
+  const activeSourceId = ref(props.sourceId || '');
   const initialSourceName = ref('');
   const needInitDetail = ref(false);
   const activeFormKey = ref(FormDesignKeyEnum.CONTRACT_PAYMENT);
 
-  function handleNewClick() {
-    activeSourceId.value = props.isContractTab ? props.sourceId || '' : '';
-    initialSourceName.value = props.isContractTab ? props.sourceName || '' : '';
-    needInitDetail.value = false;
-    activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
-    formCreateDrawerVisible.value = true;
+  const createLoading = ref(false);
+  const linkFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const linkFormInfo = ref();
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: linkFormKey,
+    sourceId: activeSourceId,
+  });
+
+  async function handleNewClick() {
+    try {
+      createLoading.value = true;
+      activeSourceId.value = props.isContractTab ? props.sourceId || '' : '';
+      initialSourceName.value = props.isContractTab ? props.sourceName || '' : '';
+      needInitDetail.value = false;
+      activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
+      if (props.isContractTab) {
+        linkFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        await initFormConfig();
+        await initFormDetail(false, true);
+      }
+      linkFormInfo.value = linkFormFieldMap.value;
+      formCreateDrawerVisible.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      createLoading.value = false;
+    }
   }
 
   const showExportModal = ref<boolean>(false);
@@ -303,7 +329,8 @@
   }
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
+    formKey: props.formKey,
+    excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
       width: currentLocale.value === 'en-US' ? 250 : 140,
@@ -340,7 +367,7 @@
         }),
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'], // TODO lmy permission
-    containerClass: '.crm-contract-payment-table',
+    containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 

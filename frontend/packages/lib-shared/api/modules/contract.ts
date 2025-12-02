@@ -26,6 +26,7 @@ import {
   DragContractViewUrl,
   PaymentPlanPageUrl,
   PaymentPlanAddUrl,
+  ContractPaymentPlanPageUrl,
   PaymentPlanUpdateUrl,
   PaymentPlanDeleteUrl,
   GetPaymentPlanDetailUrl,
@@ -170,7 +171,11 @@ export default function useContractApi(CDR: CordysAxios) {
 
   // 回款计划列表
   function getPaymentPlanList(data: TableQueryParams) {
-    return CDR.post<CommonList<PaymentPlanItem>>({ url: PaymentPlanPageUrl, data }, { ignoreCancelToken: true });
+    return CDR.post<CommonList<PaymentPlanItem>>({ url: PaymentPlanPageUrl, data });
+  }
+
+  function getContractPaymentPlanList(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentPlanItem>>({ url: ContractPaymentPlanPageUrl, data });
   }
 
   // 添加回款计划
@@ -287,6 +292,7 @@ export default function useContractApi(CDR: CordysAxios) {
     getContractFormSnapshotConfig,
     // 回款计划
     getPaymentPlanList,
+    getContractPaymentPlanList,
     addPaymentPlan,
     updatePaymentPlan,
     deletePaymentPlan,

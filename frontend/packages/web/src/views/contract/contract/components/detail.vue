@@ -23,10 +23,12 @@
           label-width="auto"
           value-align="start"
           tooltip-position="top-start"
+          @openCustomerDetail="emit('showCustomerDrawer', detailInfo)"
           @init="handleInit"
         />
         <PaymentTable
           v-else
+          :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
           :sourceId="props.sourceId"
           :sourceName="title"
           isContractTab
@@ -80,6 +82,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'showCustomerDrawer', row: ContractItem): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {

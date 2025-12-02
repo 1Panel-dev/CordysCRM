@@ -29,6 +29,7 @@ export const DragContractViewUrl = '/contract/view/edit/pos'; // 拖拽合同视
 
 // 回款计划列表
 export const PaymentPlanPageUrl = '/contract/payment-plan/page'; // 回款计划列表
+export const ContractPaymentPlanPageUrl = '/contract/contract-payment-plan/page'; // 回款计划列表
 export const PaymentPlanAddUrl = '/contract/payment-plan/add'; // 添加回款计划
 export const PaymentPlanUpdateUrl = '/contract/payment-plan/update'; // 更新回款计划
 export const PaymentPlanDeleteUrl = '/contract/payment-plan/delete'; // 删除回款计划

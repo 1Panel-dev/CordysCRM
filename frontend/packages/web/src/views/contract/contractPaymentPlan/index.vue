@@ -3,19 +3,40 @@
     <CrmCard no-content-padding hide-footer>
       <div class="h-full px-[16px] pt-[16px]">
         <PaymentTable
+          :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
           :fullscreen-target-ref="contractPaymentCardRef"
           @open-contract-drawer="handleOpenContractDrawer"
         />
       </div>
     </CrmCard>
-    <ContractDetailDrawer v-model:visible="showContractDetailDrawer" :sourceId="activeSourceId" />
+    <ContractDetailDrawer
+      v-model:visible="showContractDetailDrawer"
+      :sourceId="activeSourceId"
+      @showCustomerDrawer="handleOpenCustomerDrawer"
+    />
+    <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeCustomerSourceId" />
+    <openSeaOverviewDrawer
+      v-model:show="showCustomerOpenseaOverviewDrawer"
+      :source-id="activeCustomerSourceId"
+      :pool-id="poolId"
+      :hidden-columns="hiddenColumns"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import type { ContractItem } from '@lib/shared/models/contract';
+  import { CluePoolItem } from '@lib/shared/models/system/module';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import ContractDetailDrawer from '../contract/components/detail.vue';
   import PaymentTable from './components/paymentTable.vue';
+  import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
+
+  import { getOpenSeaOptions } from '@/api/modules';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const contractPaymentCardRef = ref<HTMLElement | null>(null);
 
@@ -25,4 +46,31 @@
     activeSourceId.value = params.id;
     showContractDetailDrawer.value = true;
   }
+
+  const showCustomerOverviewDrawer = ref(false);
+  const showCustomerOpenseaOverviewDrawer = ref(false);
+  const poolId = ref<string>('');
+  const activeCustomerSourceId = ref<string>('');
+  function handleOpenCustomerDrawer(row: ContractItem) {
+    activeCustomerSourceId.value = row.customerId;
+    showCustomerOverviewDrawer.value = true;
+  }
+
+  const openSeaOptions = ref<CluePoolItem[]>([]);
+
+  async function initOpenSeaOptions() {
+    if (hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+      const res = await getOpenSeaOptions();
+      openSeaOptions.value = res;
+    }
+  }
+
+  const hiddenColumns = computed<string[]>(() => {
+    const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
+    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+
+  onBeforeMount(() => {
+    initOpenSeaOptions();
+  });
 </script>

@@ -259,6 +259,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         key: 'departmentName',
       },
     ],
+    [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: [
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+    ],
   };
   const staticFields = [
     {
@@ -385,7 +391,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       } else if (
         item.type === FieldTypeEnum.DATA_SOURCE &&
         item.dataSourceType === FieldDataSourceTypeEnum.CUSTOMER &&
-        [FormDesignKeyEnum.CLUE, FormDesignKeyEnum.BUSINESS].includes(props.formKey.value)
+        [FormDesignKeyEnum.CLUE, FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT_SNAPSHOT].includes(
+          props.formKey.value
+        )
       ) {
         // 客户字段
         descriptions.value.push({

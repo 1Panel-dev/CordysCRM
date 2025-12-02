@@ -42,6 +42,7 @@ import {
   getContractFormConfig,
   getContractFormSnapshotConfig,
   getContractList,
+  getContractPaymentPlanList,
   getCustomer,
   getCustomerContact,
   getCustomerContactFormConfig,
@@ -683,6 +684,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: (id) => getContractFormSnapshotConfig(id),
   [FormDesignKeyEnum.CONTRACT]: getContractFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
+  [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
 };
 
@@ -717,6 +719,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTRACT]: addContract,
   [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: addContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlan,
+  [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: addPaymentPlan,
   [FormDesignKeyEnum.PRICE]: addProductPrice,
 };
 
@@ -751,6 +754,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTRACT]: updateContract,
   [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: updateContract,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlan,
+  [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: updatePaymentPlan,
   [FormDesignKeyEnum.PRICE]: updateProductPrice,
 };
 
@@ -781,6 +785,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CONTRACT]: getContractDetail,
   [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: getContractDetail,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanDetail,
+  [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getPaymentPlanDetail,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationDetail,
   [FormDesignKeyEnum.PRICE]: getProductPrice,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationDetail,
@@ -808,6 +813,7 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: advancedSearchOptPage,
   [FormDesignKeyEnum.CONTRACT]: getContractList,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanList,
+  [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getContractPaymentPlanList,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationList,
   [FormDesignKeyEnum.PRICE]: getProductPriceList,
 };
