@@ -364,4 +364,25 @@
                 LEFT JOIN customer c ON ct.customer_id = c.id
         where ct.id = #{id}
     </select>
+    <select id="calculateContractStatisticByCustomerId"
+            resultType="cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse">
+        SELECT
+            sum(ct.amount) as totalAmount
+        FROM
+        contract ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+                sys_organization_user.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+            )
+        </if>
+        where ct.organization_id = #{orgId} and ct.customer_id = #{customerId}
+        <if test="dataPermission != null and dataPermission.self">
+            and o.owner = #{userId}
+        </if>
+    </select>
 </mapper>

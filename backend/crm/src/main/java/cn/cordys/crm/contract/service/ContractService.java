@@ -27,6 +27,7 @@ import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
+import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
@@ -543,5 +544,9 @@ public class ContractService {
             fieldValues.addAll(subFieldValues);
         }
         return fieldValues;
+    }
+
+    public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);
     }
 }
