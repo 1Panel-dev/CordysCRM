@@ -739,7 +739,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 								if (showFieldConfig == null) {
 									return;
 								}
-								rowMap.put(moduleFormService.idOrBusinessKey(showFieldConfig), null);
+								rowMap.put(showFieldConfig.idOrBusinessKey(), null);
 							});
 						}
 						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);

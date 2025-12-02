@@ -7,7 +7,6 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
@@ -47,6 +46,7 @@ import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.enums.CellExtraTypeEnum;
+import cn.idev.excel.metadata.CellExtra;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -277,7 +277,10 @@ public class ProductPriceService {
 	public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
 		try {
 			List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
-			CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields);
+			CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
+			FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
+					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+			CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields, mergeCellEventListener.getMergeCellMap());
 			FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
 					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
 			return ImportResponse.builder().errorMessages(eventListener.getErrList())
@@ -295,7 +298,7 @@ public class ProductPriceService {
 	 * @param fields 自定义字段集合
 	 * @return 导入监听器
 	 */
-	private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields) {
+	private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap) {
 		CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
 			List<LogDTO> logs = new ArrayList<>();
 			prices.forEach(price -> {
@@ -308,7 +311,7 @@ public class ProductPriceService {
 			// record logs
 			logService.batchAdd(logs);
 		};
-		return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000);
+		return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap);
 	}
 
 	/**

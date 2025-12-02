@@ -188,4 +188,9 @@ public abstract class BaseField {
     public boolean isIndustry() {
         return Strings.CS.equals(type, FieldType.INDUSTRY.name());
     }
+
+	@JsonIgnore
+	public String idOrBusinessKey() {
+		return this.getBusinessKey() != null ? this.getBusinessKey() : this.getId();
+	}
 }

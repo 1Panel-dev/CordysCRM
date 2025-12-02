@@ -333,7 +333,7 @@ public class ProductService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Product> eventListener = new CustomFieldImportEventListener<>(fields, Product.class, currentOrg, currentUser,
-                    "product_field", afterDo, 2000);
+                    "product_field", afterDo, 2000, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();

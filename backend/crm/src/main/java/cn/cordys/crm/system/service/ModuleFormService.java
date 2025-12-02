@@ -74,7 +74,8 @@ public class ModuleFormService {
                 FieldSourceType.CLUE.name(), "clue",
                 FieldSourceType.CONTACT.name(), "customer_contact",
                 FieldSourceType.OPPORTUNITY.name(), "opportunity",
-                FieldSourceType.PRODUCT.name(), "product");
+                FieldSourceType.PRODUCT.name(), "product",
+				FieldSourceType.PRICE.name(), "product_price");
     }
 
     @Value("classpath:form/form.json")
@@ -326,26 +327,26 @@ public class ModuleFormService {
 		List<BaseField> allFields = flattenFormAllFields(formConfig);
 		allFields.forEach(field -> {
             if (Strings.CS.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
-                optionMap.put(idOrBusinessKey(field), optionPropToDto(radioField.getOptions()));
+                optionMap.put(field.idOrBusinessKey(), optionPropToDto(radioField.getOptions()));
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
-                optionMap.put(idOrBusinessKey(field), optionPropToDto(checkBoxField.getOptions()));
+                optionMap.put(field.idOrBusinessKey(), optionPropToDto(checkBoxField.getOptions()));
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name())) {
                 if (field instanceof HasOption optionField) {
-					optionMap.put(idOrBusinessKey(field), optionPropToDto(optionField.getOptions()));
+					optionMap.put(field.idOrBusinessKey(), optionPropToDto(optionField.getOptions()));
                 }
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name())) {
                 if (field instanceof DatasourceField sourceField) {
-                    idTypeMap.put(idOrBusinessKey(field), sourceField.getDataSourceType());
+                    idTypeMap.put(field.idOrBusinessKey(), sourceField.getDataSourceType());
                 }
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
-                idTypeMap.put(idOrBusinessKey(field), FieldType.MEMBER.name());
+                idTypeMap.put(field.idOrBusinessKey(), FieldType.MEMBER.name());
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
-                idTypeMap.put(idOrBusinessKey(field), FieldType.DEPARTMENT.name());
+                idTypeMap.put(field.idOrBusinessKey(), FieldType.DEPARTMENT.name());
             }
         });
 		// 平铺子表格字段值
@@ -366,7 +367,7 @@ public class ModuleFormService {
         }
 		// 批量查询选项映射
         typeIdsMap.forEach((fieldId, ids) -> {
-            if (CollectionUtils.isNotEmpty(ids)) {
+            if (CollectionUtils.isNotEmpty(ids) && TYPE_SOURCE_MAP.containsKey(idTypeMap.get(fieldId))) {
                 List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(idTypeMap.get(fieldId)), ids);
                 if (CollectionUtils.isNotEmpty(options)) {
                     optionMap.put(fieldId, options);
@@ -430,15 +431,6 @@ public class ModuleFormService {
 		// 插入所有字段值集合中
 		allFlattenFieldValues.addAll(allFieldValues);
 		return allFlattenFieldValues;
-	}
-
-	/**
-	 * 字段唯一Key
-	 * @param field 字段
-	 * @return Key
-	 */
-	public String idOrBusinessKey(BaseField field) {
-		return field.getBusinessKey() != null ? field.getBusinessKey() : field.getId();
 	}
 
     public Map<String, List<Attachment>> getAttachmentMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
@@ -1331,8 +1323,6 @@ public class ModuleFormService {
             }
             if (field instanceof DatasourceField datasourceField) {
                 simpleField.setDataSourceType(datasourceField.getDataSourceType());
-            } else if (field instanceof DatasourceMultipleField datasourceMultipleField) {
-                simpleField.setDataSourceType(datasourceMultipleField.getDataSourceType());
             } else if (field instanceof LocationField locationField) {
                 simpleField.setLocationType(locationField.getLocationType());
             } else if (field instanceof DateTimeField dateTimeField) {
