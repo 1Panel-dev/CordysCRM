@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-input
       v-model:value="value"
       :maxlength="30"
@@ -28,8 +29,7 @@
 </template>
 
 <script setup lang="ts">
-  import { watch } from 'vue';
-  import { NFormItem, NInput } from 'naive-ui';
+  import { NDivider, NFormItem, NInput } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -41,6 +41,8 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

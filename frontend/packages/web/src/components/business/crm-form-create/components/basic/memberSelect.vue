@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <CrmUserTagSelector
       v-model:selected-list="selectedUsers"
       :multiple="[FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
@@ -23,6 +24,7 @@
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
+      :class="props.isSubTableField ? '!w-[150px]' : ''"
       @confirm="handleConfirm"
       @delete-tag="handleConfirm"
     />
@@ -30,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem } from 'naive-ui';
+  import { NDivider, NFormItem } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -46,6 +48,8 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;

@@ -29,7 +29,19 @@ export const pathMap: PathMapItem[] = [
   {
     key: 'PRODUCT_MANAGEMENT',
     locale: 'module.productManagement',
-    route: AppRouteEnum.PRODUCT_PRO,
+    route: AppRouteEnum.PRODUCT,
+    children: [
+      {
+        key: 'PRODUCT_MANAGEMENT_PRO',
+        locale: 'module.productManagement',
+        route: AppRouteEnum.PRODUCT_PRO,
+      },
+      {
+        key: 'PRODUCT_MANAGEMENT_PRICE',
+        locale: 'module.productManagementPrice',
+        route: AppRouteEnum.PRODUCT_PRICE,
+      },
+    ],
   },
   {
     key: 'DASHBOARD',

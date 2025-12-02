@@ -38,7 +38,9 @@
             >
               <n-tooltip
                 v-if="
-                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)
+                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
+                    item.type
+                  ) && !item.resourceFieldId
                 "
                 :delay="300"
                 :show-arrow="false"
