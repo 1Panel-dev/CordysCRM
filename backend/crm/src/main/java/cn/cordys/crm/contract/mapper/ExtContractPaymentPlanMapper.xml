@@ -45,7 +45,7 @@
         </if>
 
         <if test="request.contractId != null and request.contractId != ''">
-            and o.contract_id = #{request.contractId}
+            and cpp.contract_id = #{request.contractId}
         </if>
 
         <if test="request.customerId != null and request.customerId != ''">
