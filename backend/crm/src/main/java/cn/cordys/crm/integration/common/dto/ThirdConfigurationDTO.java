@@ -43,5 +43,7 @@ public class ThirdConfigurationDTO {
     private Boolean mkEnable;
     @Schema(description = "tender开启")
     private Boolean tenderEnable;
+    @Schema(description = "地址")
+    private String tenderAddress;
 
 }
