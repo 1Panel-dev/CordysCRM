@@ -57,6 +57,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author song-cc-rock
@@ -299,10 +300,11 @@ public class ProductPriceService {
 	 * @return 导入监听器
 	 */
 	private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap) {
+		AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
 		CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
 			List<LogDTO> logs = new ArrayList<>();
 			prices.forEach(price -> {
-				price.setPos(getNextOrder(currentOrg));
+				price.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
 				logs.add(new LogDTO(currentOrg, price.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName()));
 			});
 			productPriceMapper.batchInsert(prices);

@@ -74,7 +74,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     }
 
 	private void setExtra(BaseField field, int index) {
-		fieldIndexMap.put(field, index++);
+		fieldIndexMap.put(field, index);
 		if (field.needRequireCheck()) {
 			requires.add(field.getName());
 		}

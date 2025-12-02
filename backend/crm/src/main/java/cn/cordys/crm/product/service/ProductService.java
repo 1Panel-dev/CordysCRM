@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -319,11 +320,12 @@ public class ProductService {
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
+			AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRODUCT.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Product, BaseResourceSubField> afterDo = (products, productFields, productFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 products.forEach(product -> {
-                    product.setPos(getNextOrder(currentOrg));
+                    product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
                     logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
                 });
                 productBaseMapper.batchInsert(products);

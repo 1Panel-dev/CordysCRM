@@ -107,7 +107,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by pp.pos
+                order by pp.pos desc
             </otherwise>
         </choose>
     </sql>
