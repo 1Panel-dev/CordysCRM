@@ -16,4 +16,7 @@ public class ContractResponse extends ContractListResponse {
 
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
+
+    @Schema(description = "产品子列表")
+    private List<Map<String, Object>> products;
 }

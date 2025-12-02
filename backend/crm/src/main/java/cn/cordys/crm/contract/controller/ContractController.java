@@ -79,7 +79,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
     @Operation(summary = "更新合同状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        contractService.updateStatus(request, SessionUtils.getUserId());
+        contractService.updateStatus(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
