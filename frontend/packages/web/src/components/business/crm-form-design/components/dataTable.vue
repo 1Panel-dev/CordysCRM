@@ -42,7 +42,12 @@
             @click.stop="() => handleItemClick(item)"
           >
             <div class="crm-form-design--composition-item-tools--subtable">
-              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+              <n-tooltip
+                v-if="!item.resourceFieldId"
+                :delay="300"
+                :show-arrow="false"
+                class="crm-form-design--composition-item-tools-tip"
+              >
                 <template #trigger>
                   <CrmIcon
                     type="iconicon_file_copy"
@@ -53,12 +58,7 @@
                 </template>
                 {{ t('common.copy') }}
               </n-tooltip>
-              <n-tooltip
-                v-if="!item.businessKey"
-                :delay="300"
-                :show-arrow="false"
-                class="crm-form-design--composition-item-tools-tip"
-              >
+              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
                 <template #trigger>
                   <CrmIcon
                     type="iconicon_delete"
@@ -131,17 +131,57 @@
     if (type === FieldTypeEnum.INPUT) {
       return CrmFormCreateComponents.basicComponents.singleText;
     }
-    if (type === FieldTypeEnum.SELECT || type === FieldTypeEnum.SELECT_MULTIPLE) {
-      return CrmFormCreateComponents.basicComponents.select;
+    if (type === FieldTypeEnum.TEXTAREA) {
+      return CrmFormCreateComponents.basicComponents.textarea;
     }
     if (type === FieldTypeEnum.INPUT_NUMBER) {
       return CrmFormCreateComponents.basicComponents.inputNumber;
     }
+    if (type === FieldTypeEnum.DATE_TIME) {
+      return CrmFormCreateComponents.basicComponents.dateTime;
+    }
+    if (type === FieldTypeEnum.RADIO) {
+      return CrmFormCreateComponents.basicComponents.radio;
+    }
+    if (type === FieldTypeEnum.CHECKBOX) {
+      return CrmFormCreateComponents.basicComponents.checkbox;
+    }
+    if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
+      return CrmFormCreateComponents.basicComponents.select;
+    }
+    if (
+      [
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      ].includes(type)
+    ) {
+      return CrmFormCreateComponents.basicComponents.memberSelect;
+    }
+    if (type === FieldTypeEnum.INPUT_MULTIPLE) {
+      return CrmFormCreateComponents.basicComponents.tagInput;
+    }
+    if (type === FieldTypeEnum.LOCATION) {
+      return CrmFormCreateComponents.advancedComponents.location;
+    }
+    if (type === FieldTypeEnum.PHONE) {
+      return CrmFormCreateComponents.advancedComponents.phone;
+    }
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
+      return CrmFormCreateComponents.advancedComponents.dataSource;
+    }
+    if (type === FieldTypeEnum.SERIAL_NUMBER) {
+      return CrmFormCreateComponents.advancedComponents.serialNumber;
+    }
+    if (type === FieldTypeEnum.LINK) {
+      return CrmFormCreateComponents.advancedComponents.link;
+    }
+    if (type === FieldTypeEnum.INDUSTRY) {
+      return CrmFormCreateComponents.advancedComponents.industry;
+    }
     if (type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
-    }
-    if (type === FieldTypeEnum.DATA_SOURCE) {
-      return CrmFormCreateComponents.advancedComponents.dataSource;
     }
   }
 
@@ -181,6 +221,12 @@
     fieldConfig.value.subFields = fieldConfig.value.subFields?.filter((e) => e.id !== item.id);
     if (activeItem.value?.id === item.id) {
       activeItem.value = null;
+    }
+    if (item.resourceFieldId) {
+      const sourceField = fieldConfig.value.subFields?.find((f) => f.id === item.resourceFieldId);
+      if (sourceField) {
+        sourceField.showFields = sourceField.showFields?.filter((id) => id !== item.id);
+      }
     }
   }
 </script>
@@ -229,6 +275,8 @@
           padding: 12px 4px !important;
         }
         .n-form-item-blank {
+          @apply items-start;
+
           height: 46px;
           .n-input,
           .n-select {

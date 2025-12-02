@@ -1448,10 +1448,31 @@
   const showDataSourceDisplayFieldModal = ref(false);
   function handleDataSourceDisplayFieldSave(value: string[], selectedList: any[]) {
     fieldConfig.value.showFields = value;
-    // TODO bai 表格回显
+    if (isSubTableField.value) {
+      const index = parentField.value?.subFields?.findIndex((item) => item.id === fieldConfig.value.id);
+      if (index !== undefined && index >= 0 && parentField.value) {
+        parentField.value.subFields = parentField.value?.subFields?.filter(
+          (item) => item.resourceFieldId !== fieldConfig.value.id
+        );
+        parentField.value?.subFields?.splice(
+          index + 1,
+          0,
+          ...selectedList.map((item) => ({
+            ...item,
+            resourceFieldId: fieldConfig.value.id,
+            editable: false,
+          }))
+        );
+      }
+    }
   }
   function handleClearDataSourceDisplayField() {
     fieldConfig.value.showFields = [];
+    if (isSubTableField.value && parentField.value) {
+      parentField.value.subFields = parentField.value?.subFields?.filter(
+        (item) => item.resourceFieldId !== fieldConfig.value.id
+      );
+    }
   }
 
   function handleDataSourceFilterSave(result: DataSourceFilterCombine) {

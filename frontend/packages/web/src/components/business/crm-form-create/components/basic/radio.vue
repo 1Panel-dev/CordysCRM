@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-radio-group v-model:value="value" :disabled="props.fieldConfig.editable === false">
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
@@ -22,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NRadio, NRadioGroup, NSpace } from 'naive-ui';
+  import { NDivider, NFormItem, NRadio, NRadioGroup, NSpace } from 'naive-ui';
 
   import { FormCreateField } from '../../types';
 
@@ -30,6 +31,8 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number): void;

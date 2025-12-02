@@ -25,8 +25,13 @@
           <CrmIcon :type="item.icon" />
         </template>
       </n-input>
-      <template v-if="!item.businessKey">
-        <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+      <template v-if="!item.businessKey || item.resourceFieldId">
+        <n-tooltip
+          v-if="!item.resourceFieldId"
+          :delay="300"
+          :show-arrow="false"
+          class="crm-form-design--composition-item-tools-tip"
+        >
           <template #trigger>
             <n-button
               quaternary
@@ -54,6 +59,7 @@
           </template>
           {{ t('common.delete') }}
         </n-tooltip>
+        <div v-if="item.resourceFieldId" class="w-[22px]"></div>
       </template>
       <template v-else>
         <div class="w-[52px]"></div>

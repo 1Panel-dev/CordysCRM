@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-checkbox-group
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false"
@@ -29,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NCheckbox, NCheckboxGroup, NFormItem, NSpace } from 'naive-ui';
+  import { NCheckbox, NCheckboxGroup, NDivider, NFormItem, NSpace } from 'naive-ui';
 
   import { FormCreateField } from '../../types';
 
@@ -37,6 +38,8 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;

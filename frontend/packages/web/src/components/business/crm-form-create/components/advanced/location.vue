@@ -11,6 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
+    <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <CrmCitySelect
       v-model:value="city"
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectLocation')"
@@ -34,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NInput } from 'naive-ui';
+  import { NDivider, NFormItem, NInput } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -45,6 +46,8 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+    isSubTableField?: boolean; // 是否是子表字段
+    isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

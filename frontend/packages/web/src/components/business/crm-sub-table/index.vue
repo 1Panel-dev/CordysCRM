@@ -20,6 +20,7 @@
   import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -57,6 +58,51 @@
     ]);
   }
 
+  function initFieldValueText(field: FormCreateField, id: string, value: any): string {
+    const options = props.optionMap?.[id];
+    let name: string | string[] = '';
+    // 若字段值是选项值，则取选项值的name
+    if (options) {
+      if (Array.isArray(value)) {
+        name = value.map((e) => {
+          const option = options.find((opt) => opt.id === e);
+          if (option) {
+            return option.name || t('common.optionNotExist');
+          }
+          return t('common.optionNotExist');
+        });
+      } else {
+        name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
+      }
+      return Array.isArray(name) ? name.join(', ') : name;
+    }
+    switch (field.type) {
+      case FieldTypeEnum.INPUT_NUMBER:
+        return formatNumberValue(value, field);
+      case FieldTypeEnum.DATE_TIME:
+        return formatTimeValue(value, field.dateType);
+      case FieldTypeEnum.LOCATION:
+        const addressArr: string[] = value.split('-') || [];
+        return addressArr.length
+          ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+          : '-';
+      case FieldTypeEnum.SELECT:
+      case FieldTypeEnum.RADIO:
+        return field.options?.find((e) => e.value === value)?.label || '-';
+      case FieldTypeEnum.SELECT_MULTIPLE:
+      case FieldTypeEnum.CHECKBOX:
+        if (Array.isArray(value)) {
+          const labels = field.options?.filter((e) => value.includes(e.value)).map((e) => e.label);
+          return labels && labels.length ? labels.join(', ') : '-';
+        }
+        return '-';
+      case FieldTypeEnum.INDUSTRY:
+        return value ? getIndustryPath(value) : '-';
+      default:
+        return value || '-';
+    }
+  }
+
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields.map((field, index) => {
@@ -69,37 +115,7 @@
             fieldId: key,
             filedType: field.type,
             fieldConfig: field,
-            render: (row: any) => formatNumberValue(row[key], field),
-            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-          };
-        }
-        if (field.type === FieldTypeEnum.DATA_SOURCE) {
-          return {
-            title: field.name,
-            width: 200,
-            key,
-            fieldId: key,
-            render: (row: any) => props.optionMap?.[key]?.find((e) => e.id === row[key])?.name || '',
-            filedType: field.type,
-            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-          };
-        }
-        if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
-          return {
-            title: field.name,
-            width: 150,
-            key,
-            fieldId: key,
-            render: (row: any) =>
-              field.options
-                ?.filter((option) =>
-                  field.type === FieldTypeEnum.SELECT
-                    ? option.value === row[key]
-                    : (row[key] || []).includes(option.value)
-                )
-                .map((option) => option.label)
-                .join(', '),
-            filedType: field.type,
+            render: (row: any) => initFieldValueText(field, key, row[key]),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };
         }
@@ -108,7 +124,7 @@
           width: 150,
           key,
           fieldId: key,
-          render: (row: any) => row[key],
+          render: (row: any) => initFieldValueText(field, key, row[key]),
           filedType: field.type,
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
@@ -116,6 +132,16 @@
     }
     return props.subFields.map((field, index) => {
       const key = field.businessKey || field.id;
+      if (field.resourceFieldId) {
+        return {
+          title: field.name,
+          width: 120,
+          key,
+          fieldId: key,
+          render: (row: any) => h('div', {}, props.optionMap?.[key]?.find((e) => e.id === row[key])?.name || '-'),
+          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+        };
+      }
       if (field.type === FieldTypeEnum.DATA_SOURCE) {
         return {
           title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
