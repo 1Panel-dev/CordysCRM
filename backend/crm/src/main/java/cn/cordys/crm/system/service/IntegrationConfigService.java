@@ -662,6 +662,12 @@ public class IntegrationConfigService {
             );
         }
 
+        if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
+            return List.of(
+                    ThirdConstants.ThirdDetailType.TENDER.toString()
+            );
+        }
+
 
         return new ArrayList<>();
     }
