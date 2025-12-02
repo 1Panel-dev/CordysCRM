@@ -429,6 +429,13 @@
       groupList: [],
       enable: true,
     },
+    {
+      label: t('module.tender'),
+      key: ModuleConfigEnum.TENDER,
+      icon: 'iconicon_target',
+      groupList: [],
+      enable: true,
+    },
   ];
   const moduleConfigList = computed<ModuleConfigItem[]>(() =>
     staticConfigList.map((item) => {

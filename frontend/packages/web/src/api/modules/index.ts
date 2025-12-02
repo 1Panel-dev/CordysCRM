@@ -444,6 +444,7 @@ export const {
   getConfigSynchronization,
   testConfigSynchronization,
   updateConfigSynchronization,
+  getTenderConfig,
 } = businessApi;
 
 export const {

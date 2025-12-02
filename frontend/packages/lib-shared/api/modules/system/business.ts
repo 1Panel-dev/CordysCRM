@@ -19,6 +19,7 @@ import {
   GetPageConfigUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
+  GetTenderConfigUrl,
   GetThirdPartyConfigUrl,
   GetThirdPartyResourceUrl,
   GetThirdTypeListUrl,
@@ -262,6 +263,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<PageConfigReturns>({ url: GetPageConfigUrl }, { ignoreCancelToken: true });
   }
 
+  // 获取招投标配置项
+  function getTenderConfig() {
+    return CDR.get<ConfigSynchronization>({ url: GetTenderConfigUrl }, { ignoreCancelToken: true });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -300,5 +306,6 @@ export default function useProductApi(CDR: CordysAxios) {
     addApiKey,
     savePageConfig,
     getPageConfig,
+    getTenderConfig,
   };
 }
