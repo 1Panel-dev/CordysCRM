@@ -112,6 +112,7 @@
           :sub-fields="item.fieldInfo.subFields"
           :fixed-column="item.fieldInfo.fixedColumn"
           :sum-columns="item.fieldInfo.sumColumns"
+          :optionMap="item.optionMap"
           readonly
         />
       </template>
