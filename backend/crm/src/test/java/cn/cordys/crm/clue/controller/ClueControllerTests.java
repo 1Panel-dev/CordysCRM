@@ -267,7 +267,7 @@ class ClueControllerTests extends BaseTest {
         Assertions.assertEquals(PERMISSION_USER_NAME, clue.getOwner());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, BATCH_TRANSFER, request);
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_TRANSFER, BATCH_TRANSFER, request);
     }
 
     @Test
