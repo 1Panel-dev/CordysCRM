@@ -148,18 +148,21 @@
     }
   }
 
+  const enableReason = ref(false);
   // 更新状态
   async function handleUpdateStatus(stage: string) {
-    if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
+    if (
+      props.showConfirmStatus &&
+      stage === workflowList.value[workflowList.value.length - 1].value &&
+      enableReason.value
+    ) {
       updateStatusModal.value = true;
       form.value.stage = failureStage.value;
       return;
     }
     handleSave(stage);
   }
-
   // 确认更新
-  const enableReason = ref(false);
   async function handleConfirm() {
     if (enableReason.value) {
       formRef.value?.validate(async (errors) => {

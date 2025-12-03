@@ -81,10 +81,11 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { updateClueStatus, updateOptStage } from '@/api/modules';
+  import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -128,7 +129,7 @@
       value: item.id,
     }));
   });
-
+  const enableReason = ref(false);
   const currentStageIndex = computed(() => workflowList.value.findIndex((e) => e.value === currentStage.value));
   const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
   const successStage = computed(
@@ -209,7 +210,11 @@
   async function handleUpdateStage(stage: string) {
     if (isDisabledStage(stage)) return;
 
-    if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
+    if (
+      props.showConfirmStatus &&
+      stage === workflowList.value[workflowList.value.length - 1].value &&
+      enableReason.value
+    ) {
       router.push({
         name: CommonRouteEnum.WORKFLOW_STAGE,
         query: {
@@ -223,6 +228,20 @@
     }
     await handleSave(stage);
   }
+
+  async function initReason() {
+    try {
+      const res = await getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS);
+      enableReason.value = res.enable;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  onBeforeMount(() => {
+    initReason();
+  });
 </script>
 
 <style scoped lang="less">
