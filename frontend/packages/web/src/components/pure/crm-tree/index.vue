@@ -357,6 +357,9 @@
     const key = option[props.fieldNames.keyField];
     return {
       class: `${focusNodeKeys.value.has(key) ? 'crm-tree-focus-node' : ''}`,
+      onClick: (e: MouseEvent) => {
+        emit('click', { option, checked: checkedKeys.value.includes(key), selected: selectedKeys.value.includes(key) });
+      },
     };
   }
 
