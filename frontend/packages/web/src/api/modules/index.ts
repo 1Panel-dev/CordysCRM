@@ -389,6 +389,7 @@ export const {
   getContractFormSnapshotConfig,
   updateContract,
   deleteContract,
+  changeContractStatus,
   getContractFormConfig,
   getPaymentPlanList,
   getContractPaymentPlanList,

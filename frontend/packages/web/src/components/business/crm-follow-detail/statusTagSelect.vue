@@ -3,7 +3,7 @@
     v-model:value="status"
     :placeholder="t('common.pleaseSelect')"
     :render-tag="renderTag"
-    :options="options"
+    :options="props.statusOptions ?? options"
     :show-checkmark="false"
     :render-option="renderOption"
     :disabled="props.disabled"
@@ -17,6 +17,7 @@
   import { VNodeChild } from 'vue';
   import { NSelect, SelectOption } from 'naive-ui';
 
+  import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { StatusTagKey } from '@lib/shared/models/customer';
@@ -29,13 +30,15 @@
 
   const props = defineProps<{
     disabled: boolean;
+    statusOptions?: SelectOption[];
+    statusTagComponent?: any; // 组件引用
   }>();
 
   const emit = defineEmits<{
     (e: 'change'): void;
   }>();
 
-  const status = defineModel<CustomerFollowPlanStatusEnum>('status', {
+  const status = defineModel<CustomerFollowPlanStatusEnum | ContractPaymentPlanEnum | ContractStatusEnum>('status', {
     required: true,
   });
 
@@ -46,8 +49,12 @@
     }))
   );
 
+  const actualStatusTag = computed(() => {
+    return props.statusTagComponent ?? StatusTag;
+  });
+
   const renderTag = ({ option }: { option: SelectOption; handleClose: () => void }) => {
-    return h(StatusTag, {
+    return h(actualStatusTag.value, {
       class: `${props.disabled ? '' : 'cursor-pointer'}`,
       status: option.value as StatusTagKey,
       hiddenDownIcon: props.disabled,
@@ -56,7 +63,7 @@
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
     node.children = [
-      h(StatusTag, {
+      h(actualStatusTag.value, {
         status: option.value as StatusTagKey,
         hiddenDownIcon: true,
       }),

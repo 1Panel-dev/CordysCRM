@@ -10,6 +10,7 @@ import {
   GetContractDetailUrl,
   GetContractFormConfigUrl,
   GetContractTabUrl,
+  ChangeContractStatusUrl,
   ContractVoidedUrl,
   ContractArchivedUrl,
   GetContractFormSnapshotConfigUrl,
@@ -111,6 +112,10 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get<FormDesignConfigDetailParams>({
       url: `${GetContractFormSnapshotConfigUrl}/${id}`,
     });
+  }
+
+  function changeContractStatus(id: string, status: string) {
+    return CDR.post({ url: `${ChangeContractStatusUrl}`, data: { status, id } });
   }
 
   // 获取合同tab显隐藏
@@ -286,6 +291,7 @@ export default function useContractApi(CDR: CordysAxios) {
     addContract,
     updateContract,
     deleteContract,
+    changeContractStatus,
     getContractFormConfig,
     voidedContract,
     archivedContract,

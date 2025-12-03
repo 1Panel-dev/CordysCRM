@@ -9,6 +9,7 @@ export const GetContractDetailUrl = '/contract/get'; // 获取合同详情
 export const GetContractFormConfigUrl = '/contract/module/form'; // 合同表单配置
 export const GetContractFormSnapshotConfigUrl = '/contract/module/form/snapshot'; // 合同表单配置
 export const GetContractTabUrl = '/contract/tab'; // 合同tab显隐
+export const ChangeContractStatusUrl = '/contract/status/update';
 
 // 合同导出
 export const ExportContractAllUrl = '/contract/export-all'; // 合同导出全量
