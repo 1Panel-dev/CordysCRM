@@ -12,7 +12,6 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
-import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueExportRequest;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.dto.request.ClueChartAnalysisDbRequest;
@@ -21,7 +20,6 @@ import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ExportTaskService;
-import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.registry.ExportThreadRegistry;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
@@ -44,8 +42,6 @@ public class CluePoolExportService extends ClueExportService {
 
     @Resource
     private ClueService clueService;
-    @Resource
-    private BaseMapper<Clue> clueMapper;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
