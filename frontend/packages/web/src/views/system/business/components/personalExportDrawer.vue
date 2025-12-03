@@ -134,6 +134,7 @@
     { name: SystemResourceMessageTypeEnum.CUSTOMER, tab: t('menu.customer') },
     { name: SystemResourceMessageTypeEnum.CLUE, tab: t('menu.clue') },
     { name: SystemResourceMessageTypeEnum.OPPORTUNITY, tab: t('menu.opportunity') },
+    { name: SystemResourceMessageTypeEnum.CONTRACT, tab: t('module.contract') },
   ]);
 
   const exportStatus = ref('');
@@ -192,6 +193,10 @@
         return t('module.cluePool');
       case SystemResourceMessageTypeEnum.CUSTOMER_CONTACT:
         return t('menu.contact');
+      case SystemResourceMessageTypeEnum.CONTRACT:
+        return t('module.contract');
+      case SystemResourceMessageTypeEnum.CONTRACT_PAYMENT_PLAN:
+        return t('module.paymentPlan');
       default:
         return t('menu.opportunity');
     }

@@ -363,6 +363,9 @@ export const {
   getCustomerFollowRecordFormConfig,
   getCustomerOpenSeaFollowRecordList,
   getAccountContract,
+  getAccountContractStatistic,
+  getAccountPayment,
+  getAccountPaymentStatistic,
 } = customerApi;
 
 export const {

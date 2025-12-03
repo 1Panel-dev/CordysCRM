@@ -24,6 +24,8 @@ export enum SystemResourceMessageTypeEnum {
   OPPORTUNITY = 'OPPORTUNITY',
   SYSTEM = 'SYSTEM',
   CUSTOMER_CONTACT = 'CUSTOMER_CONTACT',
+  CONTRACT = 'CONTRACT',
+  CONTRACT_PAYMENT_PLAN = 'CONTRACT_PAYMENT_PLAN'
 }
 
 export enum SystemMessageStatusEnum {

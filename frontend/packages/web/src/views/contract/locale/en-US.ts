@@ -19,4 +19,10 @@ export default {
   'contract.invoicedContract': 'Invoiced Contract',
   'contract.contractAmount': 'Contract Amount',
   'contract.applicationTime': 'Application Time',
+  'contract.customerContractAmount': 'Customer contract amount',
+  'contract.customerPaymentAmount': 'Customer expected payment',
+  'contract.paymentContract': 'Payment contract',
+  'contract.expectedPaymentDate': 'Expected payment date',
+  'contract.expectedPaymentAmount': 'Expected payment amount',
+  'contract.isPlanCompleted': 'Plan completed',
 };
