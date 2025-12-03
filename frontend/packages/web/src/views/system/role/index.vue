@@ -36,6 +36,7 @@
               :rename-api="updateRoleName"
               :rename-static="renameStatic"
               :selectable="roleTreeSelectable"
+              @click="handleRoleClick"
               @more-action-select="handleMoreActionSelect"
             />
           </n-scrollbar>
@@ -166,6 +167,12 @@
   }
 
   const roleTreeSelectable = computed(() => !roles.value.some((role) => role.isNew || role.unsave));
+
+  function handleRoleClick() {
+    if (!roleTreeSelectable.value) {
+      message.warning(t('role.saveFirst'));
+    }
+  }
 
   function handleMoreActionSelect(item: ActionsItem, node: CrmTreeNodeData) {
     switch (item.key) {
