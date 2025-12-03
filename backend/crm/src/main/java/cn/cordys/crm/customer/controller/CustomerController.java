@@ -14,6 +14,7 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.domain.Customer;
@@ -255,13 +256,13 @@ public class CustomerController {
         return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-    @GetMapping("/contract/statistic/{customerId}")
+    @GetMapping("/contract/statistic/{accountId}")
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ})
     @Operation(summary = "客户详情-合同列表统计")
-    public CustomerContractStatisticResponse calculateCustomerContractStatistic(@PathVariable String customerId) {
+    public CustomerContractStatisticResponse calculateCustomerContractStatistic(@PathVariable String accountId) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);
-        return contractService.calculateContractStatisticByCustomerId(customerId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractService.calculateContractStatisticByCustomerId(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/contract/payment-plan/page")
@@ -274,4 +275,14 @@ public class CustomerController {
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
+
+    @GetMapping("/contract/payment-plan/statistic/{accountId}")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
+    @Operation(summary = "客户详情-合同回款计划列表统计")
+    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@PathVariable String accountId) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        return contractPaymentPlanService.calculateCustomerPaymentPlanStatisticByCustomerId(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
 }

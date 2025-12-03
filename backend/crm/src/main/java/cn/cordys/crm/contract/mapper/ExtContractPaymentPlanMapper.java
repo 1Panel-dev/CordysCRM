@@ -3,6 +3,7 @@ package cn.cordys.crm.contract.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface ExtContractPaymentPlanMapper {
                                                @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<ContractPaymentPlanListResponse> getListByIds(@Param("ids") List<String> ids, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
+    CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatisticByCustomerId(@Param("customerId")  String customerId, @Param("userId")  String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 }

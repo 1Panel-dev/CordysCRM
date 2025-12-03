@@ -102,6 +102,29 @@
             and cpp.owner = #{userId}
         </if>
     </select>
+    <select id="calculateCustomerPaymentPlanStatisticByCustomerId"
+            resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse">
+        select sum(cpp.plan_amount) as totalPlanAmount
+        from contract_payment_plan cpp
+        join contract c on c.id = cpp.contract_id
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cpp.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            )
+        </if>
+
+        where cpp.organization_id = #{orgId}
+        and c.customer_id = #{customerId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cpp.owner = #{userId}
+        </if>
+    </select>
 
     <sql id="sort">
         <choose>
