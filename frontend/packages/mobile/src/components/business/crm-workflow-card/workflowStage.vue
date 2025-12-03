@@ -101,25 +101,10 @@
   const form = ref<{
     stage: string;
     failureReason?: string;
-    // expectedEndTime?: string;
   }>({
     stage: failureStage.value?.id || '',
     failureReason: '',
-    // expectedEndTime: '',
   });
-
-  // const showEndTimePicker = ref(false);
-  // const currentDate = ref<string[]>([]);
-  // function selectExpectedEndTime() {
-  //   const date = dayjs();
-  //   currentDate.value = date.format('YYYY-MM-DD').split('-');
-  //   showEndTimePicker.value = true;
-  // }
-
-  // const onSelectDateConfirm = ({ selectedValues }: { selectedValues: string[] }) => {
-  //   form.value.expectedEndTime = selectedValues.join('-');
-  //   showEndTimePicker.value = false;
-  // };
 
   const showReasonPicker = ref(false);
   const currentReason = ref<string[]>([]);
@@ -147,10 +132,6 @@
       await updateStageApi[stageType]({
         id: route.query.id as string,
         stage: form.value.stage || failureStage.value?.id || '',
-        // TODO 先不要了
-        // expectedEndTime: form.value.expectedEndTime
-        //   ? (dayjs(form.value.expectedEndTime).valueOf() as number)
-        //   : undefined,
         failureReason: form.value.stage === failureStage.value?.id ? currentReason.value[0] : undefined,
       });
       showSuccessToast(t('common.operationSuccess'));
