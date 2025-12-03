@@ -309,7 +309,7 @@ public class ContractService {
             return;
         }
         contractFieldService.deleteByResourceId(contract.getId());
-        contractFieldService.saveModuleField(contract, orgId, userId, moduleFields, false);
+        contractFieldService.saveModuleField(contract, orgId, userId, moduleFields, true);
     }
 
 
