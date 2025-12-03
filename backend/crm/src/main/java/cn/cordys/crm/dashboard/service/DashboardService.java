@@ -322,8 +322,8 @@ public class DashboardService extends DashboardSortService {
             List<String> ids = new ArrayList<>();
             ids.addAll(dashboardList.stream().map(DashboardPageResponse::getCreateUser).toList());
             ids.addAll(dashboardList.stream().map(DashboardPageResponse::getUpdateUser).toList());
-            List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
-            Map<String, String> userMap = optionDTOS
+            List<OptionDTO> options = extUserMapper.selectUserOptionByIds(ids);
+            Map<String, String> userMap = options
                     .stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 

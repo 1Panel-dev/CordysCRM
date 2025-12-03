@@ -153,8 +153,8 @@ public class OrganizationUserService {
             List<String> ids = new ArrayList<>();
             ids.addAll(list.stream().map(UserPageResponse::getCreateUser).toList());
             ids.addAll(list.stream().map(UserPageResponse::getUpdateUser).toList());
-            List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
-            Map<String, String> userMap = optionDTOS
+            List<OptionDTO> options = extUserMapper.selectUserOptionByIds(ids);
+            Map<String, String> userMap = options
                     .stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             //直属上级
@@ -162,8 +162,8 @@ public class OrganizationUserService {
                     .map(UserPageResponse::getSupervisorId)
                     .distinct()
                     .toList();
-            List<OptionDTO> supervisorDTOS = extUserMapper.selectUserOptionByIds(supervisorIds);
-            Map<String, String> supervisorMap = supervisorDTOS.stream()
+            List<OptionDTO> supervisors = extUserMapper.selectUserOptionByIds(supervisorIds);
+            Map<String, String> supervisorMap = supervisors.stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             //部门
             List<String> departmentIds = list.stream()

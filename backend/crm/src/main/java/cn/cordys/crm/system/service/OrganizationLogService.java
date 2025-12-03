@@ -60,10 +60,10 @@ public class OrganizationLogService extends BaseModuleLogService {
     }
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.OPPORTUNITY.getKey());
 
-        differenceDTOS.forEach(differ -> {
+        differences.forEach(differ -> {
             if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.roles"))) {
                 handRoleValueName(differ);
             }
@@ -96,7 +96,7 @@ public class OrganizationLogService extends BaseModuleLogService {
             }
         });
 
-        return differenceDTOS;
+        return differences;
     }
 
     protected void setDepartmentName(JsonDifferenceDTO differ) {

@@ -35,9 +35,9 @@ public class NoticeSendService {
         String template = (String) noticeModel.getParamMap().get("template");
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
+            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
-            messageDetailDTOS.stream()
+            messageDetails.stream()
                     .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
@@ -100,9 +100,9 @@ public class NoticeSendService {
         boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
         String template = (String) noticeModel.getParamMap().get("template");
         try {
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
+            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
-            messageDetailDTOS.stream()
+            messageDetails.stream()
                     .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
@@ -119,12 +119,12 @@ public class NoticeSendService {
         noticeModel.setExcludeSelf(excludeSelf);
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
+            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
                     .stream()
                     .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
 
-            messageDetailDTOS.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
+            messageDetails.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
             LogUtils.error("Error sending other notifications", e);

@@ -15,12 +15,12 @@ import java.util.List;
 public class PriceLogService extends BaseModuleLogService {
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.PRICE.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.PRICE.getKey());
 
         List<JsonDifferenceDTO> toRemove = new ArrayList<>();
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
 
             if (differ.getColumn().contains(Translator.get("products_info"))) {
                 differ.setColumnName(differ.getColumn());

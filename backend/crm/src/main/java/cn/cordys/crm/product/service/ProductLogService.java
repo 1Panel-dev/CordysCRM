@@ -31,8 +31,8 @@ public class ProductLogService extends BaseModuleLogService {
     private BaseMapper<ModuleForm> moduleFormBaseMapper;
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.PRODUCT.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.PRODUCT.getKey());
         String pictureModuleFieldId = "";
         String timeModuleFieldId = "";
         List<String> attachModuleFieldIds = new ArrayList<>();
@@ -64,7 +64,7 @@ public class ProductLogService extends BaseModuleLogService {
         }
 
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.PRODUCT_STATUS.getBusinessKey())) {
                 setProductFieldName(differ);
             }
@@ -83,7 +83,7 @@ public class ProductLogService extends BaseModuleLogService {
                 setAttachName(differ);
             }
         }
-        return differenceDTOS;
+        return differences;
     }
 
     private void setAttachName(JsonDifferenceDTO differ) {

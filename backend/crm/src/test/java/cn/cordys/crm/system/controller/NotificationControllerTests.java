@@ -123,8 +123,8 @@ public class NotificationControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(NOTIFICATION_COUNT, notificationRequest);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        List<OptionDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), OptionDTO.class);
-        Assertions.assertFalse(optionDTOS.isEmpty());
+        List<OptionDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), OptionDTO.class);
+        Assertions.assertFalse(options.isEmpty());
     }
 
     @Test
@@ -137,8 +137,8 @@ public class NotificationControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(NOTIFICATION_LAST_LIST);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        List<NotificationDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
-        Assertions.assertFalse(optionDTOS.isEmpty());
+        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
+        Assertions.assertFalse(options.isEmpty());
     }
 
     @Test
@@ -149,8 +149,8 @@ public class NotificationControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(ANNOUNCEMENT_LAST_LIST);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        List<NotificationDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
-        Assertions.assertFalse(optionDTOS.isEmpty());
+        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
+        Assertions.assertFalse(options.isEmpty());
     }
 
 

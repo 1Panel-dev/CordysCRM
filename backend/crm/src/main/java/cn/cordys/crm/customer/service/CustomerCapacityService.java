@@ -45,7 +45,7 @@ public class CustomerCapacityService {
      * @return 客户库容设置集合
      */
     public List<CustomerCapacityDTO> list(String currentOrgId) {
-        List<CustomerCapacityDTO> capacityDTOS = new ArrayList<>();
+        List<CustomerCapacityDTO> capacityList = new ArrayList<>();
         LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).orderByDesc(CustomerCapacity::getCreateTime);
         List<CustomerCapacity> capacities = customerCapacityMapper.selectListByLambda(wrapper);
@@ -58,9 +58,9 @@ public class CustomerCapacityService {
             capacityDTO.setCapacity(capacity.getCapacity());
             capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
             capacityDTO.setFilters(StringUtils.isEmpty(capacity.getFilter()) ? new ArrayList<>() : JSON.parseArray(capacity.getFilter(), FilterConditionDTO.class));
-            capacityDTOS.add(capacityDTO);
+            capacityList.add(capacityDTO);
         });
-        return capacityDTOS;
+        return capacityList;
     }
 
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)

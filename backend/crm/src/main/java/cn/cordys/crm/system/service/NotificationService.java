@@ -45,7 +45,7 @@ public class NotificationService {
     @Resource
     private MessagePublisher messagePublisher;
 
-    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> optionDTOS) {
+    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> options) {
         Map<String, Integer> countMap = new HashMap<>();
         Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
         resourceMap.forEach((k, v) -> {
@@ -68,7 +68,7 @@ public class NotificationService {
             OptionCountDTO optionDTO = new OptionCountDTO();
             optionDTO.setKey(k);
             optionDTO.setCount(v);
-            optionDTOS.add(optionDTO);
+            options.add(optionDTO);
         });
     }
 
@@ -145,7 +145,7 @@ public class NotificationService {
     }
 
     public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId, String userId) {
-        List<OptionCountDTO> optionDTOS = new ArrayList<>();
+        List<OptionCountDTO> options = new ArrayList<>();
         buildParam(notificationRequest, userId);
         notificationRequest.setResourceType(StringUtils.EMPTY);
         notificationRequest.setStatus(NotificationConstants.Status.UNREAD.name());
@@ -153,9 +153,9 @@ public class NotificationService {
         OptionCountDTO totalOptionDTO = new OptionCountDTO();
         totalOptionDTO.setKey("total");
         totalOptionDTO.setCount(notifications.size());
-        optionDTOS.add(totalOptionDTO);
-        buildSourceCount(notifications, optionDTOS);
-        return optionDTOS;
+        options.add(totalOptionDTO);
+        buildSourceCount(notifications, options);
+        return options;
     }
 
     public Integer getUnRead(String organizationId, String userId) {

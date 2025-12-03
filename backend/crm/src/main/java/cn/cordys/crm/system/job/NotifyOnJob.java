@@ -46,19 +46,19 @@ public class NotifyOnJob {
 
     private void doAddNotification(long timestamp) {
         //查询所有在这个时间内生效的公告
-        List<AnnouncementDTO> announcementDTOS = extAnnouncementMapper.selectInEffectUnConvertData(timestamp);
-        if (CollectionUtils.isEmpty(announcementDTOS)) {
+        List<AnnouncementDTO> announcements = extAnnouncementMapper.selectInEffectUnConvertData(timestamp);
+        if (CollectionUtils.isEmpty(announcements)) {
             return;
         }
-        LogUtils.info("公告通知数量: {}", announcementDTOS.size());
+        LogUtils.info("公告通知数量: {}", announcements.size());
         //将公告根据接收人生成相关的通知
         List<String> ids = new ArrayList<>();
-        for (AnnouncementDTO announcementDTO : announcementDTOS) {
+        for (AnnouncementDTO announcementDTO : announcements) {
             List<String> userIds = JSON.parseArray(new String(announcementDTO.getReceiver()), String.class);
             announcementService.convertNotification("admin", announcementDTO, userIds);
             ids.add(announcementDTO.getId());
         }
-        extAnnouncementMapper.updateNotice(ids, true, announcementDTOS.getFirst().getOrganizationId());
+        extAnnouncementMapper.updateNotice(ids, true, announcements.getFirst().getOrganizationId());
         //删除已过期公告的推送
         LocalDateTime dateTime = LocalDateTime.now();
         long expiredStamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();

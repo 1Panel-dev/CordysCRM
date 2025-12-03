@@ -116,22 +116,22 @@ public class SysOperationLogService {
         );
 
         try {
-            List<JsonDifferenceDTO> differenceDTOS = new ArrayList<>();
-            JsonDifferenceUtils.compareJson(oldString, newString, differenceDTOS);
+            List<JsonDifferenceDTO> differences = new ArrayList<>();
+            JsonDifferenceUtils.compareJson(oldString, newString, differences);
             // 过滤掉组织ID等字段
-            differenceDTOS = filterIgnoreFields(differenceDTOS);
+            differences = filterIgnoreFields(differences);
 
-            if (CollectionUtils.isNotEmpty(differenceDTOS)) {
+            if (CollectionUtils.isNotEmpty(differences)) {
                 OperationLog log = operationLogMapper.selectByPrimaryKey(id);
                 BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(log.getModule());
                 if (moduleLogService != null) {
-                    differenceDTOS = moduleLogService.handleLogField(differenceDTOS, orgId);
+                    differences = moduleLogService.handleLogField(differences, orgId);
                 } else {
-                    differenceDTOS.forEach(BaseModuleLogService::translatorDifferInfo);
+                    differences.forEach(BaseModuleLogService::translatorDifferInfo);
                 }
 
             }
-            logResponse.setDiffs(differenceDTOS);
+            logResponse.setDiffs(differences);
         } catch (Exception e) {
             LogUtils.error(e);
             throw new GenericException(Translator.get("data_parsing_exception"));
@@ -144,16 +144,16 @@ public class SysOperationLogService {
      * 过滤掉日志对比无需显示的字段
      * 例如：organizationId
      *
-     * @param differenceDTOS
+     * @param differences
      *
      * @return
      */
-    private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differenceDTOS) {
-        differenceDTOS = differenceDTOS.stream()
+    private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differences) {
+        differences = differences.stream()
                 .filter(differ -> {
                     return !Strings.CS.equalsAny(differ.getColumn(),
                             "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos");
                 }).toList();
-        return differenceDTOS;
+        return differences;
     }
 }
