@@ -216,7 +216,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 })
                 .forEach(field -> {
                     BaseModuleFieldValue fieldValue = processFieldValue(resource, field, fieldValueMap, update, orgId);
-                    if (fieldValue == null) {
+                    if (fieldValue == null || fieldValue.getFieldValue() == null) {
                         return;
                     }
 					// 处理子表格值
@@ -318,6 +318,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				BaseField field = subFieldMap.get(kv.getKey());
 				AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
 				customFieldResolver.validate(field, kv.getValue());
+                if (kv.getValue() == null) {
+                    continue;
+                }
 				String strValue = customFieldResolver.convertToString(field, kv.getValue());
 				if (field.isBlob()) {
 					V resourceField = newResourceFieldBlob();

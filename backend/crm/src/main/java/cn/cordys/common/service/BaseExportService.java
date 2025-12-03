@@ -273,7 +273,7 @@ public abstract class BaseExportService {
             try {
                 this.exportSelectData(exportTask, exportDTO);
             } catch (Exception e) {
-                LogUtils.error("导出回款计划异常", e);
+                LogUtils.error("导出异常", e);
                 //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
