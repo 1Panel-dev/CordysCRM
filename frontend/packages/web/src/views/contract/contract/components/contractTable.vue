@@ -102,6 +102,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -110,13 +111,14 @@
   import DetailDrawer from './detail.vue';
   import VoidReasonModal from './voidReasonModal.vue';
 
-  import { archivedContract, deleteContract, voidedContract } from '@/api/modules';
+  import { archivedContract, changeContractStatus, deleteContract } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
 
@@ -369,6 +371,16 @@
     );
   }
 
+  async function changeStatus(row: ContractItem) {
+    try {
+      await changeContractStatus(row.id, row.status);
+      Message.success(t('common.updateSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
     operationColumn: {
@@ -408,8 +420,20 @@
         );
       },
       status: (row: ContractItem) =>
-        h(ContractStatus, {
-          status: row.status as ContractStatusEnum,
+        h(StatusTagSelect, {
+          'status': row.status as ContractStatusEnum,
+          'disabled':
+            row.status === ContractStatusEnum.VOID ||
+            row.archivedStatus === ArchiveStatusEnum.ARCHIVED ||
+            !hasAnyPermission(['CONTRACT:UPDATE']),
+          'statusTagComponent': ContractStatus,
+          'onUpdate:status': (val) => {
+            row.status = val;
+          },
+          'statusOptions': contractStatusOptions,
+          'onChange': () => {
+            changeStatus(row);
+          },
         }),
     },
     permission: ['CONTRACT:ARCHIVE', 'CONTRACT:UPDATE', 'CONTRACT:VOIDED', 'CONTRACT:DELETE'],

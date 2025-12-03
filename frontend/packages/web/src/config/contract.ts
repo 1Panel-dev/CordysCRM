@@ -1,6 +1,8 @@
 import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
+import { hasAllPermission } from '@/utils/permission';
+
 const { t } = useI18n();
 
 // 计划状态
@@ -54,4 +56,5 @@ export const contractPaymentPlanStatusOptions = Object.entries(contractPaymentPl
 export const contractStatusOptions = Object.entries(contractStatusMap).map(([key, value]) => ({
   label: value.label,
   value: key,
+  disabled: key === ContractStatusEnum.VOID && !hasAllPermission(['CONTRACT:VOID']),
 }));

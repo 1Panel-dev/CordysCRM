@@ -105,6 +105,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -112,7 +113,7 @@
   import DetailDrawer from './detail.vue';
   import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
 
-  import { deletePaymentPlan } from '@/api/modules';
+  import { deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -120,6 +121,7 @@
   import useModal from '@/hooks/useModal';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
 
@@ -326,6 +328,16 @@
     }
   }
 
+  async function changeStatus(row: PaymentPlanItem) {
+    try {
+      await updatePaymentPlan(row);
+      Message.success(t('common.updateSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['contractId'],
@@ -360,8 +372,17 @@
             );
       },
       status: (row: PaymentPlanItem) =>
-        h(ContractStatus, {
-          status: row.planStatus as ContractPaymentPlanEnum,
+        h(StatusTagSelect, {
+          'status': row.planStatus as ContractPaymentPlanEnum,
+          'disabled': !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE']),
+          'statusTagComponent': ContractStatus,
+          'onUpdate:status': (val) => {
+            row.planStatus = val;
+          },
+          'statusOptions': contractPaymentPlanStatusOptions,
+          'onChange': () => {
+            changeStatus(row);
+          },
         }),
     },
     permission: ['CONTRACT_PAYMENT_PLAN:UPDATE', 'CONTRACT_PAYMENT_PLAN:DELETE'],
