@@ -23,6 +23,7 @@ import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -133,6 +134,20 @@ public class ContractController {
         contractService.archivedContract(request, SessionUtils.getUserId());
     }
 
+    @PostMapping("/approval")
+    @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
+    @Operation(summary = "审核通过/不通过")
+    public void approval(@Validated @RequestBody ContractApprovalRequest request) {
+        contractService.approvalContract(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/batch/approval")
+    @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
+    @Operation(summary = "批量审核通过/不通过")
+    public BatchAffectSkipResponse batchApproval(@Validated @RequestBody ContractApprovalBatchRequest request) {
+        return contractService.batchApprovalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 
     @PostMapping("/contract-payment-plan/page")
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
@@ -154,7 +169,7 @@ public class ContractController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中合同")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @RequiresPermissions(PermissionConstants.CONTRACT_EXPORT)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);
@@ -175,7 +190,7 @@ public class ContractController {
 
     @PostMapping("/export-all")
     @Operation(summary = "导出全部合同")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @RequiresPermissions(PermissionConstants.CONTRACT_EXPORT)
     public String exportAll(@Validated @RequestBody ContractExportRequest request) {
         ConditionFilterUtils.parseCondition(request);
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),

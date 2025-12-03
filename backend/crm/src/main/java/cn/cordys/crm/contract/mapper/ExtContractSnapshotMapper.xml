@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper">
+
+    <update id="update">
+        update contract_snapshot
+        set contract_id    = #{snapshot.contractId},
+            contract_prop  = #{snapshot.contractProp},
+            contract_value = #{snapshot.contractValue}
+        where id = #{snapshot.id}
+    </update>
+</mapper>

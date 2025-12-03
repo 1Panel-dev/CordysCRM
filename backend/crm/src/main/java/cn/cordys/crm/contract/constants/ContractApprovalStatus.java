@@ -4,22 +4,22 @@ package cn.cordys.crm.contract.constants;
 /**
  * 合同审核状态
  */
-public enum ReviewStatus {
+public enum ContractApprovalStatus {
 
     /**
      * 审核中
      */
-    UNDER_REVIEW,
+    UNDER_APPROVED,
 
     /**
      * 通过
      */
-    PASS,
+    APPROVED,
 
     /**
      * 不通过
      */
-    NOT_PASSED,
+    UN_APPROVED,
 
 
 }

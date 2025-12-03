@@ -22,6 +22,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.ArchivedStatus;
+import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
@@ -30,12 +31,14 @@ import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
+import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -48,12 +51,17 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,6 +92,10 @@ public class ContractService {
     private LogService logService;
     @Resource
     private SerialNumGenerator serialNumGenerator;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private ExtContractSnapshotMapper extContractSnapshotMapper;
 
     /**
      * 新建合同
@@ -114,6 +126,7 @@ public class ContractService {
         contract.setStatus(ContractStatus.SIGNED.name());
         contract.setOrganizationId(orgId);
         contract.setArchivedStatus(ArchivedStatus.UN_ARCHIVED.name());
+        contract.setApprovalStatus(ContractApprovalStatus.UNDER_APPROVED.name());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setCreateUser(operatorId);
         contract.setUpdateTime(System.currentTimeMillis());
@@ -439,7 +452,7 @@ public class ContractService {
         contract.setUpdateUser(userId);
         contractMapper.updateById(contract);
 
-        updateStatusSnapshot(request.getId(), ContractStatus.VOID.name(), null);
+        updateStatusSnapshot(request.getId(), ContractStatus.VOID.name(), null, null);
 
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
@@ -464,7 +477,7 @@ public class ContractService {
         contract.setUpdateUser(userId);
         contractMapper.updateById(contract);
 
-        updateStatusSnapshot(request.getId(), null, request.getArchivedStatus());
+        updateStatusSnapshot(request.getId(), null, request.getArchivedStatus(), null);
 
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
@@ -521,7 +534,7 @@ public class ContractService {
         contract.setUpdateUser(userId);
         contractMapper.update(contract);
 
-        updateStatusSnapshot(request.getId(), request.getStatus(), null);
+        updateStatusSnapshot(request.getId(), request.getStatus(), null, null);
 
         LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
         Map<String, String> newMap = new HashMap<>();
@@ -531,7 +544,7 @@ public class ContractService {
         logService.add(logDTO);
     }
 
-    private void updateStatusSnapshot(String id, String status, String archivedStatus) {
+    private void updateStatusSnapshot(String id, String status, String archivedStatus, String approvalStatus) {
         LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.eq(ContractSnapshot::getContractId, id);
         List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectListByLambda(delWrapper);
@@ -543,6 +556,9 @@ public class ContractService {
             }
             if (StringUtils.isNotBlank(archivedStatus)) {
                 response.setArchivedStatus(archivedStatus);
+            }
+            if (StringUtils.isNotBlank(approvalStatus)) {
+                response.setApprovalStatus(approvalStatus);
             }
             first.setContractValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(first);
@@ -565,5 +581,70 @@ public class ContractService {
 
     public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);
+    }
+
+
+    /**
+     * 审核通过/不通过
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.APPROVAL, resourceId = "{#request.id}")
+    public void approvalContract(ContractApprovalRequest request, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+
+        contract.setStatus(request.getApprovalStatus());
+        contract.setUpdateTime(System.currentTimeMillis());
+        contract.setUpdateUser(userId);
+        contractMapper.update(contract);
+
+        updateStatusSnapshot(request.getId(), null, null, request.getApprovalStatus());
+
+        // 添加日志上下文
+        OperationLogContext.setResourceName(contract.getName().concat(":").concat(Translator.get(request.getApprovalStatus())));
+    }
+
+
+    /**
+     * 批量审核
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public BatchAffectSkipResponse batchApprovalContract(ContractApprovalBatchRequest request, String userId, String orgId) {
+        List<String> ids = extContractMapper.selectByStatusAndIds(request.getIds(), request.getApprovalStatus());
+
+        if (CollectionUtils.isEmpty(ids)) {
+            return BatchAffectSkipResponse.builder().success(0).fail(0).skip(request.getIds().size()).build();
+        }
+
+        List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectByIds(ids);
+        Map<String, ContractSnapshot> snapshotsMaps = contractSnapshots.stream().collect(Collectors.toMap(ContractSnapshot::getContractId, Function.identity()));
+
+        List<LogDTO> logs = new ArrayList<>();
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtContractMapper batchUpdateMapper = sqlSession.getMapper(ExtContractMapper.class);
+        ExtContractSnapshotMapper snapshotMapper = sqlSession.getMapper(ExtContractSnapshotMapper.class);
+
+        ids.forEach(id -> {
+            batchUpdateMapper.updateStatus(id, request.getApprovalStatus(), userId, System.currentTimeMillis());
+            ContractSnapshot contractSnapshot = snapshotsMaps.get(ids);
+            ContractResponse response = JSON.parseObject(contractSnapshot.getContractValue(), ContractResponse.class);
+            response.setApprovalStatus(request.getApprovalStatus());
+            contractSnapshot.setContractValue(JSON.toJSONString(response));
+            snapshotMapper.update(contractSnapshot);
+            LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INDEX, response.getName().concat(".").concat(Translator.get(request.getApprovalStatus())));
+            logs.add(logDTO);
+        });
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+        logService.batchAdd(logs);
+
+        return BatchAffectSkipResponse.builder().success(ids.size()).fail(0).skip(request.getIds().size() - ids.size()).build();
     }
 }
