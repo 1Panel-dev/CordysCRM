@@ -62,12 +62,14 @@ INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:EXPORT');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:ARCHIVE');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:VOIDED');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:APPROVAL');
 
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:READ');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:ADD');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:UPDATE');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:EXPORT');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:VOIDED');
+INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:APPROVAL');
 
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:READ');
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:ADD');
