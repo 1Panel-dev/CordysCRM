@@ -95,7 +95,7 @@ CREATE TABLE contract
     `owner`           VARCHAR(32)  NOT NULL COMMENT '合同负责人',
     `amount`          DECIMAL(20, 10) COMMENT '金额',
     `number`          VARCHAR(50)  NOT NULL COMMENT '编号',
-    `review_status`   VARCHAR(50) COMMENT '审核状态',
+    `approval_status`   VARCHAR(50) COMMENT '审核状态',
     `archived_status` VARCHAR(50)  NOT NULL COMMENT '归档状态',
     `status`          VARCHAR(50)  NOT NULL COMMENT '合同状态',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
@@ -115,7 +115,7 @@ CREATE INDEX idx_customer_id ON contract (customer_id ASC);
 CREATE INDEX idx_owner ON contract (owner ASC);
 CREATE INDEX idx_number ON contract (number ASC);
 CREATE INDEX idx_organization_id ON contract (organization_id ASC);
-CREATE INDEX idx_review_status ON contract (review_status);
+CREATE INDEX idx_review_status ON contract (approval_status);
 CREATE INDEX idx_archived_status ON contract (archived_status);
 CREATE INDEX idx_status ON contract (status);
 

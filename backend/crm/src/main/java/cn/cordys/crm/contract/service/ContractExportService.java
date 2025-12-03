@@ -76,8 +76,8 @@ public class ContractExportService extends BaseExportService {
         systemFiledMap.put("customerId", data.getCustomerName());
         systemFiledMap.put("amount", data.getAmount());
         systemFiledMap.put("number", data.getNumber());
-        if (StringUtils.isNotBlank(data.getReviewStatus())) {
-            systemFiledMap.put("reviewStatus", Translator.get("contract.review_status." + data.getReviewStatus().toLowerCase()));
+        if (StringUtils.isNotBlank(data.getApprovalStatus())) {
+            systemFiledMap.put("reviewStatus", Translator.get("contract.review_status." + data.getApprovalStatus().toLowerCase()));
         }
         if (StringUtils.isNotBlank(data.getArchivedStatus())) {
             systemFiledMap.put("archivedStatus", Translator.get("contract.archived_status." + data.getArchivedStatus().toLowerCase()));

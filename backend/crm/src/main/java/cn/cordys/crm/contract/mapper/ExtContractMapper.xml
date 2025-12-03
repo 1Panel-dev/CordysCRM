@@ -13,6 +13,7 @@
         c.pool_id,
         ct.amount,
         ct.archived_status,
+        ct.approval_status,
         ct.`status`,
         ct.`owner`,
         ct.void_reason,
@@ -58,7 +59,7 @@
         </if>
 
         <if test="dataPermission != null and dataPermission.self">
-            and o.owner = #{userId}
+            and ct.owner = #{userId}
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
@@ -123,7 +124,7 @@
         </foreach>
 
         <if test="dataPermission != null and dataPermission.self">
-            and o.owner = #{userId}
+            and ct.owner = #{userId}
         </if>
     </select>
 
@@ -353,6 +354,7 @@
             c.pool_id,
             ct.amount,
             ct.archived_status,
+            ct.approval_status,
             ct.`status`,
             ct.`owner`,
             ct.void_reason,
@@ -386,4 +388,21 @@
             and o.owner = #{userId}
         </if>
     </select>
+
+    <select id="selectByStatusAndIds" resultType="java.lang.String">
+        select id from contract
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and approval_status != #{approvalStatus}
+    </select>
+
+    <update id="updateStatus">
+        update contract
+        set approval_status = #{approvalStatus},
+            update_user = #{userId},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
 </mapper>
