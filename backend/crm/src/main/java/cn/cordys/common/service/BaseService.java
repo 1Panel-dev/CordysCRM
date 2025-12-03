@@ -13,8 +13,8 @@ import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.domain.User;
-import cn.cordys.crm.system.dto.field.PriceSubField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -482,8 +482,8 @@ public class BaseService {
         if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
             for (BaseField field : moduleFormConfigDTO.getFields()) {
                 if (Strings.CI.equals(field.getBusinessKey(), subTableKey)) {
-                    if (field instanceof PriceSubField priceSubField) {
-                        priceSubField.getSubFields().forEach(subField -> {
+                    if (field instanceof SubField objectSubField) {
+                        objectSubField.getSubFields().forEach(subField -> {
                             nameMap.put(StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId(), subField.getName());
                         });
                     }
