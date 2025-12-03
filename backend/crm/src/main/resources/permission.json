@@ -150,6 +150,9 @@
             "id": "CUSTOMER_MANAGEMENT:UPDATE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT:TRANSFER"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT:RECYCLE",
             "name": "permission.customer_management.customer.recycle"
           },
@@ -237,6 +240,9 @@
             "id": "CLUE_MANAGEMENT:UPDATE"
           },
           {
+            "id": "CLUE_MANAGEMENT:TRANSFER"
+          },
+          {
             "id": "CLUE_MANAGEMENT:RECYCLE",
             "name": "permission.clue_management.clue.recycle"
           },
@@ -295,6 +301,9 @@
           },
           {
             "id": "OPPORTUNITY_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:TRANSFER"
           },
           {
             "id": "OPPORTUNITY_MANAGEMENT:DELETE"
