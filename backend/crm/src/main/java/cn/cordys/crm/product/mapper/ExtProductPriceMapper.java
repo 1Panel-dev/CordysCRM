@@ -53,4 +53,11 @@ public interface ExtProductPriceMapper {
 	 * @param request 请求参数
 	 */
 	void batchUpdate(@Param("request") BatchUpdateDbParam request);
+
+	/**
+	 * 根据ID列表查询价格表信息
+	 * @param ids ID列表
+	 * @return 价格信息列表
+	 */
+	List<ProductPriceResponse> selectByIds(@Param("ids") List<String> ids);
 }

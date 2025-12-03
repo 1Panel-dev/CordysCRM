@@ -324,7 +324,7 @@ public class ProductPriceService {
      * @param listData 列表数据
      * @return 列表数据
      */
-    private List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
+    public List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
                 listData.stream().map(ProductPriceResponse::getId).toList(), true);

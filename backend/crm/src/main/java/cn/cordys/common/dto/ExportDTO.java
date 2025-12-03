@@ -23,4 +23,10 @@ public class ExportDTO {
     private BasePageRequest pageRequest;
     private List<String> selectIds;
     private ExportSelectRequest selectRequest;
+	private String formKey;
+	/**
+	 * 导出字段参数 (通用参数无需设置)
+	 */
+	private ExportFieldParam exportFieldParam;
+	private List<String> mergeHeads;
 }
