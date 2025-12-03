@@ -116,7 +116,7 @@ public class ContractService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("contract.form.config.required"));
         }
-
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Contract contract = new Contract();
         String id = IDGenerator.nextStr();
         contract.setId(id);
@@ -147,7 +147,7 @@ public class ContractService {
         // 保存表单配置快照
         List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
         ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
-        saveSnapshot(contract, moduleFormConfigDTO, response);
+        saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
         return contract;
     }
@@ -248,7 +248,7 @@ public class ContractService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("contract.form.config.required"));
         }
-
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Optional.ofNullable(oldContract).ifPresentOrElse(item -> {
             if (Strings.CI.equals(oldContract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
                 throw new GenericException(Translator.get("contract.archived.cannot.edit"));
@@ -286,7 +286,7 @@ public class ContractService {
             //保存快照
             List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
             ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
-            saveSnapshot(contract, moduleFormConfigDTO, response);
+            saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
 
         }, () -> {
