@@ -323,12 +323,20 @@ public class BaseService {
             List<Map<String, Object>> rows =
                     JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
                     });
-
-            rows.forEach(row ->
+            int size = rows.size();
+            for (int i = 0; i < size; i++) {
+                Map<String, Object> row = rows.get(i);
+                if (size > 1) {
+                    int finalI = i;
                     row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key), value)
-                    )
-            );
+                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value)
+                    );
+                } else {
+                    row.forEach((key, value) ->
+                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value)
+                    );
+                }
+            }
         });
     }
 
@@ -441,10 +449,19 @@ public class BaseService {
                     JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
                     });
 
-            for (Map<String, Object> row : subTableList) {
-                row.forEach((key, value) ->
-                        resourceLog.put(subTableKeyName + fieldNameMap.get(key), value)
-                );
+            int size = subTableList.size();
+            for (int i = 0; i < size; i++) {
+                Map<String, Object> row = subTableList.get(i);
+                if (size > 1) {
+                    int finalI = i;
+                    row.forEach((key, value) ->
+                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value)
+                    );
+                } else {
+                    row.forEach((key, value) ->
+                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value)
+                    );
+                }
             }
         });
     }

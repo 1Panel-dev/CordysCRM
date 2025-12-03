@@ -4,7 +4,8 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,13 +20,13 @@ import java.util.List;
 public class OpportunityQuotationalLogService extends BaseModuleLogService {
 
     @Resource
-    private BaseMapper<Customer> customerMapper;
+    private BaseMapper<Product> productMapper;
+    @Resource
+    private BaseMapper<ProductPrice> productPriceMapper;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.QUOTATION.getKey());
-
-        List<JsonDifferenceDTO> toRemove = new ArrayList<>();
 
         for (JsonDifferenceDTO differ : differenceDTOS) {
 
@@ -47,6 +47,7 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
 
             if (differ.getColumn().contains(Translator.get("products_info"))) {
                 differ.setColumnName(differ.getColumn());
+
             }
 
             if (Strings.CS.equals(differ.getColumn(), "approvalStatus")) {
@@ -59,11 +60,8 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
                 }
             }
 
-            if (!(differ.getNewValue() instanceof List) && !(differ.getOldValue() instanceof List)) {
-                toRemove.add(differ);
-            }
         }
-        return toRemove;
+        return differenceDTOS;
     }
 
 

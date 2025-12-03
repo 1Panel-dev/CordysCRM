@@ -16,6 +16,7 @@ import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -67,15 +68,21 @@ public abstract class BaseModuleLogService {
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
+        Map<String, BaseField> subFieldMap = customerFormConfig.getFields().stream().filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
+                .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
+
+
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differenceDTOS);
         modifiable.removeIf(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             return moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name());
         });
         differenceDTOS = modifiable;
-
         // 记录选项字段的字段值
         List<BaseModuleFieldValue> optionFieldValues = new ArrayList<>();
+        // 记录子表选项字段的字段值
+        List<BaseModuleFieldValue> optionSubFieldValues = new ArrayList<>();
+
         differenceDTOS.forEach(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null && moduleField.hasSingleOptions()) {
@@ -92,34 +99,91 @@ public abstract class BaseModuleLogService {
                     optionFieldValues.add(fieldValue);
                 }
             }
+            subFieldMap.forEach((key, value) -> {
+                if (value.isSubField()) {
+                    if (value instanceof SubField) {
+                        // 子表字段
+                        for (BaseField subField : ((SubField) value).getSubFields()) {
+                            String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
+                            //如果differ.getColumn() 包含"-",则截取最后一个-后面的字符串
+                            String differColumn = differ.getColumn();
+                            if (StringUtils.isNotBlank(differ.getColumn())) {
+                                differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
+                            }
+                            if (Strings.CS.equals(subKey, differColumn)) {
+                                if (differ.getOldValue() != null) {
+                                    BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+                                    fieldValue.setFieldId(subKey);
+                                    fieldValue.setFieldValue(differ.getOldValue());
+                                    optionSubFieldValues.add(fieldValue);
+                                }
+                                if (differ.getNewValue() != null) {
+                                    BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+                                    fieldValue.setFieldId(subKey);
+                                    fieldValue.setFieldValue(differ.getNewValue());
+                                    optionSubFieldValues.add(fieldValue);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            });
         });
 
         Map<String, List<OptionDTO>> optionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getOptionMap(customerFormConfig, optionFieldValues);
+        // 子表选项字段的选项值 map
+        Map<String, List<OptionDTO>> subOptionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
+                .getOptionMap(customerFormConfig, optionSubFieldValues);
+
 
         differenceDTOS.forEach(differ -> {
-            BaseField moduleField = moduleFieldMap.get(differ.getColumn());
+            String differColumn = differ.getColumn();
+            // 子表字段处理
+            if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
+                differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
+            }
+            BaseField moduleField = moduleFieldMap.get(differColumn);
             if (moduleField != null) {
                 differ.setColumnName(moduleField.getName());
                 // 设置字段值名称
-                setColumnValueName(optionMap, differ, moduleField);
+                setColumnValueName(optionMap.get(differColumn), differ, moduleField);
             } else {
                 if (optionMap.containsKey(differ.getColumn())) {
                     differ.setColumnName(Translator.get("log." + differ.getColumn()));
                     // 设置字段值名称
-                    setColumnValueName(optionMap, differ, moduleField);
+                    setColumnValueName(optionMap.get(differColumn), differ, moduleField);
+                } else if (subOptionMap.containsKey(differColumn)) {
+                    String prefix = differ.getColumn().substring(0, differ.getColumn().lastIndexOf("-"));
+                    differ.setColumn(prefix);
+                    String finalDifferColumn = differColumn;
+                    subFieldMap.forEach((key, value) -> {
+                        if (value.isSubField()) {
+                            if (value instanceof SubField) {
+                                // 子表字段
+                                for (BaseField subField : ((SubField) value).getSubFields()) {
+                                    String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
+                                    if (Strings.CS.equals(subKey, finalDifferColumn)) {
+                                        // 设置字段值名称
+                                        setColumnValueName(subOptionMap.get(finalDifferColumn), differ, subField);
+                                    }
+                                }
+
+                            }
+                        }
+                    });
                 } else {
                     translatorDifferInfo(differ);
                 }
-
             }
+
         });
 
         return differenceDTOS;
     }
 
-    private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ, BaseField moduleField) {
-        List<OptionDTO> options = optionMap.get(differ.getColumn());
+    private void setColumnValueName(List<OptionDTO> options, JsonDifferenceDTO differ, BaseField moduleField) {
         if (options == null) {
             //解析各种数据
             parseValue(moduleField, differ);
