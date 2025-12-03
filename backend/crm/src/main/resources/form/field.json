@@ -1029,7 +1029,9 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "percent"
+          "numberFormat": "percent",
+          "decimalPlaces": true,
+          "precision": 2
         },
         {
           "name": "重要说明",
@@ -1188,7 +1190,9 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "number"
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2
         },
         {
           "name": "税点",
@@ -1198,7 +1202,9 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "percent"
+          "numberFormat": "percent",
+          "decimalPlaces": true,
+          "precision": 2
         },
         {
           "name": "金额",

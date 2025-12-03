@@ -1,7 +1,9 @@
 package cn.cordys.crm.product.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
@@ -131,13 +133,19 @@ public class ProductPriceController {
 	@Operation(summary = "导出全部")
 	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
 		ConditionFilterUtils.parseCondition(request);
-		return priceExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
+				.headList(request.getHeadList()).orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+				.locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+		return priceExportService.exportAllWithMergeStrategy(exportParam);
 	}
 
 	@PostMapping("/export-select")
 	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
 	@Operation(summary = "导出选中")
 	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-		return priceExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
+				.headList(request.getHeadList()).orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+				.locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+		return priceExportService.exportSelectWithMergeStrategy(exportParam);
 	}
 }
