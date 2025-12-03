@@ -107,7 +107,7 @@ public class OpportunityController {
 
 
     @PostMapping("/batch/transfer")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER)
     @Operation(summary = "批量转移商机")
     public void batchTransfer(@RequestBody OpportunityTransferRequest request) {
         opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

@@ -120,7 +120,7 @@ public class CustomerController {
     }
 
     @PostMapping("/batch/transfer")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER)
     @Operation(summary = "批量转移客户")
     public void batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
         customerService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
