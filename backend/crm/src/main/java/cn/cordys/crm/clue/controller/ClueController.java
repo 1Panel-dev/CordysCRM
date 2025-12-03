@@ -120,7 +120,7 @@ public class ClueController {
     }
 
     @PostMapping("/batch/transfer")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_TRANSFER)
     @Operation(summary = "批量转移线索")
     public void batchTransfer(@RequestBody ClueBatchTransferRequest request) {
         clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
