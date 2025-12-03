@@ -768,13 +768,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function makeSubFieldInitialOptions(subField: FormCreateField, res: FormDetail) {
+  function makeSubFieldInitialOptions(subField: FormCreateField, parentFieldId: string, res: FormDetail) {
     if (subField.businessKey) {
       const options = res.optionMap?.[subField.businessKey];
       if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
-          ?.filter((e) => formDetail.value[subField.id]?.includes(e.id))
+          ?.filter((e) =>
+            formDetail.value[parentFieldId].some((item: Record<string, any>) =>
+              item[subField.businessKey!]?.includes(e.id)
+            )
+          )
           .map((e) => ({
             ...e,
             name: e.name || t('common.optionNotExist'),
@@ -785,7 +789,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
-          ?.filter((e) => formDetail.value[subField.id]?.includes(e.id))
+          ?.filter((e) =>
+            formDetail.value[parentFieldId].some((item: Record<string, any>) => item[subField.id]?.includes(e.id))
+          )
           .map((e) => ({
             ...e,
             name: e.name || t('common.optionNotExist'),
@@ -823,7 +829,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             }
           }
           item.subFields.forEach((subField) => {
-            makeSubFieldInitialOptions(subField, res);
+            makeSubFieldInitialOptions(subField, item.id, res);
+            formDetail.value[item.id].forEach((subItem: Record<string, any>) => {
+              subItem[subField.businessKey || subField.id] = initFieldValue(
+                subField,
+                subItem[subField.businessKey || subField.id]
+              );
+            });
           });
           return;
         }

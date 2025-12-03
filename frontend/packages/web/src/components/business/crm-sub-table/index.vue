@@ -150,8 +150,8 @@
           width: 250,
           key,
           fieldId: key,
-          render: (row: any, rowIndex: number) =>
-            h(dataSource, {
+          render: (row: any, rowIndex: number) => {
+            return h(dataSource, {
               value: row[key] || [],
               fieldConfig: field,
               path: `${props.parentId}[${rowIndex}].${key}`,
@@ -161,7 +161,8 @@
               onChange: (val: any) => {
                 row[key] = val;
               },
-            }),
+            });
+          },
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
       }
