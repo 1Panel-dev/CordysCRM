@@ -6,6 +6,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      * 将数据库的字符串值转换为对应的参数值
      *
      * @param value
-     *
      * @return
      */
     public Object convertToValue(T selectField, String value) {
@@ -43,7 +43,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      * 将数据库的字符串值转换为对应的参数值
      *
      * @param value
-     *
      * @return
      */
     public Object transformToValue(T selectField, String value) {
@@ -55,7 +54,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      *
      * @param field 字段
      * @param text  文本
-     *
      * @return 字段值
      */
     public Object textToValue(T field, String text) {
@@ -67,7 +65,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
      * 将对应的参数值转换成字符串
      *
      * @param value
-     *
      * @return
      */
     public String convertToString(T selectField, Object value) {
@@ -99,8 +96,9 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         }
     }
 
+    // 校验选项值是否合法,空值，"",不校验
     protected void validateOptions(String name, Object value, List<OptionProp> options) {
-        if (value == null) {
+        if (value == null || StringUtils.isBlank(value.toString())) {
             return;
         }
         if (options == null) {

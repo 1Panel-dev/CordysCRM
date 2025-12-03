@@ -258,6 +258,7 @@ public class ContractService {
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
             // 保留不可更改的字段
+            contract.setNumber(oldContract.getNumber());
             contract.setCreateUser(oldContract.getCreateUser());
             contract.setCreateTime(oldContract.getCreateTime());
             contract.setAmount(oldContract.getAmount());

@@ -180,7 +180,12 @@ public abstract class BaseModuleLogService {
                             }
                         });
                     } else {
-                        differ.setColumn(prefix);
+                        //如果prefix = differ.column，则说明没有-符号，设置为Translator.get("log."+differ.getColumn()),否则设置为prefix
+                        if (Strings.CS.equals(prefix, differ.getColumn())) {
+                            differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                        } else {
+                            differ.setColumn(prefix);
+                        }
                         differ.setOldValueName(differ.getOldValue());
                         differ.setNewValueName(differ.getNewValue());
                     }
