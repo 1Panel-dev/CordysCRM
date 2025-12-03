@@ -297,11 +297,11 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 if (fieldValue instanceof String) {
                     //数据源类型的字段，进行值的转换
                     if (Strings.CI.equals(fieldTypeMap.get(fieldId), FieldType.DATA_SOURCE.toString())) {
-                        List<OptionDTO> optionDTOs = optionMap.get(fieldId);
-                        if (CollectionUtils.isEmpty(optionDTOs)) {
+                        List<OptionDTO> options = optionMap.get(fieldId);
+                        if (CollectionUtils.isEmpty(options)) {
                             continue;
                         }
-                        for (OptionDTO optionDTO : optionDTOs) {
+                        for (OptionDTO optionDTO : options) {
                             if (Strings.CI.equals(optionDTO.getId(), (String) fieldValue)) {
                                 fieldValue = optionDTO.getName();
                                 break;

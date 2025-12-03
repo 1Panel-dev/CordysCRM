@@ -311,8 +311,8 @@ public class AgentBaseService extends DashboardSortService {
             List<String> ids = new ArrayList<>();
             ids.addAll(agentList.stream().map(AgentPageResponse::getCreateUser).toList());
             ids.addAll(agentList.stream().map(AgentPageResponse::getUpdateUser).toList());
-            List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
-            Map<String, String> userMap = optionDTOS
+            List<OptionDTO> options = extUserMapper.selectUserOptionByIds(ids);
+            Map<String, String> userMap = options
                     .stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 

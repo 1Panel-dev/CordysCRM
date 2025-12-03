@@ -15,16 +15,16 @@ import java.util.List;
 public class CustomerLogService extends BaseModuleLogService {
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.CUSTOMER.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.CUSTOMER.getKey());
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "collectionTime")) {
                 setFormatDataTimeFieldValueName(differ);
             }
         }
-        return differenceDTOS;
+        return differences;
     }
 }

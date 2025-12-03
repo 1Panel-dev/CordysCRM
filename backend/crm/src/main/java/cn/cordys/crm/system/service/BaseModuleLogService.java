@@ -49,17 +49,17 @@ public abstract class BaseModuleLogService {
         differ.setNewValueName(differ.getNewValue());
     }
 
-    abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
+    abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId);
 
     /**
      * 处理非业务字段的自定义字段
      * 同时会翻译其他字段的 ColumnName
      *
-     * @param differenceDTOS
+     * @param differences
      * @param orgId
      * @param formKey
      */
-    protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId, String formKey) {
+    protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differences, String orgId, String formKey) {
         ModuleFormConfigDTO customerFormConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(formKey, orgId);
 
@@ -72,18 +72,18 @@ public abstract class BaseModuleLogService {
                 .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
 
 
-        List<JsonDifferenceDTO> modifiable = new ArrayList<>(differenceDTOS);
+        List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             return moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name());
         });
-        differenceDTOS = modifiable;
+        differences = modifiable;
         // 记录选项字段的字段值
         List<BaseModuleFieldValue> optionFieldValues = new ArrayList<>();
         // 记录子表选项字段的字段值
         List<BaseModuleFieldValue> optionSubFieldValues = new ArrayList<>();
 
-        differenceDTOS.forEach(differ -> {
+        differences.forEach(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null && moduleField.hasSingleOptions()) {
                 if (differ.getOldValue() != null) {
@@ -138,7 +138,7 @@ public abstract class BaseModuleLogService {
                 .getOptionMap(customerFormConfig, optionSubFieldValues);
 
 
-        differenceDTOS.forEach(differ -> {
+        differences.forEach(differ -> {
             String differColumn = differ.getColumn();
             // 子表字段处理
             if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
@@ -180,7 +180,7 @@ public abstract class BaseModuleLogService {
 
         });
 
-        return differenceDTOS;
+        return differences;
     }
 
     private void setColumnValueName(List<OptionDTO> options, JsonDifferenceDTO differ, BaseField moduleField) {

@@ -25,10 +25,10 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
     private BaseMapper<ProductPrice> productPriceMapper;
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.QUOTATION.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.QUOTATION.getKey());
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
 
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.QUOTATION_PRODUCT.getBusinessKey())) {
                 setProductName(differ);
@@ -61,7 +61,7 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
             }
 
         }
-        return differenceDTOS;
+        return differences;
     }
 
 

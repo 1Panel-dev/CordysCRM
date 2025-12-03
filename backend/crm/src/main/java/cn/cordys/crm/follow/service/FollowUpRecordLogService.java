@@ -22,10 +22,10 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
     private BaseMapper<Customer> customerMapper;
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.FOLLOW_RECORD.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.FOLLOW_RECORD.getKey());
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CUSTOMER.getBusinessKey())) {
                 if (differ.getOldValue() != null) {
                     Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
@@ -71,7 +71,7 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
                 setOpportunityName(differ);
             }
         }
-        return differenceDTOS;
+        return differences;
     }
 
 }

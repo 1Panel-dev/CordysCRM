@@ -103,6 +103,7 @@ public class ContractService {
      * @param request
      * @param operatorId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
@@ -193,6 +194,7 @@ public class ContractService {
      * @param contract
      * @param moduleFields
      * @param moduleFormConfigDTO
+     *
      * @return
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -232,6 +234,7 @@ public class ContractService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -341,6 +344,7 @@ public class ContractService {
      * 合同详情
      *
      * @param id
+     *
      * @return
      */
     public ContractResponse get(String id, String orgId) {
@@ -368,6 +372,7 @@ public class ContractService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
+     *
      * @return
      */
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -375,12 +380,12 @@ public class ContractService {
         List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
         List<ContractListResponse> results = buildList(list, orgId);
         ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, results, customerFormConfig);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(list, results, customerFormConfig);
 
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
     }
 
-    private Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ContractListResponse> list, List<ContractListResponse> buildList,
+    private Map<String, List<OptionDTO>> buildOptionMap(List<ContractListResponse> list, List<ContractListResponse> buildList,
                                                         ModuleFormConfigDTO formConfig) {
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractListResponse::getModuleFields);
@@ -433,6 +438,7 @@ public class ContractService {
      *
      * @param request
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
@@ -488,6 +494,7 @@ public class ContractService {
      *
      * @param id
      * @param orgId
+     *
      * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {

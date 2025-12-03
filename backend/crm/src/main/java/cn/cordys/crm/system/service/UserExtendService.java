@@ -85,8 +85,8 @@ public class UserExtendService {
         if (CollectionUtils.isEmpty(scopeIds)) {
             return new ArrayList<>();
         }
-        List<ScopeNameDTO> scopeNameDTOS = extUserExtendMapper.groupByScopeIds(scopeIds);
-        return scopeNameDTOS.stream().peek(scope -> {
+        List<ScopeNameDTO> scopeNames = extUserExtendMapper.groupByScopeIds(scopeIds);
+        return scopeNames.stream().peek(scope -> {
             if (Strings.CS.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(), InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
                 scope.setName(Translator.get("role." + scope.getName()));
             }

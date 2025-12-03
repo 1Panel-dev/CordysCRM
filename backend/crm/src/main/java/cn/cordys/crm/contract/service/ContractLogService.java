@@ -14,12 +14,12 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class ContractLogService extends BaseModuleLogService {
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.CONTRACT.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.CONTRACT.getKey());
 
         List<JsonDifferenceDTO> toRemove = new ArrayList<>();
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
+        for (JsonDifferenceDTO differ : differences) {
 
             if (differ.getColumn().contains(Translator.get("products_info"))) {
                 differ.setColumnName(differ.getColumn());

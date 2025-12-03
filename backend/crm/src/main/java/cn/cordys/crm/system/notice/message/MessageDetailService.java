@@ -45,19 +45,19 @@ public class MessageDetailService {
     }
 
     private List<MessageDetailDTO> getMessageDetailDTOs(String module, boolean useTemplate, String template, String organizationId) {
-        List<MessageDetailDTO> messageDetailDTOS = new ArrayList<>();
+        List<MessageDetailDTO> messageDetails = new ArrayList<>();
         List<MessageTask> messageTaskLists = extMessageTaskMapper.getEnableMessageTaskByReceiveTypeAndTaskType(module, organizationId);
         if (messageTaskLists == null) {
             return new ArrayList<>();
         }
-        getMessageDetailDTOs(useTemplate, template, messageDetailDTOS, messageTaskLists);
-        return messageDetailDTOS.stream()
+        getMessageDetailDTOs(useTemplate, template, messageDetails, messageTaskLists);
+        return messageDetails.stream()
                 .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo)).reversed())
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private void getMessageDetailDTOs(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetailDTOS, List<MessageTask> messageTaskLists) {
+    private void getMessageDetailDTOs(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails, List<MessageTask> messageTaskLists) {
         //消息通知任务以消息类型事件接收类型唯一进行分组
         Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream().collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
         messageTaskGroup.forEach((messageTaskId, messageTaskList) -> {
@@ -72,7 +72,7 @@ public class MessageDetailService {
                 //这里特殊处理,如果使用模版，这里用调用处传来的模板
                 messageDetailDTO.setTemplate(customTemplate);
             }
-            messageDetailDTOS.add(messageDetailDTO);
+            messageDetails.add(messageDetailDTO);
         });
     }
 

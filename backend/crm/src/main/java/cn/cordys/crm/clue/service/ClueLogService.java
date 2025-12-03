@@ -18,26 +18,26 @@ public class ClueLogService extends BaseModuleLogService {
 
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
-        differenceDTOS = super.handleModuleLogField(differenceDTOS, orgId, FormKey.CLUE.getKey());
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        differences = super.handleModuleLogField(differences, orgId, FormKey.CLUE.getKey());
 
-        for (JsonDifferenceDTO differ : differenceDTOS) {
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
-                setUserFieldName(differ);
+        for (JsonDifferenceDTO difference : differences) {
+            if (Strings.CS.equals(difference.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
+                setUserFieldName(difference);
                 continue;
             }
 
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
-                setProductName(differ);
+            if (Strings.CS.equals(difference.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
+                setProductName(difference);
             }
 
-            if (Strings.CS.equals(differ.getColumn(), "stage")) {
-                differ.setColumnName(Translator.get("clue.stage"));
-                differ.setNewValueName(ClueStatus.getByKey((String) differ.getNewValue()));
-                differ.setOldValueName(ClueStatus.getByKey((String) differ.getOldValue()));
+            if (Strings.CS.equals(difference.getColumn(), "stage")) {
+                difference.setColumnName(Translator.get("clue.stage"));
+                difference.setNewValueName(ClueStatus.getByKey((String) difference.getNewValue()));
+                difference.setOldValueName(ClueStatus.getByKey((String) difference.getOldValue()));
             }
         }
 
-        return differenceDTOS;
+        return differences;
     }
 }

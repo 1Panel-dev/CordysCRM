@@ -21,9 +21,9 @@ public class CustomerContactLogService extends BaseModuleLogService {
     private BaseMapper<Customer> customerMapper;
 
     @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
+    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         List<JsonDifferenceDTO> result = super.handleModuleLogField(
-                differenceDTOS, orgId, FormKey.CONTACT.getKey()
+                differences, orgId, FormKey.CONTACT.getKey()
         );
 
         for (JsonDifferenceDTO differ : result) {
