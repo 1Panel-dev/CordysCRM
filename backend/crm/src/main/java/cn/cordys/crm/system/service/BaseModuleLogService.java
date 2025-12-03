@@ -68,9 +68,12 @@ public abstract class BaseModuleLogService {
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
-        Map<String, BaseField> subFieldMap = customerFormConfig.getFields().stream().filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
-                .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
-
+        Map<String, BaseField> subFieldMap = new HashMap<>();
+        for (BaseField field : customerFormConfig.getFields()) {
+            if (field instanceof SubField) {
+                subFieldMap.put(field.getBusinessKey(), field);
+            }
+        }
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> {
@@ -137,42 +140,50 @@ public abstract class BaseModuleLogService {
         Map<String, List<OptionDTO>> subOptionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getOptionMap(customerFormConfig, optionSubFieldValues);
 
-
+        Set<String> subFieldIds = optionSubFieldValues.stream().map(BaseModuleFieldValue::getFieldId).collect(Collectors.toSet());
         differences.forEach(differ -> {
+            String originDifferColumn = differ.getColumn();
             String differColumn = differ.getColumn();
+            String prefix = differ.getColumn();
             // 子表字段处理
             if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
-                differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
+                differColumn = originDifferColumn.substring(differ.getColumn().lastIndexOf("-") + 1);
+                prefix = originDifferColumn.substring(0, originDifferColumn.lastIndexOf("-"));
             }
-            BaseField moduleField = moduleFieldMap.get(differColumn);
+            BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null) {
                 differ.setColumnName(moduleField.getName());
                 // 设置字段值名称
-                setColumnValueName(optionMap.get(differColumn), differ, moduleField);
+                setColumnValueName(optionMap.get(differ.getColumn()), differ, moduleField);
             } else {
                 if (optionMap.containsKey(differ.getColumn())) {
                     differ.setColumnName(Translator.get("log." + differ.getColumn()));
                     // 设置字段值名称
                     setColumnValueName(optionMap.get(differColumn), differ, moduleField);
-                } else if (subOptionMap.containsKey(differColumn)) {
-                    String prefix = differ.getColumn().substring(0, differ.getColumn().lastIndexOf("-"));
-                    differ.setColumn(prefix);
-                    String finalDifferColumn = differColumn;
-                    subFieldMap.forEach((key, value) -> {
-                        if (value.isSubField()) {
-                            if (value instanceof SubField) {
-                                // 子表字段
-                                for (BaseField subField : ((SubField) value).getSubFields()) {
-                                    String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
-                                    if (Strings.CS.equals(subKey, finalDifferColumn)) {
-                                        // 设置字段值名称
-                                        setColumnValueName(subOptionMap.get(finalDifferColumn), differ, subField);
+                } else if (subFieldIds.contains(differColumn)) {
+                    // 子表字段处理
+                    if (subOptionMap.containsKey(differColumn)) {
+                        differ.setColumn(prefix);
+                        String finalDifferColumn = differColumn;
+                        subFieldMap.forEach((key, value) -> {
+                            if (value.isSubField()) {
+                                if (value instanceof SubField) {
+                                    // 子表字段
+                                    for (BaseField subField : ((SubField) value).getSubFields()) {
+                                        String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
+                                        if (Strings.CS.equals(subKey, finalDifferColumn)) {
+                                            // 设置字段值名称
+                                            setColumnValueName(subOptionMap.get(finalDifferColumn), differ, subField);
+                                        }
                                     }
                                 }
-
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        differ.setColumn(prefix);
+                        differ.setOldValueName(differ.getOldValue());
+                        differ.setNewValueName(differ.getNewValue());
+                    }
                 } else {
                     translatorDifferInfo(differ);
                 }

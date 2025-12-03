@@ -103,7 +103,6 @@ public class ContractService {
      * @param request
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
@@ -194,7 +193,6 @@ public class ContractService {
      * @param contract
      * @param moduleFields
      * @param moduleFormConfigDTO
-     *
      * @return
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -234,7 +232,6 @@ public class ContractService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -260,15 +257,19 @@ public class ContractService {
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
+            // 保留不可更改的字段
+            contract.setCreateUser(oldContract.getCreateUser());
+            contract.setCreateTime(oldContract.getCreateTime());
+            contract.setAmount(oldContract.getAmount());
+            contract.setStatus(oldContract.getStatus());
+            contract.setArchivedStatus(oldContract.getArchivedStatus());
+            contract.setApprovalStatus(oldContract.getApprovalStatus());
             //计算子产品总金额
             setAmount(request.getProducts(), contract);
             // 设置子表格字段值
             moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
-            // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
-
             //删除快照
             LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(ContractSnapshot::getContractId, request.getId());
@@ -287,8 +288,8 @@ public class ContractService {
             List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
             ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(contract, saveModuleFormConfigDTO, response);
-
-
+            // 处理日志上下文
+            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("contract.not.exist"));
         });
@@ -344,7 +345,6 @@ public class ContractService {
      * 合同详情
      *
      * @param id
-     *
      * @return
      */
     public ContractResponse get(String id, String orgId) {
@@ -372,7 +372,6 @@ public class ContractService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -438,7 +437,6 @@ public class ContractService {
      *
      * @param request
      * @param userId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
@@ -494,7 +492,6 @@ public class ContractService {
      *
      * @param id
      * @param orgId
-     *
      * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
