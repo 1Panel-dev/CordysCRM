@@ -1143,7 +1143,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function subFieldInit(field: FormCreateField) {
     let defaultValue = field.defaultValue || '';
-    if ((field.type === FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA)) {
+    if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
     } else if (getRuleType(field) === 'array') {
       defaultValue =
