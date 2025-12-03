@@ -117,6 +117,9 @@ import {
   UpdateCustomerUrl,
   UpdateCustomerViewUrl,
   GetAccountContractListUrl,
+  GetAccountContractStatisticUrl,
+  GetAccountPaymentListUrl,
+  GetAccountPaymentStatisticUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   ChartResponseDataItem,
@@ -755,6 +758,18 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ContractItem>>({ url: GetAccountContractListUrl, data });
   }
 
+  function getAccountContractStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountContractStatisticUrl}/${id}` });
+  }
+
+    function getAccountPayment(data: TableQueryParams) {
+    return CDR.post<CommonList<ContractItem>>({ url: GetAccountPaymentListUrl, data });
+  }
+
+  function getAccountPaymentStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountPaymentStatisticUrl}/${id}` });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -873,5 +888,8 @@ export default function useProductApi(CDR: CordysAxios) {
     generateCustomerPoolChart,
     generateCustomerContactChart,
     getAccountContract,
+    getAccountContractStatistic,
+    getAccountPayment,
+    getAccountPaymentStatistic,
   };
 }

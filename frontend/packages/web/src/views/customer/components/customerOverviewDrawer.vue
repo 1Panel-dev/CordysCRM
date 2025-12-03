@@ -86,7 +86,16 @@
           :source-id="props.sourceId"
           :readonly="collaborationType === 'READ_ONLY' || props.readonly"
         />
-        <ContractTimeline v-else-if="activeTab === 'contract'" :source-id="props.sourceId" />
+        <ContractTimeline
+          v-else-if="activeTab === 'contract'"
+          :form-key="FormDesignKeyEnum.CONTRACT"
+          :source-id="props.sourceId"
+        />
+        <ContractTimeline
+          v-else-if="activeTab === 'contractPayment'"
+          :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
+          :source-id="props.sourceId"
+        />
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -244,6 +253,12 @@
         tab: t('module.contract'),
         enable: true,
         permission: ['CONTRACT:READ'],
+      },
+      {
+        name: 'contractPayment',
+        tab: t('module.paymentPlan'),
+        enable: true,
+        permission: ['CONTRACT_PAYMENT_PLAN:READ'],
       },
     ];
     if (collaborationType.value) {

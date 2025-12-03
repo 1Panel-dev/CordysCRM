@@ -19,4 +19,10 @@ export default {
   'contract.invoicedContract': '开票合同',
   'contract.contractAmount': '合同金额',
   'contract.applicationTime': '申请时间',
+  'contract.customerContractAmount': '客户合同金额',
+  'contract.customerPaymentAmount': '客户预计回款',
+  'contract.paymentContract': '回款合同',
+  'contract.expectedPaymentDate': '预计回款时间',
+  'contract.expectedPaymentAmount': '预计回款金额',
+  'contract.isPlanCompleted': '是否完成计划',
 };

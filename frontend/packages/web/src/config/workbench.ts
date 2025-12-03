@@ -30,7 +30,7 @@ export const quickAccessList = [
   },
   {
     key: FormDesignKeyEnum.CONTRACT,
-    icon: 'newOpportunity', // TODO lmy icon
+    icon: 'newContract',
     label: t('contract.new'),
     permission: ['CONTRACT:ADD'],
   },
