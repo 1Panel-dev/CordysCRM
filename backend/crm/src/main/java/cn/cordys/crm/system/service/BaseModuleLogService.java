@@ -9,7 +9,6 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.service.CustomerContactService;
-import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.system.constants.FieldSourceType;
@@ -326,24 +325,6 @@ public abstract class BaseModuleLogService {
         }
     }
 
-
-    /**
-     * 客户名称
-     *
-     * @param differ
-     */
-    protected void setCustomerName(JsonDifferenceDTO differ) {
-        CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
-        assert customerService != null;
-        if (differ.getOldValue() != null) {
-            String customerName = customerService.getCustomerName(differ.getOldValue().toString());
-            differ.setOldValueName(customerName);
-        }
-        if (differ.getNewValue() != null) {
-            String userName = customerService.getCustomerName(differ.getNewValue().toString());
-            differ.setNewValueName(userName);
-        }
-    }
 
     /**
      * 商机名称

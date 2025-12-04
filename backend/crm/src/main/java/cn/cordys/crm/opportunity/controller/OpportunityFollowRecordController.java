@@ -47,8 +47,7 @@ public class OpportunityFollowRecordController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
-        CustomerDataDTO customerData = followUpRecordService.getOpportunityPermission(SessionUtils.getUserId(),
-                request.getSourceId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        CustomerDataDTO customerData = followUpRecordService.getOpportunityPermission(SessionUtils.getUserId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", customerData);
     }
 

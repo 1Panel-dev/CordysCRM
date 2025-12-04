@@ -19,12 +19,10 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
-import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.Clue;
-import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -80,11 +78,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
-    private ExtClueMapper extClueMapper;
-    @Resource
     private PermissionCache permissionCache;
-    @Resource
-    private DataScopeService dataScopeService;
 
     /**
      * 添加跟进记录
