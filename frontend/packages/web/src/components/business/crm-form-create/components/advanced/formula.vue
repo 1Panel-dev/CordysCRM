@@ -155,6 +155,7 @@
   watch(
     () => props.formDetail,
     () => {
+      updateValue.flush?.();
       updateValue();
     },
     { deep: true }
