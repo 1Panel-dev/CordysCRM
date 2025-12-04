@@ -323,6 +323,7 @@ export const {
   downloadAttachment,
   deleteAttachment,
   getFieldPriceList,
+  getFieldQuotationList,
 } = moduleApi;
 
 export const {

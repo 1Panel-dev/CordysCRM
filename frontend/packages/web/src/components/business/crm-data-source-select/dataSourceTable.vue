@@ -57,6 +57,7 @@
     getFieldOpportunityList,
     getFieldPriceList,
     getFieldProductList,
+    getFieldQuotationList,
     getUserOptions,
   } from '@/api/modules';
 
@@ -131,6 +132,7 @@
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
     [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
     [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
+    [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
   };
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

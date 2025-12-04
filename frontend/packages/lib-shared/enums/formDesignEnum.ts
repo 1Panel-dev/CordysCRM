@@ -84,6 +84,7 @@ export enum FieldDataSourceTypeEnum {
   USER_OPTIONS = 'USER_OPTIONS', // 成员选项
   PRICE = 'PRICE', // 价格表
   CONTRACT = 'CONTRACT',
+  QUOTATION = 'QUOTATION', // 报价单
 }
 
 export enum FormLinkScenarioEnum {

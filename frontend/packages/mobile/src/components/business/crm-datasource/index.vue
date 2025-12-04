@@ -105,6 +105,7 @@
     getFieldProductList,
     getUserOptions,
     getFieldPriceList,
+    getFieldQuotationList,
   } from '@/api/modules';
 
   const props = defineProps<{
@@ -150,6 +151,7 @@
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
     [FieldDataSourceTypeEnum.PRICE]: 'formCreate.price',
     [FieldDataSourceTypeEnum.CONTRACT]: '',
+    [FieldDataSourceTypeEnum.QUOTATION]: 'formCreate.quotation',
   };
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
@@ -162,6 +164,7 @@
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
     [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
     [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
+    [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
   };
 
   function onConfirm() {
