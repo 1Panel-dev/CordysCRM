@@ -33,23 +33,54 @@
     default: 0,
   });
 
-  function calcFormula(formula: string, getter: (id: string) => any) {
+  /**
+   * 传入整个当前表达式和当前 token（例如 "${(123 / 100)}"：百分比）
+   * 根据 token 在 expression 中位置左右的运算符判断默认值：
+   *  - 如果前面是 * / % 返回 '1'
+   *  - 加减返回 '0'
+   */
+  function determineDefaultValue(expression: string, token: string): string {
+    const idx = expression.indexOf(token);
+    // 找前一个非空白字符
+    let i = idx - 1;
+    while (i >= 0 && /\s/.test(expression[i])) i--;
+    const prevChar = expression[i] ?? '+';
+
+    if (['*', '/', '%'].includes(prevChar)) {
+      return '1';
+    }
+    return '0';
+  }
+
+  function calcFormula(formula: string, getter: (id: string) => any): number | null {
     if (!formula) return null;
 
     // 清洗富文本或特定带入的字符串
     let express = formula.replace(/[\u200B-\u200D\uFEFF]/g, '');
 
-    // 替换变量
-    express = express.replace(/\$\{(.+?)\}/g, (_, fieldId) => {
-      const fieldIdMatch = fieldId.match(/^\(?(\d+)\)?/);
+    // 替换变量:match 是整块 ${...}， innerContent 是花括号内的内容
+    express = express.replace(/\$\{(.+?)\}/g, (match, innerContent) => {
+      // 匹配innerContent第一个数字 id（兼容带括号或后缀的情况）
+      const fieldIdMatch = innerContent.match(/^\s*\(?\s*(\d+)\s*\)?/);
       if (!fieldIdMatch) return '0';
       const realId = fieldIdMatch[1];
       const rawVal = getter(realId);
-      // 转换为数字，如果无效则默认为 0
-      const num = parseFloat(String(rawVal));
-      if (Number.isNaN(num)) return '0';
-      // 把表达式里原来 ID 替换成实际数值
-      return fieldId.replace(realId, String(num));
+      const parsed = parseFloat(String(rawVal));
+      // 判断 innerContent 是否包含 "/100"百分号
+      const hasPercent = /\/\s*100\b/.test(innerContent);
+      const hasPercentLiteral = /%/.test(innerContent);
+
+      // 如果值未填写:填充 '0' 或 '1'
+      if (Number.isNaN(parsed)) {
+        return determineDefaultValue(express, match);
+      }
+
+      // 填写值有效:如果原始占位是百分比格式，则返回 (parsed/100)，否则返回数字字符串
+      if (hasPercent || hasPercentLiteral) {
+        return `(${String(parsed)} / 100)`;
+      }
+
+      return String(parsed);
     });
 
     try {
