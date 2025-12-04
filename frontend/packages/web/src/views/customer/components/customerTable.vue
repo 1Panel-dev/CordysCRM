@@ -224,7 +224,7 @@
       {
         label: t('common.batchTransfer'),
         key: 'batchTransfer',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
       },
       {
         label: t('customer.moveToOpenSea'),
@@ -469,7 +469,7 @@
               },
               popSlotName: 'transferPopTitle',
               popSlotContent: 'transferPopContent',
-              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+              permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
             },
             {
               label: 'more',
@@ -594,7 +594,12 @@
             );
       },
     },
-    permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
+    permission: [
+      'CUSTOMER_MANAGEMENT:RECYCLE',
+      'CUSTOMER_MANAGEMENT:UPDATE',
+      'CUSTOMER_MANAGEMENT:DELETE',
+      'CUSTOMER_MANAGEMENT:TRANSFER',
+    ],
     containerClass: '.crm-customer-table',
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,

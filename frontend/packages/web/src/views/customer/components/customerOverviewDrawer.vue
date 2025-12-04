@@ -180,7 +180,7 @@
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
         popConfirmProps: {
           loading: transferLoading.value,
           title: t('common.transfer'),
