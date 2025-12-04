@@ -99,6 +99,8 @@ export const {
   dragSortProductPrice,
   batchUpdateProductPrice,
   downloadProductPriceTemplate,
+  exportProductPriceAll,
+  exportProductPriceSelected,
 } = productApi;
 
 export const {
