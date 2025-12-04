@@ -52,7 +52,7 @@
               type="error"
               size="small"
               class="text-btn-error p-[4px] text-[var(--text-n1)]"
-              @click="handleFieldDelete(i)"
+              @click="handleFieldDelete(item, i)"
             >
               <CrmIcon type="iconicon_delete" :size="14" />
             </n-button>
@@ -166,8 +166,14 @@
     fieldConfig.value.subFields.push(newField);
   }
 
-  function handleFieldDelete(i: number) {
+  function handleFieldDelete(item: FormCreateField, i: number) {
     fieldConfig.value.subFields?.splice(i, 1);
+    if (item.resourceFieldId) {
+      const resourceField = fieldConfig.value.subFields?.find((field) => field.id === item.resourceFieldId);
+      if (resourceField) {
+        resourceField.showFields = resourceField.showFields?.filter((id) => id !== item.id);
+      }
+    }
   }
 
   function handleFieldCopy(i: number) {
