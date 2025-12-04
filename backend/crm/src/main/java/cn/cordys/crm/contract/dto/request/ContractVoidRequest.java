@@ -14,6 +14,6 @@ public class ContractVoidRequest {
 
 
     @Size(max = 255)
-    @Schema(description = "作废原因", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "作废原因")
     private String voidReason;
 }
