@@ -82,6 +82,13 @@
     @refresh="searchData"
     @showCustomerDrawer="showCustomerDrawer"
   />
+  <ApprovalModal
+    v-model:show="showApprovalModal"
+    :quotationIds="checkedRowKeys"
+    :approval-api="batchApproveContract"
+    @refresh="handleApprovalSuccess"
+  />
+  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
 </template>
 
 <script setup lang="ts">
@@ -90,11 +97,13 @@
 
   import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { ContractItem } from '@lib/shared/models/contract';
+  import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -110,10 +119,14 @@
   import ContractStatus from './contractStatus.vue';
   import DetailDrawer from './detail.vue';
   import VoidReasonModal from './voidReasonModal.vue';
+  import ApprovalModal from '@/views/opportunity/components/quotation/approvalModal.vue';
+  import batchOperationResultModal from '@/views/opportunity/components/quotation/batchOperationResultModal.vue';
+  import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
-  import { archivedContract, changeContractStatus, deleteContract } from '@/api/modules';
+  import { archivedContract, batchApproveContract, changeContractStatus, deleteContract } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
+  import { quotationStatusOptions } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
@@ -144,6 +157,7 @@
 
   // 操作
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const tableRefreshId = ref(0);
 
   const formCreateDrawerVisible = ref(false);
   const activeSourceId = ref('');
@@ -177,14 +191,37 @@
         key: 'exportChecked',
         permission: ['CONTRACT:EXPORT'],
       },
+      {
+        label: t('common.batchApproval'),
+        key: 'approval',
+        permission: ['CONTRACT:APPROVAL'],
+      },
     ],
   };
+
+  const showApprovalModal = ref(false);
+  const batchOperationName = ref('');
+  const batchResult = ref<BatchOperationResult>({
+    success: 0,
+    fail: 0,
+    errorMessages: '',
+  });
+  const resultVisible = ref(false);
+  function handleApprovalSuccess(val: BatchOperationResult) {
+    batchResult.value = val;
+    resultVisible.value = true;
+    tableRefreshId.value += 1;
+  }
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'exportChecked':
         isExportAll.value = false;
         showExportModal.value = true;
+        break;
+      case 'approval':
+        showApprovalModal.value = true;
+        batchOperationName.value = t('common.batchApproval');
         break;
       default:
         break;
@@ -243,6 +280,18 @@
         ],
       },
     },
+    {
+      title: t('contract.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: quotationStatusOptions.filter((item) =>
+          [QuotationStatusEnum.APPROVED, QuotationStatusEnum.UNAPPROVED, QuotationStatusEnum.APPROVING].includes(
+            item.value
+          )
+        ),
+      },
+    },
     ...baseFilterConfigList,
   ]);
 
@@ -256,8 +305,22 @@
         },
       ];
     }
-    if (row.status === ContractStatusEnum.VOID) {
+    if (row.status === ContractStatusEnum.VOID || row.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [];
+    }
+    if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
+      return [
+        {
+          key: 'archive',
+          label: t('common.archive'),
+          permission: ['CONTRACT:ARCHIVE'],
+        },
+        {
+          key: 'voided',
+          label: t('common.voided'),
+          permission: ['CONTRACT:VOIDED'],
+        },
+      ];
     }
     return [
       {
@@ -266,24 +329,18 @@
         permission: ['CONTRACT:UPDATE'],
       },
       {
-        key: 'archive',
-        label: t('common.archive'),
-        permission: ['CONTRACT:ARCHIVE'],
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CONTRACT:DELETE'],
       },
       {
         key: 'voided',
         label: t('common.voided'),
         permission: ['CONTRACT:VOIDED'],
       },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CONTRACT:DELETE'],
-      },
     ];
   }
 
-  const tableRefreshId = ref(0);
   const showDetailDrawer = ref(false);
 
   function handleEdit(id: string) {
@@ -425,6 +482,7 @@
           'disabled':
             row.status === ContractStatusEnum.VOID ||
             row.archivedStatus === ArchiveStatusEnum.ARCHIVED ||
+            row.approvalStatus === QuotationStatusEnum.APPROVING ||
             !hasAnyPermission(['CONTRACT:UPDATE']),
           'statusTagComponent': ContractStatus,
           'onUpdate:status': (val) => {
@@ -434,6 +492,10 @@
           'onChange': () => {
             changeStatus(row);
           },
+        }),
+      approvalStatus: (row: ContractItem) =>
+        h(QuotationStatus, {
+          status: row.approvalStatus,
         }),
     },
     permission: ['CONTRACT:ARCHIVE', 'CONTRACT:UPDATE', 'CONTRACT:VOIDED', 'CONTRACT:DELETE'],

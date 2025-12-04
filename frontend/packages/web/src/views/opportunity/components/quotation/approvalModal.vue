@@ -36,7 +36,7 @@
 
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { BatchOperationResult } from '@lib/shared/models/opportunity';
+  import { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -52,6 +52,7 @@
 
   const props = defineProps<{
     quotationIds: (string | number)[];
+    approvalApi?: (params: BatchUpdateQuotationStatusParams) => Promise<any>;
   }>();
 
   const emit = defineEmits<{
@@ -82,7 +83,7 @@
       if (!error) {
         try {
           loading.value = true;
-          const result = await batchApprove({
+          const result = await (props.approvalApi ?? batchApprove)({
             ids: props.quotationIds,
             approvalStatus: form.value.approvalStatus as QuotationStatusEnum,
           });

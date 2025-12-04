@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
@@ -763,6 +764,20 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
         render: (row: any) =>
           row.archivedStatus === ArchiveStatusEnum.ARCHIVED ? t('common.archive') : t('common.notArchived'),
+      },
+      {
+        title: t('contract.approvalStatus'),
+        width: 120,
+        key: 'approvalStatus',
+        filterOptions: quotationStatusOptions.filter((item) =>
+          [QuotationStatusEnum.APPROVED, QuotationStatusEnum.UNAPPROVED, QuotationStatusEnum.APPROVING].includes(
+            item.value
+          )
+        ),
+        sortOrder: false,
+        sorter: true,
+        filter: true,
+        render: props.specialRender?.approvalStatus,
       },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,

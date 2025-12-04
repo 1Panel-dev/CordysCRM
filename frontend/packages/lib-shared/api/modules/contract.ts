@@ -44,6 +44,8 @@ import {
   EnablePaymentPlanViewUrl,
   DeletePaymentPlanViewUrl,
   DragPaymentPlanViewUrl,
+  BatchApproveContractUrl,
+  ApproveContractUrl
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -64,7 +66,9 @@ import type {
   PaymentPlanDetail,
   SavePaymentPlanParams,
   UpdatePaymentPlanParams,
+  ApprovalContractParams
 } from '@lib/shared/models/contract';
+import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
   // 合同列表
   function getContractList(data: TableQueryParams) {
@@ -139,6 +143,14 @@ export default function useContractApi(CDR: CordysAxios) {
       url: GenerateContractChartUrl,
       data,
     });
+  }
+
+  function batchApproveContract(data: BatchUpdateQuotationStatusParams) {
+    return CDR.post<BatchOperationResult>({ url: BatchApproveContractUrl, data });
+  }
+
+  function approvalContract(data: ApprovalContractParams) {
+    return CDR.post({ url: ApproveContractUrl, data });
   }
 
   // 视图
@@ -296,6 +308,8 @@ export default function useContractApi(CDR: CordysAxios) {
     voidedContract,
     archivedContract,
     getContractFormSnapshotConfig,
+    batchApproveContract,
+    approvalContract,
     // 回款计划
     getPaymentPlanList,
     getContractPaymentPlanList,
