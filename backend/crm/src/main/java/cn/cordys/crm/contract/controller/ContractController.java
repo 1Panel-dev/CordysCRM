@@ -119,7 +119,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/voided/{id}")
+    @PostMapping("/voided")
     @RequiresPermissions(PermissionConstants.CONTRACT_VOIDED)
     @Operation(summary = "作废")
     public void voided(@Validated @RequestBody ContractVoidRequest request) {
