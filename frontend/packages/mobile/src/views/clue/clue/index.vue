@@ -172,7 +172,7 @@
         {
           label: t('common.transfer'),
           icon: 'iconicon_jump',
-          permission: ['CLUE_MANAGEMENT:UPDATE'],
+          permission: ['CLUE_MANAGEMENT:TRANSFER'],
           action: (item: ClueListItem) => {
             handleTransfer(item.id);
           },

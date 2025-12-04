@@ -147,7 +147,7 @@
         {
           label: t('common.transfer'),
           icon: 'iconicon_jump',
-          permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
           action: (item: OpportunityItem) => {
             handleTransfer(item.id);
           },

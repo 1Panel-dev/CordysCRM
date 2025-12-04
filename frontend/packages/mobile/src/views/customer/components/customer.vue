@@ -131,7 +131,7 @@
       key: 'transfer',
       label: t('common.transfer'),
       icon: 'iconicon_jump',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
       action: (item: any) => {
         router.push({
           name: CustomerRouteEnum.CUSTOMER_TRANSFER,
