@@ -438,7 +438,7 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
     operationColumn: {
       key: 'operation',
@@ -488,7 +488,9 @@
           'onUpdate:status': (val) => {
             row.status = val;
           },
-          'statusOptions': contractStatusOptions,
+          'statusOptions': hasAnyPermission(['CONTRACT:VOIDED'])
+            ? contractStatusOptions
+            : contractStatusOptions.filter((i) => i.value !== ContractStatusEnum.VOID),
           'onChange': () => {
             changeStatus(row);
           },
@@ -503,9 +505,8 @@
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
-  // TODO lmy 有子表格的加一个子表格名称
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
-    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value)
   );
   const exportParams = computed(() => {
     return {

@@ -5,11 +5,14 @@ import { ExportTableColumnItem } from '@lib/shared/models/common';
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+
 export function getExportColumns(
   allColumns: CrmDataTableColumn[],
-  customFieldsFilterConfig?: FilterFormItem[]
+  customFieldsFilterConfig?: FilterFormItem[],
+  fieldList?: FormCreateField[]
 ): ExportTableColumnItem[] {
-  return allColumns
+  const result = allColumns
     .filter(
       (item: any) =>
         item.key !== 'operation' &&
@@ -26,6 +29,15 @@ export function getExportColumns(
           : ColumnTypeEnum.SYSTEM,
       };
     });
+  const subCol = fieldList?.find((i) => [FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(i.type));
+  if (subCol) {
+    result.push({
+      key: subCol.businessKey ?? subCol.id,
+      title: subCol.name,
+      columnType: ColumnTypeEnum.CUSTOM,
+    });
+  }
+  return result;
 }
 
 export default {};
