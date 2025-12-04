@@ -21,6 +21,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.clue.domain.ClueCapacity;
 import cn.cordys.crm.contract.constants.ArchivedStatus;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStatus;
@@ -627,8 +628,9 @@ public class ContractService {
         if (CollectionUtils.isEmpty(ids)) {
             return BatchAffectSkipResponse.builder().success(0).fail(0).skip(request.getIds().size()).build();
         }
-
-        List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectByIds(ids);
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ContractSnapshot::getContractId, ids);
+        List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectListByLambda(wrapper);
         Map<String, ContractSnapshot> snapshotsMaps = contractSnapshots.stream().collect(Collectors.toMap(ContractSnapshot::getContractId, Function.identity()));
 
         List<LogDTO> logs = new ArrayList<>();
@@ -638,7 +640,7 @@ public class ContractService {
 
         ids.forEach(id -> {
             batchUpdateMapper.updateStatus(id, request.getApprovalStatus(), userId, System.currentTimeMillis());
-            ContractSnapshot contractSnapshot = snapshotsMaps.get(ids);
+            ContractSnapshot contractSnapshot = snapshotsMaps.get(id);
             ContractResponse response = JSON.parseObject(contractSnapshot.getContractValue(), ContractResponse.class);
             response.setApprovalStatus(request.getApprovalStatus());
             contractSnapshot.setContractValue(JSON.toJSONString(response));
