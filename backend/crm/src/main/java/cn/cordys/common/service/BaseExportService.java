@@ -266,7 +266,8 @@ public abstract class BaseExportService {
 	private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
 		// 设置字段参数&&调用异步通用导出
 		exportParam.setExportFieldParam(getExportFieldParam(exportParam.getFormKey(), exportParam.getOrgId()));
-		return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(), exportParam.getLogModule(), executor);
+		return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(),
+				exportParam.getLogModule(), exportParam.getExportType(), executor);
 	}
 
 	/**
@@ -511,11 +512,11 @@ public abstract class BaseExportService {
 	 * @param executor 导出执行器
 	 */
 	public String asyncExport(String exportFileName, String currentOrg, String currentUser, Locale locale, String logModule,
-							  ExportExecutor executor) {
+							  String exportType, ExportExecutor executor) {
 		checkFileName(exportFileName);
 		exportTaskService.checkUserTaskLimit(currentUser, ExportConstants.ExportStatus.PREPARED.toString());
 		String fileId = IDGenerator.nextStr();
-		ExportTask exportTask = exportTaskService.saveTask(currentOrg, fileId, currentUser, ExportConstants.ExportType.PRODUCT_PRICE.toString(), exportFileName);
+		ExportTask exportTask = exportTaskService.saveTask(currentOrg, fileId, currentUser, exportType, exportFileName);
 		Thread.startVirtualThread(() -> {
 			try {
 				LocaleContextHolder.setLocale(locale);
