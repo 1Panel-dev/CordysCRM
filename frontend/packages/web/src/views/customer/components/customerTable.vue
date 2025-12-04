@@ -231,8 +231,6 @@
         key: 'moveToOpenSea',
         permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
       },
-    ],
-    moreAction: [
       {
         label: t('common.batchEdit'),
         key: 'batchEdit',
