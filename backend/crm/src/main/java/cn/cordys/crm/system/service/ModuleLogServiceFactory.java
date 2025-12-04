@@ -4,6 +4,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.service.ClueLogService;
 import cn.cordys.crm.contract.service.ContractLogService;
+import cn.cordys.crm.customer.service.ContractPaymentPlanLogService;
 import cn.cordys.crm.customer.service.CustomerContactLogService;
 import cn.cordys.crm.customer.service.CustomerLogService;
 import cn.cordys.crm.customer.service.RoleLogService;
@@ -36,6 +37,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.FOLLOW_UP_PLAN, CommonBeanFactory.getBean(FollowUpPlanLogService.class));
         logServiceMap.put(LogModule.SYSTEM_ROLE, CommonBeanFactory.getBean(RoleLogService.class));
         logServiceMap.put(LogModule.SYSTEM_MODULE, CommonBeanFactory.getBean(SystemModuleLogService.class));
+        logServiceMap.put(LogModule.CONTRACT_PAYMENT, CommonBeanFactory.getBean(ContractPaymentPlanLogService.class));
 
     }
 

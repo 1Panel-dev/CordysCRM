@@ -130,6 +130,6 @@ public class LogModule {
     /**
      * 合同回款计划
      */
-    public static final String CONTRACT_PAYMENT_PLAN = "CONTRACT_PAYMENT_PLAN";
+    public static final String CONTRACT_PAYMENT = "CONTRACT_PAYMENT";
 
 }
