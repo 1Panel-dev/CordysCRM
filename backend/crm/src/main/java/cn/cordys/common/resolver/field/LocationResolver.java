@@ -21,7 +21,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
     @Override
     public Object trans2Value(LocationField locationField, String value) {
-        return RegionUtils.mapping(value, false);
+        return RegionUtils.codeToName(value);
     }
 
     @Override
