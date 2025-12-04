@@ -861,4 +861,18 @@ public class OpportunityQuotationService {
         }
         return fieldValues;
     }
+
+    public String getQuotationName(String id) {
+        OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(opportunityQuotation).map(OpportunityQuotation::getName).orElse(null);
+    }
+
+    public String getQuotationNameByIds(List<String> ids) {
+        List<OpportunityQuotation> opportunityQuotations = opportunityQuotationMapper.selectByIds(ids);
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(opportunityQuotations)) {
+            List<String> names = opportunityQuotations.stream().map(OpportunityQuotation::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
+    }
 }
