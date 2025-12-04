@@ -231,7 +231,7 @@
               {
                 label: t('common.batchTransfer'),
                 key: 'batchTransfer',
-                permission: ['CLUE_MANAGEMENT:UPDATE'],
+                permission: ['CLUE_MANAGEMENT:TRANSFER'],
               },
               {
                 label: t('clue.moveIntoCluePool'),
@@ -529,7 +529,7 @@
                       {
                         label: t('common.transfer'),
                         key: 'transfer',
-                        permission: ['CLUE_MANAGEMENT:UPDATE'],
+                        permission: ['CLUE_MANAGEMENT:TRANSFER'],
                         popConfirmProps: {
                           loading: transferLoading.value,
                           title: t('common.transfer'),
@@ -578,7 +578,12 @@
             );
       },
     },
-    permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
+    permission: [
+      'CLUE_MANAGEMENT:RECYCLE',
+      'CLUE_MANAGEMENT:DELETE',
+      'CLUE_MANAGEMENT:UPDATE',
+      'CLUE_MANAGEMENT:TRANSFER',
+    ],
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
   });

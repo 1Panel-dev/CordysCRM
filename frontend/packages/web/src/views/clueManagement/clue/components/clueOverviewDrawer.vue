@@ -264,7 +264,7 @@
       {
         label: t('common.transfer'),
         key: 'transfer',
-        permission: ['CLUE_MANAGEMENT:UPDATE'],
+        permission: ['CLUE_MANAGEMENT:TRANSFER'],
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',

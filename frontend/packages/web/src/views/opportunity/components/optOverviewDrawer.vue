@@ -175,7 +175,7 @@
         },
         popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+        permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
       },
     ];
 
