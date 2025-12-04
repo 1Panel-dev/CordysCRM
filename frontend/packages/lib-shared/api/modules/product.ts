@@ -11,6 +11,8 @@ import {
   DownloadProductTemplateUrl,
   DragSortProductPriceUrl,
   DragSortProductUrl,
+  ExportAllProductPriceUrl,
+  ExportProductPriceUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
   GetProductOptionsUrl,
@@ -23,7 +25,13 @@ import {
   UpdateProductPriceUrl,
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
-import type { CommonList, TableDraggedParams, TableQueryParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  TableDraggedParams,
+  TableExportParams,
+  TableExportSelectedParams,
+  TableQueryParams,
+} from '@lib/shared/models/common';
 import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 import type {
   AddPriceParams,
@@ -154,6 +162,16 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  // 导出所有的价格表
+  function exportProductPriceAll(data: TableExportParams) {
+    return CDR.post({ url: ExportAllProductPriceUrl, data });
+  }
+
+  // 导出选择的价格表
+  function exportProductPriceSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportProductPriceUrl, data });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -177,5 +195,7 @@ export default function useProductApi(CDR: CordysAxios) {
     dragSortProductPrice,
     batchUpdateProductPrice,
     downloadProductPriceTemplate,
+    exportProductPriceAll,
+    exportProductPriceSelected,
   };
 }

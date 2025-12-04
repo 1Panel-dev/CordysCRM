@@ -58,7 +58,12 @@
                 </template>
                 {{ t('common.copy') }}
               </n-tooltip>
-              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+              <n-tooltip
+                v-if="!item.businessKey"
+                :delay="300"
+                :show-arrow="false"
+                class="crm-form-design--composition-item-tools-tip"
+              >
                 <template #trigger>
                   <CrmIcon
                     type="iconicon_delete"

@@ -154,6 +154,8 @@
     exportOpportunitySelected,
     exportPaymentPlanAll,
     exportPaymentPlanSelected,
+    exportProductPriceAll,
+    exportProductPriceSelected,
   } from '@/api/modules';
 
   const props = defineProps<{
@@ -292,7 +294,7 @@
     openSea: exportCustomerOpenSeaAll,
     contract: exportContractAll,
     contractPaymentPlan: exportPaymentPlanAll,
-    price: () => Promise.resolve(), // TODO:
+    price: exportProductPriceAll,
   };
 
   const exportSelectedApiMap = {
@@ -304,7 +306,7 @@
     openSea: exportCustomerOpenSeaSelected,
     contract: exportContractSelected,
     contractPaymentPlan: exportPaymentPlanSelected,
-    price: () => Promise.resolve(), // TODO:
+    price: exportProductPriceSelected,
   };
 
   function confirmHandler() {
