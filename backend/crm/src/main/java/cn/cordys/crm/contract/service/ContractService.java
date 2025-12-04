@@ -447,7 +447,7 @@ public class ContractService {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
 
-        if (Strings.CI.contains(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
+        if (Strings.CI.equals(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
             throw new GenericException(Translator.get("contract.archived.cannot.voided"));
         }
 
