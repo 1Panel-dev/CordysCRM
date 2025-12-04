@@ -60,20 +60,28 @@ public abstract class BaseModuleLogService {
      * @param formKey
      */
     protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differences, String orgId, String formKey) {
-        ModuleFormConfigDTO customerFormConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
+        ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(formKey, orgId);
 
+        List<BaseField> fields = formConfig.getFields();
+
         // 模块字段 map
-        Map<String, BaseField> moduleFieldMap = customerFormConfig.getFields()
+        Map<String, BaseField> moduleFieldMap = fields
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
         Map<String, BaseField> subFieldMap = new HashMap<>();
-        for (BaseField field : customerFormConfig.getFields()) {
+        for (BaseField field : fields) {
             if (field instanceof SubField) {
                 subFieldMap.put(field.getBusinessKey(), field);
             }
         }
+
+        Map<String, BaseField> businessModuleFieldMap = fields
+                .stream()
+                .filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
+                .collect(Collectors.toMap(BaseField::getBusinessKey, Function.identity()));
+
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> {
@@ -135,10 +143,10 @@ public abstract class BaseModuleLogService {
         });
 
         Map<String, List<OptionDTO>> optionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
-                .getOptionMap(customerFormConfig, optionFieldValues);
+                .getOptionMap(formConfig, optionFieldValues);
         // 子表选项字段的选项值 map
         Map<String, List<OptionDTO>> subOptionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
-                .getOptionMap(customerFormConfig, optionSubFieldValues);
+                .getOptionMap(formConfig, optionSubFieldValues);
 
         Set<String> subFieldIds = optionSubFieldValues.stream().map(BaseModuleFieldValue::getFieldId).collect(Collectors.toSet());
         differences.forEach(differ -> {
@@ -194,6 +202,11 @@ public abstract class BaseModuleLogService {
                 }
             }
 
+            // 翻译业务字段名
+            if (businessModuleFieldMap.get(differ.getColumn()) != null) {
+                BaseField baseField = businessModuleFieldMap.get(differ.getColumn());
+                differ.setColumnName(baseField.getName());
+            }
         });
 
         return differences;

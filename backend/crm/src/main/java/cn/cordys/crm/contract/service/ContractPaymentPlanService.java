@@ -205,7 +205,7 @@ public class ContractPaymentPlanService {
         return contractPaymentPlanGetResponse;
     }
 
-    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.ADD)
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.ADD)
     public ContractPaymentPlan add(ContractPaymentPlanAddRequest request, String userId, String orgId) {
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
         if (StringUtils.isBlank(request.getOwner())) {
@@ -231,7 +231,8 @@ public class ContractPaymentPlanService {
         String resourceName = contract == null ? contractPaymentPlan.getContractId() : contract.getName();
 
         baseService.handleAddLog(contractPaymentPlan, request.getModuleFields());
-        OperationLogContext.setResourceName(resourceName);
+        OperationLogContext.getContext().setResourceName(resourceName);
+        OperationLogContext.getContext().setResourceId(contractPaymentPlan.getId());
 
         // 通知
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
@@ -240,7 +241,7 @@ public class ContractPaymentPlanService {
         return contractPaymentPlan;
     }
 
-    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.UPDATE, resourceId = "{#request.id}")
     public ContractPaymentPlan update(ContractPaymentPlanUpdateRequest request, String userId, String orgId) {
         ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE);
@@ -281,7 +282,7 @@ public class ContractPaymentPlanService {
         contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, moduleFields, true);
     }
 
-    @OperationLog(module = LogModule.CONTRACT_PAYMENT_PLAN, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
