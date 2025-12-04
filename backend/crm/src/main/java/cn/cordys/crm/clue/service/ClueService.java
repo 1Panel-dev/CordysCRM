@@ -11,7 +11,6 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;

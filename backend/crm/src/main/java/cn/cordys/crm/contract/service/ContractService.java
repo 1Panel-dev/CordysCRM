@@ -21,7 +21,6 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.clue.domain.ClueCapacity;
 import cn.cordys.crm.contract.constants.ArchivedStatus;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStatus;

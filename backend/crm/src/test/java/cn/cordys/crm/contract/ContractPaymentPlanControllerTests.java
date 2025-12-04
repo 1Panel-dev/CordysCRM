@@ -78,7 +78,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addContractPaymentPlan = contractPaymentPlan;
+        addContractPaymentPlan = contractPaymentPlan;
         Assertions.assertEquals(request.getPlanAmount().intValue(), contractPaymentPlan.getPlanAmount().intValue());
 
         // 校验权限
