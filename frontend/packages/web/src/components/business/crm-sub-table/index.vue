@@ -61,6 +61,15 @@
   function initFieldValueText(field: FormCreateField, id: string, value: any): string {
     const options = props.optionMap?.[id];
     let name: string | string[] = '';
+    // 区分未选择空值和选项不存在
+    if (
+      value === null ||
+      value === undefined ||
+      (Array.isArray(value) && value.length === 0) ||
+      (typeof value === 'string' && value.trim() === '')
+    ) {
+      return '-';
+    }
     // 若字段值是选项值，则取选项值的name
     if (options) {
       if (Array.isArray(value)) {
