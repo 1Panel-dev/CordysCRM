@@ -32,7 +32,10 @@
           :sourceId="props.sourceId"
           :sourceName="title"
           isContractTab
-          :readonly="detailInfo?.status === ContractStatusEnum.VOID"
+          :readonly="
+            detailInfo?.status === ContractStatusEnum.VOID ||
+            detailInfo.approvalStatus === QuotationStatusEnum.APPROVING
+          "
         />
       </CrmCard>
     </div>
@@ -59,6 +62,7 @@
 
   import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ContractItem } from '@lib/shared/models/contract';
@@ -74,7 +78,7 @@
   import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
 
-  import { archivedContract, deleteContract, voidedContract } from '@/api/modules';
+  import { approvalContract, archivedContract, deleteContract } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
@@ -120,27 +124,52 @@
         },
       ];
     }
+    if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING) {
+      return [
+        {
+          label: t('common.pass'),
+          key: 'pass',
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+          permission: ['CONTRACT:APPROVAL'],
+        },
+        {
+          label: t('common.unPass'),
+          key: 'unPass',
+          danger: true,
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+          permission: ['CONTRACT:APPROVAL'],
+        },
+      ];
+    }
+    if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVED) {
+      return [
+        {
+          key: 'archive',
+          label: t('common.archive'),
+          permission: ['CONTRACT:ARCHIVE'],
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        },
+        {
+          key: 'voided',
+          label: t('common.voided'),
+          permission: ['CONTRACT:VOIDED'],
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        },
+      ];
+    }
     return [
       {
         key: 'edit',
         label: t('common.edit'),
         permission: ['CONTRACT:UPDATE'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-      },
-      {
-        key: 'archive',
-        label: t('common.archive'),
-        permission: ['CONTRACT:ARCHIVE'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-      },
-      {
-        key: 'voided',
-        label: t('common.voided'),
-        permission: ['CONTRACT:VOIDED'],
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
@@ -153,6 +182,14 @@
         danger: true,
         class: 'n-btn-outline-primary',
         permission: ['CONTRACT:DELETE'],
+      },
+      {
+        key: 'voided',
+        label: t('common.voided'),
+        permission: ['CONTRACT:VOIDED'],
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
       },
     ];
   });
@@ -185,7 +222,7 @@
           await deleteContract(row.id);
           Message.success(t('common.deleteSuccess'));
           visible.value = false;
-          handleSaved();
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -215,8 +252,29 @@
     }
   }
 
+  async function handleApproval(approval = false) {
+    const approvalStatus = approval ? QuotationStatusEnum.APPROVED : QuotationStatusEnum.UNAPPROVED;
+    try {
+      await approvalContract({
+        id: props.sourceId,
+        approvalStatus,
+      });
+      Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
+      handleSaved();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {
+      case 'pass':
+        handleApproval(true);
+        break;
+      case 'unPass':
+        handleApproval();
+        break;
       case 'edit':
         handleEdit();
         break;

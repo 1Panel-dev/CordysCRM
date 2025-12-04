@@ -1,5 +1,6 @@
 import { ModuleField } from '@lib/shared/models/customer';
 import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
+import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 
 // 合同列表项
 export interface ContractItem {
@@ -9,6 +10,7 @@ export interface ContractItem {
   customerName: string;
   amount: number;
   archivedStatus: string;
+  approvalStatus: QuotationStatusEnum;
   status: string;
   owner: string;
   ownerName: string;
@@ -41,6 +43,11 @@ export interface SaveContractParams {
 // 更新合同参数
 export interface UpdateContractParams extends SaveContractParams {
   id: string;
+}
+
+export interface ApprovalContractParams {
+  id: string;
+  approvalStatus: string;
 }
 
 // 回款计划列表项

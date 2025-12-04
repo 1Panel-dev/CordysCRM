@@ -56,5 +56,4 @@ export const contractPaymentPlanStatusOptions = Object.entries(contractPaymentPl
 export const contractStatusOptions = Object.entries(contractStatusMap).map(([key, value]) => ({
   label: value.label,
   value: key,
-  disabled: key === ContractStatusEnum.VOID && !hasAllPermission(['CONTRACT:VOID']),
 }));

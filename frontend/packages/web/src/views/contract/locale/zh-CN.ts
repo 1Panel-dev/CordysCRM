@@ -25,4 +25,5 @@ export default {
   'contract.expectedPaymentDate': '预计回款时间',
   'contract.expectedPaymentAmount': '预计回款金额',
   'contract.isPlanCompleted': '是否完成计划',
+  'contract.approvalStatus': '审批状态',
 };
