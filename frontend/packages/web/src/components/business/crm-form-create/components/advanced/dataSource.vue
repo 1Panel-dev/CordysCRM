@@ -19,6 +19,7 @@
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
       :disabled="props.fieldConfig.editable === false"
       :filter-params="getParams()"
+      :disabled-selection="props.disabledSelection"
       @change="($event, source) => emit('change', $event, source)"
     />
   </n-form-item>
@@ -43,6 +44,7 @@
     formDetail?: Record<string, any>;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    disabledSelection?: (row: Record<string, any>) => boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[], source: Record<string, any>[]): void;

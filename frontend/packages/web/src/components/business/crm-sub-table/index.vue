@@ -163,6 +163,15 @@
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
+              disabledSelection: (r: Record<string, any>) => {
+                if (key === 'product') {
+                  // 产品列不允许重复选择
+                  return data.value.some(
+                    (dataRow, dataRowIndex) => dataRowIndex !== rowIndex && dataRow[key].includes(r.id)
+                  );
+                }
+                return false;
+              },
               onChange: (val, source) => {
                 row[key] = val;
                 if (field.showFields?.length) {
