@@ -485,10 +485,9 @@ public class OpportunityService {
      * 商机详情
      *
      * @param id
-     * @param orgId
      * @return
      */
-    public OpportunityDetailResponse get(String id, String orgId) {
+    public OpportunityDetailResponse get(String id) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         if (response == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
@@ -501,8 +500,8 @@ public class OpportunityService {
                 .toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
         Map<String, String> contactMap = baseService.getContactMap(StringUtils.isEmpty(response.getContactId()) ? null : List.of(response.getContactId()));
-        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(List.of(response.getOwner()), orgId);
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(response.getOwner()), orgId);
+        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(List.of(response.getOwner()), response.getOrganizationId());
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(response.getOwner()), response.getOrganizationId());
 
         response.setCreateUserName(userNameMap.get(response.getCreateUser()));
         response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
@@ -510,7 +509,7 @@ public class OpportunityService {
         response.setContactName(contactMap.get(response.getContactId()));
         response.setFollowerName(userNameMap.get(response.getFollower()));
 
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(response.getOrganizationId());
         Map<String, StageConfigResponse> endConfigMaps = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
         ).collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
@@ -525,13 +524,13 @@ public class OpportunityService {
         }
 
         // 失败原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), response.getOrganizationId());
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
         response.setFailureReason(dictMap.get(response.getFailureReason()));
 
 
-        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(response.getOrganizationId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
 
         // 补充负责人选项
@@ -548,7 +547,7 @@ public class OpportunityService {
                 OpportunityDetailResponse::getCustomerId, OpportunityDetailResponse::getCustomerName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey(), customerOption);
 
-        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        List<OptionDTO> productOption = extProductMapper.getOptions(response.getOrganizationId());
         optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
         response.setOptionMap(optionMap);

@@ -84,7 +84,7 @@ public class PoolClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "线索详情")
     public ClueGetResponse get(@PathVariable String id) {
-        return clueService.get(id, OrganizationContext.getOrganizationId());
+        return clueService.get(id);
     }
 
     @PostMapping("/batch-pick")

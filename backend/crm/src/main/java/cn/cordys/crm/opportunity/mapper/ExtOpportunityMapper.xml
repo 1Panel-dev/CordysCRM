@@ -618,7 +618,8 @@
             o.expected_end_time,
             o.actual_end_time,
             o.failure_reason,
-            osc.name AS stageName
+            osc.name AS stageName,
+            o.organization_id
         FROM
             opportunity o
         LEFT JOIN customer c ON o.customer_id = c.id

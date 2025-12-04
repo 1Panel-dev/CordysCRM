@@ -292,12 +292,12 @@ public class ClueService {
     }
 
     public ClueGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        ClueGetResponse getResponse = get(id, orgId);
+        ClueGetResponse getResponse = get(id);
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return getResponse;
     }
 
-    public ClueGetResponse get(String id, String orgId) {
+    public ClueGetResponse get(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
         clueGetResponse = baseService.setCreateUpdateOwnerUserName(clueGetResponse);
@@ -305,7 +305,7 @@ public class ClueService {
         // 获取模块字段
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(clue.getOrganizationId());
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, clueFields);
         // 补充负责人选项
@@ -314,7 +314,7 @@ public class ClueService {
         optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
 
         // 意向产品选项
-        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        List<OptionDTO> productOption = extProductMapper.getOptions(clue.getOrganizationId());
         optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
 
@@ -323,13 +323,13 @@ public class ClueService {
 
 
         // 线索池原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CLUE_POOL_RS.name(), orgId);
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CLUE_POOL_RS.name(), clue.getOrganizationId());
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         if (clueGetResponse.getOwner() != null) {
             // 获取负责人线索池信息
-            Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(List.of(clueGetResponse.getOwner()), orgId);
+            Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(List.of(clueGetResponse.getOwner()), clue.getOrganizationId());
             List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CluePool::getId).distinct().toList();
             Map<String, CluePoolRecycleRule> recycleRuleMap;
             if (CollectionUtils.isEmpty(poolIds)) {
@@ -348,7 +348,7 @@ public class ClueService {
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
                     clueGetResponse.getCollectionTime(), clueGetResponse.getCreateTime()));
 
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), orgId);
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), clue.getOrganizationId());
             if (userDeptDTO != null) {
                 clueGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 clueGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -939,7 +939,7 @@ public class ClueService {
         ModuleFormConfigDTO customerFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
         FormLinkFill<Customer> customerLinkFillDTO;
         try {
-            customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId(), orgId),
+            customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId()),
                     customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CUSTOMER.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
@@ -970,7 +970,7 @@ public class ClueService {
         ModuleFormConfigDTO opportunityFormConfig = moduleFormService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         FormLinkFill<Opportunity> opportunityLinkFillDTO;
         try {
-            opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId(), orgId),
+            opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId()),
                     opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_OPPORTUNITY.name());
         } catch (Exception e) {
             LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());

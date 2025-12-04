@@ -125,7 +125,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机详情")
     public OpportunityDetailResponse get(@PathVariable String id) {
-        return opportunityService.get(id, OrganizationContext.getOrganizationId());
+        return opportunityService.get(id);
     }
 
     @PostMapping("/update/stage")

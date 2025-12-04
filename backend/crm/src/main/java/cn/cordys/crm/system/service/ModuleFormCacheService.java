@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import jakarta.annotation.Resource;
@@ -8,6 +9,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -60,7 +62,8 @@ public class ModuleFormCacheService {
         businessModuleFormConfig.setFormProp(config.getFormProp());
 
 		// 设置业务字段参数
-		businessModuleFormConfig.setFields(config.getFields().stream()
+		List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields());
+		businessModuleFormConfig.setFields(flattenFields.stream()
 				.peek(moduleFormService::setFieldBusinessParam)
 				.peek(moduleFormService::reloadPropOfSubRefFields)
 				.collect(Collectors.toList())

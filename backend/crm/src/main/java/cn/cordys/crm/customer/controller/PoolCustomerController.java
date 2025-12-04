@@ -80,7 +80,7 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
-        return customerService.get(id, OrganizationContext.getOrganizationId());
+        return customerService.get(id);
     }
 
     @PostMapping("/batch-pick")

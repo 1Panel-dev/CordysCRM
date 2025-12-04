@@ -25,4 +25,6 @@ public class DatasourceField extends BaseField {
     private Map<String, Object> combineSearch;
 	@Schema(description = "显示字段")
 	private List<String> showFields;
+	@Schema(description = "引用的字段集合")
+	private List<BaseField> refFields;
 }

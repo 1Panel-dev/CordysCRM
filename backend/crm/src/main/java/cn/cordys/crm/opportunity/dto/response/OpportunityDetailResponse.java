@@ -106,6 +106,9 @@ public class OpportunityDetailResponse {
     @Schema(description = "部门名称")
     private String departmentName;
 
+	@Schema(description = "组织ID")
+	private String organizationId;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
