@@ -178,7 +178,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
         List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true).get(resourceId);
-        return fieldValues == null ? List.of() : fieldValues;
+        return fieldValues == null ? new ArrayList<>(0) : fieldValues;
     }
 
     /**
@@ -316,6 +316,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 		for (Map<String, Object> subValue : subValues) {
 			for (Map.Entry<String, Object> kv : subValue.entrySet()) {
 				BaseField field = subFieldMap.get(kv.getKey());
+                if (field == null) {
+                    continue;
+                }
 				AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
 				customFieldResolver.validate(field, kv.getValue());
                 if (kv.getValue() == null) {
