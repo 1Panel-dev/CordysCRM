@@ -299,7 +299,7 @@
               {
                 label: t('common.batchTransfer'),
                 key: 'batchTransfer',
-                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+                permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
               },
             ]
           : []),
@@ -530,7 +530,7 @@
           iconType: 'primary',
         },
         popSlotContent: 'transferPopContent',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+        permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
       },
     ];
 
@@ -677,7 +677,7 @@
         return row.stageName || '-';
       },
     },
-    permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
+    permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE', 'OPPORTUNITY_MANAGEMENT:TRANSFER'],
     hiddenTotal: computed(() => !!props.hiddenTotal || activeShowType.value === 'billboard'),
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],

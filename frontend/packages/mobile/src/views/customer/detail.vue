@@ -144,7 +144,7 @@
     {
       key: 'transfer',
       text: t('common.transfer'),
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
     },
     {
       key: 'delete',

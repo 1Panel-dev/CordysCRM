@@ -110,7 +110,7 @@
     {
       key: 'transfer',
       text: t('common.transfer'),
-      permission: ['CLUE_MANAGEMENT:UPDATE'],
+      permission: ['CLUE_MANAGEMENT:TRANSFER'],
     },
     {
       key: 'moveToPool',

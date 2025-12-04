@@ -169,7 +169,7 @@
       {
         key: 'transfer',
         text: t('common.transfer'),
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+        permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
       },
     ];
 
