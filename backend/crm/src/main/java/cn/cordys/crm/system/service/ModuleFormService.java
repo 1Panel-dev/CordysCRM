@@ -75,6 +75,7 @@ public class ModuleFormService {
                 FieldSourceType.CONTACT.name(), "customer_contact",
                 FieldSourceType.OPPORTUNITY.name(), "opportunity",
                 FieldSourceType.PRODUCT.name(), "product",
+                FieldSourceType.QUOTATION.name(), "opportunity_quotation",
 				FieldSourceType.PRICE.name(), "product_price");
     }
 

@@ -26,4 +26,8 @@ public enum FieldSourceType {
 	 * 价格来源
 	 */
 	PRICE,
+    /**
+     * 报价单
+     */
+    QUOTATION
 }
