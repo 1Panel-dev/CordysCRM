@@ -117,6 +117,9 @@
           handleClose();
           rows.value = rows.value.filter((item) => item.id !== option.value);
           value.value = value.value.filter((key) => key !== option.value);
+          nextTick(() => {
+            emit('change', value.value, rows.value);
+          });
         },
       },
       {
