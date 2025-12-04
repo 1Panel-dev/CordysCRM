@@ -91,8 +91,8 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 作废合同
-  function voidedContract(id: string, reason: string) {
-    return CDR.post({ url: `${ContractVoidedUrl}`, data: { reason, id } });
+  function voidedContract(id: string, voidReason: string) {
+    return CDR.post({ url: `${ContractVoidedUrl}`, data: { voidReason, id } });
   }
 
   // 归档合同
