@@ -9,7 +9,7 @@ public enum ContractApprovalStatus {
     /**
      * 审核中
      */
-    UNDER_APPROVED,
+    APPROVING,
 
     /**
      * 通过
@@ -19,7 +19,7 @@ public enum ContractApprovalStatus {
     /**
      * 不通过
      */
-    UN_APPROVED,
+    UNAPPROVED,
 
 
 }

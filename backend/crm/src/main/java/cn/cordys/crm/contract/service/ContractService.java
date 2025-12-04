@@ -126,7 +126,7 @@ public class ContractService {
         contract.setStatus(ContractStatus.SIGNED.name());
         contract.setOrganizationId(orgId);
         contract.setArchivedStatus(ArchivedStatus.UN_ARCHIVED.name());
-        contract.setApprovalStatus(ContractApprovalStatus.UNDER_APPROVED.name());
+        contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setCreateUser(operatorId);
         contract.setUpdateTime(System.currentTimeMillis());
