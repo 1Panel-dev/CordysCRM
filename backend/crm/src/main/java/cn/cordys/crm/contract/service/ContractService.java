@@ -348,7 +348,7 @@ public class ContractService {
      * @param id
      * @return
      */
-    public ContractResponse get(String id, String orgId) {
+    public ContractResponse get(String id) {
         ContractResponse response = new ContractResponse();
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {

@@ -96,7 +96,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "详情")
     public ContractResponse get(@PathVariable("id") String id) {
-        return contractService.get(id, OrganizationContext.getOrganizationId());
+        return contractService.get(id);
     }
 
 

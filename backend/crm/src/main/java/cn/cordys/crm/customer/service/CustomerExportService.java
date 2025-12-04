@@ -170,7 +170,7 @@ public class CustomerExportService extends BaseExportService {
         return exportTask.getId();
     }
 
-    public void exportSelectData(ExportTask exportTask, String userId, ExportSelectRequest request, String orgId, Locale locale) throws Exception {
+    public void exportSelectData(ExportTask exportTask, String userId, ExportSelectRequest request, String orgId, Locale locale) {
         LocaleContextHolder.setLocale(locale);
         ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息

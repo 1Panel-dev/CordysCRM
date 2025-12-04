@@ -22,7 +22,6 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -31,7 +30,6 @@ import cn.cordys.crm.follow.dto.request.*;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
-import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -71,10 +69,6 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private ModuleFormService moduleFormService;
     @Resource
     private PermissionCache permissionCache;
-    @Resource
-    private BaseMapper<Clue> clueMapper;
-    @Resource
-    private BaseMapper<Opportunity> opportunityMapper;
 
     /**
      * 新建跟进计划

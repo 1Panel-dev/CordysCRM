@@ -88,7 +88,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         if (enabledModules.contains(ModuleKey.CLUE.getKey())) {
             if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
-                long clueCount = getClueCount(keyword, orgId, userSearchConfigs, list, conditions, request);
+                long clueCount = getClueCount(keyword, orgId, userSearchConfigs, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int) clueCount));
 
             }
@@ -201,13 +201,12 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param keyword           关键字
      * @param orgId             组织ID
      * @param userSearchConfigs 用户搜索配置
-     * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
      *
      * @return 数量
      */
-    private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
             List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
             if (CollectionUtils.isEmpty(clueSearchConfigs)) {

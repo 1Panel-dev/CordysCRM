@@ -110,7 +110,7 @@ public class BaseFollowUpService {
         return customerDataDTO;
     }
 
-    public CustomerDataDTO getOpportunityPermission(String userId, String sourceId, String permission) {
+    public CustomerDataDTO getOpportunityPermission(String userId, String permission) {
         CustomerDataDTO customerDataDTO = new CustomerDataDTO();
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), permission);
