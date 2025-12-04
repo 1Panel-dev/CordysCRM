@@ -603,7 +603,7 @@ public class ContractService {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
 
-        contract.setStatus(request.getApprovalStatus());
+        contract.setApprovalStatus(request.getApprovalStatus());
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(userId);
         contractMapper.update(contract);
