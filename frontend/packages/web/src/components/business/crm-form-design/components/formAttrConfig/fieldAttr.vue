@@ -1349,6 +1349,10 @@
         label: t('crmFormCreate.drawer.price'),
         value: FieldDataSourceTypeEnum.PRICE,
       },
+      {
+        label: t('crmFormCreate.drawer.quotation'),
+        value: FieldDataSourceTypeEnum.QUOTATION,
+      },
     ];
     if (isSubTableField.value) {
       return fullList.filter((item) =>

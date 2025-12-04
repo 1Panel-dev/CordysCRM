@@ -66,8 +66,9 @@ import {
   UploadTempAttachmentUrl,
   UploadTempFileUrl,
   GetFieldPriceListUrl,
+  GetFieldQuotationListUrl,
 } from '@lib/shared/api/requrls/system/module';
-import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
@@ -362,6 +363,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ClueListItem>>({ url: GetFieldPriceListUrl, data });
   }
 
+  function getFieldQuotationList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<QuotationItem>>({ url: GetFieldQuotationListUrl, data });
+  }
+
   function getFieldDisplayList(formKey: FormDesignKeyEnum) {
     return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFieldDisplayListUrl}/${formKey}` });
   }
@@ -427,5 +432,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteAttachment,
     downloadAttachment,
     getFieldPriceList,
+    getFieldQuotationList,
   };
 }
