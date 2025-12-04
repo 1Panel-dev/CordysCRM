@@ -115,18 +115,10 @@
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields.map((field, index) => {
-        const key = field.businessKey || field.id;
-        if (field.type === FieldTypeEnum.INPUT_NUMBER) {
-          return {
-            title: field.name,
-            width: 150,
-            key,
-            fieldId: key,
-            filedType: field.type,
-            fieldConfig: field,
-            render: (row: any) => initFieldValueText(field, key, row[key]),
-            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-          };
+        let key = field.businessKey || field.id;
+        if (field.resourceFieldId) {
+          // 数据源引用字段用 id作为 key
+          key = field.id;
         }
         return {
           title: field.name,
@@ -140,14 +132,18 @@
       });
     }
     return props.subFields.map((field, index) => {
-      const key = field.businessKey || field.id;
+      let key = field.businessKey || field.id;
+      if (field.resourceFieldId) {
+        // 数据源引用字段用 id作为 key
+        key = field.id;
+      }
       if (field.resourceFieldId) {
         return {
           title: field.name,
           width: 120,
           key,
           fieldId: key,
-          render: (row: any) => h('div', {}, props.optionMap?.[key]?.find((e) => e.id === row[key])?.name || '-'),
+          render: (row: any) => h('div', {}, row[key]),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
       }
@@ -167,8 +163,16 @@
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
-              onChange: (val: any) => {
+              onChange: (val, source) => {
                 row[key] = val;
+                if (field.showFields?.length) {
+                  // 数据源显示字段联动
+                  const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
+                  showFields.forEach((sf) => {
+                    const fieldVal = source.find((s) => s.id === val[0])?.[sf.businessKey || sf.id];
+                    row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
+                  });
+                }
               },
             });
           },

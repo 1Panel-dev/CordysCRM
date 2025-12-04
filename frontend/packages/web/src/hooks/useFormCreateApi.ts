@@ -1256,6 +1256,25 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
+        if (item.resourceFieldId) {
+          return;
+        }
+        if (item.subFields?.length) {
+          const refResourceFieldIds: string[] = [];
+          item.subFields.forEach((subField) => {
+            if (subField.resourceFieldId) {
+              refResourceFieldIds.push(subField.id);
+            }
+          });
+          const parentFieldDetail = form[item.id];
+          if (parentFieldDetail) {
+            parentFieldDetail.forEach((subItem: Record<string, any>) => {
+              refResourceFieldIds.forEach((id) => {
+                delete subItem[id];
+              });
+            });
+          }
+        }
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
           params[item.businessKey] = form[item.id] ?? '';

@@ -24,7 +24,7 @@
               :origin-form-detail="originFormDetail"
               :path="item.id"
               :need-init-detail="needInitDetail"
-              @change="($event: any) => handleFieldChange($event, item)"
+              @change="(value: any, source: Record<string, any>[]) => handleFieldChange(value, source, item)"
             />
           </div>
         </template>
@@ -211,7 +211,7 @@
     }
   }
 
-  function handleFieldChange(value: any, item: FormCreateField) {
+  function handleFieldChange(value: any, source: Record<string, any>[], item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
       initFormShowControl();
@@ -232,6 +232,13 @@
     }
     if (item.type === FieldTypeEnum.ATTACHMENT) {
       formRef.value?.validate();
+    }
+    if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
+      // 数据源显示字段联动
+      const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);
+      showFields.forEach((field) => {
+        formDetail.value[field.id] = source.find((s) => s.id === value)?.[field.businessKey || field.id];
+      });
     }
     unsaved.value = true;
   }

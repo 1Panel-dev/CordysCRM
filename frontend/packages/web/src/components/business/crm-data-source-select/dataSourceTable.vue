@@ -38,8 +38,9 @@
 <script setup lang="ts">
   import { DataTableRowKey } from 'naive-ui';
 
-  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { transformData } from '@lib/shared/method/formCreate';
   import { CommonList } from '@lib/shared/models/common';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -60,6 +61,7 @@
     getFieldQuotationList,
     getUserOptions,
   } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
@@ -134,8 +136,21 @@
     [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
     [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
   };
+  const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
+    [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
+    [FieldDataSourceTypeEnum.CLUE]: FormDesignKeyEnum.CLUE,
+    [FieldDataSourceTypeEnum.CONTACT]: FormDesignKeyEnum.CONTACT,
+    [FieldDataSourceTypeEnum.CUSTOMER]: FormDesignKeyEnum.CUSTOMER,
+    [FieldDataSourceTypeEnum.PRODUCT]: FormDesignKeyEnum.PRODUCT,
+    [FieldDataSourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT,
+    [FieldDataSourceTypeEnum.PRICE]: FormDesignKeyEnum.PRICE,
+  };
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const { fieldList, initFormConfig } = useFormCreateApi({
+    formKey: computed(() => formKeyMap[props.sourceType] as FormDesignKeyEnum),
+  });
+
   const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
     sourceApi[props.sourceType],
     {
@@ -145,6 +160,13 @@
         showSizePicker: false,
       },
       containerClass: '.crm-data-source-select-modal',
+    },
+    (item, originalData) => {
+      return transformData({
+        item,
+        originalData,
+        fields: fieldList.value,
+      });
     }
   );
 
@@ -167,7 +189,8 @@
 
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    await initFormConfig();
     searchData();
   });
 </script>

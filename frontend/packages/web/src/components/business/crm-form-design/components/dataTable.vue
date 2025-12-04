@@ -59,7 +59,7 @@
                 {{ t('common.copy') }}
               </n-tooltip>
               <n-tooltip
-                v-if="!item.businessKey"
+                v-if="!item.businessKey || item.resourceFieldId"
                 :delay="300"
                 :show-arrow="false"
                 class="crm-form-design--composition-item-tools-tip"
@@ -129,7 +129,10 @@
   }
 
   function handleItemClick(item: FormCreateField) {
-    activeItem.value = item;
+    if (!item.resourceFieldId) {
+      // 数据源引用字段不能编辑
+      activeItem.value = item;
+    }
   }
 
   function getItemComponent(type: FieldTypeEnum) {
@@ -232,6 +235,12 @@
       if (sourceField) {
         sourceField.showFields = sourceField.showFields?.filter((id) => id !== item.id);
       }
+    }
+    if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
+      // 删除字段时，同时删除数据源字段关联的显示字段
+      fieldConfig.value.subFields = fieldConfig.value.subFields?.filter(
+        (e) => !item.showFields?.some((id) => id === e.id)
+      );
     }
   }
 </script>

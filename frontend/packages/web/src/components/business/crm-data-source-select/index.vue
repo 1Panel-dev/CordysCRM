@@ -60,7 +60,7 @@
     multiple: true,
   });
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[]): void;
+    (e: 'change', value: (string | number)[], source: Record<string, any>[]): void;
   }>();
 
   const { t } = useI18n();
@@ -96,7 +96,7 @@
     rows.value = newRows;
     value.value = newRows.map((e) => e.id) as RowKey[];
     nextTick(() => {
-      emit('change', value.value);
+      emit('change', value.value, newRows);
     });
     dataSourcesModalVisible.value = false;
   }

@@ -2,7 +2,7 @@
   <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" type="line" animated>
     <n-tab-pane name="field" :tab="t('crmFormDesign.fieldConfig')">
       <n-scrollbar>
-        <fieldAttr :field="fieldConfig" :list="list" :form-key="props.formKey" />
+        <fieldAttr v-model:field-list="list" :field="fieldConfig" :form-key="props.formKey" />
       </n-scrollbar>
     </n-tab-pane>
     <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">

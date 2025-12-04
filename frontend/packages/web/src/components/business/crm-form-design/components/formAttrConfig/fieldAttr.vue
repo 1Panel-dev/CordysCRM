@@ -5,7 +5,7 @@
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.fieldTitle') }}</div>
         <n-input
           v-model:value="fieldConfig.name"
-          :disabled="fieldConfig.disabledProps?.includes('name')"
+          :disabled="fieldConfig.disabledProps?.includes('name') || !!fieldConfig.resourceFieldId"
           :maxlength="255"
           :placeholder="t('common.pleaseInput')"
           :status="isNameRepeat ? 'error' : undefined"
@@ -16,7 +16,7 @@
         </div>
         <n-checkbox
           v-model:checked="fieldConfig.showLabel"
-          :disabled="fieldConfig.disabledProps?.includes('showLabel')"
+          :disabled="fieldConfig.disabledProps?.includes('showLabel') || !!fieldConfig.resourceFieldId"
         >
           {{ t('crmFormDesign.showTitle') }}
         </n-checkbox>
@@ -25,7 +25,7 @@
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.desc') }}</div>
         <n-input
           v-model:value="fieldConfig.description"
-          :disabled="fieldConfig.disabledProps?.includes('description')"
+          :disabled="fieldConfig.disabledProps?.includes('description') || !!fieldConfig.resourceFieldId"
           type="textarea"
           :maxlength="1000"
           clearable
@@ -65,7 +65,7 @@
         </div>
         <n-input
           v-model:value="fieldConfig.placeholder"
-          :disabled="fieldConfig.disabledProps?.includes('placeholder')"
+          :disabled="fieldConfig.disabledProps?.includes('placeholder') || !!fieldConfig.resourceFieldId"
           :maxlength="56"
           clearable
         />
@@ -75,7 +75,7 @@
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.format') }}</div>
         <n-radio-group
           v-model:value="fieldConfig.numberFormat"
-          :disabled="fieldConfig.disabledProps?.includes('numberFormat')"
+          :disabled="fieldConfig.disabledProps?.includes('numberFormat') || !!fieldConfig.resourceFieldId"
           name="radiogroup"
           class="flex"
         >
@@ -84,7 +84,7 @@
         </n-radio-group>
         <n-checkbox
           v-model:checked="fieldConfig.decimalPlaces"
-          :disabled="fieldConfig.disabledProps?.includes('decimalPlaces')"
+          :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
           @update-checked="() => (fieldConfig.precision = 0)"
         >
           {{ t('crmFormDesign.saveFloat') }}
@@ -92,7 +92,7 @@
         <n-checkbox
           v-if="fieldConfig.numberFormat === 'number'"
           v-model:checked="fieldConfig.showThousandsSeparator"
-          :disabled="fieldConfig.disabledProps?.includes('showThousandsSeparator')"
+          :disabled="fieldConfig.disabledProps?.includes('showThousandsSeparator') || !!fieldConfig.resourceFieldId"
         >
           {{ t('crmFormDesign.showThousandSeparator') }}
         </n-checkbox>
@@ -100,7 +100,7 @@
           <CrmInputNumber
             v-if="fieldConfig.decimalPlaces"
             v-model:value="fieldConfig.precision"
-            :disabled="fieldConfig.disabledProps?.includes('precision')"
+            :disabled="fieldConfig.disabledProps?.includes('precision') || !!fieldConfig.resourceFieldId"
             :min="0"
             :max="4"
             class="flex-1"
@@ -135,32 +135,35 @@
           <n-select
             v-model:value="fieldConfig.dataSourceType"
             :options="dataSourceOptions"
-            :disabled="fieldConfig.disabledProps?.includes('dataSourceType')"
+            :disabled="fieldConfig.disabledProps?.includes('dataSourceType') || !!fieldConfig.resourceFieldId"
           />
         </div>
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.dataSourceFilter') }}
           </div>
-          <n-button :disabled="fieldConfig.disabledProps?.includes('dataSource')" @click="handleDataSourceFilter">
+          <n-button
+            :disabled="fieldConfig.disabledProps?.includes('dataSource') || !!fieldConfig.resourceFieldId"
+            @click="handleDataSourceFilter"
+          >
             {{ t('common.setting') }}
           </n-button>
         </div>
-        <!-- 显示字段 仅支持表格中的数据源字段 -->
-        <div v-if="isSubTableField" class="crm-form-design-config-item">
+        <!-- 显示字段 -->
+        <div v-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE" class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             <span>{{ t('crmFormDesign.dataSourceDisplayField') }}</span>
             <n-button
               type="primary"
               text
-              :disabled="!fieldConfig.showFields?.length"
+              :disabled="!fieldConfig.showFields?.length || !!fieldConfig.resourceFieldId"
               @click="handleClearDataSourceDisplayField"
             >
               {{ t('common.clear') }}
             </n-button>
           </div>
           <n-button
-            :disabled="fieldConfig.disabledProps?.includes('dataSource')"
+            :disabled="fieldConfig.disabledProps?.includes('dataSource') || !!fieldConfig.resourceFieldId"
             @click="showDataSourceDisplayFieldModal = true"
           >
             {{
@@ -203,7 +206,10 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.option') }}
         </div>
-        <optionConfig v-model:field="fieldConfig" :disabled="fieldConfig.disabledProps?.includes('options')" />
+        <optionConfig
+          v-model:field="fieldConfig"
+          :disabled="fieldConfig.disabledProps?.includes('options') || !!fieldConfig.resourceFieldId"
+        />
       </div>
       <!-- 选项属性 End -->
       <!-- 分割线属性 -->
@@ -212,7 +218,10 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.showRule') }}
         </div>
-        <n-button :disabled="fieldConfig.disabledProps?.includes('showControlRules')" @click="showRuleConfig">
+        <n-button
+          :disabled="fieldConfig.disabledProps?.includes('showControlRules') || !!fieldConfig.resourceFieldId"
+          @click="showRuleConfig"
+        >
           {{
             fieldConfig.showControlRules?.length
               ? t('crmFormDesign.showRuleCount', { count: fieldConfig.showControlRules?.length })
@@ -236,12 +245,19 @@
             placement="right-end"
             @confirm="clearLink"
           >
-            <n-button type="primary" text :disabled="!fieldConfig.linkProp?.linkOptions?.length">
+            <n-button
+              type="primary"
+              text
+              :disabled="!fieldConfig.linkProp?.linkOptions?.length || !!fieldConfig.resourceFieldId"
+            >
               {{ t('common.clear') }}
             </n-button>
           </CrmPopConfirm>
         </div>
-        <n-button :disabled="fieldConfig.disabledProps?.includes('linkProp')" @click="showLinkConfig">
+        <n-button
+          :disabled="fieldConfig.disabledProps?.includes('linkProp') || !!fieldConfig.resourceFieldId"
+          @click="showLinkConfig"
+        >
           {{
             fieldConfig.linkProp?.linkOptions?.length
               ? t('crmFormDesign.linkSettingTip', { count: fieldConfig.linkProp.linkOptions.length })
@@ -261,7 +277,7 @@
           width="trigger"
           :show-arrow="false"
           style="max-height: 360px"
-          :disabled="fieldConfig.disabledProps?.includes('dividerClass')"
+          :disabled="fieldConfig.disabledProps?.includes('dividerClass') || !!fieldConfig.resourceFieldId"
           scrollable
         >
           <template #trigger>
@@ -297,7 +313,7 @@
             placement="bottom"
             class="!p-0"
             :show-arrow="false"
-            :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+            :disabled="fieldConfig.disabledProps?.includes('dividerColor') || !!fieldConfig.resourceFieldId"
           >
             <template #trigger>
               <div class="crm-form-design-color-select-wrapper">
@@ -306,12 +322,12 @@
             </template>
             <CrmColorSelect
               v-model:pure-color="fieldConfig.dividerColor"
-              :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+              :disabled="fieldConfig.disabledProps?.includes('dividerColor') || !!fieldConfig.resourceFieldId"
             />
           </n-popover>
           <n-button
             class="px-[9px]"
-            :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+            :disabled="fieldConfig.disabledProps?.includes('dividerColor') || !!fieldConfig.resourceFieldId"
             @click="
               () => {
                 if (!fieldConfig.disabledProps?.includes('dividerColor')) {
@@ -330,7 +346,7 @@
             placement="bottom"
             class="!p-0"
             :show-arrow="false"
-            :disabled="fieldConfig.disabledProps?.includes('titleColor')"
+            :disabled="fieldConfig.disabledProps?.includes('titleColor') || !!fieldConfig.resourceFieldId"
           >
             <template #trigger>
               <div class="crm-form-design-color-select-wrapper">
@@ -339,7 +355,7 @@
             </template>
             <CrmColorSelect
               v-model:pure-color="fieldConfig.titleColor"
-              :disabled="fieldConfig.disabledProps?.includes('titleColor')"
+              :disabled="fieldConfig.disabledProps?.includes('titleColor') || !!fieldConfig.resourceFieldId"
             />
           </n-popover>
           <n-button
@@ -369,7 +385,7 @@
           v-model:value="fieldConfig.direction"
           name="radiogroup"
           class="flex"
-          :disabled="fieldConfig.disabledProps?.includes('direction')"
+          :disabled="fieldConfig.disabledProps?.includes('direction') || !!fieldConfig.resourceFieldId"
         >
           <n-radio-button value="vertical" class="flex-1 text-center">
             {{ t('crmFormDesign.verticalSort') }}
@@ -539,7 +555,7 @@
               value: 'detail',
             },
           ]"
-          :disabled="fieldConfig.disabledProps?.includes('locationType')"
+          :disabled="fieldConfig.disabledProps?.includes('locationType') || !!fieldConfig.resourceFieldId"
         />
       </div>
       <!-- 地址属性 End -->
@@ -579,7 +595,7 @@
           </div>
           <n-select
             v-model:value="fieldConfig.linkSource"
-            :disabled="fieldConfig.disabledProps?.includes('linkSource')"
+            :disabled="fieldConfig.disabledProps?.includes('linkSource') || !!fieldConfig.resourceFieldId"
             :options="linkSourceOptions"
           />
         </div>
@@ -587,7 +603,7 @@
           <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.openMode') }}</div>
           <n-radio-group
             v-model:value="fieldConfig.openMode"
-            :disabled="fieldConfig.disabledProps?.includes('openMode')"
+            :disabled="fieldConfig.disabledProps?.includes('openMode') || !!fieldConfig.resourceFieldId"
             name="radiogroup"
             class="flex"
           >
@@ -606,11 +622,21 @@
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             <span> {{ t('crmFormDesign.formula') }}</span>
-            <n-button type="primary" text :disabled="!fieldConfig.formula?.length" @click="handleClearFormulaField">
+            <n-button
+              type="primary"
+              text
+              :disabled="!fieldConfig.formula?.length || !!fieldConfig.resourceFieldId"
+              @click="handleClearFormulaField"
+            >
               {{ t('common.clear') }}
             </n-button>
           </div>
-          <n-button type="default" class="outline--secondary" @click="handleCalculateFormula">
+          <n-button
+            type="default"
+            class="outline--secondary"
+            :disabled="!!fieldConfig.resourceFieldId"
+            @click="handleCalculateFormula"
+          >
             {{ t('common.setting') }}
           </n-button>
         </div>
@@ -624,7 +650,7 @@
           </div>
           <n-select
             v-model:value="fieldConfig.format"
-            :disabled="fieldConfig.disabledProps?.includes('format')"
+            :disabled="fieldConfig.disabledProps?.includes('format') || !!fieldConfig.resourceFieldId"
             :options="phoneFormatOptions"
           />
         </div>
@@ -660,7 +686,7 @@
           <n-switch
             v-model:value="fieldConfig.hasCurrentUser"
             :rubber-band="false"
-            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUser')"
+            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUser') || !!fieldConfig.resourceFieldId"
             @update-value="
               ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE)
             "
@@ -674,7 +700,7 @@
           <n-switch
             v-model:value="fieldConfig.hasCurrentUserDept"
             :rubber-band="false"
-            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUserDept')"
+            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUserDept') || !!fieldConfig.resourceFieldId"
             @update-value="
               ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE)
             "
@@ -686,7 +712,7 @@
           v-model:value="fieldConfig.defaultValue"
           :show-button="false"
           :min="0"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
         />
         <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
           <n-select
@@ -701,13 +727,13 @@
                 value: 'current',
               },
             ]"
-            :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
           />
           <n-date-picker
             v-if="fieldConfig.dateDefaultType === 'custom'"
             v-model:value="fieldConfig.defaultValue"
             :type="fieldConfig.dateType"
-            :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
             class="w-full"
           ></n-date-picker>
         </template>
@@ -721,7 +747,7 @@
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="memberTypes"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
           :disabled-node-types="[DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]"
         />
         <CrmUserTagSelector
@@ -734,7 +760,7 @@
           :drawer-title="t('crmFormDesign.selectDepartment')"
           :ok-text="t('common.confirm')"
           :member-types="memberTypes"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
           :disabled-node-types="[DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]"
         />
         <CrmDataSource
@@ -743,13 +769,13 @@
           v-model:rows="fieldConfig.initialOptions"
           :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
           :data-source-type="fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
         />
         <n-input
           v-else
           v-model:value="fieldConfig.defaultValue"
           :maxlength="255"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
           clearable
         />
       </div>
@@ -762,7 +788,7 @@
         <div class="flex items-center">
           <n-checkbox
             v-model:checked="fieldConfig.onlyOne"
-            :disabled="fieldConfig.disabledProps?.includes('onlyOne')"
+            :disabled="fieldConfig.disabledProps?.includes('onlyOne') || !!fieldConfig.resourceFieldId"
             @update-checked="
               ($event) => {
                 if ($event === false) {
@@ -782,7 +808,7 @@
         </div>
         <n-checkbox
           v-model:checked="currentFieldHasAccept"
-          :disabled="fieldConfig.disabledProps?.includes('accept')"
+          :disabled="fieldConfig.disabledProps?.includes('accept') || !!fieldConfig.resourceFieldId"
           @update-checked="
             ($event) => {
               if (!$event) {
@@ -808,7 +834,7 @@
         </template>
         <n-checkbox
           v-model:checked="currentFieldHasLimitSize"
-          :disabled="fieldConfig.disabledProps?.includes('limitSize')"
+          :disabled="fieldConfig.disabledProps?.includes('limitSize') || !!fieldConfig.resourceFieldId"
           @update-checked="
             ($event) => {
               if ($event === false) {
@@ -847,7 +873,7 @@
               v-for="rule of showRules"
               :key="rule.key"
               :value="rule.key"
-              :disabled="fieldConfig.disabledProps?.includes(`rules.${rule.key}`)"
+              :disabled="fieldConfig.disabledProps?.includes(`rules.${rule.key}`) || !!fieldConfig.resourceFieldId"
             >
               {{ t(rule.label || '', { value: t(fieldConfig.name) }) }}
             </n-checkbox>
@@ -862,7 +888,7 @@
         </div>
         <n-checkbox
           v-model:checked="fieldConfig.readable"
-          :disabled="fieldConfig.disabledProps?.includes('readable')"
+          :disabled="fieldConfig.disabledProps?.includes('readable') || !!fieldConfig.resourceFieldId"
           @update-checked="
             ($event) => {
               if ($event === false) {
@@ -884,7 +910,7 @@
             ].includes(fieldConfig.type)
           "
           v-model:checked="fieldConfig.editable"
-          :disabled="fieldConfig.disabledProps?.includes('editable')"
+          :disabled="fieldConfig.disabledProps?.includes('editable') || !!fieldConfig.resourceFieldId"
           @update-checked="
             ($event) => {
               if ($event === true) {
@@ -904,7 +930,7 @@
         </div>
         <n-checkbox
           v-model:checked="fieldConfig.mobile"
-          :disabled="fieldConfig.disabledProps?.includes('mobile')"
+          :disabled="fieldConfig.disabledProps?.includes('mobile') || !!fieldConfig.resourceFieldId"
           @update-checked="
             ($event) => {
               if ($event === false) {
@@ -1054,7 +1080,7 @@
     v-if="fieldConfig"
     v-model:visible="showDataSourceFilterModal"
     :field-config="fieldConfig"
-    :form-fields="props.list"
+    :form-fields="list"
     @save="handleDataSourceFilterSave"
   />
   <DataSourceDisplayFieldModal
@@ -1067,7 +1093,7 @@
     v-if="fieldConfig"
     v-model:visible="showLinkConfigVisible"
     :field-config="fieldConfig"
-    :form-fields="props.list"
+    :form-fields="list"
     @save="handleLinkConfigSave"
   />
   <formulaModal
@@ -1136,7 +1162,6 @@
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
-    list: FormCreateField[];
     formKey: FormDesignKeyEnum;
     disabled?: boolean;
   }>();
@@ -1146,6 +1171,10 @@
 
   const fieldConfig = defineModel<FormCreateField>('field', {
     default: null,
+  });
+
+  const list = defineModel<FormCreateField[]>('fieldList', {
+    required: true,
   });
 
   const showRules = computed(() => {
@@ -1179,7 +1208,7 @@
   );
 
   const isSubTableField = computed(() => {
-    return props.list
+    return list.value
       .filter((item) => item.type === FieldTypeEnum.SUB_PRICE || item.type === FieldTypeEnum.SUB_PRODUCT)
       .some((tableField) => {
         return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
@@ -1187,7 +1216,7 @@
   });
   const parentField = computed(() => {
     if (isSubTableField.value) {
-      return props.list
+      return list.value
         .filter((item) => item.type === FieldTypeEnum.SUB_PRICE || item.type === FieldTypeEnum.SUB_PRODUCT)
         .find((tableField) => {
           return tableField.subFields?.some((subField) => subField.id === fieldConfig.value?.id);
@@ -1200,10 +1229,10 @@
       ? parentField.value?.subFields?.some(
           (item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name
         )
-      : props.list.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
+      : list.value.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
   });
 
-  const formulaScopedFields = computed(() => (isSubTableField.value ? parentField.value?.subFields ?? [] : props.list));
+  const formulaScopedFields = computed(() => (isSubTableField.value ? parentField.value?.subFields ?? [] : list.value));
 
   function handleRuleChange(val: (string | number)[]) {
     fieldConfig.value.rules = val
@@ -1384,7 +1413,7 @@
   // 显隐规则可选字段
   const showRuleFields = computed(() => {
     if (isShowRuleField.value) {
-      return props.list.filter((item) => item.id !== fieldConfig.value.id).map((e) => ({ label: e.name, value: e.id }));
+      return list.value.filter((item) => item.id !== fieldConfig.value.id).map((e) => ({ label: e.name, value: e.id }));
     }
     return [];
   });
@@ -1467,6 +1496,22 @@
             editable: false,
           }))
         );
+      }
+    } else {
+      list.value = list.value.filter((item) => item.resourceFieldId !== fieldConfig.value.id);
+      const fieldIndex = list.value.findIndex((item) => item.id === fieldConfig.value.id);
+      if (fieldIndex >= 0) {
+        nextTick(() => {
+          list.value.splice(
+            fieldIndex + 1,
+            0,
+            ...selectedList.map((item) => ({
+              ...item,
+              resourceFieldId: fieldConfig.value.id,
+              editable: false,
+            }))
+          );
+        });
       }
     }
   }

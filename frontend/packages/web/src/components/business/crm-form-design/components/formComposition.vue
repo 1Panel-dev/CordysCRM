@@ -288,6 +288,17 @@
     if (activeItem.value?.id === item.id) {
       activeItem.value = null;
     }
+    if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
+      // 删除字段时，同时删除数据源字段关联的显示字段
+      list.value.filter((e) => !item.showFields?.some((id) => id === e.id));
+    }
+    if (item.resourceFieldId) {
+      // 删除引用的数据源字段时，同时删除数据源配置的字段 id
+      const relatedField = list.value.find((e) => e.id === item.resourceFieldId);
+      if (relatedField && relatedField.showFields) {
+        relatedField.showFields = relatedField.showFields.filter((id) => id !== item.id);
+      }
+    }
   }
 
   defineExpose({

@@ -105,16 +105,19 @@
   }
 
   function handleMove(e: any) {
-    return !getFieldDisable(e.data) && e.to.className.includes('crm-form-design-subtable-wrapper')
-      ? [
-          FieldTypeEnum.INPUT,
-          FieldTypeEnum.INPUT_NUMBER,
-          FieldTypeEnum.SELECT,
-          FieldTypeEnum.SELECT_MULTIPLE,
-          FieldTypeEnum.DATA_SOURCE,
-          FieldTypeEnum.FORMULA,
-        ].includes(e.data.type)
-      : true;
+    return (
+      !getFieldDisable(e.data) &&
+      (e.to.className.includes('crm-form-design-subtable-wrapper')
+        ? [
+            FieldTypeEnum.INPUT,
+            FieldTypeEnum.INPUT_NUMBER,
+            FieldTypeEnum.SELECT,
+            FieldTypeEnum.SELECT_MULTIPLE,
+            FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.FORMULA,
+          ].includes(e.data.type)
+        : true)
+    );
   }
 
   function clone(e: FormCreateField) {
