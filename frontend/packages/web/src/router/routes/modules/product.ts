@@ -32,7 +32,7 @@ const product: AppRouteRecordRaw = {
       component: () => import('@/views/product/price.vue'),
       meta: {
         locale: 'module.productManagementPrice',
-        permissions: ['PRODUCT_MANAGEMENT:READ'],
+        permissions: ['PRICE:READ'],
         isTopMenu: true,
       },
     },

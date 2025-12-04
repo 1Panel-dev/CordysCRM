@@ -8,7 +8,7 @@
           v-bind="propsRes"
           :action-config="actionConfig"
           :fullscreen-target-ref="priceCardRef"
-          :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
+          :draggable="hasAnyPermission(['PRICE:UPDATE'])"
           class="crm-price-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
@@ -20,17 +20,17 @@
         >
           <template #actionLeft>
             <div class="flex items-center gap-[12px]">
-              <n-button v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD'])" type="primary" @click="handleCreate">
+              <n-button v-if="hasAnyPermission(['PRICE:ADD'])" type="primary" @click="handleCreate">
                 {{ t('product.newPrice') }}
               </n-button>
               <CrmImportButton
-                v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT'])"
+                v-if="hasAnyPermission(['PRICE:IMPORT'])"
                 :api-type="FormDesignKeyEnum.PRICE"
                 :title="t('module.productManagementPrice')"
                 @import-success="() => searchData()"
               />
               <n-button
-                v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT'])"
+                v-if="hasAnyPermission(['PRICE:EXPORT'])"
                 type="primary"
                 ghost
                 class="n-btn-outline-primary"
@@ -126,12 +126,12 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
+        permission: ['PRICE:EXPORT'],
       },
       {
         label: t('common.batchEdit'),
         key: 'batchEdit',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+        permission: ['PRICE:UPDATE'],
       },
     ],
   };
@@ -223,12 +223,12 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+              permission: ['PRICE:UPDATE'],
             },
             {
               label: t('common.delete'),
               key: 'delete',
-              permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+              permission: ['PRICE:DELETE'],
             },
           ],
           onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
@@ -248,7 +248,7 @@
         );
       },
     },
-    permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
+    permission: ['PRICE:UPDATE', 'PRICE:DELETE'],
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
