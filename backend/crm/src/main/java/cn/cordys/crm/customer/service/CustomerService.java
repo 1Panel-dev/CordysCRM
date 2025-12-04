@@ -289,7 +289,7 @@ public class CustomerService {
     }
 
     public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        CustomerGetResponse getResponse = get(id, orgId);
+        CustomerGetResponse getResponse = get(id);
 
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {
@@ -304,13 +304,13 @@ public class CustomerService {
         return getResponse;
     }
 
-    public CustomerGetResponse get(String id, String orgId) {
+    public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
         customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
-        ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
+        ModuleFormConfigDTO customerFormConfig = getFormConfig(customer.getOrganizationId());
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, customerFields);
 
@@ -323,13 +323,13 @@ public class CustomerService {
         customerGetResponse.setModuleFields(customerFields);
 
         // 公海原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), orgId);
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), customer.getOrganizationId());
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         if (customerGetResponse.getOwner() != null) {
             // 获取负责人默认公海信息
-            Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(List.of(customerGetResponse.getOwner()), orgId);
+            Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(List.of(customerGetResponse.getOwner()), customer.getOrganizationId());
             List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
             Map<String, CustomerPoolRecycleRule> recycleRuleMap;
             if (CollectionUtils.isEmpty(poolIds)) {
@@ -350,7 +350,7 @@ public class CustomerService {
                     customerGetResponse.getCollectionTime(), customerGetResponse.getCreateTime()));
 
 
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), customer.getOrganizationId());
             if (userDeptDTO != null) {
                 customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());

@@ -190,7 +190,7 @@ public class CustomerContactService {
         return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-    public CustomerContactGetResponse get(String id, String orgId) {
+    public CustomerContactGetResponse get(String id) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
 
@@ -199,7 +199,7 @@ public class CustomerContactService {
             customerContactGetResponse.setCustomerName(customer.getName());
         }
 
-        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(), orgId);
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(), customerContact.getOrganizationId());
         if (userDeptDTO != null) {
             customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
             customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -209,7 +209,7 @@ public class CustomerContactService {
 
         // 获取模块字段
         List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
-        ModuleFormConfigDTO customerContactFormConfig = getFormConfig(orgId);
+        ModuleFormConfigDTO customerContactFormConfig = getFormConfig(customerContact.getOrganizationId());
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig, customerContactFields);
 

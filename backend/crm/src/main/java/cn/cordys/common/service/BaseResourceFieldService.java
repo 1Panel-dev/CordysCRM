@@ -1,8 +1,11 @@
 package cn.cordys.common.service;
 
+import cn.cordys.aspectj.constants.GlobalSearchModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.crm.search.service.advanced.*;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
@@ -37,9 +40,11 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -71,6 +76,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+
+	private static final ObjectMapper mapper = new ObjectMapper();
 
     private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
         Map<String, ChartResult> mergedResults = new HashMap<>();
@@ -643,15 +650,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }
-        Map<String, BaseField> fieldConfigMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
-                getAllFields(getFormKey(), OrganizationContext.getOrganizationId())
-                .stream()
-                .collect(Collectors.toMap(BaseField::getId, Function.identity()));
-
+		List<BaseField> flattenFormFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
+				getFlattenFormFields(getFormKey(), OrganizationContext.getOrganizationId());
+		Map<String, BaseField> fieldConfigMap = flattenFormFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
         Map<String, List<BaseModuleFieldValue>> resourceMap = new HashMap<>();
 
         List<T> resourceFields = getResourceField(resourceIds);
-        resourceFields.forEach(resourceField -> {
+		Map<String, Map<String, Object>> sourceDetailMap = getSourceDetailMapByIds(flattenFormFields, resourceFields);
+		resourceFields.forEach(resourceField -> {
             if (resourceField.getFieldValue() != null) {
                 BaseField fieldConfig = fieldConfigMap.get(resourceField.getFieldId());
                 if (fieldConfig == null) {
@@ -666,13 +672,25 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 String resourceId = resourceField.getResourceId();
                 resourceMap.putIfAbsent(resourceId, new ArrayList<>());
                 resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceField.getFieldId(), objectValue));
+				// 处理数据源字段显示值
+				if (fieldConfig instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
+					// 处理展示列
+					Map<String, Object> detailMap = sourceDetailMap.get(objectValue);
+					sourceField.getShowFields().forEach(id -> {
+						BaseField showFieldConfig = fieldConfigMap.get(id);
+						if (showFieldConfig == null) {
+							return;
+						}
+						resourceMap.get(resourceId).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, detailMap)));
+					});
+				}
             }
         });
 
 		// 提前获取大文本字段值
 		List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
 		// 处理子表格字段值
-		setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs));
+		setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs), sourceDetailMap);
 
         if (!withBlob) {
             return resourceMap;
@@ -697,6 +715,42 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return resourceMap;
     }
 
+	@SuppressWarnings("unchecked")
+	private Map<String, Map<String, Object>> getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
+		Map<String, String> sourceIdType = flattenFields.stream().filter(sf -> sf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
+				.collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType()));
+		// 获取数据源详情
+		Map<String, Map<String, Object>> sourceDetailMap = new HashMap<>();
+		resourceFields.stream().filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null).forEach(rf -> {
+			if (sourceDetailMap.containsKey(rf.getFieldId())) {
+				return;
+			}
+			FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
+			Object detail = SourceServiceFactory.getById(sourceType, rf.getFieldValue().toString());
+			sourceDetailMap.put(rf.getFieldValue().toString(), mapper.convertValue(detail, Map.class));
+		});
+		return sourceDetailMap;
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> detailMap) {
+		if (detailMap == null || detailMap.isEmpty()) {
+			return null;
+		}
+		if (StringUtils.isNotEmpty(field.getBusinessKey())) {
+			return detailMap.get(field.getBusinessKey());
+		}
+		if (detailMap.containsKey("moduleFields")) {
+			List<Map> fvs = (List<Map>) detailMap.get("moduleFields");
+			for (Map fv : fvs) {
+				if (field.getId().equals(fv.get("fieldId"))) {
+					return fv.get("fieldValue");
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * 设置子表格字段值
 	 * @param resourceMap 返回的资源字段值
@@ -704,14 +758,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 	 * @param resourceFields 值集合
 	 */
 	@SuppressWarnings("unchecked")
-	public void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap,
-										 Map<String, BaseField> fieldConfigMap, List<? extends BaseResourceField> resourceFields) {
+	public void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap, Map<String, BaseField> fieldConfigMap,
+										 List<? extends BaseResourceField> resourceFields, Map<String, Map<String, Object>> sourceDetailMap) {
 		Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
 		if (!subFieldMap.isEmpty()) {
 			Set<String> refSubSet = subFieldMap.keySet();
 			List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
-			Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(
-					f -> f.getBusinessKey() != null ? f.getBusinessKey() : f.getId(), f -> f, (f1, f2) -> f1));
+			Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
 			Map<String, BaseField> subFieldIdConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 
 			Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
@@ -738,12 +791,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 						rowMap.put(subResource.getFieldId(), objectValue);
 						if (fieldConfig instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
 							// 处理展示列
+							Map<String, Object> detailMap = sourceDetailMap.get(objectValue);
 							sourceField.getShowFields().forEach(id -> {
 								BaseField showFieldConfig = subFieldIdConfigMap.get(id);
 								if (showFieldConfig == null) {
 									return;
 								}
-								rowMap.put(showFieldConfig.idOrBusinessKey(), null);
+								rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
 							});
 						}
 						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
