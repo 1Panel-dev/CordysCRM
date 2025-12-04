@@ -92,8 +92,9 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     @Override
     public List<List<Object>> getSelectExportData(List<String> ids, String taskId,  ExportDTO exportDTO) throws InterruptedException {
         String orgId = exportDTO.getOrgId();
+        String userId = exportDTO.getUserId();
         //获取数据
-        List<ContractPaymentPlanListResponse> allList = extContractPaymentPlanMapper.getListByIds(ids, orgId, exportDTO.getDeptDataPermission());
+        List<ContractPaymentPlanListResponse> allList = extContractPaymentPlanMapper.getListByIds(ids, userId, orgId, exportDTO.getDeptDataPermission());
         List<ContractPaymentPlanListResponse> dataList = contractPaymentPlanService.buildListData(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId);
         //构建导出数据

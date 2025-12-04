@@ -8,9 +8,12 @@ import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +29,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
     private static final ClueService clueService;
     private static final CustomerContactService contactService;
     private static final ProductService productService;
+    private static final ProductPriceService productPriceService;
+    private static final OpportunityQuotationService opportunityQuotationService;
 
     static {
         customerService = CommonBeanFactory.getBean(CustomerService.class);
@@ -33,6 +38,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         clueService = CommonBeanFactory.getBean(ClueService.class);
         contactService = CommonBeanFactory.getBean(CustomerContactService.class);
         productService = CommonBeanFactory.getBean(ProductService.class);
+        productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
+        opportunityQuotationService = CommonBeanFactory.getBean(OpportunityQuotationService.class);
     }
 
     @Override
@@ -65,6 +72,14 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 
         if (Strings.CI.equals(datasourceField.getDataSourceType(), "PRODUCT")) {
             return Objects.requireNonNull(productService).getProductName(value);
+        }
+
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRICE.name())) {
+            return Objects.requireNonNull(productPriceService).getProductPriceName(value);
+        }
+
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
+            return Objects.requireNonNull(opportunityQuotationService).getQuotationName(value);
         }
 
         return StringUtils.EMPTY;

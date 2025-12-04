@@ -184,8 +184,9 @@ public class ContractController {
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)
+                .formKey(FormKey.CONTRACT.getKey())
                 .build();
-        return contractExportService.exportSelect(exportDTO);
+        return contractExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-all")
@@ -205,7 +206,8 @@ public class ContractController {
                 .userId(SessionUtils.getUserId())
                 .deptDataPermission(deptDataPermission)
                 .pageRequest(request)
+                .formKey(FormKey.CONTRACT.getKey())
                 .build();
-        return contractExportService.export(exportDTO);
+        return contractExportService.exportAllWithMergeStrategy(exportDTO);
     }
 }

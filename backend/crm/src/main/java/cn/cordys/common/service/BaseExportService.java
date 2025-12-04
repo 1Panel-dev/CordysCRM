@@ -33,6 +33,7 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -319,6 +320,27 @@ public abstract class BaseExportService {
 		AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
 		// 将数据库中的字符串值,转换为对应的对象值
 		return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+	}
+
+	protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues , ExportFieldParam exportFieldParam, List<String> heads, LinkedHashMap<String, Object> systemFieldMap) {
+		List<?> subFvList = List.of();
+		if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
+			BaseModuleFieldValue subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList().getFirst();
+			moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
+			subFvList = (List<?>) subFvs.getFieldValue();
+		}
+
+		List<List<Object>> dataList = new ArrayList<>(CollectionUtils.isEmpty(subFvList) ? 1 : subFvList.size());
+		if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(subFvList)) {
+			subFvList.forEach(subFv -> {
+				Map<String, Object> subFvMap = (Map<String, Object>) subFv;
+				Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+				subFvMap.putAll(normalFvs);
+				List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
+				dataList.add(data);
+			});
+		}
+		return dataList;
 	}
 
     /**

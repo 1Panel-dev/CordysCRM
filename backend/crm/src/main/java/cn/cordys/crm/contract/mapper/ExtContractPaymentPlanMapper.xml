@@ -86,9 +86,6 @@
             <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
             </foreach>
-            <if test="dataPermission.viewId == 'ALL'">
-                or sou.user_id = #{userId}
-            </if>
             )
         </if>
 

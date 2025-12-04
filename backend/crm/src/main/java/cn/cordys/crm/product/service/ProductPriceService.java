@@ -51,6 +51,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +60,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -374,5 +377,19 @@ public class ProductPriceService {
     public Long getNextOrder(String orgId) {
         Long pos = extProductPriceMapper.getPos(orgId);
         return (pos == null ? 0 : pos) + ServiceUtils.POS_STEP;
+    }
+
+    public String getProductPriceName(String id) {
+        ProductPrice productPrice = productPriceMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(productPrice).map(ProductPrice::getName).orElse(null);
+    }
+
+    public String getProductPriceNameByIds(List<String> ids) {
+        List<ProductPrice> productPrices = productPriceMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(productPrices)) {
+            List<String> names = productPrices.stream().map(ProductPrice::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
     }
 }

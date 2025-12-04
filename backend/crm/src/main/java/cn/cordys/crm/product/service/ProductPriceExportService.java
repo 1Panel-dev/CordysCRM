@@ -12,7 +12,6 @@ import cn.cordys.crm.product.utils.ProductPriceUtils;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.registry.ExportThreadRegistry;
-import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
@@ -47,7 +46,6 @@ public class ProductPriceExportService extends BaseExportService {
 			exportList = extProductPriceMapper.selectByIds(exportParam.getSelectIds());
 		} else {
 			ProductPricePageRequest request = (ProductPricePageRequest) exportParam.getPageRequest();
-			PageHelper.startPage(request.getCurrent(), request.getPageSize());
 			exportList = extProductPriceMapper.list(request, exportParam.getOrgId());
 		}
 		if (CollectionUtils.isEmpty(exportList)) {
