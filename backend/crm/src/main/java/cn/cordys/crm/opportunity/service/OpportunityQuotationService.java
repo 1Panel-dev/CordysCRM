@@ -22,6 +22,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.ContractField;
+import cn.cordys.crm.contract.domain.ContractFieldBlob;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
@@ -96,6 +97,8 @@ public class OpportunityQuotationService {
     private BaseMapper<OpportunityQuotationSnapshot> snapshotBaseMapper;
     @Resource
     private BaseMapper<ContractField> contractFieldMapper;
+    @Resource
+    private BaseMapper<ContractFieldBlob> contractFieldBlobMapper;
     @Resource
     private BaseMapper<OpportunityQuotationApproval> approvalBaseMapper;
     @Resource
@@ -316,7 +319,11 @@ public class OpportunityQuotationService {
         LambdaQueryWrapper<ContractField> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(ContractField::getFieldValue, id);
         List<ContractField> contractFieldList = contractFieldMapper.selectListByLambda(wrapper);
-        if (CollectionUtils.isNotEmpty(contractFieldList)) {
+        LambdaQueryWrapper<ContractFieldBlob> wrapperBlob = new LambdaQueryWrapper<>();
+        wrapperBlob.like(ContractFieldBlob::getFieldValue, id);
+        List<ContractFieldBlob> contractFieldBlobList = contractFieldBlobMapper.selectListByLambda(wrapperBlob);
+
+        if (CollectionUtils.isNotEmpty(contractFieldList) || CollectionUtils.isNotEmpty(contractFieldBlobList)) {
             throw new GenericException(Translator.get(key));
         }
     }
@@ -332,7 +339,7 @@ public class OpportunityQuotationService {
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
         List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).filter(status -> ApprovalState.APPROVED.toString().equals(status)).toList();
         String noticeKey = approvalStatusList.contains(request.getApprovalStatus()) ?
-                "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved";
+                Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved");
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(request.getId());
         if (oldOpportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
@@ -666,7 +673,7 @@ public class OpportunityQuotationService {
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
         list.forEach(
                 item -> sendNotice(Translator.get(Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
-                        "opportunity.quotation.status.approved" : "opportunity.quotation.status.unapproved"), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
+                        Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved")), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
         return BatchAffectSkipResponse.builder().success(list.size() - skipCount.get()).fail(0).skip(skipCount.get()).build();
     }
@@ -686,14 +693,14 @@ public class OpportunityQuotationService {
         wrapper.in(OpportunityQuotation::getId, ids);
         List<OpportunityQuotation> list = opportunityQuotationMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(list)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages("opportunity.quotation.not.exist").build();
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("opportunity.quotation.not.exist")).build();
         }
 
 
         // 校验商机报价单是否可以作废
         List<OpportunityQuotation> validateList = validateVoidQuotation(list);
         if (CollectionUtils.isEmpty(validateList)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).skip(0).errorMessages("opportunity.quotation.batch.no.voided").build();
+            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).skip(0).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
         }
 
         List<LogDTO> logs = new ArrayList<>();
@@ -749,11 +756,14 @@ public class OpportunityQuotationService {
     private List<OpportunityQuotation> validateVoidQuotation(List<OpportunityQuotation> list) {
         List<ContractField> contractFields = contractFieldMapper.selectAll(null);
 
+        List<ContractFieldBlob> contractFieldBlobs = contractFieldBlobMapper.selectAll(null);
         Set<String> existingIdSet = new HashSet<>();
         contractFields.forEach(cf ->
                 existingIdSet.addAll(extractIdsFromFieldValue(cf.getFieldValue()))
         );
-
+        contractFieldBlobs.forEach(cfb ->
+                existingIdSet.addAll(extractIdsFromFieldValue(cfb.getFieldValue()))
+        );
         return list.stream()
                 .filter(item -> !existingIdSet.contains(item.getId())).toList();
 
