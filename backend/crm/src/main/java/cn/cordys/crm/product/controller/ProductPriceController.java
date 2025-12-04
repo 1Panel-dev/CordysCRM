@@ -18,6 +18,7 @@ import cn.cordys.crm.product.dto.response.ProductPriceGetResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceExportService;
 import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -133,8 +134,8 @@ public class ProductPriceController {
 	@Operation(summary = "导出全部")
 	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
 		ConditionFilterUtils.parseCondition(request);
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
-				.headList(request.getHeadList()).orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
+				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
 				.locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
 		return priceExportService.exportAllWithMergeStrategy(exportParam);
 	}
@@ -143,8 +144,8 @@ public class ProductPriceController {
 	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
 	@Operation(summary = "导出选中")
 	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
-				.headList(request.getHeadList()).orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
+				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
 				.locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
 		return priceExportService.exportSelectWithMergeStrategy(exportParam);
 	}
