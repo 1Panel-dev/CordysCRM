@@ -19,7 +19,7 @@
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
       :disabled="props.fieldConfig.editable === false"
       :filter-params="getParams()"
-      @change="($event) => emit('change', $event)"
+      @change="($event, source) => emit('change', $event, source)"
     />
   </n-form-item>
 </template>
@@ -45,7 +45,7 @@
     isSubTableRender?: boolean; // 是否是子表渲染
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[]): void;
+    (e: 'change', value: (string | number)[], source: Record<string, any>[]): void;
   }>();
 
   const value = defineModel<(string | number)[]>('value', {
@@ -75,7 +75,7 @@
     (val) => {
       if (!props.needInitDetail) {
         value.value = val || value.value || [];
-        emit('change', value.value);
+        emit('change', value.value, props.fieldConfig.initialOptions || []);
       }
     },
     {

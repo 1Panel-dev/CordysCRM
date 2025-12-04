@@ -7,7 +7,8 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
-import { formatNumberValue } from '@lib/shared/method/formCreate';
+import { formatNumberValue, transformData } from '@lib/shared/method/formCreate';
+import type { CommonList } from '@lib/shared/models/common';
 import type { ModuleField } from '@lib/shared/models/customer';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 
@@ -24,7 +25,6 @@ import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/confi
 import { quotationStatusOptions } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
-import { hasAnyPermission } from '@/utils/permission';
 
 export type FormKey =
   | FormDesignKeyEnum.CUSTOMER
@@ -1205,102 +1205,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       hiddenRefresh: props.hiddenRefresh,
     },
     (item, originalData) => {
-      const businessFieldAttr: Record<string, any> = {};
-      const customFieldAttr: Record<string, any> = {};
-      businessFieldIds.value.forEach((fieldId) => {
-        const options = originalData?.optionMap?.[fieldId]?.map((e) => ({
-          ...e,
-          name: e.name || t('common.optionNotExist'),
-        }));
-        if (addressFieldIds.value.includes(fieldId)) {
-          // 地址类型字段，解析代码替换成省市区
-          const addressArr: string[] = item[fieldId]?.split('-') || [];
-          const value = addressArr.length
-            ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
-            : '-';
-          businessFieldAttr[fieldId] = value;
-        } else if (industryFieldIds.value.includes(fieldId)) {
-          // 行业类型字段，解析代码替换成行业名称
-          businessFieldAttr[fieldId] = item[fieldId] ? getIndustryPath(item[fieldId] as string) : '-';
-        } else if (options && options.length > 0) {
-          let name: string | string[] = '';
-          if (dataSourceFieldIds.value.includes(fieldId)) {
-            // 处理数据源字段，需要赋值为数组
-            if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
-              // 单选
-              name = [options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist')];
-            } else {
-              // 多选
-              name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
-                t('common.optionNotExist'),
-              ];
-            }
-          } else if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
-            // 若值是单个字符串/数字
-            name = options?.find((e) => e.id === item[fieldId])?.name;
-          } else {
-            // 若值是数组
-            name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
-              t('common.optionNotExist'),
-            ];
-            if (Array.isArray(name) && name.length === 0) {
-              name = [t('common.optionNotExist')];
-            }
-          }
-          businessFieldAttr[fieldId] = name || t('common.optionNotExist');
-          if (fieldId === 'owner') {
-            businessFieldAttr.ownerId = item.owner;
-          }
-        }
+      return transformData({
+        item,
+        originalData,
+        fields: fieldList.value,
       });
-      item.moduleFields?.forEach((field: ModuleField) => {
-        const options = originalData?.optionMap?.[field.fieldId]?.map((e) => ({
-          ...e,
-          name: e.name || t('common.optionNotExist'),
-        }));
-        if (addressFieldIds.value.includes(field.fieldId)) {
-          // 地址类型字段，解析代码替换成省市区
-          const addressArr = (field?.fieldValue as string).split('-') || [];
-          const value = addressArr.length
-            ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
-            : '-';
-          customFieldAttr[field.fieldId] = value;
-        } else if (industryFieldIds.value.includes(field.fieldId)) {
-          // 行业类型字段，解析代码替换成行业名称
-          customFieldAttr[field.fieldId] = field.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
-        } else if (options && options.length > 0) {
-          let name: string | string[] = '';
-          if (dataSourceFieldIds.value.includes(field.fieldId)) {
-            // 处理数据源字段，需要赋值为数组
-            if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
-              // 单选
-              name = [options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist')];
-            } else {
-              // 多选
-              name = options.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name);
-            }
-          } else if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
-            // 若值是单个字符串/数字
-            name = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
-          } else {
-            // 若值是数组
-            name = options.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name);
-            if (Array.isArray(name) && name.length === 0) {
-              name = [t('common.optionNotExist')];
-            }
-          }
-          customFieldAttr[field.fieldId] = name || [t('common.optionNotExist')];
-        } else {
-          // 其他类型字段，直接赋值
-          customFieldAttr[field.fieldId] = field.fieldValue;
-        }
-      });
-
-      return {
-        ...item,
-        ...customFieldAttr,
-        ...businessFieldAttr,
-      };
     }
   );
 
