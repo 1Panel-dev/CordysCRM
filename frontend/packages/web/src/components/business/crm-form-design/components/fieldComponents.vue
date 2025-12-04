@@ -101,9 +101,6 @@
     if (item.type === FieldTypeEnum.SUB_PRODUCT) {
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
     }
-    if (item.type === FieldTypeEnum.FORMULA) {
-      return props.fieldList.some((e) => e.type === FieldTypeEnum.FORMULA);
-    }
     return false;
   }
 
