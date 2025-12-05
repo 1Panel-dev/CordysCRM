@@ -33,6 +33,7 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -215,9 +216,9 @@ public abstract class BaseExportService {
 	 * @return 导出任务ID
 	 */
 	public String exportAllWithMergeStrategy(ExportDTO exportParam) {
-		List<List<String>> exportHeads = getHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
+		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
-		exportParam.setMergeHeads(getHeadTitle(exportHeads));
+		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
 		return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
 				mergeColumns, exportParam.getPageRequest(),
 				t -> getExportMergeData(task.getId(), exportParam)));
@@ -229,9 +230,9 @@ public abstract class BaseExportService {
 	 * @return 导出任务ID
 	 */
 	public String exportSelectWithMergeStrategy(ExportDTO exportParam) {
-		List<List<String>> exportHeads = getHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
+		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
-		exportParam.setMergeHeads(getHeadTitle(exportHeads));
+		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
 		return exportWithMergeStrategy(exportParam, (task) -> {
 			File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
 			try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
@@ -277,10 +278,13 @@ public abstract class BaseExportService {
 	 * @param currentOrg 当前组织
 	 * @return 表头信息
 	 */
-	private List<List<String>> getHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
+	private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
 		List<String> headKey = headList.stream().map(ExportHeadDTO::getTitle).toList();
-		List<List<String>> heads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getCustomImportHeads(formKey, currentOrg);
-		return heads.stream().filter(head -> headKey.contains(head.getFirst())).toList();
+		List<List<String>> allHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getCustomImportHeads(formKey, currentOrg);
+		List<List<String>> exportHeads = allHeads.stream().filter(head -> headKey.contains(head.getFirst())).collect(Collectors.toList());
+		List<String> systemHeads = headList.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getTitle).toList();
+		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).collect(Collectors.toList()));
+		return exportHeads;
 	}
 
 	/**
@@ -296,17 +300,21 @@ public abstract class BaseExportService {
 		heads.forEach(head -> {
 			BaseField field = fieldConfigMap.get(head);
 			if (field == null) {
+				if (sysFieldValMap.containsKey(head)) {
+					// 系统固定字段
+					dataList.add(sysFieldValMap.get(head));
+				}
 				return;
 			}
-			if (sysFieldValMap.containsKey(field.getBusinessKey())) {
+			if (sysFieldValMap.containsKey(field.getBusinessKey()) && StringUtils.isEmpty(field.getResourceFieldId())) {
 				//固定字段
 				dataList.add(sysFieldValMap.get(field.getBusinessKey()));
 			} else if (moduleFieldMap.containsKey(field.getBusinessKey())) {
+				// 子表业务字段
 				Object value = moduleFieldMap.get(field.getBusinessKey());
 				dataList.add(transformFieldValue(field, value));
 			} else if (moduleFieldMap.containsKey(field.getId())) {
 				Object value = moduleFieldMap.get(field.getId());
-				// 子表业务字段
 				dataList.add(transformFieldValue(field, value));
 			} else {
 				dataList.add(null);
@@ -572,23 +580,25 @@ public abstract class BaseExportService {
 		ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class)).getBusinessFormConfig(formKey, currentOrg);
 		List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFields(formConfig);
 		String subId = flattenFields.stream().filter(f -> f instanceof SubField).map(BaseField::getId).toList().getFirst();
-		Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getName, field -> field));
+		Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 		return ExportFieldParam.builder().subId(subId).fieldConfigMap(fieldConfigMap)
 				.formConfig(formConfig)
 				.build();
 	}
 
 	/**
-	 * 获取表头标题
-	 * @param heads 表头信息
-	 * @return 表头标题列表
+	 * 获取表头ID集合
+	 * @param exportHeads 表头信息
+	 * @param currentOrg 当前组织
+	 * @param formKey 表单Key
+	 * @return 表头ID集合
 	 */
-	private List<String> getHeadTitle(List<List<String>> heads) {
-		List<String> headTitles = new ArrayList<>();
-		for (List<String> headCols : heads) {
-			headTitles.add(headCols.size() > 1 ? headCols.get(1) : headCols.get(0));
-		}
-		return headTitles;
+	private List<String> getMergeHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
+		List<String> exportKeys = exportHeads.stream().map(ExportHeadDTO::getKey).toList();
+		List<String> exportMergeHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportKeys);
+		List<String> systemKeys = exportHeads.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getKey).toList();
+		exportMergeHeads.addAll(systemKeys);
+		return exportMergeHeads;
 	}
 
 	/**
