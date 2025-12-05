@@ -56,7 +56,7 @@ public class OpportunityQuotationController {
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(@Validated @RequestBody OpportunityQuotationPageRequest request) {
         ConditionFilterUtils.parseCondition(request);
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_QUOTATION_READ);
         return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission);
     }
 

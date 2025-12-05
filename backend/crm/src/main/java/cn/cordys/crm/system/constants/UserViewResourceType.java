@@ -2,7 +2,7 @@ package cn.cordys.crm.system.constants;
 
 public enum UserViewResourceType {
     OPPORTUNITY,
-    QUOTATION,
+    OPPORTUNITY_QUOTATION,
     CUSTOMER,
     CUSTOMER_CONTACT,
     CLUE,

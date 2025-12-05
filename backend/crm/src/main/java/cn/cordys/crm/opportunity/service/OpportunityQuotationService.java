@@ -638,7 +638,7 @@ public class OpportunityQuotationService {
         List<String> approvingIds = new ArrayList<>();
         AtomicInteger skipCount = new AtomicInteger(0);
         list.stream().filter(item -> {
-            if (Strings.CI.equals(item.getApprovalStatus(), ApprovalState.APPROVED.toString())) {
+            if (!Strings.CI.equals(item.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
                 skipCount.getAndIncrement();
                 return false;
             }
@@ -656,11 +656,9 @@ public class OpportunityQuotationService {
             log.setOriginalValue(item.getApprovalStatus());
             log.setModifiedValue(approvalStatus);
             logs.add(log);
-
-
+            batchUpdateMapper.updateApprovalStatus(item.getId(), approvalStatus, userId, System.currentTimeMillis());
         });
-        batchUpdateMapper.batchUpdateApprovalStatus(approvingIds, approvalStatus, userId, System.currentTimeMillis());
-        logService.batchAdd(logs);
+
         //批量修改报价单快照
         List<OpportunityQuotationSnapshot> opportunityQuotationSnapshots = snapshotBaseMapper.selectByIds(approvingIds);
         for (OpportunityQuotationSnapshot snapshot : opportunityQuotationSnapshots) {
@@ -672,6 +670,7 @@ public class OpportunityQuotationService {
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+        logService.batchAdd(logs);
         list.forEach(
                 item -> sendNotice(Translator.get(Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
                         Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved")), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
@@ -735,10 +734,10 @@ public class OpportunityQuotationService {
         if (CollectionUtils.isNotEmpty(successIds)) {
             SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
             ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
-            batchUpdateMapper.batchUpdateApprovalStatus(successIds, LogType.VOIDED, userId, System.currentTimeMillis());
-            logService.batchAdd(logs);
+            successIds.forEach(id -> batchUpdateMapper.updateApprovalStatus(id, LogType.VOIDED, userId, System.currentTimeMillis()));
             sqlSession.flushStatements();
             SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+            logService.batchAdd(logs);
             successList.forEach(
                     item -> sendNotice(Translator.get("opportunity.quotation.status.voided"), item, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
             );

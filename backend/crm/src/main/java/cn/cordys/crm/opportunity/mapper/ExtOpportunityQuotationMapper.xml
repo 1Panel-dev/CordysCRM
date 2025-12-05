@@ -3,15 +3,13 @@
 
 <mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper">
 
-    <update id="batchUpdateApprovalStatus">
+    <update id="updateApprovalStatus">
         update opportunity_quotation
         set approval_status = #{approvalStatus},
-        update_user = #{userId},
-        update_time = #{updateTime}
-        where id in
-        <foreach collection="approvingIds" item="id" index="index" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+            update_user     = #{userId},
+            update_time     = #{updateTime}
+        where id = #{approvingId}
+
     </update>
 
 
@@ -49,6 +47,15 @@
             </if>
             )
         </if>
+        <include refid="departmentConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="departmentConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+
         where oq.organization_id = #{orgId}
 
         <if test="dataPermission != null and dataPermission.self">
@@ -85,6 +92,8 @@
                 and condition.name != 'approvalStatus'
                 and condition.name != 'amount'
                 and condition.name != 'opportunityId'
+                and condition.name != 'departmentId'
+                and condition.name != 'owner'
                 and condition.name != 'updateUser'
                 and condition.name != 'createTime'
                 and condition.name != 'updateTime'
@@ -115,6 +124,16 @@
             left join opportunity_quotation_field sort_table
             on oq.id = sort_table.resource_id and sort_table.field_id = #{sortName}
             left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+    </sql>
+
+    <sql id="departmentConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user on oq.create_user = sys_organization_user.user_id
+                </if>
+            </foreach>
         </if>
     </sql>
 
@@ -203,6 +222,18 @@
                     <property name="column" value="o.id"/>
                 </include>
             </when>
+            <when test="condition.name == 'departmentId'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="sys_organization_user.department_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'owner'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.create_user"/>
+                </include>
+            </when>
             <when test="condition.name == 'createUser'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
@@ -213,6 +244,18 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="oq.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.update_time"/>
                 </include>
             </when>
             <otherwise>
