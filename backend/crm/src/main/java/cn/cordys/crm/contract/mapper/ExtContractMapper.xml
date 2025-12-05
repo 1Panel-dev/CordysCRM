@@ -130,7 +130,7 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
-                {'name', 'owner', 'createTime', 'updateTime', 'archivedStatus', 'customerId', 'createUser', 'updateUser', 'status', 'amount'}">
+                {'name', 'owner', 'createTime', 'updateTime', 'archivedStatus', 'customerId', 'createUser', 'updateUser', 'status', 'amount', 'approvalStatus'}">
                     <if test="condition.multipleValue">
                         inner join contract_field_blob ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -206,6 +206,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="ct.status"/>
+                </include>
+            </when>
+            <when test="condition.name == 'approvalStatus'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="ct.approval_status"/>
                 </include>
             </when>
             <when test="condition.name == 'departmentId'">
