@@ -36,7 +36,6 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
-import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -867,16 +866,17 @@ public class OpportunityQuotationService {
         return Optional.ofNullable(opportunityQuotation).map(OpportunityQuotation::getName).orElse(null);
     }
 
-	/**
-	 * 通过名称获取报价单集合
-	 * @param names 名称集合
-	 * @return 报价单集合
-	 */
-	public List<OpportunityQuotation> getQuotationListByNames(List<String> names) {
-		LambdaQueryWrapper<OpportunityQuotation> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-		lambdaQueryWrapper.in(OpportunityQuotation::getName, names);
-		return opportunityQuotationMapper.selectListByLambda(lambdaQueryWrapper);
-	}
+    /**
+     * 通过名称获取报价单集合
+     *
+     * @param names 名称集合
+     * @return 报价单集合
+     */
+    public List<OpportunityQuotation> getQuotationListByNames(List<String> names) {
+        LambdaQueryWrapper<OpportunityQuotation> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(OpportunityQuotation::getName, names);
+        return opportunityQuotationMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 
     public String getQuotationNameByIds(List<String> ids) {
         List<OpportunityQuotation> opportunityQuotations = opportunityQuotationMapper.selectByIds(ids);
@@ -885,5 +885,13 @@ public class OpportunityQuotationService {
             return String.join(",", names);
         }
         return StringUtils.EMPTY;
+    }
+
+    public void download(String id, String userId, String organizationId) {
+        OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
+        if (opportunityQuotation == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
+        }
+        saveSateChangeLog(organizationId, null, userId, LogType.DOWNLOAD, opportunityQuotation);
     }
 }
