@@ -136,6 +136,7 @@
             v-model:value="fieldConfig.dataSourceType"
             :options="dataSourceOptions"
             :disabled="fieldConfig.disabledProps?.includes('dataSourceType') || !!fieldConfig.resourceFieldId"
+            @update-value="() => handleClearDataSourceDisplayField()"
           />
         </div>
         <div class="crm-form-design-config-item">
@@ -1521,6 +1522,8 @@
       parentField.value.subFields = parentField.value?.subFields?.filter(
         (item) => item.resourceFieldId !== fieldConfig.value.id
       );
+    } else {
+      list.value = list.value.filter((item) => item.resourceFieldId !== fieldConfig.value.id);
     }
   }
 
