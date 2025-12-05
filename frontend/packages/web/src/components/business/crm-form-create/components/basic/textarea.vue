@@ -16,7 +16,7 @@
       v-model:value="value"
       :maxlength="3000"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :rows="props.isSubTableField ? 1 : undefined"
       type="textarea"
       clearable

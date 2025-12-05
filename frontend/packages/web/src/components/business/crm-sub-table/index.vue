@@ -43,6 +43,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     readonly?: boolean;
     optionMap?: Record<string, any[]>;
+    disabled?: boolean;
   }>();
 
   const { t } = useI18n();
@@ -163,6 +164,7 @@
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
+              disabled: props.disabled,
               disabledSelection: (r: Record<string, any>) => {
                 if (key === 'product') {
                   // 产品列不允许重复选择
@@ -225,6 +227,7 @@
               fieldConfig: field,
               path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
+              disabled: props.disabled,
               needInitDetail: props.needInitDetail,
               onChange: (val: any) => {
                 row[key] = val;
@@ -247,6 +250,7 @@
               fieldConfig: field,
               path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
+              disabled: props.disabled,
               needInitDetail: props.needInitDetail,
               onChange: (val: any) => {
                 row[key] = val;
@@ -268,6 +272,7 @@
             fieldConfig: field,
             path: `${props.parentId}[${rowIndex}].${key}`,
             isSubTableRender: true,
+            disabled: props.disabled,
             needInitDetail: props.needInitDetail,
             onChange: (val: any) => {
               row[key] = val;

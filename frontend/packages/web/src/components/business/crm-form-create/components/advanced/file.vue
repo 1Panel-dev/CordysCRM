@@ -16,7 +16,7 @@
       :max="props.fieldConfig.onlyOne ? 1 : 10"
       :accept="props.fieldConfig.accept || '*/*'"
       :custom-request="customRequest"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       list-type="image"
       multiple
       directory-dnd

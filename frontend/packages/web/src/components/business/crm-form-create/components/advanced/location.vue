@@ -15,7 +15,7 @@
     <CrmCitySelect
       v-model:value="city"
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectLocation')"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :range="props.fieldConfig.locationType"
       clearable
       @change="handleCityAndDetailChange"
@@ -25,7 +25,7 @@
       v-model:value="detail"
       :maxlength="200"
       :placeholder="t('crmFormCreate.advanced.inputLocationDetail')"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       type="textarea"
       clearable
       class="mt-[4px]"

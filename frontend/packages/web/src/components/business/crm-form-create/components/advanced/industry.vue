@@ -15,7 +15,7 @@
     <CrmIndustrySelect
       v-model:value="value"
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectIndustry')"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :range="props.fieldConfig.locationType"
       clearable
       @change="emit('change', $event)"

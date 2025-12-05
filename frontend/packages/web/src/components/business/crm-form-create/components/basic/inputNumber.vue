@@ -17,7 +17,7 @@
       :max="1000000000"
       :min="props.fieldConfig.min"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :parse="parse"
       :format="format"
       :precision="props.fieldConfig.precision"

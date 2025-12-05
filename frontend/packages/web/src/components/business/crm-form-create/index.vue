@@ -16,7 +16,7 @@
             :style="{ width: item.type === FieldTypeEnum.ATTACHMENT ? '100%' : `${item.fieldWidth * 100}%` }"
           >
             <component
-              :is="getItemComponent(item.type)"
+              :is="getItemComponent(item)"
               :id="item.id"
               v-model:value="formDetail[item.id]"
               :field-config="item"
@@ -124,68 +124,68 @@
     linkScenario,
   });
 
-  function getItemComponent(type: FieldTypeEnum) {
-    if (type === FieldTypeEnum.INPUT) {
+  function getItemComponent(item: FormCreateField) {
+    if (item.type === FieldTypeEnum.INPUT || item.resourceFieldId) {
       return CrmFormCreateComponents.basicComponents.singleText;
     }
-    if (type === FieldTypeEnum.TEXTAREA) {
+    if (item.type === FieldTypeEnum.TEXTAREA) {
       return CrmFormCreateComponents.basicComponents.textarea;
     }
-    if (type === FieldTypeEnum.INPUT_NUMBER) {
+    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
       return CrmFormCreateComponents.basicComponents.inputNumber;
     }
-    if (type === FieldTypeEnum.DATE_TIME) {
+    if (item.type === FieldTypeEnum.DATE_TIME) {
       return CrmFormCreateComponents.basicComponents.dateTime;
     }
-    if (type === FieldTypeEnum.RADIO) {
+    if (item.type === FieldTypeEnum.RADIO) {
       return CrmFormCreateComponents.basicComponents.radio;
     }
-    if (type === FieldTypeEnum.CHECKBOX) {
+    if (item.type === FieldTypeEnum.CHECKBOX) {
       return CrmFormCreateComponents.basicComponents.checkbox;
     }
-    if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
+    if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type)) {
       return CrmFormCreateComponents.basicComponents.select;
     }
-    if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(type)) {
+    if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
     }
-    if ([FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(type)) {
+    if ([FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type)) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
     }
-    if (type === FieldTypeEnum.DIVIDER) {
+    if (item.type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }
-    if (type === FieldTypeEnum.INPUT_MULTIPLE) {
+    if (item.type === FieldTypeEnum.INPUT_MULTIPLE) {
       return CrmFormCreateComponents.basicComponents.tagInput;
     }
-    if (type === FieldTypeEnum.PICTURE) {
+    if (item.type === FieldTypeEnum.PICTURE) {
       return CrmFormCreateComponents.advancedComponents.upload;
     }
-    if (type === FieldTypeEnum.LOCATION) {
+    if (item.type === FieldTypeEnum.LOCATION) {
       return CrmFormCreateComponents.advancedComponents.location;
     }
-    if (type === FieldTypeEnum.PHONE) {
+    if (item.type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }
-    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
     }
-    if (type === FieldTypeEnum.SERIAL_NUMBER) {
+    if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
       return CrmFormCreateComponents.advancedComponents.serialNumber;
     }
-    if (type === FieldTypeEnum.LINK) {
+    if (item.type === FieldTypeEnum.LINK) {
       return CrmFormCreateComponents.advancedComponents.link;
     }
-    if (type === FieldTypeEnum.ATTACHMENT) {
+    if (item.type === FieldTypeEnum.ATTACHMENT) {
       return CrmFormCreateComponents.advancedComponents.file;
     }
-    if (type === FieldTypeEnum.INDUSTRY) {
+    if (item.type === FieldTypeEnum.INDUSTRY) {
       return CrmFormCreateComponents.advancedComponents.industry;
     }
-    if (type === FieldTypeEnum.FORMULA) {
+    if (item.type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
     }
-    if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(type)) {
+    if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
       return CrmFormCreateComponents.advancedComponents.dataTable;
     }
   }
@@ -237,7 +237,7 @@
       // 数据源显示字段联动
       const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);
       showFields.forEach((field) => {
-        formDetail.value[field.id] = source.find((s) => s.id === value)?.[field.businessKey || field.id];
+        formDetail.value[field.id] = source.find((s) => s.id === value[0])?.[field.businessKey || field.id];
       });
     }
     unsaved.value = true;

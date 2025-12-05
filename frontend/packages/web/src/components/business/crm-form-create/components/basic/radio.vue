@@ -12,7 +12,10 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
-    <n-radio-group v-model:value="value" :disabled="props.fieldConfig.editable === false">
+    <n-radio-group
+      v-model:value="value"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+    >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
           {{ item.label }}

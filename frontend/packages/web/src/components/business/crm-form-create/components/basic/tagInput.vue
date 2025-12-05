@@ -21,7 +21,7 @@
       :placeholder="props.fieldConfig.placeholder || t('common.tagsInputPlaceholder')"
       :show-arrow="false"
       :show="false"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :input-props="{
         maxlength: 64,
       }"

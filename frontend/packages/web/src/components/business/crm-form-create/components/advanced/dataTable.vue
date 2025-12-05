@@ -14,6 +14,7 @@
       :form-detail="props.formDetail"
       :fixed-column="props.fieldConfig.fixedColumn"
       :sumColumns="props.fieldConfig.sumColumns"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
     />
   </n-form-item>
 </template>
