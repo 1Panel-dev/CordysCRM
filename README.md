@@ -94,7 +94,13 @@ docker run -d \
 - [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布，代码正式开源
 - [x] 2025.11.05：[v1.3.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.1) 发布
 - [x] 2025.11.14：[v1.3.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.2) 发布
-- [ ] 2025.12：合同模块发布（包括合同、发票和回款等）
+- [x] 2025.11.21：[v1.3.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.3) 发布
+- [x] 2025.11.28：[v1.3.4](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.4) 发布
+- [x] 2025.12.04：[v1.3.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.5) 发布
+- [ ] 2025.12：标讯（大单网集成）模块上线
+- [ ] 2025.12：报价和合同模块上线
+- [ ] 2026：发票和回款等功能上线
+
 
 ## 技术栈
 
