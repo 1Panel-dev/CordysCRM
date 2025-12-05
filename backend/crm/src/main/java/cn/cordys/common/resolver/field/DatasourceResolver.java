@@ -8,9 +8,11 @@ import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.FieldSourceType;
@@ -54,23 +56,23 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
             return StringUtils.EMPTY;
         }
 
-        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CUSTOMER")) {
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CUSTOMER.name())) {
             return Objects.requireNonNull(customerService).getCustomerName(value);
         }
 
-        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CONTACT")) {
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTACT.name())) {
             return Objects.requireNonNull(contactService).getContactName(value);
         }
 
-        if (Strings.CI.equals(datasourceField.getDataSourceType(), "OPPORTUNITY")) {
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.OPPORTUNITY.name())) {
             return Objects.requireNonNull(opportunityService).getOpportunityName(value);
         }
 
-        if (Strings.CI.equals(datasourceField.getDataSourceType(), "CLUE")) {
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CLUE.name())) {
             return Objects.requireNonNull(clueService).getClueName(value);
         }
 
-        if (Strings.CI.equals(datasourceField.getDataSourceType(), "PRODUCT")) {
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
             return Objects.requireNonNull(productService).getProductName(value);
         }
 
@@ -90,26 +92,34 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         if (StringUtils.isBlank(text)) {
             return StringUtils.EMPTY;
         }
-        if (Strings.CI.equals(field.getDataSourceType(), "CUSTOMER")) {
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CUSTOMER.name())) {
             List<Customer> customerList = Objects.requireNonNull(customerService).getCustomerListByNames(List.of(text));
             return CollectionUtils.isEmpty(customerList) ? text : customerList.getFirst().getId();
         }
-        if (Strings.CI.equals(field.getDataSourceType(), "OPPORTUNITY")) {
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.OPPORTUNITY.name())) {
             List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService).getOpportunityListByNames(List.of(text));
             return CollectionUtils.isEmpty(opportunityList) ? text : opportunityList.getFirst().getId();
         }
-        if (Strings.CI.equals(field.getDataSourceType(), "CLUE")) {
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CLUE.name())) {
             List<Clue> clueList = Objects.requireNonNull(clueService).getClueListByNames(List.of(text));
             return CollectionUtils.isEmpty(clueList) ? text : clueList.getFirst().getId();
         }
-        if (Strings.CI.equals(field.getDataSourceType(), "CONTACT")) {
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTACT.name())) {
             List<CustomerContact> contactList = Objects.requireNonNull(contactService).getContactListByNames(List.of(text));
             return CollectionUtils.isEmpty(contactList) ? text : contactList.getFirst().getId();
         }
-        if (Strings.CI.equals(field.getDataSourceType(), "PRODUCT")) {
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
             List<Product> productList = Objects.requireNonNull(productService).getProductListByNames(List.of(text));
             return CollectionUtils.isEmpty(productList) ? text : productList.getFirst().getId();
         }
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRICE.name())) {
+			List<ProductPrice> productPrices = Objects.requireNonNull(productPriceService).getProductPriceListByNames(List.of(text));
+			return CollectionUtils.isEmpty(productPrices) ? text : productPrices.getFirst().getId();
+		}
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
+			List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(List.of(text));
+			return CollectionUtils.isEmpty(quotations) ? text : quotations.getFirst().getId();
+		}
         return text;
     }
 }
