@@ -337,7 +337,8 @@
             "id": "OPPORTUNITY_QUOTATION:DELETE"
           },
           {
-            "id": "OPPORTUNITY_QUOTATION:EXPORT"
+            "id": "OPPORTUNITY_QUOTATION:DOWNLOAD",
+            "name": "permission.opportunity_management.opportunity_quotation.download"
           },
           {
             "id": "OPPORTUNITY_QUOTATION:APPROVAL"
