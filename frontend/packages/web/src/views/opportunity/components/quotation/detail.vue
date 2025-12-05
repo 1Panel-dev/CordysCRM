@@ -10,6 +10,7 @@
         <n-button
           v-for="item of buttonList"
           :key="item.key"
+          v-permission="item.permission"
           :type="item.danger ? 'error' : 'primary'"
           ghost
           :class="`n-btn-outline-${item.danger ? 'error' : 'primary'}`"
@@ -127,7 +128,7 @@
     {
       label: t('common.download'),
       key: 'download',
-      permission: ['OPPORTUNITY_QUOTATION:EXPORT'],
+      permission: ['OPPORTUNITY_QUOTATION:DOWNLOAD'],
     },
   ];
 
@@ -144,7 +145,7 @@
     {
       label: t('common.voided'),
       key: 'voided',
-      permission: ['OPPORTU NITY_QUOTATION:VOIDED'],
+      permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
     },
     {
       label: t('common.revoke'),

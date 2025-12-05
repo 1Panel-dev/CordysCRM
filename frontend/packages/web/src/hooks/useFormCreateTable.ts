@@ -1108,7 +1108,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
+              render: (row: any) => row[field.businessKey || field.id] ?? '-',
               sortOrder: false,
               sorter,
               filedType: field.type,
