@@ -1,11 +1,8 @@
 package cn.cordys.common.service;
 
-import cn.cordys.aspectj.constants.GlobalSearchModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.crm.search.service.advanced.*;
-import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
@@ -24,6 +21,7 @@ import cn.cordys.common.util.*;
 import cn.cordys.common.utils.IndustryUtils;
 import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.DatasourceField;
@@ -44,7 +42,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -727,6 +724,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 			}
 			FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
 			Object detail = SourceServiceFactory.getById(sourceType, rf.getFieldValue().toString());
+			if (detail == null) {
+				return;
+			}
 			sourceDetailMap.put(rf.getFieldValue().toString(), mapper.convertValue(detail, Map.class));
 		});
 		return sourceDetailMap;
