@@ -60,7 +60,7 @@ export interface FormCreateTableProps {
   specialRender?: Record<string, (row: any) => void>;
   showPagination?: boolean;
   excludeFieldIds?: string[]; // 规避某些字段的文字替换
-  permission?: string[];
+  permission?: string[]; // 表格勾选的权限
   readonly?: boolean;
   radio?: boolean; // 是否单选
   containerClass: string; // 容器元素类名

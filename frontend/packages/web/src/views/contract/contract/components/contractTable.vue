@@ -500,7 +500,7 @@
           status: row.approvalStatus,
         }),
     },
-    permission: ['CONTRACT:ARCHIVE', 'CONTRACT:UPDATE', 'CONTRACT:VOIDED', 'CONTRACT:DELETE'],
+    permission: ['CONTRACT:EXPORT', 'CONTRACT:APPROVAL'],
     containerClass: '.crm-contract-table',
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
