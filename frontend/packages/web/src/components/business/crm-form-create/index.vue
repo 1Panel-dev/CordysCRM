@@ -19,7 +19,7 @@
               :is="getItemComponent(item)"
               :id="item.id"
               v-model:value="formDetail[item.id]"
-              :field-config="item"
+              :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
               :form-detail="formDetail"
               :origin-form-detail="originFormDetail"
               :path="item.id"
@@ -211,6 +211,14 @@
     }
   }
 
+  const specialBusinessKeyMap: Record<string, string> = {
+    customerId: 'customerName',
+    contactId: 'contactName',
+    clueId: 'clueName',
+    businessId: 'businessName',
+    contractId: 'contractName',
+    owner: 'ownerName',
+  };
   function handleFieldChange(value: any, source: Record<string, any>[], item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
@@ -237,7 +245,11 @@
       // 数据源显示字段联动
       const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);
       showFields.forEach((field) => {
-        formDetail.value[field.id] = source.find((s) => s.id === value[0])?.[field.businessKey || field.id];
+        const target = source.find((s) => s.id === value[0]);
+        formDetail.value[field.id] =
+          field.businessKey && specialBusinessKeyMap[field.businessKey]
+            ? target?.[specialBusinessKeyMap[field.businessKey]]
+            : target?.[field.businessKey || field.id];
       });
     }
     unsaved.value = true;

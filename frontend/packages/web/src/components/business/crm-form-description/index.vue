@@ -106,26 +106,36 @@
         </div>
       </template>
       <template #[FieldTypeEnum.SUB_PRICE]="{ item }">
-        <CrmSubTable
-          :parent-id="item.key || ''"
-          :value="item.value as Record<string, any>[] || []"
-          :sub-fields="item.fieldInfo.subFields"
-          :fixed-column="item.fieldInfo.fixedColumn"
-          :sum-columns="item.fieldInfo.sumColumns"
-          :optionMap="item.optionMap"
-          readonly
-        />
+        <div class="field-line flex w-full flex-wrap items-center">
+          <div class="w-full text-[var(--text-n2)]">
+            {{ item.label }}
+          </div>
+          <CrmSubTable
+            :parent-id="item.key || ''"
+            :value="item.value as Record<string, any>[] || []"
+            :sub-fields="item.fieldInfo.subFields"
+            :fixed-column="item.fieldInfo.fixedColumn"
+            :sum-columns="item.fieldInfo.sumColumns"
+            :optionMap="item.optionMap"
+            readonly
+          />
+        </div>
       </template>
       <template #[FieldTypeEnum.SUB_PRODUCT]="{ item }">
-        <CrmSubTable
-          :parent-id="item.key || ''"
-          :value="item.value as Record<string, any>[] || []"
-          :sub-fields="item.fieldInfo.subFields"
-          :fixed-column="item.fieldInfo.fixedColumn"
-          :sum-columns="item.fieldInfo.sumColumns"
-          :optionMap="item.optionMap"
-          readonly
-        />
+        <div class="field-line flex w-full flex-wrap items-center">
+          <div class="w-full text-[var(--text-n2)]">
+            {{ item.label }}
+          </div>
+          <CrmSubTable
+            :parent-id="item.key || ''"
+            :value="item.value as Record<string, any>[] || []"
+            :sub-fields="item.fieldInfo.subFields"
+            :fixed-column="item.fieldInfo.fixedColumn"
+            :sum-columns="item.fieldInfo.sumColumns"
+            :optionMap="item.optionMap"
+            readonly
+          />
+        </div>
       </template>
     </CrmDescription>
   </n-spin>
