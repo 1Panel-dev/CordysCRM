@@ -1229,6 +1229,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         item,
         originalData,
         fields: fieldList.value,
+        excludeFieldIds: props.excludeFieldIds,
       });
     }
   );

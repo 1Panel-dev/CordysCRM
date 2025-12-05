@@ -95,10 +95,12 @@ export function transformData({
   item,
   fields,
   originalData,
+  excludeFieldIds,
 }: {
   fields: FormCreateField[];
   item: any;
   originalData?: CommonList<any>;
+  excludeFieldIds?: string[];
 }) {
   const { t } = useI18n();
   const businessFieldAttr: Record<string, any> = {};
@@ -153,7 +155,9 @@ export function transformData({
             name = [t('common.optionNotExist')];
           }
         }
-        businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+        if (!excludeFieldIds?.includes(field.businessKey)) {
+          businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+        }
         if (fieldId === 'owner') {
           businessFieldAttr.ownerId = item.owner;
         }
