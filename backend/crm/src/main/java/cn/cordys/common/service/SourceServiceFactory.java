@@ -1,6 +1,7 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
@@ -45,13 +46,15 @@ public class SourceServiceFactory {
 	 */
 	public static Object getById(FieldSourceType type, Object id) {
 		Object service = getService(type);
-		if (service == null) {
-			throw new IllegalArgumentException("没有可用的数据源类型: " + type);
+		if (service == null || !(id instanceof String)) {
+			LogUtils.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
+			return null;
 		}
 		try {
-			return service.getClass().getMethod("get", String.class).invoke(service, id);
+			return service.getClass().getMethod("get", String.class).invoke(service, id.toString());
 		} catch (Exception e) {
-			throw new RuntimeException("获取数据源详情异常: " + type, e);
+			LogUtils.error("获取数据源详情异常, {}", e);
+			return null;
 		}
 	}
 }
