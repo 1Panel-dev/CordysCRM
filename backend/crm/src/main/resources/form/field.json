@@ -1012,7 +1012,7 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "currency",
+          "numberFormat": "number",
           "decimalPlaces": true,
           "precision": 2,
           "showThousandsSeparator": true,
@@ -1177,7 +1177,7 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "currency",
+          "numberFormat": "number",
           "decimalPlaces": true,
           "precision": 2,
           "showThousandsSeparator": true
@@ -1360,7 +1360,7 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "currency",
+          "numberFormat": "number",
           "decimalPlaces": true,
           "precision": 2,
           "showThousandsSeparator": true,
@@ -1377,7 +1377,7 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
-          "numberFormat": "currency"
+          "numberFormat": "number"
         }
       ]
     },
