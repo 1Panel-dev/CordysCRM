@@ -146,5 +146,12 @@ public class OpportunityQuotationController {
         return opportunityQuotationService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping("/download/{id}")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_DOWNLOAD)
+    @Operation(summary = "下载报价单日志记录")
+    public void download(@PathVariable("id") String id) {
+        opportunityQuotationService.download(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
 
 }

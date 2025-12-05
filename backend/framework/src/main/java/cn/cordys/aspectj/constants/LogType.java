@@ -88,6 +88,11 @@ public final class LogType {
     public static final String ARCHIVED = "ARCHIVED";
 
 
+    /**
+     * 下载
+     */
+    public static final String DOWNLOAD = "DOWNLOAD";
+
     private LogType() {
         // 私有构造函数防止实例化
     }
