@@ -14,29 +14,32 @@
       </CrmCard>
 
       <CrmCard hide-footer :special-height="64" noContentBottomPadding>
-        <CrmFormDescription
-          v-if="activeTab === 'contract'"
-          :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
-          :source-id="props.sourceId"
-          :column="2"
-          :refresh-key="refreshKey"
-          label-width="auto"
-          value-align="start"
-          tooltip-position="top-start"
-          @openCustomerDetail="emit('showCustomerDrawer', detailInfo)"
-          @init="handleInit"
-        />
-        <PaymentTable
-          v-else
-          :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
-          :sourceId="props.sourceId"
-          :sourceName="title"
-          isContractTab
-          :readonly="
-            detailInfo?.status === ContractStatusEnum.VOID ||
-            detailInfo.approvalStatus === QuotationStatusEnum.APPROVING
-          "
-        />
+        <!-- 需要用到 detailInfo 所以这里不用 v-if -->
+        <div v-show="activeTab === 'contract'">
+          <CrmFormDescription
+            :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
+            :source-id="props.sourceId"
+            :column="2"
+            :refresh-key="refreshKey"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            @openCustomerDetail="emit('showCustomerDrawer', detailInfo)"
+            @init="handleInit"
+          />
+        </div>
+        <template v-if="activeTab !== 'contract'">
+          <PaymentTable
+            :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
+            :sourceId="props.sourceId"
+            :sourceName="title"
+            isContractTab
+            :readonly="
+              detailInfo?.status === ContractStatusEnum.VOID ||
+              detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
+            "
+          />
+        </template>
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
