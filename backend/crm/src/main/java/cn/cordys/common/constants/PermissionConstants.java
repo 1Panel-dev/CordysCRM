@@ -174,7 +174,7 @@ public class PermissionConstants {
     public static final String OPPORTUNITY_QUOTATION_ADD = "OPPORTUNITY_QUOTATION:ADD";
     public static final String OPPORTUNITY_QUOTATION_UPDATE = "OPPORTUNITY_QUOTATION:UPDATE";
     public static final String OPPORTUNITY_QUOTATION_DELETE = "OPPORTUNITY_QUOTATION:DELETE";
-    public static final String OPPORTUNITY_QUOTATION_EXPORT = "OPPORTUNITY_QUOTATION:EXPORT";
+    public static final String OPPORTUNITY_QUOTATION_DOWNLOAD = "OPPORTUNITY_QUOTATION:DOWNLOAD";
     public static final String OPPORTUNITY_QUOTATION_VOIDED = "OPPORTUNITY_QUOTATION:VOIDED";
     public static final String OPPORTUNITY_QUOTATION_APPROVAL = "OPPORTUNITY_QUOTATION:APPROVAL";
 
@@ -198,7 +198,6 @@ public class PermissionConstants {
     public static final String CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_PAYMENT_PLAN:UPDATE";
     public static final String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN:DELETE";
     /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
-
 
 
     /*------ start: TENDER ------*/
