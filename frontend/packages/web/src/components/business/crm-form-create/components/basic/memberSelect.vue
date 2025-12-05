@@ -17,7 +17,7 @@
       :multiple="[FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :member-types="memberTypes"
       :disabled-node-types="
         [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)

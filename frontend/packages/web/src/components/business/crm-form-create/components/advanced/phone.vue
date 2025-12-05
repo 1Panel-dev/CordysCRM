@@ -16,7 +16,7 @@
       v-model:value="value"
       :maxlength="30"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :allow-input="onlyAllowNumber"
       clearable
       @update-value="($event) => emit('change', $event)"

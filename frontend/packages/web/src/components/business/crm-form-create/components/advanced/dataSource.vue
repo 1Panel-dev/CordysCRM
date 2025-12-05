@@ -17,7 +17,7 @@
       :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :filter-params="getParams()"
       :disabled-selection="props.disabledSelection"
       @change="($event, source) => emit('change', $event, source)"

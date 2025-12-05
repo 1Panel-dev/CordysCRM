@@ -17,7 +17,7 @@
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
       :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
       :custom-request="customRequest"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       multiple
       directory-dnd
       @before-upload="beforeUpload"

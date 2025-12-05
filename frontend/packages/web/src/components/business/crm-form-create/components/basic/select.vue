@@ -14,7 +14,7 @@
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-select
       v-model:value="value"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :options="options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
