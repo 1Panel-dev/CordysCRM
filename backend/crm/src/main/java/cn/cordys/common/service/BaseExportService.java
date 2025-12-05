@@ -323,23 +323,28 @@ public abstract class BaseExportService {
 	}
 
 	protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues , ExportFieldParam exportFieldParam, List<String> heads, LinkedHashMap<String, Object> systemFieldMap) {
-		List<?> subFvList = List.of();
-		if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
-			BaseModuleFieldValue subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList().getFirst();
-			moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
-			subFvList = (List<?>) subFvs.getFieldValue();
+		List<List<Object>> dataList = new ArrayList<>();
+		if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, new LinkedHashMap<>(), exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+			return dataList;
 		}
-
-		List<List<Object>> dataList = new ArrayList<>(CollectionUtils.isEmpty(subFvList) ? 1 : subFvList.size());
-		if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(subFvList)) {
-			subFvList.forEach(subFv -> {
-				Map<String, Object> subFvMap = (Map<String, Object>) subFv;
-				Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
-				subFvMap.putAll(normalFvs);
-				List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
-				dataList.add(data);
-			});
+		BaseModuleFieldValue subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList().getFirst();
+		if (subFvs == null || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFieldValue())) {
+			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+			return dataList;
 		}
+		moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
+		List<?> subFvList = (List<?>) subFvs.getFieldValue();
+		subFvList.forEach(subFv -> {
+			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
+			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			subFvMap.putAll(normalFvs);
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+		});
 		return dataList;
 	}
 
