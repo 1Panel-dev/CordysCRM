@@ -72,7 +72,6 @@ public class ProductPriceExportService extends BaseExportService {
 		return MergeResult.builder().mergeRegions(mergeRegions).dataList(data).build();
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<List<Object>> buildData(ProductPriceResponse detail, Map<String, List<OptionDTO>> optionMap,
 										 ExportFieldParam exportFieldParam, List<String> heads) {
 		LinkedHashMap<String, Object> systemFieldMap = ProductPriceUtils.getSystemFieldMap(detail, optionMap);

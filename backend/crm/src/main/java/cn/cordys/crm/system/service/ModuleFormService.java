@@ -870,6 +870,35 @@ public class ModuleFormService {
     }
 
 	/**
+	 * 获取导出的合并头ID集合
+	 * @param formKey 表单Key
+	 * @param currentOrg 当前组织
+	 * @param exportKeys 导出字段Key集合
+	 * @return
+	 */
+	public List<String> getExportMergeHeads(String formKey, String currentOrg, List<String> exportKeys) {
+		List<BaseField> allFields = getAllFields(formKey, currentOrg);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return null;
+		}
+		List<BaseField> fields = allFields.stream().filter(BaseField::canImport).toList();
+		List<String> heads = new ArrayList<>();
+		fields.forEach(field -> {
+			if (!exportKeys.contains(field.getId()) && !exportKeys.contains(field.getBusinessKey())) {
+				return;
+			}
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				subField.getSubFields().forEach(f -> {
+					heads.add(f.getId());
+				});
+			} else {
+				heads.add(field.getId());
+			}
+		});
+		return heads;
+	}
+
+	/**
 	 * 获取自定义导出字段集合
 	 * @param formKey   表单Key
 	 * @param currentOrg 当前组织

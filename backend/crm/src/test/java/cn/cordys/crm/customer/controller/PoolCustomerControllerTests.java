@@ -153,7 +153,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         request.setFileName("测试跨页导出公海");
 
         List<ExportHeadDTO> list = new ArrayList<>();
-        list.add(new ExportHeadDTO("name", "客户名称"));
+        list.add(new ExportHeadDTO("name", "客户名称", "custom"));
 
         request.setHeadList(list);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
