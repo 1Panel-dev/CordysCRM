@@ -77,20 +77,29 @@ public class ProductPriceExportService extends BaseExportService {
 	@SuppressWarnings("unchecked")
 	private List<List<Object>> buildData(ProductPriceResponse detail, Map<String, List<OptionDTO>> optionMap,
 										 ExportFieldParam exportFieldParam, List<String> heads) {
+		List<List<Object>> dataList = new ArrayList<>();
 		LinkedHashMap<String, Object> systemFieldMap = ProductPriceUtils.getSystemFieldMap(detail, optionMap);
+		if (CollectionUtils.isEmpty(detail.getModuleFields())) {
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, new LinkedHashMap<>(), exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+			return dataList;
+		}
 		BaseModuleFieldValue subFvs = detail.getModuleFields().stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList().getFirst();
+		if (subFvs == null || CollectionUtils.isEmpty((List<?>) subFvs.getFieldValue())) {
+			Map<String, Object> normalFvs = detail.getModuleFields().stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+			return dataList;
+		}
 		detail.getModuleFields().removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
 		List<?> subFvList = (List<?>) subFvs.getFieldValue();
-		List<List<Object>> dataList = new ArrayList<>(CollectionUtils.isEmpty(subFvList) ? 1 : subFvList.size());
-		if (CollectionUtils.isNotEmpty(subFvList)) {
-			subFvList.forEach(subFv -> {
-				Map<String, Object> subFvMap = (Map<String, Object>) subFv;
-				Map<String, Object> normalFvs = detail.getModuleFields().stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
-				subFvMap.putAll(normalFvs);
-				List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
-				dataList.add(data);
-			});
-		}
+		subFvList.forEach(subFv -> {
+			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
+			Map<String, Object> normalFvs = detail.getModuleFields().stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			subFvMap.putAll(normalFvs);
+			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
+			dataList.add(data);
+		});
 		return dataList;
 	}
 }
