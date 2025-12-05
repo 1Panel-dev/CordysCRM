@@ -9,6 +9,8 @@
           :column="2"
           :refresh-key="refreshId"
           label-width="auto"
+          :one-line-value="false"
+          :one-line-label="false"
           value-align="start"
           tooltip-position="top-start"
           @init="handleInit"

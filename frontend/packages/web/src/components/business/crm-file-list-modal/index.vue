@@ -28,7 +28,7 @@
             placement="bottom-end"
             @confirm="handleDelete(file, $event)"
           >
-            <n-button type="error" text>{{ t('common.delete') }}</n-button>
+            <n-button :disabled="props.readonly" type="error" text>{{ t('common.delete') }}</n-button>
           </CrmPopConfirm>
           <template v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type)">
             <n-divider vertical />
@@ -61,6 +61,7 @@
 
   const props = defineProps<{
     files: AttachmentInfo[];
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'deleteFile', id: string): void;
