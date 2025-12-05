@@ -44,6 +44,7 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import cn.idev.excel.metadata.CellExtra;
@@ -379,11 +380,21 @@ public class ProductPriceService {
         return (pos == null ? 0 : pos) + ServiceUtils.POS_STEP;
     }
 
+	/**
+	 * 获取价格表名称
+	 * @param id id
+	 * @return 名称
+	 */
     public String getProductPriceName(String id) {
         ProductPrice productPrice = productPriceMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(productPrice).map(ProductPrice::getName).orElse(null);
     }
 
+	/**
+	 * 通过ID集合获取价格表名称串
+	 * @param ids ID集合
+	 * @return 名称字符串
+	 */
     public String getProductPriceNameByIds(List<String> ids) {
         List<ProductPrice> productPrices = productPriceMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(productPrices)) {
@@ -392,4 +403,15 @@ public class ProductPriceService {
         }
         return StringUtils.EMPTY;
     }
+
+	/**
+	 * 通过名称获取价格表集合
+	 * @param names 名称集合
+	 * @return 价格表集合
+	 */
+	public List<ProductPrice> getProductPriceListByNames(List<String> names) {
+		LambdaQueryWrapper<ProductPrice> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.in(ProductPrice::getName, names);
+		return productPriceMapper.selectListByLambda(lambdaQueryWrapper);
+	}
 }
