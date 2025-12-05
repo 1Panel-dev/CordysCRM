@@ -340,28 +340,30 @@ public class ModuleFormService {
 
 		// 平铺表单所有字段, 过滤出满足条件的字段获取选项
 		List<BaseField> allFields = flattenFormAllFields(formConfig);
+		List<String> showFields = allFields.stream().filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
+				.flatMap(f -> ((DatasourceField) f).getShowFields().stream()).distinct().toList();
 		allFields.forEach(field -> {
             if (Strings.CS.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
-                optionMap.put(field.idOrBusinessKey(), optionPropToDto(radioField.getOptions()));
+                optionMap.put(getOptionKey(showFields, field), optionPropToDto(radioField.getOptions()));
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
-                optionMap.put(field.idOrBusinessKey(), optionPropToDto(checkBoxField.getOptions()));
+                optionMap.put(getOptionKey(showFields, field), optionPropToDto(checkBoxField.getOptions()));
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name())) {
                 if (field instanceof HasOption optionField) {
-					optionMap.put(field.idOrBusinessKey(), optionPropToDto(optionField.getOptions()));
+					optionMap.put(getOptionKey(showFields, field), optionPropToDto(optionField.getOptions()));
                 }
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name())) {
                 if (field instanceof DatasourceField sourceField) {
-                    idTypeMap.put(field.idOrBusinessKey(), sourceField.getDataSourceType());
+                    idTypeMap.put(getOptionKey(showFields, field), sourceField.getDataSourceType());
                 }
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
-                idTypeMap.put(field.idOrBusinessKey(), FieldType.MEMBER.name());
+                idTypeMap.put(getOptionKey(showFields, field), FieldType.MEMBER.name());
             }
             if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
-                idTypeMap.put(field.idOrBusinessKey(), FieldType.DEPARTMENT.name());
+                idTypeMap.put(getOptionKey(showFields, field), FieldType.DEPARTMENT.name());
             }
         });
 		// 平铺子表格字段值
@@ -608,6 +610,10 @@ public class ModuleFormService {
 					if (reloadFieldMap.containsKey(oldRefField.getId())) {
 						BaseField refField = JSON.parseObject(reloadFieldMap.get(oldRefField.getId()), BaseField.class);
 						refField.setFieldWidth(oldRefField.getFieldWidth());
+						if (refField instanceof DatasourceField refSourceField) {
+							refSourceField.setRefFields(null);
+							refSourceField.setShowFields(null);
+						}
 						refField.setResourceFieldId(oldRefField.getResourceFieldId());
 						flatFields.add(flatFields.size(), refField);
 					}
@@ -1381,4 +1387,17 @@ public class ModuleFormService {
             return simpleField;
         }).toList();
     }
+
+	/**
+	 * 获取选项Key
+	 * @param showFields
+	 * @param baseField
+	 * @return
+	 */
+	private String getOptionKey(List<String> showFields, BaseField baseField) {
+		if (showFields.contains(baseField.getId())) {
+			return baseField.getId();
+		}
+		return baseField.idOrBusinessKey();
+	}
 }
