@@ -108,7 +108,7 @@ public class OpportunityQuotationController {
 
     //批量作废报价单
     @PostMapping("/batch/voided")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED)
     @Operation(summary = "批量作废报价单")
     public BatchAffectReasonResponse batchVoidQuotation(@RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
