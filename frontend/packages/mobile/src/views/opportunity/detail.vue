@@ -157,7 +157,7 @@
     () => currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id
   );
 
-  const readonly = computed(() => isSuccess.value || !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
+  const readonly = computed(() => !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
 
   const showEditButton = computed(() => {
     if (isFail.value) return false;
