@@ -801,7 +801,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
           ?.filter((e) =>
-            formDetail.value[parentFieldId].some((item: Record<string, any>) =>
+            formDetail.value[parentFieldId]?.some((item: Record<string, any>) =>
               item[subField.businessKey!]?.includes(e.id)
             )
           )
@@ -816,7 +816,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
           ?.filter((e) =>
-            formDetail.value[parentFieldId].some((item: Record<string, any>) => item[subField.id]?.includes(e.id))
+            formDetail.value[parentFieldId]?.some((item: Record<string, any>) => item[subField.id]?.includes(e.id))
           )
           .map((e) => ({
             ...e,
@@ -856,7 +856,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           }
           item.subFields.forEach((subField) => {
             makeSubFieldInitialOptions(subField, item.id, res);
-            formDetail.value[item.id].forEach((subItem: Record<string, any>) => {
+            formDetail.value[item.id]?.forEach((subItem: Record<string, any>) => {
               if (subField.resourceFieldId) {
                 subItem[subField.id] = parseModuleFieldValue(
                   subField,
@@ -1131,7 +1131,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               if (!value || !value.length) {
                 return Promise.resolve();
               }
-              const subFieldValues = formDetail.value[parentFieldId].map(
+              const subFieldValues = formDetail.value[parentFieldId]?.map(
                 (subItem: Record<string, any>) => subItem[item.id]
               );
               const valueCount = subFieldValues.filter((v: string) => v === value).length;

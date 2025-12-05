@@ -385,7 +385,7 @@
           },
         }),
     },
-    permission: ['CONTRACT_PAYMENT_PLAN:UPDATE', 'CONTRACT_PAYMENT_PLAN:DELETE'],
+    permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'],
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
