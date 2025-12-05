@@ -202,18 +202,18 @@ public enum BusinessModuleField {
 	 */
 	PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
 	PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT_TABLE("priceProducts", "priceProducts", Set.of("mobile"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT("priceProduct", "priceProduct", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT_AMOUNT("priceProductAmount", "priceProductAmount", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile"), FormKey.PRICE.getKey()),
 
 	/**
 	 * 报价单表单
 	 */
 	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
 	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT_TABLE("quotationProducts", "quotationProducts", Set.of("mobile"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT("quotationProduct", "quotationProduct", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "quotationAmount", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT("quotationProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
 
 	/**
 	 * 合同回款计划
@@ -248,9 +248,9 @@ public enum BusinessModuleField {
     CONTRACT_NAME("contractName", "name", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
 
     CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT_TABLE("contractProducts", "contractProducts", Set.of("mobile"), FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT("contractProduct", "contractProduct", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "contractProductAmount", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
+	CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile"), FormKey.CONTRACT.getKey()),
+	CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.CONTRACT.getKey()),
+	CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "amount", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey());
 
