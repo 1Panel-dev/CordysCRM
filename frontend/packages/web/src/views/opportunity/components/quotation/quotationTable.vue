@@ -379,7 +379,7 @@
     {
       label: t('common.download'),
       key: 'download',
-      permission: ['OPPORTUNITY_QUOTATION:EXPORT'],
+      permission: ['OPPORTUNITY_QUOTATION:DOWNLOAD'],
     },
     {
       label: t('common.revoke'),
@@ -521,7 +521,7 @@
     permission: [
       'OPPORTUNITY_QUOTATION:UPDATE',
       'OPPORTUNITY_QUOTATION:DELETE',
-      'OPPORTUNITY_QUOTATION:EXPORT',
+      'OPPORTUNITY_QUOTATION:DOWNLOAD',
       'OPPORTUNITY_QUOTATION:VOIDED',
     ],
     readonly: props.readonly,

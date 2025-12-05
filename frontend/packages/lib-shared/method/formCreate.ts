@@ -111,6 +111,16 @@ export function transformData({
   const timeFieldIds: string[] = [];
 
   fields.forEach((field) => {
+    const fieldId = field.businessKey || field.id;
+    if (field.type === FieldTypeEnum.LOCATION) {
+      addressFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.INDUSTRY) {
+      industryFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      dataSourceFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.DATE_TIME) {
+      timeFieldIds.push(fieldId);
+    }
     if (field.businessKey) {
       const fieldId = field.businessKey;
       const options = originalData?.optionMap?.[fieldId]?.map((e: any) => ({
@@ -162,15 +172,6 @@ export function transformData({
           businessFieldAttr.ownerId = item.owner;
         }
       }
-    }
-    if (field.type === FieldTypeEnum.LOCATION) {
-      addressFieldIds.push(field.id);
-    } else if (field.type === FieldTypeEnum.INDUSTRY) {
-      industryFieldIds.push(field.id);
-    } else if (field.type === FieldTypeEnum.DATA_SOURCE) {
-      dataSourceFieldIds.push(field.id);
-    } else if (field.type === FieldTypeEnum.DATE_TIME) {
-      timeFieldIds.push(field.id);
     }
   });
 
