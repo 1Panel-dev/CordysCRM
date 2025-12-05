@@ -72,6 +72,7 @@
         <quotationTable
           :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
           :source-id="sourceId"
+          :refresh-key="refreshKey"
           :source-name="titleName"
         />
       </CrmCard>

@@ -40,6 +40,7 @@
       value-align="start"
       tooltip-position="top-start"
       class="p-[16px]"
+      readonly
       @init="handleInit"
     />
   </CrmDrawer>

@@ -52,35 +52,47 @@
     return '0';
   }
 
-  function calcFormula(formula: string, getter: (id: string) => any): number | null {
+  function normalizeExpression(str: string) {
+    const fullWidthMap: Record<string, string> = {
+      '（': '(',
+      '）': ')',
+      '【': '(',
+      '】': ')',
+      '｛': '(',
+      '｝': ')',
+      '＜': '<',
+      '＞': '>',
+      '：': ':',
+      '，': ',',
+      '。': '.',
+      '＋': '+',
+      '－': '-',
+      '×': '*',
+      '÷': '/',
+    };
+
+    return str
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // 去零宽字符
+      .replace(/./g, (c) => fullWidthMap[c] || c); // 统一替换
+  }
+
+  function calcFormula(formula: string, getter: (id: string) => any) {
     if (!formula) return null;
 
     // 清洗富文本或特定带入的字符串
-    let express = formula.replace(/[\u200B-\u200D\uFEFF]/g, '');
+    let express = normalizeExpression(formula);
 
-    // 替换变量:match 是整块 ${...}， innerContent 是花括号内的内容
-    express = express.replace(/\$\{(.+?)\}/g, (match, innerContent) => {
-      // 匹配innerContent第一个数字 id（兼容带括号或后缀的情况）
-      const fieldIdMatch = innerContent.match(/^\s*\(?\s*(\d+)\s*\)?/);
+    // 替换变量
+    express = express.replace(/\$\{(.+?)\}/g, (_, fieldId) => {
+      const fieldIdMatch = fieldId.match(/^\(?(\d+)\)?/);
       if (!fieldIdMatch) return '0';
       const realId = fieldIdMatch[1];
       const rawVal = getter(realId);
-      const parsed = parseFloat(String(rawVal));
-      // 判断 innerContent 是否包含 "/100"百分号
-      const hasPercent = /\/\s*100\b/.test(innerContent);
-      const hasPercentLiteral = /%/.test(innerContent);
-
-      // 如果值未填写:填充 '0' 或 '1'
-      if (Number.isNaN(parsed)) {
-        return determineDefaultValue(express, match);
-      }
-
-      // 填写值有效:如果原始占位是百分比格式，则返回 (parsed/100)，否则返回数字字符串
-      if (hasPercent || hasPercentLiteral) {
-        return `(${String(parsed)} / 100)`;
-      }
-
-      return String(parsed);
+      // 转换为数字，如果无效则默认为 0
+      const num = parseFloat(String(rawVal));
+      if (Number.isNaN(num)) return '0';
+      // 把表达式里原来 ID 替换成实际数值
+      return fieldId.replace(realId, String(num));
     });
 
     try {

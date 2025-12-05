@@ -3,13 +3,14 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    :class="`crm-opportunity-table-${props.formKey}`"
+    :class="`crm-quotation-table-${props.formKey}`"
     :action-config="actionConfig"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
+    @refresh="searchData"
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
@@ -52,7 +53,7 @@
     :detail="activeRow"
     :refresh-id="tableRefreshId"
     @edit="handleEdit"
-    @refresh="handleRefresh"
+    @refresh="() => searchData()"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
@@ -145,6 +146,7 @@
     sourceId?: string;
     readonly?: boolean;
     openseaHiddenColumns?: string[];
+    refreshKey?: number;
   }>();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
@@ -497,15 +499,17 @@
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       opportunityId: (row: QuotationItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showOpportunityDrawer(row);
-            },
-          },
-          { default: () => row.opportunityName, trigger: () => row.opportunityName }
-        );
+        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showOpportunityDrawer(row);
+                },
+              },
+              { default: () => row.opportunityName, trigger: () => row.opportunityName }
+            )
+          : h(CrmNameTooltip, { text: row.opportunityName });
       },
       approvalStatus: (row: QuotationItem) =>
         h(quotationStatus, {
@@ -518,12 +522,7 @@
         });
       },
     },
-    permission: [
-      'OPPORTUNITY_QUOTATION:UPDATE',
-      'OPPORTUNITY_QUOTATION:DELETE',
-      'OPPORTUNITY_QUOTATION:DOWNLOAD',
-      'OPPORTUNITY_QUOTATION:VOIDED',
-    ],
+    permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, filterItem, advanceFilter } =
@@ -607,13 +606,10 @@
     { immediate: true }
   );
 
-  watch(
-    () => tableRefreshId.value,
-    () => {
-      checkedRowKeys.value = [];
-      searchData();
-    }
-  );
+  watch([() => tableRefreshId.value, () => props.refreshKey], () => {
+    checkedRowKeys.value = [];
+    searchData();
+  });
 </script>
 
 <style scoped></style>

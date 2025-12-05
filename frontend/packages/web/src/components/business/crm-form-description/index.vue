@@ -6,6 +6,8 @@
       :class="[`value-align-${props.valueAlign ?? 'end'}`, props.class]"
       :column="props.column"
       :label-width="props.labelWidth"
+      :one-line-label="props.oneLineLabel"
+      :one-line-value="props.oneLineValue"
       :tooltip-position="props.tooltipPosition"
     >
       <template #divider="{ item }">
@@ -139,7 +141,12 @@
       </template>
     </CrmDescription>
   </n-spin>
-  <CrmFileListModal v-model:show="showFileListModal" :files="activeFileList" @delete-file="handleDeleteFile" />
+  <CrmFileListModal
+    v-model:show="showFileListModal"
+    :readonly="props.readonly"
+    :files="activeFileList"
+    @delete-file="handleDeleteFile"
+  />
 </template>
 
 <script setup lang="ts">
@@ -162,31 +169,40 @@
 
   import { AttachmentInfo } from '../crm-form-create/types';
 
-  const props = defineProps<{
-    sourceId: string;
-    formKey: FormDesignKeyEnum;
-    refreshKey?: number;
-    class?: string;
-    hiddenFields?: string[];
-    column?: number;
-    valueAlign?: 'center' | 'start' | 'end';
-    labelWidth?: string;
-    tooltipPosition?:
-      | 'top-start'
-      | 'top'
-      | 'top-end'
-      | 'right-start'
-      | 'right'
-      | 'right-end'
-      | 'bottom-start'
-      | 'bottom'
-      | 'bottom-end'
-      | 'left-start'
-      | 'left'
-      | 'left-end'
-      | undefined;
-    loadingDescription?: string;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      sourceId: string;
+      formKey: FormDesignKeyEnum;
+      refreshKey?: number;
+      class?: string;
+      hiddenFields?: string[];
+      column?: number;
+      valueAlign?: 'center' | 'start' | 'end';
+      labelWidth?: string;
+      tooltipPosition?:
+        | 'top-start'
+        | 'top'
+        | 'top-end'
+        | 'right-start'
+        | 'right'
+        | 'right-end'
+        | 'bottom-start'
+        | 'bottom'
+        | 'bottom-end'
+        | 'left-start'
+        | 'left'
+        | 'left-end'
+        | undefined;
+      readonly?: boolean;
+      loadingDescription?: string;
+      oneLineValue?: boolean; // value 是否单行显示
+      oneLineLabel?: boolean; // label 是否单行显示
+    }>(),
+    {
+      oneLineLabel: true,
+      oneLineValue: true,
+    }
+  );
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
