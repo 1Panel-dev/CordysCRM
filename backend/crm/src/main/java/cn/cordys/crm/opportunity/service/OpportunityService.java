@@ -661,7 +661,7 @@ public class OpportunityService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
 		new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeads(FormKey.OPPORTUNITY.getKey(), currentOrg),
+                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
 						new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }

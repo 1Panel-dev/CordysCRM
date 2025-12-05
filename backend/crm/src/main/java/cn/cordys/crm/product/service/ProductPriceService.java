@@ -224,7 +224,7 @@ public class ProductPriceService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                moduleFormService.getCustomImportHeads(FormKey.PRICE.getKey(), currentOrg),
+                moduleFormService.getCustomImportHeadsNoRef(FormKey.PRICE.getKey(), currentOrg),
                 Translator.get("product.price.import_tpl.name"),
                 Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                 new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),

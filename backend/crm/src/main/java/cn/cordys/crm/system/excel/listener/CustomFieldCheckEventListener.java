@@ -86,8 +86,14 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg,
 										 Map<Integer, List<CellExtra>> mergeCellMap) {
 		for (BaseField field : fields) {
+			if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
+				continue;
+			}
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
 				for (BaseField f : subField.getSubFields()) {
+					if (StringUtils.isNotEmpty(f.getResourceFieldId())) {
+						continue;
+					}
 					this.fieldMap.put(f.getName(), f);
 					refSubMap.put(f.getName(), subField.getId());
 					setCheckLimit(f);

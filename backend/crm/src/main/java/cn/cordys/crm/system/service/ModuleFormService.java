@@ -840,7 +840,7 @@ public class ModuleFormService {
     }
 
     /**
-     * 获取
+     * 获取自定义表头集合 (包括引用显示字段)
      *
      * @param formKey    表单Key
      * @param currentOrg 当前组织
@@ -868,6 +868,37 @@ public class ModuleFormService {
 		});
 		return heads;
     }
+
+	/**
+	 * 获取不含引用字段的表头集合
+	 * @param formKey 表单Key
+	 * @param currentOrg 当前组织
+	 * @return 表头集合
+	 */
+	public List<List<String>> getCustomImportHeadsNoRef(String formKey, String currentOrg) {
+		List<BaseField> allFields = getAllFields(formKey, currentOrg);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return null;
+		}
+		List<BaseField> fields = allFields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport()).toList();
+		List<List<String>> heads = new ArrayList<>();
+		fields.forEach(field -> {
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				subField.getSubFields().forEach(f -> {
+					if (StringUtils.isNotEmpty(f.getResourceFieldId())) {
+						return;
+					}
+					List<String> head = new ArrayList<>();
+					head.add(field.getName());
+					head.add(f.getName());
+					heads.add(head);
+				});
+			} else {
+				heads.add(new ArrayList<>(Collections.singletonList(field.getName())));
+			}
+		});
+		return heads;
+	}
 
 	/**
 	 * 获取导出的合并头ID集合
