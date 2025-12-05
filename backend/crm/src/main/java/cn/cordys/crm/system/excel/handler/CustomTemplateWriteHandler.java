@@ -25,6 +25,7 @@ import cn.idev.excel.write.metadata.holder.WriteWorkbookHolder;
 import cn.idev.excel.write.metadata.style.WriteCellStyle;
 import cn.idev.excel.write.metadata.style.WriteFont;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -60,8 +61,14 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
         for (BaseField field : fields) {
+			if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
+				continue;
+			}
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
 				for (BaseField f : subField.getSubFields()) {
+					if (StringUtils.isNotEmpty(f.getResourceFieldId())) {
+						continue;
+					}
 					setExtra(f, index++);
 					downOffSet.add(index);
 				}
@@ -111,7 +118,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             DataValidationHelper dataValidationHelper = sheet.getDataValidationHelper();
             validationOptionMap.forEach((k, v) -> {
                 DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(v.toArray(String[]::new));
-                DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k - 1, k - 1));
+                DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k, k));
                 sheet.addValidationData(dataValidation);
             });
         }

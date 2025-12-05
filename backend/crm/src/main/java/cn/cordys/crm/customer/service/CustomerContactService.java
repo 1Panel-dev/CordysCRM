@@ -533,7 +533,7 @@ public class CustomerContactService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
 		new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeads(FormKey.CONTACT.getKey(), currentOrg),
+                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTACT.getKey(), currentOrg),
                         Translator.get("contact.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
 						new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }

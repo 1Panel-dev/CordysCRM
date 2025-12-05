@@ -1040,7 +1040,7 @@ public class ClueService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-				moduleFormService.getCustomImportHeads(FormKey.CLUE.getKey(), currentOrg),
+				moduleFormService.getCustomImportHeadsNoRef(FormKey.CLUE.getKey(), currentOrg),
 				Translator.get("clue.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
 				new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CLUE.getKey(), currentOrg)),
 				new CustomHeadColWidthStyleStrategy());
