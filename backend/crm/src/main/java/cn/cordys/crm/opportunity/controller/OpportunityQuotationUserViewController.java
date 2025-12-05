@@ -35,7 +35,7 @@ public class OpportunityQuotationUserViewController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "添加报价单视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.QUOTATION.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY_QUOTATION.name());
     }
 
 
@@ -66,7 +66,7 @@ public class OpportunityQuotationUserViewController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "报价单视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.QUOTATION.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.OPPORTUNITY_QUOTATION.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
@@ -81,7 +81,7 @@ public class OpportunityQuotationUserViewController {
     @Operation(summary = "报价单视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.QUOTATION.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY_QUOTATION.name());
     }
 
 

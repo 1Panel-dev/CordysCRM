@@ -13,5 +13,5 @@ public interface ExtOpportunityQuotationMapper {
 
     List<OpportunityQuotationListResponse> list(@Param("request") OpportunityQuotationPageRequest request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    void batchUpdateApprovalStatus(List<String> approvingIds, String approvalStatus, String userId, long updateTime);
+    void updateApprovalStatus(@Param("approvingId") String approvingId, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
 }
