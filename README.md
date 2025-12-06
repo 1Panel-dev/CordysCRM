@@ -1,6 +1,9 @@
 <h1 align="center">Cordys CRM</h1>
 <h3 align="center">新一代的开源 AI CRM 系统</h3>
 <p align="center">
+  <a href="https://trendshift.io/repositories/15469" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15469" alt="1Panel-dev%2FCordysCRM | Trendshift" style="width: 240px; height: auto;" /></a>
+</p>
+<p align="center">
   <a href="https://github.com/1Panel-dev/CordysCRM/releases"><img src="https://img.shields.io/github/v/release/1Panel-dev/CordysCRM" alt="Latest release"></a>
   <a href="https://github.com/1Panel-dev/CordysCRM"><img src="https://img.shields.io/github/stars/1Panel-dev/CordysCRM?color=%231890FF&style=flat-square" alt="Stars"></a>    
   <a href="https://hub.docker.com/r/1panel/cordys-crm"><img src="https://img.shields.io/docker/pulls/1panel/cordys-crm?label=downloads" alt="Download"></a><br/>
