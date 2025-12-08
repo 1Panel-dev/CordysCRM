@@ -14,6 +14,7 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OpportunityQuotationalLogService extends BaseModuleLogService {
+
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.QUOTATION.getKey());

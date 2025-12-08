@@ -419,8 +419,12 @@ public class OpportunityQuotationService {
         if (state == null) {
             logDTO.setOriginalValue(opportunityQuotation.getName());
         } else {
-            logDTO.setOriginalValue(Translator.get("log.approvalStatus." + state));
-            logDTO.setModifiedValue(Translator.get("log.approvalStatus." + opportunityQuotation.getApprovalStatus()));
+            Map<String, String> oldMap = new HashMap<>();
+            oldMap.put("approvalStatus", state);
+            logDTO.setOriginalValue(oldMap);
+            Map<String, String> newMap = new HashMap<>();
+            newMap.put("approvalStatus", opportunityQuotation.getApprovalStatus());
+            logDTO.setModifiedValue(newMap);
         }
         logService.add(logDTO);
     }
@@ -652,8 +656,12 @@ public class OpportunityQuotationService {
                     LogModule.OPPORTUNITY_QUOTATION,
                     item.getName()
             );
-            log.setOriginalValue(item.getApprovalStatus());
-            log.setModifiedValue(approvalStatus);
+            Map<String, String> oldMap = new HashMap<>();
+            oldMap.put("approvalStatus", item.getApprovalStatus());
+            log.setOriginalValue(oldMap);
+            Map<String, String> newMap = new HashMap<>();
+            newMap.put("approvalStatus", approvalStatus);
+            log.setModifiedValue(newMap);
             logs.add(log);
             batchUpdateMapper.updateApprovalStatus(item.getId(), approvalStatus, userId, System.currentTimeMillis());
         });
