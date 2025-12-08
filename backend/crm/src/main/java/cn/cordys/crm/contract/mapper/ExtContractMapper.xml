@@ -130,7 +130,8 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
-                {'name', 'owner', 'createTime', 'updateTime', 'archivedStatus', 'customerId', 'createUser', 'updateUser', 'status', 'amount', 'approvalStatus'}">
+                {'name', 'owner', 'createTime', 'updateTime', 'archivedStatus', 'customerId', 'createUser', 'updateUser',
+                 'departmentId', 'status', 'amount', 'approvalStatus'}">
                     <if test="condition.multipleValue">
                         inner join contract_field_blob ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -139,6 +140,10 @@
                         inner join contract_field ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
+                </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user ${tablePrefix}_${i}
+                    on ${tablePrefix}_${i}.user_id = ct.owner
                 </if>
             </foreach>
         </if>
