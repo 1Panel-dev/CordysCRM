@@ -78,6 +78,10 @@ export const logTypeOption = [
     value: OperationTypeEnum.UNARCHIVE,
     label: 'common.unarchive',
   },
+  {
+    value: OperationTypeEnum.DOWNLOAD,
+    label: 'common.download',
+  },
 ];
 
 export const defaultNavList: ActionItem[] = [

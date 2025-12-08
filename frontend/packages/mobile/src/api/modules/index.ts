@@ -107,6 +107,7 @@ export const {
   revokeQuotation,
   batchApprove,
   batchVoided,
+  downloadQuotation,
 } = opportunityApi;
 
 export const {
