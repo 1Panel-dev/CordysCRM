@@ -49,6 +49,7 @@
     </template>
     <template #view>
       <CrmViewSelect
+        v-if="!props.isContractTab"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT_PAYMENT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -155,7 +156,7 @@
   const activeFormKey = ref(FormDesignKeyEnum.CONTRACT_PAYMENT);
 
   const createLoading = ref(false);
-  const linkFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const linkFormKey = ref(FormDesignKeyEnum.CONTRACT);
   const linkFormInfo = ref();
   const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
     formKey: linkFormKey,
@@ -170,7 +171,7 @@
       needInitDetail.value = false;
       activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT;
       if (props.isContractTab) {
-        linkFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        linkFormKey.value = FormDesignKeyEnum.CONTRACT;
         await initFormConfig();
         await initFormDetail(false, true);
       }
