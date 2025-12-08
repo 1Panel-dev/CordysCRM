@@ -175,6 +175,7 @@ export default {
   'crmFormDesign.onlyPlan': 'Plan',
   'crmFormDesign.calculation': 'Calculation',
   'crmFormDesign.formula': 'Formula',
+  'crmFormDesign.formulaTooltip': 'Calculation method not set, please contact the administrator',
   'crmFormDesign.formulaSetting': 'Formula Settings',
   'crmFormDesign.formulaEquals': 'Formula =',
   'crmFormDesign.formulaPricing': 'Price',

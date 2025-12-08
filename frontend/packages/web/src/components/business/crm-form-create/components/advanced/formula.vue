@@ -1,20 +1,30 @@
 <template>
-  <inputNumber
-    v-model:value="value"
-    path="fieldValue"
-    :field-config="fieldConfig"
-    :is-sub-table-field="props.isSubTableField"
-    :is-sub-table-render="props.isSubTableRender"
-    @change="handleChange"
-  />
+  <n-tooltip trigger="hover" placement="top">
+    <template #trigger>
+      <inputNumber
+        v-model:value="value"
+        path="fieldValue"
+        :field-config="fieldConfig"
+        :is-sub-table-field="props.isSubTableField"
+        :is-sub-table-render="props.isSubTableRender"
+        @change="handleChange"
+      />
+    </template>
+    {{ formulaTooltip }}
+  </n-tooltip>
 </template>
 
 <script setup lang="ts">
+  import { NTooltip } from 'naive-ui';
   import { debounce } from 'lodash-es';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import inputNumber from '../basic/inputNumber.vue';
 
   import { FormCreateField } from '../../types';
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -32,25 +42,6 @@
   const value = defineModel<number | null>('value', {
     default: 0,
   });
-
-  /**
-   * 传入整个当前表达式和当前 token（例如 "${(123 / 100)}"：百分比）
-   * 根据 token 在 expression 中位置左右的运算符判断默认值：
-   *  - 如果前面是 * / % 返回 '1'
-   *  - 加减返回 '0'
-   */
-  function determineDefaultValue(expression: string, token: string): string {
-    const idx = expression.indexOf(token);
-    // 找前一个非空白字符
-    let i = idx - 1;
-    while (i >= 0 && /\s/.test(expression[i])) i--;
-    const prevChar = expression[i] ?? '+';
-
-    if (['*', '/', '%'].includes(prevChar)) {
-      return '1';
-    }
-    return '0';
-  }
 
   function normalizeExpression(str: string) {
     const fullWidthMap: Record<string, string> = {
@@ -141,11 +132,29 @@
     return row?.[fieldId];
   }
 
+  function safeParseFormula(formulaString: string) {
+    const tooltip = t('crmFormDesign.formulaTooltip');
+    if (!formulaString) return { type: 'string', formula: '', tooltip };
+    try {
+      const parsed = JSON.parse(formulaString);
+      return {
+        type: 'json',
+        formula: parsed.formula ?? '',
+        tooltip: parsed.tooltip ?? t('crmFormDesign.formulaTooltip'),
+      };
+    } catch {
+      return { type: 'string', formula: formulaString, tooltip };
+    }
+  }
+
+  const formulaTooltip = computed(() => safeParseFormula(props.fieldConfig.formula ?? '').tooltip);
+
   // 根据公式实时计算
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
-    if (!formula) return;
-    const result = calcFormula(formula, getFieldValue);
+    const { formula: formulaValue } = safeParseFormula(formula ?? '');
+    if (!formulaValue) return;
+    const result = calcFormula(formulaValue, getFieldValue);
     value.value = result !== null ? Number(result.toFixed(2)) : 0;
     emit('change', value.value);
   }, 300);
