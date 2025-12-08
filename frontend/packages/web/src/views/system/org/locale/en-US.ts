@@ -73,4 +73,5 @@ export default {
   'org.firstSyncUserTipContent': 'Syncing will delete all current members. This action cannot be undone',
   'org.searchByNameAndPhone': 'Search by name/mobile number',
   'org.setDirectSuperiors': 'Set up direct superiors',
+  'org.onboardingDate': 'Onboarding Date',
 };
