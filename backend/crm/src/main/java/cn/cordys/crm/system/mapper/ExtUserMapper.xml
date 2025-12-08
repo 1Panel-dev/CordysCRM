@@ -53,6 +53,7 @@
             sou.position,
             sou.employee_type,
             sou.work_city,
+            sou.onboarding_date,
             sd.`name` departmentName
         FROM
             sys_user su

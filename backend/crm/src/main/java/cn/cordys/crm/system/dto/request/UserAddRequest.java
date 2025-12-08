@@ -59,4 +59,7 @@ public class UserAddRequest {
     @Schema(description = "是否启用")
     private Boolean enable;
 
+    @Schema(description = "入职时间")
+    private Long onboardingDate;
+
 }

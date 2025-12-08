@@ -45,4 +45,7 @@ public class OrganizationUser extends BaseModel {
 
     @Schema(description = "工作城市")
     private String workCity;
+
+    @Schema(description = "入职时间")
+    private Long onboardingDate;
 }

@@ -275,6 +275,7 @@ public class OrganizationUserService {
         orgUser.setCreateUser(operatorId);
         orgUser.setUpdateTime(System.currentTimeMillis());
         orgUser.setUpdateUser(operatorId);
+        orgUser.setOnboardingDate(request.getOnboardingDate());
         organizationUserMapper.insert(orgUser);
     }
 
