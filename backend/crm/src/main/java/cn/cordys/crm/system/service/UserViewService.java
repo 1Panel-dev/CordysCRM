@@ -227,10 +227,6 @@ public class UserViewService {
                 .collect(Collectors.toSet());
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
-        // 获取业务字段对应的ID
-        Map<String, String> businessKeyFieldIdMap = customerFormConfig.getFields().stream()
-                .filter(baseField -> businessKeys.contains(baseField.getBusinessKey()))
-                .collect(Collectors.toMap(BaseField::getBusinessKey, BaseField::getId));
 
         Map<String, String> fieldIdBusinessKeyMap = customerFormConfig.getFields().stream()
                 .filter(baseField -> businessKeys.contains(baseField.getBusinessKey()))
@@ -248,8 +244,7 @@ public class UserViewService {
                 )
                 .map(condition -> {
                     BaseModuleFieldValue moduleFieldValue = new BaseModuleFieldValue();
-                    String businessFieldId = businessKeyFieldIdMap.get(condition.getName());
-                    moduleFieldValue.setFieldId(businessFieldId != null ? businessFieldId : condition.getName());
+                    moduleFieldValue.setFieldId(condition.getName());
                     moduleFieldValue.setFieldValue(condition.getValue());
                     return moduleFieldValue;
                 }).collect(Collectors.toList());
