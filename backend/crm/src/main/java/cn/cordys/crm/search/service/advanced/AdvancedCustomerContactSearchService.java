@@ -139,6 +139,7 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
                 advancedCustomerContactResponse.setModuleFields(new ArrayList<>());
                 advancedCustomerContactResponse.setPhone(null);
                 advancedCustomerContactResponse.setDisableReason(null);
+                advancedCustomerContactResponse.setName(null);
             }
             returnList.add(advancedCustomerContactResponse);
         });
