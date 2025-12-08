@@ -71,7 +71,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -117,6 +116,7 @@ public class OpportunityQuotationService {
      * 新增报价单会自动将报价单状态设置为“提审”，此时需要保存报价单值快照，报价单表单设置快照
      *
      * @param request 新增请求参数
+     *
      * @return 商机报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
@@ -218,6 +218,7 @@ public class OpportunityQuotationService {
      * @param opportunityQuotation 报价单实体
      * @param moduleFields         报价单字段值
      * @param moduleFormConfigDTO  报价单表单配置
+     *
      * @return 报价单详情
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -237,6 +238,7 @@ public class OpportunityQuotationService {
      * 查询商机报价单详情
      *
      * @param id 报价单ID
+     *
      * @return 报价单详情
      */
     public OpportunityQuotationGetResponse get(String id) {
@@ -368,6 +370,7 @@ public class OpportunityQuotationService {
      * @param opportunityQuotation 报价单实体
      * @param approvalStatus       审批状态
      * @param userId               用户ID
+     *
      * @return 报价单
      */
     private OpportunityQuotation updateApprovalState(OpportunityQuotation opportunityQuotation, String approvalStatus, String userId) {
@@ -462,6 +465,7 @@ public class OpportunityQuotationService {
      *
      * @param request        列表请求参数
      * @param organizationId 组织ID
+     *
      * @return 商机报价单列表
      */
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId, String userId, DeptDataPermissionDTO deptDataPermission) {
@@ -479,6 +483,7 @@ public class OpportunityQuotationService {
      * 构建列表数据
      *
      * @param listData 列表数据
+     *
      * @return 列表数据
      */
     private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData) {
@@ -496,6 +501,7 @@ public class OpportunityQuotationService {
      * @param request 更新请求参数
      * @param userId  更新用户ID
      * @param orgId   组织ID
+     *
      * @return 更新后的报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.UPDATE, resourceName = "{#request.name}", operator = "{#userId}")
@@ -604,6 +610,7 @@ public class OpportunityQuotationService {
      *
      * @param userId 用户ID
      * @param orgId  组织ID
+     *
      * @return 模块标签页启用配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
@@ -618,6 +625,7 @@ public class OpportunityQuotationService {
      * @param request 批量审批请求参数
      * @param userId  用户ID
      * @param orgId   组织ID
+     *
      * @return 审批状态
      */
     public BatchAffectSkipResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
@@ -687,6 +695,7 @@ public class OpportunityQuotationService {
      * @param request        批量作废请求参数
      * @param userId         用户ID
      * @param organizationId 组织ID
+     *
      * @return 批量作废响应参数
      */
     public BatchAffectReasonResponse batchVoidQuotation(OpportunityQuotationBatchRequest request, String userId, String organizationId) {
@@ -753,6 +762,7 @@ public class OpportunityQuotationService {
      * 验证不可作废的报价单
      *
      * @param list 报价单列表
+     *
      * @return 不可作废的报价单列表
      */
     private List<OpportunityQuotation> validateVoidQuotation(List<OpportunityQuotation> list) {
@@ -777,6 +787,7 @@ public class OpportunityQuotationService {
      * 从字段值中提取ID集合
      *
      * @param fieldValue 字段值
+     *
      * @return ID集合
      */
     private Set<String> extractIdsFromFieldValue(Object fieldValue) {
@@ -819,6 +830,7 @@ public class OpportunityQuotationService {
      *
      * @param id    报价单ID
      * @param orgId 组织ID
+     *
      * @return 表单配置DTO
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
@@ -849,77 +861,120 @@ public class OpportunityQuotationService {
      *
      * @param fieldValues 自定义字段值
      * @param formConfig  字段配置
+     *
      * @return 处理后的自定义字段值
      */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private List<BaseModuleFieldValue> resolveSnapshotFields(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
-		List<BaseField> flattenFields = moduleFormService.flattenFormAllFields(formConfig);
-        List<BaseModuleFieldValue> subFieldValues = new ArrayList<>();
-		Map<String, BaseField> subFieldConfigMap = flattenFields.stream().filter(ff -> ff instanceof SubField).collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f));
-		fieldValues.stream().filter(fv -> subFieldConfigMap.containsKey(fv.getFieldId()) && subFieldConfigMap.get(fv.getFieldId()).isSubField())
-                .forEach(fv -> subFieldValues.add(new BaseModuleFieldValue(subFieldConfigMap.get(fv.getFieldId()).getId(), fv.getFieldValue())));
-        fieldValues.removeIf(fv -> subFieldConfigMap.containsKey(fv.getFieldId()) && subFieldConfigMap.get(fv.getFieldId()).isSubField());
-        if (CollectionUtils.isNotEmpty(subFieldValues)) {
+
+        // 1. 扁平化所有字段
+        final List<BaseField> flattenFields = moduleFormService.flattenFormAllFields(formConfig);
+
+        // 2. 构建子字段配置映射
+        final Map<String, BaseField> subFieldConfigMap = flattenFields.stream()
+                .filter(f -> f instanceof SubField)
+                .collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f));
+
+        // 3. 处理 SubField：将 subFieldId 替换为 fieldId
+        final List<BaseModuleFieldValue> subFieldValues = fieldValues.stream()
+                .filter(fv -> subFieldConfigMap.containsKey(fv.getFieldId())
+                        && subFieldConfigMap.get(fv.getFieldId()).isSubField())
+                .map(fv -> new BaseModuleFieldValue(
+                        subFieldConfigMap.get(fv.getFieldId()).getId(),
+                        fv.getFieldValue()
+                )).toList();
+
+        // 删除原 subField 项，并加入替换后的
+        fieldValues.removeIf(fv -> subFieldConfigMap.containsKey(fv.getFieldId())
+                && subFieldConfigMap.get(fv.getFieldId()).isSubField());
+
+        if (!subFieldValues.isEmpty()) {
             fieldValues.addAll(subFieldValues);
         }
-		Map<String, BaseField> sourceConfigMap = flattenFields.stream().filter(ff -> ff instanceof DatasourceField sourceField
-						&& CollectionUtils.isNotEmpty(sourceField.getShowFields())).collect(Collectors.toMap(BaseField::idOrBusinessKey, Function.identity(), (f1, f2) -> f1));
-		Map<String, BaseField> fieldMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
-		List<BaseModuleFieldValue> toAddFieldValues = new ArrayList<>();
-		fieldValues.forEach(fv -> {
-			if (fv.getFieldValue() == null) {
-				return;
-			}
-			if (sourceConfigMap.containsKey(fv.getFieldId())) {
-				DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fv.getFieldId());
-				FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-				Object detail = SourceServiceFactory.getById(sourceType, fv.getFieldValue().toString());
-				if (detail == null) {
-					return;
-				}
-				Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
-				sourceField.getShowFields().forEach(id -> {
-					BaseField showFieldConf = fieldMap.get(id);
-					if (showFieldConf == null) {
-						return;
-					}
-					toAddFieldValues.add(new BaseModuleFieldValue(id, opportunityQuotationFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap)));
-				});
-				return;
-			}
 
-			if (fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField()) {
-				List<Map<String, Object>> subValues = (List) fv.getFieldValue();
-				subValues.forEach(sfv -> {
-					Map<String, Object> showFieldMap = new HashMap<>();
-					sfv.forEach((k, v) -> {
-						if (v == null) {
-							return;
-						}
-						if (sourceConfigMap.containsKey(k)) {
-							DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
-							FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-							Object detail = SourceServiceFactory.getById(sourceType, v.toString());
-							if (detail == null) {
-								return;
-							}
-							Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
-							sourceField.getShowFields().forEach(id -> {
-								BaseField showFieldConf = fieldMap.get(id);
-								if (showFieldConf == null) {
-									return;
-								}
-								showFieldMap.put(id, opportunityQuotationFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap));
-							});
-						}
-					});
-					sfv.putAll(showFieldMap);
-				});
-			}
-		});
-		if (CollectionUtils.isNotEmpty(toAddFieldValues)) {
-			fieldValues.addAll(toAddFieldValues);
-		}
+        // 4. 数据源字段配置（有 showFields 的）
+        final Map<String, BaseField> sourceConfigMap = flattenFields.stream()
+                .filter(f -> f instanceof DatasourceField ds
+                        && CollectionUtils.isNotEmpty(ds.getShowFields()))
+                .collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
+
+        // 5. 所有字段映射
+        final Map<String, BaseField> fieldMap = flattenFields.stream()
+                .collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
+
+        final List<BaseModuleFieldValue> toAddFieldValues = new ArrayList<>();
+
+        // 6. 遍历原字段值，判断是否通过数据源填充 showFields
+        fieldValues.forEach(fv -> {
+            if (fv.getFieldValue() == null) {
+                return;
+            }
+
+            final String fieldId = fv.getFieldId();
+
+            // 数据源字段（普通字段）
+            if (sourceConfigMap.containsKey(fieldId)) {
+                final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fieldId);
+                final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
+
+                final Object detail = SourceServiceFactory.getById(sourceType, fv.getFieldValue().toString());
+                if (detail == null) {
+                    return;
+                }
+
+                final Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
+
+                sourceField.getShowFields().forEach(id -> {
+                    final BaseField showFieldConf = fieldMap.get(id);
+                    if (showFieldConf != null) {
+                        final Object val = opportunityQuotationFieldService
+                                .getFieldValueOfDetailMap(showFieldConf, detailMap);
+                        toAddFieldValues.add(new BaseModuleFieldValue(id, val));
+                    }
+                });
+                return;
+            }
+
+            // 7. SubField 里嵌套数据源字段
+            if (fieldMap.containsKey(fieldId) && fieldMap.get(fieldId).isSubField()) {
+                final List<Map<String, Object>> subValues = (List<Map<String, Object>>) fv.getFieldValue();
+
+                subValues.forEach(sfv -> {
+                    final Map<String, Object> showFieldMap = new HashMap<>();
+
+                    sfv.forEach((k, v) -> {
+                        if (v == null || !sourceConfigMap.containsKey(k)) {
+                            return;
+                        }
+
+                        final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
+                        final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
+
+                        final Object detail = SourceServiceFactory.getById(sourceType, v.toString());
+                        if (detail == null) {
+                            return;
+                        }
+
+                        final Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
+
+                        sourceField.getShowFields().forEach(id -> {
+                            final BaseField showFieldConf = fieldMap.get(id);
+                            if (showFieldConf != null) {
+                                showFieldMap.put(id, opportunityQuotationFieldService
+                                        .getFieldValueOfDetailMap(showFieldConf, detailMap));
+                            }
+                        });
+                    });
+
+                    sfv.putAll(showFieldMap);
+                });
+            }
+        });
+
+        if (!toAddFieldValues.isEmpty()) {
+            fieldValues.addAll(toAddFieldValues);
+        }
+
         return fieldValues;
     }
 
@@ -932,6 +987,7 @@ public class OpportunityQuotationService {
      * 通过名称获取报价单集合
      *
      * @param names 名称集合
+     *
      * @return 报价单集合
      */
     public List<OpportunityQuotation> getQuotationListByNames(List<String> names) {
