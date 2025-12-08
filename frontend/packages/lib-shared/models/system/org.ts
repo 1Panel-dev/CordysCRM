@@ -47,6 +47,7 @@ export interface BaseMemberInfo {
   enable: boolean; // 是否启用
   roleIds: string[]; // 角色
   userGroupIds: string[]; // 用户组
+  onboardingDate: number | null; // 入职日期
 }
 
 export interface MemberItem extends BaseMemberInfo {
