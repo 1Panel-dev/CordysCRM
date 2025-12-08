@@ -915,6 +915,21 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
+    if (props.formKey.value === FormDesignKeyEnum.CONTRACT_PAYMENT && props.sourceId?.value) {
+      // 合同详情下创建计划，自动带入合同信息
+      if (field.businessKey === 'contractId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value || props.initialSourceName?.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(
         props.formKey.value

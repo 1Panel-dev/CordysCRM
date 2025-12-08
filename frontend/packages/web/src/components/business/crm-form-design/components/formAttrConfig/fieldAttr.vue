@@ -1383,6 +1383,10 @@
         label: t('crmFormCreate.drawer.quotation'),
         value: FieldDataSourceTypeEnum.QUOTATION,
       },
+      {
+        label: t('module.contract'),
+        value: FieldDataSourceTypeEnum.CONTRACT,
+      },
     ];
     if (isSubTableField.value) {
       return fullList.filter((item) =>
