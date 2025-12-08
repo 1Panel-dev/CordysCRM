@@ -1138,7 +1138,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "sumColumns": ["quotationAmount"],
+      "sumColumns": ["amount"],
       "fixedColumn": 1,
       "mobile": true,
       "subFields": [
@@ -1336,7 +1336,7 @@
       "fieldWidth": 1,
       "mobile": true,
       "fixedColumn": 1,
-      "sumColumns": ["contractProductAmount", "contractProductNumber"],
+      "sumColumns": ["amount"],
       "subFields": [
         {
           "name": "选择产品",
