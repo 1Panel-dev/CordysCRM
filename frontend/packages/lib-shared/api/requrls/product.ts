@@ -24,3 +24,5 @@ export const DragSortProductPriceUrl = '/price/edit/pos'; // 排序拖拽价格�
 export const DownloadProductPriceTemplateUrl = '/price/template/download'; // 下载价格表模板
 export const ExportProductPriceUrl = '/price/export-select'; // 导出选择的价格表
 export const ExportAllProductPriceUrl = '/price/export'; // 导出所有的价格表
+export const ImportProductPriceUrl = '/price/import'; // 导入价格表
+export const PreCheckImportProductPriceUrl = '/price/import/pre-check'; // 导入价格表预检查

@@ -13,11 +13,13 @@ import {
   importLead,
   importOpportunity,
   importProduct,
+  importProductPrice,
   preCheckImportAccount,
   preCheckImportContact,
   preCheckImportLead,
   preCheckImportOpt,
   preCheckImportProduct,
+  preCheckImportProductPrice,
 } from '@/api/modules';
 
 export type ImportApiType =
@@ -61,9 +63,8 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     download: downloadProductTemplate,
   },
   [FormDesignKeyEnum.PRICE]: {
-    // TODO:
-    preCheck: () => Promise.resolve({ data: {} as ValidateInfo }),
-    save: () => Promise.resolve(),
+    preCheck: preCheckImportProductPrice,
+    save: importProductPrice,
     download: downloadProductPriceTemplate,
   },
 };

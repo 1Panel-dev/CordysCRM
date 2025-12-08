@@ -20,7 +20,9 @@ import {
   GetProductPriceListUrl,
   GetProductPriceUrl,
   GetProductUrl,
+  ImportProductPriceUrl,
   ImportProductUrl,
+  PreCheckImportProductPriceUrl,
   PreCheckProductImportUrl,
   UpdateProductPriceUrl,
   UpdateProductUrl,
@@ -162,6 +164,16 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
+  // 预检查导入价格表
+  function preCheckImportProductPrice(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportProductPriceUrl }, { fileList: [file] }, 'file');
+  }
+
+  // 导入价格表
+  function importProductPrice(file: File) {
+    return CDR.uploadFile({ url: ImportProductPriceUrl }, { fileList: [file] }, 'file');
+  }
+
   // 导出所有的价格表
   function exportProductPriceAll(data: TableExportParams) {
     return CDR.post({ url: ExportAllProductPriceUrl, data });
@@ -197,5 +209,7 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadProductPriceTemplate,
     exportProductPriceAll,
     exportProductPriceSelected,
+    preCheckImportProductPrice,
+    importProductPrice,
   };
 }
