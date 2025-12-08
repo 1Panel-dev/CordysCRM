@@ -84,4 +84,7 @@ public class UserPageResponse {
     @Schema(description = "是否是负责人")
     private Boolean commander;
 
+    @Schema(description = "入职时间")
+    private Long onboardingDate;
+
 }
