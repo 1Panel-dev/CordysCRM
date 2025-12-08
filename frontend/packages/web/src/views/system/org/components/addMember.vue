@@ -138,6 +138,14 @@
               :options="roleOptions"
             />
           </n-form-item>
+          <n-form-item
+            require-mark-placement="left"
+            label-placement="left"
+            path="onboardingDate"
+            :label="t('org.onboardingDate')"
+          >
+            <n-date-picker v-model:value="form.onboardingDate" type="date"> </n-date-picker>
+          </n-form-item>
           <!-- TODO  不上 -->
           <!-- <n-form-item
             require-mark-placement="left"
@@ -183,12 +191,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
   import {
     FormInst,
     FormItemRule,
     FormRules,
     NButton,
+    NDatePicker,
     NForm,
     NFormItem,
     NInput,
@@ -253,6 +261,7 @@
     userGroupIds: [],
     userName: '',
     roles: [],
+    onboardingDate: null,
   };
 
   const form = ref<MemberParams>(cloneDeep(initUserForm));
