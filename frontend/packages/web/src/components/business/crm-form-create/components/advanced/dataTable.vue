@@ -7,9 +7,9 @@
     ></div>
     <CrmSubTable
       v-model:value="value"
-      :sub-fields="fieldConfig.subFields || []"
+      :sub-fields="props.fieldConfig.subFields || []"
       :need-init-detail="props.needInitDetail"
-      :parent-id="fieldConfig.id"
+      :parent-id="props.fieldConfig.id"
       :readonly="false"
       :form-detail="props.formDetail"
       :fixed-column="props.fieldConfig.fixedColumn"
@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
 

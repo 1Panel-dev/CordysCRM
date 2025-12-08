@@ -143,6 +143,15 @@
     }
     return false;
   }
+
+  watch(
+    () => value.value,
+    () => {
+      selectedKeys.value = value.value;
+      selectedRows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less">

@@ -1494,6 +1494,7 @@
           ...selectedList.map((item) => ({
             ...item,
             resourceFieldId: fieldConfig.value.id,
+            description: '',
             editable: false,
           }))
         );
@@ -1509,6 +1510,7 @@
             ...selectedList.map((item) => ({
               ...item,
               resourceFieldId: fieldConfig.value.id,
+              description: '',
               editable: false,
             }))
           );
