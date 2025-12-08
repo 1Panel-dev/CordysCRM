@@ -95,6 +95,7 @@
 <script setup lang="ts">
   import { ref, RendererElement } from 'vue';
   import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import dayjs from 'dayjs';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -690,6 +691,16 @@
     //   },
     // },
     {
+      title: t('org.onboardingDate'),
+      key: 'onboardingDate',
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+    },
+    {
       title: t('common.createTime'),
       key: 'createTime',
       width: 120,
@@ -769,6 +780,7 @@
         phone: row.phone || '-',
         email: row.email || '-',
         employeeType: getEmployeeType(row.employeeType ?? ''),
+        onboardingDate: row.onboardingDate ? dayjs(row.onboardingDate).format('YYYY-MM-DD') : '-',
       };
     }
   );
