@@ -152,10 +152,12 @@ public class ModuleFormService {
 		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
 		ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
 		businessModuleFormConfig.setFormProp(config.getFormProp());
+		List<BaseField> flattenFields = flattenFormAllFields(config);
 		// 设置业务字段参数
-		businessModuleFormConfig.setFields(config.getFields().stream()
-				.peek(this::setFieldBusinessParam)
+		businessModuleFormConfig.setFields(flattenFields.stream()
 				.filter(BaseField::canDisplay)
+				.filter(f -> StringUtils.isEmpty(f.getResourceFieldId()))
+				.peek(this::setFieldBusinessParam)
 				.collect(Collectors.toList())
 		);
 		return businessModuleFormConfig;
@@ -402,7 +404,14 @@ public class ModuleFormService {
 	 */
 	public List<BaseField> flattenFormAllFields(ModuleFormConfigDTO formConfig) {
 		List<BaseField> toFlattenFields = new ArrayList<>();
-		formConfig.getFields().stream().filter(f -> f instanceof SubField).map(f -> ((SubField) f).getSubFields()).forEach(toFlattenFields::addAll);
+		formConfig.getFields().stream().filter(f -> f instanceof SubField).forEach(sf -> {
+			SubField subField = ((SubField) sf);
+			if (CollectionUtils.isEmpty(subField.getSubFields())) {
+				return;
+			}
+			subField.getSubFields().forEach(field -> field.setSubTableFieldId(subField.getId()));
+			toFlattenFields.addAll(subField.getSubFields());
+		});
 		formConfig.getFields().addAll(toFlattenFields);
 		return formConfig.getFields();
 	}
@@ -593,6 +602,7 @@ public class ModuleFormService {
 					BaseField refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
 					refField.setResourceFieldId(oldField.getResourceFieldId());
 					refField.setFieldWidth(oldField.getFieldWidth());
+					refField.setSubTableFieldId(oldField.getSubTableFieldId());
 					it.set(refField);
 				}
 			}
