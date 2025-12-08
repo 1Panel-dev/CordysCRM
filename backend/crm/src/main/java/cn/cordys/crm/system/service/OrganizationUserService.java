@@ -395,6 +395,7 @@ public class OrganizationUserService {
         BeanUtils.copyBean(organizationUser, request);
         organizationUser.setUpdateTime(System.currentTimeMillis());
         organizationUser.setUpdateUser(operatorId);
+        organizationUser.setOnboardingDate(request.getOnboardingDate());
         extOrganizationUserMapper.updateById(organizationUser);
     }
 
