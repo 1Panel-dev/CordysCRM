@@ -88,6 +88,10 @@
         return Promise.resolve(false);
       }
     }
+    if ((file.type && !['jpeg', 'png', 'jpg', 'gif', 'bmp', 'webp'].includes(file.type.split('/')[1])) || !file.type) {
+      Message.warning(t('crmFormCreate.advanced.typeNotValid'));
+      return Promise.resolve(false);
+    }
     const maxSize = props.fieldConfig.uploadSizeLimit || 20;
     const _maxSize = maxSize * 1024 * 1024;
     if (file.file && file.file.size > _maxSize) {
