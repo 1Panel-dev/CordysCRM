@@ -53,7 +53,11 @@ export default function useTableStore() {
       ) as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
     const extra = newArr.filter(
-      (item) => !oldArr.some((o) => o.key === item.key) && item.type !== SpecialColumnEnum.SELECTION
+      (item) =>
+        !oldArr.some((o) => o.key === item.key) &&
+        item.type !== SpecialColumnEnum.SELECTION &&
+        item.key !== SpecialColumnEnum.OPERATION &&
+        item.key !== SpecialColumnEnum.DRAG
     );
     const operationColumn = oldArr.find((item) => item.key === SpecialColumnEnum.OPERATION);
     const selectionColumn = newArr.find((item) => item.type === SpecialColumnEnum.SELECTION);
