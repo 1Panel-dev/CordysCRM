@@ -655,6 +655,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<T> resourceFields = getResourceField(resourceIds);
 		Map<String, Map<String, Object>> sourceDetailMap = getSourceDetailMapByIds(flattenFormFields, resourceFields);
 		resourceFields.forEach(resourceField -> {
+			if (resourceField instanceof BaseResourceSubField subResourceField && StringUtils.isNotEmpty(subResourceField.getRefSubId())) {
+				return;
+			}
             if (resourceField.getFieldValue() != null) {
                 BaseField fieldConfig = fieldConfigMap.get(resourceField.getFieldId());
                 if (fieldConfig == null) {
