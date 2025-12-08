@@ -112,7 +112,7 @@
         return value || '-';
     }
   }
-
+  const sumInitialOptions = ref<Record<string, any>[]>([]);
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields.map((field, index) => {
@@ -158,8 +158,11 @@
           fieldId: key,
           render: (row: any, rowIndex: number) => {
             return h(dataSource, {
-              value: row[key] || [],
-              fieldConfig: field,
+              value: row[key],
+              fieldConfig: {
+                ...field,
+                initialOptions: [...(field.initialOptions || []), ...sumInitialOptions.value],
+              },
               path: `${props.parentId}[${rowIndex}].${key}`,
               isSubTableRender: true,
               needInitDetail: props.needInitDetail,
@@ -176,6 +179,9 @@
               },
               onChange: (val, source) => {
                 row[key] = val;
+                sumInitialOptions.value = sumInitialOptions.value.concat(
+                  ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
+                );
                 if (field.showFields?.length) {
                   // 数据源显示字段联动
                   const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);

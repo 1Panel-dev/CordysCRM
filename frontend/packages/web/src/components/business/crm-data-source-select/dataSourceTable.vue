@@ -38,7 +38,7 @@
 <script setup lang="ts">
   import { DataTableRowKey } from 'naive-ui';
 
-  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
   import { CommonList } from '@lib/shared/models/common';
