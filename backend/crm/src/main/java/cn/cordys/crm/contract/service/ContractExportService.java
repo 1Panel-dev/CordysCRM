@@ -63,7 +63,7 @@ public class ContractExportService extends BaseExportService {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("导出中断");
             }
-            List<List<Object>> buildData = buildData(response, optionMap, exportFieldParam, exportParam.getMergeHeads());
+            List<List<Object>> buildData = buildData(response, exportFieldParam, exportParam.getMergeHeads());
             if (buildData.size() > 1) {
                 // 多行需要合并
                 mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
@@ -74,8 +74,7 @@ public class ContractExportService extends BaseExportService {
         return MergeResult.builder().mergeRegions(mergeRegions).dataList(data).build();
     }
 
-    private List<List<Object>> buildData(ContractListResponse detail, Map<String, List<OptionDTO>> optionMap,
-                                         ExportFieldParam exportFieldParam, List<String> heads) {
+    private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<String> heads) {
         return buildDataWithSub(detail.getModuleFields(), exportFieldParam, heads, getSystemFieldMap(detail));
     }
 
