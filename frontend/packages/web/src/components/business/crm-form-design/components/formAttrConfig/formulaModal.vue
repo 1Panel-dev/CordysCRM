@@ -273,11 +273,32 @@
     });
   }
 
+  function astToTooltipString(ast: any[], fieldMap: Record<string, string>): string {
+    return ast
+      .map((item) => {
+        if (item.type === 'field') return fieldMap[item.field] ?? item.field;
+        return item.value;
+      })
+      .join('');
+  }
+
   function saveCalculateFormula() {
     if (!editor.value) return;
     const ast = parseFormula(editor.value);
-    const astValue: string = astToFormulaString(ast);
-    emit('save', astValue);
+    const formulaString: string = astToFormulaString(ast);
+
+    const fieldMap: Record<string, string> = {};
+    calTagList.value.forEach((item) => {
+      fieldMap[item.id] = item.name;
+    });
+
+    const tooltipString = astToTooltipString(ast, fieldMap);
+
+    const result = JSON.stringify({
+      formula: formulaString,
+      tooltip: tooltipString,
+    });
+    emit('save', result);
   }
 
   function handleCancel() {
@@ -291,14 +312,26 @@
     isEmpty.value = true;
   }
 
+  function safeParseFormula(formulaString: string) {
+    if (!formulaString) return { type: 'string', formula: '' };
+
+    try {
+      const parsed = JSON.parse(formulaString);
+      return { type: 'json', formula: parsed.formula ?? '' };
+    } catch {
+      return { type: 'string', formula: formulaString };
+    }
+  }
+
   watch(
     () => visible.value,
     (val) => {
       if (val && props.fieldConfig.formula) {
         nextTick(() => {
           if (editor.value) {
-            const ast = formulaStringToAst(props.fieldConfig.formula ?? '');
-            if (props.fieldConfig.formula) {
+            const { formula } = safeParseFormula(props.fieldConfig.formula ?? '');
+            const ast = formulaStringToAst(formula ?? '');
+            if (formula) {
               isEmpty.value = false;
             }
             const fieldMap: Record<string, string> = {};

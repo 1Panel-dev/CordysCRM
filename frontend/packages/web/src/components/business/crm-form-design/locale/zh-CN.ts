@@ -173,6 +173,7 @@ export default {
   'crmFormDesign.onlyPlan': '计划',
   'crmFormDesign.calculation': '计算',
   'crmFormDesign.formula': '公式',
+  'crmFormDesign.formulaTooltip': '未设置计算方式，请联系管理员',
   'crmFormDesign.formulaSetting': '公式设置',
   'crmFormDesign.formulaEquals': '公式 =',
   'crmFormDesign.formulaPricing': '定价',
