@@ -76,7 +76,8 @@ public class ModuleFormService {
                 FieldSourceType.OPPORTUNITY.name(), "opportunity",
                 FieldSourceType.PRODUCT.name(), "product",
                 FieldSourceType.QUOTATION.name(), "opportunity_quotation",
-				FieldSourceType.PRICE.name(), "product_price");
+				FieldSourceType.PRICE.name(), "product_price",
+				FieldSourceType.CONTRACT.name(), "contract");
     }
 
     @Value("classpath:form/form.json")

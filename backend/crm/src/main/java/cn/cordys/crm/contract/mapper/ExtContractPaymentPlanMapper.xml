@@ -157,13 +157,13 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
-                {'name', 'owner', 'createTime', 'updateTime', 'planStatus', 'planAmount', 'planEndTime', 'createUser', 'updateUser', 'departmentId'}">
+                {'name', 'owner', 'createTime', 'updateTime', 'planStatus', 'planAmount', 'planEndTime', 'createUser', 'updateUser', 'departmentId', 'contractId'}">
                     <if test="condition.multipleValue">
-                        left join contract_payment_plan_blob ${tablePrefix}_${i}
+                        left join contract_payment_plan_field_blob ${tablePrefix}_${i}
                         on cpp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        left join contract_payment_plan ${tablePrefix}_${i}
+                        left join contract_payment_plan_field ${tablePrefix}_${i}
                         on cpp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
