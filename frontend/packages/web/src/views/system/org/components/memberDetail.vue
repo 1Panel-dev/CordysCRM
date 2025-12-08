@@ -26,14 +26,17 @@
       <template #workCity="{ item }">
         {{ getCityPath(item.value as string) || '-' }}
       </template>
+      <template #onboardingDate="{ item }">
+        {{ getDate(item.value as string) }}
+      </template>
     </CrmDescription>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
   import { NButton } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
+  import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath } from '@lib/shared/method';
@@ -78,6 +81,7 @@
     userGroupIds: [],
     userName: '',
     roles: [],
+    onboardingDate: null,
   };
 
   const detail = ref<MemberParams>(cloneDeep(initDetail));
@@ -98,6 +102,7 @@
     { label: t('org.position'), value: 'position' },
     // TODO 不上
     // { label: t('org.userGroup'), value: 'userGroup' },
+    { label: t('org.onboardingDate'), value: 'onboardingDate', valueSlotName: 'onboardingDate' },
   ];
 
   const descriptions = ref<Description[]>(cloneDeep(initDescriptions));
@@ -133,6 +138,11 @@
         return '-';
     }
   };
+
+  function getDate(value: string) {
+    if (!value) return '-';
+    return dayjs(value).format('YYYY-MM-DD');
+  }
 
   watch(
     () => showDetailDrawer.value,

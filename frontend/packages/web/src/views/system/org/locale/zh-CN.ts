@@ -70,4 +70,5 @@ export default {
   'org.firstSyncUserTipContent': '同步组织架构将删除现有成员，此操作不可逆，确认继续同步?',
   'org.searchByNameAndPhone': '通过姓名/手机号搜索',
   'org.setDirectSuperiors': '设置直属上级',
+  'org.onboardingDate': '入职日期',
 };
