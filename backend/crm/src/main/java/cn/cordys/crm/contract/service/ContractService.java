@@ -94,8 +94,6 @@ public class ContractService {
     private SerialNumGenerator serialNumGenerator;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
-    @Resource
-    private ExtContractSnapshotMapper extContractSnapshotMapper;
 
     /**
      * 新建合同
@@ -103,6 +101,7 @@ public class ContractService {
      * @param request
      * @param operatorId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
@@ -159,8 +158,7 @@ public class ContractService {
         if (numberField != null) {
             BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
             fieldValue.setFieldId(numberField.getId());
-            String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.CONTRACT.getKey());
-            return serialNo;
+            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.CONTRACT.getKey());
         }
         return null;
     }
@@ -193,6 +191,7 @@ public class ContractService {
      * @param contract
      * @param moduleFields
      * @param moduleFormConfigDTO
+     *
      * @return
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -232,6 +231,7 @@ public class ContractService {
      * @param request
      * @param userId
      * @param orgId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -346,6 +346,7 @@ public class ContractService {
      * 合同详情
      *
      * @param id
+     *
      * @return
      */
     public ContractResponse get(String id) {
@@ -373,6 +374,7 @@ public class ContractService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
+     *
      * @return
      */
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -438,6 +440,7 @@ public class ContractService {
      *
      * @param request
      * @param userId
+     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
@@ -493,6 +496,7 @@ public class ContractService {
      *
      * @param id
      * @param orgId
+     *
      * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
