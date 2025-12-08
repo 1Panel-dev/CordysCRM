@@ -10,6 +10,9 @@ import java.util.List;
 @Data
 public class ContractPaymentPlanExportRequest extends ContractPaymentPlanPageRequest {
 
+    @Schema(description = "合同ID")
+    private String contractId;
+
     @Schema(description = "文件名")
     private String fileName;
 
