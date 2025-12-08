@@ -101,6 +101,8 @@ export const {
   downloadProductPriceTemplate,
   exportProductPriceAll,
   exportProductPriceSelected,
+  preCheckImportProductPrice,
+  importProductPrice,
 } = productApi;
 
 export const {
