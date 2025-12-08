@@ -17,6 +17,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.SourceServiceFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -36,9 +37,12 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -67,6 +71,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -144,7 +149,7 @@ public class OpportunityQuotationService {
         opportunityQuotationMapper.insert(opportunityQuotation);
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+        List<BaseModuleFieldValue> resolveFieldValues = resolveSnapshotFields(moduleFields, moduleFormConfigDTO);
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
 
         baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
@@ -539,7 +544,7 @@ public class OpportunityQuotationService {
         }
         snapshotBaseMapper.deleteByLambda(delWrapper);
         //保存快照
-        List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+        List<BaseModuleFieldValue> resolveFieldValues = resolveSnapshotFields(moduleFields, moduleFormConfigDTO);
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response);
         // 处理日志上下文
@@ -846,16 +851,75 @@ public class OpportunityQuotationService {
      * @param formConfig  字段配置
      * @return 处理后的自定义字段值
      */
-    private List<BaseModuleFieldValue> resolveSubBusiness(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
-        Map<String, BaseField> fieldMap = formConfig.getFields().stream().filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
-                .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
+	@SuppressWarnings("unchecked")
+    private List<BaseModuleFieldValue> resolveSnapshotFields(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
+		List<BaseField> flattenFields = moduleFormService.flattenFormAllFields(formConfig);
         List<BaseModuleFieldValue> subFieldValues = new ArrayList<>();
-        fieldValues.stream().filter(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField())
-                .forEach(fv -> subFieldValues.add(new BaseModuleFieldValue(fieldMap.get(fv.getFieldId()).getId(), fv.getFieldValue())));
-        fieldValues.removeIf(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField());
+		Map<String, BaseField> subFieldConfigMap = flattenFields.stream().filter(ff -> ff instanceof SubField).collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f));
+		fieldValues.stream().filter(fv -> subFieldConfigMap.containsKey(fv.getFieldId()) && subFieldConfigMap.get(fv.getFieldId()).isSubField())
+                .forEach(fv -> subFieldValues.add(new BaseModuleFieldValue(subFieldConfigMap.get(fv.getFieldId()).getId(), fv.getFieldValue())));
+        fieldValues.removeIf(fv -> subFieldConfigMap.containsKey(fv.getFieldId()) && subFieldConfigMap.get(fv.getFieldId()).isSubField());
         if (CollectionUtils.isNotEmpty(subFieldValues)) {
             fieldValues.addAll(subFieldValues);
         }
+		Map<String, BaseField> sourceConfigMap = flattenFields.stream().filter(ff -> ff instanceof DatasourceField sourceField
+						&& CollectionUtils.isNotEmpty(sourceField.getShowFields())).collect(Collectors.toMap(BaseField::idOrBusinessKey, Function.identity(), (f1, f2) -> f1));
+		Map<String, BaseField> fieldMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
+		List<BaseModuleFieldValue> toAddFieldValues = new ArrayList<>();
+		fieldValues.forEach(fv -> {
+			if (fv.getFieldValue() == null) {
+				return;
+			}
+			if (sourceConfigMap.containsKey(fv.getFieldId())) {
+				DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fv.getFieldId());
+				FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
+				Object detail = SourceServiceFactory.getById(sourceType, fv.getFieldValue().toString());
+				if (detail == null) {
+					return;
+				}
+				Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
+				sourceField.getShowFields().forEach(id -> {
+					BaseField showFieldConf = fieldMap.get(id);
+					if (showFieldConf == null) {
+						return;
+					}
+					toAddFieldValues.add(new BaseModuleFieldValue(id, opportunityQuotationFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap)));
+				});
+				return;
+			}
+
+			if (fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField()) {
+				List<Map<String, Object>> subValues = (List) fv.getFieldValue();
+				subValues.forEach(sfv -> {
+					Map<String, Object> showFieldMap = new HashMap<>();
+					sfv.forEach((k, v) -> {
+						if (v == null) {
+							return;
+						}
+						if (sourceConfigMap.containsKey(k)) {
+							DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
+							FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
+							Object detail = SourceServiceFactory.getById(sourceType, v.toString());
+							if (detail == null) {
+								return;
+							}
+							Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
+							sourceField.getShowFields().forEach(id -> {
+								BaseField showFieldConf = fieldMap.get(id);
+								if (showFieldConf == null) {
+									return;
+								}
+								showFieldMap.put(id, opportunityQuotationFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap));
+							});
+						}
+					});
+					sfv.putAll(showFieldMap);
+				});
+			}
+		});
+		if (CollectionUtils.isNotEmpty(toAddFieldValues)) {
+			fieldValues.addAll(toAddFieldValues);
+		}
         return fieldValues;
     }
 

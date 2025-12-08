@@ -733,7 +733,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> detailMap) {
+	public Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> detailMap) {
 		if (detailMap == null || detailMap.isEmpty()) {
 			return null;
 		}
