@@ -79,8 +79,8 @@ export interface PaymentPlanDetail extends PaymentPlanItem {
 
 // 添加回款计划参数
 export interface SavePaymentPlanParams {
-  contractId: string;
-  owner: string;
+  contractId?: string;
+  owner?: string;
   planStatus: string;
   planAmount?: number;
   planEndTime?: number;

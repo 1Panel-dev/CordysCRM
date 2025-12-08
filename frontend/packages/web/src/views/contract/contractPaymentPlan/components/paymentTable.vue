@@ -330,7 +330,10 @@
 
   async function changeStatus(row: PaymentPlanItem) {
     try {
-      await updatePaymentPlan(row);
+      await updatePaymentPlan({
+        id: row.id,
+        planStatus: row.planStatus,
+      });
       Message.success(t('common.updateSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
