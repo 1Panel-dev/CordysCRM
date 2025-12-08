@@ -995,7 +995,7 @@
             multiple
             :options="
               fieldConfig.subFields
-                ?.filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
+                ?.filter((e) => [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(e.type))
                 .map((e) => ({
                   label: e.name,
                   value: e.businessKey || e.id,

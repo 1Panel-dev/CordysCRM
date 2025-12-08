@@ -51,6 +51,7 @@
   import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
 
   import useLocalForage from '@/hooks/useLocalForage';
+  import { hasAllPermission } from '@/utils/permission';
 
   import type { ContentTabsMap, TabContentItem } from './type';
 
@@ -65,7 +66,7 @@
     (e: 'init', value: TabContentItem[]): void;
   }>();
 
-  const cachedData = ref<TabContentItem[]>(props.tabList);
+  const cachedData = ref<TabContentItem[]>(props.tabList.filter((e) => hasAllPermission(e?.permission || [])));
 
   const popoverVisible = ref(false);
 
@@ -104,11 +105,13 @@
   }
 
   const enableTabs = computed<TabContentItem[]>(() => cachedData.value.filter((e) => e.enable));
-
+  const newTabList = computed<TabContentItem[]>(() =>
+    props.tabList.filter((e) => hasAllPermission(e?.permission || []))
+  );
   async function loadTab() {
     try {
       const localTabs = await getTabsFromLocal();
-      const currentTabMap = new Map(props.tabList.map((tab) => [tab.name, tab]));
+      const currentTabMap = new Map(newTabList.value.map((tab) => [tab.name, tab]));
 
       if (localTabs.length > 0) {
         // 使用本地存储的顺序，但只包含当前仍然存在的标签页
@@ -121,7 +124,7 @@
 
         // 添加新增的标签页（在本地存储中不存在的）
         const existingNames = new Set(mergedTabs.map((tab) => tab.name));
-        const newTabs = props.tabList
+        const newTabs = newTabList.value
           .filter((tab) => !existingNames.has(tab.name))
           .map((tab) => ({ ...tab, enable: true }));
 
@@ -139,7 +142,7 @@
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      cachedData.value = props.tabList.map((tab) => ({ ...tab, enable: true }));
+      cachedData.value = newTabList.value.map((tab) => ({ ...tab, enable: true }));
     }
   }
 
@@ -167,7 +170,7 @@
   });
 
   watch(
-    () => props.tabList,
+    () => newTabList.value,
     () => {
       loadTab();
     },
