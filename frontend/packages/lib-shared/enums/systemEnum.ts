@@ -53,6 +53,7 @@ export enum OperationTypeEnum {
   CANCEL_VOID = 'CANCEL_VOID', // 取消作废
   ARCHIVE = 'ARCHIVE', // 归档
   UNARCHIVE = 'UNARCHIVE', // 取消归档
+  DOWNLOAD = 'DOWNLOAD', // 下载
 }
 
 export enum PersonalExportStatusEnum {

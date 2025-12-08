@@ -70,6 +70,7 @@ import {
   BatchApproveUrl,
   BatchVoidedUrl,
   GetQuotationSnapshotFormConfigUrl,
+  DownloadQuotationUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -454,6 +455,10 @@ export default function useProductApi(CDR: CordysAxios) {
   function batchVoided(data: BatchUpdateQuotationStatusParams) {
     return CDR.post<BatchOperationResult>({ url: BatchVoidedUrl, data });
   }
+  
+  function downloadQuotation(id: string) {
+    return CDR.get({ url: `${DownloadQuotationUrl}/${id}`  });
+  }
 
   return {
     getOpportunityList,
@@ -526,5 +531,6 @@ export default function useProductApi(CDR: CordysAxios) {
     revokeQuotation,
     batchApprove,
     batchVoided,
+    downloadQuotation,
   };
 }

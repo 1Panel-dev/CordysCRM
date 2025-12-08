@@ -33,6 +33,8 @@
 
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
 
+  import { downloadQuotation } from '@/api/modules';
+
   const { t } = useI18n();
 
   const loading = ref(true);
@@ -51,9 +53,15 @@
     formLoading.value = false;
     await nextTick();
     await sleep(300);
-    exportPDF(quotationDetail.value?.name ?? t('opportunity.quotation'), 'quotation-detail', () => {
+    exportPDF(quotationDetail.value?.name ?? t('opportunity.quotation'), 'quotation-detail', async () => {
       loading.value = false;
-      Message.success(t('opportunity.quotation.exportPdfSuccess'));
+      try {
+        await downloadQuotation(sourceId.value);
+        Message.success(t('opportunity.quotation.exportPdfSuccess'));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     });
   }
 </script>
