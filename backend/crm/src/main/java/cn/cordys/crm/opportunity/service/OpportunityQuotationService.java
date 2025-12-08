@@ -240,23 +240,13 @@ public class OpportunityQuotationService {
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-        //获取ApprovalState中所有状态的id属性(以后改成获取自定义的审批状态)
-        List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).toList();
-        if (approvalStatusList.contains(opportunityQuotation.getApprovalStatus()) && (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString()))) {
-            // 已审核，查询最新快照
-            LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
-            OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
-            if (snapshot != null) {
-                response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
-            }
-        } else {
-            // 未审核，查询当前值
-            List<BaseModuleFieldValue> moduleFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
-            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
-            response = getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+        // 已审核，查询最新快照
+        LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+        OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
         }
-
         return response;
     }
 
