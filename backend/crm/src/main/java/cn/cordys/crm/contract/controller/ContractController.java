@@ -138,7 +138,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
     @Operation(summary = "审核通过/不通过")
     public void approval(@Validated @RequestBody ContractApprovalRequest request) {
-        contractService.approvalContract(request, SessionUtils.getUserId());
+        contractService.approvalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/approval")

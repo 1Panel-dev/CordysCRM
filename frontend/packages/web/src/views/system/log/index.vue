@@ -155,6 +155,7 @@
   }
 
   const moduleOptions = ref<CascaderOption[]>([]);
+
   function initModuleOptions() {
     moduleOptions.value = getModuleOptions();
   }
@@ -264,7 +265,11 @@
           {
             onClick: async () => {
               activeLogDetail.value = row;
-              if ([OperationTypeEnum.UPDATE, OperationTypeEnum.MERGE].includes(row.type as OperationTypeEnum)) {
+              if (
+                [OperationTypeEnum.UPDATE, OperationTypeEnum.MERGE, OperationTypeEnum.APPROVAL].includes(
+                  row.type as OperationTypeEnum
+                )
+              ) {
                 await getLogDetail(row.id);
               }
               if (!showDetailDrawer.value) {
@@ -293,6 +298,7 @@
 
   const loginLogRef = ref<InstanceType<typeof LoginLog>>();
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+
   async function searchData() {
     const { time, ...otherForm } = form.value;
     if (activeTab.value === 'operation') {
@@ -330,6 +336,7 @@
       padding: 24px 24px 8px;
     }
   }
+
   :deep(.n-form-item-feedback-wrapper) {
     min-height: 16px;
   }

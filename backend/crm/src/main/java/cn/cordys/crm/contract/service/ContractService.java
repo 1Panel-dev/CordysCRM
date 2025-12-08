@@ -599,13 +599,12 @@ public class ContractService {
      * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.APPROVAL, resourceId = "{#request.id}")
-    public void approvalContract(ContractApprovalRequest request, String userId) {
+    public void approvalContract(ContractApprovalRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-
+        String state = contract.getApprovalStatus();
         contract.setApprovalStatus(request.getApprovalStatus());
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(userId);
@@ -614,7 +613,8 @@ public class ContractService {
         updateStatusSnapshot(request.getId(), null, null, request.getApprovalStatus());
 
         // 添加日志上下文
-        OperationLogContext.setResourceName(contract.getName().concat(":").concat(Translator.get(request.getApprovalStatus())));
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, contract.getName(), state, request.getApprovalStatus());
+        logService.add(logDTO);
     }
 
 
@@ -645,10 +645,11 @@ public class ContractService {
             batchUpdateMapper.updateStatus(id, request.getApprovalStatus(), userId, System.currentTimeMillis());
             ContractSnapshot contractSnapshot = snapshotsMaps.get(id);
             ContractResponse response = JSON.parseObject(contractSnapshot.getContractValue(), ContractResponse.class);
+            String state = response.getApprovalStatus();
             response.setApprovalStatus(request.getApprovalStatus());
             contractSnapshot.setContractValue(JSON.toJSONString(response));
             snapshotMapper.update(contractSnapshot);
-            LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INDEX, response.getName().concat(".").concat(Translator.get(request.getApprovalStatus())));
+            LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, response.getName(), state, request.getApprovalStatus());
             logs.add(logDTO);
         });
         sqlSession.flushStatements();
@@ -656,5 +657,16 @@ public class ContractService {
         logService.batchAdd(logs);
 
         return BatchAffectSkipResponse.builder().success(ids.size()).fail(0).skip(request.getIds().size() - ids.size()).build();
+    }
+
+    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
+        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INDEX, response);
+        Map<String, String> oldMap = new HashMap<>();
+        oldMap.put("approvalStatus", Translator.get("contract.review_status." + state.toLowerCase()));
+        logDTO.setOriginalValue(oldMap);
+        Map<String, String> newMap = new HashMap<>();
+        newMap.put("approvalStatus", Translator.get("contract.review_status." + newState.toLowerCase()));
+        logDTO.setModifiedValue(newMap);
+        return logDTO;
     }
 }
