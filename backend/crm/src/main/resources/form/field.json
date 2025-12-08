@@ -1329,7 +1329,7 @@
     {
       "name": "合同报价信息",
       "internalKey": "contractProducts",
-      "type": "SUB_PRICE",
+      "type": "SUB_PRODUCT",
       "showLabel": true,
       "readable": true,
       "editable": true,
