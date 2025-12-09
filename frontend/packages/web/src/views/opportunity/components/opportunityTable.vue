@@ -655,7 +655,10 @@
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       customerId: (row: OpportunityItem) => {
-        return props.isCustomerTab || props.formKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY
+        return props.isCustomerTab ||
+          props.formKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY ||
+          (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+          (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
           ? h(
               CrmNameTooltip,
               { text: row.customerName },

@@ -58,12 +58,26 @@
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <CrmTableButton @click="openCustomerDetail(formDetail[item.fieldInfo.id])">
+          <CrmTableButton
+            v-if="
+              (!detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+              (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
+            "
+            @click="openCustomerDetail(formDetail[item.fieldInfo.id])"
+          >
             <template #trigger>
               {{ item.value }}
             </template>
             {{ item.value }}
           </CrmTableButton>
+          <n-tooltip v-else :delay="300">
+            <template #trigger>
+              <div class="one-line-text">
+                {{ item.value }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
         </div>
       </template>
       <template #[FieldDataSourceTypeEnum.CONTRACT]="{ item }">

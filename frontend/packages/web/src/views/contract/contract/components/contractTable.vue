@@ -108,6 +108,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -466,15 +467,24 @@
         );
       },
       customerId: (row: ContractItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showCustomerDrawer(row);
-            },
-          },
-          { default: () => row.customerName, trigger: () => row.customerName }
-        );
+        return (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+          (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
+          ? h(
+              CrmNameTooltip,
+              { text: row.customerName },
+              {
+                default: () => row.customerName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showCustomerDrawer(row);
+                },
+              },
+              { default: () => row.customerName, trigger: () => row.customerName }
+            );
       },
       status: (row: ContractItem) =>
         h(StatusTagSelect, {
