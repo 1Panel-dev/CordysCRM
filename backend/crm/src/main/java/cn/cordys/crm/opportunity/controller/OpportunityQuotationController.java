@@ -77,6 +77,14 @@ public class OpportunityQuotationController {
     }
 
     //查询详情
+    @GetMapping("/get/snapshot/{id}")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
+    @Operation(summary = "获取报价单快照详情")
+    public OpportunityQuotationGetResponse getSnapshot(@PathVariable("id") String id) {
+        return opportunityQuotationService.getSnapshot(id);
+    }
+
+    //查询详情
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "获取报价单详情")

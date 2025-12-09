@@ -79,6 +79,7 @@ import {
   getQuotationDetail,
   getQuotationFormConfig,
   getQuotationList,
+  getQuotationSnapshotDetail,
   getQuotationSnapshotFormConfig,
   updateClue,
   updateClueFollowPlan,
@@ -788,7 +789,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getPaymentPlanDetail,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationDetail,
   [FormDesignKeyEnum.PRICE]: getProductPrice,
-  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationDetail,
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationSnapshotDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {

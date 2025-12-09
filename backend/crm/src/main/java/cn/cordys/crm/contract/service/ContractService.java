@@ -101,7 +101,6 @@ public class ContractService {
      * @param request
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
@@ -143,7 +142,7 @@ public class ContractService {
         baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService);
         ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
@@ -191,7 +190,6 @@ public class ContractService {
      * @param contract
      * @param moduleFields
      * @param moduleFormConfigDTO
-     *
      * @return
      */
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -231,7 +229,6 @@ public class ContractService {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -286,7 +283,7 @@ public class ContractService {
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            List<BaseModuleFieldValue> resolveFieldValues = resolveSubBusiness(moduleFields, moduleFormConfigDTO);
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService);
             ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(contract, saveModuleFormConfigDTO, response);
             // 处理日志上下文
@@ -346,7 +343,6 @@ public class ContractService {
      * 合同详情
      *
      * @param id
-     *
      * @return
      */
     public ContractResponse get(String id) {
@@ -374,7 +370,6 @@ public class ContractService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -440,7 +435,6 @@ public class ContractService {
      *
      * @param request
      * @param userId
-     *
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
@@ -496,7 +490,6 @@ public class ContractService {
      *
      * @param id
      * @param orgId
-     *
      * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
@@ -572,20 +565,6 @@ public class ContractService {
             first.setContractValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(first);
         }
-    }
-
-
-    private List<BaseModuleFieldValue> resolveSubBusiness(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig) {
-        Map<String, BaseField> fieldMap = formConfig.getFields().stream().filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
-                .collect(Collectors.toMap(BaseField::getBusinessKey, f -> f));
-        List<BaseModuleFieldValue> subFieldValues = new ArrayList<>();
-        fieldValues.stream().filter(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField())
-                .forEach(fv -> subFieldValues.add(new BaseModuleFieldValue(fieldMap.get(fv.getFieldId()).getId(), fv.getFieldValue())));
-        fieldValues.removeIf(fv -> fieldMap.containsKey(fv.getFieldId()) && fieldMap.get(fv.getFieldId()).isSubField());
-        if (CollectionUtils.isNotEmpty(subFieldValues)) {
-            fieldValues.addAll(subFieldValues);
-        }
-        return fieldValues;
     }
 
     public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
