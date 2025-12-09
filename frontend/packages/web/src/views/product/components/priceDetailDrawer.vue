@@ -1,10 +1,5 @@
 <template>
   <CrmDrawer v-model:show="show" :title="sourceName" :width="800" :footer="false">
-    <template #titleLeft>
-      <CrmTag class="font-normal" theme="light" :type="`${enabled ? 'success' : 'default'}`">
-        {{ enabled ? t('common.activated') : t('common.disabled') }}
-      </CrmTag>
-    </template>
     <template #titleRight>
       <n-button
         v-permission="['PRICE:UPDATE']"
@@ -55,7 +50,6 @@
   });
 
   const sourceName = ref<string>('');
-  const enabled = ref<boolean>(false);
 
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,
@@ -63,7 +57,6 @@
     detail?: Record<string, any>
   ) {
     sourceName.value = _sourceName || '';
-    enabled.value = !!detail?.optionMap.status?.find((item: any) => item.id === detail?.status);
   }
 
   function handleEdit() {

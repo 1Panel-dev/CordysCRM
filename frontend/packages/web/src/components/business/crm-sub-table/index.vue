@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableCreateSummary, NButton, NDataTable } from 'naive-ui';
+  import { DataTableCreateSummary, NButton, NDataTable, NTooltip } from 'naive-ui';
 
   import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
@@ -126,7 +126,16 @@
           width: 150,
           key,
           fieldId: key,
-          render: (row: any) => initFieldValueText(field, key, row[key]),
+          render: (row: any) =>
+            h(
+              NTooltip,
+              { trigger: 'hover' },
+              {
+                default: () => initFieldValueText(field, key, row[key]),
+                trigger: () =>
+                  h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
+              }
+            ),
           filedType: field.type,
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
