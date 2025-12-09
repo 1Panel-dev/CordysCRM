@@ -179,6 +179,7 @@ export default {
   'crmFormDesign.formulaPricing': '定价',
   'crmFormDesign.formulaDiscount': '折扣',
   'crmFormDesign.formulaPlaceholder': '点击下方标签输入运算符号编辑公式；例：',
+  'crmFormDesign.formulaHasBeenSet': '已设置',
   'crmFormDesign.amount': '金额',
   'crmFormDesign.CLUE_TO_CUSTOMER': '线索转客户',
   'crmFormDesign.CLUE_TO_OPPORTUNITY': '线索转商机',

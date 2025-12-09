@@ -640,7 +640,7 @@
             :disabled="!!fieldConfig.resourceFieldId"
             @click="handleCalculateFormula"
           >
-            {{ t('common.setting') }}
+            {{ fieldConfig.formula?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
           </n-button>
         </div>
       </template>

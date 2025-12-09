@@ -181,6 +181,7 @@ export default {
   'crmFormDesign.formulaPricing': 'Price',
   'crmFormDesign.formulaDiscount': 'Discount',
   'crmFormDesign.formulaPlaceholder': 'Click the tag below to enter the operation symbol and edit the formula',
+  'crmFormDesign.formulaHasBeenSet': 'Formula has been set',
   'crmFormDesign.amount': 'Amount',
   'crmFormDesign.CLUE_TO_CUSTOMER': 'Lead to Account',
   'crmFormDesign.CLUE_TO_OPPORTUNITY': 'Lead to Opportunity',
