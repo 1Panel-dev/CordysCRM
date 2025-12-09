@@ -44,7 +44,11 @@
           </div>
           <!-- 登录页预览实际渲染 DOM，按三种屏幕尺寸缩放 -->
           <div :class="['page-preview', isLoginPageFullscreen ? 'page-preview-full' : 'page-preview-normal']">
-            <Banner :banner="pageConfig.loginImage[0]?.url ?? defaultLoginImage" is-preview />
+            <Banner
+              :banner="pageConfig.loginImage[0]?.url ?? defaultLoginImage"
+              is-preview
+              :logo="pageConfig.loginLogo[0]?.url ?? defaultLoginLogo"
+            />
             <LoginForm
               :slogan="pageConfig.slogan"
               :logo="pageConfig.loginLogo[0]?.url ?? defaultLoginLogo"
