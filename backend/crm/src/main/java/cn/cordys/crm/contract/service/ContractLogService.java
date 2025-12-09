@@ -1,9 +1,14 @@
 package cn.cordys.crm.contract.service;
 
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
+import cn.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,11 +17,32 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ContractLogService extends BaseModuleLogService {
+
+    @Resource
+    private BaseMapper<Customer> customerMapper;
+
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.CONTRACT.getKey());
 
         for (JsonDifferenceDTO differ : differences) {
+
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey())) {
+                if (differ.getOldValue() != null) {
+                    Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
+                    if (customer != null) {
+                        differ.setOldValueName(customer.getName());
+                    }
+                }
+                if (differ.getNewValue() != null) {
+                    Customer customer = customerMapper.selectByPrimaryKey(differ.getNewValue().toString());
+                    if (customer != null) {
+                        differ.setNewValueName(customer.getName());
+                    }
+                }
+                continue;
+            }
+
 
             if (differ.getColumn().contains(Translator.get("products_info"))) {
                 differ.setColumnName(differ.getColumn());
