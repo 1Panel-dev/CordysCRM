@@ -667,8 +667,6 @@ export function getFileIconType(type: string) {
       return 'iconicon_file-word_colorful';
     case 'xlsx':
       return 'iconicon_file-excel_colorful';
-    case 'mp4':
-      return 'iconicon_file-video_colorful';
     case 'csv':
       return 'iconicon_file-CSV_colorful';
     case 'xmind':
@@ -683,6 +681,10 @@ export function getFileIconType(type: string) {
       return 'icona-icon_file-JMX';
     case 'har':
       return 'iconicon_file_har';
+    case 'mp4':
+    case 'mov':
+    case 'wmv':
+      return 'iconicon_file_video_colorful';
     default:
       return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(type)
         ? 'iconicon_file-image_colorful'

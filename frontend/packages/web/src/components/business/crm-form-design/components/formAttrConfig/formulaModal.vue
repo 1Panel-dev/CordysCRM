@@ -75,9 +75,10 @@
     props.formFields
       .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
       .map((e) => {
+        const fieldId = e.businessKey || e.id;
         return {
           ...e,
-          id: e.numberFormat === 'percent' ? `(${e.id} / 100)` : e.id,
+          id: e.numberFormat === 'percent' ? `(${fieldId} / 100)` : fieldId,
         };
       })
   );

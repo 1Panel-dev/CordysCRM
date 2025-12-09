@@ -75,7 +75,7 @@
 
     // 替换变量
     express = express.replace(/\$\{(.+?)\}/g, (_, fieldId) => {
-      const fieldIdMatch = fieldId.match(/^\(?(\d+)\)?/);
+      const fieldIdMatch = fieldId.match(/^\(?([A-Za-z0-9_]+)\)?/);
       if (!fieldIdMatch) return '0';
       const realId = fieldIdMatch[1];
       const rawVal = getter(realId);
