@@ -18,7 +18,7 @@
       t('crmFormDesign.selectDataSource', { type: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '' })
     "
     :positive-text="t('common.confirm')"
-    class="crm-data-source-select-modal"
+    :class="`crm-data-source-select-modal ${fullScreenModal ? 'crm-full-modal' : ''}`"
     @confirm="handleDataSourceConfirm"
     @cancel="handleDataSourceCancel"
   >
@@ -30,6 +30,8 @@
       :source-type="props.dataSourceType"
       :disabled-selection="tableDisabledSelection"
       :filter-params="filterParams"
+      :fullscreen-target-ref="fullscreenTargetRef"
+      @toggle-full-screen="(val) => (fullScreenModal = val)"
     />
   </CrmModal>
 </template>
@@ -152,12 +154,53 @@
     },
     { immediate: true }
   );
+
+  const fullscreenTargetRef = ref();
+  const fullScreenModal = ref(false);
+
+  function setFullWrapperFullScreenRef() {
+    nextTick(() => {
+      const wrapper = document.querySelector('.n-modal-body-wrapper .crm-data-source-select-modal');
+      fullscreenTargetRef.value = wrapper;
+    });
+  }
+
+  watch(
+    () => dataSourcesModalVisible.value,
+    (v) => {
+      if (v) {
+        setFullWrapperFullScreenRef();
+      } else {
+        fullScreenModal.value = false;
+      }
+    }
+  );
+
+  watch(
+    () => fullScreenModal.value,
+    () => {
+      setFullWrapperFullScreenRef();
+    }
+  );
 </script>
 
 <style lang="less">
   .crm-data-source-select-modal {
     .n-dialog__title {
       @apply justify-between;
+    }
+  }
+  .crm-full-modal {
+    max-width: 100% !important;
+    .n-dialog__content {
+      height: calc(100vh - 136px);
+      .n-scrollbar {
+        height: 100% !important;
+        max-height: none !important;
+        .n-scrollbar-content {
+          height: 100%;
+        }
+      }
     }
   }
 </style>
