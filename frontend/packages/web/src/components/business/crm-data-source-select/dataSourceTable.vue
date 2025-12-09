@@ -1,17 +1,15 @@
 <template>
   <div
-    ref="fullscreenTargetRef"
     class="crm-data-source-table relative bg-[var(--text-n10)]"
     :style="{
-      height: isFullScreen ? '100%' : '60vh',
-      padding: isFullScreen ? '16px' : '0',
+      height: isFullScreen ? 'calc(100vh - 138px)' : '60vh',
     }"
   >
     <CrmTable
       ref="crmTableRef"
       v-model:checked-row-keys="selectedKeys"
       v-bind="propsRes"
-      :fullscreen-target-ref="fullscreenTargetRef"
+      :fullscreen-target-ref="props.fullscreenTargetRef"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -71,11 +69,16 @@
       multiple?: boolean;
       disabledSelection?: (row: RowData) => boolean;
       filterParams?: FilterResult;
+      fullscreenTargetRef?: HTMLElement | null;
     }>(),
     {
       multiple: true,
     }
   );
+
+  const emit = defineEmits<{
+    (e: 'toggleFullScreen', value: boolean): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -159,7 +162,7 @@
       crmPagination: {
         showSizePicker: false,
       },
-      containerClass: '.crm-data-source-select-modal',
+      containerClass: '.crm-data-source-table',
     },
     (item, originalData) => {
       return transformData({
@@ -171,7 +174,6 @@
   );
 
   const keyword = ref('');
-  const fullscreenTargetRef = ref();
 
   function searchData(_keyword?: string) {
     if (props.filterParams) {
@@ -193,6 +195,13 @@
     await initFormConfig();
     searchData();
   });
+
+  watch(
+    () => isFullScreen.value,
+    (val) => {
+      emit('toggleFullScreen', val ?? false);
+    }
+  );
 </script>
 
 <style lang="less">
