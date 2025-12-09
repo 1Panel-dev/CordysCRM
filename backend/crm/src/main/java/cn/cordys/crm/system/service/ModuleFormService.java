@@ -154,7 +154,7 @@ public class ModuleFormService {
         ModuleFormConfigDTO config = getConfig(formKey, organizationId);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
-        List<BaseField> flattenFields = flattenFormAllFields(config);
+        List<BaseField> flattenFields = flattenFormAllFieldsWithSubId(config);
         // 设置业务字段参数
         businessModuleFormConfig.setFields(flattenFields.stream()
                 .filter(BaseField::canDisplay)
@@ -404,17 +404,28 @@ public class ModuleFormService {
      */
     public List<BaseField> flattenFormAllFields(ModuleFormConfigDTO formConfig) {
         List<BaseField> toFlattenFields = new ArrayList<>();
-        formConfig.getFields().stream().filter(f -> f instanceof SubField).forEach(sf -> {
-            SubField subField = ((SubField) sf);
-            if (CollectionUtils.isEmpty(subField.getSubFields())) {
-                return;
-            }
-            subField.getSubFields().forEach(field -> field.setSubTableFieldId(subField.getId()));
-            toFlattenFields.addAll(subField.getSubFields());
-        });
+		formConfig.getFields().stream().filter(f -> f instanceof SubField).map(f -> ((SubField) f).getSubFields()).forEach(toFlattenFields::addAll);
         formConfig.getFields().addAll(toFlattenFields);
         return formConfig.getFields();
     }
+
+	public List<BaseField> flattenFormAllFieldsWithSubId(ModuleFormConfigDTO formConfig) {
+		List<BaseField> toFlattenFields = new ArrayList<>();
+		formConfig.getFields().stream().filter(f -> f instanceof SubField).forEach(sf -> {
+			SubField subField = ((SubField) sf);
+			if (CollectionUtils.isEmpty(subField.getSubFields())) {
+				return;
+			}
+			subField.getSubFields().forEach(field -> {
+				if (StringUtils.isEmpty(field.getSubTableFieldId())) {
+					field.setSubTableFieldId(subField.getId());
+				}
+			});
+			toFlattenFields.addAll(subField.getSubFields());
+		});
+		formConfig.getFields().addAll(toFlattenFields);
+		return formConfig.getFields();
+	}
 
     /**
      * 获得所有平铺的字段
