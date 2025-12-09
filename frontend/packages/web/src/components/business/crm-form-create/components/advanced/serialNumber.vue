@@ -1,8 +1,8 @@
 <template>
   <n-form-item :label="props.fieldConfig.name" :show-label="props.fieldConfig.showLabel">
     <template #label>
-      <div class="flex items-center gap-[4px]">
-        {{ props.fieldConfig.name }}
+      <div class="flex items-center gap-[4px] whitespace-nowrap">
+        <div class="one-line-text">{{ props.fieldConfig.name }}</div>
         <CrmIcon v-if="props.fieldConfig.resourceFieldId" type="iconicon_correlation" />
       </div>
     </template>

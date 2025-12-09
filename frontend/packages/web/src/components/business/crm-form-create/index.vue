@@ -336,7 +336,7 @@
       padding: 0 16px;
       border-radius: var(--border-radius-small);
       .n-form-item-label {
-        @apply items-center;
+        @apply w-full items-center;
 
         margin-bottom: 4px;
         padding-bottom: 0;

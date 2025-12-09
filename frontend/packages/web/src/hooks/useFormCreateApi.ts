@@ -777,7 +777,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               if (subField.resourceFieldId) {
                 subItem[subField.id] = parseModuleFieldValue(
                   subField,
-                  subItem[subField.businessKey || subField.id],
+                  subItem[subField.id],
                   res.optionMap?.[subField.id]
                 );
               } else {

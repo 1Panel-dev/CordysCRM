@@ -300,6 +300,9 @@
             margin: 8px 4px;
           }
         }
+        .n-form-item-label__text {
+          @apply w-full;
+        }
       }
       &:not(.crm-form-design--composition-item--active):hover {
         border: 1px dashed var(--primary-8) !important;
