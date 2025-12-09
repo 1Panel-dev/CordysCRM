@@ -1248,6 +1248,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!formDetail.value[item.id]) {
         formDetail.value[item.id] = defaultValue;
       }
+      if (item.resourceFieldId) {
+        // 数据源引用字段，清空默认值
+        item.defaultValue = '';
+      }
       replaceRule(item);
       if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
         item.defaultValue = userStore.userInfo.id;

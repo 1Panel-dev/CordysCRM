@@ -185,8 +185,27 @@
                 if (field.showFields?.length) {
                   // 数据源显示字段联动
                   const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
+                  const targetSource = source.find((s) => s.id === val[0]);
                   showFields.forEach((sf) => {
-                    const fieldVal = source.find((s) => s.id === val[0])?.[sf.businessKey || sf.id];
+                    let fieldVal: string | string[] = '';
+                    if (targetSource) {
+                      const sourceFieldVal = targetSource[sf.businessKey || sf.id];
+                      if (sf.subTableFieldId) {
+                        const subTableSource = targetSource[sf.subTableFieldId];
+                        if (row.product?.length) {
+                          // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
+                          // console.log(subTableSource.find((st: any) => st.product === row.product[0]));
+                          fieldVal =
+                            subTableSource.find((st: any) => st.product === row.product[0])?.[
+                              sf.businessKey || sf.id
+                            ] || '';
+                        } else {
+                          fieldVal = '';
+                        }
+                      } else {
+                        fieldVal = sourceFieldVal;
+                      }
+                    }
                     row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
                   });
                 }
@@ -368,7 +387,13 @@
     const newRow: Record<string, any> = {};
     props.subFields.forEach((field) => {
       const key = field.businessKey || field.id;
-      newRow[key] = field.type === FieldTypeEnum.INPUT_NUMBER ? null : '';
+      if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+        newRow[key] = null;
+      } else if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE].includes(field.type)) {
+        newRow[key] = [];
+      } else {
+        newRow[key] = '';
+      }
     });
     data.value.push(newRow);
   }

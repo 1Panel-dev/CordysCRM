@@ -9,4 +9,5 @@ export default {
   'product.batchDownSuccess': '下架成功',
   'product.detail': '产品详情',
   'product.newPrice': '新建价格表',
+  'product.deletePriceContentTip': '删除后，价格表不可恢复，请谨慎操作！',
 };
