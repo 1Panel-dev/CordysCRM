@@ -127,6 +127,7 @@ export interface FormCreateField {
   fixedColumn?: number; // 固定列数
   sumColumns?: string[]; // 需要汇总的字段id集合
   resourceFieldId?: string; // 关联来源字段id
+  subTableFieldId?: string; // 关联来源的子表格字段id
 }
 
 export interface AttachmentInfo {

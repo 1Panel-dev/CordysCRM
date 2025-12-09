@@ -96,11 +96,13 @@ export function transformData({
   fields,
   originalData,
   excludeFieldIds,
+  needParseSubTable = false,
 }: {
   fields: FormCreateField[];
   item: any;
   originalData?: CommonList<any>;
   excludeFieldIds?: string[];
+  needParseSubTable?: boolean;
 }) {
   const { t } = useI18n();
   const businessFieldAttr: Record<string, any> = {};
@@ -109,6 +111,7 @@ export function transformData({
   const industryFieldIds: string[] = [];
   const dataSourceFieldIds: string[] = [];
   const timeFieldIds: string[] = [];
+  let subTableFieldInfo: Record<string, any> = {};
 
   fields.forEach((field) => {
     const fieldId = field.businessKey || field.id;
@@ -120,6 +123,14 @@ export function transformData({
       dataSourceFieldIds.push(fieldId);
     } else if (field.type === FieldTypeEnum.DATE_TIME) {
       timeFieldIds.push(fieldId);
+    } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
+      subTableFieldInfo = transformData({
+        item: item[fieldId],
+        fields: field.subFields || [],
+        originalData,
+        excludeFieldIds,
+      });
+      console.log('subTableFieldInfo', subTableFieldInfo);
     }
     if (field.businessKey) {
       const fieldId = field.businessKey;
@@ -228,5 +239,6 @@ export function transformData({
     ...item,
     ...customFieldAttr,
     ...businessFieldAttr,
+    ...subTableFieldInfo,
   };
 }

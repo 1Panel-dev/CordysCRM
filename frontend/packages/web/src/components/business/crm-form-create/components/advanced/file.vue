@@ -97,7 +97,8 @@
     }
     if (props.fieldConfig.accept) {
       const acceptedTypes = props.fieldConfig.accept.split(',').map((type) => type.trim().replace('.', ''));
-      if ((file.type && !acceptedTypes.includes(file.type.split('/')[1])) || !file.type) {
+      const fileExtension = file.name.split('.').pop();
+      if ((file.type && !acceptedTypes.includes(fileExtension || '')) || !file.type) {
         Message.warning(t('crmFormCreate.advanced.typeNotValid'));
         return Promise.resolve(false);
       }

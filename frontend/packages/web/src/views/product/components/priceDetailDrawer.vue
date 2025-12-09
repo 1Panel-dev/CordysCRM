@@ -6,7 +6,13 @@
       </CrmTag>
     </template>
     <template #titleRight>
-      <n-button type="primary" ghost class="n-btn-outline-primary ml-[12px]" @click="handleEdit">
+      <n-button
+        v-permission="['PRICE:UPDATE']"
+        type="primary"
+        ghost
+        class="n-btn-outline-primary ml-[12px]"
+        @click="handleEdit"
+      >
         {{ t('common.edit') }}
       </n-button>
     </template>
@@ -14,6 +20,10 @@
       ref="descriptionRef"
       :form-key="FormDesignKeyEnum.PRICE"
       :source-id="props.id"
+      :column="3"
+      label-width="auto"
+      value-align="start"
+      tooltip-position="top-start"
       class="p-[8px]"
       @init="handleDescriptionInit"
     />

@@ -177,7 +177,7 @@
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('opportunity.batchDeleteContentTip'),
+      content: t('product.deletePriceContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {

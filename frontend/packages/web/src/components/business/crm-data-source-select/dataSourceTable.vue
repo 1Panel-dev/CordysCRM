@@ -169,6 +169,7 @@
         item,
         originalData,
         fields: fieldList.value,
+        needParseSubTable: true,
       });
     }
   );

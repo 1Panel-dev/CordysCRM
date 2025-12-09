@@ -9,4 +9,5 @@ export default {
   'product.batchDownSuccess': 'Batch down success',
   'product.detail': 'Product Details',
   'product.newPrice': 'New Price Table',
+  'product.deletePriceContentTip': 'After deletion, the price table cannot be recovered. Please proceed with caution!',
 };

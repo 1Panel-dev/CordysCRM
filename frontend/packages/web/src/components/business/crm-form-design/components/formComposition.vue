@@ -57,7 +57,7 @@
                 {{ t('common.copy') }}
               </n-tooltip>
               <n-tooltip
-                v-if="!item.businessKey"
+                v-if="!item.businessKey || item.resourceFieldId"
                 :delay="300"
                 :show-arrow="false"
                 class="crm-form-design--composition-item-tools-tip"

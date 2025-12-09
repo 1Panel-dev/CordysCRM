@@ -1,5 +1,11 @@
 <template>
   <n-form-item :label="props.fieldConfig.name" :show-label="props.fieldConfig.showLabel">
+    <template #label>
+      <div class="flex items-center gap-[4px]">
+        {{ props.fieldConfig.name }}
+        <CrmIcon v-if="props.fieldConfig.resourceFieldId" type="iconicon_correlation" />
+      </div>
+    </template>
     <div
       v-if="props.fieldConfig.description"
       class="crm-form-create-item-desc"
