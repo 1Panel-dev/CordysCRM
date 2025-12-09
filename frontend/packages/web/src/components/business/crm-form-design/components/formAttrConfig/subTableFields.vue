@@ -16,8 +16,14 @@
       <n-input
         v-model:value="item.name"
         :maxlength="50"
-        :disabled="props.disabled"
-        :status="fieldConfig.subFields.some((e) => e.id !== item.id && e.name === item.name) ? 'error' : undefined"
+        :disabled="props.disabled || !!item.resourceFieldId"
+        :status="
+          fieldConfig.subFields.some(
+            (e) => e.id !== item.id && e.name === item.name && !item.resourceFieldId && !e.resourceFieldId
+          )
+            ? 'error'
+            : undefined
+        "
         class="flex-1"
         clearable
       >
@@ -65,10 +71,14 @@
         <div class="w-[52px]"></div>
       </template>
       <div
-        v-if="fieldConfig.subFields.some((e) => e.id !== item.id && e.name === item.name)"
-        class="ml-[48px] w-full text-[12px] text-[var(--error-red)]"
+        v-if="
+          fieldConfig.subFields.some(
+            (e) => e.id !== item.id && e.name === item.name && !item.resourceFieldId && !e.resourceFieldId
+          )
+        "
+        class="ml-[24px] w-full text-[12px] text-[var(--error-red)]"
       >
-        {{ t('crmFormDesign.repeatOptionName') }}
+        {{ t('crmFormDesign.repeatFieldName') }}
       </div>
     </div>
     <n-dropdown

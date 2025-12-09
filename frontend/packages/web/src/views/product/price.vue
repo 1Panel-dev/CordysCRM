@@ -138,26 +138,7 @@
   const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
   const keyword = ref<string>('');
   const filterConfigList = computed<FilterFormItem[]>(() => {
-    return [
-      {
-        title: t('opportunity.failureReason'),
-        dataIndex: 'failureReason',
-        type: FieldTypeEnum.SELECT,
-        selectProps: {
-          options: [
-            {
-              label: t('common.enable'),
-              value: true,
-            },
-            {
-              label: t('common.disable'),
-              value: false,
-            },
-          ],
-        },
-      },
-      ...baseFilterConfigList,
-    ] as FilterFormItem[];
+    return [...baseFilterConfigList] as FilterFormItem[];
   });
 
   function handleRefresh() {

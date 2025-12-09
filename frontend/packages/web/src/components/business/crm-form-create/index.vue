@@ -55,6 +55,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { specialBusinessKeyMap } from '@lib/shared/method/formCreate';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
@@ -211,14 +212,6 @@
     }
   }
 
-  const specialBusinessKeyMap: Record<string, string> = {
-    customerId: 'customerName',
-    contactId: 'contactName',
-    clueId: 'clueName',
-    businessId: 'businessName',
-    contractId: 'contractName',
-    owner: 'ownerName',
-  };
   function handleFieldChange(value: any, source: Record<string, any>[], item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {

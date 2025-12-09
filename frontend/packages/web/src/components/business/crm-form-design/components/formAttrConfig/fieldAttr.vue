@@ -47,6 +47,8 @@
             FieldTypeEnum.FORMULA,
             FieldTypeEnum.SUB_PRICE,
             FieldTypeEnum.SUB_PRODUCT,
+            FieldTypeEnum.RADIO,
+            FieldTypeEnum.CHECKBOX,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"

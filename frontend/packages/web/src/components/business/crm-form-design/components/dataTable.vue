@@ -41,9 +41,12 @@
             }"
             @click.stop="() => handleItemClick(item)"
           >
-            <div class="crm-form-design--composition-item-tools--subtable">
+            <div
+              v-if="(!item.resourceFieldId && !item.businessKey) || !item.businessKey || item.resourceFieldId"
+              class="crm-form-design--composition-item-tools--subtable"
+            >
               <n-tooltip
-                v-if="!item.resourceFieldId"
+                v-if="!item.resourceFieldId && !item.businessKey"
                 :delay="300"
                 :show-arrow="false"
                 class="crm-form-design--composition-item-tools-tip"
