@@ -38,9 +38,17 @@
   const poolId = ref<string>('');
   const activeSourceId = ref<string>('');
   const isCustomerReadonly = ref(false);
-  function handleOpenCustomerDrawer(params: { customerId: string }, readonly = false) {
+  function handleOpenCustomerDrawer(
+    params: { customerId: string; inCustomerPool: boolean; poolId: string },
+    readonly = false
+  ) {
     activeSourceId.value = params.customerId;
-    showCustomerOverviewDrawer.value = true;
+    if (params.inCustomerPool) {
+      showCustomerOpenseaOverviewDrawer.value = true;
+      poolId.value = params.poolId;
+    } else {
+      showCustomerOverviewDrawer.value = true;
+    }
     isCustomerReadonly.value = readonly;
   }
 
