@@ -46,7 +46,7 @@ public class SourceServiceFactory {
      */
     public static Object getById(FieldSourceType type, Object id) {
         Object service = getService(type);
-        if (service == null || !(id instanceof String)) {
+        if (service == null || !(id instanceof String) || ((String) id).isEmpty()) {
             LogUtils.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
             return null;
         }

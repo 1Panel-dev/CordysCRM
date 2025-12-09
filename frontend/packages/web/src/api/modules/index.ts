@@ -168,6 +168,7 @@ export const {
   addQuotation,
   updateQuotation,
   getQuotationDetail,
+  getQuotationSnapshotDetail,
   getQuotationFormConfig,
   getQuotationSnapshotFormConfig,
   deleteQuotation,

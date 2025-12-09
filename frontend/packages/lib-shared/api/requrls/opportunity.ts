@@ -59,19 +59,20 @@ export const EnableQuotationViewUrl = '/opportunity/quotation/view/enable';
 export const DragQuotationViewUrl = '/opportunity/quotation/view/edit/pos';
 
 // 报价单
-export const QuotationPageUrl = '/opportunity/quotation/page'; 
+export const QuotationPageUrl = '/opportunity/quotation/page';
 export const AddQuotationUrl = '/opportunity/quotation/add';
-export const UpdateQuotationUrl = '/opportunity/quotation/update'; 
+export const UpdateQuotationUrl = '/opportunity/quotation/update';
 export const GetQuotationFormConfigUrl = '/opportunity/quotation/module/form';
-export const GetQuotationDetailUrl = '/opportunity/quotation/get'; 
-export const ApprovalQuotationUrl = '/opportunity/quotation/approve'; 
-export const VoidQuotationUrl = '/opportunity/quotation/voided'; 
-export const DeleteQuotationUrl = '/opportunity/quotation/delete'; 
-export const RevokeQuotationUrl = '/opportunity/quotation/revoke'; 
-export const BatchApproveUrl = '/opportunity/quotation/batch/approve'; 
-export const BatchVoidedUrl = '/opportunity/quotation/batch/voided'; 
-export const GetQuotationSnapshotFormConfigUrl = '/opportunity/quotation/module/form/snapshot'; 
-export const DownloadQuotationUrl = '/opportunity/quotation/download'; 
+export const GetQuotationDetailUrl = '/opportunity/quotation/get';
+export const GetQuotationSnapshotDetailUrl = '/opportunity/quotation/get/snapshot';
+export const ApprovalQuotationUrl = '/opportunity/quotation/approve';
+export const VoidQuotationUrl = '/opportunity/quotation/voided';
+export const DeleteQuotationUrl = '/opportunity/quotation/delete';
+export const RevokeQuotationUrl = '/opportunity/quotation/revoke';
+export const BatchApproveUrl = '/opportunity/quotation/batch/approve';
+export const BatchVoidedUrl = '/opportunity/quotation/batch/voided';
+export const GetQuotationSnapshotFormConfigUrl = '/opportunity/quotation/module/form/snapshot';
+export const DownloadQuotationUrl = '/opportunity/quotation/download';
 
 
 // 导入
