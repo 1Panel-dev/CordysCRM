@@ -434,6 +434,12 @@
     }
   );
 
+  onBeforeMount(() => {
+    if (props.isContractTab) {
+      searchData();
+    }
+  });
+
   // 先不上
   // function handleGeneratedChart(res: FilterResult, form: FilterForm) {
   //   advancedOriginalForm.value = form;
