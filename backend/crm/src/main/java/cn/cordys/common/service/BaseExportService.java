@@ -283,7 +283,7 @@ public abstract class BaseExportService {
 		List<List<String>> allHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getCustomImportHeads(formKey, currentOrg);
 		List<List<String>> exportHeads = allHeads.stream().filter(head -> headKey.contains(head.getFirst())).collect(Collectors.toList());
 		List<String> systemHeads = headList.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getTitle).toList();
-		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).collect(Collectors.toList()));
+		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).toList());
 		return exportHeads;
 	}
 
@@ -337,15 +337,16 @@ public abstract class BaseExportService {
 			dataList.add(data);
 			return dataList;
 		}
-		BaseModuleFieldValue subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList().getFirst();
-		if (subFvs == null || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFieldValue())) {
+
+		List<BaseModuleFieldValue> subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList();
+		if (subFvs.isEmpty() || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue())) {
 			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
 			dataList.add(data);
 			return dataList;
 		}
 		moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
-		List<?> subFvList = (List<?>) subFvs.getFieldValue();
+		List<?> subFvList = (List<?>) subFvs.getFirst().getFieldValue();
 		subFvList.forEach(subFv -> {
 			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
 			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
@@ -560,7 +561,7 @@ public abstract class BaseExportService {
 				executor.execute(exportTask);
 				exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), currentUser);
 			} catch (Exception e) {
-				LogUtils.error("Price export error: {}", e);
+				LogUtils.error("导出错误", e);
 				exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), currentUser);
 			} finally {
 				ExportThreadRegistry.remove(exportTask.getId());
@@ -594,8 +595,8 @@ public abstract class BaseExportService {
 	 * @return 表头ID集合
 	 */
 	private List<String> getMergeHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
-		List<String> exportKeys = exportHeads.stream().map(ExportHeadDTO::getKey).toList();
-		List<String> exportMergeHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportKeys);
+		List<String> exportTitles = exportHeads.stream().map(ExportHeadDTO::getTitle).toList();
+		List<String> exportMergeHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportTitles);
 		List<String> systemKeys = exportHeads.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getKey).toList();
 		exportMergeHeads.addAll(systemKeys);
 		return exportMergeHeads;

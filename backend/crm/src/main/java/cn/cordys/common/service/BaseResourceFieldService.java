@@ -697,6 +697,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         resourceFieldBlobs.forEach(resourceFieldBlob -> {
+			if (resourceFieldBlob instanceof BaseResourceSubField subResourceField && StringUtils.isNotEmpty(subResourceField.getRefSubId())) {
+				return;
+			}
             // 处理大文本
             if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() != null) {
                 BaseField fieldConfig = fieldConfigMap.get(resourceFieldBlob.getFieldId());
