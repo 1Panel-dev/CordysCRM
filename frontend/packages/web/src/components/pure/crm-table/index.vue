@@ -809,6 +809,11 @@
     pointer-events: none;
     .n-data-table-th__title-wrapper {
       pointer-events: auto;
+      .n-data-table-th__title {
+        .n-ellipsis {
+          max-width: 300px;
+        }
+      }
     }
     .n-data-table-resize-button {
       pointer-events: auto;

@@ -49,12 +49,14 @@ export default function useTableStore() {
           e.key !== SpecialColumnEnum.OPERATION &&
           e.key !== SpecialColumnEnum.DRAG &&
           e.type !== SpecialColumnEnum.SELECTION &&
+          e.columnSelectorDisabled !== true &&
           newArr.some((n) => n.key === e.key)
       ) as CrmDataTableColumn[];
     // 再把 new 中 old 没有的项追加在最后
     const extra = newArr.filter(
       (item) =>
         !oldArr.some((o) => o.key === item.key) &&
+        item.columnSelectorDisabled !== true &&
         item.type !== SpecialColumnEnum.SELECTION &&
         item.key !== SpecialColumnEnum.OPERATION &&
         item.key !== SpecialColumnEnum.DRAG
@@ -63,6 +65,11 @@ export default function useTableStore() {
     const selectionColumn = newArr.find((item) => item.type === SpecialColumnEnum.SELECTION);
     const orderColumn = newArr.find((item) => item.key === SpecialColumnEnum.ORDER);
     const dragColumn = newArr.find((item) => item.key === SpecialColumnEnum.DRAG);
+    const selectorDisabledColumns = newArr.filter((item) => item.columnSelectorDisabled === true);
+    // 将 columnSelectorDisabled 的列放在最前面
+    if (selectorDisabledColumns.length) {
+      sorted.splice(0, 0, ...selectorDisabledColumns);
+    }
     if (orderColumn && selectionColumn) {
       // 如果有排序列和选择列，则将选择列插入到排序列之前
       sorted.splice(0, 0, selectionColumn);

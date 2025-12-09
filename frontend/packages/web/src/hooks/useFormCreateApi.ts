@@ -500,6 +500,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       formDescriptionShowControlRulesSet(form);
       fieldList.value.forEach((item) => {
         if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && item.subFields?.length) {
+          if (item.show === false || !item.readable) return;
           descriptions.value.push({
             label: item.name,
             value: form[item.businessKey || item.id],
