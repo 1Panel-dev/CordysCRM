@@ -55,7 +55,7 @@ public class OpportunityRuleController {
     @Operation(summary = "删除商机规则")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void delete(@PathVariable String id) {
-        opportunityRuleService.delete(id, SessionUtils.getUserId());
+        opportunityRuleService.delete(id);
     }
 
     @GetMapping("/switch/{id}")
