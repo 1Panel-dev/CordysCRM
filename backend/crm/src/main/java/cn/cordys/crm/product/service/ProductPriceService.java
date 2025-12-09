@@ -112,7 +112,7 @@ public class ProductPriceService {
         ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, ProductPriceResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(priceFormConfig, moduleFieldValues);
-        return PageUtils.setPageInfoWithOption(page, results, optionMap);
+        return PageUtils.setPageInfoWithOption(page, processList(results, priceFormConfig), optionMap);
     }
 
     /**
@@ -372,6 +372,25 @@ public class ProductPriceService {
         listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
         return baseService.setCreateAndUpdateUserName(listData);
     }
+
+	/**
+	 * 处理列表数据
+	 * @param listData 列表数据
+	 * @return 列表数据
+	 */
+	public List<ProductPriceResponse> processList(List<ProductPriceResponse> listData, ModuleFormConfigDTO priceFormConf) {
+		// 查询列表数据的自定义字段
+		Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
+				listData.stream().map(ProductPriceResponse::getId).toList(), true);
+		// 列表项设置自定义字段&&用户名
+		listData.forEach(item -> {
+			if (!dataFieldMap.containsKey(item.getId())) {
+				return;
+			}
+			moduleFormService.processBusinessFieldValues(item, dataFieldMap.get(item.getId()), priceFormConf);
+		});
+		return baseService.setCreateAndUpdateUserName(listData);
+	}
 
     /**
      * 更新自定义字段
