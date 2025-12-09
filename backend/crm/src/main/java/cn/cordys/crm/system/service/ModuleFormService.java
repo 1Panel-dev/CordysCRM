@@ -1583,10 +1583,15 @@ public class ModuleFormService {
 
                         sourceField.getShowFields().forEach(id -> {
                             final BaseField showFieldConf = fieldMap.get(id);
-                            if (showFieldConf != null) {
-                                showFieldMap.put(id, baseResourceFieldService
-                                        .getFieldValueOfDetailMap(showFieldConf, detailMap));
-                            }
+							if (showFieldConf == null) {
+								return;
+							}
+							if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+								showFieldMap.put(showFieldConf.getId(), baseResourceFieldService.matchSubFieldValueOfDetailMap(showFieldConf.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+										BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), sfv.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString()));
+							} else {
+								showFieldMap.put(id, baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap));
+							}
                         });
                     });
 
