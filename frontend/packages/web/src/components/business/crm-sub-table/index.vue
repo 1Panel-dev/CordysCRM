@@ -126,6 +126,9 @@
           width: 150,
           key,
           fieldId: key,
+          ellipsis: {
+            tooltip: true,
+          },
           render: (row: any) =>
             h(
               NTooltip,
@@ -152,8 +155,19 @@
           title: field.name,
           width: 120,
           key,
+          ellipsis: {
+            tooltip: true,
+          },
           fieldId: key,
-          render: (row: any) => h('div', {}, row[key]),
+          render: (row: any) =>
+            h(
+              NTooltip,
+              { trigger: 'hover' },
+              {
+                default: () => row[key],
+                trigger: () => h('div', { class: 'one-line-text max-w-[200px]' }, row[key]),
+              }
+            ),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
         };
       }
@@ -164,6 +178,9 @@
             : field.name,
           width: 250,
           key,
+          ellipsis: {
+            tooltip: true,
+          },
           fieldId: key,
           render: (row: any, rowIndex: number) => {
             return h(dataSource, {
@@ -227,6 +244,9 @@
             : field.name,
           width: 200,
           key,
+          ellipsis: {
+            tooltip: true,
+          },
           fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(formula, {
@@ -250,6 +270,9 @@
             : field.name,
           width: 200,
           key,
+          ellipsis: {
+            tooltip: true,
+          },
           fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(inputNumber, {
@@ -273,6 +296,9 @@
             : field.name,
           width: 200,
           key,
+          ellipsis: {
+            tooltip: true,
+          },
           fieldId: key,
           render: (row: any, rowIndex: number) =>
             h(select, {
@@ -295,6 +321,9 @@
           : field.name,
         width: 200,
         key,
+        ellipsis: {
+          tooltip: true,
+        },
         fieldId: key,
         render: (row: any, rowIndex: number) =>
           h(singleText, {
@@ -408,6 +437,11 @@
   .crm-sub-table {
     .n-data-table-th {
       padding: 12px 4px;
+      .n-data-table-th__title {
+        .n-ellipsis {
+          max-width: 120px;
+        }
+      }
     }
     .n-data-table-td {
       padding: 8px 4px;

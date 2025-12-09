@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
 
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
 
