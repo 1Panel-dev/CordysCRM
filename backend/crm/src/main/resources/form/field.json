@@ -1143,7 +1143,7 @@
       "mobile": true,
       "subFields": [
         {
-          "name": "选择产品",
+          "name": "产品",
           "internalKey": "quotationProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
@@ -1339,7 +1339,7 @@
       "sumColumns": ["amount"],
       "subFields": [
         {
-          "name": "选择产品",
+          "name": "产品",
           "internalKey": "contractProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
