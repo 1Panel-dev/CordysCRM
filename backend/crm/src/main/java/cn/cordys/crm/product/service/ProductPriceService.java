@@ -19,7 +19,8 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.opportunity.domain.OpportunityField;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotationField;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotationFieldBlob;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.domain.ProductPriceField;
 import cn.cordys.crm.product.domain.ProductPriceFieldBlob;
@@ -91,7 +92,9 @@ public class ProductPriceService {
     @Resource
     private LogService logService;
     @Resource
-    private BaseMapper<OpportunityField> opportunityFieldMapper;
+    private BaseMapper<OpportunityQuotationField> opportunityFieldMapper;
+    @Resource
+    private BaseMapper<OpportunityQuotationFieldBlob> opportunityQuotationFieldBlobBaseMapper;
 
     /**
      * 价格列表
@@ -208,12 +211,18 @@ public class ProductPriceService {
         ));
 
         // 2. 检查是否被引用（报价单等）
-        List<OpportunityField> opportunityFields = opportunityFieldMapper.selectListByLambda(
-                new LambdaQueryWrapper<OpportunityField>()
-                        .eq(OpportunityField::getFieldValue, id)
+        List<OpportunityQuotationField> opportunityFields = opportunityFieldMapper.selectListByLambda(
+                new LambdaQueryWrapper<OpportunityQuotationField>()
+                        .eq(OpportunityQuotationField::getFieldValue, id)
         );
 
-        if (!opportunityFields.isEmpty()) {
+        List<OpportunityQuotationFieldBlob> opportunityBlobFields = opportunityQuotationFieldBlobBaseMapper.selectListByLambda(
+                new LambdaQueryWrapper<OpportunityQuotationFieldBlob>()
+                        .eq(OpportunityQuotationFieldBlob::getFieldValue, id)
+        );
+
+
+        if (!opportunityFields.isEmpty() || !opportunityBlobFields.isEmpty()) {
             throw new GenericException(
                     Translator.get("product.price.in.use.cannot.delete")
             );
