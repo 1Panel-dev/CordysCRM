@@ -982,7 +982,7 @@
       "fixedColumn": 1,
       "subFields": [
         {
-          "name": "选择产品",
+          "name": "产品",
           "internalKey": "priceProduct",
           "type": "DATA_SOURCE",
           "dataSourceType": "PRODUCT",
