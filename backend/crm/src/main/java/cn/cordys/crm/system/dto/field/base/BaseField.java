@@ -155,9 +155,10 @@ public abstract class BaseField {
 
     @JsonIgnore
     public boolean canImport() {
-		// 序列号、附件、图片、分割线, 不支持导入.
+		// 序列号、附件、图片、分割线, 计算 不支持导入.
         return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
-                && !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
+                && !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name())
+				&& !Strings.CS.equals(type, FieldType.FORMULA.name()) && readable;
     }
 
 	@JsonIgnore
