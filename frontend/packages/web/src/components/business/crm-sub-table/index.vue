@@ -191,14 +191,10 @@
                     if (targetSource) {
                       const sourceFieldVal = targetSource[sf.businessKey || sf.id];
                       if (sf.subTableFieldId) {
-                        const subTableSource = targetSource[sf.subTableFieldId];
-                        if (row.product?.length) {
-                          // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
-                          // console.log(subTableSource.find((st: any) => st.product === row.product[0]));
+                        // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
+                        if (targetSource.products && row.product?.length) {
                           fieldVal =
-                            subTableSource.find((st: any) => st.product === row.product[0])?.[
-                              sf.businessKey || sf.id
-                            ] || '';
+                            targetSource.products.find((st: any) => st.product === row.product[0])?.[sf.id] || '';
                         } else {
                           fieldVal = '';
                         }

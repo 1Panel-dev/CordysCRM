@@ -142,7 +142,23 @@
         formDesignRef.value?.setActiveField(field);
         return false;
       }
-      fieldNameSet.add(field.name);
+      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && field.subFields) {
+        const subFieldNameSet = new Set<string>();
+        for (let j = 0; j < field.subFields.length; j++) {
+          const subField = field.subFields[j];
+          if (subFieldNameSet.has(subField.name) && !subField.resourceFieldId) {
+            Message.error(t('crmFormDesign.repeatFieldName'));
+            formDesignRef.value?.setActiveField(field);
+            return false;
+          }
+          if (!subField.resourceFieldId) {
+            subFieldNameSet.add(subField.name);
+          }
+        }
+      }
+      if (!field.resourceFieldId) {
+        fieldNameSet.add(field.name);
+      }
     }
     const optionsFields = fieldList.value.filter((e) =>
       [FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(

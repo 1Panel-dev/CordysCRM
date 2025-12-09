@@ -17,9 +17,12 @@ import {
   formatNumberValue,
   getNormalFieldValue,
   getRuleType,
+  initFieldValue,
   linkAllAcceptTypes,
   memberTypes,
   multipleTypes,
+  parseFormDetailValue,
+  parseModuleFieldValue,
   singleTypes,
 } from '@lib/shared/method/formCreate';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
@@ -358,83 +361,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     return value === undefined || value === null || value === '' ? '-' : value;
   }
 
-  function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
-    let value: string | string[] = fieldValue || '';
-    if (options) {
-      // 若字段值是选项值，则取选项值的name
-      if (Array.isArray(fieldValue)) {
-        value = fieldValue.map((e) => {
-          const option = options.find((opt) => opt.id === e);
-          if (option) {
-            return option.name || t('common.optionNotExist');
-          }
-          return t('common.optionNotExist');
-        });
-      } else {
-        value = options.find((e) => e.id === fieldValue)?.name || t('common.optionNotExist');
-      }
-    } else if (item.type === FieldTypeEnum.LOCATION) {
-      const addressArr: string[] = (fieldValue as string).split('-') || [];
-      value = addressArr.length ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}` : '-';
-    } else if (item.type === FieldTypeEnum.INDUSTRY) {
-      value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
-    } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-      value = formatNumberValue(fieldValue as string, item);
-    } else if (item.type === FieldTypeEnum.DATE_TIME) {
-      value = formatTimeValue(fieldValue as string, item.dateType);
-    }
-    if (Array.isArray(value) && item.resourceFieldId) {
-      value = value.join(',');
-    }
-    return value;
-  }
-
-  function parseFormDetailValue(item: FormCreateField, form: FormDetail) {
-    if (item.businessKey && !item.resourceFieldId) {
-      // 引用数据源字段使用 id 读取数据，而不是 businessKey
-      const options = form.optionMap?.[item.businessKey];
-      // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
-      let name: string | string[] = '';
-      const value = form[item.businessKey];
-      // 若字段值是选项值，则取选项值的name
-      if (options) {
-        if (Array.isArray(value)) {
-          name = value.map((e) => {
-            const option = options.find((opt) => opt.id === e);
-            if (option) {
-              return option.name || t('common.optionNotExist');
-            }
-            return t('common.optionNotExist');
-          });
-        } else {
-          name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
-        }
-      }
-      if (item.type === FieldTypeEnum.DATE_TIME) {
-        return formatTimeValue(name || form[item.businessKey], item.dateType);
-      }
-      if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-        return formatNumberValue(name || form[item.businessKey], item);
-      }
-      if (item.type === FieldTypeEnum.ATTACHMENT) {
-        return form.attachmentMap?.[item.businessKey] || [];
-      }
-      if (item.businessKey === 'name') {
-        sourceName.value = name || form[item.businessKey];
-      }
-      return name || form[item.businessKey];
-    }
-    const options = form.optionMap?.[item.id];
-    // 其他的字段读取moduleFields
-    const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-    if (item.type === FieldTypeEnum.ATTACHMENT) {
-      return form.attachmentMap?.[item.id] || [];
-    }
-    if (field) {
-      return parseModuleFieldValue(item, field.fieldValue, options);
-    }
-  }
-
   function makeDescriptionItem(item: FormCreateField, form: FormDetail) {
     if (item.show === false || !item.readable) return;
     if (item.businessKey === 'expectedEndTime') {
@@ -602,16 +528,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } finally {
       loading.value = false;
     }
-  }
-
-  function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
-    if (
-      [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
-      typeof value === 'string'
-    ) {
-      return value ? [value] : [];
-    }
-    return value;
   }
 
   function makeLinkFormFields(field: FormCreateField) {
