@@ -306,6 +306,9 @@ public class CustomerService {
 
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
+		if (customer == null) {
+			return null;
+		}
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
         customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
         // 获取模块字段

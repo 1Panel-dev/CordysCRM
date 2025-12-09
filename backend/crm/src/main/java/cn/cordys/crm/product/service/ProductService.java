@@ -117,6 +117,9 @@ public class ProductService {
 
     public ProductGetResponse get(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
+		if (product == null) {
+			return null;
+		}
         ProductGetResponse productGetResponse = BeanUtils.copyBean(new ProductGetResponse(), product);
 
         // 获取模块字段
