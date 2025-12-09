@@ -758,6 +758,26 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 	}
 
 	/**
+	 * 匹配子表格字段值
+	 * @param targetId 获取的目标ID
+	 * @param detailMap 详情
+	 * @param subKey 子表格key
+	 * @param rowKey 命中的行key
+	 * @param rowVal 命中的行值
+	 * @return
+	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> detailMap, String subKey, String rowKey, String rowVal) {
+		List<Map<String, Object>> rows = (List) detailMap.get(subKey);
+		for (Map<String, Object> row : rows) {
+			if (row.containsKey(rowKey) && Strings.CS.equals(rowVal, row.get(rowKey).toString())) {
+				return row.get(targetId);
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * 设置子表格字段值
 	 * @param resourceMap 返回的资源字段值
 	 * @param fieldConfigMap 字段配置
@@ -803,7 +823,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 								if (showFieldConfig == null) {
 									return;
 								}
-								rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
+								if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+									rowMap.put(showFieldConfig.getId(), matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+											BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString()));
+								} else {
+									rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
+								}
 							});
 						}
 						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
