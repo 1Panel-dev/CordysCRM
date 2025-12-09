@@ -24,6 +24,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            readonly
             @openCustomerDetail="emit('showCustomerDrawer', detailInfo)"
             @init="handleInit"
           />

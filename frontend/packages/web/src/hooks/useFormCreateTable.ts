@@ -983,8 +983,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
           if (
-            field.businessKey === 'name' &&
-            ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey)
+            (field.businessKey === 'name' &&
+              ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey)) ||
+            ([FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT].includes(
+              props.formKey
+            ) &&
+              field.businessKey === 'contractId')
           ) {
             return {
               title: field.name,
@@ -1000,7 +1004,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
-          if (field.businessKey === 'customerId' || field.businessKey === 'contractId') {
+          if (field.businessKey === 'customerId') {
             return {
               title: field.name,
               width: 200,
