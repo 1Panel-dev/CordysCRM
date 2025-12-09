@@ -1378,6 +1378,15 @@
           "editable": true,
           "fieldWidth": 1,
           "numberFormat": "number"
+        },
+        {
+          "name": "金额",
+          "internalKey": "contractProductSumAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "editable": false,
+          "fieldWidth": 1
         }
       ]
     },
