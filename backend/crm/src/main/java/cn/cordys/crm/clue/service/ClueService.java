@@ -299,6 +299,9 @@ public class ClueService {
 
     public ClueGetResponse get(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
+		if (clue == null) {
+			return null;
+		}
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
         clueGetResponse = baseService.setCreateUpdateOwnerUserName(clueGetResponse);
 

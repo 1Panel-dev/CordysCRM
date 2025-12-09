@@ -192,6 +192,9 @@ public class CustomerContactService {
 
     public CustomerContactGetResponse get(String id) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
+		if (customerContact == null) {
+			return null;
+		}
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
 
         Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());

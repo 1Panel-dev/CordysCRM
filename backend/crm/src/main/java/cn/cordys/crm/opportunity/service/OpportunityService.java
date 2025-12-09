@@ -490,7 +490,7 @@ public class OpportunityService {
     public OpportunityDetailResponse get(String id) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         if (response == null) {
-            throw new GenericException(Translator.get("opportunity_not_found"));
+            return null;
         }
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
