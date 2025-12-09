@@ -7,7 +7,6 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.condition.CombineSearch;
-import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -117,6 +116,7 @@ public class OpportunityRuleService {
         rule.setCreateUser(currentUserId);
         rule.setUpdateTime(System.currentTimeMillis());
         rule.setUpdateUser(currentUserId);
+
         opportunityRuleMapper.insert(rule);
 
         // 添加日志上下文
@@ -145,6 +145,7 @@ public class OpportunityRuleService {
         rule.setCondition(JSON.toJSONString(request.getConditions()));
         rule.setUpdateTime(System.currentTimeMillis());
         rule.setUpdateUser(currentUserId);
+
         opportunityRuleMapper.updateById(rule);
 
         OperationLogContext.setContext(
@@ -159,14 +160,12 @@ public class OpportunityRuleService {
     /**
      * 删除商机规则
      *
-     * @param id            规则ID
-     * @param currentUserId 当前用户ID
+     * @param id 规则ID
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id, String currentUserId) {
+    public void delete(String id) {
         OpportunityRule rule = checkRuleExit(id);
         opportunityRuleMapper.deleteByPrimaryKey(id);
-
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName());
     }
@@ -230,7 +229,7 @@ public class OpportunityRuleService {
          * 命中规则任意范围即返回(默认按照创建时间作为优先级)
          */
         if (CollectionUtils.isEmpty(scopeIds) || CollectionUtils.isEmpty(rules)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return rules.stream()
                 .filter(rule -> {
@@ -333,19 +332,5 @@ public class OpportunityRuleService {
             throw new RuntimeException(Translator.get("opportunity.rule.not_exist"));
         }
         return rule;
-    }
-
-    /**
-     * 校验是否商机规则管理员
-     *
-     * @param rule         商机规则
-     * @param accessUserId 当前用户ID
-     */
-    private void checkRuleOwner(OpportunityRule rule, String accessUserId) {
-        List<String> ownerIds = JSON.parseArray(rule.getOwnerId(), String.class);
-        List<String> ownerUserIds = userExtendService.getScopeOwnerIds(ownerIds, rule.getOrganizationId());
-        if (!ownerUserIds.contains(accessUserId)) {
-            throw new GenericException(Translator.get("opportunity.access_fail"));
-        }
     }
 }

@@ -19,6 +19,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.opportunity.domain.OpportunityField;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.domain.ProductPriceField;
 import cn.cordys.crm.product.domain.ProductPriceFieldBlob;
@@ -79,22 +80,25 @@ public class ProductPriceService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private BaseMapper<ProductPrice> productPriceMapper;
-	@Resource
-	private BaseMapper<ProductPriceField> productPriceFieldMapper;
-	@Resource
-	private BaseMapper<ProductPriceFieldBlob> productPriceFieldBlobMapper;
+    @Resource
+    private BaseMapper<ProductPriceField> productPriceFieldMapper;
+    @Resource
+    private BaseMapper<ProductPriceFieldBlob> productPriceFieldBlobMapper;
     @Resource
     private ProductPriceFieldService productPriceFieldService;
     @Resource
     private ExtProductPriceMapper extProductPriceMapper;
-	@Resource
-	private LogService logService;
+    @Resource
+    private LogService logService;
+    @Resource
+    private BaseMapper<OpportunityField> opportunityFieldMapper;
 
     /**
      * 价格列表
      *
      * @param request    请求参数
      * @param currentOrg 当前组织
+     *
      * @return 价格列表
      */
     public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
@@ -114,6 +118,7 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
+     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
@@ -142,6 +147,7 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
+     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.UPDATE, operator = "{#currentUser}")
@@ -168,6 +174,7 @@ public class ProductPriceService {
      * 价格表详情
      *
      * @param id 价格表ID
+     *
      * @return 价格表详情
      */
     public ProductPriceGetResponse get(String id) {
@@ -193,13 +200,30 @@ public class ProductPriceService {
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
-        ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
-        if (price == null) {
-            throw new GenericException(Translator.get("product.price.not.exist"));
+        // 1. 查询价格表，不存在则抛错
+        ProductPrice price = Optional.ofNullable(
+                productPriceMapper.selectByPrimaryKey(id)
+        ).orElseThrow(() -> new GenericException(
+                Translator.get("product.price.not.exist")
+        ));
+
+        // 2. 检查是否被引用（报价单等）
+        List<OpportunityField> opportunityFields = opportunityFieldMapper.selectListByLambda(
+                new LambdaQueryWrapper<OpportunityField>()
+                        .eq(OpportunityField::getFieldValue, id)
+        );
+
+        if (!opportunityFields.isEmpty()) {
+            throw new GenericException(
+                    Translator.get("product.price.in.use.cannot.delete")
+            );
         }
+
+        // 3. 删除主表和自定义字段表数据
         productPriceMapper.deleteByPrimaryKey(id);
         productPriceFieldService.deleteByResourceId(id);
-        // 添加日志上下文
+
+        // 4. 记录日志上下文（用于审计）
         OperationLogContext.setResourceName(price.getName());
     }
 
@@ -232,100 +256,103 @@ public class ProductPriceService {
         );
     }
 
-	/**
-	 * 导入检查
-	 *
-	 * @param file       导入文件
-	 * @param currentOrg 当前组织
-	 *
-	 * @return 导入检查信息
-	 */
-	public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
-		if (file == null) {
-			throw new GenericException(Translator.get("file_cannot_be_null"));
-		}
-		return checkImportExcel(file, currentOrg);
-	}
+    /**
+     * 导入检查
+     *
+     * @param file       导入文件
+     * @param currentOrg 当前组织
+     *
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, currentOrg);
+    }
 
-	/**
-	 * 检查导入的文件
-	 *
-	 * @param file       文件
-	 * @param currentOrg 当前组织
-	 *
-	 * @return 检查信息
-	 */
-	private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
-		try {
-			List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
-			CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
-			FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
-					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-			CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product_price", "product_price_field", currentOrg,
-					mergeCellEventListener.getMergeCellMap());
-			FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-			return ImportResponse.builder().errorMessages(eventListener.getErrList())
-					.successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
-		} catch (Exception e) {
-			LogUtils.error("price import pre-check error: {}", e.getMessage());
-			throw new GenericException(e.getMessage());
-		}
-	}
+    /**
+     * 检查导入的文件
+     *
+     * @param file       文件
+     * @param currentOrg 当前组织
+     *
+     * @return 检查信息
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product_price", "product_price_field", currentOrg,
+                    mergeCellEventListener.getMergeCellMap());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("price import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
 
-	/**
-	 * 价格表导入
-	 *
-	 * @param file        导入文件
-	 * @param currentOrg  当前组织
-	 * @param currentUser 当前用户
-	 *
-	 * @return 导入返回信息
-	 */
-	public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
-		try {
-			List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
-			CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
-			FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
-					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-			CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields, mergeCellEventListener.getMergeCellMap());
-			FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
-					.headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-			return ImportResponse.builder().errorMessages(eventListener.getErrList())
-					.successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
-		} catch (Exception e) {
-			LogUtils.error("product price import error: ", e.getMessage());
-			throw new GenericException(e.getMessage());
-		}
-	}
+    /**
+     * 价格表导入
+     *
+     * @param file        导入文件
+     * @param currentOrg  当前组织
+     * @param currentUser 当前用户
+     *
+     * @return 导入返回信息
+     */
+    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields, mergeCellEventListener.getMergeCellMap());
+            FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("product price import error: ", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
 
-	/**
-	 * 价格表导入监听器
-	 * @param currentOrg 当前组织
-	 * @param currentUser 当前用户
-	 * @param fields 自定义字段集合
-	 * @return 导入监听器
-	 */
-	private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap) {
-		AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
-		CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
-			List<LogDTO> logs = new ArrayList<>();
-			prices.forEach(price -> {
-				price.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
-				logs.add(new LogDTO(currentOrg, price.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName()));
-			});
-			productPriceMapper.batchInsert(prices);
-			productPriceFieldMapper.batchInsert(priceFields.stream().map(field -> BeanUtils.copyBean(new ProductPriceField(), field)).toList());
-			productPriceFieldBlobMapper.batchInsert(priceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductPriceFieldBlob(), field)).toList());
-			// record logs
-			logService.batchAdd(logs);
-		};
-		return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap);
-	}
+    /**
+     * 价格表导入监听器
+     *
+     * @param currentOrg  当前组织
+     * @param currentUser 当前用户
+     * @param fields      自定义字段集合
+     *
+     * @return 导入监听器
+     */
+    private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap) {
+        AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
+        CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
+            List<LogDTO> logs = new ArrayList<>();
+            prices.forEach(price -> {
+                price.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
+                logs.add(new LogDTO(currentOrg, price.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName()));
+            });
+            productPriceMapper.batchInsert(prices);
+            productPriceFieldMapper.batchInsert(priceFields.stream().map(field -> BeanUtils.copyBean(new ProductPriceField(), field)).toList());
+            productPriceFieldBlobMapper.batchInsert(priceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductPriceFieldBlob(), field)).toList());
+            // record logs
+            logService.batchAdd(logs);
+        };
+        return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap);
+    }
 
-	/**
+    /**
      * 构建列表数据
      *
      * @param listData 列表数据
+     *
      * @return 列表数据
      */
     public List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
@@ -373,6 +400,7 @@ public class ProductPriceService {
      * 获取下一个排序值
      *
      * @param orgId 组织ID
+     *
      * @return 下一个排序值
      */
     public Long getNextOrder(String orgId) {
@@ -380,21 +408,25 @@ public class ProductPriceService {
         return (pos == null ? 0 : pos) + ServiceUtils.POS_STEP;
     }
 
-	/**
-	 * 获取价格表名称
-	 * @param id id
-	 * @return 名称
-	 */
+    /**
+     * 获取价格表名称
+     *
+     * @param id id
+     *
+     * @return 名称
+     */
     public String getProductPriceName(String id) {
         ProductPrice productPrice = productPriceMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(productPrice).map(ProductPrice::getName).orElse(null);
     }
 
-	/**
-	 * 通过ID集合获取价格表名称串
-	 * @param ids ID集合
-	 * @return 名称字符串
-	 */
+    /**
+     * 通过ID集合获取价格表名称串
+     *
+     * @param ids ID集合
+     *
+     * @return 名称字符串
+     */
     public String getProductPriceNameByIds(List<String> ids) {
         List<ProductPrice> productPrices = productPriceMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(productPrices)) {
@@ -404,14 +436,16 @@ public class ProductPriceService {
         return StringUtils.EMPTY;
     }
 
-	/**
-	 * 通过名称获取价格表集合
-	 * @param names 名称集合
-	 * @return 价格表集合
-	 */
-	public List<ProductPrice> getProductPriceListByNames(List<String> names) {
-		LambdaQueryWrapper<ProductPrice> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-		lambdaQueryWrapper.in(ProductPrice::getName, names);
-		return productPriceMapper.selectListByLambda(lambdaQueryWrapper);
-	}
+    /**
+     * 通过名称获取价格表集合
+     *
+     * @param names 名称集合
+     *
+     * @return 价格表集合
+     */
+    public List<ProductPrice> getProductPriceListByNames(List<String> names) {
+        LambdaQueryWrapper<ProductPrice> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(ProductPrice::getName, names);
+        return productPriceMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 }
