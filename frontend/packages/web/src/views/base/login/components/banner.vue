@@ -2,7 +2,7 @@
   <div class="banner-wrap">
     <img class="img" :style="props.isPreview ? 'height: 100%;' : 'height: 100vh'" :src="innerBanner" />
     <a href="https://cordys.cn/" target="_blank" class="logo-link">
-      <CrmSvg name="login-logo" class="logo" />
+      <img :src="innerLogo" />
     </a>
   </div>
 </template>
@@ -10,14 +10,13 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
 
-  import CrmSvg from '@/components/pure/crm-svg/index.vue';
-
-  import { defaultLoginImage } from '@/config/business';
+  import { defaultLoginImage, defaultLoginLogo } from '@/config/business';
   import { useAppStore } from '@/store';
 
   const props = defineProps<{
     isPreview?: boolean;
     banner?: string;
+    logo?: string;
   }>();
 
   const appStore = useAppStore();
@@ -25,6 +24,10 @@
   const innerBanner = computed(() =>
     props.banner ? props.banner : appStore.pageConfig.loginImage[0]?.url ?? defaultLoginImage
   );
+
+  const innerLogo = computed(() => {
+    return props.isPreview && props.logo ? props.logo : appStore.pageConfig.loginLogo[0]?.url ?? defaultLoginLogo;
+  });
 </script>
 
 <style lang="less" scoped>
