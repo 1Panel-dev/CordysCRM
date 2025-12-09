@@ -721,11 +721,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 	@SuppressWarnings("unchecked")
 	private Map<String, Map<String, Object>> getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
 		Map<String, String> sourceIdType = flattenFields.stream().filter(sf -> sf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-				.collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType()));
+				.collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType(), (prev, next) -> next));
 		// 获取数据源详情
 		Map<String, Map<String, Object>> sourceDetailMap = new HashMap<>();
 		resourceFields.stream().filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null).forEach(rf -> {
-			if (sourceDetailMap.containsKey(rf.getFieldId())) {
+			if (sourceDetailMap.containsKey(rf.getFieldValue().toString())) {
 				return;
 			}
 			FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
