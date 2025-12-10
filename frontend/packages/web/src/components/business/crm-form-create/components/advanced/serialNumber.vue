@@ -2,6 +2,7 @@
   <n-form-item
     :label="props.fieldConfig.name"
     :show-label="(props.fieldConfig.showLabel && !props.isSubTableRender) || props.isSubTableField"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">

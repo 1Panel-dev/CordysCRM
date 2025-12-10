@@ -78,7 +78,6 @@
                 {{ t('common.delete') }}
               </n-tooltip>
             </div>
-            <div v-if="props.formConfig.labelPos === 'left'" class="h-[30px]"></div>
             <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" isSubTableField />
             <div class="crm-form-design--composition-item-mask"></div>
           </div>

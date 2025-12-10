@@ -5,6 +5,7 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
   >
     <template #label>
       <div
