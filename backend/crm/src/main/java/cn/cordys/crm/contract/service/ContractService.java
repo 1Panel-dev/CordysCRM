@@ -359,6 +359,12 @@ public class ContractService {
         ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
         if (snapshot != null) {
             response = JSON.parseObject(snapshot.getContractValue(), ContractResponse.class);
+            Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
+            if (customer != null) {
+                response.setInCustomerPool(customer.getInSharedPool());
+                response.setPoolId(customer.getPoolId());
+            }
+
         }
 
         return response;

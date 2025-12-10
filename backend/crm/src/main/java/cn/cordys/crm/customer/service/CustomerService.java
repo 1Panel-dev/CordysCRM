@@ -291,6 +291,10 @@ public class CustomerService {
     public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         CustomerGetResponse getResponse = get(id);
 
+        if (getResponse == null) {
+            throw new GenericException(Translator.get("customer.not.exist"));
+        }
+
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {
             List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(getResponse.getId(), userId);
@@ -307,7 +311,7 @@ public class CustomerService {
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
 		if (customer == null) {
-			return null;
+            return null;
 		}
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
         customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
