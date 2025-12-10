@@ -184,7 +184,7 @@
                 </when>
                 <when test="${sort}.name not in
                         {'name', 'owner', 'create_time', 'update_time', 'contract_id', 'plan_status', 'create_user', 'update_user', 'plan_amount', 'plan_end_time'}">
-                    left join contract_payment_plan sort_table
+                    left join contract_payment_plan_field sort_table
                     on cpp.id = sort_table.resource_id and sort_table.field_id = #{sortName}
                     left join sys_module_field module_table on sort_table.field_id = module_table.id
                 </when>
