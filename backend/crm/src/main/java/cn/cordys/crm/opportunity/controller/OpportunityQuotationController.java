@@ -64,7 +64,7 @@ public class OpportunityQuotationController {
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_ADD)
     @Operation(summary = "新增报价单")
-    public OpportunityQuotation add(@RequestBody OpportunityQuotationAddRequest request) {
+    public OpportunityQuotation add(@Validated @RequestBody OpportunityQuotationAddRequest request) {
         return opportunityQuotationService.add(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -72,7 +72,7 @@ public class OpportunityQuotationController {
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
     @Operation(summary = "更新报价单")
-    public OpportunityQuotation update(@RequestBody OpportunityQuotationEditRequest request) {
+    public OpportunityQuotation update(@Validated @RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -118,7 +118,7 @@ public class OpportunityQuotationController {
     @PostMapping("/batch/voided")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED)
     @Operation(summary = "批量作废报价单")
-    public BatchAffectReasonResponse batchVoidQuotation(@RequestBody OpportunityQuotationBatchRequest request) {
+    public BatchAffectReasonResponse batchVoidQuotation(@Validated @RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -127,7 +127,7 @@ public class OpportunityQuotationController {
     @PostMapping("/approve")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
     @Operation(summary = "审批报价单")
-    public String approve(@RequestBody OpportunityQuotationEditRequest request) {
+    public String approve(@Validated @RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.approve(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -135,7 +135,7 @@ public class OpportunityQuotationController {
     @PostMapping("/batch/approve")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
     @Operation(summary = "批量审批报价单")
-    public BatchAffectSkipResponse batchApprove(@RequestBody OpportunityQuotationBatchRequest request) {
+    public BatchAffectSkipResponse batchApprove(@Validated @RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
