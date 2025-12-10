@@ -580,7 +580,7 @@ export const priceTableDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.SUB_PRICE,
   icon: 'iconicon_table',
-  name: 'crmFormDesign.priceTable',
+  name: 'crmFormDesign.quotationTable',
   fieldWidth: 1,
   showLabel: true,
   description: '',
