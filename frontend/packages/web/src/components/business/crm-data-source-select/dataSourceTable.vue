@@ -20,7 +20,7 @@
       <template #tableTop>
         <CrmSearchInput
           v-model:value="keyword"
-          class="!w-[240px]"
+          class="crm-data-source-search-input !w-[240px]"
           :placeholder="
             props.sourceType === FieldDataSourceTypeEnum.CONTACT
               ? t('common.searchByNamePhone')
@@ -217,6 +217,19 @@
       .n-radio__dot::before {
         opacity: 1 !important;
         transform: scale(1) !important;
+      }
+    }
+  }
+  .crm-data-source-search-input {
+    --n-box-shadow-focus-error: 0 0 0 2px rgb(var(--primary-8) 0.2) !important;
+    &.n-input {
+      .n-input__border {
+        &:focus {
+          border: 1px solid var(--primary-8) !important;
+        }
+      }
+      .n-input__state-border {
+        border: 1px solid var(--primary-8) !important;
       }
     }
   }
