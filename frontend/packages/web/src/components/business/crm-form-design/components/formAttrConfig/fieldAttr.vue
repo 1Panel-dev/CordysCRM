@@ -963,11 +963,11 @@
                 fieldConfig.disabledProps?.includes('fieldWidth') || fieldConfig.type === FieldTypeEnum.ATTACHMENT
               "
             >
-              <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
-              <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
-              <n-radio-button :value="1 / 2" class="!px-[8px]"> 1/2 </n-radio-button>
-              <n-radio-button :value="2 / 3" class="!px-[8px]"> 2/3 </n-radio-button>
-              <n-radio-button :value="3 / 4" class="!px-[8px]"> 3/4 </n-radio-button>
+              <n-radio-button :value="Number((1 / 4).toFixed(2))" class="!px-[8px]"> 1/4 </n-radio-button>
+              <n-radio-button :value="Number((1 / 3).toFixed(2))" class="!px-[8px]"> 1/3 </n-radio-button>
+              <n-radio-button :value="Number((1 / 2).toFixed(2))" class="!px-[8px]"> 1/2 </n-radio-button>
+              <n-radio-button :value="Number((2 / 3).toFixed(2))" class="!px-[8px]"> 2/3 </n-radio-button>
+              <n-radio-button :value="Number((3 / 4).toFixed(2))" class="!px-[8px]"> 3/4 </n-radio-button>
               <n-radio-button :value="1" class="!px-[8px]">
                 {{ t('crmFormDesign.wholeLine') }}
               </n-radio-button>
@@ -1400,8 +1400,10 @@
       },
     ];
     if (isSubTableField.value) {
-      return fullList.filter((item) =>
-        [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.PRICE].includes(item.value)
+      return fullList.filter(
+        (item) =>
+          [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.PRICE].includes(item.value) &&
+          item.formKey !== props.formKey
       );
     }
     return fullList.filter((item) => item.formKey !== props.formKey);
