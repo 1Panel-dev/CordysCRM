@@ -260,6 +260,7 @@ export const memberDefaultFieldConfig: FormCreateField = {
   rules: [],
   defaultValue: [],
   initialOptions: [],
+  hasCurrentUser: false,
   multiple: false,
 };
 
@@ -277,6 +278,7 @@ export const memberMultipleDefaultFieldConfig: FormCreateField = {
   rules: [],
   defaultValue: [],
   initialOptions: [],
+  hasCurrentUser: false,
   multiple: false,
 };
 
