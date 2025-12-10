@@ -541,6 +541,19 @@
     initLayoutType();
   }
 
+  function patchColKeys() {
+    if (!attrs.tableKey) return;
+    const colElements = tableFullRef.value?.querySelectorAll('table col');
+    if (!colElements || !currentColumns.value) return;
+
+    colElements.forEach((colEl, index) => {
+      const colKey = (currentColumns.value[index] as CrmDataTableColumn)?.key;
+      if (colKey !== undefined && colKey !== null) {
+        colEl.setAttribute('data-col-key', String(colKey));
+      }
+    });
+  }
+
   /**
    * 监听列宽变化，更新缓存的列配置，以记住列宽
    * 这里使用 ResizeObserver 来监听 col 元素的宽度变化
@@ -556,18 +569,20 @@
           isFirstResize = false; // 第一次触发，跳过
           return;
         }
-        // 遍历缓存列配置，更新列宽
-        colElements?.forEach((e, i) => {
-          if (tableColumnsMap.column[i]) {
-            tableColumnsMap.column[i].width =
-              (e.computedStyleMap()?.get('width') as any)?.value || tableColumnsMap.column[i].width;
+        // 按colKey更新宽度，避免隐藏列后，实际DOM的col数量、位置、顺序发生改变，导致列宽度错乱
+        colElements?.forEach((e) => {
+          const key = e.getAttribute('data-col-key');
+          const col = tableColumnsMap.column.find((c) => c.key === key);
+          if (col) {
+            col.width = (e.computedStyleMap()?.get('width') as any)?.value || col.width;
           }
         });
         setItem(attrs.tableKey as TableKeyEnum, tableColumnsMap);
-        currentColumns.value = currentColumns.value.map((col, index) => {
+        currentColumns.value = currentColumns.value.map((col) => {
+          const cachedColumn = tableColumnsMap.column.find((c) => c.key === col.key);
           return {
             ...col,
-            width: tableColumnsMap.column[index]?.width || col.width,
+            width: cachedColumn?.width || col.width,
           };
         });
       }
@@ -585,6 +600,8 @@
     () => props.columns,
     async () => {
       await initColumn();
+      await nextTick();
+      patchColKeys();
       listenColWidthChange();
       initLayoutType();
     },
