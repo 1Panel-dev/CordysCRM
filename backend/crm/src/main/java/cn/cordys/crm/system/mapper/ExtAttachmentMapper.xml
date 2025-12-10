@@ -7,4 +7,10 @@
             sa.name like concat('%', #{name}, '%')
         </foreach>
     </select>
+    <select id="selectNameByIds" resultType="java.lang.String">
+        select sa.name from sys_attachment sa where
+        <foreach item="id" collection="ids" open="(" separator="or" close=")">
+            sa.id = #{id}
+        </foreach>
+    </select>
 </mapper>
