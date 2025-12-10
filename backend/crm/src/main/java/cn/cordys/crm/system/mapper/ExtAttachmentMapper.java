@@ -12,4 +12,6 @@ public interface ExtAttachmentMapper {
      * @return 附件ID列表
      */
     List<String> getAttachmentIdsByNames(List<String> names);
+
+    List<String> selectNameByIds(List<String> ids);
 }

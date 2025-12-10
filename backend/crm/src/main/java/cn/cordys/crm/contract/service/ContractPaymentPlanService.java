@@ -208,6 +208,9 @@ public class ContractPaymentPlanService {
             }
         }
 
+        // 附件信息
+        contractPaymentPlanGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(contractPaymentPlanFormConfig, contractPaymentPlanFields));
+
         return contractPaymentPlanGetResponse;
     }
 
