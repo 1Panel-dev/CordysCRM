@@ -566,26 +566,26 @@
       <div v-if="fieldConfig.type === FieldTypeEnum.SERIAL_NUMBER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.serialNumberRule') }}</div>
         <template v-if="fieldConfig.serialNumberRules">
-          <n-input v-model:value="serialNumberRules1" disabled>
+          <n-input v-model:value="serialNumberRules1" maxlength="10">
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input v-model:value="serialNumberRules2" disabled>
+          <n-input v-model:value="serialNumberRules2" maxlength="10">
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
           <n-input v-model:value="serialNumberRules3" disabled>
             <template #prefix>{{ t('crmFormDesign.submitDate') }}</template>
           </n-input>
-          <n-input v-model:value="serialNumberRules4" disabled>
+          <n-input v-model:value="serialNumberRules4" maxlength="10">
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input-number v-model:value="serialNumberRules5" :show-button="false" disabled>
+          <n-input-number v-model:value="serialNumberRules5" :min="1" :max="9" :precision="0" :show-button="false">
             <template #prefix>{{ t('crmFormDesign.autoCount') }}</template>
           </n-input-number>
           <div
             class="flex flex-1 items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[8px] py-[4px]"
           >
             <div class="text-[var(--text-n4)]">{{ t('common.preview') }}</div>
-            Opp-202501-000001
+            {{ previewValue }}
           </div>
         </template>
       </div>
@@ -1565,11 +1565,33 @@
     fieldConfig.value.formula = '';
   }
 
-  const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || 'Opp');
-  const serialNumberRules2 = ref(fieldConfig.value?.serialNumberRules?.[1].toString() || '-');
+  const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || '');
+  const serialNumberRules2 = ref(fieldConfig.value?.serialNumberRules?.[1].toString() || '');
   const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'YYMM');
-  const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '-');
+  const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '');
   const serialNumberRules5 = ref(Number(fieldConfig.value?.serialNumberRules?.[4] || 6));
+  const previewValue = computed(() => {
+    const part1 = serialNumberRules1.value || '';
+    const part2 = serialNumberRules2.value || '';
+    const part4 = serialNumberRules4.value || '';
+    const digits = Number(serialNumberRules5.value) ?? 0;
+    const part5 = digits > 0 ? String(1).padStart(digits, '0') : '';
+
+    return `${part1}${part2}202501${part4}${part5}`;
+  });
+
+  watch(
+    () => [serialNumberRules1.value, serialNumberRules2.value, serialNumberRules4.value, serialNumberRules5.value],
+    () => {
+      fieldConfig.value.serialNumberRules = [
+        serialNumberRules1.value,
+        serialNumberRules2.value,
+        serialNumberRules3.value,
+        serialNumberRules4.value,
+        String(serialNumberRules5.value),
+      ];
+    }
+  );
 
   const currentFieldHasAccept = ref(!!fieldConfig.value?.accept);
   const currentFieldHasLimitSize = ref(!!fieldConfig.value?.limitSize);
@@ -1591,6 +1613,10 @@
   watch(
     () => fieldConfig.value?.id,
     () => {
+      serialNumberRules1.value = fieldConfig.value?.serialNumberRules?.[0].toString() || '';
+      serialNumberRules2.value = fieldConfig.value?.serialNumberRules?.[1].toString() || '';
+      serialNumberRules4.value = fieldConfig.value?.serialNumberRules?.[3].toString() || '';
+      serialNumberRules5.value = Number(fieldConfig.value?.serialNumberRules?.[4]);
       currentFieldHasAccept.value = !!fieldConfig.value?.accept;
       currentFieldHasLimitSize.value = !!fieldConfig.value?.limitSize;
       currentFieldLimitSize.value = parseInt(fieldConfig.value?.limitSize || '', 10) || null;
