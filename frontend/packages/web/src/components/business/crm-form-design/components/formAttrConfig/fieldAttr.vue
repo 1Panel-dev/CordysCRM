@@ -1104,6 +1104,7 @@
     v-model:visible="showCalculateFormulaModal"
     :field-config="fieldConfig"
     :form-fields="formulaScopedFields"
+    :is-sub-table-field="isSubTableField"
     @save="handleCalculateFormulaConfigSave"
   />
 </template>

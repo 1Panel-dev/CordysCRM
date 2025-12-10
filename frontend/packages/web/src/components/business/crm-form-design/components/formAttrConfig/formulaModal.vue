@@ -65,17 +65,26 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     formFields: FormCreateField[];
+    isSubTableField?: boolean;
   }>();
 
   const emit = defineEmits<{
     (e: 'save', astVal: string): void;
   }>();
 
+  function resolveFieldId(e: FormCreateField) {
+    const isSub = props.isSubTableField;
+    if (e.resourceFieldId || !isSub) {
+      return e.id;
+    }
+    return e.businessKey || e.id;
+  }
+
   const calTagList = computed<FormCreateField[]>(() =>
     props.formFields
       .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
       .map((e) => {
-        const fieldId = e.businessKey || e.id;
+        const fieldId = resolveFieldId(e);
         return {
           ...e,
           id: e.numberFormat === 'percent' ? `(${fieldId} / 100)` : fieldId,
