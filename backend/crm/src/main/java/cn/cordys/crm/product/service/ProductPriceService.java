@@ -183,7 +183,7 @@ public class ProductPriceService {
     public ProductPriceGetResponse get(String id) {
         ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
         if (price == null) {
-            throw new GenericException(Translator.get("product.price.not.exist"));
+            return null;
         }
         ProductPriceGetResponse priceDetail = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
         // 处理自定义字段(包括详情附件)
