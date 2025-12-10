@@ -984,7 +984,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           }
           if (
             (field.businessKey === 'name' &&
-              ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey)) ||
+              ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey) &&
+              !field.resourceFieldId) ||
             ([FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT].includes(
               props.formKey
             ) &&

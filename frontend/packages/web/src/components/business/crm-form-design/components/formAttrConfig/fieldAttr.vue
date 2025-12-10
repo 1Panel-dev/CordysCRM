@@ -1360,34 +1360,42 @@
       {
         label: t('crmFormDesign.customer'),
         value: FieldDataSourceTypeEnum.CUSTOMER,
+        formKey: FormDesignKeyEnum.CUSTOMER,
       },
       {
         label: t('crmFormDesign.contract'),
         value: FieldDataSourceTypeEnum.CONTACT,
+        formKey: FormDesignKeyEnum.CONTACT,
       },
       {
         label: t('crmFormDesign.opportunity'),
         value: FieldDataSourceTypeEnum.BUSINESS,
+        formKey: FormDesignKeyEnum.BUSINESS,
       },
       {
         label: t('crmFormDesign.product'),
         value: FieldDataSourceTypeEnum.PRODUCT,
+        formKey: FormDesignKeyEnum.PRODUCT,
       },
       {
         label: t('crmFormDesign.clue'),
         value: FieldDataSourceTypeEnum.CLUE,
+        formKey: FormDesignKeyEnum.CLUE,
       },
       {
         label: t('crmFormCreate.drawer.price'),
         value: FieldDataSourceTypeEnum.PRICE,
+        formKey: FormDesignKeyEnum.PRICE,
       },
       {
         label: t('crmFormCreate.drawer.quotation'),
         value: FieldDataSourceTypeEnum.QUOTATION,
+        formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
       },
       {
         label: t('module.contract'),
         value: FieldDataSourceTypeEnum.CONTRACT,
+        formKey: FormDesignKeyEnum.CONTRACT,
       },
     ];
     if (isSubTableField.value) {
@@ -1395,7 +1403,7 @@
         [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.PRICE].includes(item.value)
       );
     }
-    return fullList;
+    return fullList.filter((item) => item.formKey !== props.formKey);
   });
 
   watch(

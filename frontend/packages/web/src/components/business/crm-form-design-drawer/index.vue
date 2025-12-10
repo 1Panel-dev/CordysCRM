@@ -137,7 +137,7 @@
     const fieldNameSet = new Set<string>();
     for (let i = 0; i < fieldList.value.length; i++) {
       const field = fieldList.value[i];
-      if (fieldNameSet.has(field.name)) {
+      if (fieldNameSet.has(field.name) && !field.resourceFieldId) {
         Message.error(t('crmFormDesign.repeatFieldName'));
         formDesignRef.value?.setActiveField(field);
         return false;

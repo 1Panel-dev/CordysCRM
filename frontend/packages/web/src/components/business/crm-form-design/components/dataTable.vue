@@ -3,7 +3,7 @@
     <div v-if="fieldConfig.description" class="crm-form-create-item-desc" v-html="fieldConfig.description"></div>
     <div class="flex w-full border border-[var(--text-n8)]">
       <span class="inline-flex h-[100px] w-[40px] flex-col items-center">
-        <div class="h-[42.5px]"></div>
+        <div class="h-[46.5px]"></div>
         <n-divider class="!my-0" />
         <div class="px-[16px] py-[12px]">1</div>
       </span>
