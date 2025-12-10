@@ -194,6 +194,7 @@
               needInitDetail: props.needInitDetail,
               formDetail: props.formDetail,
               disabled: props.disabled,
+              class: 'w-[240px]',
               disabledSelection: (r: Record<string, any>) => {
                 if (key === 'product') {
                   // 产品列不允许重复选择
