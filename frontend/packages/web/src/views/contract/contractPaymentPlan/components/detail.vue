@@ -33,7 +33,7 @@
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
             :source-id="props.sourceId"
             :column="2"
-            :refresh-key="props.refreshId"
+            :refresh-key="refreshKey"
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
@@ -74,7 +74,6 @@
 
   const props = defineProps<{
     sourceId: string;
-    refreshId?: number;
     readonly?: boolean;
   }>();
   const emit = defineEmits<{
@@ -113,7 +112,7 @@
           await deletePaymentPlan(row.id);
           Message.success(t('common.deleteSuccess'));
           visible.value = false;
-          handleSaved();
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);

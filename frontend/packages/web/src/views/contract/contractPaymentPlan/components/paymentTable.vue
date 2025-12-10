@@ -357,7 +357,7 @@
     },
     specialRender: {
       contractId: (row: PaymentPlanItem) => {
-        return props.isContractTab
+        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.contractName },

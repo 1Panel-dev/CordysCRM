@@ -92,4 +92,13 @@
       }
     });
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        form.value = { reason: '' };
+      }
+    }
+  );
 </script>

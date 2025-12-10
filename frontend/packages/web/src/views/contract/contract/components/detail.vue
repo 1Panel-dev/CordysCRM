@@ -84,6 +84,7 @@
 
   import { approvalContract, archivedContract, deleteContract } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;
@@ -104,16 +105,21 @@
   const detailInfo = ref();
 
   const activeTab = ref('contract');
-  const tabList = [
-    {
-      name: 'contract',
-      tab: t('module.contract'),
-    },
-    {
-      name: 'payment',
-      tab: t('module.paymentPlan'),
-    },
-  ];
+
+  const tabList = computed(() =>
+    [
+      {
+        name: 'contract',
+        tab: t('module.contract'),
+        permission: ['CONTRACT:READ'],
+      },
+      {
+        name: 'payment',
+        tab: t('module.paymentPlan'),
+        permission: ['CONTRACT_PAYMENT_PLAN:READ'],
+      },
+    ].filter((item) => hasAnyPermission(item.permission))
+  );
 
   const buttonList = computed(() => {
     if (detailInfo.value?.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
