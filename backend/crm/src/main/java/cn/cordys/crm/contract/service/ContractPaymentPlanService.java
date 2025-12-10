@@ -251,7 +251,10 @@ public class ContractPaymentPlanService {
         contractPaymentPlan.setUpdateUser(userId);
 
         // 获取模块字段
-        List<BaseModuleFieldValue> originContractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originContractPaymentPlanFields = List.of();
+        if (request.getModuleFields() != null) {
+            originContractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
+        }
 
         if (BooleanUtils.isTrue(request.getAgentInvoke())) {
             contractPaymentPlanFieldService.updateModuleFieldByAgent(contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), orgId, userId);

@@ -44,6 +44,7 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.INDUSTRY.name(), new IndustryResolver());
         resolverMap.put(FieldType.PHONE.name(), new PhoneResolver());
         resolverMap.put(FieldType.ATTACHMENT.name(), new AttachmentFieldResolver());
+        resolverMap.put(FieldType.FORMULA.name(), new FormulaResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {

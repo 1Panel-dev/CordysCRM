@@ -3,21 +3,21 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.service.ClueService;
+import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.domain.Product;
-import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
-import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -29,9 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class BaseModuleLogService {
-
-    @Resource
-    private ExtModuleFieldMapper extModuleFieldMapper;
     @Resource
     private BaseMapper<Product> productMapper;
 
@@ -259,26 +256,12 @@ public abstract class BaseModuleLogService {
 
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
         if (moduleField != null) {
-            if (Strings.CI.equalsAny(moduleField.getType(), FieldType.DATE_TIME.name())) {
-                // 日期时间类型
-                setFormatDataTimeFieldValueName(differ);
-            } else if (moduleField instanceof DatasourceMultipleField || moduleField instanceof DatasourceField) {
-                String dataSourceType = moduleField instanceof DatasourceMultipleField ?
-                        ((DatasourceMultipleField) moduleField).getDataSourceType() :
-                        ((DatasourceField) moduleField).getDataSourceType();
-                if (Strings.CS.equals(dataSourceType, FieldSourceType.CONTACT.name())) {
-                    dataSourceType = "customer_contact";
-                }
-                setResourceValueName(differ, dataSourceType);
-            } else if (moduleField instanceof MemberMultipleField || moduleField instanceof MemberField) {
-                setResourceValueName(differ, "sys_user");
-            } else if (moduleField instanceof DepartmentMultipleField || moduleField instanceof DepartmentField) {
-                setResourceValueName(differ, "sys_department");
-            } else {
-                differ.setOldValueName(differ.getOldValue());
-                differ.setNewValueName(differ.getNewValue());
+            if (differ.getOldValue() != null) {
+                differ.setOldValueName(transformFieldValue(moduleField, differ.getOldValue().toString()));
             }
-
+            if (differ.getNewValue() != null) {
+                differ.setNewValueName(transformFieldValue(moduleField, differ.getNewValue().toString()));
+            }
         } else {
             differ.setOldValueName(differ.getOldValue());
             differ.setNewValueName(differ.getNewValue());
@@ -294,22 +277,17 @@ public abstract class BaseModuleLogService {
         }
     }
 
+    public Object transformFieldValue(BaseField field, Object value) {
+        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+        // 将数据库中的字符串值,转换为对应的对象值
+        return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+    }
+
     private String formatDataTime(String value) {
         if (StringUtils.isBlank(value) || Strings.CI.equals(value, "null")) {
             return StringUtils.EMPTY;
         }
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
-    }
-
-    private void setResourceValueName(JsonDifferenceDTO differ, String tableName) {
-        if (differ.getOldValue() != null) {
-            List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getOldValue().toString(), String.class));
-            differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
-        }
-        if (differ.getNewValue() != null) {
-            List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getNewValue().toString(), String.class));
-            differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
-        }
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {
@@ -378,6 +356,24 @@ public abstract class BaseModuleLogService {
         }
         if (differ.getNewValue() != null) {
             String userName = customerContactService.getContactName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+    /**
+     *合同名称
+     *
+     * @param differ
+     */
+    protected void setContractFieldName(JsonDifferenceDTO differ) {
+        ContractService contractService = CommonBeanFactory.getBean(ContractService.class);
+        assert contractService != null;
+        if (differ.getOldValue() != null) {
+            String customerName = contractService.getContractName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = contractService.getContractName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
     }
