@@ -389,6 +389,9 @@ public class ModuleFormService {
             allFieldValues.stream().filter(fv -> idTypeMap.containsKey(fv.getFieldId())).forEach(fv -> {
                 typeIdsMap.putIfAbsent(fv.getFieldId(), new ArrayList<>());
                 Object v = fv.getFieldValue();
+				if (v == null) {
+					return;
+				}
                 if (v instanceof List) {
                     typeIdsMap.get(fv.getFieldId()).addAll(JSON.parseArray(JSON.toJSONString(v), String.class));
                 } else {
@@ -924,7 +927,7 @@ public class ModuleFormService {
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (StringUtils.isNotEmpty(f.getResourceFieldId())) {
+                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport()) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
