@@ -397,7 +397,7 @@
         summaryRes[col.key || ''] = {
           value: h(
             'div',
-            { class: 'flex items-center ml-[4px]' },
+            { class: 'flex items-center' },
             {
               default: () => {
                 const sum = (pageData as unknown as RowData[]).reduce(
