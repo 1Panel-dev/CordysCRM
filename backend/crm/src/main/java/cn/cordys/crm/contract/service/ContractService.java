@@ -658,4 +658,9 @@ public class ContractService {
         logDTO.setModifiedValue(newMap);
         return logDTO;
     }
+
+    public String getContractName(String id) {
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(contract).map(Contract::getName).orElse(null);
+    }
 }
