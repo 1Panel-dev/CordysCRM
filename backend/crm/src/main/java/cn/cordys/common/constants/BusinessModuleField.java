@@ -210,7 +210,7 @@ public enum BusinessModuleField {
 	 * 报价单表单
 	 */
 	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
-	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT("quotationProduct", "product", Set.of("rules.required", "mobile", "dataSourceType"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile"), FormKey.QUOTATION.getKey()),
