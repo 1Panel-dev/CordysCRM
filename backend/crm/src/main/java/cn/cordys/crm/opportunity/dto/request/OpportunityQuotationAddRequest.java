@@ -14,23 +14,23 @@ import java.util.Map;
 @Data
 public class OpportunityQuotationAddRequest {
 
-    @NotBlank
+    @NotBlank(message = "{opportunity.quotation.name.required}")
     @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "{opportunity.required}")
     @Schema(description = "商机id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String opportunityId;
 
-    @NotEmpty
+    @NotEmpty(message = "{opportunity.quotation.field.required}")
     @Schema(description = "自定义字段值", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<BaseModuleFieldValue> moduleFields;
 
-    @NotNull
+    @NotNull(message = "{opportunity.quotation.form.config.required}")
     @Schema(description = "表单配置", requiredMode = Schema.RequiredMode.REQUIRED)
     private ModuleFormConfigDTO moduleFormConfigDTO;
 
-    @NotEmpty
+    @NotEmpty(message = "{opportunity.quotation.product.required}")
     @Schema(description = "子产品信息", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<Map<String, Object>> products;
 }

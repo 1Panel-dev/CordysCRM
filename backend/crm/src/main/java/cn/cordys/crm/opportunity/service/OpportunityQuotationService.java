@@ -217,9 +217,11 @@ public class OpportunityQuotationService {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
         Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
-        optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
+        if (opportunity != null) {
+            optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
+            response.setOpportunityName(opportunity.getName());
+        }
         response.setOptionMap(optionMap);
-        response.setOpportunityName(opportunity.getName());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
         moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
