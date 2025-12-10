@@ -309,6 +309,7 @@
               isSubTableRender: true,
               disabled: props.disabled,
               needInitDetail: props.needInitDetail,
+              class: 'w-[190px]',
               onChange: (val: any) => {
                 row[key] = val;
               },

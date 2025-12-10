@@ -70,6 +70,9 @@
       if (val === 'current') {
         value.value = new Date().getTime();
         emit('change', value.value);
+      } else {
+        value.value = null;
+        emit('change', value.value);
       }
     },
     {
