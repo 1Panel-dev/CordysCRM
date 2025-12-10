@@ -196,7 +196,7 @@
 
   function handleLayoutChange(layout: number) {
     list.value.forEach((item) => {
-      if (item.type !== FieldTypeEnum.ATTACHMENT) {
+      if ([FieldTypeEnum.ATTACHMENT, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.fieldWidth = 1 / layout;
       }
     });
