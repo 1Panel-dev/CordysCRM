@@ -25,4 +25,5 @@ export default {
   'contract.expectedPaymentDate': 'Expected payment date',
   'contract.expectedPaymentAmount': 'Expected payment amount',
   'contract.isPlanCompleted': 'Plan completed',
+  'contract.approvalStatus': 'Approval Status',
 };
