@@ -342,6 +342,9 @@
 
           margin-bottom: 4px;
           padding-bottom: 0;
+          .n-form-item-label__text {
+            @apply overflow-hidden;
+          }
         }
         .n-form-item-feedback-wrapper {
           @apply hidden;

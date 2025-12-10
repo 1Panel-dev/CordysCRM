@@ -1,16 +1,17 @@
 <template>
   <n-form-item
     :label="props.fieldConfig.name"
-    :show-label="props.fieldConfig.showLabel"
     :path="props.path"
     :rule="mergedRules"
+    :show-label="(props.fieldConfig.showLabel && !props.isSubTableRender) || props.isSubTableField"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <template #label>
-      <div class="flex items-center gap-[4px] whitespace-nowrap">
+      <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
         <div class="one-line-text">{{ props.fieldConfig.name }}</div>
         <CrmIcon v-if="props.fieldConfig.resourceFieldId" type="iconicon_correlation" />
       </div>
+      <div v-else-if="props.isSubTableField || props.isSubTableRender" class="h-[22px]"></div>
     </template>
     <div
       v-if="props.fieldConfig.description"

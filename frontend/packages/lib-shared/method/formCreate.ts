@@ -292,7 +292,7 @@ export function transformData({
         }
       } else if (specialBusinessKeyMap[fieldId]) {
         // 处理特殊业务 key 映射关系
-        businessFieldAttr[fieldId] = item[specialBusinessKeyMap[fieldId]];
+        businessFieldAttr[specialBusinessKeyMap[fieldId]] = item[specialBusinessKeyMap[fieldId]];
       }
     }
   });

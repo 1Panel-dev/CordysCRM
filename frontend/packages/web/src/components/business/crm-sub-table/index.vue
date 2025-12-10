@@ -115,234 +115,234 @@
   const sumInitialOptions = ref<Record<string, any>[]>([]);
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
-      return props.subFields.map((field, index) => {
+      return props.subFields
+        .filter((field) => field.readable)
+        .map((field, index) => {
+          let key = field.businessKey || field.id;
+          if (field.resourceFieldId) {
+            // 数据源引用字段用 id作为 key
+            key = field.id;
+          }
+          return {
+            title: field.showLabel ? field.name : '',
+            width: 150,
+            key,
+            fieldId: key,
+            ellipsis: {
+              tooltip: true,
+            },
+            render: (row: any) =>
+              h(
+                NTooltip,
+                { trigger: 'hover' },
+                {
+                  default: () => initFieldValueText(field, key, row[key]),
+                  trigger: () =>
+                    h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
+                }
+              ),
+            filedType: field.type,
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        });
+    }
+    return props.subFields
+      .filter((field) => field.readable)
+      .map((field, index) => {
         let key = field.businessKey || field.id;
         if (field.resourceFieldId) {
           // 数据源引用字段用 id作为 key
           key = field.id;
         }
+        if (field.resourceFieldId) {
+          return {
+            title: field.showLabel ? field.name : '',
+            width: 120,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any) =>
+              h(
+                NTooltip,
+                { trigger: 'hover' },
+                {
+                  default: () => row[key],
+                  trigger: () => h('div', { class: 'one-line-text max-w-[200px]' }, row[key]),
+                }
+              ),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        let title: any = field.name;
+        if (field.showLabel === false) {
+          title = '';
+        } else if (field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)) {
+          title = () => makeRequiredTitle(field.name);
+        }
+        if (field.type === FieldTypeEnum.DATA_SOURCE) {
+          return {
+            title,
+            width: 250,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) => {
+              return h(dataSource, {
+                value: row[key],
+                fieldConfig: {
+                  ...field,
+                  initialOptions: [...(field.initialOptions || []), ...sumInitialOptions.value],
+                },
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                needInitDetail: props.needInitDetail,
+                formDetail: props.formDetail,
+                disabled: props.disabled,
+                class: 'w-[240px]',
+                disabledSelection: (r: Record<string, any>) => {
+                  if (key === 'product') {
+                    // 产品列不允许重复选择
+                    return data.value.some(
+                      (dataRow, dataRowIndex) => dataRowIndex !== rowIndex && dataRow[key].includes(r.id)
+                    );
+                  }
+                  return false;
+                },
+                onChange: (val, source) => {
+                  row[key] = val;
+                  sumInitialOptions.value = sumInitialOptions.value.concat(
+                    ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
+                  );
+                  if (field.showFields?.length) {
+                    // 数据源显示字段联动
+                    const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
+                    const targetSource = source.find((s) => s.id === val[0]);
+                    showFields.forEach((sf) => {
+                      let fieldVal: string | string[] = '';
+                      if (targetSource) {
+                        const sourceFieldVal = targetSource[sf.businessKey || sf.id];
+                        if (sf.subTableFieldId) {
+                          // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
+                          if (targetSource.products && row.product?.length) {
+                            fieldVal =
+                              targetSource.products.find((st: any) => st.product === row.product[0])?.[sf.id] || '';
+                          } else {
+                            fieldVal = '';
+                          }
+                        } else {
+                          fieldVal = sourceFieldVal;
+                        }
+                      }
+                      row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
+                    });
+                  }
+                },
+              });
+            },
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (field.type === FieldTypeEnum.FORMULA) {
+          return {
+            title,
+            width: 200,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) =>
+              h(formula, {
+                value: row[key],
+                fieldConfig: field,
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                needInitDetail: props.needInitDetail,
+                formDetail: props.formDetail,
+                onChange: (val: any) => {
+                  row[key] = val;
+                },
+              }),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+          return {
+            title,
+            width: 200,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) =>
+              h(inputNumber, {
+                value: row[key],
+                fieldConfig: field,
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                disabled: props.disabled,
+                needInitDetail: props.needInitDetail,
+                onChange: (val: any) => {
+                  row[key] = val;
+                },
+              }),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
+          return {
+            title,
+            width: 200,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) =>
+              h(select, {
+                value: row[key],
+                fieldConfig: field,
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                disabled: props.disabled,
+                needInitDetail: props.needInitDetail,
+                class: 'w-[190px]',
+                onChange: (val: any) => {
+                  row[key] = val;
+                },
+              }),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
         return {
-          title: field.name,
-          width: 150,
+          title,
+          width: 200,
           key,
-          fieldId: key,
           ellipsis: {
             tooltip: true,
           },
-          render: (row: any) =>
-            h(
-              NTooltip,
-              { trigger: 'hover' },
-              {
-                default: () => initFieldValueText(field, key, row[key]),
-                trigger: () =>
-                  h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
-              }
-            ),
-          filedType: field.type,
+          fieldId: key,
+          render: (row: any, rowIndex: number) =>
+            h(singleText, {
+              value: row[key],
+              fieldConfig: field,
+              path: `${props.parentId}[${rowIndex}].${key}`,
+              isSubTableRender: true,
+              disabled: props.disabled,
+              needInitDetail: props.needInitDetail,
+              onChange: (val: any) => {
+                row[key] = val;
+              },
+            }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          filedType: field.type,
         };
       });
-    }
-    return props.subFields.map((field, index) => {
-      let key = field.businessKey || field.id;
-      if (field.resourceFieldId) {
-        // 数据源引用字段用 id作为 key
-        key = field.id;
-      }
-      if (field.resourceFieldId) {
-        return {
-          title: field.name,
-          width: 120,
-          key,
-          ellipsis: {
-            tooltip: true,
-          },
-          fieldId: key,
-          render: (row: any) =>
-            h(
-              NTooltip,
-              { trigger: 'hover' },
-              {
-                default: () => row[key],
-                trigger: () => h('div', { class: 'one-line-text max-w-[200px]' }, row[key]),
-              }
-            ),
-          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        };
-      }
-      if (field.type === FieldTypeEnum.DATA_SOURCE) {
-        return {
-          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
-            ? () => makeRequiredTitle(field.name)
-            : field.name,
-          width: 250,
-          key,
-          ellipsis: {
-            tooltip: true,
-          },
-          fieldId: key,
-          render: (row: any, rowIndex: number) => {
-            return h(dataSource, {
-              value: row[key],
-              fieldConfig: {
-                ...field,
-                initialOptions: [...(field.initialOptions || []), ...sumInitialOptions.value],
-              },
-              path: `${props.parentId}[${rowIndex}].${key}`,
-              isSubTableRender: true,
-              needInitDetail: props.needInitDetail,
-              formDetail: props.formDetail,
-              disabled: props.disabled,
-              class: 'w-[240px]',
-              disabledSelection: (r: Record<string, any>) => {
-                if (key === 'product') {
-                  // 产品列不允许重复选择
-                  return data.value.some(
-                    (dataRow, dataRowIndex) => dataRowIndex !== rowIndex && dataRow[key].includes(r.id)
-                  );
-                }
-                return false;
-              },
-              onChange: (val, source) => {
-                row[key] = val;
-                sumInitialOptions.value = sumInitialOptions.value.concat(
-                  ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
-                );
-                if (field.showFields?.length) {
-                  // 数据源显示字段联动
-                  const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
-                  const targetSource = source.find((s) => s.id === val[0]);
-                  showFields.forEach((sf) => {
-                    let fieldVal: string | string[] = '';
-                    if (targetSource) {
-                      const sourceFieldVal = targetSource[sf.businessKey || sf.id];
-                      if (sf.subTableFieldId) {
-                        // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
-                        if (targetSource.products && row.product?.length) {
-                          fieldVal =
-                            targetSource.products.find((st: any) => st.product === row.product[0])?.[sf.id] || '';
-                        } else {
-                          fieldVal = '';
-                        }
-                      } else {
-                        fieldVal = sourceFieldVal;
-                      }
-                    }
-                    row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
-                  });
-                }
-              },
-            });
-          },
-          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        };
-      }
-      if (field.type === FieldTypeEnum.FORMULA) {
-        return {
-          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
-            ? () => makeRequiredTitle(field.name)
-            : field.name,
-          width: 200,
-          key,
-          ellipsis: {
-            tooltip: true,
-          },
-          fieldId: key,
-          render: (row: any, rowIndex: number) =>
-            h(formula, {
-              value: row[key],
-              fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${key}`,
-              isSubTableRender: true,
-              needInitDetail: props.needInitDetail,
-              formDetail: props.formDetail,
-              onChange: (val: any) => {
-                row[key] = val;
-              },
-            }),
-          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        };
-      }
-      if (field.type === FieldTypeEnum.INPUT_NUMBER) {
-        return {
-          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
-            ? () => makeRequiredTitle(field.name)
-            : field.name,
-          width: 200,
-          key,
-          ellipsis: {
-            tooltip: true,
-          },
-          fieldId: key,
-          render: (row: any, rowIndex: number) =>
-            h(inputNumber, {
-              value: row[key],
-              fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${key}`,
-              isSubTableRender: true,
-              disabled: props.disabled,
-              needInitDetail: props.needInitDetail,
-              onChange: (val: any) => {
-                row[key] = val;
-              },
-            }),
-          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        };
-      }
-      if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
-        return {
-          title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
-            ? () => makeRequiredTitle(field.name)
-            : field.name,
-          width: 200,
-          key,
-          ellipsis: {
-            tooltip: true,
-          },
-          fieldId: key,
-          render: (row: any, rowIndex: number) =>
-            h(select, {
-              value: row[key],
-              fieldConfig: field,
-              path: `${props.parentId}[${rowIndex}].${key}`,
-              isSubTableRender: true,
-              disabled: props.disabled,
-              needInitDetail: props.needInitDetail,
-              class: 'w-[190px]',
-              onChange: (val: any) => {
-                row[key] = val;
-              },
-            }),
-          fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        };
-      }
-      return {
-        title: field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
-          ? () => makeRequiredTitle(field.name)
-          : field.name,
-        width: 200,
-        key,
-        ellipsis: {
-          tooltip: true,
-        },
-        fieldId: key,
-        render: (row: any, rowIndex: number) =>
-          h(singleText, {
-            value: row[key],
-            fieldConfig: field,
-            path: `${props.parentId}[${rowIndex}].${key}`,
-            isSubTableRender: true,
-            disabled: props.disabled,
-            needInitDetail: props.needInitDetail,
-            onChange: (val: any) => {
-              row[key] = val;
-            },
-          }),
-        fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
-        filedType: field.type,
-      };
-    });
   });
 
   const realColumns = computed(() => {
