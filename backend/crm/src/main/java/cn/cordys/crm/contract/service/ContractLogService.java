@@ -27,6 +27,11 @@ public class ContractLogService extends BaseModuleLogService {
 
         for (JsonDifferenceDTO differ : differences) {
 
+            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_OWNER.getBusinessKey())) {
+                setUserFieldName(differ);
+                continue;
+            }
+
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey())) {
                 if (differ.getOldValue() != null) {
                     Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
