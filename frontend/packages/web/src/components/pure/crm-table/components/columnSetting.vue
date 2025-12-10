@@ -26,7 +26,7 @@
     </div>
     <n-scrollbar class="my-[4px] max-h-[416px] px-[4px]">
       <div v-if="layoutType === 'columnHeaderSet'">
-        <div class="mb-[4px] flex h-[24px] items-center justify-between text-[12px]">
+        <div class="mb-[4px] flex h-[24px] items-center justify-between pr-[8px] text-[12px]">
           <div class="one-line-text font-medium text-[var(--text-n1)]">
             {{ t('crmTable.columnSetting.tableHeaderDisplaySettings') }}
           </div>
@@ -34,7 +34,11 @@
             {{ t('crmTable.columnSetting.resetDefault') }}
           </n-button>
         </div>
-        <div v-for="element in notAllowSortCachedColumns" :key="element.key" class="crm-table-column-setting-item">
+        <div
+          v-for="element in notAllowSortCachedColumns"
+          :key="element.key"
+          class="crm-table-column-setting-item pr-[8px]"
+        >
           <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
             <CrmIcon type="iconicon_move" class="cursor-not-allowed text-[var(--text-n6)]" :size="12" />
             <CrmIcon
@@ -44,9 +48,14 @@
               }`"
               :size="12"
             />
-            <span class="one-line-text ml-[8px] text-[12px]">
+            <n-tooltip trigger="hover" placement="top">
+              <template #trigger>
+                <span class="one-line-text ml-[8px] text-[12px]">
+                  {{ t(element.title as string) }}
+                </span>
+              </template>
               {{ t(element.title as string) }}
-            </span>
+            </n-tooltip>
           </div>
           <n-switch
             v-model:value="element.showInTable"
@@ -75,9 +84,14 @@
                 :size="12"
                 @click="toggleFixedColumn(element)"
               />
-              <span class="one-line-text ml-[8px] text-[12px]">
+              <n-tooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <span class="one-line-text ml-[8px] text-[12px]">
+                    {{ t(element.title as string) }}
+                  </span>
+                </template>
                 {{ t(element.title as string) }}
-              </span>
+              </n-tooltip>
             </div>
             <n-switch
               v-model:value="element.showInTable"
@@ -129,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NPopover, NRadioButton, NRadioGroup, NScrollbar, NSkeleton, NSwitch } from 'naive-ui';
+  import { NButton, NPopover, NRadioButton, NRadioGroup, NScrollbar, NSkeleton, NSwitch, NTooltip } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -242,6 +256,7 @@
     padding: 0 !important;
     .crm-table-column-setting-item {
       padding: 5px 8px;
+      max-width: 300px;
       border-radius: @border-radius-small;
       @apply flex items-center justify-between;
       &:hover {

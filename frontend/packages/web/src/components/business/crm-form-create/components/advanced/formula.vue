@@ -104,6 +104,23 @@
     }
   }
 
+  function normalizeNumber(val: any): number | null {
+    if (val === null || val === undefined || val === '') return null;
+    // 已经是 number 直接返回
+    if (typeof val === 'number') return val;
+    let str = String(val).trim();
+    // 是否是百分比格式（可能带千分位）
+    if (str.endsWith('%')) {
+      str = str.slice(0, -1); // 去掉 %
+    }
+    // 去除千分位 ","
+    str = str.replace(/,/g, '');
+    // 转数字
+    const num = Number(str);
+    if (Number.isNaN(num)) return null;
+    return num;
+  }
+
   function getFieldValue(fieldId: string) {
     // 父级字段
     if (!props.isSubTableRender) {
@@ -112,24 +129,12 @@
 
     const pathMatch = props.path.match(/^([^[]+)\[(\d+)\]\.(.+)$/);
     if (pathMatch) {
-      const [, tableKey, rowIndexStr, currentFieldId] = pathMatch;
+      const [, tableKey, rowIndexStr] = pathMatch;
       const rowIndex = parseInt(rowIndexStr, 10);
-
-      if (fieldId === currentFieldId) {
-        const row = props.formDetail?.[tableKey]?.[rowIndex];
-        return row?.[fieldId];
-      }
-
       const row = props.formDetail?.[tableKey]?.[rowIndex];
-      return row?.[fieldId];
+      const rawValue = row?.[fieldId];
+      return normalizeNumber(rawValue);
     }
-
-    const paths = props.path.split('.');
-    const tableKey = paths[0];
-    const rowIndex = Number(paths[1]);
-
-    const row = props.formDetail?.[tableKey]?.[rowIndex];
-    return row?.[fieldId];
   }
 
   function safeParseFormula(formulaString: string) {
