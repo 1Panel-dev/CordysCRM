@@ -12,6 +12,8 @@ public class SourceDetailResolveContext {
 
 	private static final ThreadLocal<Map<String, Map<String, Object>>> CONTEXT =
 			ThreadLocal.withInitial(HashMap::new);
+	private static final ThreadLocal<Integer> DEPTH =
+			ThreadLocal.withInitial(() -> 0);
 
 	public static Map<String, Map<String, Object>> getSourceMap() {
 		return CONTEXT.get();
@@ -27,6 +29,20 @@ public class SourceDetailResolveContext {
 
 	public static void put(String sourceId, Map<String, Object> detail) {
 		CONTEXT.get().put(sourceId, detail);
+	}
+
+	public static void start() {
+		DEPTH.set(DEPTH.get() + 1);
+	}
+
+	public static void end() {
+		int depth = DEPTH.get() - 1;
+		if (depth <= 0) {
+			clear();
+			DEPTH.remove();
+		} else {
+			DEPTH.set(depth);
+		}
 	}
 
 	public static void clear() {

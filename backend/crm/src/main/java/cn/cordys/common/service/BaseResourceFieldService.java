@@ -655,6 +655,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }
+		SourceDetailResolveContext.start();
         try {
             List<BaseField> flattenFormFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
                     getFlattenFormFields(getFormKey(), OrganizationContext.getOrganizationId());
@@ -735,7 +736,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             LogUtils.error(e);
             return null;
         } finally {
-            SourceDetailResolveContext.clear();
+            SourceDetailResolveContext.end();
         }
     }
 
