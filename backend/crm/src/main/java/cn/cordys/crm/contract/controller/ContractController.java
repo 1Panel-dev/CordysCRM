@@ -131,7 +131,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_ARCHIVE)
     @Operation(summary = "归档/取消归档")
     public void archived(@Validated @RequestBody ContractArchivedRequest request) {
-        contractService.archivedContract(request, SessionUtils.getUserId());
+        contractService.archivedContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/approval")

@@ -85,7 +85,11 @@ public final class LogType {
     /**
      * 归档
      */
-    public static final String ARCHIVED = "ARCHIVED";
+    public static final String ARCHIVE = "ARCHIVE";
+    /**
+     * 取消归档
+     */
+    public static final String UNARCHIVE = "UNARCHIVE";
 
 
     /**

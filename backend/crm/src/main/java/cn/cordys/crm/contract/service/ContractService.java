@@ -468,9 +468,9 @@ public class ContractService {
      *
      * @param request
      * @param userId
+     * @param orgId
      */
-    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ARCHIVED, resourceId = "{#request.id}")
-    public void archivedContract(ContractArchivedRequest request, String userId) {
+    public void archivedContract(ContractArchivedRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
@@ -483,8 +483,16 @@ public class ContractService {
 
         updateStatusSnapshot(request.getId(), null, request.getArchivedStatus(), null);
 
-        // 添加日志上下文
-        OperationLogContext.setResourceName(contract.getName());
+
+        if(Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())){
+
+        }
+
+        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId,
+                Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())? LogType.ARCHIVE : LogType.UNARCHIVE,
+                LogModule.CONTRACT_INDEX, contract.getName());
+        logService.add(logDTO);
+
     }
 
     /**
