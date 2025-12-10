@@ -161,6 +161,7 @@ public class CustomerContactService {
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
@@ -173,9 +174,9 @@ public class CustomerContactService {
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        list.forEach(customerListResponse -> {
+		list.forEach(customerListResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
+            List<BaseModuleFieldValue> customerFields = fieldValueMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
 
             UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
@@ -212,6 +213,8 @@ public class CustomerContactService {
 
         // 获取模块字段
         List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
+		customerContactFields = customerContactFieldService.setBusinessRefFieldValue(List.of(customerContactGetResponse),
+				moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), customerContact.getOrganizationId()), new HashMap<>(Map.of(id, customerContactFields))).get(id);
         ModuleFormConfigDTO customerContactFormConfig = getFormConfig(customerContact.getOrganizationId());
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig, customerContactFields);

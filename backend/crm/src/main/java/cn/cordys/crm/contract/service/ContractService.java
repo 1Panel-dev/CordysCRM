@@ -409,8 +409,10 @@ public class ContractService {
         List<String> contractIds = list.stream().map(ContractListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(contractIds, true);
+		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), orgId), contractFiledMap);
 
-        List<String> ownerIds = list.stream()
+
+		List<String> ownerIds = list.stream()
                 .map(ContractListResponse::getOwner)
                 .distinct()
                 .toList();
@@ -425,7 +427,7 @@ public class ContractService {
                 item.setDepartmentName(userDeptDTO.getDeptName());
             }
             // 获取自定义字段
-            List<BaseModuleFieldValue> contractFields = contractFiledMap.get(item.getId());
+            List<BaseModuleFieldValue> contractFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(contractFields);
         });
         return baseService.setCreateAndUpdateUserName(list);

@@ -257,7 +257,7 @@ public class OpportunityQuotationService {
     public OpportunityQuotationGetResponse get(String id) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
-            throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
+            return null;
         }
         // 未审核，查询当前值
         List<BaseModuleFieldValue> moduleFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);

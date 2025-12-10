@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -118,8 +119,11 @@ public class ContractPaymentPlanService {
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = contractPaymentPlanFieldService.getResourceFieldMap(planIds, true);
+		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentPlanFieldService.setBusinessRefFieldValue(list,
+				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), caseCustomFiledMap);
 
-        List<String> ownerIds = list.stream()
+
+		List<String> ownerIds = list.stream()
                 .map(ContractPaymentPlanListResponse::getOwner)
                 .distinct()
                 .toList();
@@ -142,7 +146,7 @@ public class ContractPaymentPlanService {
 
         list.forEach(planListResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> contractPaymentPlanFields = caseCustomFiledMap.get(planListResponse.getId());
+            List<BaseModuleFieldValue> contractPaymentPlanFields = resolvefieldValueMap.get(planListResponse.getId());
             planListResponse.setModuleFields(contractPaymentPlanFields);
 
             UserDeptDTO userDeptDTO = userDeptMap.get(planListResponse.getOwner());
@@ -174,6 +178,8 @@ public class ContractPaymentPlanService {
         Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlanGetResponse.getContractId());
         // 获取模块字段
         List<BaseModuleFieldValue> contractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
+		contractPaymentPlanFields = contractPaymentPlanFieldService.setBusinessRefFieldValue(List.of(contractPaymentPlanGetResponse),
+				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), new HashMap<>(Map.of(id, contractPaymentPlanFields))).get(id);
         ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(orgId);
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractPaymentPlanFormConfig, contractPaymentPlanFields);
