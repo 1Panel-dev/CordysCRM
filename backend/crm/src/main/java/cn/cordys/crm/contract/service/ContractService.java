@@ -203,6 +203,8 @@ public class ContractService {
         response.setOptionMap(optionMap);
         response.setCustomerName(customer.getName());
         response.setOwnerName(owner.getName());
+        response.setInCustomerPool(customer.getInSharedPool());
+        response.setPoolId(customer.getPoolId());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
         return baseService.setCreateAndUpdateUserName(response);
