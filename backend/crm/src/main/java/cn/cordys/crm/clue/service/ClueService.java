@@ -1043,7 +1043,7 @@ public class ClueService {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
                 moduleFormService.getCustomImportHeadsNoRef(FormKey.CLUE.getKey(), currentOrg),
                 Translator.get("clue.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CLUE.getKey(), currentOrg)),
+                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg)),
                 new CustomHeadColWidthStyleStrategy());
     }
 
@@ -1087,7 +1087,7 @@ public class ClueService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
-                    "clue_field", afterDo, 2000, null);
+                    "clue_field", afterDo, 2000, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
@@ -1106,8 +1106,8 @@ public class ClueService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg, null);
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

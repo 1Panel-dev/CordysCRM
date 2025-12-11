@@ -27,10 +27,13 @@ public class CustomFieldMergeCellEventListener extends AnalysisEventListener<Map
 	 */
 	@Getter
 	private final Map<Integer, List<CellExtra>> mergeCellMap = new HashMap<>();
+	@Getter
+	private final Map<Integer, Map<Integer, String>> mergeRowDataMap = new HashMap<>();
 
 	@Override
-	public void invoke(Map<Integer, String> integerStringMap, AnalysisContext analysisContext) {
-
+	public void invoke(Map<Integer, String> data, AnalysisContext context) {
+		int rowIndex = context.readRowHolder().getRowIndex();
+		mergeRowDataMap.put(rowIndex, new HashMap<>(data));
 	}
 
 	@Override
@@ -43,6 +46,22 @@ public class CustomFieldMergeCellEventListener extends AnalysisEventListener<Map
 		if (extra.getType() == CellExtraTypeEnum.MERGE && extra.getRowIndex() >= maxHeadRow) {
 			for (int row = extra.getFirstRowIndex(); row <= extra.getLastRowIndex(); row++) {
 				mergeCellMap.computeIfAbsent(row, k -> new ArrayList<>()).add(extra);
+			}
+
+			int firstRow = extra.getFirstRowIndex();
+			int lastRow = extra.getLastRowIndex();
+			int colIndex = extra.getFirstColumnIndex();
+
+			Map<Integer, String> firstRowData = mergeRowDataMap.get(firstRow);
+
+			if (firstRowData == null) {
+				return;
+			}
+
+			String val = firstRowData.get(colIndex);
+			for (int r = firstRow; r <= lastRow; r++) {
+				mergeRowDataMap.computeIfAbsent(r, k -> new HashMap<>())
+						.put(colIndex, val);
 			}
 		}
 	}

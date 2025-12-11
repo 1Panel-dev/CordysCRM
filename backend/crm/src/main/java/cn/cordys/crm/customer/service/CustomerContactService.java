@@ -540,7 +540,7 @@ public class CustomerContactService {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTACT.getKey(), currentOrg),
                         Translator.get("contact.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -581,7 +581,7 @@ public class CustomerContactService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<CustomerContact> eventListener = new CustomFieldImportEventListener<>(fields, CustomerContact.class, currentOrg, currentUser,
-                    "customer_contact_field", afterDo, 2000, null);
+                    "customer_contact_field", afterDo, 2000, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
@@ -600,8 +600,8 @@ public class CustomerContactService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact", "customer_contact_field", currentOrg, null);
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTACT.getKey(), currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact", "customer_contact_field", currentOrg, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
