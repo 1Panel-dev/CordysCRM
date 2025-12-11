@@ -454,7 +454,7 @@
     .n-form-item-feedback-wrapper {
       @apply hidden;
 
-      height: 16px;
+      height: 18px;
       min-height: 0;
     }
   }
