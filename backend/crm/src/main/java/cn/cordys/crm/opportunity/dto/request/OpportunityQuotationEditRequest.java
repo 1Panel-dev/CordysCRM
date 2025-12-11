@@ -11,7 +11,6 @@ public class OpportunityQuotationEditRequest extends OpportunityQuotationAddRequ
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
 
-    @NotBlank(message = "{opportunity.quotation.approval.status.required}")
     @Schema(description = "审批状态", requiredMode = Schema.RequiredMode.REQUIRED)
     private String approvalStatus;
 
