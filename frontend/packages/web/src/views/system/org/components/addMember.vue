@@ -144,7 +144,7 @@
             path="onboardingDate"
             :label="t('org.onboardingDate')"
           >
-            <n-date-picker v-model:value="form.onboardingDate" type="date"> </n-date-picker>
+            <n-date-picker v-model:value="form.onboardingDate" type="date" class="w-full"> </n-date-picker>
           </n-form-item>
           <!-- TODO  不上 -->
           <!-- <n-form-item
