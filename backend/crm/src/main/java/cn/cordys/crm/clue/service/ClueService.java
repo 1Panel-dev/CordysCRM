@@ -176,9 +176,9 @@ public class ClueService {
     private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
-                                                        DeptDataPermissionDTO deptDataPermission) {
+                                                        DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, deptDataPermission);
+        List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, deptDataPermission, source);
         List<ClueListResponse> buildList = buildListData(list, orgId);
 
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
@@ -299,9 +299,9 @@ public class ClueService {
 
     public ClueGetResponse get(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
-		if (clue == null) {
-			return null;
-		}
+        if (clue == null) {
+            return null;
+        }
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
         clueGetResponse = baseService.setCreateUpdateOwnerUserName(clueGetResponse);
 
@@ -824,8 +824,9 @@ public class ClueService {
 
     /**
      * 批量复制线索跟进计划和记录
-     * @param clueId 线索ID
-     * @param customerId 客户ID
+     *
+     * @param clueId        线索ID
+     * @param customerId    客户ID
      * @param opportunityId 商机ID
      */
     public void batchCopyCluePlanAndRecord(String clueId, String customerId, String opportunityId, String contactId) {
@@ -843,7 +844,7 @@ public class ClueService {
             List<FollowUpRecordFieldBlob> followUpRecordFieldBlobs = followUpRecordFieldBlobMapper.selectListByLambda(fieldBlobLambdaQueryWrapper);
             followUpRecords.forEach(record -> {
                 String recordId = IDGenerator.nextStr();
-                followUpRecordFields.stream().filter(recordField ->Strings.CS.equals(recordField.getResourceId(), record.getId())).forEach(field -> {
+                followUpRecordFields.stream().filter(recordField -> Strings.CS.equals(recordField.getResourceId(), record.getId())).forEach(field -> {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(recordId);
                 });
@@ -876,7 +877,7 @@ public class ClueService {
             List<FollowUpPlanFieldBlob> followUpPlanFieldBlobs = followUpPlanFieldBlobMapper.selectListByLambda(fieldBlobLambdaQueryWrapper);
             followUpPlans.forEach(plan -> {
                 String planId = IDGenerator.nextStr();
-                followUpPlanFields.stream().filter(planField ->Strings.CS.equals(planField.getResourceId(), plan.getId())).forEach(field -> {
+                followUpPlanFields.stream().filter(planField -> Strings.CS.equals(planField.getResourceId(), plan.getId())).forEach(field -> {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(planId);
                 });
@@ -915,7 +916,6 @@ public class ClueService {
      * 同名客户选择器
      *
      * @param customers 客户列表
-     *
      * @return 客户
      */
     public Customer selectorCs(List<Customer> customers, String clueOwner) {
@@ -934,7 +934,6 @@ public class ClueService {
      * @param clue        线索
      * @param currentUser 当前用户
      * @param orgId       组织ID
-     *
      * @return 客户
      */
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
@@ -966,7 +965,6 @@ public class ClueService {
      * @param contactId   联系人ID
      * @param currentUser 当前用户
      * @param orgId       组织ID
-     *
      * @return 商机
      */
     public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
@@ -1043,10 +1041,10 @@ public class ClueService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-				moduleFormService.getCustomImportHeadsNoRef(FormKey.CLUE.getKey(), currentOrg),
-				Translator.get("clue.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-				new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CLUE.getKey(), currentOrg)),
-				new CustomHeadColWidthStyleStrategy());
+                moduleFormService.getCustomImportHeadsNoRef(FormKey.CLUE.getKey(), currentOrg),
+                Translator.get("clue.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CLUE.getKey(), currentOrg)),
+                new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -1054,7 +1052,6 @@ public class ClueService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -1070,7 +1067,6 @@ public class ClueService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -1106,7 +1102,6 @@ public class ClueService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {

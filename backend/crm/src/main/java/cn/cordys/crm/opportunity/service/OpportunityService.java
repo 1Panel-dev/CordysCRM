@@ -138,9 +138,9 @@ public class OpportunityService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
-                                                               DeptDataPermissionDTO deptDataPermission) {
+                                                               DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
+        List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission, source);
         List<OpportunityListResponse> buildList = buildListData(list, orgId);
 
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
@@ -660,10 +660,10 @@ public class OpportunityService {
      * @param response 响应
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
-		new EasyExcelExporter()
+        new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-						new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**

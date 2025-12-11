@@ -66,8 +66,11 @@
         <if test="request.opportunityId != null and request.opportunityId != ''">
             and o.id = #{request.opportunityId}
         </if>
-        <if test="request.keyword != null and request.keyword != ''">
+        <if test="!source and request.keyword != null and request.keyword != ''">
             and (oq.name like concat('%', #{request.keyword},'%') or o.name like concat('%', #{request.keyword},'%'))
+        </if>
+        <if test="source and request.keyword != null and request.keyword != ''">
+            and oq.name like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">

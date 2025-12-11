@@ -85,7 +85,7 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 4. 查询并返回相似线索列表
-        List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, null);
+        List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, null, false);
         if (CollectionUtils.isEmpty(list)) {
             return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
         }

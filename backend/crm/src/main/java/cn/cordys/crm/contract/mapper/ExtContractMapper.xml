@@ -62,11 +62,14 @@
             and ct.owner = #{userId}
         </if>
 
-        <if test="request.keyword != null and request.keyword != ''">
+        <if test="!source and request.keyword != null and request.keyword != ''">
             and (
             ct.name like concat('%', #{request.keyword},'%')
             or c.name like concat('%', #{request.keyword},'%')
             )
+        </if>
+        <if test="source and request.keyword != null and request.keyword != ''">
+            and ct.name  like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">

@@ -21,7 +21,7 @@ import java.util.List;
 public interface ExtCustomerContactMapper {
 
     List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                                           @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+                                           @Param("dataPermission") DeptDataPermissionDTO dataPermission, @Param("source") boolean source);
 
     List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 

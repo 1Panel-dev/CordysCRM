@@ -38,8 +38,11 @@
 
         where cc.organization_id = #{orgId}
 
-        <if test="request.keyword != null and request.keyword != ''">
+        <if test="!source and request.keyword != null and request.keyword != ''">
             and (cc.name like concat('%', #{request.keyword},'%') or cc.phone like concat('%', #{request.keyword},'%'))
+        </if>
+        <if test="source and request.keyword != null and request.keyword != ''">
+            and cc.name like concat('%', #{request.keyword},'%')
         </if>
 
         <if test="dataPermission != null and dataPermission.self">

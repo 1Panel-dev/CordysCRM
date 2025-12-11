@@ -56,7 +56,7 @@ public class PoolClueController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
     public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
         ConditionFilterUtils.parseCondition(request);
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, false);
     }
 
     @PostMapping("/pick")

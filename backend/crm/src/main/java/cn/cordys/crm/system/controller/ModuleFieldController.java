@@ -99,7 +99,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 "ALL", PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/account")
@@ -117,7 +117,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 "ALL", PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/opportunity")
@@ -126,7 +126,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/quotation")
@@ -135,7 +135,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission);
+        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/contract")
@@ -144,7 +144,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_READ);
-        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/product")

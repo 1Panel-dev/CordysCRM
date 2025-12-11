@@ -27,7 +27,7 @@ import java.util.List;
 public interface ExtClueMapper {
 
     List<ClueListResponse> list(@Param("request") CluePageRequest request, @Param("orgId") String orgId,
-                                @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
