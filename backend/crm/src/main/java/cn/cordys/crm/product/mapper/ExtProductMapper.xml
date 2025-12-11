@@ -35,6 +35,10 @@
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
         </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
 
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
@@ -50,7 +54,9 @@
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
-
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
         <include refid="sort">
             <property name="sort" value="request.sort"/>
         </include>
@@ -190,6 +196,25 @@
                 </include>
             </otherwise>
         </choose>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
     </sql>
 
     <select id="listIdNameByIds" resultType="cn.cordys.crm.product.domain.Product">
