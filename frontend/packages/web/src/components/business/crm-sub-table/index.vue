@@ -86,6 +86,10 @@
       }
       return Array.isArray(name) ? name.join(', ') : name;
     }
+    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      // 数据源字段且找不到 optionMap 对应值，则显示不存在
+      return t('common.optionNotExist');
+    }
     switch (field.type) {
       case FieldTypeEnum.INPUT_NUMBER:
         return formatNumberValue(value, field);

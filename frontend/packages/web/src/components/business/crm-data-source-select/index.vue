@@ -126,7 +126,7 @@
       },
       {
         default: () => {
-          return (rows.value || []).find((item) => item?.id === option.value)?.name;
+          return (rows.value || []).find((item) => item?.id === option.value)?.name || t('common.optionNotExist');
         },
       }
     );
