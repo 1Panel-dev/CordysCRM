@@ -402,10 +402,10 @@
             { class: 'flex items-center' },
             {
               default: () => {
-                const sum = (pageData as unknown as RowData[]).reduce(
-                  (prevValue, row) => prevValue + row[col.key as keyof RowData],
-                  0
-                );
+                const sum = (pageData as unknown as RowData[]).reduce((prevValue, row) => {
+                  const rowVal = row[col.key as keyof RowData] ?? 0;
+                  return prevValue + rowVal;
+                }, 0);
                 if (col.filedType === FieldTypeEnum.INPUT_NUMBER && col.fieldConfig) {
                   return formatNumberValue(sum, col.fieldConfig);
                 }
