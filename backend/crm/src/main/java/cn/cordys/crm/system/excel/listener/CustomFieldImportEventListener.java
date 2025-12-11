@@ -174,7 +174,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     try {
                         setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
                     } catch (Exception e) {
-                        LogUtils.error("import error, cannot set property. {}", e.getMessage());
+                        LogUtils.error("导入错误, 无法设置字段值. {}", e.getMessage());
                         throw new GenericException(e);
                     }
                 } else {
@@ -217,7 +217,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 				mergedTmpEntity = null;
 			}
         } catch (Exception e) {
-            LogUtils.error("import error: {}", e.getMessage());
+            LogUtils.error("导入错误, 原因: {}", e.getMessage());
             throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
     }
@@ -239,7 +239,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
             return customFieldResolver.textToValue(field, text);
         } catch (Exception e) {
-            LogUtils.error(String.format("parse field %s error, %s cannot be transfer, error: %s", field.getName(), text, e.getMessage()));
+            LogUtils.error(String.format("解析字段[%s]错误, [%s]不能被转换; 原因: %s", field.getName(), text, e.getMessage()));
         }
         return null;
     }
