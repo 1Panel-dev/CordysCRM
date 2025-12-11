@@ -6,7 +6,7 @@
         <n-input
           v-model:value="fieldConfig.name"
           :disabled="fieldConfig.disabledProps?.includes('name') || !!fieldConfig.resourceFieldId"
-          :maxlength="255"
+          :maxlength="16"
           :placeholder="t('common.pleaseInput')"
           :status="isNameRepeat ? 'error' : undefined"
           clearable
@@ -998,19 +998,7 @@
           <n-checkbox v-model:checked="showSumColumn">
             {{ t('crmFormDesign.show') }}
           </n-checkbox>
-          <n-select
-            v-if="showSumColumn"
-            v-model:value="fieldConfig.sumColumns"
-            multiple
-            :options="
-              fieldConfig.subFields
-                ?.filter((e) => [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(e.type))
-                .map((e) => ({
-                  label: e.name,
-                  value: e.businessKey || e.id,
-                }))
-            "
-          />
+          <n-select v-if="showSumColumn" v-model:value="fieldConfig.sumColumns" multiple :options="sumOptions" />
         </div>
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
@@ -1363,6 +1351,18 @@
     dividerStyleShow.value = false;
   }
 
+  const sumOptions = computed<SelectOption[]>(() => {
+    return fieldConfig.value.subFields
+      ?.filter((e) => [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(e.type))
+      .map((e) => {
+        const fieldId = e.resourceFieldId ? e.id : e.businessKey || e.id;
+        return {
+          label: e.name,
+          value: fieldId,
+        };
+      }) as SelectOption[];
+  });
+
   const dataSourceOptions = computed<SelectOption[]>(() => {
     const fullList = [
       {
@@ -1629,6 +1629,15 @@
       currentFieldLimitSize.value = parseInt(fieldConfig.value?.limitSize || '', 10) || null;
       currentFieldLimitSizeUnit.value = fieldConfig.value?.limitSize?.slice(-2) || 'KB';
       showSumColumn.value = !!(fieldConfig.value?.sumColumns && fieldConfig.value.sumColumns.length > 0);
+    }
+  );
+
+  watch(
+    () => showSumColumn.value,
+    (val) => {
+      if (!val) {
+        fieldConfig.value.sumColumns = [];
+      }
     }
   );
 </script>

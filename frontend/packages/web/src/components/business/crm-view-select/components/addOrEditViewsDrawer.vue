@@ -11,39 +11,43 @@
     @continue="confirmHandler(true)"
     @cancel="cancelHandler"
   >
-    <n-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-placement="left"
-      :label-width="100"
-      require-mark-placement="left"
-      :class="props.readonly ? 'read-only' : ''"
-    >
-      <n-form-item path="name" :label="t('crmViewSelect.viewName')">
-        <n-input
-          v-model:value="form.name"
-          :disabled="props.readonly"
-          :maxlength="255"
-          type="text"
-          :placeholder="t('common.pleaseInput')"
+    <n-scrollbar content-class="p-[16px]">
+      <n-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-placement="left"
+        :label-width="100"
+        require-mark-placement="left"
+        :class="props.readonly ? 'read-only' : ''"
+      >
+        <n-form-item path="name" :label="t('crmViewSelect.viewName')">
+          <n-input
+            v-model:value="form.name"
+            :disabled="props.readonly"
+            :maxlength="255"
+            type="text"
+            :placeholder="t('common.pleaseInput')"
+          />
+        </n-form-item>
+        <FilterContent
+          ref="filterContentRef"
+          v-model:form-model="formModel as FilterForm"
+          keep-one-line
+          class="!p-[0px]"
+          no-filter-option
+          :config-list="props.configList"
+          :custom-list="props.customList"
+          :readonly="props.readonly"
         />
-      </n-form-item>
-      <FilterContent
-        ref="filterContentRef"
-        v-model:form-model="formModel as FilterForm"
-        keep-one-line
-        :config-list="props.configList"
-        :custom-list="props.customList"
-        :readonly="props.readonly"
-      />
-    </n-form>
+      </n-form>
+    </n-scrollbar>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
