@@ -7,6 +7,7 @@
         :field-config="fieldConfig"
         :is-sub-table-field="props.isSubTableField"
         :is-sub-table-render="props.isSubTableRender"
+        :form-config="props.formConfig"
         @change="handleChange"
       />
     </template>
@@ -19,6 +20,7 @@
   import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormConfig } from '@lib/shared/models/system/module';
 
   import inputNumber from '../basic/inputNumber.vue';
 
@@ -28,6 +30,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况

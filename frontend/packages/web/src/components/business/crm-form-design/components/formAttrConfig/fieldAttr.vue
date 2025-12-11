@@ -731,6 +731,13 @@
               },
             ]"
             :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
+            @update-value="
+              (val) => {
+                if (val === 'custom') {
+                  fieldConfig.defaultValue = null;
+                }
+              }
+            "
           />
           <n-date-picker
             v-if="fieldConfig.dateDefaultType === 'custom'"

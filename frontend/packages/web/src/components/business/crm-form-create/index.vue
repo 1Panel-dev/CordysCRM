@@ -24,6 +24,7 @@
               :origin-form-detail="originFormDetail"
               :path="item.id"
               :need-init-detail="needInitDetail"
+              :form-config="formConfig"
               @change="(value: any, source: Record<string, any>[]) => handleFieldChange(value, source, item)"
             />
           </div>
