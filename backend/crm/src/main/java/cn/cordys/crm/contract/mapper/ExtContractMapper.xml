@@ -96,6 +96,7 @@
         c.pool_id,
         ct.amount,
         ct.archived_status,
+        ct.approval_status,
         ct.`status`,
         ct.`owner`,
         ct.void_reason,
