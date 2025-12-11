@@ -116,8 +116,8 @@
         item-class="my-[16px]"
         :item-height="32"
       >
-        <template #title="{ item }">
-          <div :key="item.num" class="flex px-4">
+        <template #item="{ item }">
+          <div class="flex px-4">
             <div class="circle"></div>
             <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
           </div>
