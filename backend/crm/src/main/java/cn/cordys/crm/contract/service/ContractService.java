@@ -415,10 +415,10 @@ public class ContractService {
         List<String> contractIds = list.stream().map(ContractListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(contractIds, true);
-		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), orgId), contractFiledMap);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), orgId), contractFiledMap);
 
 
-		List<String> ownerIds = list.stream()
+        List<String> ownerIds = list.stream()
                 .map(ContractListResponse::getOwner)
                 .distinct()
                 .toList();
@@ -492,12 +492,12 @@ public class ContractService {
         updateStatusSnapshot(request.getId(), null, request.getArchivedStatus(), null);
 
 
-        if(Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())){
+        if (Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
 
         }
 
         LogDTO logDTO = new LogDTO(orgId, request.getId(), userId,
-                Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())? LogType.ARCHIVE : LogType.UNARCHIVE,
+                Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name()) ? LogType.ARCHIVE : LogType.UNARCHIVE,
                 LogModule.CONTRACT_INDEX, contract.getName());
         logService.add(logDTO);
 
@@ -623,7 +623,7 @@ public class ContractService {
      * @param orgId
      */
     public BatchAffectSkipResponse batchApprovalContract(ContractApprovalBatchRequest request, String userId, String orgId) {
-        List<String> ids = extContractMapper.selectByStatusAndIds(request.getIds(), request.getApprovalStatus());
+        List<String> ids = extContractMapper.selectByStatusAndIds(request.getIds(), ContractApprovalStatus.APPROVING.name());
 
         if (CollectionUtils.isEmpty(ids)) {
             return BatchAffectSkipResponse.builder().success(0).fail(0).skip(request.getIds().size()).build();

@@ -407,7 +407,7 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-        and approval_status != #{approvalStatus}
+        and approval_status = #{approvalStatus}
     </select>
 
     <update id="updateStatus">
