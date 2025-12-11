@@ -99,6 +99,7 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { PaymentPlanItem } from '@lib/shared/models/contract';
 
+  import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -238,6 +239,7 @@
       title: t('contract.planStatus'),
       dataIndex: 'planStatus',
       type: FieldTypeEnum.SELECT_MULTIPLE,
+      operatorOption: COMMON_SELECTION_OPERATORS,
       selectProps: {
         options: contractPaymentPlanStatusOptions,
       },
