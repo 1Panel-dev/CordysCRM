@@ -1296,6 +1296,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
+      "mobile": true,
       "rules": [
         {"key":  "required"},
         {"key":  "unique"}
@@ -1324,6 +1325,7 @@
       "readable": true,
       "editable": false,
       "fieldWidth": 1,
+      "mobile": true,
       "disableProps": ["serialNumberRules"]
     },
     {
@@ -1377,6 +1379,7 @@
           "readable": true,
           "editable": true,
           "fieldWidth": 1,
+          "mobile": true,
           "numberFormat": "number"
         },
         {
@@ -1385,6 +1388,7 @@
           "type": "FORMULA",
           "showLabel": true,
           "readable": true,
+          "mobile": true,
           "editable": false,
           "fieldWidth": 1
         }
@@ -1398,6 +1402,7 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
+      "mobile": true,
       "fieldWidth": 1,
       "rules": [
         {"key":  "required"}
