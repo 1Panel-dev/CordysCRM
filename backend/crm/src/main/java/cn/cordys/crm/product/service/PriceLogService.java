@@ -31,8 +31,6 @@ public class PriceLogService extends BaseModuleLogService {
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.PRICE.getKey());
 
-        List<JsonDifferenceDTO> toRemove = new ArrayList<>();
-
         for (JsonDifferenceDTO differ : differences) {
 			if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.PRICE_STATUS.getBusinessKey())) {
 				setPriceStatus(differ, orgId);
@@ -40,13 +38,9 @@ public class PriceLogService extends BaseModuleLogService {
             if (differ.getColumn().contains(Translator.get("products_info"))) {
                 differ.setColumnName(differ.getColumn());
             }
-            //去掉表格类型的变更日志
-            if (!(differ.getNewValue() instanceof List) && !(differ.getOldValue() instanceof List)) {
-                toRemove.add(differ);
-            }
         }
 
-        return toRemove;
+        return differences;
     }
 
 
