@@ -5,7 +5,7 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -46,7 +46,7 @@
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+  import { type FormConfig, SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
@@ -54,6 +54,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段

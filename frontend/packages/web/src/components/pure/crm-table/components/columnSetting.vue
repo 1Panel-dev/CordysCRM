@@ -24,7 +24,7 @@
         <n-radio-button v-for="e in layoutTypeList" :key="e.value" :value="e.value" :label="e.label" />
       </n-radio-group>
     </div>
-    <n-scrollbar class="my-[4px] max-h-[416px] px-[4px]">
+    <n-scrollbar class="my-[4px] max-h-[416px] max-w-[250px] px-[4px]">
       <div v-if="layoutType === 'columnHeaderSet'">
         <div class="mb-[4px] flex h-[24px] items-center justify-between pr-[8px] text-[12px]">
           <div class="one-line-text font-medium text-[var(--text-n1)]">

@@ -5,7 +5,7 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -46,6 +46,7 @@
   import { NDivider, NFormItem, NInput } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
 
@@ -53,6 +54,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染

@@ -5,7 +5,7 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -38,6 +38,7 @@
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import type { FormConfig } from '@lib/shared/models/system/module';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
@@ -47,6 +48,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     formDetail?: Record<string, any>;

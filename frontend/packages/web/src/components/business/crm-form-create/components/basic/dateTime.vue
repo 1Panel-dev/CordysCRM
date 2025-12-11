@@ -5,7 +5,7 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -35,10 +35,13 @@
 <script setup lang="ts">
   import { NDatePicker, NDivider, NFormItem } from 'naive-ui';
 
+  import type { FormConfig } from '@lib/shared/models/system/module';
+
   import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     disabled?: boolean;
@@ -57,7 +60,7 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val || value.value;
+        value.value = val !== undefined ? val : value.value;
         emit('change', value.value);
       }
     },
@@ -71,11 +74,10 @@
     (val) => {
       if (val === 'current') {
         value.value = new Date().getTime();
-        emit('change', value.value);
-      } else {
+      } else if (val === 'custom' && props.fieldConfig.defaultValue === null) {
         value.value = null;
-        emit('change', value.value);
       }
+      emit('change', value.value);
     },
     {
       immediate: true,

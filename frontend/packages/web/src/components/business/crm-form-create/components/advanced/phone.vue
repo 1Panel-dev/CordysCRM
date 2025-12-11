@@ -5,7 +5,7 @@
     :rule="mergedRules"
     :show-label="(props.fieldConfig.showLabel && !props.isSubTableRender) || props.isSubTableField"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
-    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : 'left'"
+    :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -40,6 +40,7 @@
   import { NDivider, NFormItem, NInput } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -47,6 +48,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    formConfig?: FormConfig;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
