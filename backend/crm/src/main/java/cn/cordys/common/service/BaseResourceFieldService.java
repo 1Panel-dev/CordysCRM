@@ -217,7 +217,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         allFields.stream()
                 .filter(field -> {
                     BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField();
+                    return (fieldValue != null && fieldValue.valid()) ||
+							(field.isSerialNumber() && StringUtils.isEmpty(field.getBusinessKey())) || field.isSubField();
                 })
                 .forEach(field -> {
                     BaseModuleFieldValue fieldValue = processFieldValue(resource, field, fieldValueMap, update, orgId);
