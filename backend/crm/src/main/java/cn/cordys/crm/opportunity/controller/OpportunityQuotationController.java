@@ -127,7 +127,7 @@ public class OpportunityQuotationController {
     @PostMapping("/approve")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL)
     @Operation(summary = "审批报价单")
-    public String approve(@Validated @RequestBody OpportunityQuotationEditRequest request) {
+    public String approve(@RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.approve(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

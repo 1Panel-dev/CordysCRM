@@ -122,6 +122,9 @@ public class OpportunityQuotationService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
         }
+        if (CollectionUtils.isEmpty(request.getProducts())) {
+            throw new GenericException(Translator.get("opportunity.quotation.product.required"));
+        }
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         OpportunityQuotation opportunityQuotation = new OpportunityQuotation();
         opportunityQuotation.setId(IDGenerator.nextStr());
@@ -520,6 +523,9 @@ public class OpportunityQuotationService {
         }
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
+        }
+        if (CollectionUtils.isEmpty(request.getProducts())) {
+            throw new GenericException(Translator.get("opportunity.quotation.product.required"));
         }
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
