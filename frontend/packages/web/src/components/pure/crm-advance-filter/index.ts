@@ -41,7 +41,7 @@ export const FIXED = { value: OperatorEnum.FIXED, label: 'advanceFilter.operator
 // 通用文本符号
 const COMMON_TEXT_OPERATORS = [CONTAINS, NO_CONTAINS, EMPTY, NOT_EMPTY, EQUAL, NOT_EQUAL];
 // 通用选择符号
-const COMMON_SELECTION_OPERATORS = [IN, NOT_IN, EMPTY, NOT_EMPTY];
+export const COMMON_SELECTION_OPERATORS = [IN, NOT_IN, EMPTY, NOT_EMPTY];
 
 export const operatorOptionsMap: Record<string, { value: string; label: string }[]> = {
   [FieldTypeEnum.INPUT]: COMMON_TEXT_OPERATORS,

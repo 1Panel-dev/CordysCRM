@@ -105,6 +105,7 @@
   import type { ContractItem } from '@lib/shared/models/contract';
   import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
+  import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -250,6 +251,7 @@
       title: t('contract.status'),
       dataIndex: 'status',
       type: FieldTypeEnum.SELECT_MULTIPLE,
+      operatorOption: COMMON_SELECTION_OPERATORS,
       selectProps: {
         options: contractStatusOptions,
       },
@@ -267,6 +269,7 @@
     {
       title: t('contract.archivedStatus'),
       dataIndex: 'archivedStatus',
+      operatorOption: COMMON_SELECTION_OPERATORS,
       type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
         options: [
@@ -284,6 +287,7 @@
     {
       title: t('contract.approvalStatus'),
       dataIndex: 'approvalStatus',
+      operatorOption: COMMON_SELECTION_OPERATORS,
       type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
         options: quotationStatusOptions.filter((item) =>
