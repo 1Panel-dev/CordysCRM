@@ -454,13 +454,19 @@ public class BaseService {
                 Map<String, Object> row = subTableList.get(i);
                 if (size > 1) {
                     int finalI = i;
-                    row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value)
-                    );
+                    row.forEach((key, value) -> {
+						if (!fieldNameMap.containsKey(key)) {
+							return;
+						}
+						resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
+					});
                 } else {
-                    row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value)
-                    );
+                    row.forEach((key, value) -> {
+						if (!fieldNameMap.containsKey(key)) {
+							return;
+						}
+						resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value);
+					});
                 }
             }
         });
