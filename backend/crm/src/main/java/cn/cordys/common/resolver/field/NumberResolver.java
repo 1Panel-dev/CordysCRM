@@ -40,9 +40,32 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
             text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
         }
         try {
-            return new BigDecimal(text);
+			BigDecimal bd = new BigDecimal(text);
+			boolean illegal = checkIllegalDecimal(bd);
+			if (illegal) {
+				throw new FormulaParseException("数值超出范围, 整数不超过9位, 小数不超过4位;");
+			}
+			return bd;
         } catch (NumberFormatException e) {
             throw new FormulaParseException("无法解析数值类型: " + text);
         }
     }
+
+	/**
+	 * 是否非法的数值范围 (整数不超过9位, 小数不超过4位)
+	 * @param value 数值
+	 * @return 是否非法
+	 */
+	private boolean checkIllegalDecimal(BigDecimal value) {
+		if (value == null) {
+			return false;
+		}
+		// 小数位
+		int scale = value.scale();
+		int precision = value.precision();
+		// 整数位
+		int integerDigits = precision - scale;
+
+		return integerDigits > 9 || scale > 4;
+	}
 }
