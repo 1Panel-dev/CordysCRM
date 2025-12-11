@@ -300,7 +300,7 @@
           }
         }
         .n-form-item-label__text {
-          @apply w-full;
+          max-width: 100%;
         }
       }
       &:not(.crm-form-design--composition-item--active):hover {
