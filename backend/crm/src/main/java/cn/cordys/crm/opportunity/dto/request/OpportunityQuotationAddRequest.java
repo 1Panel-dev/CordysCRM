@@ -30,7 +30,6 @@ public class OpportunityQuotationAddRequest {
     @Schema(description = "表单配置", requiredMode = Schema.RequiredMode.REQUIRED)
     private ModuleFormConfigDTO moduleFormConfigDTO;
 
-    @NotEmpty(message = "{opportunity.quotation.product.required}")
     @Schema(description = "子产品信息", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<Map<String, Object>> products;
 }
