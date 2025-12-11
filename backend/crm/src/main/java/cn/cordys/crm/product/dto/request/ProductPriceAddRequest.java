@@ -16,14 +16,14 @@ import java.util.Map;
 @Data
 public class ProductPriceAddRequest {
 
-	@NotBlank
+	@NotBlank(message = "{product.price.name.required}")
 	@Size(max = 255)
-	@Schema(description = "价格表名称")
+	@Schema(description = "价格表名称", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String name;
 
-	@NotBlank
+	@NotBlank(message = "{product.price.status.required}")
 	@Size(max = 32)
-	@Schema(description = "状态")
+	@Schema(description = "状态", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String status;
 
 	@Schema(description = "自定义字段值")

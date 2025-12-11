@@ -663,7 +663,7 @@ public class OpportunityService {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -709,7 +709,7 @@ public class OpportunityService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
-                    "opportunity_field", afterDo, 2000, null);
+                    "opportunity_field", afterDo, 2000, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
@@ -728,8 +728,8 @@ public class OpportunityService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg, null);
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg, null, null);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

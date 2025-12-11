@@ -260,7 +260,7 @@ public class ProductPriceService {
                 moduleFormService.getCustomImportHeadsNoRef(FormKey.PRICE.getKey(), currentOrg),
                 Translator.get("product.price.import_tpl.name"),
                 Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),
+                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.PRICE.getKey(), currentOrg)),
                 new CustomHeadColWidthStyleStrategy()
         );
     }
@@ -290,12 +290,12 @@ public class ProductPriceService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
             CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
                     .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
             CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product_price", "product_price_field", currentOrg,
-                    mergeCellEventListener.getMergeCellMap());
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -316,11 +316,12 @@ public class ProductPriceService {
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
-            List<BaseField> fields = moduleFormService.getCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRICE.getKey(), currentOrg);
             CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
                     .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-            CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields, mergeCellEventListener.getMergeCellMap());
+            CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields,
+					mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
             FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
                     .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
@@ -340,7 +341,8 @@ public class ProductPriceService {
      *
      * @return 导入监听器
      */
-    private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap) {
+    private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields,
+																			   Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
         AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
         CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
             List<LogDTO> logs = new ArrayList<>();
@@ -354,7 +356,7 @@ public class ProductPriceService {
             // record logs
             logService.batchAdd(logs);
         };
-        return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap);
+        return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap, mergeRowDataMap);
     }
 
     /**

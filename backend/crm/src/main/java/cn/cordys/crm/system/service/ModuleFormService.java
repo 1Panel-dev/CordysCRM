@@ -976,12 +976,12 @@ public class ModuleFormService {
      * @param currentOrg 当前组织
      * @return 字段集合
      */
-    public List<BaseField> getCustomImportFields(String formKey, String currentOrg) {
+    public List<BaseField> getAllCustomImportFields(String formKey, String currentOrg) {
         List<BaseField> allFields = getAllFields(formKey, currentOrg);
         if (CollectionUtils.isEmpty(allFields)) {
             return null;
         }
-        return allFields.stream().filter(BaseField::canImport).collect(Collectors.toList());
+        return new ArrayList<>(allFields);
     }
 
     /**

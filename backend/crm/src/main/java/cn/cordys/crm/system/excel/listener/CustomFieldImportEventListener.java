@@ -75,8 +75,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
 										  CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
-										  Map<Integer, List<CellExtra>> mergeCellMap) {
-		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap);
+										  Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
@@ -197,21 +197,21 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     }
                 }
             });
-            if (serialField != null) {
-				BaseResourceSubField serialResource = new BaseResourceSubField();
-                serialResource.setId(IDGenerator.nextStr());
-                serialResource.setResourceId(id.get().toString());
-                serialResource.setFieldId(serialField.idOrBusinessKey());
-                String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
-                        currentOrg, entityClass.getSimpleName().toLowerCase());
-                serialResource.setFieldValue(serialNo);
-				if (refSubMap.containsKey(serialField.getName())) {
-					serialResource.setRefSubId(refSubMap.get(serialField.getName()));
-					serialResource.setRowId(String.valueOf(subRowId));
-				}
-                fields.add(serialResource);
-            }
 			if (isNormalRow(rowIndex) || isMergedLastRow(rowIndex)) {
+				if (serialField != null) {
+					BaseResourceSubField serialResource = new BaseResourceSubField();
+					serialResource.setId(IDGenerator.nextStr());
+					serialResource.setResourceId(id.get().toString());
+					serialResource.setFieldId(serialField.idOrBusinessKey());
+					String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
+							currentOrg, entityClass.getSimpleName().toLowerCase());
+					serialResource.setFieldValue(serialNo);
+					if (refSubMap.containsKey(serialField.getName())) {
+						serialResource.setRefSubId(refSubMap.get(serialField.getName()));
+						serialResource.setRowId(String.valueOf(subRowId));
+					}
+					fields.add(serialResource);
+				}
 				// 合并最后行, 添加并清除实体
 				dataList.add(mergedTmpEntity);
 				mergedTmpEntity = null;

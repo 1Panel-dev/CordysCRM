@@ -60,17 +60,14 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
-        for (BaseField field : fields) {
-			if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
-				continue;
-			}
+		List<BaseField> importFields = fields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport()).toList();
+		for (BaseField field : importFields) {
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
 				for (BaseField f : subField.getSubFields()) {
-					if (StringUtils.isNotEmpty(f.getResourceFieldId())) {
-						continue;
+					if (StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport()) {
+						downOffSet.add(index);
+						setExtra(f, index++);
 					}
-					setExtra(f, index++);
-					downOffSet.add(index);
 				}
 				centerCells.add(subField.getName());
 				continue;
