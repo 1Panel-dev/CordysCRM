@@ -274,7 +274,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 		if (field.needRequireCheck()) {
 			requires.add(field.getName());
 		}
-		if (field.needRepeatCheck()) {
+		if (field.needRepeatCheck() || Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
 			uniques.put(field.getName(), field);
 		}
 		if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
