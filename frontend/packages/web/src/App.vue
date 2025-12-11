@@ -144,12 +144,11 @@
   watchStyle(appStore.pageConfig.style, appStore.pageConfig);
   watchTheme(appStore.pageConfig.theme, appStore.pageConfig);
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
     try {
-      licenseStore.getValidateLicense();
       appStore.initThirdPartyResource();
-      const { isLoginPage } = useUser();
-      if (licenseStore.hasLicense() && !isLoginPage()) {
+      await licenseStore.getValidateLicense();
+      if (licenseStore.hasLicense()) {
         appStore.initPageConfig();
         if (appStore.pageConfig.icon[0]?.url) {
           setFavicon(appStore.pageConfig.icon[0]?.url);
