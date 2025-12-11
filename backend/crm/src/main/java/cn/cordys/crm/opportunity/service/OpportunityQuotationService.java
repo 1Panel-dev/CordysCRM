@@ -686,7 +686,7 @@ public class OpportunityQuotationService {
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
         logService.batchAdd(logs);
         list.forEach(
-                item -> sendNotice(Translator.get(Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
+                item -> sendNotice((Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
                         Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved")), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
         return BatchAffectSkipResponse.builder().success(list.size() - skipCount.get()).fail(0).skip(skipCount.get()).build();
