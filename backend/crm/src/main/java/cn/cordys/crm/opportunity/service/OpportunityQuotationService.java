@@ -116,15 +116,8 @@ public class OpportunityQuotationService {
     public OpportunityQuotation add(OpportunityQuotationAddRequest request, String orgId, String userId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        if (CollectionUtils.isEmpty(moduleFields)) {
-            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
-        }
-        if (moduleFormConfigDTO == null) {
-            throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
-        }
-        if (CollectionUtils.isEmpty(request.getProducts())) {
-            throw new GenericException(Translator.get("opportunity.quotation.product.required"));
-        }
+        checkQuotationInfo(moduleFields, moduleFormConfigDTO, request.getProducts());
+
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         OpportunityQuotation opportunityQuotation = new OpportunityQuotation();
         opportunityQuotation.setId(IDGenerator.nextStr());
@@ -518,15 +511,7 @@ public class OpportunityQuotationService {
         String id = request.getId();
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        if (CollectionUtils.isEmpty(moduleFields)) {
-            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
-        }
-        if (moduleFormConfigDTO == null) {
-            throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
-        }
-        if (CollectionUtils.isEmpty(request.getProducts())) {
-            throw new GenericException(Translator.get("opportunity.quotation.product.required"));
-        }
+        checkQuotationInfo(moduleFields, moduleFormConfigDTO, request.getProducts());
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
@@ -568,6 +553,33 @@ public class OpportunityQuotationService {
         // 处理日志上下文
         baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
         return opportunityQuotationMapper.selectByPrimaryKey(id);
+    }
+
+    /**
+     * 检查报价单信息
+     *
+     * @param moduleFields        报价单字段值
+     * @param moduleFormConfigDTO 报价单表单配置
+     * @param request             报价单产品列表
+     */
+    private void checkQuotationInfo(List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO, List<Map<String, Object>> request) {
+        if (CollectionUtils.isEmpty(moduleFields)) {
+            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
+        }
+        if (moduleFormConfigDTO == null) {
+            throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
+        }
+        if (CollectionUtils.isEmpty(request)) {
+            throw new GenericException(Translator.get("opportunity.quotation.product.required"));
+        }
+        for (Map<String, Object> product : request) {
+            if (product.get("amount") == null) {
+                throw new GenericException(Translator.get("opportunity.quotation.product.amount.invalid"));
+            }
+            if (product.get("product") == null) {
+                throw new GenericException(Translator.get("opportunity.quotation.product.invalid"));
+            }
+        }
     }
 
     /**
