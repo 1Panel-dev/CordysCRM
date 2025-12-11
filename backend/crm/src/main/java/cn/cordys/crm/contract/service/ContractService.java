@@ -380,9 +380,9 @@ public class ContractService {
      * @param deptDataPermission
      * @return
      */
-    public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission);
+        List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission, source);
         List<ContractListResponse> results = buildList(list, orgId);
         ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(list, results, customerFormConfig);

@@ -13,7 +13,7 @@ public interface ExtContractMapper {
 
 
     List<ContractListResponse> list(@Param("request") ContractPageRequest request, @Param("orgId") String orgId,
-                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
 
     ContractResponse getDetail(@Param("id") String id);
 

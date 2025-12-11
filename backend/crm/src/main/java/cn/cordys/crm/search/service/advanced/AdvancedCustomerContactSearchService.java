@@ -65,7 +65,7 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
 
         ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null,false);
         List<AdvancedCustomerContactResponse> buildListData = buildCustomerContactData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildCustomerContactOptionMap(orgId, buildListData);
         // 查询重复联系人列表

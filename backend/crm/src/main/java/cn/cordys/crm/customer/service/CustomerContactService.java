@@ -114,9 +114,9 @@ public class CustomerContactService {
     @Resource
     private LogService logService;
 
-    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission, source);
         list = buildListData(list, orgId);
 
         Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
@@ -161,7 +161,7 @@ public class CustomerContactService {
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
@@ -174,7 +174,7 @@ public class CustomerContactService {
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-		list.forEach(customerListResponse -> {
+        list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = fieldValueMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
@@ -193,9 +193,9 @@ public class CustomerContactService {
 
     public CustomerContactGetResponse get(String id) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
-		if (customerContact == null) {
-			return null;
-		}
+        if (customerContact == null) {
+            return null;
+        }
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
 
         Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
@@ -213,8 +213,8 @@ public class CustomerContactService {
 
         // 获取模块字段
         List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
-		customerContactFields = customerContactFieldService.setBusinessRefFieldValue(List.of(customerContactGetResponse),
-				moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), customerContact.getOrganizationId()), new HashMap<>(Map.of(id, customerContactFields))).get(id);
+        customerContactFields = customerContactFieldService.setBusinessRefFieldValue(List.of(customerContactGetResponse),
+                moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), customerContact.getOrganizationId()), new HashMap<>(Map.of(id, customerContactFields))).get(id);
         ModuleFormConfigDTO customerContactFormConfig = getFormConfig(customerContact.getOrganizationId());
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig, customerContactFields);
@@ -467,7 +467,6 @@ public class CustomerContactService {
      * @param phone      联系人电话
      * @param customerId 客户ID
      * @param orgId      组织ID
-     *
      * @return 是否唯一
      */
     public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
@@ -538,10 +537,10 @@ public class CustomerContactService {
      * @param response 响应
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
-		new EasyExcelExporter()
+        new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTACT.getKey(), currentOrg),
                         Translator.get("contact.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-						new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -549,7 +548,6 @@ public class CustomerContactService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -565,7 +563,6 @@ public class CustomerContactService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -599,7 +596,6 @@ public class CustomerContactService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -642,6 +638,7 @@ public class CustomerContactService {
 
     /**
      * 联系人是否有唯一字段
+     *
      * @param orgId 组织ID
      * @return 是否唯一
      */

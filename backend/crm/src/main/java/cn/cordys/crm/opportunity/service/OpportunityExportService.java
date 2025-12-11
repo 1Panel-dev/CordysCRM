@@ -116,7 +116,7 @@ public class OpportunityExportService extends BaseExportService {
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, OpportunityExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         //获取数据
-        List<OpportunityListResponse> allList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
+        List<OpportunityListResponse> allList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission,false);
         List<OpportunityListResponse> dataList = opportunityService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(orgId, allList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);

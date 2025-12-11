@@ -54,7 +54,6 @@ public class CustomerContactExportService extends BaseExportService {
      * @param orgId
      * @param deptDataPermission
      * @param locale
-     *
      * @return
      */
     public String export(String userId, CustomerContactExportRequest request, String orgId,
@@ -113,13 +112,12 @@ public class CustomerContactExportService extends BaseExportService {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, CustomerContactExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         //获取数据
-        List<CustomerContactListResponse> allList = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
+        List<CustomerContactListResponse> allList = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission, false);
         allList = customerContactService.buildListData(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
         //构建导出数据
@@ -157,7 +155,6 @@ public class CustomerContactExportService extends BaseExportService {
      * @param request
      * @param orgId
      * @param locale
-     *
      * @return
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {

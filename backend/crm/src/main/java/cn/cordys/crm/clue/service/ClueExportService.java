@@ -148,7 +148,7 @@ public class ClueExportService extends BaseExportService {
 
     public List<List<Object>> getExportData(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ClueListResponse> exportList = extClueMapper.list(request, orgId, userId, deptDataPermission);
+        List<ClueListResponse> exportList = extClueMapper.list(request, orgId, userId, deptDataPermission, false);
         List<ClueListResponse> dataList = clueService.buildListData(exportList, orgId);
         Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, exportList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);

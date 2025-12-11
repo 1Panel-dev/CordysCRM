@@ -67,11 +67,15 @@
             and o.owner = #{userId}
         </if>
 
-        <if test="request.keyword != null and request.keyword != ''">
+        <if test="!source and request.keyword != null and request.keyword != ''">
             and (
             o.name like concat('%', #{request.keyword},'%')
             or c.name like concat('%', #{request.keyword},'%')
             )
+        </if>
+
+        <if test="source and request.keyword != null and request.keyword != ''">
+            and o.name like concat('%', #{request.keyword},'%')
         </if>
 
         <if test="request.viewId != null and request.viewId != '' and request.viewId == 'OPPORTUNITY_SUCCESS'">

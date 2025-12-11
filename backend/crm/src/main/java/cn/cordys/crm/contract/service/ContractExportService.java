@@ -46,7 +46,7 @@ public class ContractExportService extends BaseExportService {
             exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
         } else {
             ContractPageRequest request = (ContractPageRequest) exportParam.getPageRequest();
-            exportList = extContractMapper.list(request, orgId, userId, deptDataPermission);
+            exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
         }
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).build();

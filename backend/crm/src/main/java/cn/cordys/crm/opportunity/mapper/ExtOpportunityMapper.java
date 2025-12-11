@@ -25,7 +25,7 @@ public interface ExtOpportunityMapper {
 
 
     List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,
-                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
 
     OpportunitySearchStatisticResponse searchStatistic(@Param("request") OpportunitySearchStatisticRequest request, @Param("orgId") String orgId,
                                                        @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
