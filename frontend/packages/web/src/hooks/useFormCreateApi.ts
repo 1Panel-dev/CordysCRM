@@ -1121,7 +1121,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function subFieldInit(field: FormCreateField) {
     let defaultValue = field.defaultValue || '';
-    if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
+    if (field.resourceFieldId && field.defaultValue) {
+      defaultValue = parseModuleFieldValue(field, field.defaultValue, field.initialOptions);
+    } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
     } else if (getRuleType(field) === 'array') {
       defaultValue =
@@ -1151,6 +1153,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         item.defaultValue = undefined;
       }
       let defaultValue = item.defaultValue || '';
+      if (item.resourceFieldId && item.defaultValue) {
+        defaultValue = parseModuleFieldValue(item, item.defaultValue, item.initialOptions);
+        formDetail.value[item.id] = defaultValue;
+        return;
+      }
       if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type)) {
         defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
       } else if (getRuleType(item) === 'array') {
@@ -1164,10 +1171,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
       if (!formDetail.value[item.id]) {
         formDetail.value[item.id] = defaultValue;
-      }
-      if (item.resourceFieldId) {
-        // 数据源引用字段，清空默认值
-        item.defaultValue = '';
       }
       replaceRule(item);
       if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
