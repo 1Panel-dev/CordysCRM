@@ -247,7 +247,7 @@ public enum BusinessModuleField {
      */
     CONTRACT_NAME("contractName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
-    CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
