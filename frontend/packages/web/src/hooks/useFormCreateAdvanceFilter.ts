@@ -38,7 +38,6 @@ export default function useFormCreateFilter() {
           FieldTypeEnum.TEXTAREA,
           FieldTypeEnum.PICTURE,
           FieldTypeEnum.DIVIDER,
-          FieldTypeEnum.FORMULA,
           FieldTypeEnum.SUB_PRICE,
           FieldTypeEnum.SUB_PRODUCT,
         ].includes(field.type)
