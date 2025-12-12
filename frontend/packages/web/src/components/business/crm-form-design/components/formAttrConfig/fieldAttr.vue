@@ -1583,7 +1583,7 @@
 
   const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || '');
   const serialNumberRules2 = ref(fieldConfig.value?.serialNumberRules?.[1].toString() || '');
-  const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'YYMM');
+  const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'yyyyMM');
   const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '');
   const serialNumberRules5 = ref(Number(fieldConfig.value?.serialNumberRules?.[4] || 6));
   const previewValue = computed(() => {

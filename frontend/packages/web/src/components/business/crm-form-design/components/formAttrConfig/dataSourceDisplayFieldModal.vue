@@ -8,23 +8,22 @@
   >
     <n-scrollbar class="max-h-[60vh]">
       <FieldSection
-        v-if="systemList.length"
-        v-model:selected-ids="selectedSystemIds"
-        :items="systemList"
-        class="px-0 pt-0"
-        :title="t('common.systemFields')"
-        @select-part="(ids) => updateSelectedList(ids, systemList)"
-        @select-item="(meta) => selectItem(ColumnTypeEnum.SYSTEM, meta)"
-      />
-
-      <FieldSection
         v-if="customList.length"
         v-model:selected-ids="selectedCustomIds"
         :items="customList"
-        class="p-0"
+        class="px-0 pt-0"
         :title="t('common.formFields')"
         @select-part="(ids) => updateSelectedList(ids, customList)"
         @select-item="(meta) => selectItem(ColumnTypeEnum.CUSTOM, meta)"
+      />
+      <FieldSection
+        v-if="subTableList.length"
+        v-model:selected-ids="selectedSubTableIds"
+        :items="subTableList"
+        class="px-0 pt-0"
+        :title="t('crmFormDesign.subTableField')"
+        @select-part="(ids) => updateSelectedList(ids, subTableList)"
+        @select-item="(meta) => selectItem(ColumnTypeEnum.SUB_TABLE, meta)"
       />
     </n-scrollbar>
   </CrmModal>
@@ -75,7 +74,7 @@
         return {
           key: item.id,
           title: item.name,
-          columnType: ColumnTypeEnum.CUSTOM,
+          columnType: item.subTableFieldId ? ColumnTypeEnum.SUB_TABLE : ColumnTypeEnum.CUSTOM,
           ...item,
         };
       });
@@ -97,13 +96,13 @@
     }
   );
 
-  const systemList = computed(() => allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM));
+  const subTableList = computed(() => allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.SUB_TABLE));
   const customList = computed(() => allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));
 
   const selectedList = ref<any[]>([]);
 
-  const selectedSystemIds = computed(() =>
-    selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.SYSTEM).map((e) => e.key)
+  const selectedSubTableIds = computed(() =>
+    selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.SUB_TABLE).map((e) => e.key)
   );
 
   const selectedCustomIds = computed(() =>
@@ -119,7 +118,7 @@
   function selectItem(columnType: ColumnTypeEnum, meta: { actionType: 'check' | 'uncheck'; value: string | number }) {
     if (meta.actionType === 'check') {
       // 添加选中的项
-      const itemToAdd = (columnType === ColumnTypeEnum.SYSTEM ? systemList.value : customList.value).find(
+      const itemToAdd = (columnType === ColumnTypeEnum.SUB_TABLE ? subTableList.value : customList.value).find(
         (i) => i.key === meta.value
       );
       if (itemToAdd) {
@@ -133,7 +132,7 @@
 
   function handleConfirm() {
     show.value = false;
-    emit('save', [...selectedSystemIds.value, ...selectedCustomIds.value], selectedList.value);
+    emit('save', [...selectedSubTableIds.value, ...selectedCustomIds.value], selectedList.value);
   }
 
   function handleCancel() {
