@@ -75,7 +75,7 @@ public abstract class BaseModuleLogService {
 
         Map<String, BaseField> businessModuleFieldMap = fields
                 .stream()
-                .filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()))
+                .filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()) && StringUtils.isEmpty(f.getResourceFieldId()))
                 .collect(Collectors.toMap(BaseField::getBusinessKey, Function.identity()));
 
 
