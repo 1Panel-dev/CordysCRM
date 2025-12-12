@@ -7,10 +7,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.common.dto.RolePermissionDTO;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -246,11 +243,12 @@ public class OpportunityQuotationService {
         return response;
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 报价单ID
-	 * @return 报价单详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 报价单ID
+     * @return 报价单详情
+     */
     public OpportunityQuotationGetResponse get(String id) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
@@ -474,7 +472,7 @@ public class OpportunityQuotationService {
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId, String userId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OpportunityQuotationListResponse> list = extOpportunityQuotationMapper.list(request, organizationId, userId, deptDataPermission, source);
-        List<OpportunityQuotationListResponse> results = buildList(list);
+        List<OpportunityQuotationListResponse> results = buildList(list, organizationId);
         // 处理自定义字段选项
         ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(results, OpportunityQuotationListResponse::getModuleFields);
@@ -488,12 +486,21 @@ public class OpportunityQuotationService {
      * @param listData 列表数据
      * @return 列表数据
      */
-    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData) {
+    private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData, String organizationId) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = opportunityQuotationFieldService.getResourceFieldMap(
                 listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
         // 列表项设置自定义字段&&用户名
-        listData.forEach(item -> item.setModuleFields(dataFieldMap.get(item.getId())));
+        List<String> createUserIds = listData.stream().map(OpportunityQuotationListResponse::getCreateUser).toList();
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(createUserIds, organizationId);
+        listData.forEach(item -> {
+            item.setModuleFields(dataFieldMap.get(item.getId()));
+            UserDeptDTO userDeptDTO = userDeptMap.get(item.getCreateUser());
+            if (userDeptDTO != null) {
+                item.setDepartmentId(userDeptDTO.getDeptId());
+                item.setDepartmentName(userDeptDTO.getDeptName());
+            }
+        });
         return baseService.setCreateAndUpdateUserName(listData);
     }
 

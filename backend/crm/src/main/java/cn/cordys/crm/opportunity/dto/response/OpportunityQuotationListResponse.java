@@ -27,6 +27,12 @@ public class OpportunityQuotationListResponse {
     @Schema(description = "商机名称")
     private String opportunityName;
 
+    @Schema(description = "部门id")
+    private String departmentId;
+
+    @Schema(description = "部门名称")
+    private String departmentName;
+
     @Schema(description = "累计金额")
     private BigDecimal amount;
 
