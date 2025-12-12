@@ -888,14 +888,13 @@ public class ModuleFormService {
      * @param currentOrg 当前组织
      * @return 自定义导入表头集合
      */
-    public List<List<String>> getCustomImportHeads(String formKey, String currentOrg) {
+    public List<List<String>> getAllExportHeads(String formKey, String currentOrg) {
         List<BaseField> allFields = getAllFields(formKey, currentOrg);
         if (CollectionUtils.isEmpty(allFields)) {
             return null;
         }
-        List<BaseField> fields = allFields.stream().filter(BaseField::canImport).toList();
         List<List<String>> heads = new ArrayList<>();
-        fields.forEach(field -> {
+		allFields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
                     List<String> head = new ArrayList<>();
@@ -909,6 +908,32 @@ public class ModuleFormService {
         });
         return heads;
     }
+
+	/**
+	 * 获取导出的合并头ID集合
+	 * @param formKey 表单Key
+	 * @param currentOrg 当前组织
+	 * @param exportTitles 导出字段名称集合
+	 * @return 导出字段ID集合
+	 */
+	public List<String> getExportMergeHeads(String formKey, String currentOrg, List<String> exportTitles) {
+		List<BaseField> allFields = getAllFields(formKey, currentOrg);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return null;
+		}
+		List<String> heads = new ArrayList<>();
+		allFields.forEach(field -> {
+			if (!exportTitles.contains(field.getName())) {
+				return;
+			}
+			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				subField.getSubFields().forEach(f -> heads.add(f.getId()));
+			} else {
+				heads.add(field.getId());
+			}
+		});
+		return heads;
+	}
 
     /**
      * 获取不含引用字段的表头集合
@@ -941,33 +966,6 @@ public class ModuleFormService {
         });
         return heads;
     }
-
-	/**
-	 * 获取导出的合并头ID集合
-	 * @param formKey 表单Key
-	 * @param currentOrg 当前组织
-	 * @param exportTitles 导出字段名称集合
-	 * @return 导出字段ID集合
-	 */
-	public List<String> getExportMergeHeads(String formKey, String currentOrg, List<String> exportTitles) {
-		List<BaseField> allFields = getAllFields(formKey, currentOrg);
-		if (CollectionUtils.isEmpty(allFields)) {
-			return null;
-		}
-		List<BaseField> fields = allFields.stream().filter(BaseField::canImport).toList();
-		List<String> heads = new ArrayList<>();
-		fields.forEach(field -> {
-			if (!exportTitles.contains(field.getName())) {
-				return;
-			}
-			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-				subField.getSubFields().forEach(f -> heads.add(f.getId()));
-			} else {
-				heads.add(field.getId());
-			}
-		});
-		return heads;
-	}
 
     /**
      * 获取自定义导出字段集合
