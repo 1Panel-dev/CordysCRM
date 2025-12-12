@@ -280,7 +280,7 @@ public abstract class BaseExportService {
 	 */
 	private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
 		List<String> headKey = headList.stream().map(ExportHeadDTO::getTitle).toList();
-		List<List<String>> allHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getCustomImportHeads(formKey, currentOrg);
+		List<List<String>> allHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(formKey, currentOrg);
 		List<List<String>> exportHeads = allHeads.stream().filter(head -> headKey.contains(head.getFirst())).collect(Collectors.toList());
 		List<String> systemHeads = headList.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getTitle).toList();
 		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).toList());
@@ -325,6 +325,9 @@ public abstract class BaseExportService {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public Object transformFieldValue(BaseField field, Object value) {
+		if (value == null) {
+			return null;
+		}
 		AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
 		// 将数据库中的字符串值,转换为对应的对象值
 		return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
