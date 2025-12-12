@@ -653,8 +653,9 @@ public class ModuleFormService {
         fields.forEach(field -> {
             flatFields.add(field);
             if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
-                List<String> refIds = sourceField.getShowFields();
-                List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(refIds);
+                List<String> oldRefIds = sourceField.getShowFields();
+                List<String> newRefIds = new ArrayList<>();
+                List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
                 Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
                 sourceField.getRefFields().forEach(oldRefField -> {
                     if (reloadFieldMap.containsKey(oldRefField.getId())) {
@@ -668,8 +669,10 @@ public class ModuleFormService {
                         refField.setResourceFieldId(oldRefField.getResourceFieldId());
 						refField.setName(oldRefField.getName());
                         flatFields.add(flatFields.size(), refField);
+						newRefIds.add(refField.getId());
                     }
                 });
+				sourceField.setShowFields(newRefIds);
             }
         });
         return flatFields;
