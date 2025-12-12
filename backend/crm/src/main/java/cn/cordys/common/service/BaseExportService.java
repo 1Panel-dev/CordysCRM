@@ -219,7 +219,7 @@ public abstract class BaseExportService {
 		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
 		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-		return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
+		return exportWithMergeStrategy(exportParam, mergeColumns, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
 				mergeColumns, exportParam.getPageRequest(),
 				t -> getExportMergeData(task.getId(), exportParam)));
 	}
@@ -233,7 +233,7 @@ public abstract class BaseExportService {
 		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
 		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-		return exportWithMergeStrategy(exportParam, (task) -> {
+		return exportWithMergeStrategy(exportParam, mergeColumns, (task) -> {
 			File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
 			try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
 					.registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
@@ -265,9 +265,9 @@ public abstract class BaseExportService {
 	 * @param executor 导出执行器
 	 * @return 导出任务ID
 	 */
-	private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
-		// 设置字段参数&&调用异步通用导出
+	private String exportWithMergeStrategy(ExportDTO exportParam, List<Integer> mergeColumns, ExportExecutor executor) {
 		exportParam.setExportFieldParam(getExportFieldParam(exportParam.getFormKey(), exportParam.getOrgId()));
+		exportParam.getExportFieldParam().setMergeColumns(mergeColumns);
 		return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(),
 				exportParam.getLogModule(), exportParam.getExportType(), executor);
 	}
@@ -333,16 +333,20 @@ public abstract class BaseExportService {
 		return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
 	}
 
+	@SuppressWarnings("unchecked")
 	protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues , ExportFieldParam exportFieldParam, List<String> heads, LinkedHashMap<String, Object> systemFieldMap) {
 		List<List<Object>> dataList = new ArrayList<>();
 		if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
+			// 无自定义字段, 导出系统字段值, 单行导出
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, new LinkedHashMap<>(), exportFieldParam.getFieldConfigMap());
 			dataList.add(data);
 			return dataList;
 		}
 
 		List<BaseModuleFieldValue> subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList();
-		if (subFvs.isEmpty() || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue())) {
+		if (subFvs.isEmpty() || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue()) ||
+				CollectionUtils.isEmpty(exportFieldParam.getMergeColumns())) {
+			// 无子表格字段值或者有子表格字段值但未导出(无合并行), 也是单行导出
 			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
 			dataList.add(data);
@@ -351,6 +355,7 @@ public abstract class BaseExportService {
 		moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
 		List<?> subFvList = (List<?>) subFvs.getFirst().getFieldValue();
 		subFvList.forEach(subFv -> {
+			// 包含子表格行数据, 需多行合并导出
 			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
 			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
 			subFvMap.putAll(normalFvs);
@@ -617,6 +622,10 @@ public abstract class BaseExportService {
 			if (headCols.size() == 1) {
 				mergeColumns.add(i);
 			}
+		}
+		if (mergeColumns.size() == heads.size()) {
+			// 因为子表格缺失, 全部列都需要合并. 跳过即可
+			mergeColumns.clear();
 		}
 		return mergeColumns;
 	}
