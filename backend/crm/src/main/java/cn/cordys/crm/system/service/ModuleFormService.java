@@ -11,6 +11,7 @@ import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -70,6 +71,7 @@ public class ModuleFormService {
     private static final String DEFAULT_ORGANIZATION_ID = "100001";
     private static final String CONTROL_RULES_KEY = "showControlRules";
     private static final String SUB_FIELDS = "subFields";
+	public static final String SUM_PREFIX = "sum_";
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -892,24 +894,34 @@ public class ModuleFormService {
     /**
      * 获取自定义表头集合 (包括引用显示字段)
      *
+	 * @param exportHeads 导出头
      * @param formKey    表单Key
      * @param currentOrg 当前组织
      * @return 自定义导入表头集合
      */
-    public List<List<String>> getAllExportHeads(String formKey, String currentOrg) {
+    public List<List<String>> getAllExportHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
         List<BaseField> allFields = getAllFields(formKey, currentOrg);
         if (CollectionUtils.isEmpty(allFields)) {
             return null;
         }
+		List<String> headTitles = exportHeads.stream().map(ExportHeadDTO::getTitle).toList();
         List<List<String>> heads = new ArrayList<>();
 		allFields.forEach(field -> {
+			if (!headTitles.contains(field.getName())) {
+				return;
+			}
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-                subField.getSubFields().forEach(f -> {
+				List<BaseField> subFields = subField.getSubFields();
+				Map<String, String> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, BaseField::getName, (oldValue, newValue) -> oldValue));
+				subField.getSubFields().forEach(f -> {
                     List<String> head = new ArrayList<>();
                     head.add(field.getName());
                     head.add(f.getName());
                     heads.add(head);
                 });
+				if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
+					subField.getSumColumns().forEach(sumColumn -> heads.add(new ArrayList<>(Collections.singletonList(Translator.get("sum") + "-" + subFieldMap.get(sumColumn)))));
+				}
             } else {
                 heads.add(new ArrayList<>(Collections.singletonList(field.getName())));
             }
@@ -935,7 +947,11 @@ public class ModuleFormService {
 				return;
 			}
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+				Map<String, BaseField> subFieldMap = subField.getSubFields().stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, Function.identity(), (p, n) -> n));
 				subField.getSubFields().forEach(f -> heads.add(f.getId()));
+				if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
+					subField.getSumColumns().forEach(sumColumn -> heads.add(SUM_PREFIX + subFieldMap.get(sumColumn).getId()));
+				}
 			} else {
 				heads.add(field.getId());
 			}

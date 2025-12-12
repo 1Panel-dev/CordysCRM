@@ -20,7 +20,7 @@ import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
-import cn.cordys.crm.system.excel.handler.MergeHandler;
+import cn.cordys.crm.system.excel.handler.SummaryMergeHandler;
 import cn.cordys.crm.system.service.ExportTaskService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -51,6 +51,8 @@ public abstract class BaseExportService {
 	 * 最大查询数量
 	 */
 	public static final int EXPORT_MAX_COUNT = 2000;
+	private static final String SUM_PREFIX = "sum_";
+	public static final String SLASH = "/";
     @Resource
     private LogService logService;
     @Resource
@@ -138,7 +140,7 @@ public abstract class BaseExportService {
 				writer.write(mergeResult.getDataList(), sheet);
 				// 执行合并策略
 				Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-				MergeHandler strategy = new MergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset);
+				SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset);
 				strategy.merge(mergeSheet);
 				if (mergeResult.getDataList().size() < EXPORT_MAX_COUNT) {
 					break;
@@ -153,11 +155,9 @@ public abstract class BaseExportService {
 
     /**
      * 准备导出文件
-     *
-     * @param fileId
-     * @param fileName
-     *
-     * @return
+     * @param fileId 文件ID
+     * @param fileName 文件名
+     * @return 导出文件
      */
     public File prepareExportFile(String fileId, String fileName, String orgId) {
         if (fileId == null || fileName == null || orgId == null) {
@@ -184,11 +184,11 @@ public abstract class BaseExportService {
     /**
      * 根据数据value 转换对应值
      *
-     * @param headList
-     * @param systemFiledMap
-     * @param moduleFieldMap
-     * @param dataList
-     * @param fieldConfigMap
+     * @param headList 头集合信息
+     * @param systemFiledMap 系统字段值
+     * @param moduleFieldMap 模块字段值
+     * @param dataList 数据列表
+     * @param fieldConfigMap 字段配置集合
      */
     public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
         headList.forEach(head -> {
@@ -251,7 +251,7 @@ public abstract class BaseExportService {
 					writer.write(mergeResult.getDataList(), sheet);
 					// 执行合并策略
 					Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-					MergeHandler strategy = new MergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset.get());
+					SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset.get());
 					strategy.merge(mergeSheet);
 					offset.addAndGet(mergeResult.getDataList().size());
 				});
@@ -278,9 +278,7 @@ public abstract class BaseExportService {
 	 * @return 表头信息
 	 */
 	private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
-		List<String> headKey = headList.stream().map(ExportHeadDTO::getTitle).toList();
-		List<List<String>> allHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(formKey, currentOrg);
-		List<List<String>> exportHeads = allHeads.stream().filter(head -> headKey.contains(head.getFirst())).collect(Collectors.toList());
+		List<List<String>> exportHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(headList, formKey, currentOrg);
 		List<String> systemHeads = headList.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getTitle).toList();
 		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).toList());
 		return exportHeads;
@@ -297,6 +295,9 @@ public abstract class BaseExportService {
 											   Map<String, BaseField> fieldConfigMap) {
 		List<Object> dataList = new ArrayList<>();
 		heads.forEach(head -> {
+			if (head.contains(SUM_PREFIX)) {
+				head = head.split(SUM_PREFIX)[1];
+			}
 			BaseField field = fieldConfigMap.get(head);
 			if (field == null) {
 				if (sysFieldValMap.containsKey(head)) {
@@ -387,12 +388,12 @@ public abstract class BaseExportService {
     /**
      * 日志
      *
-     * @param orgId
-     * @param taskId
-     * @param userId
-     * @param logType
-     * @param moduleType
-     * @param fileName
+     * @param orgId 组织ID
+     * @param taskId 任务ID
+     * @param userId 用户ID
+     * @param logType 日志类型
+     * @param moduleType 模块类型
+     * @param fileName 文件名
      */
     public void exportLog(String orgId, String taskId, String userId, String logType, String moduleType, String fileName) {
         LogDTO logDTO = new LogDTO(orgId, taskId, userId, logType, moduleType, fileName);
@@ -401,7 +402,7 @@ public abstract class BaseExportService {
 
 
     public void checkFileName(String fileName) {
-        if (fileName.contains("/")) {
+        if (fileName.contains(SLASH)) {
             throw new GenericException(Translator.get("file_name_illegal"));
         }
     }
@@ -457,7 +458,7 @@ public abstract class BaseExportService {
     /**
      * 构建全部导出数据
      * @return 导出数据列表
-     * @throws InterruptedException
+     * @throws InterruptedException 异常信息
      */
     protected List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {return null;}
 
@@ -474,7 +475,7 @@ public abstract class BaseExportService {
      * 构建选择的导出数据
      *
      * @return 导出数据列表
-     * @throws InterruptedException
+     * @throws InterruptedException 异常信息
      */
     protected List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {return null;}
 
