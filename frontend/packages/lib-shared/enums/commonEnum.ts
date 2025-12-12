@@ -38,4 +38,5 @@ export enum OperatorEnum {
 export enum ColumnTypeEnum {
   SYSTEM = 'system',
   CUSTOM = 'custom',
+  SUB_TABLE = 'subTable',
 }
