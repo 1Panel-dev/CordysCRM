@@ -219,7 +219,7 @@ public abstract class BaseExportService {
 		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
 		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-		return exportWithMergeStrategy(exportParam, mergeColumns, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
+		return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
 				mergeColumns, exportParam.getPageRequest(),
 				t -> getExportMergeData(task.getId(), exportParam)));
 	}
@@ -233,7 +233,7 @@ public abstract class BaseExportService {
 		List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
 		List<Integer> mergeColumns = getMergeColumns(exportHeads);
 		exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-		return exportWithMergeStrategy(exportParam, mergeColumns, (task) -> {
+		return exportWithMergeStrategy(exportParam, (task) -> {
 			File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
 			try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
 					.registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
@@ -265,9 +265,8 @@ public abstract class BaseExportService {
 	 * @param executor 导出执行器
 	 * @return 导出任务ID
 	 */
-	private String exportWithMergeStrategy(ExportDTO exportParam, List<Integer> mergeColumns, ExportExecutor executor) {
-		exportParam.setExportFieldParam(getExportFieldParam(exportParam.getFormKey(), exportParam.getOrgId()));
-		exportParam.getExportFieldParam().setMergeColumns(mergeColumns);
+	private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
+		exportParam.setExportFieldParam(getExportFieldParam(exportParam));
 		return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(),
 				exportParam.getLogModule(), exportParam.getExportType(), executor);
 	}
@@ -343,9 +342,11 @@ public abstract class BaseExportService {
 			return dataList;
 		}
 
-		List<BaseModuleFieldValue> subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList();
-		if (subFvs.isEmpty() || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue()) ||
-				CollectionUtils.isEmpty(exportFieldParam.getMergeColumns())) {
+		List<BaseModuleFieldValue> subFvs = new ArrayList<>();
+		if (StringUtils.isNotEmpty(exportFieldParam.getSubId())) {
+			subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList();
+		}
+		if (CollectionUtils.isEmpty(subFvs) || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue())) {
 			// 无子表格字段值或者有子表格字段值但未导出(无合并行), 也是单行导出
 			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
@@ -581,14 +582,16 @@ public abstract class BaseExportService {
 
 	/**
 	 * 获取一些公共的导出字段参数
-	 * @param formKey 表单Key
-	 * @param currentOrg 当前组织
+	 * @param exportParam 导出参数
 	 * @return 导出字段参数
 	 */
-	protected ExportFieldParam getExportFieldParam(String formKey, String currentOrg) {
-		ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class)).getBusinessFormConfig(formKey, currentOrg);
+	protected ExportFieldParam getExportFieldParam(ExportDTO exportParam) {
+		ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
+				.getBusinessFormConfig(exportParam.getFormKey(), exportParam.getOrgId());
+		List<String> exportTitles = exportParam.getHeadList().stream().map(ExportHeadDTO::getTitle).toList();
 		List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFields(formConfig);
-		String subId = flattenFields.stream().filter(f -> f instanceof SubField).map(BaseField::getId).toList().getFirst();
+		Optional<String> subOptional = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).findFirst();
+		String subId = subOptional.orElse(StringUtils.EMPTY);
 		Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 		return ExportFieldParam.builder().subId(subId).fieldConfigMap(fieldConfigMap)
 				.formConfig(formConfig)

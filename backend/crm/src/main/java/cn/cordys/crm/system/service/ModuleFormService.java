@@ -633,7 +633,13 @@ public class ModuleFormService {
                     BaseField refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
                     refField.setResourceFieldId(oldField.getResourceFieldId());
                     refField.setFieldWidth(oldField.getFieldWidth());
-                    refField.setSubTableFieldId(oldField.getSubTableFieldId());
+					if (refField instanceof DatasourceField refSourceField) {
+						// 清空多级引用的属性
+						refSourceField.setRefFields(null);
+						refSourceField.setShowFields(null);
+					}
+					refField.setName(oldField.getName());
+					refField.setSubTableFieldId(oldField.getSubTableFieldId());
                     it.set(refField);
                 }
             }
@@ -653,10 +659,12 @@ public class ModuleFormService {
                         BaseField refField = JSON.parseObject(reloadFieldMap.get(oldRefField.getId()), BaseField.class);
                         refField.setFieldWidth(oldRefField.getFieldWidth());
                         if (refField instanceof DatasourceField refSourceField) {
+							// 清空多级引用的属性
                             refSourceField.setRefFields(null);
                             refSourceField.setShowFields(null);
                         }
                         refField.setResourceFieldId(oldRefField.getResourceFieldId());
+						refField.setName(oldRefField.getName());
                         flatFields.add(flatFields.size(), refField);
                     }
                 });
