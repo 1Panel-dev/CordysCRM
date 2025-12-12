@@ -1244,7 +1244,8 @@
       "fieldWidth": 1,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "计划回款金额",
