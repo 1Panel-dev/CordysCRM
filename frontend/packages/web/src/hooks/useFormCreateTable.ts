@@ -698,6 +698,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [
       {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.departmentName || '-',
+      },
+      {
         title: t('common.status'),
         width: 120,
         key: 'approvalStatus',
