@@ -47,15 +47,6 @@
             </if>
             )
         </if>
-        <include refid="departmentConditionJoin">
-            <property name="conditions" value="request.combineSearch.conditions"/>
-            <property name="tablePrefix" value="combine"/>
-        </include>
-        <include refid="departmentConditionJoin">
-            <property name="conditions" value="request.viewCombineSearch.conditions"/>
-            <property name="tablePrefix" value="viewCombine"/>
-        </include>
-
         where oq.organization_id = #{orgId}
 
         <if test="dataPermission != null and dataPermission.self">
@@ -115,6 +106,10 @@
                         on oq.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user ${tablePrefix}_${i}
+                    on ${tablePrefix}_${i}.user_id = oq.create_user
+                </if>
             </foreach>
         </if>
     </sql>
@@ -122,21 +117,14 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'approval_status', 'amount', 'opportunity_id', 'update_user', 'create_time', 'update_time',
-                'create_user'}">
+                'create_user', 'department_id' }">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_quotation_field sort_table
             on oq.id = sort_table.resource_id and sort_table.field_id = #{sortName}
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
-    </sql>
-
-    <sql id="departmentConditionJoin">
-        <if test="${conditions} != null and ${conditions}.size() > 0">
-            <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name == 'departmentId'">
-                    left join sys_organization_user on oq.create_user = sys_organization_user.user_id
-                </if>
-            </foreach>
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+            left join sys_organization_user souc_sort on souc_sort.user_id = oq.create_user
         </if>
     </sql>
 
@@ -228,7 +216,7 @@
             <when test="condition.name == 'departmentId'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="sys_organization_user.department_id"/>
+                    <property name="column" value="${table}.department_id"/>
                 </include>
             </when>
             <when test="condition.name == 'owner'">
