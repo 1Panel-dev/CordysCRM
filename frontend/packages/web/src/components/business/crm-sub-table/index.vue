@@ -428,13 +428,13 @@
     props.subFields.forEach((field) => {
       const key = field.businessKey || field.id;
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
-        newRow[key] = null;
+        newRow[key] = field.defaultValue ?? null;
       } else if (field.type === FieldTypeEnum.FORMULA) {
-        newRow[key] = 0;
+        newRow[key] = field.defaultValue ?? 0;
       } else if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE].includes(field.type)) {
         newRow[key] = [];
       } else {
-        newRow[key] = '';
+        newRow[key] = field.defaultValue ?? '';
       }
     });
     data.value.push(newRow);
