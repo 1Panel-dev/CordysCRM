@@ -246,12 +246,11 @@ public class OpportunityQuotationService {
         return response;
     }
 
-    /**
-     * 查询商机报价单详情
-     *
-     * @param id 报价单ID
-     * @return 报价单详情
-     */
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 报价单ID
+	 * @return 报价单详情
+	 */
     public OpportunityQuotationGetResponse get(String id) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {

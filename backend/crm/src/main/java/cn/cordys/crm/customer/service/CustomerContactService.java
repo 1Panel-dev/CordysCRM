@@ -191,6 +191,11 @@ public class CustomerContactService {
         return baseService.setCreateUpdateOwnerUserName(list);
     }
 
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 联系人ID
+	 * @return 联系人详情
+	 */
     public CustomerContactGetResponse get(String id) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         if (customerContact == null) {

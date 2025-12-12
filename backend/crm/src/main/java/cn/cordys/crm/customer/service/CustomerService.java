@@ -290,11 +290,9 @@ public class CustomerService {
 
     public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         CustomerGetResponse getResponse = get(id);
-
         if (getResponse == null) {
             throw new GenericException(Translator.get("customer.not.exist"));
         }
-
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {
             List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(getResponse.getId(), userId);
@@ -308,6 +306,11 @@ public class CustomerService {
         return getResponse;
     }
 
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 客户ID
+	 * @return 客户详情
+	 */
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
 		if (customer == null) {

@@ -115,6 +115,11 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(list);
     }
 
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 产品ID
+	 * @return 产品详情
+	 */
     public ProductGetResponse get(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
 		if (product == null) {

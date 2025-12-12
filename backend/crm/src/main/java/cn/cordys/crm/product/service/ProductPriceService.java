@@ -173,13 +173,11 @@ public class ProductPriceService {
         return productPriceMapper.selectByPrimaryKey(request.getId());
     }
 
-    /**
-     * 价格表详情
-     *
-     * @param id 价格表ID
-     *
-     * @return 价格表详情
-     */
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 价格表ID
+	 * @return 价格表详情
+	 */
     public ProductPriceGetResponse get(String id) {
         ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
         if (price == null) {
