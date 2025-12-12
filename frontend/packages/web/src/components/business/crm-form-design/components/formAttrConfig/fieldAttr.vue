@@ -5,7 +5,7 @@
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.fieldTitle') }}</div>
         <n-input
           v-model:value="fieldConfig.name"
-          :disabled="fieldConfig.disabledProps?.includes('name') || !!fieldConfig.resourceFieldId"
+          :disabled="fieldConfig.disabledProps?.includes('name')"
           :maxlength="16"
           :placeholder="t('common.pleaseInput')"
           :status="isNameRepeat ? 'error' : undefined"
@@ -1224,11 +1224,20 @@
     return null;
   });
   const isNameRepeat = computed(() => {
-    return isSubTableField.value
-      ? parentField.value?.subFields?.some(
-          (item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name
-        )
-      : list.value.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
+    const fieldNameSet = new Set<string>();
+    list.value.forEach((field) => {
+      if (field.id !== fieldConfig.value?.id) {
+        fieldNameSet.add(field.name);
+      }
+      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type)) {
+        field.subFields?.forEach((subField) => {
+          if (subField.id !== fieldConfig.value?.id) {
+            fieldNameSet.add(subField.name);
+          }
+        });
+      }
+    });
+    return fieldConfig.value ? fieldNameSet.has(fieldConfig.value.name) : false;
   });
 
   const formulaScopedFields = computed(() => (isSubTableField.value ? parentField.value?.subFields ?? [] : list.value));
