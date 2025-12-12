@@ -146,6 +146,9 @@
                     <when test="${sort}.name == 'opportunity_id'">
                         o.`id` ${sortType}, oq.id ASC
                     </when>
+                    <when test="${sort}.name == 'department_id'">
+                        souc_sort.`id` ${sortType}, oq.id ASC
+                    </when>
                     <when test="${sort}.name == 'create_time'">
                         oq.`create_time` ${sortType}, oq.id ASC
                     </when>
