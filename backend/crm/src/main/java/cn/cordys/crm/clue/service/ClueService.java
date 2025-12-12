@@ -293,10 +293,18 @@ public class ClueService {
 
     public ClueGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         ClueGetResponse getResponse = get(id);
+		if (getResponse == null) {
+			throw new GenericException(Translator.get("clue.not.exist"));
+		}
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return getResponse;
     }
 
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 线索ID
+	 * @return 线索详情
+	 */
     public ClueGetResponse get(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         if (clue == null) {

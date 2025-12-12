@@ -481,12 +481,11 @@ public class OpportunityService {
     }
 
 
-    /**
-     * 商机详情
-     *
-     * @param id
-     * @return
-     */
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 商机ID
+	 * @return 商机详情
+	 */
     public OpportunityDetailResponse get(String id) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         if (response == null) {

@@ -341,19 +341,17 @@ public class ContractService {
     }
 
 
-    /**
-     * 合同详情
-     *
-     * @param id
-     * @return
-     */
+	/**
+	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 合同ID
+	 * @return 合同详情
+	 */
     public ContractResponse get(String id) {
         ContractResponse response = new ContractResponse();
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
+            return null;
         }
-
         LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractSnapshot::getContractId, id);
         ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
@@ -366,7 +364,6 @@ public class ContractService {
             }
 
         }
-
         return response;
     }
 
