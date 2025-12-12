@@ -28,6 +28,7 @@ export const specialBusinessKeyMap: Record<string, string> = {
   businessId: 'businessName',
   contractId: 'contractName',
   owner: 'ownerName',
+  opportunityId: 'opportunityName',
 };
 
 export function getRuleType(item: FormCreateField) {
