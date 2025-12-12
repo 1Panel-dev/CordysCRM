@@ -226,7 +226,7 @@ public enum BusinessModuleField {
 	/**
 	 * 合同
 	 */
-	CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of(), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of("dataSourceType"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
 	/**
 	 * 计划回款金额
 	 */
