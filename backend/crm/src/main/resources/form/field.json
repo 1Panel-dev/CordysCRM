@@ -1213,7 +1213,8 @@
           "showLabel": true,
           "readable": true,
           "editable": false,
-          "fieldWidth": 1
+          "fieldWidth": 1,
+          "mobile": true
         }
       ]
     }
