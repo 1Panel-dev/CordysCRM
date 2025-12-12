@@ -202,7 +202,7 @@ public enum BusinessModuleField {
 	 */
 	PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
 	PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile"), FormKey.PRICE.getKey()),
+	PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile", "readable"), FormKey.PRICE.getKey()),
 	PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.PRICE.getKey()),
 	PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
 
@@ -211,7 +211,7 @@ public enum BusinessModuleField {
 	 */
 	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile"), FormKey.QUOTATION.getKey()),
+	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT("quotationProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
@@ -248,7 +248,7 @@ public enum BusinessModuleField {
     CONTRACT_NAME("contractName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
     CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
-	CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile"), FormKey.CONTRACT.getKey()),
+	CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 	CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
