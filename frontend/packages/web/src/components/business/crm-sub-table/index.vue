@@ -53,10 +53,26 @@
   });
 
   function makeRequiredTitle(title: string) {
-    return h('div', { class: 'flex items-center' }, [
-      h('span', {}, title),
-      h('span', { class: 'text-[var(--error-red)] ml-[4px]' }, '*'),
-    ]);
+    return h(
+      NTooltip,
+      { class: 'flex items-center' },
+      {
+        trigger: () =>
+          h(
+            'div',
+            {
+              class: 'flex items-center',
+            },
+            {
+              default: () => [
+                h('div', { class: 'overflow-hidden text-ellipsis' }, { default: () => title }),
+                h('div', { class: 'text-[var(--error-red)] ml-[4px]' }, '*'),
+              ],
+            }
+          ),
+        default: () => h('div', {}, { default: () => title }),
+      }
+    );
   }
 
   function initFieldValueText(field: FormCreateField, id: string, value: any): string {
@@ -446,8 +462,13 @@
     .n-data-table-th {
       padding: 12px 4px;
       .n-data-table-th__title {
+        width: 100%;
         .n-ellipsis {
-          max-width: 120px;
+          max-width: 100%;
+          span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
         }
       }
     }
