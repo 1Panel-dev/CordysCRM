@@ -40,7 +40,6 @@ export default function useFormCreateFilter() {
           FieldTypeEnum.DIVIDER,
           FieldTypeEnum.SUB_PRICE,
           FieldTypeEnum.SUB_PRODUCT,
-          FieldTypeEnum.LINK,
         ].includes(field.type)
       ) {
         let key = field.businessKey || field.id;
