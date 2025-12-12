@@ -570,7 +570,7 @@
   function searchData(_keyword?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
-      viewId: activeTab.value,
+      viewId: props.sourceId ? 'ALL' : activeTab.value,
       opportunityId: props.sourceId,
     });
     loadList();
@@ -597,7 +597,7 @@
         checkedRowKeys.value = [];
         setLoadListParams({
           keyword: keyword.value,
-          viewId: activeTab.value,
+          viewId: props.sourceId ? 'ALL' : activeTab.value,
           opportunityId: props.sourceId,
         });
         crmTableRef.value?.setColumnSort(val);
