@@ -252,13 +252,13 @@
             <when test="condition.name == 'createTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="o.create_time"/>
+                    <property name="column" value="oq.create_time"/>
                 </include>
             </when>
             <when test="condition.name == 'updateTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="o.update_time"/>
+                    <property name="column" value="oq.update_time"/>
                 </include>
             </when>
             <otherwise>
