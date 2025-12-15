@@ -134,7 +134,10 @@
   function transformFieldsToOptions(fields: FormCreateField[], leftFieldType?: FieldTypeEnum): SelectOption[] {
     return fields
       .filter((e) => {
-        const condition = ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE].includes(e.type) && props.selfId !== e.id;
+        const condition =
+          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
+            e.type
+          ) && props.selfId !== e.id;
         if (leftFieldType) {
           if (multipleValueTypeList.includes(leftFieldType)) {
             return multipleValueTypeList.includes(e.type) && condition;

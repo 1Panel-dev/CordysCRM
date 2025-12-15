@@ -11,7 +11,7 @@
     @continue="confirmHandler(true)"
     @cancel="cancelHandler"
   >
-    <n-scrollbar content-class="p-[16px]">
+    <n-scrollbar>
       <n-form
         ref="formRef"
         :model="form"
@@ -34,7 +34,6 @@
           ref="filterContentRef"
           v-model:form-model="formModel as FilterForm"
           keep-one-line
-          class="!p-[0px]"
           no-filter-option
           :config-list="props.configList"
           :custom-list="props.customList"
@@ -221,5 +220,11 @@
         }
       }
     }
+  }
+</style>
+
+<style lang="less">
+  .n-scrollbar-rail--vertical {
+    @apply !right-0;
   }
 </style>

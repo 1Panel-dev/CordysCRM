@@ -20,6 +20,7 @@ import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.SourceServiceFactory;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
@@ -109,6 +110,8 @@ public class ModuleFormService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
+	@Resource
+	private SerialNumGenerator serialNumGenerator;
 
     /**
      * 获取模块表单配置
@@ -219,18 +222,44 @@ public class ModuleFormService {
         LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
         fieldWrapper.eq(ModuleField::getFormId, form.getId());
         List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+		// 重置流水号
+		resetSerial(fields, saveParam.getFields(), saveParam.getFormKey(), currentOrgId);
         if (CollectionUtils.isNotEmpty(fields)) {
             List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
             extModuleFieldMapper.deleteByIds(fieldIds);
             extModuleFieldMapper.deletePropByIds(fieldIds);
         }
-        if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
+		if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
 			saveFields(saveParam.getFields(), form.getId(), currentUserId);
         }
 
         // 返回表单配置
         return getConfig(form.getFormKey(), currentOrgId);
     }
+
+	/**
+	 * 重置流水号
+	 * @param oldFields 旧的字段集合
+	 * @param saveFields 保存的字段集合
+	 */
+	private void resetSerial(List<ModuleField> oldFields, List<BaseField> saveFields, String formKey, String orgId) {
+		Optional<ModuleField> serialOld = oldFields.stream().filter(f -> Strings.CS.equals(f.getType(), FieldType.SERIAL_NUMBER.name())).findAny();
+		Optional<BaseField> serialNew = saveFields.stream().filter(BaseField::isSerialNumber).findAny();
+		if (serialOld.isEmpty()) {
+			return;
+		}
+		ModuleFieldBlob oldFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(serialOld.get().getId());
+		List<String> oldRules = JSON.parseObject(oldFieldBlob.getProp(), SerialNumberField.class).getSerialNumberRules();
+		if (serialNew.isEmpty()) {
+			serialNumGenerator.resetKey(oldRules.get(2), formKey, orgId);
+			return;
+		}
+		List<String> newRules = ((SerialNumberField) serialNew.get()).getSerialNumberRules();
+		if (serialNumGenerator.sameRule(oldRules, newRules)) {
+			return;
+		}
+		serialNumGenerator.resetKey(oldRules.get(2), formKey, orgId);
+	}
 
 	/**
 	 * 保存所有字段集合

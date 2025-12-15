@@ -4,6 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.quartz.anno.QuartzScheduled;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -65,6 +66,14 @@ public class SerialNumGenerator {
                     Integer.parseInt(rules.get(4))
             );
         }
+
+		private boolean equals(Rule other) {
+			return Strings.CS.equals(this.p1, other.p1)
+					&& Strings.CS.equals(this.p2, other.p2)
+					&& Strings.CS.equals(this.datePattern, other.datePattern)
+					&& Strings.CS.equals(this.mid, other.mid)
+					&& this.width == other.width;
+		}
     }
 
     @QuartzScheduled(cron = "0 0 1 1,16 * ?")
@@ -87,4 +96,22 @@ public class SerialNumGenerator {
 
         LogUtils.info("流水号过期Key清理完成");
     }
+
+	public boolean sameRule(List<String> oRules, List<String> nRules) {
+		if (oRules.size() != nRules.size() && oRules.size() != RULE_SIZE) {
+			return false;
+		}
+		Rule or = Rule.from(oRules);
+		Rule nr = Rule.from(nRules);
+		return or.equals(nr);
+	}
+
+	/**
+	 * 重置指定规则的流水号
+	 */
+	public void resetKey(String datePattern, String formKey, String orgId) {
+		String date = new SimpleDateFormat(datePattern).format(new Date());
+		String key = "%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date);
+		redis.delete(key);
+	}
 }
