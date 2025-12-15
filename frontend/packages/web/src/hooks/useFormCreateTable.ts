@@ -921,6 +921,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.USER_TAG_SELECTOR,
             FieldTypeEnum.CHECKBOX,
+            FieldTypeEnum.LINK,
           ];
           if (field.type === FieldTypeEnum.PICTURE) {
             return {
