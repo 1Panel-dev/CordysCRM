@@ -110,6 +110,7 @@ export const multipleValueTypeList = [
   FieldTypeEnum.SELECT_MULTIPLE,
   FieldTypeEnum.INPUT_MULTIPLE,
   FieldTypeEnum.ATTACHMENT,
+  FieldTypeEnum.LINK,
 ];
 
 export const inputDefaultFieldConfig: FormCreateField = {
