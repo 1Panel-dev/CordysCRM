@@ -156,6 +156,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
+  import { normalizeToE164 } from '@lib/shared/method/validate';
   import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -358,8 +359,8 @@
             result.fieldValue = result.fieldValue?.[0];
           }
           if (currentForm.value.type === FieldTypeEnum.PHONE) {
-            // 去空格
-            result.fieldValue = result.fieldValue.replace(/[\s\uFEFF\xA0]+/g, '');
+            // 转换为 E.164 格式
+            result.fieldValue = normalizeToE164(result.fieldValue, currentForm.value.format);
           }
           await saveApiMap[props.formKey]({
             ids: props.ids,

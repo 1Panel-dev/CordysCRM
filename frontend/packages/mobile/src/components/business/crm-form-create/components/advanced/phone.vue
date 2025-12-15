@@ -44,7 +44,7 @@
     const normalized = normalizeToE164(val, props.fieldConfig.format);
     const errorKey = validateE164Phone(normalized);
     if (!errorKey) return undefined;
-    
+
     return t('formCreate.phone.formatValidator');
   }
 
@@ -58,18 +58,19 @@
       emit('change', '');
       return;
     }
-    
-    // 过滤：只保留 + 和数字，且 + 只能在开头
+
+    // 过滤：只保留 + 和数字
     let filtered = val.replace(/[^+\d]/g, '');
-    // 确保 + 只在开头
-    if (filtered.includes('+') && !filtered.startsWith('+')) {
-      filtered = '+' + filtered.replace(/\+/g, '');
+    // 确保 + 只在开头（移除所有 + 后，如果原来有 + 则在开头添加一个）
+    if (filtered.includes('+')) {
+      const digits = filtered.replace(/\+/g, '');
+      filtered = '+' + digits;
     }
     // 限制长度（E.164 最多16个字符：+ + 15位数字）
     if (filtered.length > 16) {
       filtered = filtered.substring(0, 16);
     }
-    
+
     value.value = filtered;
     emit('change', filtered);
   }
@@ -96,7 +97,7 @@
         if (error) {
           return error;
         }
-        return Promise.resolve();
+        return true;
       }) as FieldRuleValidator,
     };
     return [...rawRules, formatRule];

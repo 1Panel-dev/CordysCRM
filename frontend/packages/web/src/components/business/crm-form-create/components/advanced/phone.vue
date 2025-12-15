@@ -41,8 +41,8 @@
   import { NDivider, NFormItem, NInput } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { normalizeToE164, validateE164Phone } from '@lib/shared/method/validate';
   import type { FormConfig } from '@lib/shared/models/system/module';
-  import { normalizeToE164, validateE164Phone, getPatternByAreaCode } from '@lib/shared/method/validate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -84,7 +84,7 @@
     const normalized = normalizeToE164(val, props.fieldConfig.format);
     const errorKey = validateE164Phone(normalized);
     if (!errorKey) return undefined;
-    
+
     return t('crmFormDesign.phone.formatValidator');
   }
 
