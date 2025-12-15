@@ -370,3 +370,30 @@ export function transformData({
     ...subTableFieldInfo,
   };
 }
+
+/**
+ * 表单子表单计算汇总数值转换
+ */
+export function normalizeNumber(val: unknown): number {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') {
+    return Number.isFinite(val) ? val : 0;
+  }
+  if (typeof val === 'string') {
+    let str = val.trim();
+    if (!str) return 0;
+    // 是否是百分比
+    const isPercent = str.endsWith('%');
+    // 去掉百分号
+    if (isPercent) {
+      str = str.slice(0, -1);
+    }
+    // 去掉千分位
+    str = str.replace(/,/g, '');
+    const num = Number(str);
+    if (Number.isNaN(num)) return 0;
+    return isPercent ? num / 100 : num;
+  }
+
+  return 0;
+}
