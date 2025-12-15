@@ -7,12 +7,14 @@ import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,7 @@ public class DataScopeService {
             deptDataPermission.setViewId(viewId);
             if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
                 // 数据权限是全部,但是查询条件是部门,则按照部门查询
-				return getDeptDataPermissionForAllPermission(userId, orgId);
+                return getDeptDataPermissionForAllPermission(userId, orgId);
             }
         }
 
@@ -66,7 +68,6 @@ public class DataScopeService {
      *
      * @param userId
      * @param orgId
-     *
      * @return
      */
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String permission) {
@@ -161,7 +162,6 @@ public class DataScopeService {
     /**
      * @param userId
      * @param orgId
-     *
      * @return
      */
     private DeptDataPermissionDTO getDeptDataPermissionForDeptSearchType(String userId, String orgId, String permission) {
@@ -187,7 +187,6 @@ public class DataScopeService {
      *
      * @param tree
      * @param deptIds
-     *
      * @return
      */
     public List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
@@ -207,7 +206,6 @@ public class DataScopeService {
      * 获取树节点及其子节点的ID
      *
      * @param tree
-     *
      * @return
      */
     private List<String> getNodeIdsWithChild(List<BaseTreeNode> tree) {
@@ -229,10 +227,16 @@ public class DataScopeService {
      * @param orgId
      */
     public void checkDataPermission(String userId, String orgId, String owner, String permission) {
+        if (StringUtils.isBlank(owner)) {
+            throw new GenericException(Translator.get("data.permission"));
+        }
         checkDataPermission(userId, orgId, List.of(owner), permission);
     }
 
     public void checkDataPermission(String userId, String orgId, List<String> owners, String permission) {
+        if (CollectionUtils.isEmpty(owners)) {
+            throw new GenericException(Translator.get("data.permission"));
+        }
         boolean hasPermission = hasDataPermission(userId, orgId, owners, permission);
         if (!hasPermission) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -240,10 +244,16 @@ public class DataScopeService {
     }
 
     public boolean hasDataPermission(String userId, String orgId, String owner, String permission) {
+        if (StringUtils.isBlank(owner)) {
+            throw new GenericException(Translator.get("data.permission"));
+        }
         return hasDataPermission(userId, orgId, List.of(owner), permission);
     }
 
     public boolean hasDataPermission(String userId, String orgId, List<String> owners, String permission) {
+        if (CollectionUtils.isEmpty(owners)) {
+            throw new GenericException(Translator.get("data.permission"));
+        }
         DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId, permission);
         if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
