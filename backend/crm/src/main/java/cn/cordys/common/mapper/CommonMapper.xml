@@ -24,18 +24,29 @@
             <choose>
                 <!-- JSON_OVERLAPS 处理数组匹配 -->
                 <when test="${condition}.operator == 'CONTAINS'">
-                    JSON_OVERLAPS(${column}, JSON_ARRAY(
-                    <foreach collection="${condition}.value" item="valueItem" separator=",">
-                        #{valueItem}
-                    </foreach>))
+                    <if test="${condition}.type == 'LINK'">
+                        ${column} like CONCAT('%', #{condition.value},'%')
+                    </if>
+                    <if test="${condition}.type != 'LINK'">
+                        JSON_OVERLAPS(${column}, JSON_ARRAY(
+                        <foreach collection="${condition}.value" item="valueItem" separator=",">
+                            #{valueItem}
+                        </foreach>))
+                    </if>
                 </when>
 
                 <when test="${condition}.operator == 'NOT_CONTAINS'">
-                    ${column} is null or ${column} = '[]' or
-                    NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
-                    <foreach collection="${condition}.value" item="valueItem" separator=",">
-                       #{valueItem}
-                    </foreach>))
+                    <if test="${condition}.type == 'LINK'">
+                        ${column} not like CONCAT('%', #{condition.value},'%')
+                        or ${column} is null
+                    </if>
+                    <if test="${condition}.type != 'LINK'">
+                        ${column} is null or ${column} = '[]' or
+                        NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
+                        <foreach collection="${condition}.value" item="valueItem" separator=",">
+                            #{valueItem}
+                        </foreach>))
+                    </if>
                 </when>
 
                 <when test="${condition}.operator == 'IN'">
