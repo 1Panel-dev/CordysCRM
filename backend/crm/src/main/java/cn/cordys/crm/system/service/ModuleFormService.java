@@ -1526,31 +1526,26 @@ public class ModuleFormService {
      * @return 处理后的自定义字段值
      */
     @SuppressWarnings("unchecked")
-    public <T extends BaseResourceField,
-            V extends BaseResourceField> List<BaseModuleFieldValue> resolveSnapshotFields(List<BaseModuleFieldValue> fieldValues, ModuleFormConfigDTO formConfig, BaseResourceFieldService<T, V> baseResourceFieldService) {
+    public <T extends BaseResourceField, V extends BaseResourceField> List<BaseModuleFieldValue> resolveSnapshotFields(List<BaseModuleFieldValue> fieldValues,
+		   ModuleFormConfigDTO formConfig, BaseResourceFieldService<T, V> baseResourceFieldService, String resourceId) {
         // 1. 扁平化所有字段
         final List<BaseField> flattenFields = flattenFormAllFields(formConfig);
 		List<BaseModuleFieldValue> resolveFvs = resolveSubKeyToId(fieldValues, flattenFields);
-
 		// 4. 数据源字段配置（有 showFields 的）
         final Map<String, BaseField> sourceConfigMap = flattenFields.stream()
                 .filter(f -> f instanceof DatasourceField ds
                         && org.apache.commons.collections.CollectionUtils.isNotEmpty(ds.getShowFields()))
                 .collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
-
         // 5. 所有字段映射
         final Map<String, BaseField> fieldMap = flattenFields.stream()
                 .collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
-
-        final List<BaseModuleFieldValue> toAddFieldValues = new ArrayList<>();
         // 6. 遍历原字段值，判断是否通过数据源填充 showFields
+		final List<BaseModuleFieldValue> toAddFieldValues = new ArrayList<>();
 		resolveFvs.forEach(fv -> {
             if (fv.getFieldValue() == null) {
                 return;
             }
-
             final String fieldId = fv.getFieldId();
-
             // 数据源字段（普通字段）
             if (sourceConfigMap.containsKey(fieldId)) {
                 final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fieldId);
@@ -1570,7 +1565,6 @@ public class ModuleFormService {
                 });
                 return;
             }
-
             // 7. SubField 里嵌套数据源字段
             if (fieldMap.containsKey(fieldId) && fieldMap.get(fieldId).isSubField()) {
                 final List<Map<String, Object>> subValues = (List<Map<String, Object>>) fv.getFieldValue();
@@ -1604,11 +1598,17 @@ public class ModuleFormService {
                 });
             }
         });
-
-        if (!toAddFieldValues.isEmpty()) {
+		// 8. 补充流水号字段
+		Optional<BaseField> serialField = flattenFields.stream().filter(BaseField::isSerialNumber).findAny();
+		if (serialField.isPresent() && StringUtils.isEmpty(serialField.get().getBusinessKey())) {
+			Object serialVal = baseResourceFieldService.getResourceFieldValue(resourceId, serialField.get().getId());
+			if (serialVal != null) {
+				toAddFieldValues.add(new BaseModuleFieldValue(serialField.get().getId(), serialVal));
+			}
+		}
+		if (!toAddFieldValues.isEmpty()) {
 			resolveFvs.addAll(toAddFieldValues);
         }
-
         return resolveFvs;
     }
 
