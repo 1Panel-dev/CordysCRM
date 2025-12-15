@@ -142,8 +142,12 @@
         failCount.value = fail;
         showToPoolResultModel.value = true;
       }
-      showModal.value = false;
-      emit('refresh');
+      if (failCount.value === 0) {
+        setTimeout(() => {
+          showModal.value = false;
+          emit('refresh');
+        }, 3000);
+      }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
