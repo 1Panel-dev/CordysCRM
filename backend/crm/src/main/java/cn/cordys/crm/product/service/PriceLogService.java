@@ -4,7 +4,6 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
-import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
@@ -16,7 +15,6 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
