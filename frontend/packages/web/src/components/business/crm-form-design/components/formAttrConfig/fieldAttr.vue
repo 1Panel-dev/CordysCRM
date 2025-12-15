@@ -1091,7 +1091,7 @@
     v-if="fieldConfig"
     v-model:visible="showLinkConfigVisible"
     :field-config="fieldConfig"
-    :form-fields="list"
+    :form-fields="isSubTableField ? parentField?.subFields || [] : list"
     @save="handleLinkConfigSave"
   />
   <formulaModal

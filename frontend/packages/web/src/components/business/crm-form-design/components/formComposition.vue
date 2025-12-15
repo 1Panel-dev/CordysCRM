@@ -5,7 +5,7 @@
     label-width="auto"
     class="crm-form-design--composition"
   >
-    <n-scrollbar class="p-[24px]">
+    <n-scrollbar x-scrollable class="p-[24px]" content-style="minWidth: 1000px">
       <VueDraggable
         v-model="list"
         :animation="150"
