@@ -21,7 +21,7 @@
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
-  import { formatNumberValue } from '@lib/shared/method/formCreate';
+  import { formatNumberValue, normalizeNumber } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -424,7 +424,7 @@
               default: () => {
                 const sum =
                   pageData.reduce((prev, row) => {
-                    const rowVal = Number(row[col.key as keyof RowData] ?? 0);
+                    const rowVal = normalizeNumber(row[col.key as keyof RowData]);
                     return prev + Math.round(rowVal * 100);
                   }, 0) / 100;
 
