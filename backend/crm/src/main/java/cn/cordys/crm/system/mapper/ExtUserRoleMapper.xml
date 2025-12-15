@@ -104,7 +104,7 @@
         (
             select su.id, su.name, sou.department_id from sys_organization_user sou
             join sys_user su
-            on sou.organization_id = #{orgId} and sou.user_id = su.id
+            on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
         ) as temp
         left join sys_user_role sur
         on temp.id = sur.user_id and sur.role_id = #{roleId}
@@ -112,14 +112,14 @@
 
     <select id="selectUserDeptForOrg" resultType="cn.cordys.common.dto.DeptUserTreeNode">
         select su.id, su.name, sou.department_id as parentId, 'USER' as nodeType from sys_organization_user sou
-        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id
+        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
     </select>
 
     <select id="selectUserRoleForRelevance" resultType="cn.cordys.common.dto.RoleUserTreeNode">
         select su.id, su.name, sur.role_id as parentId, 1 as enable, 'USER' as nodeType
         from sys_organization_user sou
         join sys_user su
-            on sou.organization_id = #{orgId} and sou.user_id = su.id
+            on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
         join sys_user_role sur
             on su.id = sur.user_id and sur.role_id != #{roleId}
     </select>
@@ -128,7 +128,7 @@
         select su.id, su.name, sur.role_id as parentId, 1 as enable, 'USER' as nodeType
         from sys_organization_user sou
                  join sys_user su
-                      on sou.organization_id = #{orgId} and sou.user_id = su.id
+                      on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
                  join sys_user_role sur
                       on su.id = sur.user_id and sur.role_id != #{roleId}
     </select>
