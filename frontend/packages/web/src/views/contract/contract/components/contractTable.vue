@@ -447,7 +447,7 @@
     formKey: FormDesignKeyEnum.CONTRACT,
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 250 : 200,
+      width: currentLocale.value === 'en-US' ? 180 : 150,
       fixed: 'right',
       render: (row: ContractItem) =>
         getOperationGroupList(row).length
