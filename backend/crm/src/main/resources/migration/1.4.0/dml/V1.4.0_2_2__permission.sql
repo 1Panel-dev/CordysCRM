@@ -15,6 +15,8 @@ INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:APPROVAL');
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:VOIDED');
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'org_admin', 'TENDER:READ');
 -- init sales manager permissions
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_manager', 'OPPORTUNITY_QUOTATION:READ');
@@ -28,6 +30,8 @@ INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'org_admin', 'OPPORTUNITY_QUOTATION:APPROVAL');
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_manager', 'OPPORTUNITY_QUOTATION:VOIDED');
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'sales_manager', 'TENDER:READ');
 -- init sales_staff permissions
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_staff', 'OPPORTUNITY_QUOTATION:READ');
@@ -39,6 +43,8 @@ INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_staff', 'OPPORTUNITY_QUOTATION:DOWNLOAD');
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_staff', 'OPPORTUNITY_QUOTATION:VOIDED');
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'sales_staff', 'TENDER:READ');
 
 -- init price permissions
 INSERT INTO sys_role_permission (id, role_id, permission_id)
