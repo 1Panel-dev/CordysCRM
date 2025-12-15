@@ -123,7 +123,7 @@ public class DataEaseClient {
 
     public <V extends DataEaseBaseResponse> V post(String path, Object body, Class<V> responseClass, String... uriVars) {
         var url = getUrl(path);
-        var response = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, uriVars)
+        var response = restTemplate.exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, (Object[]) uriVars)
                 .getBody();
         validateResponse(response);
         return response;
