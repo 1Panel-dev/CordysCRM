@@ -153,6 +153,18 @@
                     <property name="column" value="pp.update_user"/>
                 </include>
             </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="pp.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="pp.update_time"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>
