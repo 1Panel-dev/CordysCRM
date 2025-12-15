@@ -17,15 +17,29 @@ export function validateEmail(email: string): boolean {
 }
 
 /**
- * 校验手机号（E.164 标准）
- * @param phone 手机号（会自动转换为 E.164 格式后验证）
+ * 校验手机号（通用验证）
+ * 支持以下格式：
+ * - 中国11位手机号：1xxxxxxxxxx
+ * - E.164 格式：+xxxxxxxxxxx
+ * @param phone 手机号
  * @returns boolean
  */
 export function validatePhone(phone: string): boolean {
   if (!phone) return false;
-  // 先转换为 E.164 格式，再验证
-  const normalized = normalizeToE164(phone);
-  return validateE164Phone(normalized) === undefined;
+
+  const cleaned = cleanPhoneNumber(phone);
+
+  // 中国11位手机号（以1开头）- 直接验证，无需转换
+  if (/^1\d{10}$/.test(cleaned)) {
+    return true;
+  }
+
+  // E.164 格式 - 使用 E.164 验证
+  if (cleaned.startsWith('+')) {
+    return validateE164Phone(cleaned) === undefined;
+  }
+
+  return false;
 }
 
 /**
