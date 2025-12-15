@@ -1342,4 +1342,20 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return moduleFormService.getOptionMap(formConfig, moduleFieldValues);
     }
 
+	/**
+	 * 获取资源字段值
+	 * @param resourceId 资源ID
+	 * @param fieldId 字段ID
+	 * @return 字段值
+	 */
+	public Object getResourceFieldValue(String resourceId, String fieldId) {
+		T example = newResourceField();
+		example.setResourceId(resourceId);
+		example.setFieldId(fieldId);
+		T resourceField = getResourceFieldMapper().selectOne(example);
+		if (resourceField != null) {
+			return resourceField.getFieldValue();
+		}
+		return null;
+	}
 }

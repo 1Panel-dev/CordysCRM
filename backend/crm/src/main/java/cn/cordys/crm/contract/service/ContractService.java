@@ -142,7 +142,7 @@ public class ContractService {
         baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService);
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService, contract.getId());
         ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
@@ -285,7 +285,7 @@ public class ContractService {
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService);
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService, contract.getId());
             ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(contract, saveModuleFormConfigDTO, response);
             // 处理日志上下文
