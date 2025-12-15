@@ -149,7 +149,7 @@
       appStore.initThirdPartyResource();
       await licenseStore.getValidateLicense();
       if (licenseStore.hasLicense()) {
-        appStore.initPageConfig();
+        await appStore.initPageConfig();
         if (appStore.pageConfig.icon[0]?.url) {
           setFavicon(appStore.pageConfig.icon[0]?.url);
         }
