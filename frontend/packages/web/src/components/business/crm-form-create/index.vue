@@ -57,6 +57,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { specialBusinessKeyMap } from '@lib/shared/method/formCreate';
+  import { normalizeToE164 } from '@lib/shared/method/validate';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
@@ -258,8 +259,10 @@
       result[key] = result[key]?.[0];
     }
     if (item.type === FieldTypeEnum.PHONE) {
-      // 去空格
-      result[key] = result[key]?.replace(/[\s\uFEFF\xA0]+/g, '');
+      // 转换为 E.164 格式
+      if (result[key]) {
+        result[key] = normalizeToE164(result[key], item.format);
+      }
     }
   }
 
@@ -271,8 +274,10 @@
         result[index][item.businessKey || item.id] = fieldValue?.[0];
       }
       if (item.type === FieldTypeEnum.PHONE) {
-        // 去空格
-        result[index][item.businessKey || item.id] = fieldValue?.replace(/[\s\uFEFF\xA0]+/g, '');
+        // 转换为 E.164 格式
+        if (fieldValue) {
+          result[index][item.businessKey || item.id] = normalizeToE164(fieldValue, item.format);
+        }
       }
     });
   }

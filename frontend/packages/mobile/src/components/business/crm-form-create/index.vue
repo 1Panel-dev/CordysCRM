@@ -48,6 +48,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { normalizeToE164 } from '@lib/shared/method/validate';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
@@ -172,8 +173,10 @@
           result[item.id] = result[item.id]?.[0];
         }
         if (item.type === FieldTypeEnum.PHONE) {
-          // 去空格
-          result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
+          // 转换为 E.164 格式
+          if (result[item.id]) {
+            result[item.id] = normalizeToE164(result[item.id], item.format);
+          }
         }
       });
       saveForm(result, () => router.back());

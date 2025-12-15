@@ -1,7 +1,5 @@
 // 邮箱校验
 export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-// 手机号校验，11位
-export const phoneRegex = /^\d{11}$/;
 // 密码校验，8-32位
 export const passwordLengthRegex = /^.{8,32}$/;
 // 密码校验，必须包含数字和字母，特殊符号范围校验
@@ -19,12 +17,15 @@ export function validateEmail(email: string): boolean {
 }
 
 /**
- * 校验手机号
- * @param phone 手机号
+ * 校验手机号（E.164 标准）
+ * @param phone 手机号（会自动转换为 E.164 格式后验证）
  * @returns boolean
  */
 export function validatePhone(phone: string): boolean {
-  return phoneRegex.test(phone);
+  if (!phone) return false;
+  // 先转换为 E.164 格式，再验证
+  const normalized = normalizeToE164(phone);
+  return validateE164Phone(normalized) === undefined;
 }
 
 /**
@@ -67,4 +68,104 @@ export function getPatternByAreaCode(code: string): RegExp | null {
     default: // 其他
       return /^\d+$/;
   }
+}
+
+/**
+ * E.164 标准正则表达式
+ * 格式：+[1-3位国家代码][电话号码]，总长度不超过15位数字（不包括+号）
+ */
+export const e164Regex = /^\+[1-9]\d{1,14}$/;
+
+/**
+ * 清理手机号：去除空格、连字符、括号等字符
+ * @param phone 手机号
+ * @returns 清理后的手机号
+ */
+export function cleanPhoneNumber(phone: string): string {
+  if (!phone) return '';
+  return phone.replace(/[\s\uFEFF\xA0\-()（）]/g, '');
+}
+
+/**
+ * 将手机号转换为 E.164 格式
+ * E.164 标准：+[国家代码][电话号码]
+ * @param phone 手机号
+ * @param format 格式类型，'11' 表示中国大陆11位格式
+ * @returns E.164 格式的手机号
+ */
+export function normalizeToE164(phone: string, format?: string): string {
+  if (!phone) return '';
+  
+  const cleaned = cleanPhoneNumber(phone);
+  
+  // 如果 format === '11' 且是11位数字，自动添加 +86
+  if (format === '11' && /^\d{11}$/.test(cleaned)) {
+    return `+86${cleaned}`;
+  }
+  
+  // 如果已经是 E.164 格式（以+开头），直接返回
+  if (cleaned.startsWith('+')) {
+    return cleaned;
+  }
+  
+  // 如果以数字开头，添加 + 前缀
+  if (/^\d/.test(cleaned)) {
+    return `+${cleaned}`;
+  }
+  
+  return cleaned;
+}
+
+/**
+ * 验证 E.164 格式手机号
+ * E.164 标准：
+ * - 必须以 + 开头
+ * - 后跟国家代码（1-3位数字，不能以0开头）
+ * - 然后是电话号码（纯数字）
+ * - 总长度不超过15位数字（不包括+号）
+ * - 格式：+[1-3位国家代码][电话号码]
+ * @param phone 手机号（必须是 E.164 格式，即必须以+开头）
+ * @returns 错误信息 key，如果验证通过返回 undefined
+ */
+export function validateE164Phone(phone: string): string | undefined {
+  if (!phone) return undefined;
+  
+  const cleaned = cleanPhoneNumber(phone);
+  
+  // E.164 标准：必须以 + 开头
+  if (!cleaned.startsWith('+')) {
+    return 'phone.formatValidator';
+  }
+  
+  // 提取国家代码和号码部分
+  // E.164 国家代码：1-3位数字，不能以0开头
+  const e164Match = cleaned.match(/^\+([1-9]\d{0,2})(\d+)$/);
+  if (!e164Match) {
+    return 'phone.formatValidator';
+  }
+  
+  const countryCode = e164Match[1];
+  const phoneNumber = e164Match[2];
+  
+  // 总长度验证：国家代码 + 电话号码不超过15位（不包括+号）
+  const totalLength = countryCode.length + phoneNumber.length;
+  if (totalLength < 7 || totalLength > 15) {
+    return 'phone.formatValidator';
+  }
+  
+  // 电话号码部分至少4位（E.164 要求）
+  if (phoneNumber.length < 4) {
+    return 'phone.formatValidator';
+  }
+  
+  // 如果国家代码在已知列表中，使用对应的验证规则
+  const areaCode = `+${countryCode}`;
+  const pattern = getPatternByAreaCode(areaCode);
+  if (pattern) {
+    if (!pattern.test(phoneNumber)) {
+      return 'phone.formatValidator';
+    }
+  }
+  
+  return undefined;
 }
