@@ -349,7 +349,7 @@
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 250 : 140,
+      width: currentLocale.value === 'en-US' ? 180 : 150,
       fixed: 'right',
       render: (row: PaymentPlanItem) =>
         h(CrmOperationButton, {

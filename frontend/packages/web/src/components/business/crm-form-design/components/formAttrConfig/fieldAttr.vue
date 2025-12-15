@@ -564,7 +564,18 @@
       <!-- 地址属性 End -->
       <!-- 流水号属性 -->
       <div v-if="fieldConfig.type === FieldTypeEnum.SERIAL_NUMBER" class="crm-form-design-config-item">
-        <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.serialNumberRule') }}</div>
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.serialNumberRule') }}
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <CrmIcon
+                type="iconicon_help_circle"
+                class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+              />
+            </template>
+            {{ t('crmFormDesign.serialNumberRuleTip') }}
+          </n-tooltip>
+        </div>
         <template v-if="fieldConfig.serialNumberRules">
           <n-input v-model:value="serialNumberRules1" maxlength="10">
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
