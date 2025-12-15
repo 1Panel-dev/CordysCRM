@@ -325,7 +325,7 @@ public class ProductPriceService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("product price import error: ", e.getMessage());
+            LogUtils.error("价格表导入失败, 原因: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

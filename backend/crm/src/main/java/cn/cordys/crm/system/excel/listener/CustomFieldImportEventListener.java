@@ -157,6 +157,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 			} else {
 				subRowId++;
 			}
+			if (mergedTmpEntity == null) {
+				return;
+			}
 			Optional<Object> id = Optional.ofNullable(getResourceId(mergedTmpEntity));
 			if (id.isEmpty()) {
 				return;
