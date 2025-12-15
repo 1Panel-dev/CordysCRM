@@ -67,9 +67,17 @@ public abstract class BaseModuleLogService {
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
         Map<String, BaseField> subFieldMap = new HashMap<>();
+        Set<String> subFieldRemoveIds = new HashSet<>() {
+        };
         for (BaseField field : fields) {
-            if (field instanceof SubField) {
-                subFieldMap.put(field.getBusinessKey(), field);
+            if (field.isSubField()) {
+                if (StringUtils.isNotBlank(field.getBusinessKey())) {
+                    subFieldMap.put(field.getBusinessKey(), field);
+                } else {
+                    subFieldMap.put(field.getId(), field);
+                }
+                //记录系统字段需要移除的子表字段
+                subFieldRemoveIds.add(field.getId());
             }
         }
 
@@ -82,7 +90,7 @@ public abstract class BaseModuleLogService {
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> {
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
-            return moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name());
+            return (moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name())) || subFieldRemoveIds.contains(differ.getColumn());
         });
         differences = modifiable;
         // 记录选项字段的字段值
@@ -107,32 +115,28 @@ public abstract class BaseModuleLogService {
                 }
             }
             subFieldMap.forEach((key, value) -> {
-                if (value.isSubField()) {
-                    if (value instanceof SubField) {
-                        // 子表字段
-                        for (BaseField subField : ((SubField) value).getSubFields()) {
-                            String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
-                            //如果differ.getColumn() 包含"-",则截取最后一个-后面的字符串
-                            String differColumn = differ.getColumn();
-                            if (StringUtils.isNotBlank(differ.getColumn())) {
-                                differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
-                            }
-                            if (Strings.CS.equals(subKey, differColumn)) {
-                                if (differ.getOldValue() != null) {
-                                    BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-                                    fieldValue.setFieldId(subKey);
-                                    fieldValue.setFieldValue(differ.getOldValue());
-                                    optionSubFieldValues.add(fieldValue);
-                                }
-                                if (differ.getNewValue() != null) {
-                                    BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-                                    fieldValue.setFieldId(subKey);
-                                    fieldValue.setFieldValue(differ.getNewValue());
-                                    optionSubFieldValues.add(fieldValue);
-                                }
-                            }
+                // 子表字段
+                for (BaseField subField : ((SubField) value).getSubFields()) {
+                    String subBusinessKey = subField.getBusinessKey();
+                    String subFieldIdKey = subField.getId();
+                    //如果differ.getColumn() 包含"-",则截取最后一个-后面的字符串
+                    String differColumn = differ.getColumn();
+                    if (StringUtils.isNotBlank(differ.getColumn())) {
+                        differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
+                    }
+                    if (Strings.CS.equals(subBusinessKey, differColumn) || Strings.CS.equals(subFieldIdKey, differColumn)) {
+                        if (differ.getOldValue() != null) {
+                            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+                            fieldValue.setFieldId(differColumn);
+                            fieldValue.setFieldValue(differ.getOldValue());
+                            optionSubFieldValues.add(fieldValue);
                         }
-
+                        if (differ.getNewValue() != null) {
+                            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+                            fieldValue.setFieldId(differColumn);
+                            fieldValue.setFieldValue(differ.getNewValue());
+                            optionSubFieldValues.add(fieldValue);
+                        }
                     }
                 }
             });
@@ -361,7 +365,7 @@ public abstract class BaseModuleLogService {
     }
 
     /**
-     *合同名称
+     * 合同名称
      *
      * @param differ
      */

@@ -101,7 +101,6 @@ public class ProductPriceService {
      *
      * @param request    请求参数
      * @param currentOrg 当前组织
-     *
      * @return 价格列表
      */
     public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
@@ -121,7 +120,6 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
-     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
@@ -140,7 +138,7 @@ public class ProductPriceService {
         productPriceMapper.insert(productPrice);
         // 处理日志上下文
         ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
-        baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), "products", Translator.get("products_info"), priceFormConfig);
+        baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), Translator.get("products_info"), priceFormConfig);
         return productPrice;
     }
 
@@ -150,7 +148,6 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
-     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.UPDATE, operator = "{#currentUser}")
@@ -169,15 +166,16 @@ public class ProductPriceService {
         productPriceMapper.update(productPrice);
         // 处理日志上下文
         ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
-        baseService.handleUpdateLogWithSubTable(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName(), "products", Translator.get("products_info"), priceFormConfig);
+        baseService.handleUpdateLogWithSubTable(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName(), Translator.get("products_info"), priceFormConfig);
         return productPriceMapper.selectByPrimaryKey(request.getId());
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 价格表ID
-	 * @return 价格表详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 价格表ID
+     * @return 价格表详情
+     */
     public ProductPriceGetResponse get(String id) {
         ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
         if (price == null) {
@@ -268,7 +266,6 @@ public class ProductPriceService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -283,7 +280,6 @@ public class ProductPriceService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -309,7 +305,6 @@ public class ProductPriceService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -319,7 +314,7 @@ public class ProductPriceService {
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
                     .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
             CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields,
-					mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
             FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
                     .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
@@ -336,11 +331,10 @@ public class ProductPriceService {
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
      * @param fields      自定义字段集合
-     *
      * @return 导入监听器
      */
     private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields,
-																			   Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+                                                                               Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
         AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
         CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
             List<LogDTO> logs = new ArrayList<>();
@@ -361,7 +355,6 @@ public class ProductPriceService {
      * 构建列表数据
      *
      * @param listData 列表数据
-     *
      * @return 列表数据
      */
     public List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
@@ -373,24 +366,25 @@ public class ProductPriceService {
         return baseService.setCreateAndUpdateUserName(listData);
     }
 
-	/**
-	 * 处理列表数据
-	 * @param listData 列表数据
-	 * @return 列表数据
-	 */
-	public List<ProductPriceResponse> processList(List<ProductPriceResponse> listData, ModuleFormConfigDTO priceFormConf) {
-		// 查询列表数据的自定义字段
-		Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
-				listData.stream().map(ProductPriceResponse::getId).toList(), true);
-		// 列表项设置自定义字段&&用户名
-		listData.forEach(item -> {
-			if (!dataFieldMap.containsKey(item.getId())) {
-				return;
-			}
-			moduleFormService.processBusinessFieldValues(item, dataFieldMap.get(item.getId()), priceFormConf);
-		});
-		return baseService.setCreateAndUpdateUserName(listData);
-	}
+    /**
+     * 处理列表数据
+     *
+     * @param listData 列表数据
+     * @return 列表数据
+     */
+    public List<ProductPriceResponse> processList(List<ProductPriceResponse> listData, ModuleFormConfigDTO priceFormConf) {
+        // 查询列表数据的自定义字段
+        Map<String, List<BaseModuleFieldValue>> dataFieldMap = productPriceFieldService.getResourceFieldMap(
+                listData.stream().map(ProductPriceResponse::getId).toList(), true);
+        // 列表项设置自定义字段&&用户名
+        listData.forEach(item -> {
+            if (!dataFieldMap.containsKey(item.getId())) {
+                return;
+            }
+            moduleFormService.processBusinessFieldValues(item, dataFieldMap.get(item.getId()), priceFormConf);
+        });
+        return baseService.setCreateAndUpdateUserName(listData);
+    }
 
     /**
      * 更新自定义字段
@@ -428,7 +422,6 @@ public class ProductPriceService {
      * 获取下一个排序值
      *
      * @param orgId 组织ID
-     *
      * @return 下一个排序值
      */
     public Long getNextOrder(String orgId) {
@@ -440,7 +433,6 @@ public class ProductPriceService {
      * 获取价格表名称
      *
      * @param id id
-     *
      * @return 名称
      */
     public String getProductPriceName(String id) {
@@ -452,7 +444,6 @@ public class ProductPriceService {
      * 通过ID集合获取价格表名称串
      *
      * @param ids ID集合
-     *
      * @return 名称字符串
      */
     public String getProductPriceNameByIds(List<String> ids) {
@@ -468,7 +459,6 @@ public class ProductPriceService {
      * 通过名称获取价格表集合
      *
      * @param names 名称集合
-     *
      * @return 价格表集合
      */
     public List<ProductPrice> getProductPriceListByNames(List<String> names) {

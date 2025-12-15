@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -266,16 +265,15 @@ public class BaseService {
     public <T> void handleAddLogWithSubTable(
             T resource,
             List<BaseModuleFieldValue> moduleFields,
-            String subTableKey,
             String subTableKeyName,
             ModuleFormConfigDTO moduleFormConfigDTO) {
 
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
 
         if (moduleFields != null) {
-            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, subTableKey, moduleFormConfigDTO);
-            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
-            fillLogWithSubTable(resourceLog, moduleFields, fieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
+            Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, moduleFormConfigDTO);
+            Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
+            fillResourceLog(resourceLog, moduleFields, fieldNameMap, subTableIdKeyMap, subTableKeyName);
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -297,47 +295,6 @@ public class BaseService {
         } catch (Exception e) {
             throw new GenericException(e);
         }
-    }
-
-
-    /**
-     * 子表逻辑处理抽取成公共函数
-     */
-    private void fillLogWithSubTable(
-            Map<String, Object> resourceLog,
-            List<BaseModuleFieldValue> moduleFields,
-            Map<String, String> fieldNameMap,
-            String subTableKey,
-            String subTableKeyId,
-            String subTableKeyName) {
-        moduleFields.forEach(field -> {
-            String fieldId = field.getFieldId();
-
-            // 普通字段
-            if (!Strings.CI.equals(fieldId, subTableKey) && !Strings.CI.equals(fieldId, subTableKeyId)) {
-                resourceLog.put(fieldId, field.getFieldValue());
-                return;
-            }
-
-            // 子表字段
-            List<Map<String, Object>> rows =
-                    JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
-                    });
-            int size = rows.size();
-            for (int i = 0; i < size; i++) {
-                Map<String, Object> row = rows.get(i);
-                if (size > 1) {
-                    int finalI = i;
-                    row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value)
-                    );
-                } else {
-                    row.forEach((key, value) ->
-                            resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value)
-                    );
-                }
-            }
-        });
     }
 
     public <T> void handleUpdateLog(
@@ -389,7 +346,6 @@ public class BaseService {
             List<BaseModuleFieldValue> modifiedResourceFields,
             String id,
             String name,
-            String subTableKey,
             String subTableKeyName,
             ModuleFormConfigDTO moduleFormConfigDTO) {
 
@@ -397,18 +353,18 @@ public class BaseService {
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
 
         if (originResourceFields != null) {
-            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, subTableKey, moduleFormConfigDTO);
-            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
-            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
+            Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, moduleFormConfigDTO);
+            Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
+            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName);
         }
 
         if (modifiedResourceFields != null) {
-            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, subTableKey, moduleFormConfigDTO);
+            Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, moduleFormConfigDTO);
             List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
-            String subTableKeyId = getSubTableKeyId(moduleFormConfigDTO, subTableKey);
-            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableKey, subTableKeyId, subTableKeyName);
+            Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName);
         }
 
         try {
@@ -432,14 +388,12 @@ public class BaseService {
             Map<String, Object> resourceLog,
             List<BaseModuleFieldValue> fields,
             Map<String, String> fieldNameMap,
-            String subTableKey,
-            String subTableKeyId,
+            Map<String, String> subTableKeyMap,
             String subTableKeyName) {
         fields.forEach(field -> {
             String fieldId = field.getFieldId();
-
             // 普通字段
-            if (!Strings.CI.equals(fieldId, subTableKey) && !Strings.CI.equals(fieldId, subTableKeyId)) {
+            if (!subTableKeyMap.containsKey(fieldId) && !subTableKeyMap.containsValue(fieldId)) {
                 resourceLog.put(fieldId, field.getFieldValue());
                 return;
             }
@@ -455,18 +409,18 @@ public class BaseService {
                 if (size > 1) {
                     int finalI = i;
                     row.forEach((key, value) -> {
-						if (!fieldNameMap.containsKey(key)) {
-							return;
-						}
-						resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
-					});
+                        if (!fieldNameMap.containsKey(key)) {
+                            return;
+                        }
+                        resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
+                    });
                 } else {
                     row.forEach((key, value) -> {
-						if (!fieldNameMap.containsKey(key)) {
-							return;
-						}
-						resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value);
-					});
+                        if (!fieldNameMap.containsKey(key)) {
+                            return;
+                        }
+                        resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value);
+                    });
                 }
             }
         });
@@ -476,7 +430,7 @@ public class BaseService {
     /**
      * 字段 ID → 字段名称 映射表
      */
-    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, String subTableKey, ModuleFormConfigDTO moduleFormConfigDTO) {
+    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, ModuleFormConfigDTO moduleFormConfigDTO) {
         List<String> fieldIds = new ArrayList<>(fields.stream()
                 .map(BaseModuleFieldValue::getFieldId)
                 .distinct()
@@ -487,7 +441,7 @@ public class BaseService {
 
         if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
             for (BaseField field : moduleFormConfigDTO.getFields()) {
-                if (Strings.CI.equals(field.getBusinessKey(), subTableKey)) {
+                if (field.isSubField()) {
                     if (field instanceof SubField objectSubField) {
                         objectSubField.getSubFields().forEach(subField -> {
                             nameMap.put(StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId(), subField.getName());
@@ -500,15 +454,16 @@ public class BaseService {
         return nameMap;
     }
 
-    public String getSubTableKeyId(ModuleFormConfigDTO moduleFormConfigDTO, String subTableKey) {
+    public Map<String, String> getSubTableIdKeyMap(ModuleFormConfigDTO moduleFormConfigDTO) {
+        Map<String, String> subTableIdKeyMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
             for (BaseField field : moduleFormConfigDTO.getFields()) {
-                if (Strings.CI.equals(field.getBusinessKey(), subTableKey)) {
-                    return field.getId();
+                if (field.isSubField()) {
+                    subTableIdKeyMap.put(field.getId(), field.getBusinessKey());
                 }
             }
         }
-        return null;
+        return subTableIdKeyMap;
 
     }
 
