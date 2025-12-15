@@ -278,10 +278,7 @@ public abstract class BaseExportService {
 	 * @return 表头信息
 	 */
 	private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
-		List<List<String>> exportHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(headList, formKey, currentOrg);
-		List<String> systemHeads = headList.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getTitle).toList();
-		exportHeads.addAll(systemHeads.stream().map(head -> new ArrayList<>(Collections.singletonList(head))).toList());
-		return exportHeads;
+		return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(headList, formKey, currentOrg);
 	}
 
 	/**
@@ -607,11 +604,7 @@ public abstract class BaseExportService {
 	 * @return 表头ID集合
 	 */
 	private List<String> getMergeHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
-		List<String> exportTitles = exportHeads.stream().map(ExportHeadDTO::getTitle).toList();
-		List<String> exportMergeHeads = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportTitles);
-		List<String> systemKeys = exportHeads.stream().filter(head -> Strings.CS.equals(head.getColumnType(), "system")).map(ExportHeadDTO::getKey).toList();
-		exportMergeHeads.addAll(systemKeys);
-		return exportMergeHeads;
+		return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportHeads);
 	}
 
 	/**
