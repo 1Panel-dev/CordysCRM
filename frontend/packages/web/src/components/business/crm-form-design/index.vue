@@ -88,7 +88,7 @@
     background-color: var(--text-n10);
   }
   .crm-form-design--center {
-    @apply h-full flex-1 bg-transparent;
+    @apply h-full flex-1 overflow-hidden bg-transparent;
 
     padding: 16px;
     .crm-form-design--center-content {
