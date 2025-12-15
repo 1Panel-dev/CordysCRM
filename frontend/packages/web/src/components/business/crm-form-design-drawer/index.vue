@@ -230,6 +230,7 @@
         name: t(item.name),
         placeholder: t(item.placeholder || ''),
         fieldWidth: safeFractionConvert(item.fieldWidth),
+        subFields: item.subFields?.map((e) => ({ ...e, description: '' })),
         defaultValue:
           [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
           typeof item.defaultValue === 'string'
