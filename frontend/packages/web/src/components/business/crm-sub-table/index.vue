@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
   import { DataTableCreateSummary, NButton, NDataTable, NTooltip } from 'naive-ui';
+  import { isEqual } from 'lodash-es';
 
   import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
@@ -44,6 +45,9 @@
     readonly?: boolean;
     optionMap?: Record<string, any[]>;
     disabled?: boolean;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change', value: Record<string, any>[]): void;
   }>();
 
   const { t } = useI18n();
@@ -132,6 +136,28 @@
         return value || '-';
     }
   }
+
+  function applyFieldLink(item: FormCreateField, row: Record<string, any> = {}) {
+    const currentFieldValue = row[item.id];
+    const linkField = props.subFields.find((f) => f.id === item.linkProp?.targetField);
+    if (item.linkProp?.linkOptions) {
+      for (let i = 0; i < item.linkProp?.linkOptions.length; i++) {
+        const option = item.linkProp?.linkOptions[i];
+        if (isEqual(currentFieldValue, option.current)) {
+          if (linkField) {
+            if (option.method === 'HIDDEN') {
+              linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
+            } else {
+              linkField.linkRange = undefined;
+              row[linkField.id] = option.target;
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+
   const sumInitialOptions = ref<Record<string, any>[]>([]);
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
@@ -260,6 +286,7 @@
                       row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
                     });
                   }
+                  emit('change', data.value);
                 },
               });
             },
@@ -309,6 +336,7 @@
                 needInitDetail: props.needInitDetail,
                 onChange: (val: any) => {
                   row[key] = val;
+                  emit('change', data.value);
                 },
               }),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -334,6 +362,11 @@
                 class: 'w-[190px]',
                 onChange: (val: any) => {
                   row[key] = val;
+                  // 字段联动
+                  if (field.linkProp?.targetField && field.linkProp?.linkOptions.length) {
+                    applyFieldLink(field, row);
+                  }
+                  emit('change', data.value);
                 },
               }),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -357,6 +390,7 @@
               needInitDetail: props.needInitDetail,
               onChange: (val: any) => {
                 row[key] = val;
+                emit('change', data.value);
               },
             }),
           fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -392,6 +426,7 @@
               class: 'p-[8px_9px]',
               onClick: () => {
                 data.value.splice(rowIndex, 1);
+                emit('change', data.value);
               },
             },
             { default: () => h(CrmIcon, { type: 'iconicon_minus_circle1' }) }

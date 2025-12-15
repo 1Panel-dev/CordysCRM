@@ -255,15 +255,15 @@ export function transformData({
       }));
       if (addressFieldIds.includes(fieldId)) {
         // 地址类型字段，解析代码替换成省市区
-      const addressArr: string[] = item[fieldId].split('-')?.filter(Boolean) || [];
-      let value = '';
-      if (!addressArr.length) {
-        value = '-';
-      } else {
-        const country = addressArr[0];
-        const rest = addressArr.filter((e, i) => i > 0).join('-');
-        value = rest ? `${getCityPath(country)}-${rest}` : getCityPath(country);
-      }
+        const addressArr: string[] = item[fieldId].split('-')?.filter(Boolean) || [];
+        let value = '';
+        if (!addressArr.length) {
+          value = '-';
+        } else {
+          const country = addressArr[0];
+          const rest = addressArr.filter((e, i) => i > 0).join('-');
+          value = rest ? `${getCityPath(country)}-${rest}` : getCityPath(country);
+        }
         businessFieldAttr[fieldId] = value;
       } else if (industryFieldIds.includes(fieldId)) {
         // 行业类型字段，解析代码替换成行业名称
