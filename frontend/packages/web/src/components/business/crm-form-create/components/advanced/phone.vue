@@ -22,10 +22,13 @@
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-input
       v-model:value="value"
-      :maxlength="16"
-      :placeholder="props.fieldConfig.placeholder || '+8613800138000'"
+      :maxlength="props.fieldConfig.format === '11' ? 16 : 30"
+      :placeholder="
+        props.fieldConfig.placeholder ||
+        (props.fieldConfig.format === '11' ? '+8613800138000' : t('common.pleaseInput'))
+      "
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
-      :allow-input="onlyAllowE164"
+      :allow-input="allowInput"
       clearable
       @update-value="handlePhoneInput"
       @blur="handlePhoneBlur"
@@ -67,25 +70,39 @@
   const { t } = useI18n();
 
   /**
-   * E.164 标准输入限制：只允许 + 和数字
-   * E.164 格式：+[国家代码][电话号码]，总长度不超过15位数字（不包括+号）
+   * 输入限制函数
+   * format='11': E.164 严格模式，只允许 + 和数字
+   * 其他: 宽松模式，允许数字、+、-、空格、括号
    */
-  function onlyAllowE164(val: string) {
-    if (!val) return true;
-    // 只允许 + 和数字，且 + 只能在开头
-    return /^\+?\d*$/.test(val);
-  }
+  const allowInput = computed(() => {
+    if (props.fieldConfig.format === '11') {
+      // E.164 严格模式
+      return (val: string) => {
+        if (!val) return true;
+        return /^\+?\d*$/.test(val);
+      };
+    }
+    // 宽松模式
+    return (val: string) => {
+      if (!val) return true;
+      return /^[0-9+\- ()（）]*$/.test(val);
+    };
+  });
 
   /**
-   * 验证手机号（使用内置方法，并处理国际化消息）
+   * 验证手机号
+   * 只有 format='11' 时才使用 E.164 严格验证
    */
   function validatePhone(val: string): string | undefined {
-    // 先转换为 E.164 格式再验证
-    const normalized = normalizeToE164(val, props.fieldConfig.format);
-    const errorKey = validateE164Phone(normalized);
-    if (!errorKey) return undefined;
-
-    return t('crmFormDesign.phone.formatValidator');
+    // 只有 format='11' 时才启用 E.164 严格验证
+    if (props.fieldConfig.format === '11') {
+      const normalized = normalizeToE164(val, props.fieldConfig.format);
+      const errorKey = validateE164Phone(normalized);
+      if (errorKey) {
+        return t('crmFormDesign.phone.formatValidator');
+      }
+    }
+    return undefined;
   }
 
   /**
@@ -97,10 +114,11 @@
   }
 
   /**
-   * 处理手机号失焦，自动转换为 E.164 格式
+   * 处理手机号失焦
+   * 只有 format='11' 时才自动转换为 E.164 格式
    */
   function handlePhoneBlur() {
-    if (value.value) {
+    if (value.value && props.fieldConfig.format === '11') {
       const normalized = normalizeToE164(value.value, props.fieldConfig.format);
       if (normalized !== value.value) {
         value.value = normalized;

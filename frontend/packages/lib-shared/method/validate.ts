@@ -87,37 +87,35 @@ export function cleanPhoneNumber(phone: string): string {
 }
 
 /**
- * 将手机号转换为 E.164 格式
- * E.164 标准：+[国家代码][电话号码]
+ * 格式化手机号
  * @param phone 手机号
- * @param format 格式类型，'11' 表示中国大陆11位格式
- * @returns E.164 格式的手机号
+ * @param format 格式类型，'11' 表示启用 E.164 严格模式
+ * @returns 格式化后的手机号
  */
 export function normalizeToE164(phone: string, format?: string): string {
   if (!phone) return '';
-  
+
   const cleaned = cleanPhoneNumber(phone);
-  
-  // 如果 format === '11' 且是11位数字，自动添加 +86
-  if (format === '11' && /^\d{11}$/.test(cleaned)) {
-    return `+86${cleaned}`;
+
+  // 只有 format='11' 时才启用 E.164 模式
+  if (format === '11') {
+    // 如果是11位数字且以1开头，自动添加 +86（中国手机号格式）
+    if (/^1\d{10}$/.test(cleaned)) {
+      return `+86${cleaned}`;
+    }
+
+    // 如果已经是 E.164 格式（以+开头），直接返回
+    if (cleaned.startsWith('+')) {
+      return cleaned;
+    }
+
+    // 如果以数字开头，添加 + 前缀
+    if (/^\d/.test(cleaned)) {
+      return `+${cleaned}`;
+    }
   }
 
-  // 智能识别：如果是11位数字且以1开头，很可能是中国大陆手机号
-  if (/^1\d{10}$/.test(cleaned)) {
-    return `+86${cleaned}`;
-  }
-
-  // 如果已经是 E.164 格式（以+开头），直接返回
-  if (cleaned.startsWith('+')) {
-    return cleaned;
-  }
-
-  // 如果以数字开头，添加 + 前缀
-  if (/^\d/.test(cleaned)) {
-    return `+${cleaned}`;
-  }
-  
+  // format != '11' 时，只做基本清理，不强制 E.164 格式
   return cleaned;
 }
 
