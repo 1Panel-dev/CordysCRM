@@ -482,9 +482,7 @@
   }
 
   const isDisabledAdd = computed(() =>
-    props.maxFilterFieldNumber
-      ? formModel.value.list?.length >= props.maxFilterFieldNumber
-      : formModel.value.list?.length === [...props.configList, ...(props.customList ?? [])].length
+    props.maxFilterFieldNumber ? formModel.value.list?.length >= props.maxFilterFieldNumber : false
   );
 
   function validateForm(cb: (res?: Record<string, any>) => void) {
