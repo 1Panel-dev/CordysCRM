@@ -139,7 +139,7 @@ public class ContractService {
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
 
-        baseService.handleAddLogWithSubTable(contract, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
+        baseService.handleAddLogWithSubTable(contract, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
         List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService, contract.getId());
@@ -289,7 +289,7 @@ public class ContractService {
             ContractResponse response = getContractResponse(contract, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(contract, saveModuleFormConfigDTO, response);
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("contract.not.exist"));
         });
@@ -341,11 +341,12 @@ public class ContractService {
     }
 
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 合同ID
-	 * @return 合同详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 合同ID
+     * @return 合同详情
+     */
     public ContractResponse get(String id) {
         ContractResponse response = new ContractResponse();
         Contract contract = contractMapper.selectByPrimaryKey(id);

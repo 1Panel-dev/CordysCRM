@@ -138,7 +138,7 @@ public class OpportunityQuotationService {
         List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
 
-        baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, "products", Translator.get("products_info"), moduleFormConfigDTO);
+        baseService.handleAddLogWithSubTable(opportunityQuotation, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
 
         saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response);
 
@@ -557,7 +557,7 @@ public class OpportunityQuotationService {
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response);
         // 处理日志上下文
-        baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), "products", Translator.get("products_info"), moduleFormConfigDTO);
+        baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         return opportunityQuotationMapper.selectByPrimaryKey(id);
     }
 
