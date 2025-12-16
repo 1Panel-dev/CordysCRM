@@ -20,8 +20,12 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
       ],
       "mobile": true
     },
@@ -34,7 +38,18 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "互联网", "value":  "1"}, {"label": "金融", "value":  "2"}, {"label": "制造业", "value":  "3"}
+        {
+          "label": "互联网",
+          "value": "1"
+        },
+        {
+          "label": "金融",
+          "value": "2"
+        },
+        {
+          "label": "制造业",
+          "value": "3"
+        }
       ]
     },
     {
@@ -47,7 +62,18 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "重要客户", "value":  "1"}, {"label": "一般客户", "value":  "2"}, {"label": "战略客户", "value":  "3"}
+        {
+          "label": "重要客户",
+          "value": "1"
+        },
+        {
+          "label": "一般客户",
+          "value": "2"
+        },
+        {
+          "label": "战略客户",
+          "value": "3"
+        }
       ]
     },
     {
@@ -59,7 +85,18 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "无", "value":  "1"}, {"label": "最终客户", "value":  "2"}, {"label": "代理商", "value":  "3"}
+        {
+          "label": "无",
+          "value": "1"
+        },
+        {
+          "label": "最终客户",
+          "value": "2"
+        },
+        {
+          "label": "代理商",
+          "value": "3"
+        }
       ]
     },
     {
@@ -71,11 +108,38 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "线上", "value":  "1"}, {"label": "线下", "value":  "2"}, {"label": "维保", "value":  "3"},
-        {"label": "续约", "value":  "4"}, {"label": "扩容", "value":  "5"}, {"label": "增购", "value":  "6"}
+        {
+          "label": "线上",
+          "value": "1"
+        },
+        {
+          "label": "线下",
+          "value": "2"
+        },
+        {
+          "label": "维保",
+          "value": "3"
+        },
+        {
+          "label": "续约",
+          "value": "4"
+        },
+        {
+          "label": "扩容",
+          "value": "5"
+        },
+        {
+          "label": "增购",
+          "value": "6"
+        }
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["customerOnlineSource"]}
+        {
+          "value": "1",
+          "fieldIds": [
+            "customerOnlineSource"
+          ]
+        }
       ]
     },
     {
@@ -87,7 +151,18 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
+        {
+          "label": "400电话",
+          "value": "1"
+        },
+        {
+          "label": "官网咨询",
+          "value": "2"
+        },
+        {
+          "label": "社区用户",
+          "value": "3"
+        }
       ]
     },
     {
@@ -141,7 +216,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     }
   ],
@@ -166,7 +243,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -179,7 +258,14 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "初步意向", "value":  "1"}, {"label": "强烈意愿", "value":  "2"}
+        {
+          "label": "初步意向",
+          "value": "1"
+        },
+        {
+          "label": "强烈意愿",
+          "value": "2"
+        }
       ]
     },
     {
@@ -191,12 +277,46 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "线上", "value":  "1"}, {"label": "电话影响", "value":  "2"}, {"label": "客户介绍", "value":  "3"},
-        {"label": "线下活动", "value":  "4"}, {"label": "社区用户", "value":  "5"}, {"label": "GitHub", "value":  "6"},
-        {"label": "维保，续约，增购", "value":  "7"}, {"label": "其他", "value":  "8"}
+        {
+          "label": "线上",
+          "value": "1"
+        },
+        {
+          "label": "电话影响",
+          "value": "2"
+        },
+        {
+          "label": "客户介绍",
+          "value": "3"
+        },
+        {
+          "label": "线下活动",
+          "value": "4"
+        },
+        {
+          "label": "社区用户",
+          "value": "5"
+        },
+        {
+          "label": "GitHub",
+          "value": "6"
+        },
+        {
+          "label": "维保，续约，增购",
+          "value": "7"
+        },
+        {
+          "label": "其他",
+          "value": "8"
+        }
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["clueOnlineSource"]}
+        {
+          "value": "1",
+          "fieldIds": [
+            "clueOnlineSource"
+          ]
+        }
       ]
     },
     {
@@ -208,7 +328,18 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
+        {
+          "label": "400电话",
+          "value": "1"
+        },
+        {
+          "label": "官网咨询",
+          "value": "2"
+        },
+        {
+          "label": "社区用户",
+          "value": "3"
+        }
       ]
     },
     {
@@ -240,7 +371,9 @@
       "fieldWidth": 1,
       "mobile": true,
       "rules": [
-        {"key":  "unique"}
+        {
+          "key": "unique"
+        }
       ]
     },
     {
@@ -296,7 +429,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     }
   ],
@@ -321,7 +456,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -335,7 +472,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -345,11 +484,19 @@
       "type": "SERIAL_NUMBER",
       "placeholder": "无需录入, 自动生成",
       "showLabel": true,
-      "serialNumberRules": ["Opp", "-", "yyyyMM", "-", "6"],
+      "serialNumberRules": [
+        "Opp",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
       "readable": true,
       "editable": false,
       "fieldWidth": 1,
-      "disableProps": ["serialNumberRules"]
+      "disableProps": [
+        "serialNumberRules"
+      ]
     },
     {
       "name": "商机来源",
@@ -360,9 +507,34 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "电话营销", "value":  "1"}, {"label": "客户介绍", "value":  "2"}, {"label": "线下活动", "value":  "3"},
-        {"label": "社区用户", "value":  "4"}, {"label": "Github", "value":  "5"}, {"label": "维保，续约，增购", "value":  "6"},
-        {"label": "其他", "value":  "7"}
+        {
+          "label": "电话营销",
+          "value": "1"
+        },
+        {
+          "label": "客户介绍",
+          "value": "2"
+        },
+        {
+          "label": "线下活动",
+          "value": "3"
+        },
+        {
+          "label": "社区用户",
+          "value": "4"
+        },
+        {
+          "label": "Github",
+          "value": "5"
+        },
+        {
+          "label": "维保，续约，增购",
+          "value": "6"
+        },
+        {
+          "label": "其他",
+          "value": "7"
+        }
       ]
     },
     {
@@ -376,7 +548,9 @@
       "numberFormat": "number",
       "showThousandsSeparator": true,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -401,7 +575,9 @@
       "fieldWidth": 1,
       "dateType": "date",
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -487,7 +663,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     }
   ],
@@ -512,8 +690,12 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
       ]
     },
     {
@@ -538,10 +720,19 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "上架", "value":  "1"}, {"label": "下架", "value":  "2"}
+        {
+          "label": "上架",
+          "value": "1"
+        },
+        {
+          "label": "下架",
+          "value": "2"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -588,7 +779,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -601,7 +794,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -624,8 +819,12 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
       ],
       "mobile": true
     },
@@ -639,7 +838,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     }
   ],
@@ -653,14 +854,35 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "客户", "value":  "CUSTOMER"}, {"label": "线索", "value":  "CLUE"}
+        {
+          "label": "客户",
+          "value": "CUSTOMER"
+        },
+        {
+          "label": "线索",
+          "value": "CLUE"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "showControlRules": [
-          {"value": "CUSTOMER", "fieldIds": ["recordCustomer", "recordOpportunity", "recordContact"]},
-          {"value": "CLUE", "fieldIds": ["recordClue"]}
+        {
+          "value": "CUSTOMER",
+          "fieldIds": [
+            "recordCustomer",
+            "recordOpportunity",
+            "recordContact"
+          ]
+        },
+        {
+          "value": "CLUE",
+          "fieldIds": [
+            "recordClue"
+          ]
+        }
       ],
       "mobile": true
     },
@@ -674,7 +896,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -688,7 +912,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -713,7 +939,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -726,10 +954,19 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "到访", "value":  "1"}, {"label": "电话", "value":  "2"}
+        {
+          "label": "到访",
+          "value": "1"
+        },
+        {
+          "label": "电话",
+          "value": "2"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -743,7 +980,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -757,7 +996,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -780,7 +1021,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     }
@@ -795,14 +1038,35 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "客户", "value":  "CUSTOMER"}, {"label": "线索", "value":  "CLUE"}
+        {
+          "label": "客户",
+          "value": "CUSTOMER"
+        },
+        {
+          "label": "线索",
+          "value": "CLUE"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "showControlRules": [
-        {"value": "CUSTOMER", "fieldIds": ["planCustomer", "planOpportunity", "planContact"]},
-        {"value": "CLUE", "fieldIds": ["planClue"]}
+        {
+          "value": "CUSTOMER",
+          "fieldIds": [
+            "planCustomer",
+            "planOpportunity",
+            "planContact"
+          ]
+        },
+        {
+          "value": "CLUE",
+          "fieldIds": [
+            "planClue"
+          ]
+        }
       ],
       "mobile": true
     },
@@ -816,7 +1080,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -830,7 +1096,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -855,7 +1123,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -869,7 +1139,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -882,10 +1154,19 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "到访", "value":  "1"}, {"label": "电话", "value":  "2"}
+        {
+          "label": "到访",
+          "value": "1"
+        },
+        {
+          "label": "电话",
+          "value": "2"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -899,7 +1180,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -921,7 +1204,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     }
@@ -947,8 +1232,12 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
       ],
       "mobile": true
     },
@@ -963,10 +1252,19 @@
       "editable": true,
       "fieldWidth": 1,
       "options": [
-        {"label": "启用", "value":  "1"}, {"label": "禁用", "value":  "2"}
+        {
+          "label": "启用",
+          "value": "1"
+        },
+        {
+          "label": "禁用",
+          "value": "2"
+        }
       ],
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -991,7 +1289,9 @@
           "editable": true,
           "fieldWidth": 1,
           "rules": [
-            {"key":  "required"}
+            {
+              "key": "required"
+            }
           ],
           "mobile": true
         },
@@ -1018,7 +1318,9 @@
           "showThousandsSeparator": true,
           "mobile": true,
           "rules": [
-            {"key":  "required"}
+            {
+              "key": "required"
+            }
           ]
         },
         {
@@ -1076,9 +1378,14 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
-      ]
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true
     },
     {
       "name": "商机",
@@ -1090,7 +1397,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -1127,7 +1436,9 @@
       "fieldWidth": 1,
       "mobile": true,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -1138,7 +1449,9 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "sumColumns": ["amount"],
+      "sumColumns": [
+        "amount"
+      ],
       "fixedColumn": 1,
       "mobile": true,
       "subFields": [
@@ -1153,9 +1466,14 @@
           "fieldWidth": 1,
           "mobile": true,
           "rules": [
-            {"key":  "required"}
+            {
+              "key": "required"
+            }
           ],
-          "disabledProps": ["dataSourceType", "rules.required"]
+          "disabledProps": [
+            "dataSourceType",
+            "rules.required"
+          ]
         },
         {
           "name": "价格表",
@@ -1167,7 +1485,9 @@
           "editable": true,
           "fieldWidth": 1,
           "mobile": true,
-          "disabledProps": ["dataSourceType"]
+          "disabledProps": [
+            "dataSourceType"
+          ]
         },
         {
           "name": "产品定价",
@@ -1230,7 +1550,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -1244,7 +1566,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -1259,7 +1583,9 @@
       "numberFormat": "number",
       "showThousandsSeparator": true,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     },
@@ -1273,7 +1599,9 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
     }
@@ -1300,8 +1628,12 @@
       "fieldWidth": 1,
       "mobile": true,
       "rules": [
-        {"key":  "required"},
-        {"key":  "unique"}
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
       ]
     },
     {
@@ -1314,21 +1646,32 @@
       "editable": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ],
       "mobile": true
-    },{
+    },
+    {
       "name": "合同编号",
       "internalKey": "contractNo",
       "type": "SERIAL_NUMBER",
       "placeholder": "无需录入, 自动生成",
       "showLabel": true,
-      "serialNumberRules": ["Opp", "-", "yyyyMM", "-", "6"],
+      "serialNumberRules": [
+        "Opp",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
       "readable": true,
       "editable": false,
       "fieldWidth": 1,
       "mobile": true,
-      "disableProps": ["serialNumberRules"]
+      "disableProps": [
+        "serialNumberRules"
+      ]
     },
     {
       "name": "合同报价信息",
@@ -1340,7 +1683,9 @@
       "fieldWidth": 1,
       "mobile": true,
       "fixedColumn": 1,
-      "sumColumns": ["amount"],
+      "sumColumns": [
+        "amount"
+      ],
       "subFields": [
         {
           "name": "产品",
@@ -1352,7 +1697,9 @@
           "editable": true,
           "fieldWidth": 1,
           "rules": [
-            {"key":  "required"}
+            {
+              "key": "required"
+            }
           ],
           "mobile": true
         },
@@ -1370,7 +1717,9 @@
           "showThousandsSeparator": true,
           "mobile": true,
           "rules": [
-            {"key":  "required"}
+            {
+              "key": "required"
+            }
           ]
         },
         {
@@ -1407,7 +1756,9 @@
       "mobile": true,
       "fieldWidth": 1,
       "rules": [
-        {"key":  "required"}
+        {
+          "key": "required"
+        }
       ]
     }
   ]
