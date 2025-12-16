@@ -36,7 +36,10 @@
             #{name}
         </foreach>
         <if test="tableName == 'clue'">
-            and (transition_id IS NULL OR  transition_id = '')
+            and (transition_id IS NULL OR  transition_id = '') and in_shared_pool is false
+        </if>
+        <if test="tableName == 'customer'">
+            and in_shared_pool is false
         </if>
     </select>
 
