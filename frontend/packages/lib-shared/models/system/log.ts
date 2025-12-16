@@ -36,8 +36,8 @@ export interface OperationLogDetailDiffItem {
   oldValue: string;
   newValue: string;
   columnName: string;
-  oldValueName: string;
-  newValueName: string;
+  oldValueName: string | number;
+  newValueName: string | number;
   type: string;
 }
 

@@ -25,12 +25,18 @@
           class="flex flex-col gap-[8px] rounded-[var(--border-radius-small)] border border-solid border-[var(--text-n8)] p-[12px] text-[12px]"
         >
           <div> {{ item.columnName }}:</div>
-          <div v-if="item.oldValueName?.length" class="value-name bg-[var(--error-5)]">
+          <div
+            v-if="(typeof item.oldValueName === 'number' ? String(item.oldValueName) : item.oldValueName)?.length"
+            class="value-name bg-[var(--error-5)]"
+          >
             <span class="line-through">
               {{ Array.isArray(item.oldValueName) ? item.oldValueName.join('；') : item.oldValueName }}
             </span>
           </div>
-          <div v-if="item.newValueName?.length" class="value-name bg-[var(--success-5)]">
+          <div
+            v-if="(typeof item.newValueName === 'number' ? String(item.newValueName) : item.newValueName)?.length"
+            class="value-name bg-[var(--success-5)]"
+          >
             {{ Array.isArray(item.newValueName) ? item.newValueName.join('；') : item.newValueName }}
           </div>
         </div>
