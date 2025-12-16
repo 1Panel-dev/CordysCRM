@@ -95,6 +95,7 @@
         c.in_shared_pool AS inCustomerPool,
         c.pool_id,
         ct.amount,
+        ct.number,
         ct.archived_status,
         ct.approval_status,
         ct.`status`,
