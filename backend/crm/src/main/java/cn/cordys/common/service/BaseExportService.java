@@ -547,7 +547,11 @@ public abstract class BaseExportService {
 
     protected Map<String, Object> getFieldIdValueMap(List<BaseModuleFieldValue> fieldValues) {
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
-        Optional.ofNullable(fieldValues).ifPresent(moduleFields -> moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
+        Optional.ofNullable(fieldValues).ifPresent(moduleFields -> moduleFieldMap.set(
+				moduleFields.stream()
+						.filter(fv -> fv.getFieldValue() != null)
+						.collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)))
+		);
         return moduleFieldMap.get();
     }
 
