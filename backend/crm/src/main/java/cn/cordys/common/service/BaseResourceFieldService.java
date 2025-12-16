@@ -47,6 +47,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.annotation.Lazy;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -76,6 +77,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+	@Lazy
+	@Resource
+	private SourceServiceFactory sourceServiceFactory;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -767,7 +771,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				if (!SourceDetailResolveContext.getSourceMap().containsKey(val.toString())) {
 					FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
 					try {
-						Object sourceObj = SourceServiceFactory.getById(sourceType, val.toString());
+						Object sourceObj = sourceServiceFactory.safeGetById(sourceType, val.toString());
 						if (detail != null) {
 							SourceDetailResolveContext.put(val.toString(), mapper.convertValue(sourceObj, Map.class));
 						}
@@ -804,7 +808,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             SourceDetailResolveContext.putPlaceholder(rf.getFieldValue().toString());
             try {
                 FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                Object detail = SourceServiceFactory.getById(sourceType, rf.getFieldValue().toString());
+                Object detail = sourceServiceFactory.safeGetById(sourceType, rf.getFieldValue().toString());
                 if (detail == null) {
                     SourceDetailResolveContext.remove(rf.getFieldValue().toString());
                 } else {
