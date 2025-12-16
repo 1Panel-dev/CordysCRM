@@ -945,7 +945,8 @@ public class ModuleFormService {
 			BaseField field = fieldConfigMap.get(exportHead.getTitle());
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
 				List<BaseField> subFields = subField.getSubFields();
-				Map<String, String> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, BaseField::getName, (oldValue, newValue) -> oldValue));
+				Map<String, String> subFieldMap = subFields.stream().collect(Collectors.toMap(
+						f -> StringUtils.isNotBlank(f.getResourceFieldId()) ? f.getId() : f.idOrBusinessKey(), BaseField::getName, (oldValue, newValue) -> oldValue));
 				subField.getSubFields().forEach(f -> {
 					List<String> head = new ArrayList<>();
 					head.add(field.getName());
@@ -986,7 +987,8 @@ public class ModuleFormService {
 			}
 			BaseField field = fieldConfigMap.get(exportHead.getTitle());
 			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-				Map<String, BaseField> subFieldMap = subField.getSubFields().stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, Function.identity(), (p, n) -> n));
+				Map<String, BaseField> subFieldMap = subField.getSubFields().stream().collect(Collectors.toMap(
+						f -> StringUtils.isNotBlank(f.getResourceFieldId()) ? f.getId() : f.idOrBusinessKey(), Function.identity(), (oldValue, newValue) -> oldValue));
 				subField.getSubFields().forEach(f -> heads.add(f.getId()));
 				if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
 					subField.getSumColumns().forEach(sumColumn -> {
