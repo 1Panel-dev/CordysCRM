@@ -38,6 +38,13 @@
     barWidth: '10px',
     data: props.data,
     barMinHeight: props.data.every((e) => e.value > 0) ? 10 : undefined,
+    label: {
+      show: true,
+      position: 'top',
+      formatter: (params: any) => {
+        return params.value.toLocaleString('en-US');
+      },
+    },
     itemStyle: {
       borderRadius: [2, 2, 0, 0],
     },
