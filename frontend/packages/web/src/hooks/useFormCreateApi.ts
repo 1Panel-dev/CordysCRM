@@ -1270,17 +1270,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         params.moduleFormConfigDTO = moduleFormConfig.value;
       }
       let res;
-      // if (props.sourceId?.value && props.needInitDetail?.value) {
-      //   res = await updateFormApi[props.formKey.value](params);
-      //   Message.success(t('common.updateSuccess'));
-      // } else {
-      //   res = await createFormApi[props.formKey.value](params);
-      //   if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
-      //     Message.success(t('clue.transferredToCustomer'));
-      //   } else {
-      //     Message.success(t('common.createSuccess'));
-      //   }
-      // }
+      if (props.sourceId?.value && props.needInitDetail?.value) {
+        res = await updateFormApi[props.formKey.value](params);
+        Message.success(t('common.updateSuccess'));
+      } else {
+        res = await createFormApi[props.formKey.value](params);
+        if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+          Message.success(t('clue.transferredToCustomer'));
+        } else {
+          Message.success(t('common.createSuccess'));
+        }
+      }
       if (callback) {
         callback(isContinue, res);
       }
