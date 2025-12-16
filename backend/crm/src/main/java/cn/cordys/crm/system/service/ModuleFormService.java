@@ -18,7 +18,7 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.service.BaseResourceFieldService;
-import cn.cordys.common.service.SourceServiceFactory;
+import cn.cordys.common.service.FieldSourceServiceProvider;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -115,7 +115,7 @@ public class ModuleFormService {
 	private SerialNumGenerator serialNumGenerator;
 	@Lazy
 	@Resource
-	private SourceServiceFactory sourceServiceFactory;
+	private FieldSourceServiceProvider fieldSourceServiceProvider;
 
     /**
      * 获取模块表单配置
@@ -1595,7 +1595,7 @@ public class ModuleFormService {
             if (sourceConfigMap.containsKey(fieldId)) {
                 final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fieldId);
                 final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                final Object detail = sourceServiceFactory.safeGetById(sourceType, fv.getFieldValue().toString());
+                final Object detail = fieldSourceServiceProvider.safeGetById(sourceType, fv.getFieldValue().toString());
                 if (detail == null) {
                     return;
                 }
@@ -1621,7 +1621,7 @@ public class ModuleFormService {
                         }
                         final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
                         final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                        final Object detail = sourceServiceFactory.safeGetById(sourceType, v.toString());
+                        final Object detail = fieldSourceServiceProvider.safeGetById(sourceType, v.toString());
                         if (detail == null) {
                             return;
                         }

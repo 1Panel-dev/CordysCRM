@@ -23,38 +23,38 @@ import java.util.Map;
  * @author song-cc-rock
  */
 @Service
-public class SourceServiceFactory {
+public class FieldSourceServiceProvider {
 
     private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
 
-	@Resource
-	private ClueService clueService;
-	@Resource
-	private CustomerService customerService;
-	@Resource
-	private OpportunityService opportunityService;
-	@Resource
-	private CustomerContactService customerContactService;
-	@Resource
-	private ProductService productService;
-	@Resource
-	private ProductPriceService productPriceService;
-	@Resource
-	private OpportunityQuotationService opportunityQuotationService;
-	@Resource
-	private ContractService contractService;
+    @Resource
+    private ClueService clueService;
+    @Resource
+    private CustomerService customerService;
+    @Resource
+    private OpportunityService opportunityService;
+    @Resource
+    private CustomerContactService customerContactService;
+    @Resource
+    private ProductService productService;
+    @Resource
+    private ProductPriceService productPriceService;
+    @Resource
+    private OpportunityQuotationService opportunityQuotationService;
+    @Resource
+    private ContractService contractService;
 
-	@PostConstruct
-	public void init() {
-		SERVICE_MAP.put(FieldSourceType.CLUE, clueService);
-		SERVICE_MAP.put(FieldSourceType.CUSTOMER, customerService);
-		SERVICE_MAP.put(FieldSourceType.OPPORTUNITY, opportunityService);
-		SERVICE_MAP.put(FieldSourceType.CONTACT, customerContactService);
-		SERVICE_MAP.put(FieldSourceType.PRODUCT, productService);
-		SERVICE_MAP.put(FieldSourceType.PRICE, productPriceService);
-		SERVICE_MAP.put(FieldSourceType.QUOTATION, opportunityQuotationService);
-		SERVICE_MAP.put(FieldSourceType.CONTRACT, contractService);
-	}
+    @PostConstruct
+    public void init() {
+        SERVICE_MAP.put(FieldSourceType.CLUE, clueService);
+        SERVICE_MAP.put(FieldSourceType.CUSTOMER, customerService);
+        SERVICE_MAP.put(FieldSourceType.OPPORTUNITY, opportunityService);
+        SERVICE_MAP.put(FieldSourceType.CONTACT, customerContactService);
+        SERVICE_MAP.put(FieldSourceType.PRODUCT, productService);
+        SERVICE_MAP.put(FieldSourceType.PRICE, productPriceService);
+        SERVICE_MAP.put(FieldSourceType.QUOTATION, opportunityQuotationService);
+        SERVICE_MAP.put(FieldSourceType.CONTRACT, contractService);
+    }
 
     /**
      * 根据来源类型获取对应的 Service
@@ -66,9 +66,11 @@ public class SourceServiceFactory {
 
     /**
      * 根据数据源类型和入参获取数据对象
-	 * @param type 数据源类型
-	 * @param id 主键ID
-	 * @return 数据对象
+     *
+     * @param type 数据源类型
+     * @param id   主键ID
+     *
+     * @return 数据对象
      */
     public Object getById(FieldSourceType type, Object id) {
         Object service = getService(type);
@@ -84,14 +86,16 @@ public class SourceServiceFactory {
         }
     }
 
-	/**
-	 * 挂起事务, 防止下游方法异常回滚当前事务
-	 * @param type 数据源类型
-	 * @param id 主键ID
-	 * @return 数据对象
-	 */
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public Object safeGetById(FieldSourceType type, String id) {
-		return getById(type, id);
-	}
+    /**
+     * 挂起事务, 防止下游方法异常回滚当前事务
+     *
+     * @param type 数据源类型
+     * @param id   主键ID
+     *
+     * @return 数据对象
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public Object safeGetById(FieldSourceType type, String id) {
+        return getById(type, id);
+    }
 }
