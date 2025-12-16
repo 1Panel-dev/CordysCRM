@@ -356,7 +356,7 @@ public abstract class BaseExportService {
 		subFvList.forEach(subFv -> {
 			// 包含子表格行数据, 需多行合并导出
 			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
-			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue, (p, n) -> p));
 			subFvMap.putAll(normalFvs);
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
 			dataList.add(data);

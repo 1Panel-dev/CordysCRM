@@ -173,6 +173,10 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (val == null) {
                     return;
                 }
+				if (!refSubMap.containsKey(field.getName()) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
+					// 除合并的首行外, 其余合并行非子表字段都跳过
+					return;
+				}
                 if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
                     try {
                         setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
