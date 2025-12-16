@@ -17,4 +17,7 @@ public class FormulaField extends BaseField {
 
 	@Schema(description = "公式")
 	private String formula;
+
+	@Schema(description = "显示千分位")
+	private Boolean showThousandsSeparator;
 }
