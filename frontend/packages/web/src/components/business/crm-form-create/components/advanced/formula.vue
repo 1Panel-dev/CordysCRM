@@ -163,8 +163,11 @@
     const { formula: formulaValue } = safeParseFormula(formula ?? '');
     if (!formulaValue) return;
     const result = calcFormula(formulaValue, getFieldValue);
-    value.value = result !== null ? Number(result.toFixed(2)) : 0;
-    emit('change', value.value);
+    const next = result !== null ? Number(result.toFixed(2)) : 0;
+    // 如果值未变，不需要更新
+    if (Object.is(next, value.value)) return;
+    value.value = next;
+    emit('change', next);
   }, 300);
 
   watch(
