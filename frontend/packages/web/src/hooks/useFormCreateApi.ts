@@ -1241,9 +1241,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           item.subFields.forEach((subField) => {
             if (subField.resourceFieldId) {
               refResourceFieldIds.push(subField.id);
-              if (subField.businessKey) {
-                refResourceFieldIds.push(subField.businessKey);
-              }
             }
           });
           const parentFieldDetail = form[item.id];
