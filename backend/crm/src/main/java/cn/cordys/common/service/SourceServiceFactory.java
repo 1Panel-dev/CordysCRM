@@ -1,6 +1,5 @@
 package cn.cordys.common.service;
 
-import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.ContractService;
@@ -11,6 +10,11 @@ import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.FieldSourceType;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,20 +22,39 @@ import java.util.Map;
 /**
  * @author song-cc-rock
  */
+@Service
 public class SourceServiceFactory {
 
     private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
 
-    static {
-        SERVICE_MAP.put(FieldSourceType.CLUE, CommonBeanFactory.getBean(ClueService.class));
-        SERVICE_MAP.put(FieldSourceType.CUSTOMER, CommonBeanFactory.getBean(CustomerService.class));
-        SERVICE_MAP.put(FieldSourceType.OPPORTUNITY, CommonBeanFactory.getBean(OpportunityService.class));
-        SERVICE_MAP.put(FieldSourceType.CONTACT, CommonBeanFactory.getBean(CustomerContactService.class));
-        SERVICE_MAP.put(FieldSourceType.PRODUCT, CommonBeanFactory.getBean(ProductService.class));
-        SERVICE_MAP.put(FieldSourceType.PRICE, CommonBeanFactory.getBean(ProductPriceService.class));
-        SERVICE_MAP.put(FieldSourceType.QUOTATION, CommonBeanFactory.getBean(OpportunityQuotationService.class));
-        SERVICE_MAP.put(FieldSourceType.CONTRACT, CommonBeanFactory.getBean(ContractService.class));
-    }
+	@Resource
+	private ClueService clueService;
+	@Resource
+	private CustomerService customerService;
+	@Resource
+	private OpportunityService opportunityService;
+	@Resource
+	private CustomerContactService customerContactService;
+	@Resource
+	private ProductService productService;
+	@Resource
+	private ProductPriceService productPriceService;
+	@Resource
+	private OpportunityQuotationService opportunityQuotationService;
+	@Resource
+	private ContractService contractService;
+
+	@PostConstruct
+	public void init() {
+		SERVICE_MAP.put(FieldSourceType.CLUE, clueService);
+		SERVICE_MAP.put(FieldSourceType.CUSTOMER, customerService);
+		SERVICE_MAP.put(FieldSourceType.OPPORTUNITY, opportunityService);
+		SERVICE_MAP.put(FieldSourceType.CONTACT, customerContactService);
+		SERVICE_MAP.put(FieldSourceType.PRODUCT, productService);
+		SERVICE_MAP.put(FieldSourceType.PRICE, productPriceService);
+		SERVICE_MAP.put(FieldSourceType.QUOTATION, opportunityQuotationService);
+		SERVICE_MAP.put(FieldSourceType.CONTRACT, contractService);
+	}
 
     /**
      * 根据来源类型获取对应的 Service
@@ -43,8 +66,11 @@ public class SourceServiceFactory {
 
     /**
      * 根据数据源类型和入参获取数据对象
+	 * @param type 数据源类型
+	 * @param id 主键ID
+	 * @return 数据对象
      */
-    public static Object getById(FieldSourceType type, Object id) {
+    public Object getById(FieldSourceType type, Object id) {
         Object service = getService(type);
         if (service == null || !(id instanceof String) || ((String) id).isEmpty()) {
             LogUtils.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
@@ -57,4 +83,15 @@ public class SourceServiceFactory {
             return null;
         }
     }
+
+	/**
+	 * 挂起事务, 防止下游方法异常回滚当前事务
+	 * @param type 数据源类型
+	 * @param id 主键ID
+	 * @return 数据对象
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public Object safeGetById(FieldSourceType type, String id) {
+		return getById(type, id);
+	}
 }
