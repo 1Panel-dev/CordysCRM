@@ -231,6 +231,9 @@
       .n-input__state-border {
         border: 1px solid var(--primary-8) !important;
       }
+      &:not(.n-input--disabled) .n-input__input-el {
+        caret-color: var(--primary-8) !important;
+      }
     }
   }
 </style>
