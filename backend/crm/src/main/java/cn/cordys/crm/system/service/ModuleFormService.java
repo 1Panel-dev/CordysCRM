@@ -953,7 +953,12 @@ public class ModuleFormService {
 					heads.add(head);
 				});
 				if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
-					subField.getSumColumns().forEach(sumColumn -> heads.add(new ArrayList<>(Collections.singletonList(Translator.get("sum") + "-" + subFieldMap.get(sumColumn)))));
+					subField.getSumColumns().forEach(sumColumn -> {
+						if (!subFieldMap.containsKey(sumColumn)) {
+							return;
+						}
+						heads.add(new ArrayList<>(Collections.singletonList(Translator.get("sum") + "-" + subFieldMap.get(sumColumn))));
+					});
 				}
 			} else {
 				heads.add(new ArrayList<>(Collections.singletonList(field.getName())));
@@ -984,7 +989,12 @@ public class ModuleFormService {
 				Map<String, BaseField> subFieldMap = subField.getSubFields().stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, Function.identity(), (p, n) -> n));
 				subField.getSubFields().forEach(f -> heads.add(f.getId()));
 				if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
-					subField.getSumColumns().forEach(sumColumn -> heads.add(SUM_PREFIX + subFieldMap.get(sumColumn).getId()));
+					subField.getSumColumns().forEach(sumColumn -> {
+						if (!subFieldMap.containsKey(sumColumn)) {
+							return;
+						}
+						heads.add(SUM_PREFIX + subFieldMap.get(sumColumn).getId());
+					});
 				}
 			} else {
 				heads.add(field.getId());
