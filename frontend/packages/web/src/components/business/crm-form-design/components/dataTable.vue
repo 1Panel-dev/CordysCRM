@@ -131,10 +131,7 @@
   }
 
   function handleItemClick(item: FormCreateField) {
-    if (!item.resourceFieldId) {
-      // 数据源引用字段不能编辑
-      activeItem.value = item;
-    }
+    activeItem.value = item;
   }
 
   function getItemComponent(type: FieldTypeEnum) {
