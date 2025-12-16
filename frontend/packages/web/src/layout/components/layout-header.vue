@@ -1,6 +1,6 @@
 <template>
   <n-layout-header class="flex" bordered>
-    <div class="flex max-w-[300px] px-[24px] py-[14px]">
+    <div class="flex min-w-[180px] max-w-[300px] justify-center px-[24px] py-[14px]">
       <img :src="innerLogo" class="h-[28px]" />
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
