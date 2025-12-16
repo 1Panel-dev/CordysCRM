@@ -269,11 +269,11 @@ public class BaseService {
             ModuleFormConfigDTO moduleFormConfigDTO) {
 
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
-
-        if (moduleFields != null) {
+		Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
+		if (moduleFields != null) {
             Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, moduleFormConfigDTO);
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(resourceLog, moduleFields, fieldNameMap, subTableIdKeyMap, subTableKeyName);
+            fillResourceLog(resourceLog, moduleFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -351,11 +351,11 @@ public class BaseService {
 
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
-
-        if (originResourceFields != null) {
+		Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
+		if (originResourceFields != null) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, moduleFormConfigDTO);
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName);
+            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
         }
 
         if (modifiedResourceFields != null) {
@@ -364,7 +364,7 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName);
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
         }
 
         try {
@@ -389,7 +389,8 @@ public class BaseService {
             List<BaseModuleFieldValue> fields,
             Map<String, String> fieldNameMap,
             Map<String, String> subTableKeyMap,
-            String subTableKeyName) {
+            String subTableKeyName,
+			Set<String> subRefKey) {
         fields.forEach(field -> {
             String fieldId = field.getFieldId();
             // 普通字段
@@ -409,14 +410,14 @@ public class BaseService {
                 if (size > 1) {
                     int finalI = i;
                     row.forEach((key, value) -> {
-                        if (!fieldNameMap.containsKey(key)) {
+                        if (!fieldNameMap.containsKey(key) || subRefKey.contains(key)) {
                             return;
                         }
                         resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
                     });
                 } else {
                     row.forEach((key, value) -> {
-                        if (!fieldNameMap.containsKey(key)) {
+                        if (!fieldNameMap.containsKey(key) || subRefKey.contains(key)) {
                             return;
                         }
                         resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value);
@@ -466,6 +467,25 @@ public class BaseService {
         return subTableIdKeyMap;
 
     }
+
+	/**
+	 * 获取子表引用字段ID集合
+	 * @param formConfig 表单陪配置
+	 * @return 子表引用字段ID集合
+	 */
+	private Set<String> getSubTableRefIds(ModuleFormConfigDTO formConfig) {
+		if (CollectionUtils.isNotEmpty(formConfig.getFields())) {
+			Optional<BaseField> subOptional = formConfig.getFields().stream().filter(BaseField::isSubField).findAny();
+			if (subOptional.isPresent()) {
+				SubField subField = (SubField) subOptional.get();
+				return subField.getSubFields().stream()
+						.filter(f -> StringUtils.isNotBlank(f.getResourceFieldId()))
+						.map(BaseField::getId)
+						.collect(Collectors.toSet());
+			}
+		}
+		return Collections.emptySet();
+	}
 
 
     /**
