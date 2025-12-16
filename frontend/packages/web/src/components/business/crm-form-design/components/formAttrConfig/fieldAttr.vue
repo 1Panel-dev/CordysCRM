@@ -577,19 +577,38 @@
           </n-tooltip>
         </div>
         <template v-if="fieldConfig.serialNumberRules">
-          <n-input v-model:value="serialNumberRules1" maxlength="10">
+          <n-input
+            v-model:value="serialNumberRules1"
+            maxlength="10"
+            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+          >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input v-model:value="serialNumberRules2" maxlength="10">
+          <n-input
+            v-model:value="serialNumberRules2"
+            maxlength="10"
+            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+          >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
           <n-input v-model:value="serialNumberRules3" disabled>
             <template #prefix>{{ t('crmFormDesign.submitDate') }}</template>
           </n-input>
-          <n-input v-model:value="serialNumberRules4" maxlength="10">
+          <n-input
+            v-model:value="serialNumberRules4"
+            maxlength="10"
+            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+          >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input-number v-model:value="serialNumberRules5" :min="1" :max="9" :precision="0" :show-button="false">
+          <n-input-number
+            v-model:value="serialNumberRules5"
+            :min="1"
+            :max="9"
+            :precision="0"
+            :show-button="false"
+            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+          >
             <template #prefix>{{ t('crmFormDesign.autoCount') }}</template>
           </n-input-number>
           <div
