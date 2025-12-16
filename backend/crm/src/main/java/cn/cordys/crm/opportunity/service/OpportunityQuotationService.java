@@ -250,14 +250,29 @@ public class OpportunityQuotationService {
      * @return 报价单详情
      */
     public OpportunityQuotationGetResponse get(String id) {
+        OpportunityQuotationGetResponse response = new OpportunityQuotationGetResponse();
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
-            return null;
+            throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
-        // 未审核，查询当前值
-        List<BaseModuleFieldValue> moduleFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
-        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
-        return getOpportunityQuotationGetResponse(opportunityQuotation, moduleFields, moduleFormConfigDTO);
+        // 已审核，查询最新快照
+        LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+        OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
+        }
+        response.setApprovalStatus(opportunityQuotation.getApprovalStatus());
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId());
+        if (userDeptDTO != null) {
+            response.setDepartmentId(userDeptDTO.getDeptId());
+            response.setDepartmentName(userDeptDTO.getDeptName());
+        }
+        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(opportunityQuotation.getOpportunityId());
+        if (opportunity != null) {
+            response.setOpportunityName(opportunity.getName());
+        }
+        return response;
     }
 
     /**
