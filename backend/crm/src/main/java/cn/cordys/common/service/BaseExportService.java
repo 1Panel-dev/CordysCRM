@@ -346,7 +346,10 @@ public abstract class BaseExportService {
 		}
 		if (CollectionUtils.isEmpty(subFvs) || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue())) {
 			// 无子表格字段值或者有子表格字段值但未导出(无合并行), 也是单行导出
-			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+			Map<String, Object> normalFvs = moduleFieldValues
+					.stream()
+					.filter(moduleFieldValue -> moduleFieldValue.getFieldValue() != null)
+					.collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, normalFvs, exportFieldParam.getFieldConfigMap());
 			dataList.add(data);
 			return dataList;
@@ -356,7 +359,10 @@ public abstract class BaseExportService {
 		subFvList.forEach(subFv -> {
 			// 包含子表格行数据, 需多行合并导出
 			Map<String, Object> subFvMap = (Map<String, Object>) subFv;
-			Map<String, Object> normalFvs = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue, (p, n) -> p));
+			Map<String, Object> normalFvs = moduleFieldValues
+					.stream()
+					.filter(moduleFieldValue -> moduleFieldValue.getFieldValue() != null)
+					.collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue, (p, n) -> p));
 			subFvMap.putAll(normalFvs);
 			List<Object> data = transFieldValueWithSub(heads, systemFieldMap, subFvMap, exportFieldParam.getFieldConfigMap());
 			dataList.add(data);
