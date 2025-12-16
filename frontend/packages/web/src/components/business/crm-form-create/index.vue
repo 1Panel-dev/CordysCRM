@@ -208,6 +208,8 @@
             }
             return;
           }
+        } else if (linkField) {
+          linkField.linkRange = undefined;
         }
       }
     }
