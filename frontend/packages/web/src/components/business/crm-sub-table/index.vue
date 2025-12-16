@@ -56,7 +56,7 @@
     required: true,
   });
 
-  function makeRequiredTitle(title: string) {
+  function makeTitle(field: FormCreateField) {
     return h(
       NTooltip,
       { class: 'flex items-center' },
@@ -69,12 +69,23 @@
             },
             {
               default: () => [
-                h('div', { class: 'overflow-hidden text-ellipsis' }, { default: () => title }),
-                h('div', { class: 'text-[var(--error-red)] ml-[4px]' }, '*'),
+                h(
+                  'div',
+                  { class: 'overflow-hidden text-ellipsis' },
+                  {
+                    default: () => [
+                      field.name,
+                      field.resourceFieldId ? h(CrmIcon, { type: 'iconicon_correlation' }) : null,
+                    ],
+                  }
+                ),
+                field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)
+                  ? h('div', { class: 'text-[var(--error-red)] ml-[4px]' }, '*')
+                  : null,
               ],
             }
           ),
-        default: () => h('div', {}, { default: () => title }),
+        default: () => h('div', {}, { default: () => field.name }),
       }
     );
   }
@@ -202,9 +213,15 @@
           // 数据源引用字段用 id作为 key
           key = field.id;
         }
+        let title: any = field.name;
+        if (field.showLabel === false) {
+          title = '';
+        } else {
+          title = () => makeTitle(field);
+        }
         if (field.resourceFieldId) {
           return {
-            title: field.showLabel ? field.name : '',
+            title,
             width: 120,
             key,
             ellipsis: {
@@ -222,12 +239,6 @@
               ),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };
-        }
-        let title: any = field.name;
-        if (field.showLabel === false) {
-          title = '';
-        } else if (field.rules.some((rule) => rule.key === FieldRuleEnum.REQUIRED)) {
-          title = () => makeRequiredTitle(field.name);
         }
         if (field.type === FieldTypeEnum.DATA_SOURCE) {
           return {
