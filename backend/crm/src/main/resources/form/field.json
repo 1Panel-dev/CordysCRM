@@ -1534,7 +1534,8 @@
           "readable": true,
           "editable": false,
           "fieldWidth": 1,
-          "mobile": true
+          "mobile": true,
+          "showThousandsSeparator": true
         }
       ]
     }
@@ -1741,7 +1742,8 @@
           "readable": true,
           "mobile": true,
           "editable": false,
-          "fieldWidth": 1
+          "fieldWidth": 1,
+          "showThousandsSeparator": true
         }
       ]
     },
