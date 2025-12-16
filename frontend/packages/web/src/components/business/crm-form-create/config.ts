@@ -559,6 +559,7 @@ export const formulaDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   formula: '',
+  showThousandsSeparator: true,
 };
 
 export const productTableDefaultFieldConfig: FormCreateField = {
