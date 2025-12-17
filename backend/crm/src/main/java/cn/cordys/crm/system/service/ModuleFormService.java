@@ -659,25 +659,34 @@ public class ModuleFormService {
             if (CollectionUtils.isEmpty(subRefIds)) {
                 return;
             }
+			// 子表格引用的字段来源 (表单字段&&价格表子字段)
             List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(subRefIds);
             Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
-            ListIterator<BaseField> it = subField.getSubFields().listIterator();
+			List<BaseField> subFields = getSubFieldsBySourceType(FieldSourceType.PRICE.name());
+			Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
+			ListIterator<BaseField> it = subField.getSubFields().listIterator();
             while (it.hasNext()) {
                 BaseField oldField = it.next();
-                if (reloadFieldMap.containsKey(oldField.getId())) {
-                    // 属于引用字段 (保留数据源引用ID)
-                    BaseField refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
-                    refField.setResourceFieldId(oldField.getResourceFieldId());
-                    refField.setFieldWidth(oldField.getFieldWidth());
-					if (refField instanceof DatasourceField refSourceField) {
-						// 清空多级引用的属性
-						refSourceField.setRefFields(null);
-						refSourceField.setShowFields(null);
-					}
-					refField.setName(oldField.getName());
-					refField.setSubTableFieldId(oldField.getSubTableFieldId());
-                    it.set(refField);
-                }
+				if (!reloadFieldMap.containsKey(oldField.getId()) && !subFieldMap.containsKey(oldField.getId())) {
+					continue;
+				}
+				BaseField refField;
+				if (reloadFieldMap.containsKey(oldField.getId())) {
+					refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
+				} else {
+					refField = subFieldMap.get(oldField.getId());
+				}
+				// 属于引用字段 (保留数据源引用ID)
+				refField.setResourceFieldId(oldField.getResourceFieldId());
+				refField.setFieldWidth(oldField.getFieldWidth());
+				if (refField instanceof DatasourceField refSourceField) {
+					// 清空多级引用的属性
+					refSourceField.setRefFields(null);
+					refSourceField.setShowFields(null);
+				}
+				refField.setName(oldField.getName());
+				refField.setSubTableFieldId(oldField.getSubTableFieldId());
+				it.set(refField);
             }
         }
     }
@@ -692,7 +701,7 @@ public class ModuleFormService {
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
                 Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 				List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
-				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 				sourceField.getRefFields().forEach(oldRefField -> {
 					if (!reloadFieldMap.containsKey(oldRefField.getId()) && !subFieldMap.containsKey(oldRefField.getId())) {
 						return;
