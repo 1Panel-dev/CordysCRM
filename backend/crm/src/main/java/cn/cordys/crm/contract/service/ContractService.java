@@ -34,6 +34,7 @@ import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
+import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -266,7 +267,7 @@ public class ContractService {
             contract.setAmount(oldContract.getAmount());
             contract.setStatus(oldContract.getStatus());
             contract.setArchivedStatus(oldContract.getArchivedStatus());
-            contract.setApprovalStatus(oldContract.getApprovalStatus());
+            contract.setApprovalStatus(ApprovalState.APPROVING.getId());
             //计算子产品总金额
             setAmount(request.getProducts(), contract);
             // 设置子表格字段值
