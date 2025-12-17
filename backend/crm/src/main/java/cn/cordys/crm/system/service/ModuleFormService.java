@@ -582,7 +582,7 @@ public class ModuleFormService {
         return attachmentMapResult;
     }
 
-    public List<String> resolveSourceNames(String type, List<String> nameList) {
+    public List<OptionDTO> getSourceOptionsByKeywords(String type, List<String> nameList) {
         if (CollectionUtils.isEmpty(nameList)) {
             return new ArrayList<>();
         }
@@ -590,7 +590,7 @@ public class ModuleFormService {
             LogUtils.error("未知的数据源类型：{}", type);
             return new ArrayList<>();
         }
-        return extModuleFieldMapper.resolveIdsByName(TYPE_SOURCE_MAP.get(type), nameList);
+        return extModuleFieldMapper.getSourceOptionsByKeywords(TYPE_SOURCE_MAP.get(type), nameList);
     }
 
     /**

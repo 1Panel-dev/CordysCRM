@@ -24,7 +24,7 @@ public interface ExtModuleFieldMapper {
 
     List<OptionDTO> getSourceOptionsByIds(@Param("tableName") String table, @Param("ids") List<String> ids);
 
-    List<String> resolveIdsByName(@Param("tableName") String table, @Param("names") List<String> names);
+    List<OptionDTO> getSourceOptionsByKeywords(@Param("tableName") String table, @Param("keywords") List<String> keywords);
 
     List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword, @Param("orgId") String orgId);
 
