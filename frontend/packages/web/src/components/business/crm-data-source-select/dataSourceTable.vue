@@ -39,7 +39,6 @@
   import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
-  import { CommonList } from '@lib/shared/models/common';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -47,20 +46,9 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
-  import {
-    getCustomerOptions,
-    getFieldClueList,
-    getFieldContactList,
-    getFieldContractList,
-    getFieldCustomerList,
-    getFieldOpportunityList,
-    getFieldPriceList,
-    getFieldProductList,
-    getFieldQuotationList,
-    getUserOptions,
-  } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import { formKeyMap, sourceApi } from './config';
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
@@ -126,28 +114,6 @@
       }
     );
   }
-
-  const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
-    [FieldDataSourceTypeEnum.BUSINESS]: getFieldOpportunityList,
-    [FieldDataSourceTypeEnum.CLUE]: getFieldClueList,
-    [FieldDataSourceTypeEnum.CONTACT]: getFieldContactList,
-    [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
-    [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
-    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
-    [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
-    [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
-    [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
-    [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
-  };
-  const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
-    [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
-    [FieldDataSourceTypeEnum.CLUE]: FormDesignKeyEnum.CLUE,
-    [FieldDataSourceTypeEnum.CONTACT]: FormDesignKeyEnum.CONTACT,
-    [FieldDataSourceTypeEnum.CUSTOMER]: FormDesignKeyEnum.CUSTOMER,
-    [FieldDataSourceTypeEnum.PRODUCT]: FormDesignKeyEnum.PRODUCT,
-    [FieldDataSourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT,
-    [FieldDataSourceTypeEnum.PRICE]: FormDesignKeyEnum.PRICE,
-  };
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const { fieldList, initFormConfig } = useFormCreateApi({

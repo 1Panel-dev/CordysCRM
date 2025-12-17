@@ -10,11 +10,10 @@ import {
   type FormLinkScenarioEnum,
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
+import { getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
-  formatNumberValue,
   getNormalFieldValue,
   getRuleType,
   initFieldValue,
@@ -363,7 +362,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function makeDescriptionItem(item: FormCreateField, form: FormDetail) {
     if (item.show === false || !item.readable) return;
-    if (item.businessKey === 'expectedEndTime') {
+    if (item.businessKey === 'expectedEndTime' && !item.resourceFieldId) {
       // TODO:商机结束时间原位编辑
       descriptions.value.push({
         label: item.name,
@@ -1177,12 +1176,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         formDetail.value[item.id] = defaultValue;
       }
       replaceRule(item);
-      if (
-        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) &&
-        item.hasCurrentUser &&
-        !item.resourceFieldId
-      ) {
-        item.defaultValue = userStore.userInfo.id;
+      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
+        item.defaultValue = item.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
         item.initialOptions = [
           ...(item.initialOptions || []),
           {
@@ -1194,7 +1189,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
         item.hasCurrentUserDept
       ) {
-        item.defaultValue = userStore.userInfo.departmentId;
+        item.defaultValue = item.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
         item.initialOptions = [
           ...(item.initialOptions || []),
           {

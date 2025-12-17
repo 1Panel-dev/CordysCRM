@@ -23,7 +23,6 @@
     @cancel="handleDataSourceCancel"
   >
     <dataSourceTable
-      v-if="dataSourcesModalVisible"
       v-model:selected-keys="selectedKeys"
       v-model:selected-rows="selectedRows"
       :multiple="props.multiple"

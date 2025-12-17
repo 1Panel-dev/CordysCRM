@@ -37,11 +37,16 @@
   import { NDivider, NFormItem } from 'naive-ui';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { transformData } from '@lib/shared/method/formCreate';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import useTable from '@/components/pure/crm-table/useTable';
+  import { formKeyMap, sourceApi } from '@/components/business/crm-data-source-select/config';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
+
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { multipleValueTypeList } from '../../config';
   import { FormCreateField } from '../../types';
@@ -81,6 +86,41 @@
       conditions,
     };
   }
+
+  const { fieldList, initFormConfig } = useFormCreateApi({
+    formKey: computed(
+      () => formKeyMap[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER] as FormDesignKeyEnum
+    ),
+  });
+
+  const { propsRes, loadList, setLoadListParams } = useTable(
+    sourceApi[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER],
+    {
+      columns: [],
+      showSetting: false,
+    },
+    (item, originalData) => {
+      return transformData({
+        item,
+        originalData,
+        fields: fieldList.value,
+        needParseSubTable: true,
+      });
+    }
+  );
+
+  onMounted(async () => {
+    if (!props.needInitDetail && props.fieldConfig.showFields?.length && props.fieldConfig.defaultValue?.length) {
+      await initFormConfig();
+      setLoadListParams({
+        keyword: props.fieldConfig.initialOptions?.[0]?.name || '',
+      });
+      await loadList();
+      const newRows = propsRes.value.data.filter((item) => props.fieldConfig.defaultValue?.includes(item.id));
+      value.value = newRows.map((e) => e.id) as (string | number)[];
+      emit('change', value.value, newRows);
+    }
+  });
 
   watch(
     () => props.fieldConfig.defaultValue,
