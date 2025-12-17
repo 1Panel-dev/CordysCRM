@@ -196,7 +196,7 @@ public class ContractService {
         ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
         moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
 		List<BaseModuleFieldValue> fvs = contractFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()),
-				new HashMap<>(Map.of(response.getId(), response.getModuleFields()))).get(response.getId());
+				new HashMap<>(Map.of(response.getId(), moduleFields))).get(response.getId());
 		response.setModuleFields(fvs);
 		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
