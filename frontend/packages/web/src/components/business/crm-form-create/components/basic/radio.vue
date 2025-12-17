@@ -23,6 +23,7 @@
     <n-radio-group
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      @update-value="emit('change', $event)"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
@@ -63,13 +64,6 @@
         value.value = val;
         emit('change', value.value);
       }
-    }
-  );
-
-  watch(
-    () => value.value,
-    (val) => {
-      emit('change', val);
     }
   );
 

@@ -1,5 +1,5 @@
 <template>
-  <component :is="getComponent" v-if="fieldConfig.options" v-model:value="fieldConfig.defaultValue">
+  <component :is="getComponent" v-if="fieldConfig.options" :value="fieldConfig.defaultValue" :disabled="props.disabled">
     <!-- 通过draggable属性控制带.draggable类的元素可拖拽，实现部分元素不允许拖拽 -->
     <VueDraggable
       v-model="fieldConfig.options"
@@ -29,14 +29,14 @@
           </template>
           {{ t('common.sort') }}
         </n-tooltip>
-        <n-checkbox v-if="isMultiple" :value="item.value" />
+        <n-checkbox v-if="isMultiple" :value="item.value" @click="handleCheckBoxOptionClick(item.value)" />
         <n-radio
           v-else
           :value="item.value"
           :default-checked="fieldConfig.defaultValue === item.value"
           class="flex items-center"
           :disabled="props.disabled"
-          @click="debounce(() => handleRadioOptionClick(item.value), 200)"
+          @click="handleRadioOptionClick(item.value)"
         />
         <n-input
           v-model:value="item.label"
@@ -159,13 +159,25 @@
     return NRadioGroup;
   });
 
-  function handleRadioOptionClick(val: string | number) {
+  const handleRadioOptionClick = debounce((val: string | number) => {
     if (fieldConfig.value.defaultValue === val) {
       fieldConfig.value.defaultValue = '';
     } else {
       fieldConfig.value.defaultValue = val;
     }
-  }
+  });
+
+  const handleCheckBoxOptionClick = debounce((val: string | number) => {
+    if (!Array.isArray(fieldConfig.value.defaultValue)) {
+      fieldConfig.value.defaultValue = [];
+    }
+    const index = fieldConfig.value.defaultValue.indexOf(val);
+    if (index > -1) {
+      fieldConfig.value.defaultValue.splice(index, 1);
+    } else {
+      fieldConfig.value.defaultValue.push(val);
+    }
+  });
 
   function handleAddOption() {
     if (props.disabled) {
