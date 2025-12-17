@@ -808,7 +808,7 @@
           v-model:value="fieldConfig.defaultValue"
           v-model:rows="fieldConfig.initialOptions"
           :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
-          :data-source-type="fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
+          :data-source-type="fieldConfig.dataSourceType || dataSourceOptions[0].value as FieldDataSourceTypeEnum"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
         />
         <n-input
@@ -1459,11 +1459,23 @@
     () => dataSourceOptions.value,
     (options) => {
       if (fieldConfig.value && !options.some((item) => item.value === fieldConfig.value.dataSourceType)) {
-        fieldConfig.value.dataSourceType =
-          (options[0]?.value as FieldDataSourceTypeEnum) || FieldDataSourceTypeEnum.CUSTOMER;
+        fieldConfig.value.dataSourceType = options[0]?.value as FieldDataSourceTypeEnum;
       }
     },
     { immediate: true }
+  );
+
+  watch(
+    () => fieldConfig.value?.id,
+    (val) => {
+      if (
+        val &&
+        fieldConfig.value &&
+        !dataSourceOptions.value.some((item) => item.value === fieldConfig.value.dataSourceType)
+      ) {
+        fieldConfig.value.dataSourceType = dataSourceOptions.value[0]?.value as FieldDataSourceTypeEnum;
+      }
+    }
   );
 
   const showRuleConfigVisible = ref(false);
