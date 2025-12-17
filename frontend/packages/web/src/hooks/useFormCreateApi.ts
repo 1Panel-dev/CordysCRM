@@ -1177,7 +1177,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         formDetail.value[item.id] = defaultValue;
       }
       replaceRule(item);
-      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
+      if (
+        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) &&
+        item.hasCurrentUser &&
+        !item.resourceFieldId
+      ) {
         item.defaultValue = userStore.userInfo.id;
         item.initialOptions = [
           ...(item.initialOptions || []),
