@@ -14,6 +14,6 @@ public class FieldResolveRequest {
     @Schema(description = "字段业务来源", requiredMode = Schema.RequiredMode.REQUIRED)
     private String sourceType;
     @NotEmpty
-    @Schema(description = "字段名称", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<String> names;
+    @Schema(description = "查询关键字，名称或ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<String> keywords;
 }

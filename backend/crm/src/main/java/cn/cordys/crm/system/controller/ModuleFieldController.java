@@ -5,6 +5,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.DeptUserTreeNode;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.context.OrganizationContext;
@@ -171,8 +172,8 @@ public class ModuleFieldController {
 
     @PostMapping("/resolve/business")
     @Operation(summary = "解析业务ID")
-    public List<String> resolveBusinessId(@Valid @RequestBody FieldResolveRequest request) {
-        return moduleFormService.resolveSourceNames(request.getSourceType(), request.getNames());
+    public List<OptionDTO> resolveBusinessId(@Valid @RequestBody FieldResolveRequest request) {
+        return moduleFormService.getSourceOptionsByKeywords(request.getSourceType(), request.getKeywords());
     }
 
     @GetMapping("/display/{formKey}")

@@ -30,10 +30,14 @@
         </foreach>
     </select>
 
-    <select id="resolveIdsByName" resultType="java.lang.String">
-        select id from ${tableName} where name in
-        <foreach collection="names" item="name" open="(" separator="," close=")">
-            #{name}
+    <select id="getSourceOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
+        select id,name from ${tableName} where id in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
+        </foreach>
+        or name in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
         </foreach>
         <if test="tableName == 'clue'">
             and (transition_id IS NULL OR  transition_id = '') and in_shared_pool is false
