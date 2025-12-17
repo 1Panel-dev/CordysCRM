@@ -879,16 +879,11 @@ public class OpportunityQuotationService {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
         //获取ApprovalState中所有状态的id属性(以后改成获取自定义的审批状态)
-        List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).toList();
-        if (approvalStatusList.contains(opportunityQuotation.getApprovalStatus()) && (Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVED.toString()) || Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString()))) {
-            LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
-            OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
-            if (snapshot != null) {
-                moduleFormConfigDTO = JSON.parseObject(snapshot.getQuotationProp(), ModuleFormConfigDTO.class);
-            } else {
-                moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
-            }
+        LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+        OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            moduleFormConfigDTO = JSON.parseObject(snapshot.getQuotationProp(), ModuleFormConfigDTO.class);
         } else {
             moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
         }
