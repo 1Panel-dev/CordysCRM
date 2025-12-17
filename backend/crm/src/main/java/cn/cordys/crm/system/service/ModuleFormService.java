@@ -691,26 +691,60 @@ public class ModuleFormService {
                 List<String> newRefIds = new ArrayList<>();
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
                 Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
-                sourceField.getRefFields().forEach(oldRefField -> {
-                    if (reloadFieldMap.containsKey(oldRefField.getId())) {
-                        BaseField refField = JSON.parseObject(reloadFieldMap.get(oldRefField.getId()), BaseField.class);
-                        refField.setFieldWidth(oldRefField.getFieldWidth());
-                        if (refField instanceof DatasourceField refSourceField) {
-							// 清空多级引用的属性
-                            refSourceField.setRefFields(null);
-                            refSourceField.setShowFields(null);
-                        }
-                        refField.setResourceFieldId(oldRefField.getResourceFieldId());
-						refField.setName(oldRefField.getName());
-                        flatFields.add(flatFields.size(), refField);
-						newRefIds.add(refField.getId());
-                    }
+				List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
+				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
+				sourceField.getRefFields().forEach(oldRefField -> {
+					if (!reloadFieldMap.containsKey(oldRefField.getId()) && !subFieldMap.containsKey(oldRefField.getId())) {
+						return;
+					}
+					BaseField refField;
+					if (reloadFieldMap.containsKey(oldRefField.getId())) {
+						refField = JSON.parseObject(reloadFieldMap.get(oldRefField.getId()), BaseField.class);
+					} else {
+						refField = subFieldMap.get(oldRefField.getId());
+					}
+					refField.setFieldWidth(oldRefField.getFieldWidth());
+					if (refField instanceof DatasourceField refSourceField) {
+						// 清空多级引用的属性
+						refSourceField.setRefFields(null);
+						refSourceField.setShowFields(null);
+					}
+					refField.setResourceFieldId(oldRefField.getResourceFieldId());
+					refField.setName(oldRefField.getName());
+					flatFields.add(flatFields.size(), refField);
+					newRefIds.add(refField.getId());
                 });
 				sourceField.setShowFields(newRefIds);
             }
         });
         return flatFields;
     }
+
+	/**
+	 * 获取指定数据源的子表字段集合
+	 * @param sourceType 数据源类型
+	 * @return 子表字段集合
+	 */
+	private List<BaseField> getSubFieldsBySourceType(String sourceType) {
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		if (Strings.CS.equals(sourceType, FieldSourceType.QUOTATION.name())) {
+			fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.QUOTATION_PRODUCT_TABLE.getKey());
+		} else if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
+			fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.PRICE_PRODUCT_TABLE.getKey());
+		} else if (Strings.CS.equals(sourceType, FieldSourceType.CONTRACT.name())) {
+			fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.CONTRACT_PRODUCT_TABLE.getKey());
+		} else {
+			return new ArrayList<>();
+		}
+		List<ModuleField> subFields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+		if (CollectionUtils.isEmpty(subFields)) {
+			return new ArrayList<>();
+		}
+		String subId = subFields.getFirst().getId();
+		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(subId);
+		SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+		return subField.getSubFields();
+	}
 
     /**
      * OptionProp转OptionDTO
