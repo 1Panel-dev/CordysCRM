@@ -1035,7 +1035,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       loading.value = true;
       const api = getFormConfigApiMap[props.formKey.value];
       const res = await api(props.sourceId?.value ?? '');
-      moduleFormConfig.value = res;
+      moduleFormConfig.value = cloneDeep(res);
       initFormFieldConfig(res.fields);
       formConfig.value = res.formProp;
       nextTick(() => {
