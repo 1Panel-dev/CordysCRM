@@ -96,7 +96,32 @@ const useViewStore = defineStore('view', {
         ];
       }
     },
-
+    async resolveTypeOptions(type: TabType) {
+      switch (type) {
+        case FormDesignKeyEnum.BUSINESS:
+          return {
+            opportunitySuccessOptions: await this.getOpportunitySuccessStageOption(),
+          };
+        default:
+          return {};
+      }
+    },
+    resolveInternalConditionList(params: {
+      type: TabType;
+      tabName: string;
+      optionItem: Record<string, any>;
+    }): FilterFormItem[] {
+      const { type, tabName, optionItem } = params;
+      // 商机成功阶段
+      if (tabName === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS) {
+        return optionItem.opportunitySuccessOptions ?? [];
+      }
+      // 报价单我的视图
+      if (type === FormDesignKeyEnum.OPPORTUNITY_QUOTATION && tabName === CustomerSearchTypeEnum.SELF) {
+        return internalConditionsMap[CustomerSearchTypeEnum.SELF_QUOTATION] ?? [];
+      }
+      return internalConditionsMap[tabName] ?? [];
+    },
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
       const userStore = useUserStore();
 
@@ -108,8 +133,7 @@ const useViewStore = defineStore('view', {
 
       const storedIds = new Set(stored.map((i) => i.id));
 
-      const optItem = type === FormDesignKeyEnum.BUSINESS ? await this.getOpportunitySuccessStageOption() : null;
-
+      const optItem = (await this.resolveTypeOptions(type)) ?? null;
       const merged = [
         // 优先使用 stored 的顺序和设置
         ...stored
@@ -119,10 +143,11 @@ const useViewStore = defineStore('view', {
             return {
               ...item,
               name: def.tab as string,
-              list:
-                def.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-                  ? optItem
-                  : internalConditionsMap[def.name as string],
+              list: this.resolveInternalConditionList({
+                type,
+                tabName: def.name as string,
+                optionItem: optItem,
+              }),
               type: 'internal',
               searchMode: item.searchMode ?? 'AND',
             } as ViewItem;
@@ -140,10 +165,11 @@ const useViewStore = defineStore('view', {
                 fixed: true,
                 type: 'internal',
                 searchMode: 'AND',
-                list:
-                  item.name === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-                    ? optItem
-                    : internalConditionsMap[item.name as string],
+                list: this.resolveInternalConditionList({
+                  type,
+                  tabName: item.name as string,
+                  optionItem: optItem,
+                }),
               } as ViewItem)
           ),
       ];
