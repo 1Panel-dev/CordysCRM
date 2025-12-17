@@ -235,6 +235,15 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
       selectedUserList: [{ id: userStore.userInfo.id, name: userStore.userInfo.name }],
     },
   ],
+  [CustomerSearchTypeEnum.SELF_QUOTATION]: [
+    {
+      dataIndex: 'createUser',
+      type: FieldTypeEnum.MEMBER,
+      operator: OperatorEnum.IN,
+      value: [userStore.userInfo.id],
+      selectedUserList: [{ id: userStore.userInfo.id, name: userStore.userInfo.name }],
+    },
+  ],
 };
 
 export default {};
