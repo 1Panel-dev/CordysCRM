@@ -195,7 +195,10 @@ public class ContractService {
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
         moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
+		List<BaseModuleFieldValue> fvs = contractFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()),
+				new HashMap<>(Map.of(response.getId(), response.getModuleFields()))).get(response.getId());
+		response.setModuleFields(fvs);
+		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
         optionMap.put("customerId", Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
         User owner = userBaseMapper.selectByPrimaryKey(contract.getOwner());
