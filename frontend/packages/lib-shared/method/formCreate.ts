@@ -391,8 +391,7 @@ export function normalizeNumber(val: unknown): number {
     // 去掉千分位
     str = str.replace(/,/g, '');
     const num = Number(str);
-    if (Number.isNaN(num)) return 0;
-    return isPercent ? num / 100 : num;
+    return Number.isNaN(num) ? 0 : num;
   }
 
   return 0;
