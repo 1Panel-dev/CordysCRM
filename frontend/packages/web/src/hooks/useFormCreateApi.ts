@@ -790,7 +790,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           return;
         }
         transformFormDetailValue(item, res);
-        if (item.type === FieldTypeEnum.DATE_TIME) {
+        // transformFormDetailValue里已经处理了item.resourceFieldId的时间格式
+        if (item.type === FieldTypeEnum.DATE_TIME && !item.resourceFieldId) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : null;
         } else if (item.type === FieldTypeEnum.ATTACHMENT) {
