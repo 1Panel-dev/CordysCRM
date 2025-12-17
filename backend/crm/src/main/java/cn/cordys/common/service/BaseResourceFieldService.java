@@ -55,6 +55,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +84,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
     private Class<T> getResourceFieldClass() {
         Type type = getGenericType(0);
         if (type instanceof Class tClass) {
@@ -92,6 +94,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
     private Class<V> getResourceFieldBlobClass() {
         Type type = getGenericType(1);
         if (type instanceof Class vClass) {
@@ -189,11 +192,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * 获取资源和模块字段的 map
-     *
-     * @param resourceId
-     *
-     * @return
+     * 获取资源和字段值映射
+     * @param resourceId 资源ID
+     * @return 字段值映射
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
         List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true).get(resourceId);
@@ -207,6 +208,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param moduleFieldValues 自定义字段值
      * @param update            是否更新
      */
+	@SuppressWarnings({"rawtypes", "unchecked"})
     public <K> void saveModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
@@ -235,7 +237,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             (field.isSerialNumber() && StringUtils.isEmpty(field.getBusinessKey())) || field.isSubField();
                 })
                 .forEach(field -> {
-                    BaseModuleFieldValue fieldValue = processFieldValue(resource, field, fieldValueMap, update, orgId);
+                    BaseModuleFieldValue fieldValue = processFieldValue(field, fieldValueMap, update, orgId);
                     if (fieldValue == null || fieldValue.getFieldValue() == null || StringUtils.isNotEmpty(field.getResourceFieldId())) {
                         return;
                     }
@@ -255,23 +257,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     customFieldResolver.validate(field, fieldValue.getFieldValue());
                     // 将参数值转换成字符串入库
                     String strValue = customFieldResolver.convertToString(field, fieldValue.getFieldValue());
-
-                    if (field.isBlob()) {
-                        V resourceField = newResourceFieldBlob();
-                        resourceField.setId(IDGenerator.nextStr());
-                        resourceField.setResourceId(resourceId);
-                        resourceField.setFieldId(fieldValue.getFieldId());
-                        resourceField.setFieldValue(strValue);
-                        customerFieldBlobs.add(resourceField);
-                    } else {
-                        T resourceField = newResourceField();
-                        resourceField.setId(IDGenerator.nextStr());
-                        resourceField.setResourceId(resourceId);
-                        resourceField.setFieldId(fieldValue.getFieldId());
-                        resourceField.setFieldValue(strValue);
-                        customerFields.add(resourceField);
-                    }
-
+					if (field.isBlob()) {
+						customerFieldBlobs.add(supplyNewResource(this::newResourceFieldBlob, resourceId, fieldValue.getFieldId(), strValue));
+					} else {
+						customerFields.add(supplyNewResource(this::newResourceField, resourceId, fieldValue.getFieldId(), strValue));
+					}
                 });
 
         // Process all attachment field
@@ -292,7 +282,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
-    public <K> BaseModuleFieldValue processFieldValue(K resource, BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
+    public BaseModuleFieldValue processFieldValue(BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
         // 流水号
         if (field.isSerialNumber() && !update) {
             BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
@@ -317,7 +307,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return fieldValueMap.get(field.getId());
     }
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
     public void saveSubFieldValue(String resourceId, SubField subField, BaseModuleFieldValue fieldValue,
                                   List<T> fields, List<V> fieldBlobs) {
         List<Map<String, Object>> subValues = (List) fieldValue.getFieldValue();
@@ -349,23 +339,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
                 String strValue = customFieldResolver.convertToString(field, kv.getValue());
                 if (field.isBlob()) {
-                    V resourceField = newResourceFieldBlob();
-                    resourceField.setId(IDGenerator.nextStr());
-                    resourceField.setResourceId(resourceId);
-                    resourceField.setFieldId(kv.getKey());
-                    resourceField.setFieldValue(strValue);
-                    setResourceFieldValue(resourceField, "rowId", String.valueOf(rowId));
-                    setResourceFieldValue(resourceField, "refSubId", subField.getId());
-                    fieldBlobs.add(resourceField);
+					V v = supplyNewResource(this::newResourceFieldBlob, resourceId, kv.getKey(), strValue);
+                    setResourceFieldValue(v, "rowId", String.valueOf(rowId));
+                    setResourceFieldValue(v, "refSubId", subField.getId());
+                    fieldBlobs.add(v);
                 } else {
-                    T resourceField = newResourceField();
-                    resourceField.setId(IDGenerator.nextStr());
-                    resourceField.setResourceId(resourceId);
-                    resourceField.setFieldId(kv.getKey());
-                    resourceField.setFieldValue(strValue);
-                    setResourceFieldValue(resourceField, "rowId", String.valueOf(rowId));
-                    setResourceFieldValue(resourceField, "refSubId", subField.getId());
-                    fields.add(resourceField);
+                    T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), strValue);
+                    setResourceFieldValue(t, "rowId", String.valueOf(rowId));
+                    setResourceFieldValue(t, "refSubId", subField.getId());
+                    fields.add(t);
                 }
             }
             rowId++;
@@ -375,11 +357,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     /**
      * 校验业务字段，字段值是否重复
      *
-     * @param orgId
-     * @param resource
-     * @param updateIds
-     * @param allFields
-     * @param <K>
+     * @param orgId 组织ID
+     * @param resource 资源
+     * @param updateIds 资源ID集合
+     * @param allFields 所有字段
+     * @param <K> 资源类型
      */
     private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, List<BaseField> allFields) {
         Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
@@ -402,7 +384,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         Object fieldValue = getResourceFieldValue(resource, fieldName);
 
-        if (!isBlankValue(fieldValue)) {
+        if (isNotBlank(fieldValue)) {
             boolean repeat;
             if (CollectionUtils.isNotEmpty(updateIds)) {
                 repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, updateIds);
@@ -424,7 +406,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 String userId,
                                 String orgId) {
 
-        if (field.needRepeatCheck() && request.getIds().size() > 1 && !isBlankValue(request.getFieldValue())) {
+        if (field.needRepeatCheck() && request.getIds().size() > 1 && isNotBlank(request.getFieldValue())) {
             // 如果字段唯一，则校验不能同时修改多条
             throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
         }
@@ -461,12 +443,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             // 先删除
             batchDeleteFieldValues(request, moduleField);
 
-            if (field.needRepeatCheck() && !isBlankValue(request.getFieldValue())) {
+            if (field.needRepeatCheck() && isNotBlank(request.getFieldValue())) {
                 // 字段唯一性校验
                 checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
             }
 
-            if (!isBlankValue(request.getFieldValue())) {
+            if (isNotBlank(request.getFieldValue())) {
                 // 再插入
                 batchUpdateFieldValues(request, field, moduleField);
             }
@@ -479,15 +461,23 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         batchInsertFunc.accept(updateParam);
     }
 
-    private boolean isBlankValue(Object value) {
-        if (value == null) {
-            return true;
-        }
-        if (value instanceof String str && StringUtils.isBlank(str)) {
-            return true;
-        }
-        return value instanceof List list && list.isEmpty();
-    }
+	@SuppressWarnings("rawtypes")
+	private boolean isNotBlank(Object value) {
+		switch (value) {
+			case null -> {
+				return false;
+			}
+			case String str -> {
+				return StringUtils.isNotBlank(str);
+			}
+			case List list -> {
+				return CollectionUtils.isNotEmpty(list);
+			}
+			default -> {
+				return true;
+			}
+		}
+	}
 
     public BaseField getAndCheckField(String fieldId, String organizationId) {
         return moduleFormCacheService.getConfig(getFormKey(), organizationId)
@@ -512,12 +502,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     /**
      * 记录业务字段批量更新日志
      *
-     * @param originResourceList
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param <K>
+     * @param originResourceList 资源集合
+	 * @param field 字段信息
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     * @param <K> 资源类型
      */
+	@SuppressWarnings({"rawtypes", "unchecked"})
     private <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
                                                     BaseField field,
                                                     ResourceBatchEditRequest request,
@@ -528,12 +520,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<LogDTO> logs = originResourceList.stream()
                 .map(resource -> {
                     Map originResource = new HashMap();
-                    if (!isBlankValue(getResourceFieldValue(resource, field.getBusinessKey()))) {
+                    if (isNotBlank(getResourceFieldValue(resource, field.getBusinessKey()))) {
                         originResource.put(field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
                     }
 
                     Map modifiedResource = new HashMap();
-                    if (!isBlankValue(request.getFieldValue())) {
+                    if (isNotBlank(request.getFieldValue())) {
                         modifiedResource.put(field.getBusinessKey(), request.getFieldValue());
                     }
 
@@ -551,13 +543,16 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 记录自定义字段批量更新日志
-     *
-     * @param originResourceList
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param <K>
+	 *
+	 * @param originResourceList 资源集合
+	 * @param originFields 旧的字段值
+	 * @param field 字段信息
+	 * @param request 请求参数
+	 * @param userId 用户ID
+	 * @param orgId 组织ID
+	 * @param <K> 资源类型
      */
+	@SuppressWarnings({"rawtypes", "unchecked"})
     private <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
                                                   List<? extends BaseResourceField> originFields,
                                                   ResourceBatchEditRequest request,
@@ -573,9 +568,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
 
-                    BaseResourceField baseResourceField = fieldMap.get(id);
+                    BaseResourceField baseResourceField = fieldMap.get(id.toString());
                     Map originResource = new HashMap();
-                    if (baseResourceField != null && !isBlankValue(baseResourceField.getFieldValue())) {
+                    if (baseResourceField != null && isNotBlank(baseResourceField.getFieldValue())) {
                         // 获取字段解析器
                         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
                         // 将数据库中的字符串值,转换为对应的对象值
@@ -585,7 +580,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
 
                     Map modifiedResource = new HashMap();
-                    if (!isBlankValue(request.getFieldValue())) {
+                    if (isNotBlank(request.getFieldValue())) {
                         modifiedResource.put(request.getFieldId(), request.getFieldValue());
                     }
 
@@ -665,7 +660,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 字段集合
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
@@ -793,7 +788,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                 }
                 Map<String, Object> sourceDetail = SourceDetailResolveContext.getSourceMap().get(val.toString());
-                if (MapUtils.isEmpty(sourceDetail)) {
+                if (MapUtils.isEmpty(sourceDetail) || detail == null) {
                     return;
                 }
                 sourceField.getShowFields().forEach(id -> {
@@ -801,7 +796,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (showFieldConfig == null) {
                         return;
                     }
-                    resourceFieldMap.putIfAbsent(detail.getId(), new ArrayList<>());
+					resourceFieldMap.putIfAbsent(detail.getId(), new ArrayList<>());
                     resourceFieldMap.get(detail.getId()).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, sourceDetail)));
                 });
             });
@@ -860,8 +855,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param subKey    子表格key
      * @param rowKey    命中的行key
      * @param rowVal    命中的行值
-     *
-     * @return
+     * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> detailMap, String subKey, String rowKey, String rowVal) {
@@ -881,7 +875,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldConfigMap 字段配置
      * @param resourceFields 值集合
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap, Map<String, BaseField> fieldConfigMap,
                                          List<? extends BaseResourceField> resourceFields) {
         Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
@@ -979,8 +973,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 删除指定资源的模块字段值
-     *
-     * @param resourceId
+     * @param resourceId 资源ID
      */
     public void deleteByResourceId(String resourceId) {
         T example = newResourceField();
@@ -994,8 +987,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 删除指定资源的模块字段值
-     *
-     * @param resourceIds
+     * @param resourceIds 资源ID集合
      */
     public void deleteByResourceIds(List<String> resourceIds) {
         LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
@@ -1009,9 +1001,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 保存指定资源的模块字段值
-     *
-     * @param moduleFieldValues
+     * @param moduleFieldValues 字段值集合
      */
+	@SuppressWarnings({"unchecked", "rawtypes"})
     public void saveModuleFieldByResourceIds(List<String> resourceIds, List<BaseModuleFieldValue> moduleFieldValues) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
@@ -1040,19 +1032,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     String strValue = customFieldResolver.convertToString(fieldConfig, fieldValue.getFieldValue());
                     for (String resourceId : resourceIds) {
                         if (fieldConfig.isBlob()) {
-                            V resourceField = newResourceFieldBlob();
-                            resourceField.setId(IDGenerator.nextStr());
-                            resourceField.setResourceId(resourceId);
-                            resourceField.setFieldId(fieldValue.getFieldId());
-                            resourceField.setFieldValue(strValue);
-                            customerFieldBlobs.add(resourceField);
+                            customerFieldBlobs.add(supplyNewResource(this::newResourceFieldBlob, resourceId, fieldValue.getFieldId(), strValue));
                         } else {
-                            T resourceField = newResourceField();
-                            resourceField.setId(IDGenerator.nextStr());
-                            resourceField.setResourceId(resourceId);
-                            resourceField.setFieldId(fieldValue.getFieldId());
-                            resourceField.setFieldValue(strValue);
-                            customerFields.add(resourceField);
+                            customerFields.add(supplyNewResource(this::newResourceField, resourceId, fieldValue.getFieldId(), strValue));
                         }
                     }
                 });
@@ -1090,9 +1072,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 批量更新自定义字段值
-     *
-     * @param request
+     * @param request 批量编辑参数
      */
+	@SuppressWarnings({"unchecked", "rawtypes"})
     public void batchUpdateFieldValues(ResourceBatchEditRequest request, BaseField field, ModuleField moduleField) {
         // 获取字段解析器
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
@@ -1105,33 +1087,18 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         if (BaseField.isBlob(moduleField.getType())) {
             List<V> resourceFields = request.getIds().stream()
-                    .map(id -> {
-                        V resourceField = newResourceFieldBlob();
-                        resourceField.setId(IDGenerator.nextStr());
-                        resourceField.setResourceId(id);
-                        resourceField.setFieldId(request.getFieldId());
-                        resourceField.setFieldValue(strValue);
-                        return resourceField;
-                    }).collect(Collectors.toList());
+                    .map(id -> supplyNewResource(this::newResourceFieldBlob, id, request.getFieldId(), strValue)).collect(Collectors.toList());
             getResourceFieldBlobMapper().batchInsert(resourceFields);
         } else {
             List<T> resourceFields = request.getIds().stream()
-                    .map(id -> {
-                        T resourceField = newResourceField();
-                        resourceField.setId(IDGenerator.nextStr());
-                        resourceField.setResourceId(id);
-                        resourceField.setFieldId(request.getFieldId());
-                        resourceField.setFieldValue(strValue);
-                        return resourceField;
-                    }).collect(Collectors.toList());
+                    .map(id -> supplyNewResource(this::newResourceField, id, request.getFieldId(), strValue)).collect(Collectors.toList());
             getResourceFieldMapper().batchInsert(resourceFields);
         }
     }
 
     /**
      * 批量删除自定义字段值
-     *
-     * @param request
+     * @param request 批量参数
      */
     public void batchDeleteFieldValues(ResourceBatchEditRequest request, ModuleField moduleField) {
         if (moduleField == null) {
@@ -1165,6 +1132,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
     public <K> void updateModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
@@ -1252,6 +1220,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
         }
 
+		if (categoryAxisField == null || subCategoryAxisField == null) {
+			return chartResults;
+		}
         Map<String, List<OptionDTO>> optionMap = getChartOptionMap(formConfig, chartResults, categoryAxisParam,
                 subCategoryAxisParam);
 
@@ -1260,22 +1231,20 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
-        Map<String, String> subCategoryOptionMap = null;
-        if (subCategoryAxisParam != null) {
-            subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
-                    .orElse(List.of())
-                    .stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-        }
+        Map<String, String> subCategoryOptionMap;
+		subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
+				.orElse(List.of())
+				.stream()
+				.collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
-        for (ChartResult chartResult : chartResults) {
+		for (ChartResult chartResult : chartResults) {
             if (categoryOptionMap.get(chartResult.getCategoryAxis()) != null) {
                 chartResult.setCategoryAxisName(categoryOptionMap.get(chartResult.getCategoryAxis()));
             } else {
                 chartResult.setCategoryAxisName(chartResult.getCategoryAxis());
             }
 
-            if (subCategoryAxisParam != null && subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
+            if (subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
                 chartResult.setSubCategoryAxisName(subCategoryOptionMap.get(chartResult.getSubCategoryAxis()));
             } else {
                 chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
@@ -1290,7 +1259,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 chartResult.setCategoryAxis(RegionUtils.getCode(chartResult.getCategoryAxis()));
             }
 
-            if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
+            if (subCategoryAxisField.isLocation()) {
                 chartResult.setSubCategoryAxisName(RegionUtils.codeToName(chartResult.getSubCategoryAxis()));
                 chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
             }
@@ -1299,7 +1268,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 chartResult.setCategoryAxisName(IndustryUtils.mapping(chartResult.getCategoryAxis(), false));
             }
 
-            if (subCategoryAxisField != null && subCategoryAxisField.isIndustry()) {
+            if (subCategoryAxisField.isIndustry()) {
                 chartResult.setSubCategoryAxisName(IndustryUtils.mapping(chartResult.getSubCategoryAxis(), false));
             }
         }
@@ -1309,7 +1278,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             chartResults = mergeResult(chartResults, ChartResult::getCategoryAxis);
         }
 
-        if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
+        if (subCategoryAxisField.isLocation()) {
             // 合并SubCategoryAxis相同的项
             chartResults = mergeResult(chartResults, ChartResult::getSubCategoryAxis);
         }
@@ -1376,4 +1345,22 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         return null;
     }
+
+	/**
+	 * 提供新的字段实例 (通用&新增)
+	 * @param instance 字段值实例
+	 * @param resourceId 资源ID
+	 * @param fieldId 字段ID
+	 * @param strValue 字段值
+	 * @return 字段实例
+	 * @param <R> 字段类型
+	 */
+	private <R extends BaseResourceField> R supplyNewResource(Supplier<R> instance, String resourceId, String fieldId, String strValue) {
+		R resourceField = instance.get();
+		resourceField.setId(IDGenerator.nextStr());
+		resourceField.setResourceId(resourceId);
+		resourceField.setFieldId(fieldId);
+		resourceField.setFieldValue(strValue);
+		return resourceField;
+	}
 }
