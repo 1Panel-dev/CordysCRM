@@ -124,7 +124,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
       value = options.find((e) => e.id === fieldValue)?.name || t('common.optionNotExist');
     }
   } else if (item.type === FieldTypeEnum.LOCATION) {
-    const addressArr: string[] = (fieldValue as string).split('-')?.filter(Boolean) || [];
+    const addressArr: string[] = (fieldValue as string)?.split('-')?.filter(Boolean) || [];
     if (!addressArr.length) {
       value = '-';
     } else {
@@ -255,7 +255,7 @@ export function transformData({
       }));
       if (addressFieldIds.includes(fieldId)) {
         // 地址类型字段，解析代码替换成省市区
-        const addressArr: string[] = item[fieldId].split('-')?.filter(Boolean) || [];
+        const addressArr: string[] = item[fieldId]?.split('-')?.filter(Boolean) || [];
         let value = '';
         if (!addressArr.length) {
           value = '-';
@@ -316,7 +316,7 @@ export function transformData({
     }));
     if (addressFieldIds.includes(field.fieldId)) {
       // 地址类型字段，解析代码替换成省市区
-      const addressArr: string[] = (field?.fieldValue as string).split('-')?.filter(Boolean) || [];
+      const addressArr: string[] = (field?.fieldValue as string)?.split('-')?.filter(Boolean) || [];
       let value = '';
       if (!addressArr.length) {
         value = '-';
