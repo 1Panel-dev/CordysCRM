@@ -657,10 +657,10 @@ public class ContractService {
     private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
         LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INDEX, response);
         Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("approvalStatus", Translator.get("contract.review_status." + state.toLowerCase()));
+        oldMap.put("approvalStatus", Translator.get("contract.approval_status." + state.toLowerCase()));
         logDTO.setOriginalValue(oldMap);
         Map<String, String> newMap = new HashMap<>();
-        newMap.put("approvalStatus", Translator.get("contract.review_status." + newState.toLowerCase()));
+        newMap.put("approvalStatus", Translator.get("contract.approval_status." + newState.toLowerCase()));
         logDTO.setModifiedValue(newMap);
         return logDTO;
     }
