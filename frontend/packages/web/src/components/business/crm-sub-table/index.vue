@@ -201,6 +201,7 @@
                 }
               ),
             filedType: field.type,
+            fieldConfig: field,
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
           };
         });
@@ -238,6 +239,8 @@
                 }
               ),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+            filedType: field.type,
+            fieldConfig: field,
           };
         }
         if (field.type === FieldTypeEnum.DATA_SOURCE) {
@@ -296,7 +299,13 @@
                           fieldVal = sourceFieldVal;
                         }
                       }
-                      row[sf.id] = Array.isArray(fieldVal) ? fieldVal.join(',') : fieldVal;
+                      if (Array.isArray(fieldVal)) {
+                        row[sf.id] = fieldVal.join(',');
+                      } else if (sf.type === FieldTypeEnum.INPUT_NUMBER) {
+                        row[sf.id] = formatNumberValue(fieldVal, sf) ?? null;
+                      } else {
+                        row[sf.id] = fieldVal;
+                      }
                     });
                   }
                   emit('change', data.value);
@@ -328,6 +337,8 @@
                 },
               }),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+            filedType: field.type,
+            fieldConfig: field,
           };
         }
         if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -353,6 +364,8 @@
                 },
               }),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+            filedType: field.type,
+            fieldConfig: field,
           };
         }
         if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
@@ -475,8 +488,10 @@
                     const rowVal = normalizeNumber(row[col.key as keyof RowData]);
                     return prev + Math.round(rowVal * 100);
                   }, 0) / 100;
-
-                if (col.filedType === FieldTypeEnum.INPUT_NUMBER && col.fieldConfig) {
+                if (
+                  [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(col.filedType as FieldTypeEnum) &&
+                  col.fieldConfig
+                ) {
                   return formatNumberValue(sum, col.fieldConfig);
                 }
                 return sum;
@@ -494,7 +509,9 @@
     props.subFields.forEach((field) => {
       const key = field.businessKey || field.id;
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
-        newRow[key] = field.defaultValue ?? null;
+        newRow[key] = field.resourceFieldId
+          ? formatNumberValue(field.defaultValue ?? 0, field)
+          : field.defaultValue ?? null;
       } else if (field.type === FieldTypeEnum.FORMULA) {
         newRow[key] = field.defaultValue ?? 0;
       } else if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE].includes(field.type)) {
