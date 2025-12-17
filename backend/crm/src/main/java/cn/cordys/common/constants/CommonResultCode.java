@@ -10,7 +10,8 @@ import cn.cordys.common.exception.IResultCode;
  */
 public enum CommonResultCode implements IResultCode {
 
-    FIELD_VALIDATE_ERROR(100001, "field_validate_error");
+    FIELD_VALIDATE_ERROR(100001, "field_validate_error"),
+	FIELD_OPTION_VALUE_ERROR(100002, "field_option_value_error");
 
 
     private final int code;

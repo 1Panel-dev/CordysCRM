@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static cn.cordys.common.constants.CommonResultCode.FIELD_OPTION_VALUE_ERROR;
 import static cn.cordys.common.constants.CommonResultCode.FIELD_VALIDATE_ERROR;
 
 
@@ -75,6 +76,10 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         throw new GenericException(FIELD_VALIDATE_ERROR, Translator.getWithArgs(FIELD_VALIDATE_ERROR.getMessage(), name));
     }
 
+	protected void throwOptionException(String name) {
+		throw new GenericException(FIELD_OPTION_VALUE_ERROR, Translator.getWithArgs(FIELD_OPTION_VALUE_ERROR.getMessage(), name));
+	}
+
     protected void validateRequired(T customField, Object value) {
         // 移动端，不一定需要校验必填，暂时不校验
     }
@@ -108,7 +113,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
                 .map(OptionProp::getValue)
                 .collect(Collectors.toSet());
         if (!values.contains(value)) {
-            throwValidateException(name);
+			throwOptionException(name);
         }
     }
 
