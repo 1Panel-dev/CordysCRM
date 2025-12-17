@@ -115,7 +115,7 @@ CREATE INDEX idx_customer_id ON contract (customer_id ASC);
 CREATE INDEX idx_owner ON contract (owner ASC);
 CREATE INDEX idx_number ON contract (number ASC);
 CREATE INDEX idx_organization_id ON contract (organization_id ASC);
-CREATE INDEX idx_review_status ON contract (approval_status);
+CREATE INDEX idx_approval_status ON contract (approval_status);
 CREATE INDEX idx_archived_status ON contract (archived_status);
 CREATE INDEX idx_status ON contract (status);
 
