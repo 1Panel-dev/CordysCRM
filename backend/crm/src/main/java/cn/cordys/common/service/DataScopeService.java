@@ -251,9 +251,6 @@ public class DataScopeService {
     }
 
     public boolean hasDataPermission(String userId, String orgId, List<String> owners, String permission) {
-        if (CollectionUtils.isEmpty(owners)) {
-            throw new GenericException(Translator.get("data.permission"));
-        }
         DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId, permission);
         if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
