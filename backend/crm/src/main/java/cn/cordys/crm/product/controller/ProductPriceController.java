@@ -53,7 +53,6 @@ public class ProductPriceController {
     private ModuleFormCacheService moduleFormCacheService;
 
     @GetMapping("/module/form")
-    @RequiresPermissions(PermissionConstants.PRICE_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
