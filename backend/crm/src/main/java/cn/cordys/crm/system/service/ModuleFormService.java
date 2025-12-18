@@ -668,6 +668,9 @@ public class ModuleFormService {
 			ListIterator<BaseField> it = subField.getSubFields().listIterator();
             while (it.hasNext()) {
                 BaseField oldField = it.next();
+				if (StringUtils.isEmpty(oldField.getResourceFieldId())) {
+					continue;
+				}
 				if (!reloadFieldMap.containsKey(oldField.getId()) && !subFieldMap.containsKey(oldField.getId())) {
 					continue;
 				}
