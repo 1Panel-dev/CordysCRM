@@ -821,7 +821,8 @@
   );
 
   function searchData(_keyword?: string) {
-    if (!activeTab.value && !props.isCustomerTab) return;
+    if (!activeTab.value && !props.isCustomerTab && props.formKey !== FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY)
+      return;
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       viewId: activeTab.value,
