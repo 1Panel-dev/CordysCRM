@@ -987,9 +987,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 : undefined,
               isTag: field.type === FieldTypeEnum.CHECKBOX || field.type === FieldTypeEnum.SELECT_MULTIPLE,
               filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
-              filter: true,
+              filter: !field.resourceFieldId,
               sortOrder: false,
-              sorter: !noSorterType.includes(field.type),
+              sorter: !noSorterType.includes(field.type) && !field.resourceFieldId,
               filterMultipleValue: multipleValueTypeList.includes(field.type),
               filedType: field.type,
             };
@@ -1092,7 +1092,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key,
               fieldId: field.id,
               isTag: true,
-              filter: true,
+              filter: !field.resourceFieldId,
               filterOptions: [],
               remoteFilterApiKey: field.businessKey,
               filedType: field.type,
@@ -1153,7 +1153,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 tooltip: true,
               },
               sortOrder: false,
-              sorter: !noSorterType.includes(field.type),
+              sorter: !noSorterType.includes(field.type) && !field.resourceFieldId,
               filedType: field.type,
             };
           }
@@ -1166,7 +1166,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               tooltip: true,
             },
             sortOrder: false,
-            sorter: !noSorterType.includes(field.type) ? sorter : false,
+            sorter: !noSorterType.includes(field.type) && !field.resourceFieldId ? sorter : false,
             filedType: field.type,
           };
         });
