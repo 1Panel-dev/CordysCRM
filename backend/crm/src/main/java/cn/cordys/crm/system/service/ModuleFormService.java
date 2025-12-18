@@ -383,9 +383,6 @@ public class ModuleFormService {
      * @return 字段选项集合
      */
     public Map<String, List<OptionDTO>> getOptionMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
-        if (CollectionUtils.isEmpty(allDataFields)) {
-            return new HashMap<>(2);
-        }
         Map<String, List<OptionDTO>> optionMap = new HashMap<>(4);
         Map<String, String> idTypeMap = new HashMap<>(8);
 
@@ -417,6 +414,9 @@ public class ModuleFormService {
                 idTypeMap.put(getOptionKey(showFields, field), FieldType.DEPARTMENT.name());
             }
         });
+		if (CollectionUtils.isEmpty(allDataFields)) {
+			return optionMap;
+		}
         // 平铺子表格字段值
         List<BaseModuleFieldValue> allFieldValues = flattenSubFieldValues(formConfig, allDataFields);
 
@@ -683,6 +683,7 @@ public class ModuleFormService {
 				// 属于引用字段 (保留数据源引用ID)
 				refField.setResourceFieldId(oldField.getResourceFieldId());
 				refField.setFieldWidth(oldField.getFieldWidth());
+				refField.setBusinessKey(oldField.getBusinessKey());
 				if (refField instanceof DatasourceField refSourceField) {
 					// 清空多级引用的属性
 					refSourceField.setRefFields(null);
