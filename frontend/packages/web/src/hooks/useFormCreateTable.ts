@@ -942,8 +942,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                       {},
                       {
                         default: () =>
-                          row[field.businessKey || field.id]?.length
-                            ? (row[field.businessKey || field.id] || []).map((_key: string) =>
+                          row[key]?.length
+                            ? (row[key] || []).map((_key: string) =>
                                 h(NImage, {
                                   class: 'h-[40px] w-[40px] mr-[4px]',
                                   src: `${PreviewPictureUrl}/${_key}`,
@@ -1125,7 +1125,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              render: (row: any) => row[field.businessKey || field.id] ?? '-',
+              render: (row: any) => row[key] ?? '-',
               sortOrder: false,
               sorter,
               filedType: field.type,
