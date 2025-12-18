@@ -301,7 +301,7 @@
                       }
                       if (Array.isArray(fieldVal)) {
                         row[sf.id] = fieldVal.join(',');
-                      } else if (sf.type === FieldTypeEnum.INPUT_NUMBER) {
+                      } else if (sf.type === FieldTypeEnum.INPUT_NUMBER && typeof fieldVal === 'number') {
                         row[sf.id] = formatNumberValue(fieldVal, sf) ?? null;
                       } else {
                         row[sf.id] = fieldVal;
