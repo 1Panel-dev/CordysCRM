@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
@@ -1680,6 +1681,9 @@ public class ModuleFormService {
                             return;
                         }
                         final Map<String, Object> detailMap = MAPPER.convertValue(detail, Map.class);
+						if (MapUtils.isEmpty(detailMap)) {
+							return;
+						}
                         sourceField.getShowFields().forEach(id -> {
                             final BaseField showFieldConf = fieldMap.get(id);
 							if (showFieldConf == null) {
