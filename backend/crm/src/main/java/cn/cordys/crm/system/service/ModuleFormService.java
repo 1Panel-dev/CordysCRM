@@ -1686,8 +1686,11 @@ public class ModuleFormService {
 								return;
 							}
 							if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
-								showFieldMap.put(showFieldConf.getId(), baseResourceFieldService.matchSubFieldValueOfDetailMap(showFieldConf.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-										BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), sfv.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString()));
+								Object matchVal = baseResourceFieldService.matchSubFieldValueOfDetailMap(showFieldConf.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+										BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), sfv.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
+								if (matchVal != null) {
+									showFieldMap.put(showFieldConf.getId(), matchVal);
+								}
 							} else {
 								showFieldMap.put(id, baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap));
 							}
