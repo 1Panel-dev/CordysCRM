@@ -218,7 +218,7 @@ export function transformData({
   let subTableFieldInfo: Record<string, any> = {};
 
   fields.forEach((field) => {
-    const fieldId = field.businessKey || field.id;
+    const fieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
     if (field.type === FieldTypeEnum.LOCATION) {
       addressFieldIds.push(fieldId);
     } else if (field.type === FieldTypeEnum.INDUSTRY) {
