@@ -763,7 +763,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                                                             Map<String, List<BaseModuleFieldValue>> resourceFieldMap) {
         List<BaseField> sourceBusinessFields = fields.stream().filter(field -> field instanceof DatasourceField sourceField &&
                 CollectionUtils.isNotEmpty(sourceField.getShowFields()) && StringUtils.isNotEmpty(sourceField.getBusinessKey())).toList();
-        if (CollectionUtils.isEmpty(sourceBusinessFields)) {
+        if (CollectionUtils.isEmpty(sourceBusinessFields) || resourceFieldMap.isEmpty()) {
             return resourceFieldMap;
         }
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
