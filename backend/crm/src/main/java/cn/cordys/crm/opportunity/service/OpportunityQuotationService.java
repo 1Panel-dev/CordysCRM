@@ -208,8 +208,11 @@ public class OpportunityQuotationService {
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
+		List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId()),
+				new HashMap<>(Map.of(response.getId(), moduleFields))).get(response.getId());
+		response.setModuleFields(fvs);
         Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, moduleFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         if (opportunity != null) {
             optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
             response.setOpportunityName(opportunity.getName());
@@ -505,11 +508,14 @@ public class OpportunityQuotationService {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = opportunityQuotationFieldService.getResourceFieldMap(
                 listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
-        // 列表项设置自定义字段&&用户名
+		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = opportunityQuotationFieldService.setBusinessRefFieldValue(listData,
+				moduleFormService.getFlattenFormFields(FormKey.QUOTATION.getKey(), organizationId), dataFieldMap);
+
+		// 列表项设置自定义字段&&用户名
         List<String> createUserIds = listData.stream().map(OpportunityQuotationListResponse::getCreateUser).toList();
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(createUserIds, organizationId);
         listData.forEach(item -> {
-            item.setModuleFields(dataFieldMap.get(item.getId()));
+            item.setModuleFields(resolvefieldValueMap.get(item.getId()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getCreateUser());
             if (userDeptDTO != null) {
                 item.setDepartmentId(userDeptDTO.getDeptId());
