@@ -1115,6 +1115,7 @@
     v-if="fieldConfig"
     v-model:show="showDataSourceDisplayFieldModal"
     :field-config="fieldConfig"
+    :is-sub-table-field="isSubTableField"
     @save="handleDataSourceDisplayFieldSave"
   />
   <fieldLinkDrawer

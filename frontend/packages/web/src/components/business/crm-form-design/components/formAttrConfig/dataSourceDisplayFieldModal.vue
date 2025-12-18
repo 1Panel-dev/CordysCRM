@@ -53,6 +53,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    isSubTableField?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -96,7 +97,9 @@
     }
   );
 
-  const subTableList = computed(() => allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.SUB_TABLE));
+  const subTableList = computed(() =>
+    !props.isSubTableField ? [] : allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.SUB_TABLE)
+  );
   const customList = computed(() => allColumns.value.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));
 
   const selectedList = ref<any[]>([]);
