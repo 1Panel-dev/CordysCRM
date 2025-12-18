@@ -41,6 +41,7 @@
 <script setup lang="ts">
   import { NDivider, NFormItem } from 'naive-ui';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
@@ -97,7 +98,11 @@
 
   function format(val: number | null) {
     if (val === null) return '';
-    if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
+    if (
+      (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) ||
+      // TODO 下个版本再调整
+      (props.fieldConfig.type === FieldTypeEnum.FORMULA && props.fieldConfig.showThousandsSeparator)
+    ) {
       return val.toLocaleString('en-US');
     }
     return val.toString();
