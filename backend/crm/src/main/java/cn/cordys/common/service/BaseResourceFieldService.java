@@ -761,7 +761,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return 字段值集合
      */
     @SuppressWarnings("unchecked")
-    public Map<String, List<BaseModuleFieldValue>> setBusinessRefFieldValue(List<? extends BaseModel> details, List<BaseField> fields,
+    public Map<String, List<BaseModuleFieldValue>> setBusinessRefFieldValue(List<?> details, List<BaseField> fields,
                                                                             Map<String, List<BaseModuleFieldValue>> resourceFieldMap) {
         List<BaseField> sourceBusinessFields = fields.stream().filter(field -> field instanceof DatasourceField sourceField &&
                 CollectionUtils.isNotEmpty(sourceField.getShowFields()) && StringUtils.isNotEmpty(sourceField.getBusinessKey())).toList();
@@ -795,11 +795,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
                 sourceField.getShowFields().forEach(id -> {
                     BaseField showFieldConfig = fieldConfigMap.get(id);
-                    if (showFieldConfig == null) {
+                    if (showFieldConfig == null || !detailMap.containsKey("id")) {
                         return;
                     }
-                    resourceFieldMap.putIfAbsent(detail.getId(), new ArrayList<>());
-                    resourceFieldMap.get(detail.getId()).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, sourceDetail)));
+					String resourceId = detailMap.get("id").toString();
+					resourceFieldMap.putIfAbsent(resourceId, new ArrayList<>());
+                    resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, sourceDetail)));
                 });
             });
         });
