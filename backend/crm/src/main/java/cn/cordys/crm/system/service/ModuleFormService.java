@@ -56,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1468,7 +1469,13 @@ public class ModuleFormService {
                     List<Map<String, Object>> fields = (List<Map<String, Object>>) entry.getValue();
                     List<LinkField> fieldList = fields.stream().map(field -> {
                         field.put("enable", true);
-                        return BeanUtils.copyBean(new LinkField(), field);
+						LinkField linkField = new LinkField();
+						try {
+							org.apache.commons.beanutils.BeanUtils.populate(linkField, field);
+						} catch (IllegalAccessException | InvocationTargetException e) {
+							LogUtils.error("Populate old link field error: {}", e.getMessage());
+						}
+						return linkField;
                     }).toList();
                     String scenarioKey = (Strings.CS.equals(formKey, FormKey.CUSTOMER.getKey()) && Strings.CS.equals(entry.getKey(), FormKey.CLUE.getKey()) ?
                             LinkScenarioKey.CLUE_TO_CUSTOMER.name() :
