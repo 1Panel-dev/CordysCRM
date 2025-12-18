@@ -26,6 +26,7 @@ public class SystemService {
     private static final String PRODUCT = "CORDYS";
     private static final String EDITION_CE = "ce";
     private static final String EDITION_EE = "ee";
+    private static final String PERMISSION_CACHE = "permission_cache";
 
     private final CacheManager cacheManager;
     private final LicenseService licenseService;
@@ -126,7 +127,7 @@ public class SystemService {
             LogUtils.info("CacheManager 未初始化，跳过清理。");
             return;
         }
-        String[] cacheNames = {CACHE_FORM, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT};
+        String[] cacheNames = {CACHE_FORM, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE};
         for (String cacheName : cacheNames) {
             try {
                 Cache cache = cacheManager.getCache(cacheName);
