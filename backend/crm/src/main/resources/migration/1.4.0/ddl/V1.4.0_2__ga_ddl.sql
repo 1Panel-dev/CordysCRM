@@ -278,6 +278,9 @@ CREATE TABLE product_price_field_blob
 CREATE INDEX idx_resource_id ON product_price_field_blob (resource_id ASC);
 CREATE INDEX idx_ref_sub_id ON product_price_field_blob (ref_sub_id ASC);
 
+-- modify record, plan content field length (3000)
+ALTER TABLE follow_up_record MODIFY COLUMN content VARCHAR(3000) NOT NULL COMMENT '跟进内容';
+ALTER TABLE follow_up_plan MODIFY COLUMN content VARCHAR(3000) NOT NULL COMMENT '跟进内容';
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
