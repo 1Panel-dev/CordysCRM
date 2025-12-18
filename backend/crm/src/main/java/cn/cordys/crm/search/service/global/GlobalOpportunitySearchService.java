@@ -196,10 +196,10 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
                         opportunityListResponse.setName((String) getInputFieldValue(opportunityListResponse.getName(), opportunityListResponse.getName().length()));
                     }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "contactId")) {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "contactId") && StringUtils.isNotBlank(opportunityListResponse.getContactName())) {
                         opportunityListResponse.setContactName((String) getInputFieldValue(opportunityListResponse.getContactName(), opportunityListResponse.getContactName().length()));
                     }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId")) {
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId") && StringUtils.isNotBlank(opportunityListResponse.getCustomerName())) {
                         opportunityListResponse.setCustomerName((String) getInputFieldValue(opportunityListResponse.getCustomerName(), opportunityListResponse.getCustomerName().length()));
                     }
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products")) {
