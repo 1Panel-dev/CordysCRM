@@ -862,6 +862,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> detailMap, String subKey, String rowKey, String rowVal) {
+		if (!detailMap.containsKey(subKey)) {
+			return null;
+		}
         List<Map<String, Object>> rows = (List) detailMap.get(subKey);
         for (Map<String, Object> row : rows) {
             if (row.containsKey(rowKey) && Strings.CS.equals(rowVal, row.get(rowKey).toString())) {
@@ -925,8 +928,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                     return;
                                 }
                                 if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
-                                    rowMap.put(showFieldConfig.getId(), matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-                                            BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString()));
+									Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+											BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
+									if (matchVal != null) {
+										rowMap.put(showFieldConfig.getId(), matchVal);
+									}
                                 } else {
                                     rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
                                 }
