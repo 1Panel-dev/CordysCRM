@@ -1,18 +1,11 @@
 package cn.cordys.common.service;
 
-import cn.cordys.aspectj.constants.LogType;
-import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.context.SourceDetailResolveContext;
-import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.BatchUpdateDbParam;
-import cn.cordys.common.dto.ChartAnalysisDbRequest;
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.dto.chart.ChartCategoryAxisDbParam;
-import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -20,22 +13,16 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.*;
-import cn.cordys.common.utils.IndustryUtils;
-import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldSourceType;
-import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.DatasourceField;
-import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
-import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.AttachmentService;
-import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -51,7 +38,6 @@ import org.springframework.context.annotation.Lazy;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -64,7 +50,7 @@ import java.util.stream.Collectors;
  * @author jianxing
  * @date 2025-01-03 12:01:54
  */
-public abstract class BaseResourceFieldService<T extends BaseResourceField, V extends BaseResourceField> {
+public abstract class BaseResourceFieldService<T extends BaseResourceField, V extends BaseResourceField> extends BaseChartService {
 
     @Resource
     private SerialNumGenerator serialNumGenerator;
@@ -73,17 +59,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
-    private LogService logService;
-    @Resource
     private ModuleFormCacheService moduleFormCacheService;
-    @Resource
-    private ModuleFormService moduleFormService;
     @Lazy
     @Resource
     private FieldSourceServiceProvider fieldSourceServiceProvider;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+	private static final String SOURCE_DETAIL_ID = "id";
+	private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
+	/**
+	 * 获取资源字段类型 (T)
+	 * @return 资源字段类型
+	 */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Class<T> getResourceFieldClass() {
         Type type = getGenericType(0);
@@ -94,6 +82,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
+	/**
+	 * 获取资源大字段类型 (V)
+	 * @return 资源大字段类型
+	 */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Class<V> getResourceFieldBlobClass() {
         Type type = getGenericType(1);
@@ -104,6 +96,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
+	/**
+	 * 获取泛型类型
+	 * @param index 泛型参数索引
+	 * @return 泛型类型
+	 */
     protected Type getGenericType(int index) {
         // 获取当前类的泛型父类
         Type superclass = getClass().getGenericSuperclass();
@@ -121,82 +118,28 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         throw new IllegalStateException("No generic type found");
     }
 
-    private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
-        Map<String, ChartResult> mergedResults = new HashMap<>();
-        for (ChartResult chartResult : chartResults) {
-            String categoryAxis = getKeyFunc.apply(chartResult);
-            if (mergedResults.containsKey(categoryAxis)) {
-                ChartResult existingResult = mergedResults.get(categoryAxis);
-                if (existingResult.getValueAxis() instanceof Double && chartResult.getValueAxis() instanceof Double) {
-                    existingResult.setValueAxis((Double) existingResult.getValueAxis() + (Double) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Long && chartResult.getValueAxis() instanceof Long) {
-                    existingResult.setValueAxis((Long) existingResult.getValueAxis() + (Long) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Integer && chartResult.getValueAxis() instanceof Integer) {
-                    existingResult.setValueAxis((Integer) existingResult.getValueAxis() + (Integer) chartResult.getValueAxis());
-                }
-            } else {
-                mergedResults.put(categoryAxis, chartResult);
-            }
-        }
-        return new ArrayList<>(mergedResults.values());
-    }
-
-    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {
-        BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
-        if (baseField != null) {
-            // 业务字段key翻译成字段ID
-            categoryFieldValue.setFieldId(baseField.getId());
-        } else {
-            categoryFieldValue.setFieldId(fieldKey);
-        }
-        return categoryFieldValue;
-    }
-
-    private static BaseField getBaseField(List<BaseField> fields, String fieldKey) {
-        if (StringUtils.isBlank(fieldKey)) {
-            return null;
-        }
-        return fields.stream()
-                .filter(field -> Strings.CI.equals(field.getId(), fieldKey)
-                        || Strings.CI.equals(field.getBusinessKey(), fieldKey))
-                .findFirst().orElse(null);
-    }
-
-    public static List<BaseField> getChartBaseFields() {
-        BaseField createUserField = new MemberField();
-        createUserField.setType(FieldType.MEMBER.name());
-        createUserField.setId("createUser");
-        createUserField.setBusinessKey("createUser");
-
-        BaseField updateUserField = new MemberField();
-        updateUserField.setType(FieldType.MEMBER.name());
-        updateUserField.setId("updateUser");
-        updateUserField.setBusinessKey("updateUser");
-
-        return List.of(createUserField, updateUserField);
-    }
-
+	/**
+	 * 获取表单Key
+	 * @return 表单Key
+	 */
     protected abstract String getFormKey();
 
+	/**
+	 * 获取资源字段Mapper
+	 * @return FieldMapper
+	 */
     protected abstract BaseMapper<T> getResourceFieldMapper();
 
+	/**
+	 * 获取资源大字段Mapper
+	 * @return BlobFieldMapper
+	 */
     protected abstract BaseMapper<V> getResourceFieldBlobMapper();
 
-    protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
-        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
-        wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
-        if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
-            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-        }
-    }
-
     /**
-     * 获取资源和字段值映射
-     *
+     * 获取资源所有字段值
      * @param resourceId 资源ID
-     *
-     * @return 字段值映射
+     * @return 字段值集合
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
         List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true).get(resourceId);
@@ -204,6 +147,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
+	 * 保存字段值
+	 *
      * @param resource          资源
      * @param orgId             组织ID
      * @param userId            用户ID
@@ -224,7 +169,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
             fieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, v -> v));
         } else {
-            fieldValueMap = new HashMap<>();
+            fieldValueMap = new HashMap<>(8);
         }
 
         // 校验业务字段，字段值是否重复
@@ -239,7 +184,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             (field.isSerialNumber() && StringUtils.isEmpty(field.getBusinessKey())) || field.isSubField();
                 })
                 .forEach(field -> {
-                    BaseModuleFieldValue fieldValue = processFieldValue(field, fieldValueMap, update, orgId);
+                    BaseModuleFieldValue fieldValue = processSpecialFieldValue(field, fieldValueMap, update, orgId);
                     if (fieldValue == null || fieldValue.getFieldValue() == null || StringUtils.isNotEmpty(field.getResourceFieldId())) {
                         return;
                     }
@@ -266,7 +211,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                 });
 
-        // Process all attachment field
+        // process all attachment field
         List<BaseModuleFieldValue> attachmentFieldVals = allFields.stream()
                 .filter(field -> {
                     BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
@@ -284,31 +229,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
-    public BaseModuleFieldValue processFieldValue(BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
-        // 流水号
-        if (field.isSerialNumber() && !update) {
-            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-            fieldValue.setFieldId(field.getId());
-            String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(), orgId, getFormKey());
-            fieldValue.setFieldValue(serialNo);
-            return fieldValue;
-        }
-        // 子表格 {业务字段来源resource, 字段值来源fieldValueMap}
-        if (field.isSubField()) {
-            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-            fieldValue.setFieldId(field.getId());
-            String businessKey = field.getBusinessKey();
-            if (StringUtils.isNotEmpty(businessKey)) {
-                fieldValue.setFieldValue(fieldValueMap.get(businessKey).getFieldValue());
-            } else {
-                fieldValue = fieldValueMap.get(field.getId());
-            }
-            return fieldValue;
-        }
-        // 其他字段直接返回
-        return fieldValueMap.get(field.getId());
-    }
-
+	/**
+	 * 保存子字段值
+	 *
+	 * @param resourceId 资源ID
+	 * @param subField 子字段信息
+	 * @param fieldValue 子字段值
+	 * @param fields 字段值集合
+	 * @param fieldBlobs 大字段值集合
+	 */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void saveSubFieldValue(String resourceId, SubField subField, BaseModuleFieldValue fieldValue,
                                   List<T> fields, List<V> fieldBlobs) {
@@ -377,28 +306,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         });
     }
 
-    private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, String fieldName) {
-        if (!field.needRepeatCheck()) {
-            return;
-        }
-        Class<?> clazz = resource.getClass();
-        String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
-
-        Object fieldValue = getResourceFieldValue(resource, fieldName);
-
-        if (isNotBlank(fieldValue)) {
-            boolean repeat;
-            if (CollectionUtils.isNotEmpty(updateIds)) {
-                repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, updateIds);
-            } else {
-                repeat = commonMapper.checkAddExist(tableName, fieldName, fieldValue.toString(), orgId);
-            }
-            if (repeat) {
-                throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-            }
-        }
-    }
-
+	/**
+	 * 批量更新自定义字段或业务字段值
+	 *
+	 * @param request 批量参数
+	 * @param field 字段信息
+	 * @param originResourceList 旧的字段值
+	 * @param clazz 资源类对象
+	 * @param logModule 日志类型
+	 * @param batchInsertFunc 批量更新回调函数
+	 * @param userId  当前用户ID
+	 * @param orgId 当前组织ID
+	 * @param <K> 资源类型
+	 */
     public <K> void batchUpdate(ResourceBatchEditRequest request,
                                 BaseField field,
                                 List<K> originResourceList,
@@ -420,246 +340,42 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         updateParam.setUpdateUser(userId);
 
         if (StringUtils.isNotBlank(field.getBusinessKey())) {
+			// 设置值&&唯一性校验
             K resource = newInstance(clazz);
-            // 设置值用于唯一校验
             setResourceFieldValue(resource, field.getBusinessKey(), request.getFieldValue());
-            // 字段唯一性校验
             businessFieldRepeatCheck(orgId, resource, request.getIds(), field, field.getBusinessKey());
-
             updateParam.setFieldName(field.getBusinessKey());
             updateParam.setFieldValue(request.getFieldValue());
-
             // 添加日志
             addBusinessFieldBatchUpdateLog(originResourceList, field, request, logModule, userId, orgId);
         } else {
             ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
-
-            // 查询修改前的字段，记录日志
             List<? extends BaseResourceField> originFields;
             if (field.isBlob()) {
                 originFields = getResourceFieldBlob(request.getIds(), request.getFieldId());
             } else {
                 originFields = getResourceField(request.getIds(), request.getFieldId());
             }
-
-            // 先删除
+			// 删除旧值 && 唯一性校验 && 添加新值
             batchDeleteFieldValues(request, moduleField);
-
             if (field.needRepeatCheck() && isNotBlank(request.getFieldValue())) {
-                // 字段唯一性校验
                 checkUnique(BeanUtils.copyBean(new BaseModuleFieldValue(), request), field);
             }
-
             if (isNotBlank(request.getFieldValue())) {
-                // 再插入
                 batchUpdateFieldValues(request, field, moduleField);
             }
-
             // 添加日志
             addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
         }
-
         // 批量修改业务字段和更新时间等
         batchInsertFunc.accept(updateParam);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private boolean isNotBlank(Object value) {
-        switch (value) {
-            case null -> {
-                return false;
-            }
-            case String str -> {
-                return StringUtils.isNotBlank(str);
-            }
-            case List list -> {
-                return CollectionUtils.isNotEmpty(list);
-            }
-            default -> {
-                return true;
-            }
-        }
-    }
-
-    public BaseField getAndCheckField(String fieldId, String organizationId) {
-        return moduleFormCacheService.getConfig(getFormKey(), organizationId)
-                .getFields()
-                .stream()
-                .filter(f -> fieldId.equals(f.getId()))
-                .findFirst()
-                .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
-    }
-
-    private <K> K newInstance(Class<K> clazz) {
-        K resource;
-        try {
-            resource = clazz.getConstructor().newInstance();
-        } catch (Exception e) {
-            LogUtils.error(e);
-            throw new RuntimeException(e);
-        }
-        return resource;
-    }
-
-    /**
-     * 记录业务字段批量更新日志
-     *
-     * @param originResourceList 资源集合
-     * @param field              字段信息
-     * @param request            请求参数
-     * @param userId             用户ID
-     * @param orgId              组织ID
-     * @param <K>                资源类型
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
-                                                    BaseField field,
-                                                    ResourceBatchEditRequest request,
-                                                    String logModule,
-                                                    String userId,
-                                                    String orgId) {
-        // 记录日志
-        List<LogDTO> logs = originResourceList.stream()
-                .map(resource -> {
-                    Map originResource = new HashMap();
-                    if (isNotBlank(getResourceFieldValue(resource, field.getBusinessKey()))) {
-                        originResource.put(field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
-                    }
-
-                    Map modifiedResource = new HashMap();
-                    if (isNotBlank(request.getFieldValue())) {
-                        modifiedResource.put(field.getBusinessKey(), request.getFieldValue());
-                    }
-
-                    Object id = getResourceFieldValue(resource, "id");
-                    Object name = getResourceFieldValue(resource, "name");
-
-                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
-                    logDTO.setOriginalValue(originResource);
-                    logDTO.setModifiedValue(modifiedResource);
-                    return logDTO;
-                }).toList();
-
-        logService.batchAdd(logs);
-    }
-
-    /**
-     * 记录自定义字段批量更新日志
-     *
-     * @param originResourceList 资源集合
-     * @param originFields       旧的字段值
-     * @param field              字段信息
-     * @param request            请求参数
-     * @param userId             用户ID
-     * @param orgId              组织ID
-     * @param <K>                资源类型
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
-                                                  List<? extends BaseResourceField> originFields,
-                                                  ResourceBatchEditRequest request,
-                                                  BaseField field,
-                                                  String logModule,
-                                                  String userId,
-                                                  String orgId) {
-        Map<String, ? extends BaseResourceField> fieldMap = originFields.stream()
-                .collect(Collectors.toMap(BaseResourceField::getResourceId, Function.identity()));
-        // 记录日志
-        List<LogDTO> logs = originResourceList.stream()
-                .map(resource -> {
-                    Object id = getResourceFieldValue(resource, "id");
-                    Object name = getResourceFieldValue(resource, "name");
-
-                    BaseResourceField baseResourceField = fieldMap.get(id.toString());
-                    Map originResource = new HashMap();
-                    if (baseResourceField != null && isNotBlank(baseResourceField.getFieldValue())) {
-                        // 获取字段解析器
-                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-                        // 将数据库中的字符串值,转换为对应的对象值
-                        Object objectValue = customFieldResolver.convertToValue(field, baseResourceField.getFieldValue().toString());
-                        baseResourceField.setFieldValue(objectValue);
-                        originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
-                    }
-
-                    Map modifiedResource = new HashMap();
-                    if (isNotBlank(request.getFieldValue())) {
-                        modifiedResource.put(request.getFieldId(), request.getFieldValue());
-                    }
-
-                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
-                    logDTO.setOriginalValue(originResource);
-                    logDTO.setModifiedValue(modifiedResource);
-                    return logDTO;
-                }).toList();
-
-        logService.batchAdd(logs);
-    }
-
-    private <K> Object getResourceFieldValue(K resource, String fieldName) {
-        Class<?> clazz = resource.getClass();
-        // 获取字段值
-        Object fieldValue = null;
-        try {
-            fieldValue = clazz.getMethod("get" + CaseFormatUtils.capitalizeFirstLetter(fieldName))
-                    .invoke(resource);
-        } catch (Exception e) {
-            LogUtils.error(e);
-        }
-        return fieldValue;
-    }
-
-    private <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
-        Class<?> clazz = resource.getClass();
-        // 设置字段值
-        try {
-            if (value != null) {
-                Class<?> valueClass = value.getClass();
-                switch (value) {
-                    case List<?> ignored -> valueClass = List.class;
-                    case Map<?, ?> ignored -> valueClass = Map.class;
-                    case Integer i -> {
-                        Class<?> type = clazz.getDeclaredField(fieldName).getType();
-                        if (type.equals(BigDecimal.class)) {
-                            value = BigDecimal.valueOf(i);
-                        } else if (type.equals(Long.class)) {
-                            value = Long.valueOf(i);
-                        }
-                        valueClass = value.getClass();
-                    }
-                    default -> {
-                    }
-                }
-                clazz.getMethod("set" + CaseFormatUtils.capitalizeFirstLetter(fieldName), valueClass)
-                        .invoke(resource, value);
-            }
-        } catch (Exception e) {
-            LogUtils.error(e);
-        }
-    }
-
-    private T newResourceField() {
-        try {
-            return getResourceFieldClass().getConstructor().newInstance();
-        } catch (Exception e) {
-            LogUtils.error(e);
-            throw new GenericException(e);
-        }
-    }
-
-    private V newResourceFieldBlob() {
-        try {
-            return getResourceFieldBlobClass().getConstructor().newInstance();
-        } catch (Exception e) {
-            LogUtils.error(e);
-            throw new GenericException(e);
-        }
     }
 
     /**
      * 查询指定资源的模块字段值
      *
      * @param resourceIds 资源ID集合
-     *
+	 * @param withBlob 是否包含大文本字段
      * @return 字段集合
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -672,8 +388,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             List<BaseField> flattenFormFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
                     getFlattenFormFields(getFormKey(), OrganizationContext.getOrganizationId());
             Map<String, BaseField> fieldConfigMap = flattenFormFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
-            Map<String, List<BaseModuleFieldValue>> resourceMap = new HashMap<>();
-
+            Map<String, List<BaseModuleFieldValue>> resourceMap = new HashMap<>(8);
             List<T> resourceFields = getResourceField(resourceIds);
             getSourceDetailMapByIds(flattenFormFields, resourceFields);
             resourceFields.forEach(resourceField -> {
@@ -693,7 +408,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (objectValue == null) {
                         return;
                     }
-
                     String resourceId = resourceField.getResourceId();
                     resourceMap.putIfAbsent(resourceId, new ArrayList<>());
                     resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceField.getFieldId(), objectValue));
@@ -714,16 +428,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                 }
             });
-
             // 提前获取大文本字段值
             List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
             // 处理子表格字段值
             setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs));
-
             if (!withBlob) {
                 return resourceMap;
             }
-
             resourceFieldBlobs.forEach(resourceFieldBlob -> {
                 if (resourceFieldBlob instanceof BaseResourceSubField subResourceField && StringUtils.isNotEmpty(subResourceField.getRefSubId())) {
                     return;
@@ -742,7 +453,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceFieldBlob.getFieldId(), objectValue));
                 }
             });
-
             return resourceMap;
         } catch (Exception e) {
             LogUtils.error(e);
@@ -753,11 +463,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * 设置业务引用字段值
+     * 数据源业务字段引用值回显
      *
      * @param details 详情集合
      * @param fields  表单字段集合
-     *
      * @return 字段值集合
      */
     @SuppressWarnings("unchecked")
@@ -770,7 +479,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
         details.forEach(detail -> {
-            Map<String, Object> detailMap = mapper.convertValue(detail, Map.class);
+            Map<String, Object> detailMap = MAPPER.convertValue(detail, Map.class);
             sourceBusinessFields.forEach(bsf -> {
                 DatasourceField sourceField = (DatasourceField) bsf;
                 Object val = detailMap.get(sourceField.getBusinessKey());
@@ -782,7 +491,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     try {
                         Object sourceObj = fieldSourceServiceProvider.safeGetById(sourceType, val.toString());
                         if (detail != null) {
-                            SourceDetailResolveContext.put(val.toString(), mapper.convertValue(sourceObj, Map.class));
+                            SourceDetailResolveContext.put(val.toString(), MAPPER.convertValue(sourceObj, Map.class));
                         }
                     } catch (Exception e) {
                         LogUtils.error(e);
@@ -795,10 +504,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
                 sourceField.getShowFields().forEach(id -> {
                     BaseField showFieldConfig = fieldConfigMap.get(id);
-                    if (showFieldConfig == null || !detailMap.containsKey("id")) {
+                    if (showFieldConfig == null || !detailMap.containsKey(SOURCE_DETAIL_ID)) {
                         return;
                     }
-					String resourceId = detailMap.get("id").toString();
+					String resourceId = detailMap.get(SOURCE_DETAIL_ID).toString();
 					resourceFieldMap.putIfAbsent(resourceId, new ArrayList<>());
                     resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, sourceDetail)));
                 });
@@ -807,40 +516,23 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return resourceFieldMap;
     }
 
-    @SuppressWarnings("unchecked")
-    private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
-        Map<String, String> sourceIdType = flattenFields.stream().filter(sf -> sf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType(), (prev, next) -> next));
-        resourceFields.stream().filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null).forEach(rf -> {
-            if (SourceDetailResolveContext.contains(rf.getFieldValue().toString())) {
-                return;
-            }
-            SourceDetailResolveContext.putPlaceholder(rf.getFieldValue().toString());
-            try {
-                FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                Object detail = fieldSourceServiceProvider.safeGetById(sourceType, rf.getFieldValue().toString());
-                if (detail == null) {
-                    SourceDetailResolveContext.remove(rf.getFieldValue().toString());
-                } else {
-                    SourceDetailResolveContext.put(rf.getFieldValue().toString(), mapper.convertValue(detail, Map.class));
-                }
-            } catch (Exception e) {
-                LogUtils.error(e);
-                SourceDetailResolveContext.remove(rf.getFieldValue().toString());
-            }
-        });
-    }
-
+	/**
+	 * 获取详情中的字段值
+	 *
+	 * @param field 字段信息
+	 * @param sourceDetailMap 来源详情
+	 * @return 字段值
+	 */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> detailMap) {
-        if (detailMap == null || detailMap.isEmpty()) {
+    public Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> sourceDetailMap) {
+        if (MapUtils.isEmpty(sourceDetailMap)) {
             return null;
         }
         if (StringUtils.isNotEmpty(field.getBusinessKey())) {
-            return detailMap.get(field.getBusinessKey());
+            return sourceDetailMap.get(field.getBusinessKey());
         }
-        if (detailMap.containsKey("moduleFields")) {
-            List<Map> fvs = (List<Map>) detailMap.get("moduleFields");
+        if (sourceDetailMap.containsKey(DETAIL_FIELD_PARAM_NAME)) {
+            List<Map> fvs = (List<Map>) sourceDetailMap.get(DETAIL_FIELD_PARAM_NAME);
             for (Map fv : fvs) {
                 if (field.getId().equals(fv.get("fieldId"))) {
                     return fv.get("fieldValue");
@@ -851,134 +543,29 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * 匹配子表格字段值
+     * 子字段值回显
      *
-     * @param targetId  获取的目标ID
-     * @param detailMap 详情
-     * @param subKey    子表格key
-     * @param rowKey    命中的行key
-     * @param rowVal    命中的行值
-     *
+     * @param targetId  显示的子字段
+     * @param sourceDetail 来源详情
+     * @param subKey    子表格业务Key
+     * @param sourceRowKey    来源行Key
+     * @param sourceRowVal    来源行值
      * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> detailMap, String subKey, String rowKey, String rowVal) {
-		if (!detailMap.containsKey(subKey)) {
+    public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> sourceDetail, String subKey, String sourceRowKey, String sourceRowVal) {
+		if (MapUtils.isEmpty(sourceDetail) || !sourceDetail.containsKey(subKey)) {
 			return null;
 		}
-        List<Map<String, Object>> rows = (List) detailMap.get(subKey);
+		// 子表格数据集合
+        List<Map<String, Object>> rows = (List) sourceDetail.get(subKey);
         for (Map<String, Object> row : rows) {
-            if (row.containsKey(rowKey) && Strings.CS.equals(rowVal, row.get(rowKey).toString())) {
+			// 匹配行数据
+            if (row.containsKey(sourceRowKey) && Strings.CS.equals(sourceRowVal, row.get(sourceRowKey).toString())) {
                 return row.get(targetId);
             }
         }
         return null;
-    }
-
-    /**
-     * 设置子表格字段值
-     *
-     * @param resourceMap    返回的资源字段值
-     * @param fieldConfigMap 字段配置
-     * @param resourceFields 值集合
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap, Map<String, BaseField> fieldConfigMap,
-                                         List<? extends BaseResourceField> resourceFields) {
-        Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
-        if (!subFieldMap.isEmpty()) {
-            Set<String> refSubSet = subFieldMap.keySet();
-            List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
-            Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
-            Map<String, BaseField> subFieldIdConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
-
-            Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
-                    .filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
-                    .collect(Collectors.groupingBy(BaseResourceField::getResourceId));
-            subResourceMap.forEach((resourceId, subResources) -> {
-                Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>();
-                subResources.forEach(resource -> {
-                    if (resource.getFieldValue() != null) {
-                        BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
-                        if (fieldConfig == null) {
-                            return;
-                        }
-                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-                        Object objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
-
-                        BaseResourceSubField subResource = (BaseResourceSubField) resource;
-                        subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
-                        int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
-                        if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
-                            subFieldValueMap.get(subResource.getRefSubId()).add(new HashMap<>());
-                        }
-                        Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
-                        rowMap.put(subResource.getFieldId(), objectValue);
-                        if (objectValue == null || !SourceDetailResolveContext.getSourceMap().containsKey(objectValue.toString())) {
-                            return;
-                        }
-                        if (fieldConfig instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
-                            // 处理展示列
-                            Map<String, Object> detailMap = SourceDetailResolveContext.getSourceMap().get(objectValue.toString());
-                            if (MapUtils.isEmpty(detailMap)) {
-                                return;
-                            }
-                            sourceField.getShowFields().forEach(id -> {
-                                BaseField showFieldConfig = subFieldIdConfigMap.get(id);
-                                if (showFieldConfig == null) {
-                                    return;
-                                }
-                                if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
-									Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-											BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
-									if (matchVal != null) {
-										rowMap.put(showFieldConfig.getId(), matchVal);
-									}
-                                } else {
-                                    rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
-                                }
-                            });
-                        }
-                        subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
-                    }
-                });
-                List<BaseModuleFieldValue> subTableFieldValues = new ArrayList<>();
-                subFieldValueMap.forEach((subFieldId, subFieldValues) -> {
-                    BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-                    fieldValue.setFieldId(subFieldId);
-                    fieldValue.setFieldValue(subFieldValues);
-                    subTableFieldValues.add(fieldValue);
-                });
-                resourceMap.putIfAbsent(resourceId, new ArrayList<>());
-                resourceMap.get(resourceId).addAll(subTableFieldValues);
-            });
-        }
-    }
-
-    private List<T> getResourceField(List<String> resourceIds) {
-        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(BaseResourceField::getResourceId, resourceIds);
-        return getResourceFieldMapper().selectListByLambda(wrapper);
-    }
-
-    private List<T> getResourceField(List<String> resourceIds, String fieldId) {
-        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(BaseResourceField::getResourceId, resourceIds);
-        wrapper.eq(BaseResourceField::getFieldId, fieldId);
-        return getResourceFieldMapper().selectListByLambda(wrapper);
-    }
-
-    private List<V> getResourceFieldBlob(List<String> resourceIds) {
-        LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(BaseResourceField::getResourceId, resourceIds);
-        return getResourceFieldBlobMapper().selectListByLambda(wrapper);
-    }
-
-    private List<V> getResourceFieldBlob(List<String> resourceIds, String fieldId) {
-        LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(BaseResourceField::getResourceId, resourceIds);
-        wrapper.eq(BaseResourceField::getFieldId, fieldId);
-        return getResourceFieldBlobMapper().selectListByLambda(wrapper);
     }
 
     /**
@@ -1055,31 +642,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isNotEmpty(customerFields)) {
             getResourceFieldMapper().batchInsert(customerFields);
         }
-
         if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
             getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
-        }
-    }
-
-    /**
-     * 处理临时附件
-     */
-    @SuppressWarnings("unchecked")
-    private void preProcessTempAttachment(String orgId, String resourceId, String userId, Object processValue) {
-        try {
-            List<String> tmpPicIds = new ArrayList<>();
-            if (processValue instanceof String) {
-                tmpPicIds.add(processValue.toString());
-            } else if (processValue instanceof List) {
-                tmpPicIds.addAll((List<String>) processValue);
-            }
-            AttachmentService attachmentService = CommonBeanFactory.getBean(AttachmentService.class);
-            UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
-            if (attachmentService != null) {
-                attachmentService.processTemp(transferRequest);
-            }
-        } catch (Exception e) {
-            LogUtils.error("临时附件处理失败: {}", e.getMessage());
         }
     }
 
@@ -1134,19 +698,38 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
-    public <K> void updateModuleFieldByAgent(K customer, List<BaseModuleFieldValue> originCustomerFields, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+	/**
+	 * 更新自定义字段值 (MCP调用)
+	 *
+	 * @param resource 资源对象
+	 * @param originCustomerFields 原有字段值
+	 * @param moduleFields 新的字段值
+	 * @param orgId 组织ID
+	 * @param userId 当前用户ID
+	 * @param <K> 资源类型
+	 */
+    public <K> void updateModuleFieldByAgent(K resource, List<BaseModuleFieldValue> originCustomerFields, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
-
         if (CollectionUtils.isEmpty(originCustomerFields)) {
-            saveModuleField(customer, orgId, userId, moduleFields, false);
+            saveModuleField(resource, orgId, userId, moduleFields, false);
         } else {
-            updateModuleField(customer, orgId, userId, moduleFields, true);
+            updateModuleField(resource, orgId, userId, moduleFields, true);
         }
     }
 
+	/**
+	 * 更新自定义字段值
+	 *
+	 * @param resource 资源对象
+	 * @param orgId 组织ID
+	 * @param userId 当前用户ID
+	 * @param moduleFieldValues 字段值集合
+	 * @param update 是否更新操作
+	 * @param <K> 资源类型
+	 */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <K> void updateModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -1154,9 +737,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isEmpty(allFields)) {
             return;
         }
+
         String resourceId = (String) getResourceFieldValue(resource, "id");
         List<T> resourceFields = getResourceField(List.of(resourceId));
-
         Map<String, BaseModuleFieldValue> moduleFieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, t -> t));
 
         // 校验业务字段，字段值是否重复
@@ -1167,7 +750,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         resourceFields.forEach(resourceField -> {
             if (moduleFieldValueMap.containsKey(resourceField.getFieldId())) {
                 BaseModuleFieldValue fieldValue = moduleFieldValueMap.get(resourceField.getFieldId());
-
                 BaseField base = allFields.stream().filter(baseField -> baseField.getId().equals(resourceField.getFieldId())).findFirst().orElse(null);
                 if (base != null) {
                     if (base.needRepeatCheck()) {
@@ -1194,23 +776,25 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         field.setFieldValue(strValue);
                         updateFields.add(field);
                     }
-
                 }
             }
         });
-
         Map<String, T> resourceMap = resourceFields.stream().collect(Collectors.toMap(BaseResourceField::getFieldId, Function.identity()));
         Map<String, BaseField> allbaseFieldMap = allFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
         List<BaseModuleFieldValue> addlist = moduleFieldValues.stream().filter(moduleField ->
                 allbaseFieldMap.containsKey(moduleField.getFieldId()) && !resourceMap.containsKey(moduleField.getFieldId())
         ).toList();
 
-
         saveModuleField(resource, orgId, userId, addlist, update);
-
         updateData(updateFields, updateBlobFields);
     }
 
+	/**
+	 * 批量更新字段值
+	 *
+	 * @param updateFields 更新字段值
+	 * @param updateBlobFields 更新大字段值
+	 */
     private void updateData(List<T> updateFields, List<V> updateBlobFields) {
         for (T resourceField : updateFields) {
             getResourceFieldMapper().update(resourceField);
@@ -1221,126 +805,171 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
     }
 
-    public List<ChartResult> translateAxisName(ModuleFormConfigDTO formConfig, ChartAnalysisDbRequest chartAnalysisDbRequest, List<ChartResult> chartResults) {
-        ChartCategoryAxisDbParam categoryAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
-        ChartCategoryAxisDbParam subCategoryAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
+	/**
+	 * 处理子表格字段值 (查询)
+	 *
+	 * @param resourceMap    返回的资源字段值
+	 * @param fieldConfigMap 字段配置
+	 * @param resourceFields 值集合
+	 */
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap, Map<String, BaseField> fieldConfigMap,
+										  List<? extends BaseResourceField> resourceFields) {
+		Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
+		if (!subFieldMap.isEmpty()) {
+			Set<String> refSubSet = subFieldMap.keySet();
+			List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
+			Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
+			Map<String, BaseField> subFieldIdConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 
-        chartResults = chartResults.stream()
-                .filter(Objects::nonNull)
-                .toList();
+			Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
+					.filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
+					.collect(Collectors.groupingBy(BaseResourceField::getResourceId));
+			subResourceMap.forEach((resourceId, subResources) -> {
+				Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>(8);
+				subResources.forEach(resource -> {
+					if (resource.getFieldValue() != null) {
+						BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
+						if (fieldConfig == null) {
+							return;
+						}
+						AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+						Object objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
 
-        BaseField categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
-        BaseField subCategoryAxisField = null;
-        if (subCategoryAxisParam != null) {
-            subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
-        }
+						BaseResourceSubField subResource = (BaseResourceSubField) resource;
+						subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
+						int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
+						if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
+							subFieldValueMap.get(subResource.getRefSubId()).add(new HashMap<>(8));
+						}
+						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
+						rowMap.put(subResource.getFieldId(), objectValue);
+						if (objectValue == null || !SourceDetailResolveContext.getSourceMap().containsKey(objectValue.toString())) {
+							return;
+						}
+						if (fieldConfig instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
+							// 处理展示列
+							Map<String, Object> detailMap = SourceDetailResolveContext.getSourceMap().get(objectValue.toString());
+							if (MapUtils.isEmpty(detailMap)) {
+								return;
+							}
+							sourceField.getShowFields().forEach(id -> {
+								BaseField showFieldConfig = subFieldIdConfigMap.get(id);
+								if (showFieldConfig == null) {
+									return;
+								}
+								if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+									Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+											BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
+									if (matchVal != null) {
+										rowMap.put(showFieldConfig.getId(), matchVal);
+									}
+								} else {
+									rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
+								}
+							});
+						}
+						subFieldValueMap.get(subResource.getRefSubId()).set(rowIndex, rowMap);
+					}
+				});
+				List<BaseModuleFieldValue> subTableFieldValues = new ArrayList<>();
+				subFieldValueMap.forEach((subFieldId, subFieldValues) -> {
+					BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+					fieldValue.setFieldId(subFieldId);
+					fieldValue.setFieldValue(subFieldValues);
+					subTableFieldValues.add(fieldValue);
+				});
+				resourceMap.putIfAbsent(resourceId, new ArrayList<>());
+				resourceMap.get(resourceId).addAll(subTableFieldValues);
+			});
+		}
+	}
 
-        if (categoryAxisField == null || subCategoryAxisField == null) {
-            return chartResults;
-        }
-        Map<String, List<OptionDTO>> optionMap = getChartOptionMap(formConfig, chartResults, categoryAxisParam,
-                subCategoryAxisParam);
+	/**
+	 * 获取数据源详情上下文
+	 *
+	 * @param flattenFields 平铺字段集合
+	 * @param resourceFields 资源字段值集合
+	 */
+	@SuppressWarnings("unchecked")
+	private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
+		Map<String, String> sourceIdType = flattenFields.stream().filter(sf -> sf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
+				.collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType(), (prev, next) -> next));
+		resourceFields.stream().filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null).forEach(rf -> {
+			if (SourceDetailResolveContext.contains(rf.getFieldValue().toString())) {
+				return;
+			}
+			SourceDetailResolveContext.putPlaceholder(rf.getFieldValue().toString());
+			try {
+				FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
+				Object detail = fieldSourceServiceProvider.safeGetById(sourceType, rf.getFieldValue().toString());
+				if (detail == null) {
+					SourceDetailResolveContext.remove(rf.getFieldValue().toString());
+				} else {
+					SourceDetailResolveContext.put(rf.getFieldValue().toString(), MAPPER.convertValue(detail, Map.class));
+				}
+			} catch (Exception e) {
+				LogUtils.error(e);
+				SourceDetailResolveContext.remove(rf.getFieldValue().toString());
+			}
+		});
+	}
 
-        Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisField.getId()))
-                .orElse(List.of())
-                .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+	/**
+	 * 处理临时附件
+	 */
+	@SuppressWarnings("unchecked")
+	private void preProcessTempAttachment(String orgId, String resourceId, String userId, Object processValue) {
+		try {
+			List<String> tmpPicIds = new ArrayList<>();
+			if (processValue instanceof String) {
+				tmpPicIds.add(processValue.toString());
+			} else if (processValue instanceof List) {
+				tmpPicIds.addAll((List<String>) processValue);
+			}
+			AttachmentService attachmentService = CommonBeanFactory.getBean(AttachmentService.class);
+			UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
+			if (attachmentService != null) {
+				attachmentService.processTemp(transferRequest);
+			}
+		} catch (Exception e) {
+			LogUtils.error("临时附件处理失败: {}", e.getMessage());
+		}
+	}
 
-        Map<String, String> subCategoryOptionMap;
-        subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
-                .orElse(List.of())
-                .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-
-        for (ChartResult chartResult : chartResults) {
-            if (categoryOptionMap.get(chartResult.getCategoryAxis()) != null) {
-                chartResult.setCategoryAxisName(categoryOptionMap.get(chartResult.getCategoryAxis()));
-            } else {
-                chartResult.setCategoryAxisName(chartResult.getCategoryAxis());
-            }
-
-            if (subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
-                chartResult.setSubCategoryAxisName(subCategoryOptionMap.get(chartResult.getSubCategoryAxis()));
-            } else {
-                chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
-            }
-
-            if (chartResult.getValueAxis() == null) {
-                chartResult.setValueAxis(0);
-            }
-
-            if (categoryAxisField.isLocation()) {
-                chartResult.setCategoryAxisName(RegionUtils.codeToName(chartResult.getCategoryAxis()));
-                chartResult.setCategoryAxis(RegionUtils.getCode(chartResult.getCategoryAxis()));
-            }
-
-            if (subCategoryAxisField.isLocation()) {
-                chartResult.setSubCategoryAxisName(RegionUtils.codeToName(chartResult.getSubCategoryAxis()));
-                chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
-            }
-
-            if (categoryAxisField.isIndustry()) {
-                chartResult.setCategoryAxisName(IndustryUtils.mapping(chartResult.getCategoryAxis(), false));
-            }
-
-            if (subCategoryAxisField.isIndustry()) {
-                chartResult.setSubCategoryAxisName(IndustryUtils.mapping(chartResult.getSubCategoryAxis(), false));
-            }
-        }
-
-        if (categoryAxisField.isLocation()) {
-            // 合并CategoryAxis相同的项
-            chartResults = mergeResult(chartResults, ChartResult::getCategoryAxis);
-        }
-
-        if (subCategoryAxisField.isLocation()) {
-            // 合并SubCategoryAxis相同的项
-            chartResults = mergeResult(chartResults, ChartResult::getSubCategoryAxis);
-        }
-
-        return chartResults;
-    }
-
-    private Map<String, List<OptionDTO>> getChartOptionMap(
-            ModuleFormConfigDTO formConfig,
-            List<ChartResult> chartResults,
-            ChartCategoryAxisDbParam categoryAxisParam,
-            ChartCategoryAxisDbParam subCategoryAxisParam) {
-
-        var categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
-        var subCategoryAxisField = subCategoryAxisParam != null
-                ? getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId())
-                : null;
-
-        // 收集所有需要转换为 Option 的字段值
-        var moduleFieldValues = chartResults.stream()
-                .flatMap(chartResult -> {
-                    List<BaseModuleFieldValue> values = new ArrayList<>(2);
-
-                    if (categoryAxisField != null && categoryAxisField.hasOptions()) {
-                        var categoryValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
-                        categoryValue.setFieldValue(chartResult.getCategoryAxis());
-                        values.add(categoryValue);
-                    }
-
-                    if (subCategoryAxisField != null && subCategoryAxisField.hasOptions()) {
-                        var subValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
-                        subValue.setFieldValue(chartResult.getSubCategoryAxis());
-                        values.add(subValue);
-                    }
-
-                    return values.stream();
-                })
-                .filter(BaseModuleFieldValue::valid)
-                .distinct()
-                .toList();
-
-        if (moduleFieldValues.isEmpty()) {
-            return Map.of();
-        }
-
-        return moduleFormService.getOptionMap(formConfig, moduleFieldValues);
-    }
+	/**
+	 * 处理特殊的字段值
+	 *
+	 * @param field 字段信息
+	 * @param fieldValueMap 字段值集合
+ 	 * @param update 是否更新操作
+	 * @param orgId 组织ID
+	 * @return 字段值
+	 */
+	private BaseModuleFieldValue processSpecialFieldValue(BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
+		// 流水号
+		if (field.isSerialNumber() && !update) {
+			BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+			fieldValue.setFieldId(field.getId());
+			String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(), orgId, getFormKey());
+			fieldValue.setFieldValue(serialNo);
+			return fieldValue;
+		}
+		// 子表格 {业务字段来源resource, 字段值来源fieldValueMap}
+		if (field.isSubField()) {
+			BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
+			fieldValue.setFieldId(field.getId());
+			String businessKey = field.getBusinessKey();
+			if (StringUtils.isNotEmpty(businessKey)) {
+				fieldValue.setFieldValue(fieldValueMap.get(businessKey).getFieldValue());
+			} else {
+				fieldValue = fieldValueMap.get(field.getId());
+			}
+			return fieldValue;
+		}
+		// 其他字段直接返回
+		return fieldValueMap.get(field.getId());
+	}
 
     /**
      * 获取资源字段值
@@ -1361,8 +990,59 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return null;
     }
 
+	/**
+	 * 获取资源字段值集合
+	 *
+	 * @param resourceIds 资源ID集合
+	 * @return 字段值集合
+	 */
+	private List<T> getResourceField(List<String> resourceIds) {
+		LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(BaseResourceField::getResourceId, resourceIds);
+		return getResourceFieldMapper().selectListByLambda(wrapper);
+	}
+
+	/**
+	 * 获取资源指定字段值集合
+	 *
+	 * @param resourceIds 资源ID集合
+	 * @param fieldId 字段ID
+	 * @return 指定字段值集合
+	 */
+	private List<T> getResourceField(List<String> resourceIds, String fieldId) {
+		LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(BaseResourceField::getResourceId, resourceIds);
+		wrapper.eq(BaseResourceField::getFieldId, fieldId);
+		return getResourceFieldMapper().selectListByLambda(wrapper);
+	}
+
+	/**
+	 * 获取资源大字段值集合
+	 * @param resourceIds 资源ID集合
+	 * @return 大字段值集合
+	 */
+	private List<V> getResourceFieldBlob(List<String> resourceIds) {
+		LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(BaseResourceField::getResourceId, resourceIds);
+		return getResourceFieldBlobMapper().selectListByLambda(wrapper);
+	}
+
+	/**
+	 * 获取资源指定大字段值集合
+	 *
+	 * @param resourceIds 资源ID集合
+	 * @param fieldId 大字段ID
+	 * @return 指定大字段值集合
+	 */
+	private List<V> getResourceFieldBlob(List<String> resourceIds, String fieldId) {
+		LambdaQueryWrapper<V> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(BaseResourceField::getResourceId, resourceIds);
+		wrapper.eq(BaseResourceField::getFieldId, fieldId);
+		return getResourceFieldBlobMapper().selectListByLambda(wrapper);
+	}
+
     /**
-     * 提供新的字段实例 (通用&新增)
+     * 提供新的字段或大字段实例 (通用&新增)
      *
      * @param instance   字段值实例
      * @param resourceId 资源ID
@@ -1380,4 +1060,93 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         resourceField.setFieldValue(strValue);
         return resourceField;
     }
+
+	/**
+	 * 创建新的资源字段实例
+	 *
+	 * @return 资源字段实例
+	 */
+	private T newResourceField() {
+		try {
+			return getResourceFieldClass().getConstructor().newInstance();
+		} catch (Exception e) {
+			LogUtils.error(e);
+			throw new GenericException(e);
+		}
+	}
+
+	/**
+	 * 创建新的资源大字段实例
+	 *
+	 * @return 资源大字段实例
+	 */
+	private V newResourceFieldBlob() {
+		try {
+			return getResourceFieldBlobClass().getConstructor().newInstance();
+		} catch (Exception e) {
+			LogUtils.error(e);
+			throw new GenericException(e);
+		}
+	}
+
+	/**
+	 * 字段值唯一性校验
+	 *
+	 * @param fieldValue 字段值
+	 * @param field 字段信息
+	 */
+	protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
+		LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
+		wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
+		if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
+			throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+		}
+	}
+
+	/**
+	 * 获取并校验字段是否存在
+	 *
+	 * @param fieldId 字段ID
+	 * @param organizationId 组织ID
+	 * @return 字段信息
+	 */
+	public BaseField getAndCheckField(String fieldId, String organizationId) {
+		return moduleFormCacheService.getConfig(getFormKey(), organizationId)
+				.getFields()
+				.stream()
+				.filter(f -> fieldId.equals(f.getId()))
+				.findFirst()
+				.orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
+	}
+
+	/**
+	 * 校验业务字段值是否重复
+	 *
+	 * @param orgId 组织ID
+	 * @param resource 资源对象
+	 * @param updateIds 排除的ID集合
+	 * @param field 字段信息
+	 * @param fieldName 字段名称
+	 * @param <K> 资源类型
+	 */
+	private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, String fieldName) {
+		if (!field.needRepeatCheck()) {
+			return;
+		}
+		Class<?> clazz = resource.getClass();
+		String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
+		Object fieldValue = getResourceFieldValue(resource, fieldName);
+		if (isNotBlank(fieldValue)) {
+			boolean repeat;
+			if (CollectionUtils.isNotEmpty(updateIds)) {
+				repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, updateIds);
+			} else {
+				repeat = commonMapper.checkAddExist(tableName, fieldName, fieldValue.toString(), orgId);
+			}
+			if (repeat) {
+				throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+			}
+		}
+	}
 }
