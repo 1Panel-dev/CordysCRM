@@ -96,7 +96,7 @@
       } else {
         list.value = list.value.concat(dataList);
       }
-      finished.value = props.noPageNation || data.total <= currentPage.value * 10;
+      finished.value = props.noPageNation || data.total <= currentPage.value * 20;
       error.value = false;
       originData.value = cloneDeep(dataList);
     } catch (_error: any) {
