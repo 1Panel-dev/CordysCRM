@@ -35,3 +35,4 @@ target
 .factorypath
 /crm/src/main/resources/packages/
 /app/src/main/resources/static/
+/crm/src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker
