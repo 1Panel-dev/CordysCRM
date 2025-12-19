@@ -749,6 +749,10 @@ public class OpportunityService {
             return;
         }
 
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
+            productService.checkProductList((List<String>) request.getFieldValue());
+        }
+
         List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
 
         opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
