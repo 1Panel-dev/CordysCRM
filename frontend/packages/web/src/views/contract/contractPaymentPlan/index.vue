@@ -51,11 +51,11 @@
   const showCustomerOpenseaOverviewDrawer = ref(false);
   const poolId = ref<string>('');
   const activeCustomerSourceId = ref<string>('');
-  function handleOpenCustomerDrawer(row: ContractItem) {
-    activeCustomerSourceId.value = row.customerId;
-    if (row.inCustomerPool) {
+  function handleOpenCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    activeCustomerSourceId.value = params.customerId;
+    if (params.inCustomerPool) {
       showCustomerOpenseaOverviewDrawer.value = true;
-      poolId.value = row.poolId;
+      poolId.value = params.poolId;
     } else {
       showCustomerOverviewDrawer.value = true;
     }

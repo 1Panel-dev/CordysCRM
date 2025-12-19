@@ -420,14 +420,14 @@
     }
   }
 
-  function showCustomerDrawer(row: ContractItem) {
-    activeSourceId.value = row.customerId;
+  function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    activeSourceId.value = params.customerId;
     emit(
       'openCustomerDrawer',
       {
-        customerId: row.customerId,
-        inCustomerPool: row.inCustomerPool,
-        poolId: row.poolId || '',
+        customerId: params.customerId,
+        inCustomerPool: params.inCustomerPool,
+        poolId: params.poolId || '',
       },
       false
     );
