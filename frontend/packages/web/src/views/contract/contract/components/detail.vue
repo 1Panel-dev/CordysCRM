@@ -25,7 +25,7 @@
             value-align="start"
             tooltip-position="top-start"
             readonly
-            @openCustomerDetail="emit('showCustomerDrawer', detailInfo)"
+            @openCustomerDetail="emit('showCustomerDrawer', $event)"
             @init="handleInit"
           />
         </div>
@@ -91,7 +91,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
-    (e: 'showCustomerDrawer', row: ContractItem): void;
+    (e: 'showCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
