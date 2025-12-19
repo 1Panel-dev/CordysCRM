@@ -60,7 +60,9 @@
                     trigger="hover"
                     @select="(item) => handleMoreSelect(item.key as string)"
                   >
-                    <n-button type="primary" text :keyboard="false">{{ t('common.more') }}</n-button>
+                    <n-button v-permission="['MODULE_SETTING:UPDATE']" type="primary" text :keyboard="false">
+                      {{ t('common.more') }}
+                    </n-button>
                   </CrmMoreAction>
                 </div>
               </VueDraggable>
