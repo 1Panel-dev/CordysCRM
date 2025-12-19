@@ -1136,6 +1136,10 @@ public class ClueService {
             return;
         }
 
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
+            productService.checkProductList((List<String>) request.getFieldValue());
+        }
+
         List<Clue> originClues = clueMapper.selectByIds(request.getIds());
 
         clueFieldService.batchUpdate(request, field, originClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
