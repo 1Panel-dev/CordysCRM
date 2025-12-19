@@ -83,7 +83,6 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
-     *
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
@@ -98,7 +97,16 @@ public class DingTalkDepartmentService {
                 // 获取部门详情
                 getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
                 // 获取部门用户
-                usersByDept.put(deptId, getUsersByDepartment(accessToken, deptId));
+                List<DingTalkUser> users = getUsersByDepartment(accessToken, deptId);
+                List<DingTalkUser> filteredUsers = new ArrayList<>();
+                for (DingTalkUser user : users) {
+                    //用户dept_id_list 获取第一个部门ID进行匹配(主部门)
+                    if (user.getDeptIdList() != null && !user.getDeptIdList().isEmpty()
+                            && user.getDeptIdList().getFirst().equals(deptId)) {
+                        filteredUsers.add(user);
+                    }
+                }
+                usersByDept.put(deptId, filteredUsers);
             }
 
             response.setDepartments(departments);
@@ -115,7 +123,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 部门ID列表
      */
     private List<Long> getAllSubDepartmentIds(String accessToken, Long deptId) {
@@ -148,7 +155,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
@@ -175,7 +181,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {

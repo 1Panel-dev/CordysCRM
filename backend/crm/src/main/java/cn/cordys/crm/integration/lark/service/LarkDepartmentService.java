@@ -41,7 +41,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      根部门ID
-     *
      * @return 子部门列表
      */
     public List<LarkDepartment> getAllSubDepartments(String tenantAccessToken, String departmentId) {
@@ -85,7 +84,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      部门ID
-     *
      * @return 部门直属用户列表
      */
     public List<LarkUser> getDepartmentUsers(String tenantAccessToken, String departmentId) {
@@ -132,7 +130,6 @@ public class LarkDepartmentService {
      * 将飞书部门转化为CRM部门
      *
      * @param tenantAccessToken 租户访问令牌
-     *
      * @return CRM部门列表
      */
     public List<ThirdDepartment> getDepartmentList(String tenantAccessToken) {
@@ -173,7 +170,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentIds     部门ID列表
-     *
      * @return 部门ID与用户列表的映射
      */
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
@@ -181,7 +177,8 @@ public class LarkDepartmentService {
 
         departmentIds.forEach(departmentId -> {
             List<LarkUser> larkUsers = getDepartmentUsers(tenantAccessToken, departmentId);
-            thirdUserMap.put(departmentId, larkUsers.stream()
+            thirdUserMap.put(departmentId, larkUsers.stream().filter(larkUser ->
+                            larkUser.getOrders().stream().anyMatch(order -> order.getIsPrimaryDept() && order.getDepartmentId().equals(departmentId)))
                     .map(larkUser -> ThirdUser.builder()
                             .userId(larkUser.getOpenId())
                             .name(larkUser.getName())
@@ -201,7 +198,6 @@ public class LarkDepartmentService {
      * 获取企业信息
      *
      * @param tenantAccessToken 租户访问令牌
-     *
      * @return 企业信息
      */
     public LarkTenant getTenantInfo(String tenantAccessToken) {
