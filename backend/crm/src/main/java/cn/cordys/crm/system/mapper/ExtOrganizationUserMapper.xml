@@ -11,40 +11,41 @@
         <foreach collection="departmentIds" item="departmentId" index="index" open="(" close=")" separator=",">
             #{departmentId}
         </foreach>
-          and organization_id = #{orgId}
+        and organization_id = #{orgId}
     </select>
 
     <select id="list" resultType="cn.cordys.crm.system.dto.response.UserPageResponse">
         SELECT
-            sou.id,
-            sou.user_id,
-            sou.organization_id,
-            sou.department_id,
-            su.name userName,
-            sou.`enable`,
-            su.gender,
-            su.phone,
-            su.email,
-            sou.supervisor_id,
-            sou.employee_id,
-            sou.position,
-            sou.employee_type,
-            sou.work_city,
-            sou.create_time,
-            sou.update_time,
-            sou.create_user,
-            sou.update_user,
-            sou.onboarding_date,
-            sou.position
+        sou.id,
+        sou.user_id,
+        sou.organization_id,
+        sou.department_id,
+        su.name userName,
+        sou.`enable`,
+        su.gender,
+        su.phone,
+        su.email,
+        sou.supervisor_id,
+        sou.employee_id,
+        sou.position,
+        sou.employee_type,
+        sou.work_city,
+        sou.create_time,
+        sou.update_time,
+        sou.create_user,
+        sou.update_user,
+        sou.onboarding_date,
+        sou.position
         FROM
-            sys_organization_user sou
-                INNER JOIN sys_user su ON sou.user_id = su.id
+        sys_organization_user sou
+        INNER JOIN sys_user su ON sou.user_id = su.id
         left JOIN (
         SELECT
         user_id,
         1 AS is_commander
         FROM
         sys_department_commander
+        GROUP BY user_id
         ) uc ON su.id = uc.user_id
         where sou.department_id in
         <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
@@ -136,8 +137,8 @@
     <update id="enable">
         update sys_organization_user
         set `enable` = #{request.enable},
-            update_time = UNIX_TIMESTAMP() * 1000,
-            update_user = #{operatorId}
+        update_time = UNIX_TIMESTAMP() * 1000,
+        update_user = #{operatorId}
         where id in
         <foreach collection="request.ids" item="id" open="(" separator="," close=")">
             #{id}
@@ -146,10 +147,10 @@
 
     <select id="getUserList" resultType="cn.cordys.crm.system.domain.User">
         SELECT
-            su.id,
-            su.name,
-            su.phone,
-            su.password
+        su.id,
+        su.name,
+        su.phone,
+        su.password
         from sys_user su
         inner join sys_organization_user sou on su.id = sou.user_id
         where sou.id in
@@ -161,20 +162,21 @@
     </select>
 
     <select id="getEnableUser" resultType="cn.cordys.security.UserDTO">
-        SELECT
-        su.id,
-        su.name,
-        su.email,
-        su.phone,
-        su.password,
-        sou.enable
+        SELECT su.id,
+               su.name,
+               su.email,
+               su.phone,
+               su.password,
+               sou.enable
         from sys_user su
-        inner join sys_organization_user sou on su.id = sou.user_id
+                 inner join sys_organization_user sou on su.id = sou.user_id
         where sou.resource_user_id = #{resourceUserId}
     </select>
 
     <delete id="deleteUserByOrgId">
-        DELETE FROM sys_organization_user WHERE organization_id  = #{orgId}
+        DELETE
+        FROM sys_organization_user
+        WHERE organization_id = #{orgId}
     </delete>
 
     <select id="selectEnableOrgUser" resultType="cn.cordys.common.dto.OptionDTO">
@@ -218,18 +220,23 @@
         from sys_organization_user sou
         INNER JOIN sys_user su on sou.user_id = su.id
         where sou.organization_id = #{orgId}
-          and su.name in
-            <foreach collection="nameList" item="name" open="(" separator="," close=")">
-                #{name}
-            </foreach>
+        and su.name in
+        <foreach collection="nameList" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
     </select>
 
     <select id="getUserByOrgId" resultType="cn.cordys.crm.system.domain.OrganizationUser">
-        select * from sys_organization_user where organization_id = #{orgId}
+        select *
+        from sys_organization_user
+        where organization_id = #{orgId}
     </select>
 
     <select id="getOrgUserIdByUserId" resultType="java.lang.String">
-        select id from sys_organization_user where organization_id = #{orgId} and user_id = #{userId}
+        select id
+        from sys_organization_user
+        where organization_id = #{orgId}
+          and user_id = #{userId}
     </select>
 
     <update id="updateOrganizationUser" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
@@ -300,17 +307,17 @@
 
     <select id="getUserDepAndPhoneByUserIds" resultType="cn.cordys.crm.system.dto.response.UserResponse">
         SELECT
-            su.id as userId,
-            su.phone,
-            sou.department_id as departmentId,
-            sd.NAME AS departmentName
+        su.id as userId,
+        su.phone,
+        sou.department_id as departmentId,
+        sd.NAME AS departmentName
         FROM
-            sys_user su
-                INNER JOIN sys_organization_user sou on su.id = sou.user_id
-                INNER JOIN sys_department sd on sd.id = sou.department_id
+        sys_user su
+        INNER JOIN sys_organization_user sou on su.id = sou.user_id
+        INNER JOIN sys_department sd on sd.id = sou.department_id
         where
-            sou.organization_id = #{orgId}
-           and su.id in
+        sou.organization_id = #{orgId}
+        and su.id in
         <foreach collection="userIds" item="userId" open="(" separator="," close=")">
             #{userId}
         </foreach>
@@ -329,31 +336,38 @@
 
     <update id="updateById" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
         update sys_organization_user
-        set department_id = #{organizationUser.departmentId},
-            `enable` = #{organizationUser.enable},
-            employee_id = #{organizationUser.employeeId},
-            `position` = #{organizationUser.position},
-            employee_type = #{organizationUser.employeeType},
-            supervisor_id = #{organizationUser.supervisorId},
-            work_city = #{organizationUser.workCity},
-            update_time = #{organizationUser.updateTime},
-            update_user = #{organizationUser.updateUser},
+        set department_id   = #{organizationUser.departmentId},
+            `enable`        = #{organizationUser.enable},
+            employee_id     = #{organizationUser.employeeId},
+            `position`      = #{organizationUser.position},
+            employee_type   = #{organizationUser.employeeType},
+            supervisor_id   = #{organizationUser.supervisorId},
+            work_city       = #{organizationUser.workCity},
+            update_time     = #{organizationUser.updateTime},
+            update_user     = #{organizationUser.updateUser},
             onboarding_date = #{organizationUser.onboardingDate}
         where id = #{organizationUser.id}
     </update>
 
 
     <update id="disableUser" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
-        update sys_organization_user set enable = 0 where id = #{organizationUser.id}
+        update sys_organization_user
+        set enable = 0
+        where id = #{organizationUser.id}
     </update>
 
 
     <update id="updateUserByUserId">
-        update sys_organization_user set update_time = #{time}, update_user = #{operatorId} where user_id = #{userId}
+        update sys_organization_user
+        set update_time = #{time},
+            update_user = #{operatorId}
+        where user_id = #{userId}
     </update>
 
-    
+
     <select id="getDepartmentByUserId" resultType="java.lang.String">
-        select department_id from sys_organization_user where user_id = #{userId} limit 1
+        select department_id
+        from sys_organization_user
+        where user_id = #{userId} limit 1
     </select>
 </mapper>

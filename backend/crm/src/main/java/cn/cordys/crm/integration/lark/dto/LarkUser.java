@@ -117,5 +117,7 @@ public class LarkUser {
         private String userOrder;
         @JsonProperty("department_order")
         private String departmentOrder;
+        @JsonProperty("is_primary_dept")
+        private Boolean isPrimaryDept;
     }
 }
