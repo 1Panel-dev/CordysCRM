@@ -1115,7 +1115,7 @@ public class ClueService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg, null, null);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
