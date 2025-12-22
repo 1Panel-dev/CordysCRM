@@ -107,7 +107,7 @@
   function handleMove(e: any) {
     return (
       !getFieldDisable(e.data) &&
-      (e.to.className.includes('crm-form-design-subtable-wrapper')
+      (e.to.className.includes('crm-form-design-subtable-wrapper') // 子表格支持的组件类型
         ? [
             FieldTypeEnum.INPUT,
             FieldTypeEnum.INPUT_NUMBER,
@@ -115,6 +115,7 @@
             FieldTypeEnum.SELECT_MULTIPLE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.FORMULA,
+            FieldTypeEnum.PICTURE,
           ].includes(e.data.type)
         : true)
     );
