@@ -106,7 +106,6 @@ public class OpportunityQuotationService {
      * 新增报价单会自动将报价单状态设置为“提审”，此时需要保存报价单值快照，报价单表单设置快照
      *
      * @param request 新增请求参数
-     *
      * @return 商机报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
@@ -204,7 +203,6 @@ public class OpportunityQuotationService {
      * @param opportunityQuotation 报价单实体
      * @param moduleFields         报价单字段值
      * @param moduleFormConfigDTO  报价单表单配置
-     *
      * @return 报价单详情
      */
     private OpportunityQuotationGetResponse getOpportunityQuotationGetResponse(OpportunityQuotation opportunityQuotation, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
@@ -229,7 +227,6 @@ public class OpportunityQuotationService {
      * 查询商机报价单快照详情
      *
      * @param id 报价单ID
-     *
      * @return 报价单详情
      */
     public OpportunityQuotationGetResponse getSnapshot(String id) {
@@ -252,7 +249,6 @@ public class OpportunityQuotationService {
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
      * @param id 报价单ID
-     *
      * @return 报价单详情
      */
     public OpportunityQuotationGetResponse get(String id) {
@@ -404,7 +400,6 @@ public class OpportunityQuotationService {
      * @param opportunityQuotation 报价单实体
      * @param approvalStatus       审批状态
      * @param userId               用户ID
-     *
      * @return 报价单
      */
     private OpportunityQuotation updateApprovalState(OpportunityQuotation opportunityQuotation, String approvalStatus, String userId) {
@@ -499,7 +494,6 @@ public class OpportunityQuotationService {
      *
      * @param request        列表请求参数
      * @param organizationId 组织ID
-     *
      * @return 商机报价单列表
      */
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(OpportunityQuotationPageRequest request, String organizationId, String userId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -517,7 +511,6 @@ public class OpportunityQuotationService {
      * 构建列表数据
      *
      * @param listData 列表数据
-     *
      * @return 列表数据
      */
     private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData, String organizationId) {
@@ -547,7 +540,6 @@ public class OpportunityQuotationService {
      * @param request 更新请求参数
      * @param userId  更新用户ID
      * @param orgId   组织ID
-     *
      * @return 更新后的报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.UPDATE, resourceName = "{#request.name}", operator = "{#userId}")
@@ -678,7 +670,6 @@ public class OpportunityQuotationService {
      *
      * @param userId 用户ID
      * @param orgId  组织ID
-     *
      * @return 模块标签页启用配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
@@ -693,7 +684,6 @@ public class OpportunityQuotationService {
      * @param request 批量审批请求参数
      * @param userId  用户ID
      * @param orgId   组织ID
-     *
      * @return 审批状态
      */
     public BatchAffectSkipResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
@@ -710,6 +700,7 @@ public class OpportunityQuotationService {
         ExtOpportunityQuotationSnapshotMapper extOpportunityQuotationSnapshotMapper = sqlSession.getMapper(ExtOpportunityQuotationSnapshotMapper.class);
 
         List<LogDTO> logs = new ArrayList<>();
+        List<String> approvingIds = new ArrayList<>();
         AtomicInteger skipCount = new AtomicInteger(0);
         list.stream().filter(item -> {
             if (!Strings.CI.equals(item.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
@@ -718,6 +709,7 @@ public class OpportunityQuotationService {
             }
             return true;
         }).forEach(item -> {
+            approvingIds.add(item.getId());
             var log = new LogDTO(
                     orgId,
                     item.getId(),
@@ -738,7 +730,7 @@ public class OpportunityQuotationService {
 
         //批量修改报价单快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> snapshotWrapper = new LambdaQueryWrapper<>();
-        snapshotWrapper.in(OpportunityQuotationSnapshot::getQuotationId, ids);
+        snapshotWrapper.in(OpportunityQuotationSnapshot::getQuotationId, approvingIds);
         List<OpportunityQuotationSnapshot> opportunityQuotationSnapshots = snapshotBaseMapper.selectListByLambda(snapshotWrapper);
         for (OpportunityQuotationSnapshot snapshot : opportunityQuotationSnapshots) {
             OpportunityQuotationGetResponse response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
@@ -764,7 +756,6 @@ public class OpportunityQuotationService {
      * @param request        批量作废请求参数
      * @param userId         用户ID
      * @param organizationId 组织ID
-     *
      * @return 批量作废响应参数
      */
     public BatchAffectReasonResponse batchVoidQuotation(OpportunityQuotationBatchRequest request, String userId, String organizationId) {
@@ -813,7 +804,7 @@ public class OpportunityQuotationService {
         });
         if (CollectionUtils.isNotEmpty(successIds)) {
             LambdaQueryWrapper<OpportunityQuotationSnapshot> snapshotWrapper = new LambdaQueryWrapper<>();
-            snapshotWrapper.in(OpportunityQuotationSnapshot::getQuotationId, ids);
+            snapshotWrapper.in(OpportunityQuotationSnapshot::getQuotationId, successIds);
             List<OpportunityQuotationSnapshot> opportunityQuotationSnapshots = snapshotBaseMapper.selectListByLambda(snapshotWrapper);
             SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
             ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
@@ -842,7 +833,6 @@ public class OpportunityQuotationService {
      * 验证不可作废的报价单
      *
      * @param list 报价单列表
-     *
      * @return 不可作废的报价单列表
      */
     private List<OpportunityQuotation> validateVoidQuotation(List<OpportunityQuotation> list) {
@@ -865,7 +855,6 @@ public class OpportunityQuotationService {
      * 从字段值中提取ID集合
      *
      * @param fieldValue 字段值
-     *
      * @return ID集合
      */
     private Set<String> extractIdsFromFieldValue(Object fieldValue) {
@@ -908,7 +897,6 @@ public class OpportunityQuotationService {
      *
      * @param id    报价单ID
      * @param orgId 组织ID
-     *
      * @return 表单配置DTO
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
@@ -938,7 +926,6 @@ public class OpportunityQuotationService {
      * 通过名称获取报价单集合
      *
      * @param names 名称集合
-     *
      * @return 报价单集合
      */
     public List<OpportunityQuotation> getQuotationListByNames(List<String> names) {
