@@ -245,16 +245,21 @@ public class ProductPriceService {
 		// 2. 复制价格表基础信息
 		price.setId(IDGenerator.nextStr());
 		price.setPos(getNextOrder(currentOrg));
-		price.setName(price.getName() + "_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
+		price.setName(price.getName() + "_copy_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
 		price.setCreateUser(currentUser);
 		price.setCreateTime(System.currentTimeMillis());
 		price.setUpdateUser(currentUser);
 		price.setUpdateTime(System.currentTimeMillis());
 		price.setOrganizationId(currentOrg);
 		productPriceMapper.insert(price);
-		// 3. 复制自定义字段信息
+		// 3. 复制价格表自定义字段信息
 		copyPriceFields(id, price.getId(), currentOrg, currentUser);
-		// 4. TODO: 处理日志上下文
+		// 4. 处理日志上下文
+		ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+		List<BaseModuleFieldValue> fvs = productPriceFieldService.getModuleFieldValuesByResourceId(price.getId());
+		baseService.handleAddLogWithSubTable(price, fvs, Translator.get("products_info"), priceFormConfig);
+		OperationLogContext.getContext().setResourceId(price.getId());
+		OperationLogContext.getContext().setResourceName(price.getName());
 		return price;
 	}
 

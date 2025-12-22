@@ -221,7 +221,6 @@ public class AttachmentService {
 			oldAttachment.setUpdateTime(System.currentTimeMillis());
 			oldAttachment.setUpdateUser(currentUser);
 			newAttachments.add(oldAttachment);
-
 		});
 		attachmentMapper.batchInsert(newAttachments);
 	}
