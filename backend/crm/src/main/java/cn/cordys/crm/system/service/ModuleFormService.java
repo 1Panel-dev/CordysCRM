@@ -1691,7 +1691,7 @@ public class ModuleFormService {
 				});
 				return;
 			}
-			// 7. SubField 里嵌套数据源字段
+			// 子字段嵌套数据源字段
 			if (fieldMap.containsKey(fieldId) && fieldMap.get(fieldId).isSubField()) {
 				final List<Map<String, Object>> subValues = (List<Map<String, Object>>) fv.getFieldValue();
 				subValues.forEach(sfv -> {
@@ -1737,16 +1737,15 @@ public class ModuleFormService {
 	}
 
 	/**
-	 * 子字段值 (key => id)
+	 * 解析子表格Key=>ID
 	 * @param fvs 所有字段值
 	 * @param flattenFields 所有字段配置
 	 * @return 处理后的字段值
 	 */
 	private List<BaseModuleFieldValue> resolveSubKeyToId(List<BaseModuleFieldValue> fvs, List<BaseField> flattenFields) {
-		// 2. 构建子字段配置映射
+		// 获取替换后的子表格值
 		final Map<String, BaseField> subFieldConfigMap = flattenFields.stream().filter(f -> f instanceof SubField)
 				.collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f));
-		// 3. 处理 SubField：将 subFieldId 替换为 fieldId
 		final List<BaseModuleFieldValue> subFieldValues = fvs.stream()
 				.filter(fv -> subFieldConfigMap.containsKey(fv.getFieldId())
 						&& subFieldConfigMap.get(fv.getFieldId()).isSubField())
