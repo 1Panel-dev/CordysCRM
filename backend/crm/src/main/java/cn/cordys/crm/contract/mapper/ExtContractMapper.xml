@@ -408,7 +408,7 @@
         </if>
         where ct.organization_id = #{orgId} and ct.customer_id = #{customerId}
         <if test="dataPermission != null and dataPermission.self">
-            and o.owner = #{userId}
+            and ct.owner = #{userId}
         </if>
     </select>
 
