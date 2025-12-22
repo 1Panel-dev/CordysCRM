@@ -50,8 +50,7 @@
   <approvalModal v-model:show="showApprovalModal" :quotationIds="checkedRowKeys" @refresh="handleApprovalSuccess" />
   <detailDrawer
     v-model:visible="showDetailDrawer"
-    :detail="activeRow"
-    :refresh-id="tableRefreshId"
+    :source-id="activeSourceId"
     @edit="handleEdit"
     @refresh="() => searchData()"
   />
@@ -165,7 +164,6 @@
 
   const activeTab = ref();
   const keyword = ref('');
-  const activeQuotationId = ref('');
   const tableRefreshId = ref(0);
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -301,7 +299,6 @@
   }
 
   const showDetailDrawer = ref(false);
-  const activeRow = ref<Partial<QuotationItem>>();
   function handleDelete(row: QuotationItem) {
     openModal({
       type: 'error',
@@ -337,10 +334,18 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
 
+  function handleApproval(row: QuotationItem) {
+    activeSourceId.value = row.id;
+    showDetailDrawer.value = true;
+  }
+
   function handleActionSelect(row: QuotationItem, actionKey: string, done?: () => void) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
+        break;
+      case 'approval':
+        handleApproval(row);
         break;
       case 'voided':
         handleVoid(row);
@@ -366,6 +371,11 @@
       permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
     },
     {
+      label: t('common.approval'),
+      key: 'approval',
+      permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
+    },
+    {
       label: t('common.voided'),
       key: 'voided',
       permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
@@ -374,6 +384,11 @@
       label: t('common.delete'),
       key: 'delete',
       permission: ['OPPORTUNITY_QUOTATION:DELETE'],
+    },
+    {
+      label: 'more',
+      key: 'more',
+      slotName: 'more',
     },
   ];
 
@@ -386,6 +401,20 @@
     {
       label: t('common.revoke'),
       key: 'revoke',
+    },
+  ];
+
+  const moreActions = [
+    {
+      label: t('common.voided'),
+      key: 'voided',
+      permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
+    },
+    {
+      label: t('common.delete'),
+      key: 'delete',
+      danger: true,
+      permission: ['OPPORTUNITY_QUOTATION:DELETE'],
     },
   ];
 
@@ -403,13 +432,27 @@
       case QuotationStatusEnum.REVOKED:
         return getGroups(['edit', ...commonGroups]);
       case QuotationStatusEnum.APPROVING:
-        const operationGroups = row.createUser === useStore.userInfo.id ? ['revoke', ...commonGroups] : commonGroups;
+        const operationGroups =
+          row.createUser === useStore.userInfo.id && hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
+            ? ['approval', 'revoke', 'more']
+            : ['approval', ...commonGroups];
         return getGroups(operationGroups);
       case QuotationStatusEnum.VOIDED:
         return getGroups(['delete']);
       default:
         return [];
     }
+  }
+
+  function getMoreOperationGroupList(row: QuotationItem) {
+    if (
+      row.approvalStatus === QuotationStatusEnum.APPROVING &&
+      row.createUser === useStore.userInfo.id &&
+      hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
+    ) {
+      return moreActions;
+    }
+    return [];
   }
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunity = ref();
@@ -478,6 +521,7 @@
             getOperationGroupList(row).length
               ? h(CrmOperationButton, {
                   groupList: getOperationGroupList(row),
+                  moreList: getMoreOperationGroupList(row),
                   onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                 })
               : '-',
@@ -489,8 +533,7 @@
             CrmTableButton,
             {
               onClick: () => {
-                activeRow.value = row;
-                activeQuotationId.value = row.id;
+                activeSourceId.value = row.id;
                 showDetailDrawer.value = true;
               },
             },

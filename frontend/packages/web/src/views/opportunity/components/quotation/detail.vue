@@ -1,8 +1,8 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="props.detail?.name ?? ''">
+  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <quotationStatus v-if="props.detail?.approvalStatus" :status="props.detail?.approvalStatus" />
+        <quotationStatus v-if="detailInfo?.approvalStatus" :status="detailInfo?.approvalStatus" />
       </div>
     </template>
     <template #titleRight>
@@ -33,9 +33,9 @@
     <CrmFormDescription
       ref="formDescriptionRef"
       :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
-      :source-id="sourceId"
+      :source-id="props.sourceId"
       :column="2"
-      :refresh-key="props.refreshId"
+      :refresh-key="refreshKey"
       label-width="auto"
       value-align="start"
       tooltip-position="top-start"
@@ -55,7 +55,6 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
-  import { QuotationItem } from '@lib/shared/models/opportunity';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
@@ -79,8 +78,7 @@
   const Message = useMessage();
 
   const props = defineProps<{
-    refreshId?: number;
-    detail?: Partial<QuotationItem>;
+    sourceId: string;
   }>();
 
   const emit = defineEmits<{
@@ -92,21 +90,23 @@
     required: true,
   });
 
-  const sourceId = computed(() => props.detail?.id ?? '');
-
+  const refreshKey = ref(0);
   const title = ref('');
-  function handleInit(type?: CollaborationType, name?: string) {
+  const detailInfo = ref();
+
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
+    detailInfo.value = detail ?? {};
   }
 
   const isShowApproval = computed(
     () =>
       hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL']) &&
-      props.detail?.approvalStatus === QuotationStatusEnum.APPROVING
+      detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING
   );
 
   function handleDownload() {
-    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id: sourceId.value });
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id: props.sourceId });
   }
 
   const commonActions = [
@@ -144,23 +144,28 @@
 
   const moreActions = [
     {
+      label: t('common.revoke'),
+      key: 'revoke',
+    },
+    {
       label: t('common.voided'),
       key: 'voided',
       permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
     },
-    {
-      label: t('common.revoke'),
-      key: 'revoke',
-    },
   ];
+
+  function handleSavedRefresh() {
+    refreshKey.value += 1;
+    emit('refresh');
+  }
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription> | null>(null);
   async function handleApproval(approval = false) {
     const approvalStatus = approval ? QuotationStatusEnum.APPROVED : QuotationStatusEnum.UNAPPROVED;
-    const { name, opportunityId, moduleFields = [], products = [] } = props.detail || {};
+    const { name, opportunityId, moduleFields = [], products = [] } = detailInfo.value;
     try {
       await approvalQuotation({
-        id: sourceId.value,
+        id: props.sourceId,
         name: name ?? '',
         approvalStatus,
         opportunityId: opportunityId ?? '',
@@ -169,8 +174,7 @@
         products,
       });
       Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
-      visible.value = false;
-      emit('refresh');
+      handleSavedRefresh();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -178,19 +182,17 @@
   }
 
   function handleVoid() {
-    const { name } = props.detail ?? {};
     openModal({
       type: 'error',
-      title: t('opportunity.quotation.voidTitleTip', { name: characterLimit(name) }),
+      title: t('opportunity.quotation.voidTitleTip', { name: characterLimit(detailInfo.value.name ?? '') }),
       content: t('opportunity.quotation.invalidContentTip'),
       positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await voidQuotation(sourceId.value);
+          await voidQuotation(props.sourceId);
           Message.success(t('common.voidSuccess'));
-          visible.value = false;
-          emit('refresh');
+          handleSavedRefresh();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -201,10 +203,9 @@
 
   async function handleRevoke() {
     try {
-      await revokeQuotation(sourceId.value);
+      await revokeQuotation(props.sourceId);
       Message.success(t('common.revokeSuccess'));
-      visible.value = false;
-      emit('refresh');
+      handleSavedRefresh();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -212,16 +213,15 @@
   }
 
   function handleDelete() {
-    const { name } = props.detail ?? {};
     openModal({
       type: 'error',
-      title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(name) }),
+      title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(detailInfo.value.name ?? '') }),
       content: t('opportunity.quotation.deleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await deleteQuotation(sourceId.value);
+          await deleteQuotation(props.sourceId);
           Message.success(t('common.deleteSuccess'));
           visible.value = false;
           emit('refresh');
@@ -236,7 +236,7 @@
   function handleSelect(key: string) {
     switch (key) {
       case 'edit':
-        emit('edit', sourceId.value);
+        emit('edit', props.sourceId);
         visible.value = false;
         break;
       case 'pass':
@@ -263,8 +263,7 @@
   }
 
   const buttonList = computed<ActionsItem[]>(() => {
-    const { approvalStatus } = props.detail ?? {};
-    switch (approvalStatus) {
+    switch (detailInfo.value?.approvalStatus) {
       case QuotationStatusEnum.APPROVING:
         return isShowApproval.value ? commonActions.filter((item) => ['pass', 'unPass'].includes(item.key)) : [];
       case QuotationStatusEnum.APPROVED:
@@ -282,7 +281,7 @@
   const buttonMoreList = computed(() => {
     const allActions = [...commonActions, ...moreActions, ...deleteActions];
     const commonActionsKeys = ['voided', 'delete'];
-    const { approvalStatus, createUser } = props.detail ?? {};
+    const { approvalStatus, createUser } = detailInfo.value || {};
     const getActions = (keys: string[]) => allActions.filter((e) => keys.includes(e.key));
     switch (approvalStatus) {
       case QuotationStatusEnum.APPROVED:
