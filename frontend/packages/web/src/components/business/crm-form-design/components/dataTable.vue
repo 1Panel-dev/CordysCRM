@@ -190,6 +190,9 @@
     if (type === FieldTypeEnum.FORMULA) {
       return CrmFormCreateComponents.advancedComponents.formula;
     }
+    if (type === FieldTypeEnum.PICTURE) {
+      return CrmFormCreateComponents.advancedComponents.upload;
+    }
   }
 
   function copyItem(item: FormCreateField) {

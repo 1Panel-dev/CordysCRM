@@ -15,9 +15,10 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableCreateSummary, NButton, NDataTable, NTooltip } from 'naive-ui';
+  import { DataTableCreateSummary, NButton, NDataTable, NImage, NImageGroup, NTooltip } from 'naive-ui';
   import { isEqual } from 'lodash-es';
 
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -28,6 +29,7 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
   import formula from '@/components/business/crm-form-create/components/advanced/formula.vue';
+  import upload from '@/components/business/crm-form-create/components/advanced/upload.vue';
   import inputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
@@ -172,6 +174,20 @@
   }
 
   const sumInitialOptions = ref<Record<string, any>[]>([]);
+  const maxPictureCount = computed<number>(() => {
+    return data.value.reduce((prev, curr) => {
+      let currMax = 0;
+      props.subFields.forEach((field) => {
+        if (field.type === FieldTypeEnum.PICTURE) {
+          const pics = curr[field.businessKey || field.id];
+          if (Array.isArray(pics)) {
+            currMax = Math.max(currMax, pics.length);
+          }
+        }
+      });
+      return Math.max(prev, currMax);
+    }, 0);
+  });
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields
@@ -184,22 +200,37 @@
           }
           return {
             title: field.showLabel ? field.name : '',
-            width: 150,
+            width:
+              maxPictureCount.value > 0 && field.type === FieldTypeEnum.PICTURE ? maxPictureCount.value * 110 : 200,
             key,
             fieldId: key,
-            ellipsis: {
-              tooltip: true,
-            },
+            ellipsis:
+              field.type === FieldTypeEnum.PICTURE
+                ? undefined
+                : {
+                    tooltip: true,
+                  },
             render: (row: any) =>
-              h(
-                NTooltip,
-                { trigger: 'hover' },
-                {
-                  default: () => initFieldValueText(field, key, row[key]),
-                  trigger: () =>
-                    h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
-                }
-              ),
+              field.type === FieldTypeEnum.PICTURE
+                ? h(
+                    NImageGroup,
+                    {},
+                    {
+                      default: () =>
+                        row[key].map((img: string) =>
+                          h(NImage, { src: `${PreviewPictureUrl}/${img}`, class: 'w-[100px] h-[100px] mr-[8px]' })
+                        ),
+                    }
+                  )
+                : h(
+                    NTooltip,
+                    { trigger: 'hover' },
+                    {
+                      default: () => initFieldValueText(field, key, row[key]),
+                      trigger: () =>
+                        h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
+                    }
+                  ),
             filedType: field.type,
             fieldConfig: field,
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
@@ -396,6 +427,30 @@
                 },
               }),
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (field.type === FieldTypeEnum.PICTURE) {
+          return {
+            title,
+            width: maxPictureCount.value > 0 ? maxPictureCount.value * 110 + 120 : 200, // 每个卡片 110px + 上传按钮宽度 120px
+            key,
+            fieldId: key,
+            render: (row: any, rowIndex: number) =>
+              h(upload, {
+                value: row[key],
+                fieldConfig: field,
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                disabled: props.disabled,
+                needInitDetail: props.needInitDetail,
+                onChange: (val: any) => {
+                  row[key] = val;
+                  emit('change', data.value);
+                },
+              }),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+            filedType: field.type,
+            fieldConfig: field,
           };
         }
         return {

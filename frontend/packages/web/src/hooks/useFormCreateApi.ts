@@ -1125,6 +1125,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       defaultValue = parseModuleFieldValue(field, field.defaultValue, field.initialOptions);
     } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+    } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(field.type)) {
+      defaultValue = defaultValue || [];
     } else if (getRuleType(field) === 'array') {
       defaultValue =
         field.type === FieldTypeEnum.DATA_SOURCE && typeof field.defaultValue === 'string'
