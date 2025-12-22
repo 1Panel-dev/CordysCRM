@@ -15,10 +15,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.LogUtils;
-import cn.cordys.common.util.ServiceUtils;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationField;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationFieldBlob;
 import cn.cordys.crm.product.domain.ProductPrice;
@@ -41,6 +38,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -55,15 +53,13 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -95,6 +91,8 @@ public class ProductPriceService {
     private BaseMapper<OpportunityQuotationField> opportunityFieldMapper;
     @Resource
     private BaseMapper<OpportunityQuotationFieldBlob> opportunityQuotationFieldBlobBaseMapper;
+	@Resource
+	private AttachmentService attachmentService;
 
     /**
      * 价格列表
@@ -231,6 +229,34 @@ public class ProductPriceService {
         // 4. 记录日志上下文（用于审计）
         OperationLogContext.setResourceName(price.getName());
     }
+
+	/**
+	 * 复制价格表
+	 * @param id 价格表ID
+	 * @param currentUser 当前用户
+	 * @param currentOrg 当前组织
+	 * @return 复制后价格表
+	 */
+	@OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, operator = "{#currentUser}")
+	public ProductPrice copy(String id, String currentUser, String currentOrg) {
+		// 1. 查询价格表，不存在则抛错
+		ProductPrice price = Optional.ofNullable(productPriceMapper.selectByPrimaryKey(id))
+				.orElseThrow(() -> new GenericException(Translator.get("product.price.not.exist")));
+		// 2. 复制价格表基础信息
+		price.setId(IDGenerator.nextStr());
+		price.setPos(getNextOrder(currentOrg));
+		price.setName(price.getName() + "_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
+		price.setCreateUser(currentUser);
+		price.setCreateTime(System.currentTimeMillis());
+		price.setUpdateUser(currentUser);
+		price.setUpdateTime(System.currentTimeMillis());
+		price.setOrganizationId(currentOrg);
+		productPriceMapper.insert(price);
+		// 3. 复制自定义字段信息
+		copyPriceFields(id, price.getId(), currentOrg, currentUser);
+		// 4. TODO: 处理日志上下文
+		return price;
+	}
 
     /**
      * 批量更新价格表
@@ -466,4 +492,45 @@ public class ProductPriceService {
         lambdaQueryWrapper.in(ProductPrice::getName, names);
         return productPriceMapper.selectListByLambda(lambdaQueryWrapper);
     }
+
+	/**
+	 * 复制价格表自定义字段信息
+	 * @param sourceId 源价格表ID
+	 * @param targetId 目标价格表ID
+	 */
+	private void copyPriceFields(String sourceId, String targetId, String currentOrg, String currentUser) {
+		LambdaQueryWrapper<ProductPriceField> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
+		fieldLambdaQueryWrapper.eq(ProductPriceField::getResourceId, sourceId);
+		List<ProductPriceField> productPriceFields = productPriceFieldMapper.selectListByLambda(fieldLambdaQueryWrapper);
+		LambdaQueryWrapper<ProductPriceFieldBlob> blobLambdaQueryWrapper = new LambdaQueryWrapper<>();
+		blobLambdaQueryWrapper.eq(ProductPriceFieldBlob::getResourceId, sourceId);
+		List<ProductPriceFieldBlob> productPriceFieldBlobs = productPriceFieldBlobMapper.selectListByLambda(blobLambdaQueryWrapper);
+		if (CollectionUtils.isNotEmpty(productPriceFields)) {
+			List<ProductPriceField> fields = productPriceFields.stream().peek(f -> {
+				f.setId(IDGenerator.nextStr());
+				f.setResourceId(targetId);
+			}).toList();
+			productPriceFieldMapper.batchInsert(fields);
+		}
+		Map<String, String> attachmentIdMap = new HashMap<>(8);
+		List<String> attachmentFieldIds = moduleFormService.getFieldIdsOfForm(FormKey.PRICE.getKey(), currentOrg);
+		if (CollectionUtils.isNotEmpty(productPriceFieldBlobs)) {
+			List<ProductPriceFieldBlob> blobs = productPriceFieldBlobs.stream().peek(b -> {
+				b.setId(IDGenerator.nextStr());
+				b.setResourceId(targetId);
+				if (attachmentFieldIds.contains(b.getFieldId()) && b.getFieldValue() != null) {
+					List<String> attachmentIds = JSON.parseArray(b.getFieldValue().toString(), String.class);
+					List<String> copyAttachmentIds = new ArrayList<>();
+					attachmentIds.forEach(attachmentId -> {
+						attachmentIdMap.putIfAbsent(attachmentId, IDGenerator.nextStr());
+						copyAttachmentIds.add(attachmentIdMap.get(attachmentId));
+					});
+					b.setFieldValue(JSON.toJSONString(copyAttachmentIds));
+				}
+			}).toList();
+			productPriceFieldBlobMapper.batchInsert(blobs);
+		}
+		// 复制附件信息
+		Thread.startVirtualThread(() -> attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser));
+	}
 }

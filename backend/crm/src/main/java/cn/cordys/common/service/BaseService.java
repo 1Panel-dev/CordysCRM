@@ -285,10 +285,10 @@ public class BaseService {
      */
     private <T> void writeAddLogContext(T resource, Map<String, Object> resourceLog) {
         try {
-            Method getId = resource.getClass().getMethod("getId");
+            Method idGetter = resource.getClass().getMethod("getId");
             OperationLogContext.setContext(
                     LogContextInfo.builder()
-                            .resourceId((String) getId.invoke(resource))
+                            .resourceId((String) idGetter.invoke(resource))
                             .modifiedValue(resourceLog)
                             .build()
             );

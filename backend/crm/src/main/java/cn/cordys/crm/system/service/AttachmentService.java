@@ -23,9 +23,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+/**
+ * @author song-cc-rock
+ */
 @Service
 public class AttachmentService {
 
@@ -92,7 +100,7 @@ public class AttachmentService {
                 }
                 File file = folderFiles.getFirst();
                 fileStream = new FileInputStream(file);
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName(file.getName()))
                         .contentLength(file.length())
                         .contentType(isSvg(file.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
             } else {
@@ -102,7 +110,7 @@ public class AttachmentService {
                 if (fileStream == null) {
                     throw new GenericException("The file does not exist or has been deleted");
                 }
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"")
+                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName(attachment.getName()))
                         .contentLength(attachment.getSize())
                         .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
             }
@@ -181,4 +189,50 @@ public class AttachmentService {
             });
         }
     }
+
+	/**
+	 * 通过ID映射批量复制附件
+	 * @param oldOfNewIdMap {旧的附件ID: 新的附件ID} 集合
+	 * @param targetId 目标资源ID
+	 * @param currentUser 当前操作用户
+	 */
+	public void batchCopyOfIdMap(Map<String, String> oldOfNewIdMap, String targetId, String currentUser) {
+		LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.in(Attachment::getId, oldOfNewIdMap.keySet().stream().toList());
+		List<Attachment> attachments = attachmentMapper.selectListByLambda(queryWrapper);
+		Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
+		List<Attachment> newAttachments = new ArrayList<>();
+		oldOfNewIdMap.forEach((oId, nId) -> {
+			if (!attachmentMap.containsKey(oId)) {
+				return;
+			}
+			Attachment oldAttachment = attachmentMap.get(oId);
+			// 复制文件
+			FileCopyRequest copyRequest = new FileCopyRequest(
+					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
+					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
+					oldAttachment.getName());
+			fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+			// 复制附件记录
+			oldAttachment.setId(nId);
+			oldAttachment.setResourceId(targetId);
+			oldAttachment.setCreateTime(System.currentTimeMillis());
+			oldAttachment.setCreateUser(currentUser);
+			oldAttachment.setUpdateTime(System.currentTimeMillis());
+			oldAttachment.setUpdateUser(currentUser);
+			newAttachments.add(oldAttachment);
+
+		});
+		attachmentMapper.batchInsert(newAttachments);
+	}
+
+	/**
+	 * 编码文件名
+	 * @param fileName 文件名
+	 * @return 编码后文件名
+	 */
+	private String encodeName(String fileName) {
+		return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+				.replaceAll("\\+", "%20");
+	}
 }

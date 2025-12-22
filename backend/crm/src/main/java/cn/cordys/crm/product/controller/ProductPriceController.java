@@ -73,6 +73,13 @@ public class ProductPriceController {
         return priceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+	@GetMapping("/copy/{id}")
+	@RequiresPermissions(PermissionConstants.PRICE_ADD)
+	@Operation(summary = "复制价格表")
+	public ProductPrice copy(@PathVariable String id) {
+		return priceService.copy(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
     @Operation(summary = "修改价格表")
