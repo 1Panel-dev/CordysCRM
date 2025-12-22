@@ -103,6 +103,7 @@ export const {
   exportProductPriceSelected,
   preCheckImportProductPrice,
   importProductPrice,
+  copyProductPrice,
 } = productApi;
 
 export const {
