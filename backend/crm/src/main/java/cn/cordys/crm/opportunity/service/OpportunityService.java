@@ -728,7 +728,7 @@ public class OpportunityService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg, null, null);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

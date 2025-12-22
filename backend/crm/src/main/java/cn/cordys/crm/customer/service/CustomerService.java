@@ -168,7 +168,7 @@ public class CustomerService {
         List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, orgId);
         request.setTransitionPoolIds(pools.stream().map(CustomerPool::getId).toList());
         request.setTransition(true);
-		request.setTransitionDataPermission(dataScopeService.getDeptDataPermission(userId, orgId, null, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
+        request.setTransitionDataPermission(dataScopeService.getDeptDataPermission(userId, orgId, null, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
         return list(request, userId, orgId, null);
     }
 
@@ -306,16 +306,18 @@ public class CustomerService {
         return getResponse;
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 客户ID
-	 * @return 客户详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 客户ID
+     *
+     * @return 客户详情
+     */
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
-		if (customer == null) {
+        if (customer == null) {
             return null;
-		}
+        }
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
         customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
         // 获取模块字段
@@ -685,8 +687,8 @@ public class CustomerService {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CUSTOMER.getKey(), currentOrg),
                         Translator.get("customer.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-						new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg)),
-						new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg)),
+                        new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -751,7 +753,7 @@ public class CustomerService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer", "customer_field", currentOrg, null, null);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer", "customer_field", currentOrg);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();

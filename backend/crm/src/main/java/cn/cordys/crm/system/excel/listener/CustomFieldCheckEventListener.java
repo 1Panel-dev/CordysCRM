@@ -27,16 +27,16 @@ import java.util.stream.Collectors;
  */
 public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
-	/**
-	 * 表头字段集合
-	 */
+    /**
+     * 表头字段集合
+     */
     protected final Map<String, BaseField> fieldMap = new HashMap<>();
     /**
      * 源数据表
      */
     private final String sourceTable;
     private final String fieldTable;
-	protected final String currentOrg;
+    protected final String currentOrg;
     /**
      * 必填校验
      */
@@ -47,82 +47,86 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private final Map<String, BaseField> uniques = new HashMap<>();
     private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
-	private final CommonMapper commonMapper;
+    private final CommonMapper commonMapper;
     /**
      * 长度校验
      */
     private final Map<String, Integer> fieldLenLimit = new HashMap<>();
-	/**
-	 * 错误, 成功信息
-	 */
+    /**
+     * 错误, 成功信息
+     */
     @Getter
     protected Integer success = 0;
     @Getter
     protected List<ExcelErrData> errList = new ArrayList<>();
-	/**
-	 * 表头字段集合 && 业务字段集合映射
-	 */
-	protected Map<Integer, String> headMap;
-	protected Map<String, BusinessModuleField> businessFieldMap;
-	/**
-	 * 错误行号集合
-	 */
-	@Getter
-	protected List<Integer> errRows = new ArrayList<>();
-	/**
-	 * 子字段引用映射(子字段名称 -> 子表格字段ID)
-	 */
-	protected final Map<String, String> refSubMap = new HashMap<>();
-	/**
-	 * 合并单元格信息
-	 */
-	protected final Map<Integer, List<CellExtra>> mergeCellMap;
-	/**
-	 * 是否至少有一行数据 && 表头行数
-	 */
-	protected boolean atLeastOne = false;
-	protected int maxHeadRow;
-	protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
+    /**
+     * 表头字段集合 && 业务字段集合映射
+     */
+    protected Map<Integer, String> headMap;
+    protected Map<String, BusinessModuleField> businessFieldMap;
+    /**
+     * 错误行号集合
+     */
+    @Getter
+    protected List<Integer> errRows = new ArrayList<>();
+    /**
+     * 子字段引用映射(子字段名称 -> 子表格字段ID)
+     */
+    protected final Map<String, String> refSubMap = new HashMap<>();
+    /**
+     * 合并单元格信息
+     */
+    protected final Map<Integer, List<CellExtra>> mergeCellMap;
+    /**
+     * 是否至少有一行数据 && 表头行数
+     */
+    protected boolean atLeastOne = false;
+    protected int maxHeadRow;
+    protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
 
-	protected String specialSubRepeatColumnName = "";
+    protected String specialSubRepeatColumnName = "";
+
+    public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg) {
+        this(fields, sourceTable, fieldTable, currentOrg, null, null);
+    }
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg,
-										 Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
-		for (BaseField field : fields) {
-			if (isInvalidField(field)) {
-				continue;
-			}
-			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-				for (BaseField f : subField.getSubFields()) {
-					if (isInvalidField(f)) {
-						continue;
-					}
-					if (Strings.CS.equals(f.getBusinessKey(), BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
-						specialSubRepeatColumnName = f.getName();
-					}
-					this.fieldMap.put(f.getName(), f);
-					refSubMap.put(f.getName(), subField.getId());
-					setCheckLimit(f);
-				}
-				continue;
-			}
-			this.fieldMap.put(field.getName(), field);
-			setCheckLimit(field);
-		}
+                                         Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+        for (BaseField field : fields) {
+            if (isInvalidField(field)) {
+                continue;
+            }
+            if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+                for (BaseField f : subField.getSubFields()) {
+                    if (isInvalidField(f)) {
+                        continue;
+                    }
+                    if (Strings.CS.equals(f.getBusinessKey(), BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+                        specialSubRepeatColumnName = f.getName();
+                    }
+                    this.fieldMap.put(f.getName(), f);
+                    refSubMap.put(f.getName(), subField.getId());
+                    setCheckLimit(f);
+                }
+                continue;
+            }
+            this.fieldMap.put(field.getName(), field);
+            setCheckLimit(field);
+        }
         this.sourceTable = sourceTable;
         this.currentOrg = currentOrg;
         this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
         this.fieldTable = fieldTable;
-		this.mergeCellMap = mergeCellMap;
-		this.mergeRowDataMap = mergeRowDataMap;
+        this.mergeCellMap = mergeCellMap;
+        this.mergeRowDataMap = mergeRowDataMap;
     }
 
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-		maxHeadRow = context.readWorkbookHolder().getHeadRowNumber();
-		if (context.readRowHolder().getRowIndex() != maxHeadRow - 1) {
-			return;
-		}
+        maxHeadRow = context.readWorkbookHolder().getHeadRowNumber();
+        if (context.readRowHolder().getRowIndex() != maxHeadRow - 1) {
+            return;
+        }
         if (headMap == null) {
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
@@ -138,12 +142,12 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext context) {
-		if (data == null) {
-			return;
-		}
-		atLeastOne = true;
-		Integer rowIndex = context.readRowHolder().getRowIndex();
-		validateRowData(rowIndex, data);
+        if (data == null) {
+            return;
+        }
+        atLeastOne = true;
+        Integer rowIndex = context.readRowHolder().getRowIndex();
+        validateRowData(rowIndex, data);
     }
 
     @Override
@@ -160,7 +164,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (!uniques.isEmpty()) {
             uniques.values().forEach(field -> {
                 if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
-					// 子表格字段不走业务唯一性校验
+                    // 子表格字段不走业务唯一性校验
                     BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
                     String fieldName = businessModuleField.getBusinessKey();
                     List<String> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
@@ -181,13 +185,13 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
         StringBuilder errText = new StringBuilder();
-		if (StringUtils.isNotEmpty(specialSubRepeatColumnName)) {
-			checkMergedDuplicateOnRow(rowIndex, specialSubRepeatColumnName);
-		}
+        if (StringUtils.isNotEmpty(specialSubRepeatColumnName)) {
+            checkMergedDuplicateOnRow(rowIndex, specialSubRepeatColumnName);
+        }
         headMap.forEach((k, v) -> {
-			if (!isValidateCell(rowIndex, k)) {
-				return;
-			}
+            if (!isValidateCell(rowIndex, k)) {
+                return;
+            }
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
                 errText.append(v).append(Translator.get("cannot_be_null")).append(";");
             }
@@ -199,108 +203,111 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
             }
         });
-		if (StringUtils.isNotEmpty(errText)) {
+        if (StringUtils.isNotEmpty(errText)) {
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,
                     Translator.getWithArgs("row.error.tip", rowIndex + 1).concat(" " + errText));
             //错误信息
             errList.add(excelErrData);
-			errRows.add(rowIndex);
+            errRows.add(rowIndex);
         } else if (!errRows.contains(rowIndex)) {
-			success++;
-		}
+            success++;
+        }
     }
 
-	/**
-	 * 判断单元格是否需要校验
-	 * @param rowIndex 行序号
-	 * @param colIndex 列序号
-	 * @return 是否需要校验
-	 */
-	private boolean isValidateCell(int rowIndex, int colIndex) {
-		if (mergeCellMap == null) {
-			return true;
-		}
-		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-		if (cellExtras != null) {
-			for (CellExtra extra : cellExtras) {
-				// 属于合并列的区域内
-				if (colIndex >= extra.getFirstColumnIndex() && colIndex <= extra.getLastColumnIndex()) {
-					// 合并第一行也需校验
-					return rowIndex == extra.getFirstRowIndex();
-				}
-			}
-		}
-		// 不属于合并单元格，直接校验
-		return true;
-	}
+    /**
+     * 判断单元格是否需要校验
+     *
+     * @param rowIndex 行序号
+     * @param colIndex 列序号
+     *
+     * @return 是否需要校验
+     */
+    private boolean isValidateCell(int rowIndex, int colIndex) {
+        if (mergeCellMap == null) {
+            return true;
+        }
+        List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+        if (cellExtras != null) {
+            for (CellExtra extra : cellExtras) {
+                // 属于合并列的区域内
+                if (colIndex >= extra.getFirstColumnIndex() && colIndex <= extra.getLastColumnIndex()) {
+                    // 合并第一行也需校验
+                    return rowIndex == extra.getFirstRowIndex();
+                }
+            }
+        }
+        // 不属于合并单元格，直接校验
+        return true;
+    }
 
-	/**
-	 * 校验合并行内特殊列是否重复
-	 * @param rowIndex 行序号
-	 * @param checkColName 校验的列名
-	 */
-	private void checkMergedDuplicateOnRow(int rowIndex, String checkColName) {
-		if (mergeCellMap == null || mergeCellMap.isEmpty()) {
-			return;
-		}
+    /**
+     * 校验合并行内特殊列是否重复
+     *
+     * @param rowIndex     行序号
+     * @param checkColName 校验的列名
+     */
+    private void checkMergedDuplicateOnRow(int rowIndex, String checkColName) {
+        if (mergeCellMap == null || mergeCellMap.isEmpty()) {
+            return;
+        }
 
-		Integer targetColIndex = null;
-		for (Map.Entry<Integer, String> e : headMap.entrySet()) {
-			if (e.getValue() != null && checkColName.trim().equals(e.getValue().trim())) {
-				targetColIndex = e.getKey();
-				break;
-			}
-		}
-		if (targetColIndex == null) {
-			return;
-		}
+        Integer targetColIndex = null;
+        for (Map.Entry<Integer, String> e : headMap.entrySet()) {
+            if (e.getValue() != null && checkColName.trim().equals(e.getValue().trim())) {
+                targetColIndex = e.getKey();
+                break;
+            }
+        }
+        if (targetColIndex == null) {
+            return;
+        }
 
-		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-		if (CollectionUtils.isEmpty(cellExtras)) {
-			return;
-		}
+        List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+        if (CollectionUtils.isEmpty(cellExtras)) {
+            return;
+        }
 
-		for (CellExtra extra : cellExtras) {
-			if (rowIndex != extra.getFirstRowIndex()) {
-				continue;
-			}
+        for (CellExtra extra : cellExtras) {
+            if (rowIndex != extra.getFirstRowIndex()) {
+                continue;
+            }
 
-			int first = extra.getFirstRowIndex();
-			int last = extra.getLastRowIndex();
+            int first = extra.getFirstRowIndex();
+            int last = extra.getLastRowIndex();
 
-			Map<String, List<Integer>> valToRows = new HashMap<>(8);
-			for (int r = first; r <= last; r++) {
-				Map<Integer, String> rowData = mergeRowDataMap.get(r);
-				if (rowData == null) {
-					continue;
-				}
-				String val = rowData.get(targetColIndex);
-				if (StringUtils.isEmpty(val)) {
-					continue;
-				}
-				valToRows.computeIfAbsent(val, k -> new ArrayList<>()).add(r);
-			}
+            Map<String, List<Integer>> valToRows = new HashMap<>(8);
+            for (int r = first; r <= last; r++) {
+                Map<Integer, String> rowData = mergeRowDataMap.get(r);
+                if (rowData == null) {
+                    continue;
+                }
+                String val = rowData.get(targetColIndex);
+                if (StringUtils.isEmpty(val)) {
+                    continue;
+                }
+                valToRows.computeIfAbsent(val, k -> new ArrayList<>()).add(r);
+            }
 
-			for (Map.Entry<String, List<Integer>> en : valToRows.entrySet()) {
-				List<Integer> dupRows = en.getValue();
-				if (dupRows.size() <= 1) {
-					continue;
-				}
-				String dupVal = en.getKey();
-				for (Integer dupRow : dupRows) {
-					if (!errRows.contains(dupRow)) {
-						String detailMsg = Translator.getWithArgs("row.error.tip", dupRow + 1)
-								+ " " + checkColName + Translator.get("cell.not.unique") + " [" + dupVal + "]";
-						errList.add(new ExcelErrData(dupRow, detailMsg));
-						errRows.add(dupRow);
-					}
-				}
-			}
-		}
-	}
+            for (Map.Entry<String, List<Integer>> en : valToRows.entrySet()) {
+                List<Integer> dupRows = en.getValue();
+                if (dupRows.size() <= 1) {
+                    continue;
+                }
+                String dupVal = en.getKey();
+                for (Integer dupRow : dupRows) {
+                    if (!errRows.contains(dupRow)) {
+                        String detailMsg = Translator.getWithArgs("row.error.tip", dupRow + 1)
+                                + " " + checkColName + Translator.get("cell.not.unique") + " [" + dupVal + "]";
+                        errList.add(new ExcelErrData(dupRow, detailMsg));
+                        errRows.add(dupRow);
+                    }
+                }
+            }
+        }
+    }
 
 
-	/**
+    /**
      * 检查字段值唯一
      *
      * @param val   值
@@ -342,31 +349,32 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         return null;
     }
 
-	/**
-	 * 设置校验信息
-	 * @param field 自定义字段
-	 */
-	private void setCheckLimit(BaseField field) {
-		if (field.needRequireCheck()) {
-			requires.add(field.getName());
-		}
-		if (field.needRepeatCheck()) {
-			uniques.put(field.getName(), field);
-		}
-		if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
-				FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
-				FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
-			fieldLenLimit.put(field.getName(), 255);
-		}
-		if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-			fieldLenLimit.put(field.getName(), 3000);
-		}
-	}
+    /**
+     * 设置校验信息
+     *
+     * @param field 自定义字段
+     */
+    private void setCheckLimit(BaseField field) {
+        if (field.needRequireCheck()) {
+            requires.add(field.getName());
+        }
+        if (field.needRepeatCheck()) {
+            uniques.put(field.getName(), field);
+        }
+        if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
+                FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
+                FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
+            fieldLenLimit.put(field.getName(), 255);
+        }
+        if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
+            fieldLenLimit.put(field.getName(), 3000);
+        }
+    }
 
-	private boolean isInvalidField(BaseField field) {
-		if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
-			return true;
-		}
-		return !field.canImport() && !field.isSerialNumber();
-	}
+    private boolean isInvalidField(BaseField field) {
+        if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
+            return true;
+        }
+        return !field.canImport() && !field.isSerialNumber();
+    }
 }
