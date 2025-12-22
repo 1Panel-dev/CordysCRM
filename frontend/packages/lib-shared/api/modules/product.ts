@@ -26,6 +26,7 @@ import {
   PreCheckProductImportUrl,
   UpdateProductPriceUrl,
   UpdateProductUrl,
+  CopyProductPriceUrl,
 } from '@lib/shared/api/requrls/product';
 import type {
   CommonList,
@@ -184,6 +185,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportProductPriceUrl, data });
   }
 
+  // 复制价格表
+  function copyProductPrice(id: string) {
+    return CDR.get({ url: `${CopyProductPriceUrl}/${id}` });
+  }
+
   return {
     addProduct,
     updateProduct,
@@ -211,5 +217,6 @@ export default function useProductApi(CDR: CordysAxios) {
     exportProductPriceSelected,
     preCheckImportProductPrice,
     importProductPrice,
+    copyProductPrice,
   };
 }

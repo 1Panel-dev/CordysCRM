@@ -84,8 +84,9 @@
 
 <script setup lang="ts">
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { debounce } from 'lodash-es';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem, TableDraggedParams } from '@lib/shared/models/common';
@@ -103,7 +104,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import priceDetailDrawer from './components/priceDetailDrawer.vue';
 
-  import { deleteProductPrice, dragSortProductPrice } from '@/api/modules';
+  import { copyProductPrice, deleteProductPrice, dragSortProductPrice } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -174,6 +175,17 @@
     });
   }
 
+  const handleCopy = debounce(async (id: string) => {
+    try {
+      await copyProductPrice(id);
+      Message.success(t('common.copySuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }, 200);
+
   function handleActionSelect(row: any, actionKey: string, done?: () => void) {
     activeSourceId.value = row.id;
     switch (actionKey) {
@@ -182,6 +194,9 @@
         break;
       case 'delete':
         handleDelete(row);
+        break;
+      case 'copy':
+        handleCopy(row.id);
         break;
       default:
         break;
@@ -196,7 +211,7 @@
     containerClass: 'crm-price-table',
     operationColumn: {
       key: 'operation',
-      width: 120,
+      width: 150,
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {
@@ -205,6 +220,11 @@
               label: t('common.edit'),
               key: 'edit',
               permission: ['PRICE:UPDATE'],
+            },
+            {
+              label: t('common.copy'),
+              key: 'copy',
+              permission: ['PRICE:ADD'],
             },
             {
               label: t('common.delete'),

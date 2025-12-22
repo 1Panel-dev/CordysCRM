@@ -26,3 +26,4 @@ export const ExportProductPriceUrl = '/price/export-select'; // 导出选择的�
 export const ExportAllProductPriceUrl = '/price/export'; // 导出所有的价格表
 export const ImportProductPriceUrl = '/price/import'; // 导入价格表
 export const PreCheckImportProductPriceUrl = '/price/import/pre-check'; // 导入价格表预检查
+export const CopyProductPriceUrl = '/price/copy'; // 复制价格表
