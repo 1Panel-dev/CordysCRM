@@ -130,7 +130,6 @@ public class ProductController {
     }
 
     @GetMapping("/list/option")
-    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "获取当前组织下全部产品的id,和name集合")
     public List<OptionDTO> listOption() {
         return productService.listOption(OrganizationContext.getOrganizationId());
