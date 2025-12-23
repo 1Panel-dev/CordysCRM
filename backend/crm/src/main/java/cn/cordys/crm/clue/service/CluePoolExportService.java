@@ -1,7 +1,6 @@
 package cn.cordys.crm.clue.service;
 
 import cn.cordys.aspectj.constants.LogModule;
-import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
@@ -20,13 +19,11 @@ import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ExportTaskService;
-import cn.cordys.registry.ExportThreadRegistry;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,38 +52,25 @@ public class CluePoolExportService extends ClueExportService {
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
-        Thread.startVirtualThread(() -> {
-            try {
-                LocaleContextHolder.setLocale(locale);
-                ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
-                //表头信息
-                List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Collections.singletonList(head.getTitle()))
-                        .toList();
 
-                batchHandleData(fileId,
-                        headList,
-                        exportTask,
-                        request.getFileName(),
-                        request,
-                        t -> getExportData(request, userId, orgId, dataPermission, exportTask.getId()));
+        runExport(orgId, userId, LogModule.CLUE_POOL_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportData(fileId, exportTask, userId, request, orgId, dataPermission));
 
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
-
-            } catch (InterruptedException e) {
-                LogUtils.error("任务停止中断", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
-            } catch (Exception e) {
-                LogUtils.error("任务失败", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                //从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_POOL_INDEX, request.getFileName());
-            }
-        });
         return exportTask.getId();
+    }
+
+    private void exportData(String fileId, ExportTask exportTask, String userId, ClueExportRequest request, String orgId, DeptDataPermissionDTO dataPermission) throws InterruptedException {
+        //表头信息
+        List<List<String>> headList = request.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+
+        batchHandleData(fileId,
+                headList,
+                exportTask,
+                request.getFileName(),
+                request,
+                t -> getExportData(request, userId, orgId, dataPermission, exportTask.getId()));
     }
 
     @Override
@@ -96,45 +80,40 @@ public class CluePoolExportService extends ClueExportService {
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
-        Thread.startVirtualThread(() -> {
-            try {
-                LocaleContextHolder.setLocale(locale);
-                ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
-                //表头信息
-                List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Collections.singletonList(head.getTitle()))
-                        .toList();
 
-                // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
-                try (ExcelWriter writer = EasyExcel.write(file)
-                        .head(headList)
-                        .excelType(ExcelTypeEnum.XLSX)
-                        .build()) {
-                    WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+        runExport(orgId, userId, LogModule.OPPORTUNITY_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportData(fileId, exportTask, userId, request, orgId));
 
-                    SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
-                        List<List<Object>> data = new ArrayList<>();
-                        try {
-                            data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
-                        } catch (InterruptedException e) {
-                            LogUtils.error("任务停止中断", e);
-                            exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
-                        }
-                        writer.write(data, sheet);
-                    });
-                }
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
-            } catch (Exception e) {
-                LogUtils.error("导出线索池异常", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                //从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CLUE_POOL_INDEX, request.getFileName());
-            }
-        });
         return exportTask.getId();
+    }
+
+    private void exportData(String fileId, ExportTask exportTask,
+                            String userId, ExportSelectRequest request,
+                            String orgId) {
+        //表头信息
+        List<List<String>> headList = request.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+
+        // 准备导出文件
+        File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
+                List<List<Object>> data = new ArrayList<>();
+                try {
+                    data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
+                } catch (InterruptedException e) {
+                    LogUtils.error("任务停止中断", e);
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
+                }
+                writer.write(data, sheet);
+            });
+        }
     }
 
     public List<ChartResult> chart(PoolClueChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

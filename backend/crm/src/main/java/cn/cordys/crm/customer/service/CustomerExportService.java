@@ -1,7 +1,6 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.aspectj.constants.LogModule;
-import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -54,28 +53,15 @@ public class CustomerExportService extends BaseExportService {
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
-        Thread.startVirtualThread(() -> {
-            try {
-                this.exportCustomerData(exportTask, userId, request, orgId, deptDataPermission, locale);
-            } catch (InterruptedException e) {
-                LogUtils.error("任务停止中断", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
-            } catch (Exception e) {
-                //更新任务
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                //从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_INDEX, request.getFileName());
-            }
-        });
+
+        // 启动虚拟线程执行导出任务
+        runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportCustomerData(exportTask, userId, request, orgId, deptDataPermission, locale));
+
         return exportTask.getId();
     }
 
     public void exportCustomerData(ExportTask exportTask, String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) throws Exception {
-        LocaleContextHolder.setLocale(locale);
-        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息
         List<List<String>> headList = request.getHeadList().stream()
                 .map(head -> Collections.singletonList(head.getTitle()))
@@ -87,8 +73,6 @@ public class CustomerExportService extends BaseExportService {
                 request.getFileName(),
                 request,
                 t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
-        //更新状态
-        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
     }
 
 
@@ -153,20 +137,10 @@ public class CustomerExportService extends BaseExportService {
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
-        Thread.startVirtualThread(() -> {
-            try {
-                this.exportSelectData(exportTask, userId, request, orgId, locale);
-            } catch (Exception e) {
-                LogUtils.error("导出客户异常", e);
-                //更新任务
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                //从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_INDEX, request.getFileName());
-            }
-        });
+
+        runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportSelectData(exportTask, userId, request, orgId, locale));
+
         return exportTask.getId();
     }
 

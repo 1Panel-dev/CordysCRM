@@ -1,7 +1,6 @@
 package cn.cordys.crm.opportunity.service;
 
 import cn.cordys.aspectj.constants.LogModule;
-import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -29,7 +28,6 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,45 +60,26 @@ public class OpportunityExportService extends BaseExportService {
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
 
-        Thread.startVirtualThread(() -> {
-            try {
-                LocaleContextHolder.setLocale(locale);
-                ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
-
-                // 表头信息
-                List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Collections.singletonList(head.getTitle()))
-                        .toList();
-
-
-                //分批查询数据并写入文件
-                batchHandleData(fileId,
-                        headList,
-                        exportTask,
-                        request.getFileName(),
-                        request,
-                        t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
-
-                // 更新状态
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
-
-            } catch (InterruptedException e) {
-                LogUtils.error("任务停止中断", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
-            } catch (Exception e) {
-                LogUtils.error("导出数据异常", e);
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                // 从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                // 日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY_INDEX, request.getFileName());
-            }
-        });
+        runExport(orgId, userId, LogModule.OPPORTUNITY_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportData(fileId, exportTask, userId, request, orgId, deptDataPermission));
 
         return exportTask.getId();
     }
 
+    private void exportData(String fileId, ExportTask exportTask, String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) throws InterruptedException {
+        // 表头信息
+        List<List<String>> headList = request.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+
+        //分批查询数据并写入文件
+        batchHandleData(fileId,
+                headList,
+                exportTask,
+                request.getFileName(),
+                request,
+                t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
+    }
 
     /**
      * 构建导出的数据
@@ -116,7 +95,7 @@ public class OpportunityExportService extends BaseExportService {
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, OpportunityExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         //获取数据
-        List<OpportunityListResponse> allList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission,false);
+        List<OpportunityListResponse> allList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission, false);
         List<OpportunityListResponse> dataList = opportunityService.buildListData(allList, orgId);
         Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(orgId, allList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);
@@ -169,51 +148,40 @@ public class OpportunityExportService extends BaseExportService {
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
-        Thread.startVirtualThread(() -> {
-            try {
-                LocaleContextHolder.setLocale(locale);
-                ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
-                //表头信息
-                List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Collections.singletonList(head.getTitle()))
-                        .toList();
 
-                // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
-                try (ExcelWriter writer = EasyExcel.write(file)
-                        .head(headList)
-                        .excelType(ExcelTypeEnum.XLSX)
-                        .build()) {
-                    WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+        runExport(orgId, userId, LogModule.OPPORTUNITY_INDEX, locale, exportTask, request.getFileName(),
+                () -> exportData(fileId, exportTask, userId, request, orgId));
 
-                    SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
-                        List<List<Object>> data = null;
-                        try {
-                            data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
-                        } catch (InterruptedException e) {
-                            LogUtils.error("任务停止中断", e);
-                            exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
-                        }
-                        writer.write(data, sheet);
-                    });
-                }
-
-                //更新导出任务状态
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
-            } catch (Exception e) {
-                LogUtils.error("导出商机异常", e);
-                //更新任务
-                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
-            } finally {
-                //从注册中心移除
-                ExportThreadRegistry.remove(exportTask.getId());
-                //日志
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY_INDEX, request.getFileName());
-            }
-        });
         return exportTask.getId();
     }
 
+    private void exportData(String fileId, ExportTask exportTask, String userId, ExportSelectRequest request, String orgId) {
+        //表头信息
+        List<List<String>> headList = request.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+
+        // 准备导出文件
+        File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
+                List<List<Object>> data = null;
+                try {
+                    data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
+                } catch (InterruptedException e) {
+                    LogUtils.error("任务停止中断", e);
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
+                }
+                writer.write(data, sheet);
+            });
+        }
+
+    }
 
     /**
      * 选中商机数据
@@ -247,6 +215,5 @@ public class OpportunityExportService extends BaseExportService {
 
         return data;
     }
-
 
 }

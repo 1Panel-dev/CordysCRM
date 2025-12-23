@@ -4,22 +4,31 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.service.BaseExportService;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.LogUtils;
+import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
+import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.service.ExportTaskService;
 import cn.cordys.registry.ExportThreadRegistry;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.support.ExcelTypeEnum;
+import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -29,6 +38,8 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     private ContractPaymentPlanService contractPaymentPlanService;
     @Resource
     private ExtContractPaymentPlanMapper extContractPaymentPlanMapper;
+    @Resource
+    private ExportTaskService exportTaskService;
 
     /**
      * 构建导出的数据
@@ -90,7 +101,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
      * @return 导出数据列表
      */
     @Override
-    public List<List<Object>> getSelectExportData(List<String> ids, String taskId,  ExportDTO exportDTO) throws InterruptedException {
+    public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
         String orgId = exportDTO.getOrgId();
         String userId = exportDTO.getUserId();
         //获取数据
@@ -108,4 +119,94 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         }
         return data;
     }
+
+    /**
+     * 导出选择数据
+     *
+     * @return 导出任务ID
+     */
+    public String exportSelect(ExportDTO exportDTO) {
+        String fileName = exportDTO.getFileName();
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        checkFileName(fileName);
+        // 用户导出数量限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportDTO.getExportType(), fileName);
+
+        runExport(orgId, userId, exportDTO.getLogModule(), exportDTO.getLocale(), exportTask, exportDTO.getFileName(),
+                () -> exportSelectData(exportTask, exportDTO));
+
+        return exportTask.getId();
+    }
+
+    public void exportSelectData(ExportTask exportTask, ExportDTO exportDTO) {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        // 准备导出文件
+        File file = prepareExportFile(exportTask.getFileId(), exportDTO.getFileName(), exportTask.getOrganizationId());
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            SubListUtils.dealForSubList(exportDTO.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
+                List<List<Object>> data = null;
+                try {
+                    data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
+                } catch (InterruptedException e) {
+                    LogUtils.error("任务停止中断", e);
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), exportDTO.getUserId());
+                }
+                writer.write(data, sheet);
+            });
+        }
+
+        //更新导出任务状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
+    public String export(ExportDTO exportDTO) {
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        String exportType = exportDTO.getExportType();
+        String fileName = exportDTO.getFileName();
+        checkFileName(exportDTO.getFileName());
+        //用户导出数量 限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportType, fileName);
+
+        runExport(orgId, userId, exportDTO.getLogModule(), exportDTO.getLocale(), exportTask, exportDTO.getFileName(),
+                () -> exportCustomerData(exportTask, exportDTO));
+
+        return exportTask.getId();
+    }
+
+    public void exportCustomerData(ExportTask exportTask, ExportDTO exportDTO) throws Exception {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        //分批查询数据并写入文件
+        batchHandleData(exportTask.getFileId(),
+                headList,
+                exportTask,
+                exportDTO.getFileName(),
+                exportDTO.getPageRequest(),
+                t -> getExportData(exportTask.getId(), exportDTO));
+        //更新状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
 }
