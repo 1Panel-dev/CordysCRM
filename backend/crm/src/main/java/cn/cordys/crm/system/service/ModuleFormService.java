@@ -1632,18 +1632,18 @@ public class ModuleFormService {
 		List<BaseModuleFieldValue> resolveFvs = resolveSubKeyToId(fieldValues, flattenFields);
 
 		// 2. 处理数据源引用字段
-		resolveFvs = resolveRefFields(resolveFvs, flattenFields, baseResourceFieldService);
+		List<BaseModuleFieldValue> resolveRefFvs = resolveRefFields(resolveFvs, flattenFields, baseResourceFieldService);
 
 		// 3. 补充流水号字段
 		Optional<BaseField> serialField = flattenFields.stream().filter(BaseField::isSerialNumber).findAny();
 		if (serialField.isPresent() && StringUtils.isEmpty(serialField.get().getBusinessKey())) {
 			Object serialVal = baseResourceFieldService.getResourceFieldValue(resourceId, serialField.get().getId());
 			if (serialVal != null) {
-				resolveFvs.add(new BaseModuleFieldValue(serialField.get().getId(), serialVal));
+				resolveRefFvs.add(new BaseModuleFieldValue(serialField.get().getId(), serialVal));
 			}
 		}
 
-        return resolveFvs;
+        return resolveRefFvs;
     }
 
 	/**
@@ -1733,7 +1733,7 @@ public class ModuleFormService {
 		if (!reFvs.isEmpty()) {
 			resolveFvs.addAll(reFvs);
 		}
-		return reFvs;
+		return resolveFvs;
 	}
 
 	/**
