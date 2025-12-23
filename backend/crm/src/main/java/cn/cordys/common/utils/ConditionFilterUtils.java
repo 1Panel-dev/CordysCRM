@@ -56,7 +56,7 @@ public class ConditionFilterUtils {
         BaseField departmentField = new DepartmentField();
         departmentField.setId("departmentId");
         departmentField.setType(FieldType.DEPARTMENT.name());
-        departmentField.setBusinessKey("department_id");
+        departmentField.setBusinessKey("departmentId");
         fields.add(departmentField);
 
         ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
