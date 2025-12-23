@@ -94,6 +94,8 @@ public class ProductPriceService {
 	@Resource
 	private AttachmentService attachmentService;
 
+	public static final int MAX_NAME_SPLIT_LENGTH = 243;
+
     /**
      * 价格列表
      *
@@ -245,6 +247,9 @@ public class ProductPriceService {
 		// 2. 复制价格表基础信息
 		price.setId(IDGenerator.nextStr());
 		price.setPos(getNextOrder(currentOrg));
+		if (price.getName() != null && price.getName().length() > MAX_NAME_SPLIT_LENGTH) {
+			price.setName(price.getName().substring(0, 243));
+		}
 		price.setName(price.getName() + "_copy_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
 		price.setCreateUser(currentUser);
 		price.setCreateTime(System.currentTimeMillis());
@@ -536,6 +541,6 @@ public class ProductPriceService {
 			productPriceFieldBlobMapper.batchInsert(blobs);
 		}
 		// 复制附件信息
-		Thread.startVirtualThread(() -> attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser));
+		attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser);
 	}
 }
