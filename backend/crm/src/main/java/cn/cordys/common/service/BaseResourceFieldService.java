@@ -141,14 +141,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return new ArrayList<>(mergedResults.values());
     }
 
-    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey, BaseField baseField) {
+    private static BaseModuleFieldValue getBaseModuleFieldValue(String fieldKey) {
         BaseModuleFieldValue categoryFieldValue = new BaseModuleFieldValue();
-        if (baseField != null) {
-            // 业务字段key翻译成字段ID
-            categoryFieldValue.setFieldId(baseField.getId());
-        } else {
-            categoryFieldValue.setFieldId(fieldKey);
-        }
+        categoryFieldValue.setFieldId(fieldKey);
         return categoryFieldValue;
     }
 
@@ -1238,14 +1233,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         Map<String, List<OptionDTO>> optionMap = getChartOptionMap(formConfig, chartResults, categoryAxisParam,
                 subCategoryAxisParam);
 
-        Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisField.getId()))
+        Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisParam.getFieldId()))
                 .orElse(List.of())
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
         Map<String, String> subCategoryOptionMap = null;
         if (subCategoryAxisField != null) {
-            subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
+            subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisParam.getFieldId()))
                     .orElse(List.of())
                     .stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
@@ -1317,13 +1312,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     List<BaseModuleFieldValue> values = new ArrayList<>(2);
 
                     if (categoryAxisField != null && categoryAxisField.hasOptions()) {
-                        var categoryValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId(), categoryAxisField);
+                        var categoryValue = getBaseModuleFieldValue(categoryAxisParam.getFieldId());
                         categoryValue.setFieldValue(chartResult.getCategoryAxis());
                         values.add(categoryValue);
                     }
 
                     if (subCategoryAxisField != null && subCategoryAxisField.hasOptions()) {
-                        var subValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId(), subCategoryAxisField);
+                        var subValue = getBaseModuleFieldValue(subCategoryAxisParam.getFieldId());
                         subValue.setFieldValue(chartResult.getSubCategoryAxis());
                         values.add(subValue);
                     }
