@@ -25,6 +25,7 @@
     :success-count="successCount"
     :title="resultTitle"
     :reason-key="props.reasonKey"
+    @cancel="handleResultCancel"
   />
 </template>
 
@@ -178,6 +179,11 @@
       // eslint-disable-next-line no-console
       console.log(e);
     }
+  }
+
+  function handleResultCancel() {
+    showModal.value = false;
+    showToPoolResultModel.value = false;
   }
 
   watch(
