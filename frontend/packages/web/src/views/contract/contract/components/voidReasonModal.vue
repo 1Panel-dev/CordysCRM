@@ -41,11 +41,12 @@
 <script setup lang="ts">
   import { FormInst, FormRules, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
 
+  import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { voidedContract } from '@/api/modules';
+  import { changeContractStatus } from '@/api/modules';
 
   const props = defineProps<{
     sourceId: string;
@@ -79,7 +80,7 @@
       if (!error) {
         try {
           loading.value = true;
-          await voidedContract(props.sourceId, form.value.reason);
+          await changeContractStatus(props.sourceId, ContractStatusEnum.VOID, form.value.reason);
           Message.success(t('common.voidSuccess'));
           visible.value = false;
           emit('refresh');

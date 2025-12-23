@@ -6,16 +6,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
 
-  import { contractPaymentPlanStatus, contractStatusMap } from '@/config/contract';
+  import { contractPaymentPlanStatus } from '@/config/contract';
 
   const props = defineProps<{
-    status: ContractPaymentPlanEnum | ContractStatusEnum;
+    status: ContractPaymentPlanEnum;
   }>();
 
   const statusMap = {
     ...contractPaymentPlanStatus,
-    ...contractStatusMap,
   };
 </script>

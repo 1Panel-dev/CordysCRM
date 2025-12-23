@@ -71,14 +71,6 @@ export const logTypeOption = [
     label: 'common.cancelVoid',
   },
   {
-    value: OperationTypeEnum.ARCHIVE,
-    label: 'common.archive',
-  },
-  {
-    value: OperationTypeEnum.UNARCHIVE,
-    label: 'common.unarchive',
-  },
-  {
     value: OperationTypeEnum.DOWNLOAD,
     label: 'common.download',
   },

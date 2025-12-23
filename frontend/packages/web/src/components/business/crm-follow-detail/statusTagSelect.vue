@@ -2,10 +2,10 @@
   <n-select
     v-model:value="status"
     :placeholder="t('common.pleaseSelect')"
-    :render-tag="renderTag"
+    :render-tag="props.noRender ? undefined : renderTag"
     :options="props.statusOptions ?? options"
     :show-checkmark="false"
-    :render-option="renderOption"
+    :render-option="props.noRender ? undefined : renderOption"
     :disabled="props.disabled"
     :bordered="false"
     class="follow-plan-status-select"
@@ -32,6 +32,7 @@
     disabled: boolean;
     statusOptions?: SelectOption[];
     statusTagComponent?: any; // 组件引用
+    noRender?: boolean;
   }>();
 
   const emit = defineEmits<{

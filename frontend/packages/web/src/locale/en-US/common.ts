@@ -203,7 +203,6 @@ export default {
   'common.searchName': 'Search by name',
   'common.archive': 'archive',
   'common.notArchived': 'Not archived',
-  'common.unarchive': 'Unarchive',
   'common.running': 'Running',
   'common.unExecute': 'Pending',
   'common.executed': 'Executed',

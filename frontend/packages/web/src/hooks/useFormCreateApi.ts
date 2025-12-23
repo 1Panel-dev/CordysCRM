@@ -250,10 +250,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         title: t('opportunity.quotation.amount'),
         key: 'amount',
       },
-      {
-        title: t('contract.archivedStatus'),
-        key: 'archivedStatus',
-      },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
       {

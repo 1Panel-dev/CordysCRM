@@ -9,9 +9,8 @@ export interface ContractItem {
   customerId: string;
   customerName: string;
   amount: number;
-  archivedStatus: string;
   approvalStatus: QuotationStatusEnum;
-  status: string;
+  stage: string;
   owner: string;
   ownerName: string;
   createUser: string;

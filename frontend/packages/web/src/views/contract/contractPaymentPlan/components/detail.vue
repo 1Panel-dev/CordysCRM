@@ -67,7 +67,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
-  import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
+  import ContractStatus from './contractPaymentStatus.vue';
 
   import { deletePaymentPlan } from '@/api/modules';
   import useModal from '@/hooks/useModal';

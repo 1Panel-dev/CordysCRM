@@ -51,7 +51,7 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
         value: '',
       },
       {
-        key: 'status',
+        key: 'stage',
         label: t('contract.status'),
         value: '',
       },

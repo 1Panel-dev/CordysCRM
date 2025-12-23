@@ -11,8 +11,6 @@ import {
   GetContractFormConfigUrl,
   GetContractTabUrl,
   ChangeContractStatusUrl,
-  ContractVoidedUrl,
-  ContractArchivedUrl,
   GetContractFormSnapshotConfigUrl,
   ExportContractAllUrl,
   ExportContractSelectedUrl,
@@ -45,7 +43,8 @@ import {
   DeletePaymentPlanViewUrl,
   DragPaymentPlanViewUrl,
   BatchApproveContractUrl,
-  ApproveContractUrl
+  ApproveContractUrl,
+  RevokeContractUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -66,7 +65,7 @@ import type {
   PaymentPlanDetail,
   SavePaymentPlanParams,
   UpdatePaymentPlanParams,
-  ApprovalContractParams
+  ApprovalContractParams,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
@@ -90,16 +89,6 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${ContractDeleteUrl}/${id}` });
   }
 
-  // 作废合同
-  function voidedContract(id: string, voidReason: string) {
-    return CDR.post({ url: `${ContractVoidedUrl}`, data: { voidReason, id } });
-  }
-
-  // 归档合同
-  function archivedContract(id: string, archivedStatus: string) {
-    return CDR.post({ url: `${ContractArchivedUrl}`, data: { archivedStatus, id } });
-  }
-
   // 合同详情
   function getContractDetail(id: string) {
     return CDR.get<ContractDetail>({ url: `${GetContractDetailUrl}/${id}` });
@@ -118,8 +107,8 @@ export default function useContractApi(CDR: CordysAxios) {
     });
   }
 
-  function changeContractStatus(id: string, status: string) {
-    return CDR.post({ url: `${ChangeContractStatusUrl}`, data: { status, id } });
+  function changeContractStatus(id: string, stage: string, voidReason?: string) {
+    return CDR.post({ url: `${ChangeContractStatusUrl}`, data: { stage, id, voidReason } });
   }
 
   // 获取合同tab显隐藏
@@ -151,6 +140,10 @@ export default function useContractApi(CDR: CordysAxios) {
 
   function approvalContract(data: ApprovalContractParams) {
     return CDR.post({ url: ApproveContractUrl, data });
+  }
+
+  function revokeContract(id: string) {
+    return CDR.get({ url: `${RevokeContractUrl}/${id}` });
   }
 
   // 视图
@@ -305,11 +298,10 @@ export default function useContractApi(CDR: CordysAxios) {
     deleteContract,
     changeContractStatus,
     getContractFormConfig,
-    voidedContract,
-    archivedContract,
     getContractFormSnapshotConfig,
     batchApproveContract,
     approvalContract,
+    revokeContract,
     // 回款计划
     getPaymentPlanList,
     getContractPaymentPlanList,
