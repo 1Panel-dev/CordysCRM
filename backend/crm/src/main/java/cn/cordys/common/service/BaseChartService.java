@@ -42,9 +42,6 @@ public abstract class BaseChartService extends BaseResourceService {
 			subCategoryAxisField = getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId());
 		}
 
-		if (categoryAxisField == null || subCategoryAxisField == null) {
-			return chartResults;
-		}
 		Map<String, List<OptionDTO>> optionMap = getChartOptionMap(formConfig, chartResults, categoryAxisParam,
 				subCategoryAxisParam);
 
@@ -53,11 +50,13 @@ public abstract class BaseChartService extends BaseResourceService {
 				.stream()
 				.collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
-		Map<String, String> subCategoryOptionMap;
-		subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
-				.orElse(List.of())
-				.stream()
-				.collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+		Map<String, String> subCategoryOptionMap = null;
+		if (subCategoryAxisField != null) {
+			subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisField.getId()))
+					.orElse(List.of())
+					.stream()
+					.collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+		}
 
 		for (ChartResult chartResult : chartResults) {
 			if (categoryOptionMap.get(chartResult.getCategoryAxis()) != null) {
@@ -66,7 +65,7 @@ public abstract class BaseChartService extends BaseResourceService {
 				chartResult.setCategoryAxisName(chartResult.getCategoryAxis());
 			}
 
-			if (subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
+			if (subCategoryOptionMap != null && subCategoryOptionMap.get(chartResult.getSubCategoryAxis()) != null) {
 				chartResult.setSubCategoryAxisName(subCategoryOptionMap.get(chartResult.getSubCategoryAxis()));
 			} else {
 				chartResult.setSubCategoryAxisName(chartResult.getSubCategoryAxis());
@@ -81,7 +80,7 @@ public abstract class BaseChartService extends BaseResourceService {
 				chartResult.setCategoryAxis(RegionUtils.getCode(chartResult.getCategoryAxis()));
 			}
 
-			if (subCategoryAxisField.isLocation()) {
+			if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
 				chartResult.setSubCategoryAxisName(RegionUtils.codeToName(chartResult.getSubCategoryAxis()));
 				chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
 			}
@@ -90,7 +89,7 @@ public abstract class BaseChartService extends BaseResourceService {
 				chartResult.setCategoryAxisName(IndustryUtils.mapping(chartResult.getCategoryAxis(), false));
 			}
 
-			if (subCategoryAxisField.isIndustry()) {
+			if (subCategoryAxisField != null && subCategoryAxisField.isIndustry()) {
 				chartResult.setSubCategoryAxisName(IndustryUtils.mapping(chartResult.getSubCategoryAxis(), false));
 			}
 		}
@@ -100,7 +99,7 @@ public abstract class BaseChartService extends BaseResourceService {
 			chartResults = mergeResult(chartResults, ChartResult::getCategoryAxis);
 		}
 
-		if (subCategoryAxisField.isLocation()) {
+		if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
 			// 合并SubCategoryAxis相同的项
 			chartResults = mergeResult(chartResults, ChartResult::getSubCategoryAxis);
 		}
