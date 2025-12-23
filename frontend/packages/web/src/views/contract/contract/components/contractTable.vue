@@ -93,9 +93,9 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NTooltip, useMessage } from 'naive-ui';
 
-  import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -118,19 +118,19 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
-  import ContractStatus from './contractStatus.vue';
   import DetailDrawer from './detail.vue';
   import VoidReasonModal from './voidReasonModal.vue';
   import ApprovalModal from '@/views/opportunity/components/quotation/approvalModal.vue';
   import batchOperationResultModal from '@/views/opportunity/components/quotation/batchOperationResultModal.vue';
   import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
-  import { archivedContract, batchApproveContract, changeContractStatus, deleteContract } from '@/api/modules';
+  import { batchApproveContract, changeContractStatus, deleteContract, revokeContract } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
   import { quotationStatusOptions } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useUserStore } from '@/store';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -148,6 +148,7 @@
     ): void;
   }>();
 
+  const useStore = useUserStore();
   const { t } = useI18n();
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
@@ -249,7 +250,7 @@
     },
     {
       title: t('contract.status'),
-      dataIndex: 'status',
+      dataIndex: 'stage',
       type: FieldTypeEnum.SELECT_MULTIPLE,
       operatorOption: COMMON_SELECTION_OPERATORS,
       selectProps: {
@@ -265,24 +266,6 @@
       title: t('opportunity.quotation.amount'),
       dataIndex: 'amount',
       type: FieldTypeEnum.INPUT_NUMBER,
-    },
-    {
-      title: t('contract.archivedStatus'),
-      dataIndex: 'archivedStatus',
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: [
-          {
-            label: t('common.archive'),
-            value: ArchiveStatusEnum.ARCHIVED,
-          },
-          {
-            label: t('common.notArchived'),
-            value: ArchiveStatusEnum.UN_ARCHIVED,
-          },
-        ],
-      },
     },
     {
       title: t('contract.approvalStatus'),
@@ -301,29 +284,34 @@
   ]);
 
   function getOperationGroupList(row: ContractItem) {
-    if (row.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
+    if (row.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [
         {
-          key: 'unarchive',
-          label: t('common.unarchive'),
-          permission: ['CONTRACT:ARCHIVE'],
+          label: t('common.approval'),
+          key: 'approval',
+          permission: ['CONTRACT:APPROVAL'],
+        },
+        ...(row.createUser === useStore.userInfo.id
+          ? [
+              {
+                label: t('common.revoke'),
+                key: 'revoke',
+              },
+            ]
+          : []),
+        {
+          label: t('common.delete'),
+          key: 'delete',
+          permission: ['CONTRACT:DELETE'],
         },
       ];
-    }
-    if (row.status === ContractStatusEnum.VOID || row.approvalStatus === QuotationStatusEnum.APPROVING) {
-      return [];
     }
     if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
         {
-          key: 'archive',
-          label: t('common.archive'),
-          permission: ['CONTRACT:ARCHIVE'],
-        },
-        {
-          key: 'voided',
-          label: t('common.voided'),
-          permission: ['CONTRACT:VOIDED'],
+          label: t('common.delete'),
+          key: 'delete',
+          permission: ['CONTRACT:DELETE'],
         },
       ];
     }
@@ -337,11 +325,6 @@
         label: t('common.delete'),
         key: 'delete',
         permission: ['CONTRACT:DELETE'],
-      },
-      {
-        key: 'voided',
-        label: t('common.voided'),
-        permission: ['CONTRACT:VOIDED'],
       },
     ];
   }
@@ -382,15 +365,10 @@
     showVoidReasonModal.value = true;
   }
 
-  async function handleArchive(id: string, status: string) {
+  async function handleRevoke(row: ContractItem) {
     try {
-      const isArchived = status === ArchiveStatusEnum.ARCHIVED;
-      await archivedContract(id, isArchived ? ArchiveStatusEnum.UN_ARCHIVED : ArchiveStatusEnum.ARCHIVED);
-      if (!isArchived) {
-        Message.success(t('common.batchArchiveSuccess'));
-      } else {
-        Message.success(`${t('common.unarchive')}${t('common.success')}`);
-      }
+      await revokeContract(row.id);
+      Message.success(t('common.revokeSuccess'));
       tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -400,17 +378,15 @@
 
   async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
+      case 'approval':
+        activeSourceId.value = row.id;
+        showDetailDrawer.value = true;
+        break;
+      case 'revoke':
+        handleRevoke(row);
+        break;
       case 'edit':
         handleEdit(row.id);
-        break;
-      case 'unarchive':
-        handleArchive(row.id, row.archivedStatus);
-        break;
-      case 'archive':
-        handleArchive(row.id, row.archivedStatus);
-        break;
-      case 'voided':
-        handleVoided(row);
         break;
       case 'delete':
         handleDelete(row);
@@ -433,10 +409,11 @@
     );
   }
 
-  async function changeStatus(row: ContractItem) {
+  async function changeStatus(id: string, stage: string) {
     try {
-      await changeContractStatus(row.id, row.status);
+      await changeContractStatus(id, stage);
       Message.success(t('common.updateSuccess'));
+      return true;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -490,25 +467,41 @@
               { default: () => row.customerName, trigger: () => row.customerName }
             );
       },
-      status: (row: ContractItem) =>
-        h(StatusTagSelect, {
-          'status': row.status as ContractStatusEnum,
-          'disabled':
-            row.status === ContractStatusEnum.VOID ||
-            row.archivedStatus === ArchiveStatusEnum.ARCHIVED ||
-            row.approvalStatus === QuotationStatusEnum.APPROVING ||
-            !hasAnyPermission(['CONTRACT:UPDATE']),
-          'statusTagComponent': ContractStatus,
-          'onUpdate:status': (val) => {
-            row.status = val;
+      stage: (row: ContractItem) => {
+        const disabled = row.approvalStatus !== QuotationStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
+        if (disabled) {
+          return h(
+            NTooltip,
+            { delay: 300 },
+            {
+              trigger: () =>
+                h(
+                  'div',
+                  { class: 'cursor-not-allowed' },
+                  {
+                    default: () => contractStatusOptions.find((item) => item.value === row?.stage)?.label,
+                  }
+                ),
+              default: () => t('contract.changeStageTip'),
+            }
+          );
+        }
+        return h(StatusTagSelect, {
+          'status': row.stage as ContractStatusEnum,
+          'noRender': true,
+          'disabled': disabled,
+          'onUpdate:status': async (val) => {
+            // 修改为作废的时候需要填写原因
+            if (val === ContractStatusEnum.VOID) {
+              handleVoided(row);
+            } else {
+              const res = await changeStatus(row.id, val);
+              if (res) row.stage = val;
+            }
           },
-          'statusOptions': hasAnyPermission(['CONTRACT:VOIDED'])
-            ? contractStatusOptions
-            : contractStatusOptions.filter((i) => i.value !== ContractStatusEnum.VOID),
-          'onChange': () => {
-            changeStatus(row);
-          },
-        }),
+          'statusOptions': contractStatusOptions,
+        });
+      },
       approvalStatus: (row: ContractItem) =>
         h(QuotationStatus, {
           status: row.approvalStatus,

@@ -201,7 +201,6 @@ export default {
   'common.searchName': '通过姓名搜索',
   'common.archive': '归档',
   'common.notArchived': '未归档',
-  'common.unarchive': '取消归档',
   'common.running': '执行中',
   'common.unExecute': '未执行',
   'common.executed': '已执行',

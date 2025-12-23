@@ -1,13 +1,10 @@
-export enum ArchiveStatusEnum {
-  ARCHIVED = 'ARCHIVED', // 已归档
-  UN_ARCHIVED = 'UN_ARCHIVED', // 未归档
-}
-
 export enum ContractStatusEnum {
+  PENDING_SIGNING = 'PENDING_SIGNING', // 待签署
   SIGNED = 'SIGNED', // 已签署
   IN_PROGRESS = 'IN_PROGRESS', // 履行中
   COMPLETED_PERFORMANCE = 'COMPLETED_PERFORMANCE', // 履行完毕
   VOID = 'VOID', // 作废
+  ARCHIVED = 'ARCHIVED', // 归档
 }
 
 export enum ContractPaymentPlanEnum {

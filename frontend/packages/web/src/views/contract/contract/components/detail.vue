@@ -2,10 +2,10 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <ContractStatus :status="detailInfo?.status ?? ContractStatusEnum.SIGNED" />
+        {{ stageName }}
       </div>
     </template>
-    <template v-if="detailInfo?.status !== ContractStatusEnum.VOID" #titleRight>
+    <template #titleRight>
       <CrmButtonGroup class="gap-[12px]" :list="buttonList" not-show-divider @select="handleButtonClick" />
     </template>
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
@@ -36,7 +36,7 @@
             :sourceName="title"
             isContractTab
             :readonly="
-              detailInfo?.status === ContractStatusEnum.VOID ||
+              detailInfo?.stage === ContractStatusEnum.VOID ||
               detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
             "
           />
@@ -51,20 +51,13 @@
       :link-form-key="FormDesignKeyEnum.CONTRACT"
       @saved="() => handleSaved()"
     />
-
-    <VoidReasonModal
-      v-model:visible="showVoidReasonModal"
-      :name="detailInfo?.name ?? ''"
-      :sourceId="props.sourceId"
-      @refresh="handleSaved"
-    />
   </CrmDrawer>
 </template>
 
 <script lang="ts" setup>
   import { useMessage } from 'naive-ui';
 
-  import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -78,12 +71,12 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
-  import VoidReasonModal from './voidReasonModal.vue';
-  import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
 
-  import { approvalContract, archivedContract, deleteContract } from '@/api/modules';
+  import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
+  import { contractStatusOptions } from '@/config/contract';
   import useModal from '@/hooks/useModal';
+  import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -98,11 +91,16 @@
     required: true,
   });
 
+  const useStore = useUserStore();
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
   const title = ref('');
   const detailInfo = ref();
+
+  const stageName = computed(() => {
+    return contractStatusOptions.find((item) => item.value === detailInfo.value?.stage)?.label;
+  });
 
   const activeTab = ref('contract');
 
@@ -122,18 +120,6 @@
   );
 
   const buttonList = computed(() => {
-    if (detailInfo.value?.archivedStatus === ArchiveStatusEnum.ARCHIVED) {
-      return [
-        {
-          key: 'unarchive',
-          label: t('common.unarchive'),
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT:ARCHIVE'],
-        },
-      ];
-    }
     if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [
         {
@@ -153,25 +139,38 @@
           class: 'n-btn-outline-primary',
           permission: ['CONTRACT:APPROVAL'],
         },
+        ...(detailInfo.value?.createUser === useStore.userInfo.id
+          ? [
+              {
+                label: t('common.revoke'),
+                key: 'revoke',
+                text: false,
+                ghost: true,
+                class: 'n-btn-outline-primary',
+              },
+            ]
+          : []),
+        {
+          label: t('common.delete'),
+          key: 'delete',
+          text: false,
+          ghost: true,
+          danger: true,
+          class: 'n-btn-outline-primary',
+          permission: ['CONTRACT:DELETE'],
+        },
       ];
     }
     if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
         {
-          key: 'archive',
-          label: t('common.archive'),
-          permission: ['CONTRACT:ARCHIVE'],
+          label: t('common.delete'),
+          key: 'delete',
           text: false,
           ghost: true,
+          danger: true,
           class: 'n-btn-outline-primary',
-        },
-        {
-          key: 'voided',
-          label: t('common.voided'),
-          permission: ['CONTRACT:VOIDED'],
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
+          permission: ['CONTRACT:DELETE'],
         },
       ];
     }
@@ -192,14 +191,6 @@
         danger: true,
         class: 'n-btn-outline-primary',
         permission: ['CONTRACT:DELETE'],
-      },
-      {
-        key: 'voided',
-        label: t('common.voided'),
-        permission: ['CONTRACT:VOIDED'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
       },
     ];
   });
@@ -241,20 +232,10 @@
     });
   }
 
-  const showVoidReasonModal = ref(false);
-  function handleVoided() {
-    showVoidReasonModal.value = true;
-  }
-
-  async function handleArchive(id: string, status: string) {
+  async function handleRevoke() {
     try {
-      const isArchived = status === ArchiveStatusEnum.ARCHIVED;
-      await archivedContract(id, isArchived ? ArchiveStatusEnum.UN_ARCHIVED : ArchiveStatusEnum.ARCHIVED);
-      if (!isArchived) {
-        Message.success(t('common.batchArchiveSuccess'));
-      } else {
-        Message.success(`${t('common.unarchive')}${t('common.success')}`);
-      }
+      await revokeContract(props.sourceId);
+      Message.success(t('common.revokeSuccess'));
       handleSaved();
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -288,14 +269,8 @@
       case 'edit':
         handleEdit();
         break;
-      case 'unarchive':
-        handleArchive(props.sourceId, detailInfo.value.archivedStatus);
-        break;
-      case 'archive':
-        handleArchive(props.sourceId, detailInfo.value.archivedStatus);
-        break;
-      case 'voided':
-        handleVoided();
+      case 'revoke':
+        handleRevoke();
         break;
       case 'delete':
         handleDelete(detailInfo.value);

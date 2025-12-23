@@ -51,8 +51,6 @@ export enum OperationTypeEnum {
   APPROVAL = 'APPROVAL', // 审批
   VOIDED = 'VOIDED', // 作废
   CANCEL_VOID = 'CANCEL_VOID', // 取消作废
-  ARCHIVE = 'ARCHIVE', // 归档
-  UNARCHIVE = 'UNARCHIVE', // 取消归档
   DOWNLOAD = 'DOWNLOAD', // 下载
 }
 

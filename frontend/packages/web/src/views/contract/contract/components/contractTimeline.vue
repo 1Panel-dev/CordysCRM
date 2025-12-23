@@ -42,8 +42,8 @@
                     <template #trigger> {{ decItem.value }} </template>
                   </CrmTableButton>
                 </template>
-                <template #status>
-                  <ContractStatus :status="item?.status ?? ContractStatusEnum.SIGNED" />
+                <template #stage>
+                  {{ contractStatusOptions.find((i) => i.value === item.stage)?.label }}
                 </template>
                 <template #planStatus>
                   <ContractStatus :status="item?.planStatus ?? ContractStatusEnum.SIGNED" />
@@ -74,14 +74,14 @@
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ContractItem } from '@lib/shared/models/contract';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
+  import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
+  import { contractStatusOptions } from '@/config/contract';
   import type { TimelineType } from '@/hooks/useContractTimeline';
   import useContractTimeline from '@/hooks/useContractTimeline';
   import useOpenNewPage from '@/hooks/useOpenNewPage';

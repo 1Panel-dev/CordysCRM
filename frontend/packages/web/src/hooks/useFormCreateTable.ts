@@ -2,7 +2,6 @@ import { NImage, NImageGroup, NSwitch } from 'naive-ui';
 import dayjs from 'dayjs';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-import { ArchiveStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -745,12 +744,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('contract.status'),
         width: 120,
-        key: 'status',
+        key: 'stage',
         filterOptions: contractStatusOptions,
         sortOrder: false,
         sorter: true,
         filter: true,
-        render: props.specialRender?.status,
+        render: props.specialRender?.stage,
       },
       {
         title: t('contract.voidReason'),
@@ -766,15 +765,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         key: 'amount',
         sortOrder: false,
         sorter: true,
-      },
-      {
-        title: t('contract.archivedStatus'),
-        width: 120,
-        key: 'archivedStatus',
-        sortOrder: false,
-        sorter: true,
-        render: (row: any) =>
-          row.archivedStatus === ArchiveStatusEnum.ARCHIVED ? t('common.archive') : t('common.notArchived'),
       },
       {
         title: t('contract.approvalStatus'),

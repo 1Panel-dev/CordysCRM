@@ -250,8 +250,6 @@ export const {
   deleteContractView,
   dragContractView,
   addContract,
-  voidedContract,
-  archivedContract,
   getContractFormSnapshotConfig,
   updateContract,
   deleteContract,

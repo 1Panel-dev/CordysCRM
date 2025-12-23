@@ -112,8 +112,8 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import ContractStatus from './contractPaymentStatus.vue';
   import DetailDrawer from './detail.vue';
-  import ContractStatus from '@/views/contract/contract/components/contractStatus.vue';
 
   import { deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';

@@ -3,15 +3,14 @@ export const ContractPageUrl = '/contract/page'; // 合同列表
 export const ContractAddUrl = '/contract/add'; // 添加合同
 export const ContractUpdateUrl = '/contract/update'; // 更新合同
 export const ContractDeleteUrl = '/contract/delete'; // 删除合同
-export const ContractVoidedUrl = '/contract/voided'; // 作废合同
-export const ContractArchivedUrl = '/contract/archived'; // 归档合同
 export const GetContractDetailUrl = '/contract/get'; // 获取合同详情
 export const GetContractFormConfigUrl = '/contract/module/form'; // 合同表单配置
 export const GetContractFormSnapshotConfigUrl = '/contract/module/form/snapshot'; // 合同表单配置
 export const GetContractTabUrl = '/contract/tab'; // 合同tab显隐
-export const ChangeContractStatusUrl = '/contract/status/update';
+export const ChangeContractStatusUrl = '/contract/stage/update';
 export const BatchApproveContractUrl = '/contract/batch/approval';
 export const ApproveContractUrl = '/contract/approval';
+export const RevokeContractUrl = '/contract/revoke';
 
 // 合同导出
 export const ExportContractAllUrl = '/contract/export-all'; // 合同导出全量

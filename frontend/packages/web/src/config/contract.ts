@@ -24,36 +24,34 @@ export const contractPaymentPlanStatus = {
   },
 };
 
-// 合同状态
-export const contractStatusMap = {
-  [ContractStatusEnum.SIGNED]: {
+export const contractStatusOptions = [
+  {
+    value: ContractStatusEnum.PENDING_SIGNING,
+    label: t('contract.toBeSigned'),
+  },
+  {
+    value: ContractStatusEnum.SIGNED,
     label: t('contract.signed'),
-    icon: 'iconicon_check_circle_filled',
-    color: 'var(--success-green)',
   },
-  [ContractStatusEnum.IN_PROGRESS]: {
+  {
+    value: ContractStatusEnum.IN_PROGRESS,
     label: t('contract.inProgress'),
-    icon: 'iconicon_testing',
-    color: 'var(--info-blue)',
   },
-  [ContractStatusEnum.COMPLETED_PERFORMANCE]: {
+  {
+    value: ContractStatusEnum.COMPLETED_PERFORMANCE,
     label: t('contract.completedPerformance'),
-    icon: 'iconicon_check_circle_filled',
-    color: 'var(--text-n4)',
   },
-  [ContractStatusEnum.VOID]: {
+  {
+    value: ContractStatusEnum.ARCHIVED,
+    label: t('common.archive'),
+  },
+  {
+    value: ContractStatusEnum.VOID,
     label: t('common.voided'),
-    icon: 'iconicon_minus_circle_filled1',
-    color: 'var(--warning-yellow)',
   },
-};
+];
 
 export const contractPaymentPlanStatusOptions = Object.entries(contractPaymentPlanStatus).map(([key, value]) => ({
-  label: value.label,
-  value: key,
-}));
-
-export const contractStatusOptions = Object.entries(contractStatusMap).map(([key, value]) => ({
   label: value.label,
   value: key,
 }));
