@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="show" size="small" :footer="false" :title="props.title">
+  <CrmModal v-model:show="show" size="small" :footer="false" :title="props.title" @cancel="emit('cancel')">
     <div class="text-center">
       <CrmIcon :size="32" :type="getTipType?.icon" :class="`${getTipType?.color}`" />
       <div class="my-2 text-[16px] font-medium text-[var(--text-n1)]">{{ t(getTipType?.message ?? '') }}</div>
@@ -52,6 +52,10 @@
     successCount: number;
     title?: string;
     reasonKey: ReasonKey;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'cancel'): void;
   }>();
 
   const { t } = useI18n();
