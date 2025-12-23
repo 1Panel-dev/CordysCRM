@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ContractStatusRequest {
+public class ContractStageRequest {
 
     @NotBlank
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -14,7 +14,11 @@ public class ContractStatusRequest {
     private String id;
 
 
-    @Schema(description = "状态: SIGNED/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String status;
+    @Schema(description = "阶段: PENDING_SIGNING/SIGNED/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String stage;
 
+
+    @Size(max = 255)
+    @Schema(description = "作废原因")
+    private String voidReason;
 }

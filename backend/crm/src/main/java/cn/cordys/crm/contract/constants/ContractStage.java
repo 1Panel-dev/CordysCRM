@@ -4,8 +4,13 @@ package cn.cordys.crm.contract.constants;
 /**
  * 合同状态
  */
-public enum ContractStatus {
+public enum ContractStage {
 
+
+    /**
+     * 待签署
+     */
+    PENDING_SIGNING,
 
     /**
      * 已签署
@@ -26,4 +31,9 @@ public enum ContractStatus {
      * 作废
      */
     VOID,
+
+    /**
+     * 归档
+     */
+    ARCHIVED,
 }
