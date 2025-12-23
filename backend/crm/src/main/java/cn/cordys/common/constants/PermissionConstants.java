@@ -186,9 +186,8 @@ public class PermissionConstants {
     public static final String CONTRACT_UPDATE = "CONTRACT:UPDATE";
     public static final String CONTRACT_DELETE = "CONTRACT:DELETE";
     public static final String CONTRACT_EXPORT = "CONTRACT:EXPORT";
-    public static final String CONTRACT_ARCHIVE = "CONTRACT:ARCHIVE";
-    public static final String CONTRACT_VOIDED = "CONTRACT:VOIDED";
     public static final String CONTRACT_APPROVAL = "CONTRACT:APPROVAL";
+    public static final String CONTRACT_STAGE = "CONTRACT:STAGE";
 
     /*------ end: CONTRACT ------*/
 

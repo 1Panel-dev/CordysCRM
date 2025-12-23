@@ -12,9 +12,8 @@
         c.in_shared_pool AS inCustomerPool,
         c.pool_id,
         ct.amount,
-        ct.archived_status,
         ct.approval_status,
-        ct.`status`,
+        ct.stage,
         ct.`owner`,
         ct.void_reason,
         ct.create_user,
@@ -96,9 +95,8 @@
         c.pool_id,
         ct.amount,
         ct.number,
-        ct.archived_status,
         ct.approval_status,
-        ct.`status`,
+        ct.stage,
         ct.`owner`,
         ct.void_reason,
         ct.create_user,
@@ -135,8 +133,8 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
-                {'name', 'owner', 'createTime', 'updateTime', 'archivedStatus', 'customerId', 'createUser', 'updateUser',
-                 'departmentId', 'number', 'status', 'amount', 'approvalStatus'}">
+                {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'createUser', 'updateUser',
+                 'departmentId', 'number', 'stage', 'amount', 'approvalStatus'}">
                     <if test="condition.multipleValue">
                         left join contract_field_blob ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -156,7 +154,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'customer_id', 'amount', 'archived_status', 'status', 'update_user', 'create_time',
+                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
                  'approval_status', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
@@ -207,16 +205,10 @@
                     <property name="column" value="ct.owner"/>
                 </include>
             </when>
-            <when test="condition.name == 'archivedStatus'">
+            <when test="condition.name == 'stage'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="ct.archived_status"/>
-                </include>
-            </when>
-            <when test="condition.name == 'status'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="ct.status"/>
+                    <property name="column" value="ct.stage"/>
                 </include>
             </when>
             <when test="condition.name == 'number'">
@@ -326,11 +318,8 @@
                     <when test="${sort}.name == 'amount'">
                         ct.`amount` ${sortType},  ct.id ASC
                     </when>
-                    <when test="${sort}.name == 'archived_status'">
-                        ct.`archived_status` ${sortType},  ct.id ASC
-                    </when>
-                    <when test="${sort}.name == 'status'">
-                        ct.`status` ${sortType},  ct.id ASC
+                    <when test="${sort}.name == 'stage'">
+                        ct.`stage` ${sortType},  ct.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
                         ct.`create_time` ${sortType},  ct.id ASC
@@ -376,9 +365,8 @@
             c.in_shared_pool AS inCustomerPool,
             c.pool_id,
             ct.amount,
-            ct.archived_status,
             ct.approval_status,
-            ct.`status`,
+            ct.stage,
             ct.`owner`,
             ct.void_reason,
             ct.create_user,

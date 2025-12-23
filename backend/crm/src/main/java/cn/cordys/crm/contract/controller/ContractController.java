@@ -21,7 +21,6 @@ import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.service.ContractExportService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -76,11 +75,11 @@ public class ContractController {
         return contractService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/status/update")
-    @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
-    @Operation(summary = "更新合同状态")
-    public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        contractService.updateStatus(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    @PostMapping("/stage/update")
+    @RequiresPermissions(PermissionConstants.CONTRACT_STAGE)
+    @Operation(summary = "更新合同阶段")
+    public void updateStage(@Validated @RequestBody ContractStageRequest request) {
+        contractService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
@@ -118,21 +117,6 @@ public class ContractController {
         return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
     }
 
-
-    @PostMapping("/voided")
-    @RequiresPermissions(PermissionConstants.CONTRACT_VOIDED)
-    @Operation(summary = "作废")
-    public void voided(@Validated @RequestBody ContractVoidRequest request) {
-        contractService.voidContract(request, SessionUtils.getUserId());
-    }
-
-
-    @PostMapping("/archived")
-    @RequiresPermissions(PermissionConstants.CONTRACT_ARCHIVE)
-    @Operation(summary = "归档/取消归档")
-    public void archived(@Validated @RequestBody ContractArchivedRequest request) {
-        contractService.archivedContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
 
     @PostMapping("/approval")
     @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)

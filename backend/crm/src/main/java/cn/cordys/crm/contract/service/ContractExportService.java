@@ -89,11 +89,8 @@ public class ContractExportService extends BaseExportService {
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
             systemFiledMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
         }
-        if (StringUtils.isNotBlank(data.getArchivedStatus())) {
-            systemFiledMap.put("archivedStatus", Translator.get("contract.archived_status." + data.getArchivedStatus().toLowerCase()));
-        }
-        if (StringUtils.isNotBlank(data.getStatus())) {
-            systemFiledMap.put("status", Translator.get("contract.status." + data.getStatus().toLowerCase()));
+        if (StringUtils.isNotBlank(data.getStage())) {
+            systemFiledMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase()));
         }
         systemFiledMap.put("createUser", data.getCreateUserName());
         systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));

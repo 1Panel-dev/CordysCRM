@@ -20,6 +20,9 @@ public enum ContractApprovalStatus {
      * 不通过
      */
     UNAPPROVED,
-
+    /**
+     * 撤销
+     */
+    REVOKED,
 
 }

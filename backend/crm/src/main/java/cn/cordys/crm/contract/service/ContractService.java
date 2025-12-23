@@ -21,9 +21,8 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.constants.ArchivedStatus;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
-import cn.cordys.crm.contract.constants.ContractStatus;
+import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.*;
@@ -33,8 +32,6 @@ import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -122,9 +119,8 @@ public class ContractService {
         contract.setCustomerId(request.getCustomerId());
         contract.setOwner(request.getOwner());
         contract.setNumber(createContractNumber(moduleFormConfigDTO, orgId));
-        contract.setStatus(ContractStatus.SIGNED.name());
+        contract.setStage(ContractStage.PENDING_SIGNING.name());
         contract.setOrganizationId(orgId);
-        contract.setArchivedStatus(ArchivedStatus.UN_ARCHIVED.name());
         contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setCreateUser(operatorId);
@@ -196,10 +192,10 @@ public class ContractService {
     private ContractResponse getContractResponse(Contract contract, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         ContractResponse response = BeanUtils.copyBean(new ContractResponse(), contract);
         moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
-		List<BaseModuleFieldValue> fvs = contractFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()),
-				new HashMap<>(Map.of(response.getId(), moduleFields))).get(response.getId());
-		response.setModuleFields(fvs);
-		Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
+        List<BaseModuleFieldValue> fvs = contractFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()),
+                new HashMap<>(Map.of(response.getId(), moduleFields))).get(response.getId());
+        response.setModuleFields(fvs);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
         optionMap.put("customerId", Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
         User owner = userBaseMapper.selectByPrimaryKey(contract.getOwner());
@@ -250,12 +246,7 @@ public class ContractService {
         }
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Optional.ofNullable(oldContract).ifPresentOrElse(item -> {
-            if (Strings.CI.equals(oldContract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
-                throw new GenericException(Translator.get("contract.archived.cannot.edit"));
-            }
-            if (Strings.CI.equals((oldContract.getStatus()), ContractStatus.VOID.name())) {
-                throw new GenericException(Translator.get("contract.void.cannot.edit"));
-            }
+
             List<BaseModuleFieldValue> originFields = contractFieldService.getModuleFieldValuesByResourceId(request.getId());
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setUpdateTime(System.currentTimeMillis());
@@ -265,9 +256,8 @@ public class ContractService {
             contract.setCreateUser(oldContract.getCreateUser());
             contract.setCreateTime(oldContract.getCreateTime());
             contract.setAmount(oldContract.getAmount());
-            contract.setStatus(oldContract.getStatus());
-            contract.setArchivedStatus(oldContract.getArchivedStatus());
-            contract.setApprovalStatus(ApprovalState.APPROVING.getId());
+            contract.setStage(oldContract.getStage());
+            contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
             //计算子产品总金额
             setAmount(request.getProducts(), contract);
             // 设置子表格字段值
@@ -328,9 +318,6 @@ public class ContractService {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
-        }
-        if (Strings.CI.equals(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
-            throw new GenericException(Translator.get("contract.archived.cannot.delete"));
         }
 
         contractFieldService.deleteByResourceId(id);
@@ -443,69 +430,6 @@ public class ContractService {
 
 
     /**
-     * 作废
-     *
-     * @param request
-     * @param userId
-     * @return
-     */
-    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.VOIDED, resourceId = "{#id}")
-    public void voidContract(ContractVoidRequest request, String userId) {
-        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
-        }
-
-        if (Strings.CI.equals(contract.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
-            throw new GenericException(Translator.get("contract.archived.cannot.voided"));
-        }
-
-        contract.setStatus(ContractStatus.VOID.name());
-        contract.setVoidReason(request.getVoidReason());
-        contract.setUpdateTime(System.currentTimeMillis());
-        contract.setUpdateUser(userId);
-        contractMapper.updateById(contract);
-
-        updateStatusSnapshot(request.getId(), ContractStatus.VOID.name(), null, null);
-
-        // 添加日志上下文
-        OperationLogContext.setResourceName(contract.getName());
-    }
-
-
-    /**
-     * 归档/取消归档
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     */
-    public void archivedContract(ContractArchivedRequest request, String userId, String orgId) {
-        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
-        }
-        //todo 审核通过才能归档 （目前没有审核
-        contract.setArchivedStatus(request.getArchivedStatus());
-        contract.setUpdateTime(System.currentTimeMillis());
-        contract.setUpdateUser(userId);
-        contractMapper.updateById(contract);
-
-        updateStatusSnapshot(request.getId(), null, request.getArchivedStatus(), null);
-
-
-        if (Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name())) {
-
-        }
-
-        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId,
-                Strings.CI.equals(request.getArchivedStatus(), ArchivedStatus.ARCHIVED.name()) ? LogType.ARCHIVE : LogType.UNARCHIVE,
-                LogModule.CONTRACT_INDEX, contract.getName());
-        logService.add(logDTO);
-
-    }
-
-    /**
      * 获取表单快照
      *
      * @param id
@@ -543,41 +467,46 @@ public class ContractService {
      * @param request
      * @param userId
      */
-    public void updateStatus(FollowUpPlanStatusRequest request, String userId, String orgId) {
+    public void updateStage(ContractStageRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-        Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("contractStatus", contract.getStatus());
+        if (Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
+            throw new GenericException(Translator.get("contract.unapproved.cannot.edit"));
+        }
 
-        contract.setStatus(request.getStatus());
+        Map<String, String> oldMap = new HashMap<>();
+        oldMap.put("contractStage", contract.getStage());
+
+        contract.setStage(request.getStage());
+        if (StringUtils.isNotBlank(request.getVoidReason())) {
+            contract.setVoidReason(request.getVoidReason());
+        }
+
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(userId);
         contractMapper.update(contract);
 
-        updateStatusSnapshot(request.getId(), request.getStatus(), null, null);
+        updateStatusSnapshot(request.getId(), request.getStage(), null);
 
         LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
         Map<String, String> newMap = new HashMap<>();
-        newMap.put("contractStatus", request.getStatus());
+        newMap.put("contractStage", request.getStage());
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
     }
 
-    private void updateStatusSnapshot(String id, String status, String archivedStatus, String approvalStatus) {
+    private void updateStatusSnapshot(String id, String stage, String approvalStatus) {
         LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.eq(ContractSnapshot::getContractId, id);
         List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectListByLambda(delWrapper);
         ContractSnapshot first = contractSnapshots.getFirst();
         if (first != null) {
             ContractResponse response = JSON.parseObject(first.getContractValue(), ContractResponse.class);
-            if (StringUtils.isNotBlank(status)) {
-                response.setStatus(status);
-            }
-            if (StringUtils.isNotBlank(archivedStatus)) {
-                response.setArchivedStatus(archivedStatus);
+            if (StringUtils.isNotBlank(stage)) {
+                response.setStage(stage);
             }
             if (StringUtils.isNotBlank(approvalStatus)) {
                 response.setApprovalStatus(approvalStatus);
@@ -609,7 +538,7 @@ public class ContractService {
         contract.setUpdateUser(userId);
         contractMapper.update(contract);
 
-        updateStatusSnapshot(request.getId(), null, null, request.getApprovalStatus());
+        updateStatusSnapshot(request.getId(), null, request.getApprovalStatus());
 
         // 添加日志上下文
         LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, contract.getName(), state, request.getApprovalStatus());
