@@ -403,7 +403,9 @@ public class BaseService {
             List<Map<String, Object>> subTableList =
                     JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
                     });
-
+			if (CollectionUtils.isEmpty(subTableList)) {
+				return;
+			}
             int size = subTableList.size();
             for (int i = 0; i < size; i++) {
                 Map<String, Object> row = subTableList.get(i);
