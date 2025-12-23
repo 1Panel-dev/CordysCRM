@@ -32,6 +32,7 @@ import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -543,6 +544,30 @@ public class ContractService {
         // 添加日志上下文
         LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, contract.getName(), state, request.getApprovalStatus());
         logService.add(logDTO);
+    }
+
+    public String revoke(String id, String userId, String orgId) {
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+        String originApprovalStatus = contract.getApprovalStatus();
+        if (!Strings.CI.equals(contract.getCreateUser(), userId) || !Strings.CI.equals(contract.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
+            return contract.getApprovalStatus();
+        }
+        contract.setApprovalStatus(ApprovalState.REVOKED.toString());
+        contract.setUpdateUser(userId);
+        contract.setUpdateTime(System.currentTimeMillis());
+        contractMapper.update(contract);
+
+        //更新快照
+        updateStatusSnapshot(id, null, ApprovalState.REVOKED.toString());
+
+        // 添加日志上下文
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, contract.getName(), originApprovalStatus, ApprovalState.REVOKED.toString());
+        logService.add(logDTO);
+
+        return contract.getApprovalStatus();
     }
 
 

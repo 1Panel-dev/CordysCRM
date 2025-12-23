@@ -125,6 +125,12 @@ public class ContractController {
         contractService.approvalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping("/revoke/{id}")
+    @Operation(summary = "撤销审批")
+    public String revoke(@PathVariable("id") String id) {
+        return contractService.revoke(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @PostMapping("/batch/approval")
     @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
     @Operation(summary = "批量审核通过/不通过")
