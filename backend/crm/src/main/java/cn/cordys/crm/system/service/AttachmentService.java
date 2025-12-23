@@ -212,7 +212,9 @@ public class AttachmentService {
 					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
 					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
 					oldAttachment.getName());
-			fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+			Thread.startVirtualThread(() -> {
+				fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+			});
 			// 复制附件记录
 			oldAttachment.setId(nId);
 			oldAttachment.setResourceId(targetId);
