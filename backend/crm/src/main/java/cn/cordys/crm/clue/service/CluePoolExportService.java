@@ -81,7 +81,7 @@ public class CluePoolExportService extends ClueExportService {
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
 
-        runExport(orgId, userId, LogModule.OPPORTUNITY_INDEX, locale, exportTask, request.getFileName(),
+        runExport(orgId, userId, LogModule.CLUE_POOL_INDEX, locale, exportTask, request.getFileName(),
                 () -> exportData(fileId, exportTask, userId, request, orgId));
 
         return exportTask.getId();
