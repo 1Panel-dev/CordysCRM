@@ -106,6 +106,7 @@
     formulaDefaultFieldConfig,
     inputDefaultFieldConfig,
     inputNumberDefaultFieldConfig,
+    pictureDefaultFieldConfig,
     selectDefaultFieldConfig,
     selectMultipleDefaultFieldConfig,
   } from '@/components/business/crm-form-create/config';
@@ -128,6 +129,7 @@
     selectMultipleDefaultFieldConfig,
     dataSourceDefaultFieldConfig,
     formulaDefaultFieldConfig,
+    pictureDefaultFieldConfig,
   ].map((field) => ({
     ...field,
     label: t(field.name),
