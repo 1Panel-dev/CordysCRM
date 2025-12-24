@@ -273,11 +273,7 @@
       operatorOption: COMMON_SELECTION_OPERATORS,
       type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
-        options: quotationStatusOptions.filter((item) =>
-          [QuotationStatusEnum.APPROVED, QuotationStatusEnum.UNAPPROVED, QuotationStatusEnum.APPROVING].includes(
-            item.value
-          )
-        ),
+        options: quotationStatusOptions.filter((item) => ![QuotationStatusEnum.VOIDED].includes(item.value)),
       },
     },
     ...baseFilterConfigList,
