@@ -60,7 +60,7 @@ public class CustomFieldMergeCellEventListener extends AnalysisEventListener<Map
 
 			String val = firstRowData.get(colIndex);
 			for (int r = firstRow; r <= lastRow; r++) {
-				mergeRowDataMap.computeIfAbsent(r, k -> new HashMap<>())
+				mergeRowDataMap.computeIfAbsent(r, k -> new HashMap<>(8))
 						.put(colIndex, val);
 			}
 		}
