@@ -26,6 +26,9 @@ public class DatasourceParser extends TextFieldParser<DatasourceField> {
         if (Strings.CI.equals(datasourceTableName, FieldSourceType.CONTACT.name())) {
             datasourceTableName = "customer_contact";
         }
+        if (Strings.CI.equals(datasourceTableName, FieldSourceType.QUOTATION.name())) {
+            datasourceTableName = "opportunity_quotation";
+        }
         return MessageFormat.format(MEMBER_OPTION_FIELD_SQL_TEMPLATE,
                 fieldValueTable,
                 datasourceTableName,

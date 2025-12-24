@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public enum SQLBotTable {
     PRODUCT("product", "产品表", null, false),
     SYS_DEPARTMENT("sys_department", "部门表", null, false),
+    SYS_USER("sys_user", "用户表", null, false),
 
     CUSTOMER("customer", "客户表", PermissionConstants.CUSTOMER_MANAGEMENT_READ, true),
     CLUE("clue", "线索表", PermissionConstants.CLUE_MANAGEMENT_READ, true),
