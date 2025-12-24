@@ -473,7 +473,7 @@ public class ContractService {
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-        if (Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
+        if (!Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
             throw new GenericException(Translator.get("contract.unapproved.cannot.edit"));
         }
 
