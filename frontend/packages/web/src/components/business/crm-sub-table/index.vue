@@ -174,19 +174,20 @@
   }
 
   const sumInitialOptions = ref<Record<string, any>[]>([]);
-  const maxPictureCount = computed<number>(() => {
+  const pictureFields = computed<FormCreateField[]>(() => {
+    return props.subFields.filter((field) => field.type === FieldTypeEnum.PICTURE);
+  });
+  const maxPictureCountMap = computed<Record<string, number>>(() => {
     return data.value.reduce((prev, curr) => {
-      let currMax = 0;
-      props.subFields.forEach((field) => {
-        if (field.type === FieldTypeEnum.PICTURE) {
-          const pics = curr[field.businessKey || field.id];
-          if (Array.isArray(pics)) {
-            currMax = Math.max(currMax, pics.length);
-          }
+      pictureFields.value.forEach((field) => {
+        const key = field.businessKey || field.id;
+        const currCount = Array.isArray(curr[key]) ? curr[key].length : 0;
+        if (!prev[key] || currCount > prev[key]) {
+          prev[key] = currCount;
         }
       });
-      return Math.max(prev, currMax);
-    }, 0);
+      return prev;
+    }, {} as Record<string, number>);
   });
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
@@ -201,7 +202,9 @@
           return {
             title: field.showLabel ? field.name : '',
             width:
-              maxPictureCount.value > 0 && field.type === FieldTypeEnum.PICTURE ? maxPictureCount.value * 118 : 200,
+              maxPictureCountMap.value[field.id] > 0 && field.type === FieldTypeEnum.PICTURE
+                ? maxPictureCountMap.value[field.id] * 118
+                : 200,
             key,
             fieldId: key,
             ellipsis:
@@ -432,7 +435,7 @@
         if (field.type === FieldTypeEnum.PICTURE) {
           return {
             title,
-            width: maxPictureCount.value > 0 ? maxPictureCount.value * 118 + 120 : 200, // 每个卡片 110px + 8px间距 + 上传按钮宽度 120px
+            width: maxPictureCountMap.value[field.id] > 0 ? maxPictureCountMap.value[field.id] * 118 + 120 : 200, // 每个卡片 110px + 8px间距 + 上传按钮宽度 120px
             key,
             fieldId: key,
             render: (row: any, rowIndex: number) =>
