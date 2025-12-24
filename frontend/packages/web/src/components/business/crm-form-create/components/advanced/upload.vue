@@ -6,6 +6,7 @@
     :show-label="(props.fieldConfig.showLabel && !props.isSubTableRender) || props.isSubTableField"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
+    :validation-status="fileKeys.length > 0 ? 'success' : 'error'"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
