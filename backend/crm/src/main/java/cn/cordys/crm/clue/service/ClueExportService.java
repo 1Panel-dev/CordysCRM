@@ -120,23 +120,93 @@ public class ClueExportService extends BaseExportService {
         }
     }
 
-    public List<List<Object>> getExportData(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
+    /**
+     * 导出选中线索数据
+     *
+     * @param headList
+     * @param ids
+     * @param orgId
+     * @param taskId
+     *
+     * @return
+     *
+     * @throws InterruptedException
+     */
+    public List<List<Object>> getExportDataBySelect(
+            List<ExportHeadDTO> headList,
+            List<String> ids,
+            String orgId,
+            String taskId) throws InterruptedException {
+
+        // 获取原始数据
+        List<ClueListResponse> rawList = extClueMapper.getListByIds(ids);
+
+        return buildExportResult(
+                headList,
+                rawList,
+                orgId,
+                taskId);
+    }
+
+    /**
+     * 导出全部线索数据
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param deptDataPermission
+     * @param taskId
+     *
+     * @return
+     *
+     * @throws InterruptedException
+     */
+    public List<List<Object>> getExportData(
+            ClueExportRequest request,
+            String userId,
+            String orgId,
+            DeptDataPermissionDTO deptDataPermission,
+            String taskId) throws InterruptedException {
+
+        // 分页
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ClueListResponse> exportList = extClueMapper.list(request, orgId, userId, deptDataPermission, false);
-        List<ClueListResponse> dataList = clueService.buildListData(exportList, orgId);
-        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, exportList, dataList);
+
+        // 获取原始数据
+        List<ClueListResponse> rawList = extClueMapper.list(request, orgId, userId, deptDataPermission, false);
+
+        return buildExportResult(
+                request.getHeadList(),
+                rawList,
+                orgId,
+                taskId
+        );
+    }
+
+    private List<List<Object>> buildExportResult(
+            List<ExportHeadDTO> headList,
+            List<ClueListResponse> rawList,
+            String orgId,
+            String taskId) throws InterruptedException {
+
+        // 构建业务数据
+        List<ClueListResponse> dataList = clueService.buildListData(rawList, orgId);
+
+        // 构建选项映射
+        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, rawList, dataList);
+
+        // 字段配置
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
+
+        // 构建导出结果（预分配容量）
+        List<List<Object>> result = new ArrayList<>(dataList.size());
         for (ClueListResponse response : dataList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(request.getHeadList(), response, optionMap, fieldConfigMap);
-            data.add(value);
+            result.add(buildData(headList, response, optionMap, fieldConfigMap));
         }
 
-        return data;
+        return result;
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
@@ -149,25 +219,5 @@ public class ClueExportService extends BaseExportService {
         //处理数据转换
         transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
         return dataList;
-    }
-
-    public List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
-        //获取数据
-        List<ClueListResponse> allList = extClueMapper.getListByIds(ids);
-        List<ClueListResponse> dataList = clueService.buildListData(allList, orgId);
-        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, allList, dataList);
-
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ClueListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
-            data.add(value);
-        }
-
-        return data;
     }
 }
