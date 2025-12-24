@@ -45,14 +45,6 @@ public abstract class DataScopeTablePermissionHandler extends ModuleFieldTablePe
         tableFields.add(getDepartmentNameField());
     }
 
-    private FieldDTO getDepartmentNameField() {
-        FieldDTO fieldDTO = new FieldDTO();
-        fieldDTO.setType("varchar(255)");
-        fieldDTO.setComment("部门名称");
-        fieldDTO.setName("department_name");
-        return fieldDTO;
-    }
-
     protected String getProductsFieldSql() {
         return "(select JSON_ARRAYAGG(p.name) from product p where c.products like concat('%', p.id, '%')) as products";
     }
