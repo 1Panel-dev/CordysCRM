@@ -75,37 +75,6 @@ public class CustomerExportService extends BaseExportService {
                 t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
     }
 
-
-    /**
-     * 构建导出的数据
-     *
-     * @param headList           表头列表
-     * @param request            导出请求
-     * @param userId             用户ID
-     * @param orgId              组织id
-     * @param deptDataPermission 部门数据权限
-     *
-     * @return 导出数据列表
-     */
-    private List<List<Object>> getExportData(List<ExportHeadDTO> headList, CustomerExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        //获取数据
-        List<CustomerListResponse> allList = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
-        List<CustomerListResponse> dataList = customerService.buildListData(allList, orgId);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CUSTOMER.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (CustomerListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(headList, response, fieldConfigMap);
-            data.add(value);
-        }
-
-        return data;
-    }
-
     private List<Object> buildData(List<ExportHeadDTO> headList, CustomerListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
@@ -178,29 +147,48 @@ public class CustomerExportService extends BaseExportService {
 
     /**
      * 选中客户数据
-     *
-     * @param headList 表头列表
-     * @param ids      选中数据ID列表
-     * @param orgId    组织ID
-     * @param taskId   任务ID
-     *
-     * @return 导出数据列表
      */
-    private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
-        //获取数据
-        List<CustomerListResponse> allList = extCustomerMapper.getListByIds(ids);
-        List<CustomerListResponse> dataList = customerService.buildListData(allList, orgId);
+    private List<List<Object>> getExportDataBySelect(
+            List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId
+    ) throws InterruptedException {
+
+        List<CustomerListResponse> rawList = extCustomerMapper.getListByIds(ids);
+        return buildCustomerExportData(headList, rawList, orgId, taskId);
+    }
+
+    /**
+     * 条件分页导出客户数据
+     */
+    private List<List<Object>> getExportData(
+            List<ExportHeadDTO> headList, CustomerExportRequest request,
+            String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId
+    ) throws InterruptedException {
+
+        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<CustomerListResponse> rawList =
+                extCustomerMapper.list(request, orgId, userId, deptDataPermission);
+        return buildCustomerExportData(headList, rawList, orgId, taskId);
+    }
+
+    /**
+     * 构建客户导出数据（公共逻辑）
+     */
+    private List<List<Object>> buildCustomerExportData(
+            List<ExportHeadDTO> headList, List<CustomerListResponse> rawList,
+            String orgId, String taskId
+    ) throws InterruptedException {
+
+        List<CustomerListResponse> dataList = customerService.buildListData(rawList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CUSTOMER.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
+
+        List<List<Object>> result = new ArrayList<>(dataList.size());
         for (CustomerListResponse response : dataList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, fieldConfigMap);
-            data.add(value);
+            result.add(buildData(headList, response, fieldConfigMap));
         }
-
-        return data;
+        return result;
     }
+
 }
