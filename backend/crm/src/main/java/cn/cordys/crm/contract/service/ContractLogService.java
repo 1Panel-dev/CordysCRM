@@ -4,6 +4,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -46,6 +48,12 @@ public class ContractLogService extends BaseModuleLogService {
                     }
                 }
                 continue;
+            }
+
+            if (Strings.CI.equals(differ.getColumn(), "approvalStatus") && Arrays.stream(ContractApprovalStatus.values()).anyMatch(status -> status.name().equals(differ.getOldValue()))) {
+                differ.setOldValueName(Translator.get("contract.approval_status." + differ.getOldValue().toString().toLowerCase()));
+                differ.setNewValueName(Translator.get("contract.approval_status." + differ.getNewValue().toString().toLowerCase()));
+
             }
 
 

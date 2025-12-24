@@ -478,7 +478,7 @@ public class ContractService {
         }
 
         Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("contractStage", contract.getStage());
+        oldMap.put("contractStage", Translator.get("contract.stage." + contract.getStage().toLowerCase()));
 
         contract.setStage(request.getStage());
         if (StringUtils.isNotBlank(request.getVoidReason())) {
@@ -493,7 +493,7 @@ public class ContractService {
 
         LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
         Map<String, String> newMap = new HashMap<>();
-        newMap.put("contractStage", request.getStage());
+        newMap.put("contractStage", Translator.get("contract.stage." + request.getStage().toLowerCase()));
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
