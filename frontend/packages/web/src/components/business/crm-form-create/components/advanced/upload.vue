@@ -27,15 +27,8 @@
       :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
       :custom-request="customRequest"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
-      :file-list-class="props.isSubTableField || props.isSubTableRender ? 'crm-upload--subtable-file-list' : ''"
-      :trigger-style="
-        props.isSubTableField || props.isSubTableRender
-          ? {
-              width: '100px',
-              height: '100px',
-            }
-          : undefined
-      "
+      :file-list-class="props.isSubTableRender ? 'crm-upload--subtable-file-list' : ''"
+      :trigger-style="getTriggerStyle"
       multiple
       directory-dnd
       @before-upload="beforeUpload"
@@ -96,6 +89,22 @@
   });
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
+
+  const getTriggerStyle = computed(() => {
+    if (props.isSubTableField) {
+      return {
+        width: '32px',
+        height: '32px',
+      };
+    }
+    if (props.isSubTableRender) {
+      return {
+        width: '100px',
+        height: '100px',
+      };
+    }
+    return undefined;
+  });
 
   async function beforeUpload({
     file,
