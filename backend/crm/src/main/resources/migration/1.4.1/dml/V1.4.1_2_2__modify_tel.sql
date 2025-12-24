@@ -9,4 +9,7 @@ VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:STAGE');
 
 DELETE FROM sys_user_view_condition WHERE name = 'archivedStatus';
 
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:DELETE');
+
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
