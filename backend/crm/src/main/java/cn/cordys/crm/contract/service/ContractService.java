@@ -94,6 +94,8 @@ public class ContractService {
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+
     /**
      * 新建合同
      *
@@ -222,6 +224,9 @@ public class ContractService {
         BigDecimal totalAmount = products.stream()
                 .map(product -> new BigDecimal(product.get("amount").toString()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (totalAmount.compareTo(MAX_AMOUNT) > 0) {
+            throw new GenericException(Translator.get("contract.amount.exceed.max"));
+        }
         contract.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
     }
 
