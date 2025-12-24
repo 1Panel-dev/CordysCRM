@@ -569,7 +569,9 @@
           : field.defaultValue ?? null;
       } else if (field.type === FieldTypeEnum.FORMULA) {
         newRow[key] = field.defaultValue ?? 0;
-      } else if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE].includes(field.type)) {
+      } else if (
+        [FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.PICTURE].includes(field.type)
+      ) {
         newRow[key] = [];
       } else {
         newRow[key] = field.defaultValue ?? '';

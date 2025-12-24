@@ -438,6 +438,7 @@
               {{ t('crmFormDesign.card') }}
             </div>
             <div
+              v-if="!isSubTableField"
               class="crm-form-design-config-item-label-picture"
               :class="fieldConfig.pictureShowType === 'list' ? 'crm-form-design-config-item-label-picture--active' : ''"
               @click="
@@ -466,6 +467,7 @@
               </div>
               {{ t('crmFormDesign.list') }}
             </div>
+            <div v-else class="w-[50%]"></div>
           </div>
         </div>
         <div class="crm-form-design-config-item">
