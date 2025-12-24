@@ -201,7 +201,7 @@
           return {
             title: field.showLabel ? field.name : '',
             width:
-              maxPictureCount.value > 0 && field.type === FieldTypeEnum.PICTURE ? maxPictureCount.value * 110 : 200,
+              maxPictureCount.value > 0 && field.type === FieldTypeEnum.PICTURE ? maxPictureCount.value * 118 : 200,
             key,
             fieldId: key,
             ellipsis:
@@ -432,7 +432,7 @@
         if (field.type === FieldTypeEnum.PICTURE) {
           return {
             title,
-            width: maxPictureCount.value > 0 ? maxPictureCount.value * 110 + 120 : 200, // 每个卡片 110px + 上传按钮宽度 120px
+            width: maxPictureCount.value > 0 ? maxPictureCount.value * 118 + 120 : 200, // 每个卡片 110px + 8px间距 + 上传按钮宽度 120px
             key,
             fieldId: key,
             render: (row: any, rowIndex: number) =>

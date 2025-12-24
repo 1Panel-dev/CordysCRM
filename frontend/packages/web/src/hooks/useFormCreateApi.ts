@@ -1105,7 +1105,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
           staticRule.message = t(staticRule.message as string, { value: t(item.name) });
           staticRule.type = getRuleType(item);
-          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE, FieldTypeEnum.PICTURE].includes(item.type)
+          ) {
             staticRule.trigger = 'none';
           }
         }
