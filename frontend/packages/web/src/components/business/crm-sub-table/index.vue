@@ -204,7 +204,7 @@
             width:
               maxPictureCountMap.value[field.id] > 0 && field.type === FieldTypeEnum.PICTURE
                 ? maxPictureCountMap.value[field.id] * 118
-                : 200,
+                : 120,
             key,
             fieldId: key,
             ellipsis:
@@ -435,7 +435,7 @@
         if (field.type === FieldTypeEnum.PICTURE) {
           return {
             title,
-            width: maxPictureCountMap.value[field.id] > 0 ? maxPictureCountMap.value[field.id] * 118 + 120 : 200, // 每个卡片 110px + 8px间距 + 上传按钮宽度 120px
+            width: maxPictureCountMap.value[field.id] > 0 ? maxPictureCountMap.value[field.id] * 118 + 32 : 150, // 每个卡片 110px + 8px间距 + 上传按钮宽度 32px
             key,
             fieldId: key,
             render: (row: any, rowIndex: number) =>
