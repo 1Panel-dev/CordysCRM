@@ -220,7 +220,7 @@
                     {},
                     {
                       default: () =>
-                        row[key].map((img: string) =>
+                        (row[key] || []).map((img: string) =>
                           h(NImage, { src: `${PreviewPictureUrl}/${img}`, class: 'w-[100px] h-[100px] mr-[8px]' })
                         ),
                     }
