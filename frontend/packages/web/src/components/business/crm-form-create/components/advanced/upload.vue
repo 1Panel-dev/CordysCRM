@@ -163,6 +163,7 @@
       onFinish();
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
+      emit('change', fileKeys.value, fileList.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
