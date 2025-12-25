@@ -214,8 +214,8 @@
 <style lang="less">
   .crm-upload--subtable-file-list {
     grid-auto-flow: column;
-    grid-template-columns: repeat(auto-fill, 100px) !important; /* 自动填充 100px 宽的列 */
-    align-items: start !important;
+    grid-template-columns: repeat(auto-fill, minmax(auto, 100px)) !important; /* 最小宽度自适应，最大宽度 100px */
+    align-items: center;
     .n-upload-file--image-card-type {
       width: 100px !important;
       height: 100px !important;
