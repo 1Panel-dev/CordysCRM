@@ -27,7 +27,6 @@ public class WeComDepartmentService {
      * 获取部门列表
      *
      * @param accessToken 访问令牌
-     *
      * @return 部门列表
      */
     public List<ThirdDepartment> getDepartmentList(String accessToken) {
@@ -67,7 +66,6 @@ public class WeComDepartmentService {
      *
      * @param accessToken   访问令牌
      * @param departmentIds 部门ID列表
-     *
      * @return 部门ID与用户列表的映射
      */
     public Map<String, List<ThirdUser>> getDepartmentUser(String accessToken, List<Long> departmentIds) {
@@ -80,7 +78,8 @@ public class WeComDepartmentService {
             if (response.getErrCode() != 0) {
                 throw new GenericException("获取用户接口返回结果失败: " + response.getErrMsg());
             }
-            List<ThirdUser> thirdUsers = response.getUserList().stream()
+            List<ThirdUser> thirdUsers = response.getUserList().stream()//过滤如果weComUser有mainDepartment属性，过滤department中含有mainDepartment的用户，没有就不过滤
+                    .filter(weComUser -> weComUser.getMainDepartment() == null || weComUser.getMainDepartment().equals(departmentId))
                     .map(weComUser -> ThirdUser.builder()
                             .userId(weComUser.getUserId())
                             .name(weComUser.getName())
