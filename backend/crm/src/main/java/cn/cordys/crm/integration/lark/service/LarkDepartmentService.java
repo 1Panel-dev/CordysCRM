@@ -12,7 +12,6 @@ import cn.cordys.crm.integration.lark.dto.LarkUser;
 import cn.cordys.crm.integration.lark.response.LarkDepartmentResponse;
 import cn.cordys.crm.integration.lark.response.LarkTenantResponse;
 import cn.cordys.crm.integration.lark.response.LarkUserResponse;
-import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import jakarta.annotation.Resource;
@@ -32,9 +31,6 @@ public class LarkDepartmentService {
 
     @Resource
     private QrCodeClient qrCodeClient;
-
-    @Resource
-    private TokenService tokenService;
 
     /**
      * 递归获取所有子部门信息
