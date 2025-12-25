@@ -33,7 +33,13 @@
       multiple
       directory-dnd
       @before-upload="beforeUpload"
-      @update-file-list="() => emit('change', fileKeys, fileList)"
+      @update-file-list="
+        () => {
+          if (fileKeys.length !== 0 || fileKeys.length === fileList.length) {
+            emit('change', fileKeys, fileList);
+          }
+        }
+      "
       @remove="handleFileRemove"
     >
       <n-upload-dragger>
@@ -86,22 +92,16 @@
   const Message = useMessage();
 
   const fileKeys = defineModel<string[]>('value', {
-    default: [],
+    default: () => [],
   });
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
 
   const getTriggerStyle = computed(() => {
-    if (props.isSubTableField) {
+    if (props.isSubTableField || props.isSubTableRender) {
       return {
         width: '32px',
         height: '32px',
-      };
-    }
-    if (props.isSubTableRender) {
-      return {
-        width: '100px',
-        height: '100px',
       };
     }
     return undefined;
