@@ -15,6 +15,7 @@ import cn.cordys.crm.system.service.ModuleFormService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
  * 图标分析通用类
  * @author song-cc-rock
  */
-public abstract class BaseChartService extends BaseResourceService {
+@Service
+public class BaseChartService {
 
 	@Resource
 	private ModuleFormService moduleFormService;
