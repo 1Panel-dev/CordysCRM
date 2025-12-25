@@ -5,7 +5,7 @@ import cn.cordys.common.dto.ChartAnalysisDbRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
-import cn.cordys.common.service.BaseResourceFieldService;
+import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.LogUtils;
@@ -44,7 +44,8 @@ public class CluePoolExportService extends ClueExportService {
     @Resource
     private ExportTaskService exportTaskService;
     @Resource
-    private ClueFieldService clueFieldService;
+    private BaseChartService baseChartService;
+
 
     public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
@@ -118,11 +119,11 @@ public class CluePoolExportService extends ClueExportService {
 
     public List<ChartResult> chart(PoolClueChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = clueService.getFormConfig(orgId);
-        formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(BaseChartService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         ClueChartAnalysisDbRequest clueChartAnalysisDbRequest = BeanUtils.copyBean(new ClueChartAnalysisDbRequest(), chartAnalysisDbRequest);
         clueChartAnalysisDbRequest.setPoolId(request.getPoolId());
         List<ChartResult> chartResults = extClueMapper.chart(clueChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return clueFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return baseChartService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 }

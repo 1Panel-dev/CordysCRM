@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * @author jianxing
  * @date 2025-01-03 12:01:54
  */
-public abstract class BaseResourceFieldService<T extends BaseResourceField, V extends BaseResourceField> extends BaseChartService {
+public abstract class BaseResourceFieldService<T extends BaseResourceField, V extends BaseResourceField> extends BaseResourceService {
 
     @Resource
     private SerialNumGenerator serialNumGenerator;

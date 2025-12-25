@@ -19,7 +19,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseResourceFieldService;
+import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -133,6 +133,8 @@ public class CustomerService {
     private ExtCustomerPoolMapper extCustomerPoolMapper;
     @Resource
     private CustomerContactService customerContactService;
+    @Resource
+    private BaseChartService baseChartService;
     @Resource
     private DictService dictService;
     @Resource
@@ -860,11 +862,11 @@ public class CustomerService {
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
-        formConfig.getFields().addAll(BaseResourceFieldService.getChartBaseFields());
+        formConfig.getFields().addAll(BaseChartService.getChartBaseFields());
         ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
         CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
         List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
-        return customerFieldService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
+        return baseChartService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 
     /**
