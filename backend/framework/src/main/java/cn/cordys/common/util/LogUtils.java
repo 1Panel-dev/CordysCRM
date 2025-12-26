@@ -1,301 +1,117 @@
 package cn.cordys.common.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * LogUtils 提供了日志输出的工具方法，支持不同级别的日志记录。
- */
-public class LogUtils {
-    public static final String DEBUG = "DEBUG";
-    public static final String INFO = "INFO";
-    public static final String WARN = "WARN";
-    public static final String ERROR = "ERROR";
+ * 日志工具类
+ **/
+public final class LogUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogUtils.class);
 
-    /**
-     * 根据日志级别输出日志信息。
-     *
-     * @param msg   要输出的日志信息
-     * @param level 日志级别，支持 DEBUG、INFO、WARN、ERROR
-     */
-    public static void writeLog(Object msg, String level) {
-        String message = getMsg(msg);
+    private LogUtils() {
+        // 工具类禁止实例化
+    }
 
+    /**
+     * 通用日志方法
+     *
+     * @param level
+     * @param message
+     * @param args
+     */
+    public static void log(LogLevel level, String message, Object... args) {
         switch (level) {
-            case DEBUG:
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(message);
-                }
-                break;
-            case INFO:
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(message);
-                }
-                break;
-            case WARN:
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn(message);
-                }
-                break;
-            case ERROR:
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(message);
-                }
-                break;
-            default:
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(StringUtils.EMPTY);
-                }
+            case DEBUG -> LOGGER.debug(message, args);
+            case INFO -> LOGGER.info(message, args);
+            case WARN -> LOGGER.warn(message, args);
+            case ERROR -> LOGGER.error(message, args);
         }
     }
 
     /**
-     * 输出 INFO 级别的日志。
+     * info
      *
-     * @param msg 要输出的日志信息
-     */
-    public static void info(Object msg) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getMsg(msg));
-        }
-    }
-
-    /**
-     * 输出带有格式化参数的 INFO 级别日志。
-     *
-     * @param message 格式化的日志信息
-     * @param args    参数
+     * @param message
+     * @param args
      */
     public static void info(String message, Object... args) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(message, args);
-        }
+        LOGGER.info(message, args);
     }
 
+    /**
+     * DEBUG
+     *
+     * @param message
+     * @param args
+     */
     public static void debug(String message, Object... args) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(message, args);
+        LOGGER.debug(message, args);
+    }
+
+    /**
+     * DEBUG 级别 + 方法名（仅在 DEBUG 开启时才计算堆栈）
+     */
+    public static void debugWithMethod(String message, Object... args) {
+        if (!LOGGER.isDebugEnabled()) {
+            return;
         }
+        LOGGER.debug("[{}] {}", getCallerMethod(), String.format(message, args));
     }
 
     /**
-     * 输出带有两个参数的 INFO 级别日志。
+     * WARN
      *
-     * @param msg  要输出的日志信息
-     * @param arg1 第一个参数
+     * @param message
+     * @param args
      */
-    public static void info(Object msg, Object arg1) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getMsg(msg), arg1);
-        }
+    public static void warn(String message, Object... args) {
+        LOGGER.warn(message, args);
     }
 
     /**
-     * 输出带有多个参数的 INFO 级别日志。
+     * ERROR
      *
-     * @param msg  要输出的日志信息
-     * @param args 参数数组
+     * @param message
+     * @param args
      */
-    public static void info(Object msg, Object[] args) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getMsg(msg), args);
-        }
+    public static void error(String message, Object... args) {
+        LOGGER.error(message, args);
+    }
+
+    public static void error(String message, Throwable ex) {
+        LOGGER.error(message, ex);
+    }
+
+    public static void error(Throwable ex) {
+        LOGGER.error(ex.getMessage(), ex);
     }
 
     /**
-     * 输出 DEBUG 级别的日志。
-     *
-     * @param msg 要输出的日志信息
+     * 获取调用方方法名（用于 DEBUG）
      */
-    public static void debug(Object msg) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getMsg(msg));
-        }
-    }
-
-    /**
-     * 输出带有参数的 DEBUG 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param arg1 第一个参数
-     */
-    public static void debug(Object msg, Object arg1) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getMsg(msg), arg1);
-        }
-    }
-
-    /**
-     * 输出带有多个参数的 DEBUG 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param args 参数数组
-     */
-    public static void debug(Object msg, Object[] args) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getMsg(msg), args);
-        }
-    }
-
-    /**
-     * 输出 WARN 级别的日志。
-     *
-     * @param msg 要输出的日志信息
-     */
-    public static void warn(Object msg) {
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn(getMsg(msg));
-        }
-    }
-
-    /**
-     * 输出带有参数的 WARN 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param arg1 第一个参数
-     */
-    public static void warn(Object msg, Object arg1) {
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn(getMsg(msg), arg1);
-        }
-    }
-
-    /**
-     * 输出带有多个参数的 WARN 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param args 参数数组
-     */
-    public static void warn(Object msg, Object[] args) {
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn(getMsg(msg), args);
-        }
-    }
-
-    /**
-     * 输出 ERROR 级别的日志。
-     *
-     * @param msg 要输出的日志信息
-     */
-    public static void error(Object msg) {
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(getMsg(msg));
-        }
-    }
-
-    /**
-     * 输出 ERROR 级别的异常日志。
-     *
-     * @param e 异常信息
-     */
-    public static void error(Throwable e) {
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(getMsg(e), e);
-        }
-    }
-
-    /**
-     * 输出带有参数的 ERROR 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param arg1 第一个参数
-     */
-    public static void error(Object msg, Object arg1) {
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(getMsg(msg), arg1);
-        }
-    }
-
-    /**
-     * 输出带有多个参数的 ERROR 级别日志。
-     *
-     * @param msg  要输出的日志信息
-     * @param args 参数数组
-     */
-    public static void error(Object msg, Object[] args) {
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(getMsg(msg), args);
-        }
-    }
-
-    /**
-     * 输出带有异常信息的 ERROR 级别日志。
-     *
-     * @param msg 要输出的日志信息
-     * @param ex  异常
-     */
-    public static void error(Object msg, Throwable ex) {
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(getMsg(msg), ex);
-        }
-    }
-
-    /**
-     * 获取日志信息。
-     *
-     * @param msg 要输出的日志信息
-     * @param ex  异常信息
-     *
-     * @return 格式化后的日志信息
-     */
-    private static String getMsg(Object msg, Throwable ex) {
-        String message = (msg != null) ? msg.toString() : "null";
-        String methodName = getLogMethod();
-        String exceptionMessage = (ex != null) ? "[" + ex.getMessage() + "]" : "";
-        return "Method[" + methodName + "]" + "[" + message + "]" + exceptionMessage;
-    }
-
-    /**
-     * 获取日志信息。
-     *
-     * @param msg 要输出的日志信息
-     *
-     * @return 格式化后的日志信息
-     */
-    private static String getMsg(Object msg) {
-        return getMsg(msg, null);
-    }
-
-    /**
-     * 获取调用类名。
-     *
-     * @return 调用类名
-     */
-    private static String getLogClass() {
+    private static String getCallerMethod() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        return (stack.length > 3) ? stack[3].getClassName() : StringUtils.EMPTY;
+        return stack.length > 4 ? stack[4].getMethodName() : "unknown";
     }
 
     /**
-     * 获取调用方法名。
-     *
-     * @return 调用方法名
+     * 将异常堆栈转为字符串（仅在确实需要字符串时使用）
      */
-    private static String getLogMethod() {
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        return (stack.length > 4) ? stack[4].getMethodName() : StringUtils.EMPTY;
+    public static String stackTraceToString(Throwable e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
     /**
-     * 将异常堆栈信息转换为字符串。
-     *
-     * @param e 异常
-     *
-     * @return 异常堆栈的字符串表示
+     * 日志级别枚举
      */
-    public static String toString(Throwable e) {
-        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
-            e.printStackTrace(pw);
-            return sw.toString();
-        } catch (IOException ex) {
-            return ex.getMessage();
-        }
+    public enum LogLevel {
+        DEBUG, INFO, WARN, ERROR
     }
 }
