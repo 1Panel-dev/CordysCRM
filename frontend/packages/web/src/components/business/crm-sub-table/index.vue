@@ -203,7 +203,7 @@
             title: field.showLabel ? field.name : '',
             width:
               maxPictureCountMap.value[field.id] > 0 && field.type === FieldTypeEnum.PICTURE
-                ? maxPictureCountMap.value[field.id] * 108
+                ? maxPictureCountMap.value[field.id] * 110
                 : 120,
             key,
             fieldId: key,
@@ -436,14 +436,14 @@
           let finalPictureColWidth = 0;
           if (maxPictureCountMap.value[field.id]) {
             if (field.uploadLimit && maxPictureCountMap.value[field.id] >= field.uploadLimit) {
-              finalPictureColWidth = field.uploadLimit * 108;
+              finalPictureColWidth = field.uploadLimit * 110;
             } else {
-              finalPictureColWidth = maxPictureCountMap.value[field.id] * 108 + 32;
+              finalPictureColWidth = maxPictureCountMap.value[field.id] * 110 + 32;
             }
           }
           return {
             title,
-            width: finalPictureColWidth || 150, // 每个卡片 100px + 8px间距 + 上传按钮宽度 32px
+            width: finalPictureColWidth || 150, // 每个卡片 100px + 8px间距 + 2px 冗余 + 上传按钮宽度 32px
             key,
             fieldId: key,
             render: (row: any, rowIndex: number) =>
