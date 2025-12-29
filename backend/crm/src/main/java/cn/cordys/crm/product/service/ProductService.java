@@ -115,16 +115,18 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(list);
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 产品ID
-	 * @return 产品详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 产品ID
+     *
+     * @return 产品详情
+     */
     public ProductGetResponse get(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
-		if (product == null) {
-			return null;
-		}
+        if (product == null) {
+            return null;
+        }
         ProductGetResponse productGetResponse = BeanUtils.copyBean(new ProductGetResponse(), product);
 
         // 获取模块字段
@@ -233,17 +235,30 @@ public class ProductService {
      * @param userId 操作人id
      */
     public void batchDelete(List<String> ids, String userId) {
-        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(Product::getId, ids);
-        List<Product> products = productBaseMapper.selectListByLambda(wrapper);
+
+        List<Product> products = productBaseMapper.selectByIds(ids);
+
+        if (products == null || products.isEmpty()) {
+            return;
+        }
         productBaseMapper.deleteByIds(ids);
         productFieldService.deleteByResourceIds(ids);
-        List<LogDTO> logs = new ArrayList<>();
-        products.forEach(product -> {
-            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.PRODUCT_MANAGEMENT, product.getName());
-            logDTO.setOriginalValue(product.getName());
-            logs.add(logDTO);
-        });
+
+        List<LogDTO> logs = products.stream()
+                .map(p -> {
+                    LogDTO log = new LogDTO(
+                            p.getOrganizationId(),
+                            p.getId(),
+                            userId,
+                            LogType.DELETE,
+                            LogModule.PRODUCT_MANAGEMENT,
+                            p.getName()
+                    );
+                    log.setOriginalValue(p.getName());
+                    return log;
+                })
+                .toList();
+
         logService.batchAdd(logs);
     }
 
@@ -299,7 +314,7 @@ public class ProductService {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.PRODUCT.getKey(), currentOrg),
                         Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-						new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -328,7 +343,7 @@ public class ProductService {
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
-			AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
+            AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRODUCT.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Product, BaseResourceSubField> afterDo = (products, productFields, productFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
