@@ -36,5 +36,9 @@ public enum DepartmentConstants {
     /**
      * tender
      */
-    TENDER
+    TENDER,
+    /**
+     * 企查查
+     */
+    QCC
 }

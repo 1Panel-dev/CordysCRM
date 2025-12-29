@@ -18,6 +18,7 @@ import cn.cordys.crm.integration.lark.dto.LarkBaseParamDTO;
 import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkToken;
 import cn.cordys.crm.integration.lark.dto.LarkTokenParamDTO;
+import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.tender.constant.TenderApiPaths;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComSendDTO;
@@ -36,6 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -346,5 +348,25 @@ public class TokenService {
             return false;
         }
 
+    }
+
+    public boolean getQcc(String qccAddress, String qccAccessKey, String qccSecretKey) {
+
+        long time = System.currentTimeMillis() / 1000;
+        String token = EncryptUtils.md5(qccAccessKey + time + qccSecretKey).toUpperCase();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Token", token);
+        headers.put("Timespan", String.valueOf(time));
+
+        try {
+
+            String url = HttpRequestUtil.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
+            HttpRequestUtil.sendGetRequest(url, headers);
+            return true;
+        } catch (Exception e) {
+            LogUtils.error("测试连接失败", e);
+            return false;
+        }
     }
 }
