@@ -66,6 +66,7 @@ export enum FieldTypeEnum {
   FORMULA = 'FORMULA', // 计算公式
   SUB_PRODUCT = 'SUB_PRODUCT',
   SUB_PRICE = 'SUB_PRICE',
+  INPUT_NUMBER_WITH_UNIT = 'INPUT_NUMBER_WITH_UNIT', // 数值带单位组件，用于到到期提醒等场景X年、月、天、小时
 }
 
 export enum FieldRuleEnum {

@@ -44,4 +44,14 @@ export default {
   'system.message.confirmCloseWeChatNotice': 'Are you sure to close the WeCom notification?',
   'system.message.weComSwitchTip':
     '{type} unable to get user receives the message, please complete the WeCom structure synchronization, make sure the system consistent with the {type} personnel data!',
+  'system.message.expirationTitle': '{type} expiration configuration',
+  'system.message.endOfType': 'before {type} ends',
+  'system.message.timeNumberRepeatMsg': 'Duplicate number',
+  'system.message.expirationReminder': 'Expiration reminder',
+  'system.message.scopedSettings': 'Scope configuration',
+  'system.message.noticePerson': 'Notified personnel',
+  'system.message.supervisorOfOwner': 'Direct supervisor',
+  'system.message.maxLimit': 'Maximum number of {count} items',
+  'system.message.toHeadAbove': 'To the head and above',
+  'system.message.noticeOfDepartmentHead': 'Notice from the head of the level department',
 };

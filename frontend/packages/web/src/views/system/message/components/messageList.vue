@@ -10,6 +10,7 @@
       :loading="loading"
       :max-height="licenseStore.expiredDuring ? 'calc(100vh - 306px)' : 'calc(100vh - 242px)'"
     />
+    <expirationSettingDrawer v-model:visible="showExpirationSetting" :detail="activeDetail" @ok="initMessageList" />
   </CrmCard>
 </template>
 
@@ -21,6 +22,8 @@
   import type { MessageConfigItem, MessageTaskDetailDTOItem } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import expirationSettingDrawer from './expirationSettingDrawer.vue';
   import SwitchPopConfirm from './switchPopConfirm.vue';
 
   import { batchSaveMessageTask, getConfigSynchronization, getMessageTask, saveMessageTask } from '@/api/modules';
@@ -145,6 +148,12 @@
   const platformName = computed(() => platFormNameMap[appStore.activePlatformResource.syncResource]);
   const isSyncFromThirdChecked = computed(() => appStore.activePlatformResource.sync);
 
+  const showExpirationSetting = ref(false);
+  const activeDetail = ref<MessageConfigItem | null>(null);
+  function settingMessage(e: MouseEvent, row: MessageConfigItem) {
+    showExpirationSetting.value = true;
+    activeDetail.value = row;
+  }
   const columns = computed<DataTableColumn[]>(() => [
     {
       title: t('system.message.Feature'),
@@ -164,6 +173,25 @@
       width: 200,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row) => {
+        return h(
+          'div',
+          {
+            class: 'one-line-text flex items-center gap-[8px]',
+          },
+          [
+            h('span', row.eventName as string),
+            hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])
+              ? h(CrmIcon, {
+                  type: 'iconicon_set_up',
+                  size: 16,
+                  class: 'ml-2 text-[var(--primary-8)] cursor-pointer',
+                  onClick: (e: MouseEvent) => settingMessage(e, row as unknown as MessageConfigItem),
+                })
+              : null,
+          ]
+        );
       },
     },
     {
