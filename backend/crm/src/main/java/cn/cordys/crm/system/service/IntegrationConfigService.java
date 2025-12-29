@@ -21,6 +21,7 @@ import cn.cordys.crm.integration.common.dto.ThirdEnableDTO;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
 import cn.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
+import cn.cordys.crm.integration.qcc.dto.QccDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
 import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
@@ -85,6 +86,7 @@ public class IntegrationConfigService {
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name()));
 
         addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.TENDER.name()));
+        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.QCC.name()));
 
         // 添加数据看板配置
         ThirdConfigurationDTO deEmbeddedConfig = getThirdConfigurationDTOByType(
@@ -144,7 +146,6 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
-     *
      * @return ThirdConfigurationDTO
      */
     private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
@@ -173,6 +174,8 @@ public class IntegrationConfigService {
                 enableDTO.setMkEnable(isEnabled);
             } else if (detailType.contains("TENDER")) {
                 enableDTO.setTenderEnable(isEnabled);
+            } else if (detailType.contains("QCC")) {
+                enableDTO.setQccEnable(isEnabled);
             }
         }
 
@@ -194,6 +197,7 @@ public class IntegrationConfigService {
         configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
         configDTO.setMkEnable(thirdEnableDTO.isMkEnable());
         configDTO.setTenderEnable(thirdEnableDTO.isTenderEnable());
+        configDTO.setQccEnable(thirdEnableDTO.isQccEnable());
 
         return configDTO;
     }
@@ -343,6 +347,12 @@ public class IntegrationConfigService {
             tenderConfig.setVerify(configDTO.getVerify());
             jsonContent = JSON.toJSONString(tenderConfig);
             verify = tenderConfig.getVerify();
+        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
+            QccDetailDTO qccConfig = new QccDetailDTO();
+            BeanUtils.copyBean(qccConfig, configDTO);
+            qccConfig.setVerify(configDTO.getVerify());
+            jsonContent = JSON.toJSONString(qccConfig);
+            verify = qccConfig.getVerify();
         } else {
             return;
         }
@@ -539,6 +549,18 @@ public class IntegrationConfigService {
             oldConfig.setTenderEnable(detail.getEnable());
             jsonContent = JSON.toJSONString(tenderConfig);
             openEnable = enable;
+        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
+            QccDetailDTO qccConfig = new QccDetailDTO();
+            BeanUtils.copyBean(qccConfig, configDTO);
+            if (Boolean.TRUE.equals(configDTO.getQccEnable())) {
+                verifyQcc(token, qccConfig);
+                configDTO.setVerify(qccConfig.getVerify());
+            } else {
+                qccConfig.setVerify(configDTO.getVerify());
+            }
+            oldConfig.setQccEnable(detail.getEnable());
+            jsonContent = JSON.toJSONString(qccConfig);
+            openEnable = enable;
         } else {
             return;
         }
@@ -619,6 +641,10 @@ public class IntegrationConfigService {
         tenderConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
+    private void verifyQcc(String token, QccDetailDTO qccConfig) {
+        qccConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
+    }
+
     /**
      * 根据配置类型获取详情类型列表
      */
@@ -664,6 +690,12 @@ public class IntegrationConfigService {
             );
         }
 
+        if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
+            return List.of(
+                    ThirdConstants.ThirdDetailType.QCC.toString()
+            );
+        }
+
 
         return new ArrayList<>();
     }
@@ -691,6 +723,8 @@ public class IntegrationConfigService {
             map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), configDTO.getMkEnable());
         } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
             map.put(ThirdConstants.ThirdDetailType.TENDER.toString(), configDTO.getTenderEnable());
+        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
+            map.put(ThirdConstants.ThirdDetailType.QCC.toString(), configDTO.getQccEnable());
         }
 
         return map;
@@ -717,6 +751,8 @@ public class IntegrationConfigService {
             return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret()) ? "true" : null;
         } else if (DepartmentConstants.TENDER.name().equals(type)) {
             return tokenService.getTender() ? "true" : null;
+        } else if (DepartmentConstants.QCC.name().equals(type)) {
+            return tokenService.getQcc(configDTO.getQccAddress(),configDTO.getQccAccessKey(),configDTO.getQccSecretKey())? "true":null;
         }
 
         return null;
@@ -840,6 +876,11 @@ public class IntegrationConfigService {
     public boolean testConnection(ThirdConfigurationDTO configDTO) {
 
         if (Strings.CI.contains(configDTO.getType(), DepartmentConstants.TENDER.name())) {
+            String token = getToken(configDTO);
+            return StringUtils.isNotBlank(token);
+        }
+
+        if (Strings.CI.contains(configDTO.getType(), DepartmentConstants.QCC.name())) {
             String token = getToken(configDTO);
             return StringUtils.isNotBlank(token);
         }

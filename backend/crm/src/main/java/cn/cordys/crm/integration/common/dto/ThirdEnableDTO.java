@@ -9,4 +9,5 @@ public class ThirdEnableDTO {
     private boolean chatEnable;
     private boolean mkEnable;
     private boolean tenderEnable;
+    private boolean qccEnable;
 }

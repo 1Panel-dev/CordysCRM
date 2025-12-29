@@ -45,5 +45,13 @@ public class ThirdConfigurationDTO {
     private Boolean tenderEnable;
     @Schema(description = "地址")
     private String tenderAddress;
+    @Schema(description = "企查查开启")
+    private Boolean qccEnable;
+    @Schema(description = "企查查地址")
+    private String qccAddress;
+    @Schema(description = "企查查AccessKey")
+    private String qccAccessKey;
+    @Schema(description = "企查查SecretKey")
+    private String qccSecretKey;
 
 }
