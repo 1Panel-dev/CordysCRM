@@ -103,6 +103,19 @@
                     precision: model.numberProps?.precision,
                   }"
                 />
+                <CrmInputNumberWithUnit
+                  v-if="model.type === FieldTypeEnum.INPUT_NUMBER_WITH_UNIT"
+                  v-model:value="element[model.path]"
+                  class="w-full"
+                  clearable
+                  :disabled="!element.editing || model.numberProps?.disabledFunction?.(element)"
+                  :placeholder="model.numberProps?.placeholder ?? t('common.pleaseInput')"
+                  v-bind="{
+                    min: model.numberProps?.min,
+                    max: model.numberProps?.max,
+                    precision: model.numberProps?.precision,
+                  }"
+                />
                 <n-tooltip
                   v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
                   :disabled="!model.selectProps?.disabledFunction?.(element)"
@@ -188,19 +201,24 @@
           </VueDraggable>
         </n-scrollbar>
       </n-form>
-      <n-button
-        v-if="props.addText"
-        type="primary"
-        :disabled="props.disabledAdd"
-        text
-        class="mt-[5px] w-[fit-content]"
-        @click="handleAddListItem"
-      >
-        <template #icon>
-          <n-icon><Add /></n-icon>
+      <n-tooltip trigger="hover" placement="bottom" :disabled="getAddDisabled ? !props.disabledAddTooltip : true">
+        <template #trigger>
+          <n-button
+            v-if="props.addText"
+            type="primary"
+            :disabled="getAddDisabled"
+            text
+            class="mt-[5px] w-[fit-content]"
+            @click="handleAddListItem"
+          >
+            <template #icon>
+              <n-icon><Add /></n-icon>
+            </template>
+            {{ props.addText }}
+          </n-button>
         </template>
-        {{ props.addText }}
-      </n-button>
+        {{ props.disabledAddTooltip }}
+      </n-tooltip>
     </div>
   </div>
 </template>
@@ -232,6 +250,7 @@
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmPopConfirm, { CrmPopConfirmProps } from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmInputNumberWithUnit from '@/components/business/crm-input-number-with-unit/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { FormItemModel } from './types';
@@ -250,6 +269,8 @@
       draggable?: boolean;
       popConfirmProps?: (ele: Record<string, any>, i: number) => CrmPopConfirmProps | CrmPopConfirmProps;
       move?: (evt: any) => boolean;
+      disabledAddTooltip?: string;
+      maxLimitLength?: number;
     }>(),
     {
       maxHeight: '100%',
@@ -271,6 +292,10 @@
   const formItemRefs = ref<Record<string, Map<string, any>>>({});
   const formItem: Record<string, any> = {};
   const popShow = ref<Record<string, boolean>>({});
+
+  const getAddDisabled = computed(() =>
+    props.maxLimitLength && form.value.list.length >= props.maxLimitLength ? true : props.disabledAdd
+  );
 
   const handleFormItemRef = (el: Element | ComponentPublicInstance | null, path: string, index: number) => {
     if (!formItemRefs.value[path]) {

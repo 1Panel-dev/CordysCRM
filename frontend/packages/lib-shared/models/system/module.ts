@@ -42,6 +42,7 @@ export interface SelectedUsersItem {
   id: string; // ID
   scope?: MemberSelectTypeEnum; // 范围
   name: string; // 名称
+  disabled?: boolean;
 }
 
 export interface ModuleConditionsItem {

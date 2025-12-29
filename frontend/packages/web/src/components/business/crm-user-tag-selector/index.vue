@@ -94,12 +94,14 @@
     emit('confirm');
   }
   const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
+    const selected = selectedList.value?.find((item) => item.id === option.value);
+    const tagDisabled = props.disabled || selected?.disabled;
     return h(
       CrmTag,
       {
         type: props.userErrorTagIds?.includes(option.value as string) ? 'error' : 'default',
         theme: 'light',
-        closable: !props.disabled,
+        closable: !tagDisabled,
         onClose: () => {
           handleClose();
           selectedList.value = selectedList.value?.filter((item) => item.id !== option.value);

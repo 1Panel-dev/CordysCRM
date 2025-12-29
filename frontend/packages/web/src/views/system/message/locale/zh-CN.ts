@@ -43,4 +43,14 @@ export default {
   'system.message.confirmCloseWeChatNotice': '确定关闭该企业微信通知吗？',
   'system.message.weComSwitchTip':
     '{type}无法获取接收消息的用户身份，请先完成{type}组织架构同步，确保系统与{type}的人员数据一致!',
+  'system.message.expirationTitle': '{type}即将到期配置',
+  'system.message.endOfType': '距{type}结束',
+  'system.message.timeNumberRepeatMsg': '数字重复，请重新输入',
+  'system.message.expirationReminder': '到期提醒',
+  'system.message.scopedSettings': '范围配置',
+  'system.message.noticePerson': '通知人员',
+  'system.message.supervisorOfOwner': '负责人直属上级',
+  'system.message.maxLimit': '最多可添加 {count} 条',
+  'system.message.toHeadAbove': '向负责人及以上',
+  'system.message.noticeOfDepartmentHead': '级部门负责人通知',
 };

@@ -656,6 +656,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.FORMULA]: [],
   [FieldTypeEnum.SUB_PRODUCT]: [],
   [FieldTypeEnum.SUB_PRICE]: [],
+  [FieldTypeEnum.INPUT_NUMBER_WITH_UNIT]: [],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Promise<FormDesignConfigDetailParams>> = {
