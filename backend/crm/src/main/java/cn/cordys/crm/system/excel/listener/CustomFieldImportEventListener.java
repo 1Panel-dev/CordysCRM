@@ -164,6 +164,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 			if (id.isEmpty()) {
 				return;
 			}
+			String bizId = IDGenerator.nextStr();
 			headMap.forEach((k, v) -> {
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
@@ -193,6 +194,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 					if (refSubMap.containsKey(field.getName())) {
 						resourceField.setRefSubId(refSubMap.get(field.getName()));
 						resourceField.setRowId(String.valueOf(subRowId));
+						resourceField.setBizId(bizId);
 					}
                     if (field.isBlob()) {
                         if (val instanceof List<?> valList) {
@@ -216,6 +218,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 					if (refSubMap.containsKey(serialField.getName())) {
 						serialResource.setRefSubId(refSubMap.get(serialField.getName()));
 						serialResource.setRowId(String.valueOf(subRowId));
+						serialResource.setBizId(bizId);
 					}
 					fields.add(serialResource);
 				}
