@@ -547,6 +547,7 @@ public class ContractService {
 
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("customerName", customerName);
+        paramMap.put("name", contract.getName());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT, event,
                 paramMap, userId, orgId, receiveUserIds, true);
     }

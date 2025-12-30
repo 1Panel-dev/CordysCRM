@@ -197,44 +197,45 @@ public enum BusinessModuleField {
     PRODUCT_STATUS("productStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRODUCT.getKey()),
     /*------ end: PRODUCT ------*/
 
-	/**
-	 * 价格表单
-	 */
-	PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
-	PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile", "readable"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.PRICE.getKey()),
-	PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
+    /**
+     * 价格表单
+     */
+    PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
+    PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
+    PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile", "readable"), FormKey.PRICE.getKey()),
+    PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.PRICE.getKey()),
+    PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
 
-	/**
-	 * 报价单表单
-	 */
-	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    /**
+     * 报价单表单
+     */
+    QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
-	/**
-	 * 合同回款计划
-	 */
-	/*------ start: CONTRACT_PAYMENT_PLAN ------*/
-	/**
-	 * 负责人
-	 */
-	CONTRACT_PAYMENT_PLAN_OWNER("contractPaymentPlanOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-	/**
-	 * 合同
-	 */
-	CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-	/**
-	 * 计划回款金额
-	 */
-	CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-	/**
-	 * 计划回款时间
-	 */
-	CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-	/*------ end: CONTRACT_PAYMENT_PLAN ------*/
+    /**
+     * 合同回款计划
+     */
+    /*------ start: CONTRACT_PAYMENT_PLAN ------*/
+    /**
+     * 负责人
+     */
+    CONTRACT_PAYMENT_PLAN_OWNER("contractPaymentPlanOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    /**
+     * 合同
+     */
+    CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    /**
+     * 计划回款金额
+     */
+    CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    /**
+     * 计划回款时间
+     */
+    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    /*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 
     /**
@@ -247,10 +248,10 @@ public enum BusinessModuleField {
     CONTRACT_NAME("contractName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
     CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
-	CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
-	CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.CONTRACT.getKey()),
-	CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
-	CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey());
 
@@ -298,7 +299,6 @@ public enum BusinessModuleField {
      *
      * @param formKey 表单 key
      * @param fields  字段集合
-     *
      * @return 是否被删除
      */
     public static boolean isBusinessDeleted(String formKey, List<BaseField> fields) {
@@ -309,33 +309,33 @@ public enum BusinessModuleField {
         return formBusinessFields.stream()
                 .anyMatch(businessField ->
                         fields.stream().noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey()))
-						&& businessField.noneMatchOfSubFields(fields)
-				);
+                                && businessField.noneMatchOfSubFields(fields)
+                );
     }
 
-	/**
-	 * 判断子表字段中是否存在业务字段
-	 * @param fields 字段集合
-	 * @return 是否存在业务字段
-	 */
-	private boolean noneMatchOfSubFields(List<BaseField> fields) {
-		boolean noneMatch = true;
-		for (BaseField field : fields) {
-			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-				noneMatch = subField.getSubFields().stream().noneMatch(sub -> Strings.CS.equals(this.getKey(), sub.getInternalKey()));
-				if (!noneMatch) {
-					break;
-				}
-			}
-		}
-		return noneMatch;
-	}
+    /**
+     * 判断子表字段中是否存在业务字段
+     *
+     * @param fields 字段集合
+     * @return 是否存在业务字段
+     */
+    private boolean noneMatchOfSubFields(List<BaseField> fields) {
+        boolean noneMatch = true;
+        for (BaseField field : fields) {
+            if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+                noneMatch = subField.getSubFields().stream().noneMatch(sub -> Strings.CS.equals(this.getKey(), sub.getInternalKey()));
+                if (!noneMatch) {
+                    break;
+                }
+            }
+        }
+        return noneMatch;
+    }
 
     /**
      * 判断是否有重复的字段
      *
      * @param fields 字段集合
-     *
      * @return 是否有重复的字段
      */
     public static boolean hasRepeatName(List<BaseField> fields) {
@@ -349,7 +349,6 @@ public enum BusinessModuleField {
      * 通过Key查询业务字段
      *
      * @param internalKey 业务key
-     *
      * @return 业务字段
      */
     public static BusinessModuleField ofKey(String internalKey) {

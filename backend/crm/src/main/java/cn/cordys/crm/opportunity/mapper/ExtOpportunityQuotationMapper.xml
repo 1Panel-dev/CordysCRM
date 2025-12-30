@@ -15,7 +15,7 @@
 
     <select id="list" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse">
         select oq.id, oq.name, oq.opportunity_id, o.name as opportunityName, oq.approval_status, oq.amount,
-        oq.organization_id, oq.create_time,
+        oq.until_time, oq.organization_id, oq.create_time,
         oq.update_time, oq.create_user, oq.update_user
         from opportunity_quotation oq
         left join opportunity o on oq.opportunity_id = o.id
@@ -96,6 +96,7 @@
                 and condition.name != 'create_time'
                 and condition.name != 'update_time'
                 and condition.name != 'create_user'
+                and condition.name != 'untilTime'
                 ">
                     <if test="condition.multipleValue">
                         left join opportunity_quotation_field_blob ${tablePrefix}_${i}
@@ -116,7 +117,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'approval_status', 'amount', 'opportunity_id', 'update_user', 'create_time', 'update_time',
+                {'name', 'approval_status', 'amount', 'opportunity_id', 'update_user', 'create_time', 'update_time', 'until_time',
                 'create_user', 'department_id' }">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_quotation_field sort_table
@@ -145,6 +146,9 @@
                     </when>
                     <when test="${sort}.name == 'opportunity_id'">
                         o.`id` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'until_time'">
+                        oq.`until_time` ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
                         souc_sort.`id` ${sortType}, oq.id ASC
@@ -214,6 +218,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="o.id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'untilTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="oq.until_time"/>
                 </include>
             </when>
             <when test="condition.name == 'departmentId'">
