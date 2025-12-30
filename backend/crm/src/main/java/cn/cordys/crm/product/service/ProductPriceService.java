@@ -91,16 +91,17 @@ public class ProductPriceService {
     private BaseMapper<OpportunityQuotationField> opportunityFieldMapper;
     @Resource
     private BaseMapper<OpportunityQuotationFieldBlob> opportunityQuotationFieldBlobBaseMapper;
-	@Resource
-	private AttachmentService attachmentService;
+    @Resource
+    private AttachmentService attachmentService;
 
-	public static final int MAX_NAME_SPLIT_LENGTH = 243;
+    public static final int MAX_NAME_SPLIT_LENGTH = 243;
 
     /**
      * 价格列表
      *
      * @param request    请求参数
      * @param currentOrg 当前组织
+     *
      * @return 价格列表
      */
     public PagerWithOption<List<ProductPriceResponse>> list(ProductPricePageRequest request, String currentOrg) {
@@ -120,6 +121,7 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
+     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
@@ -148,6 +150,7 @@ public class ProductPriceService {
      * @param request     请求参数
      * @param currentUser 当前用户
      * @param currentOrg  当前组织
+     *
      * @return 价格表
      */
     @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.UPDATE, operator = "{#currentUser}")
@@ -174,6 +177,7 @@ public class ProductPriceService {
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
      * @param id 价格表ID
+     *
      * @return 价格表详情
      */
     public ProductPriceGetResponse get(String id) {
@@ -232,41 +236,43 @@ public class ProductPriceService {
         OperationLogContext.setResourceName(price.getName());
     }
 
-	/**
-	 * 复制价格表
-	 * @param id 价格表ID
-	 * @param currentUser 当前用户
-	 * @param currentOrg 当前组织
-	 * @return 复制后价格表
-	 */
-	@OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, operator = "{#currentUser}")
-	public ProductPrice copy(String id, String currentUser, String currentOrg) {
-		// 1. 查询价格表，不存在则抛错
-		ProductPrice price = Optional.ofNullable(productPriceMapper.selectByPrimaryKey(id))
-				.orElseThrow(() -> new GenericException(Translator.get("product.price.not.exist")));
-		// 2. 复制价格表基础信息
-		price.setId(IDGenerator.nextStr());
-		price.setPos(getNextOrder(currentOrg));
-		if (price.getName() != null && price.getName().length() > MAX_NAME_SPLIT_LENGTH) {
-			price.setName(price.getName().substring(0, 243));
-		}
-		price.setName(price.getName() + "_copy_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
-		price.setCreateUser(currentUser);
-		price.setCreateTime(System.currentTimeMillis());
-		price.setUpdateUser(currentUser);
-		price.setUpdateTime(System.currentTimeMillis());
-		price.setOrganizationId(currentOrg);
-		productPriceMapper.insert(price);
-		// 3. 复制价格表自定义字段信息
-		copyPriceFields(id, price.getId(), currentOrg, currentUser);
-		// 4. 处理日志上下文
-		ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
-		List<BaseModuleFieldValue> fvs = productPriceFieldService.getModuleFieldValuesByResourceId(price.getId());
-		baseService.handleAddLogWithSubTable(price, fvs, Translator.get("products_info"), priceFormConfig);
-		OperationLogContext.getContext().setResourceId(price.getId());
-		OperationLogContext.getContext().setResourceName(price.getName());
-		return price;
-	}
+    /**
+     * 复制价格表
+     *
+     * @param id          价格表ID
+     * @param currentUser 当前用户
+     * @param currentOrg  当前组织
+     *
+     * @return 复制后价格表
+     */
+    @OperationLog(module = LogModule.PRODUCT_PRICE_MANAGEMENT, type = LogType.ADD, operator = "{#currentUser}")
+    public ProductPrice copy(String id, String currentUser, String currentOrg) {
+        // 1. 查询价格表，不存在则抛错
+        ProductPrice price = Optional.ofNullable(productPriceMapper.selectByPrimaryKey(id))
+                .orElseThrow(() -> new GenericException(Translator.get("product.price.not.exist")));
+        // 2. 复制价格表基础信息
+        price.setId(IDGenerator.nextStr());
+        price.setPos(getNextOrder(currentOrg));
+        if (price.getName() != null && price.getName().length() > MAX_NAME_SPLIT_LENGTH) {
+            price.setName(price.getName().substring(0, 243));
+        }
+        price.setName(price.getName() + "_copy_" + RandomStringUtils.random(6, 0, 0, true, true, null, new Random()));
+        price.setCreateUser(currentUser);
+        price.setCreateTime(System.currentTimeMillis());
+        price.setUpdateUser(currentUser);
+        price.setUpdateTime(System.currentTimeMillis());
+        price.setOrganizationId(currentOrg);
+        productPriceMapper.insert(price);
+        // 3. 复制价格表自定义字段信息
+        copyPriceFields(id, price.getId(), currentOrg, currentUser);
+        // 4. 处理日志上下文
+        ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
+        List<BaseModuleFieldValue> fvs = productPriceFieldService.getModuleFieldValuesByResourceId(price.getId());
+        baseService.handleAddLogWithSubTable(price, fvs, Translator.get("products_info"), priceFormConfig);
+        OperationLogContext.getContext().setResourceId(price.getId());
+        OperationLogContext.getContext().setResourceName(price.getName());
+        return price;
+    }
 
     /**
      * 批量更新价格表
@@ -302,6 +308,7 @@ public class ProductPriceService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -316,21 +323,55 @@ public class ProductPriceService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.PRICE.getKey(), currentOrg);
-            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
-            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
-                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product_price", "product_price_field", currentOrg,
-                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-            return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(
+                    FormKey.PRICE.getKey(),
+                    currentOrg
+            );
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener =
+                    new CustomFieldCheckEventListener(
+                            fields,
+                            "product_price",
+                            "product_price_field",
+                            currentOrg,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap()
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
         } catch (Exception e) {
-            LogUtils.error("price import pre-check error: {}", e.getMessage());
+            LogUtils.error("price import pre-check error: {}", e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }
@@ -341,22 +382,55 @@ public class ProductPriceService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
-            List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRICE.getKey(), currentOrg);
-            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
-            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener).extraRead(CellExtraTypeEnum.MERGE)
-                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-            CustomFieldImportEventListener<ProductPrice> eventListener = getPriceEventListener(currentOrg, currentUser, fields,
-                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap());
-            FastExcelFactory.read(file.getInputStream(), eventListener).extraRead(CellExtraTypeEnum.MERGE)
-                    .headRowNumber(moduleFormService.supportSubHead(fields) ? 2 : 1).ignoreEmptyRow(true).sheet().doRead();
-            return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+            List<BaseField> fields = moduleFormService.getAllFields(
+                    FormKey.PRICE.getKey(),
+                    currentOrg
+            );
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 实际导入
+            CustomFieldImportEventListener<ProductPrice> eventListener =
+                    getPriceEventListener(
+                            currentOrg,
+                            currentUser,
+                            fields,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap()
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
         } catch (Exception e) {
-            LogUtils.error("价格表导入失败, 原因: {}", e.getMessage());
+            LogUtils.error("价格表导入失败, 原因: {}", e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }
@@ -367,30 +441,71 @@ public class ProductPriceService {
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
      * @param fields      自定义字段集合
+     *
      * @return 导入监听器
      */
-    private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(String currentOrg, String currentUser, List<BaseField> fields,
-                                                                               Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+    private CustomFieldImportEventListener<ProductPrice> getPriceEventListener(
+            String currentOrg,
+            String currentUser,
+            List<BaseField> fields,
+            Map<Integer, List<CellExtra>> mergeCellMap,
+            Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+
         AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
-        CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo = (prices, priceFields, priceFieldBlobs) -> {
-            List<LogDTO> logs = new ArrayList<>();
-            prices.forEach(price -> {
-                price.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
-                logs.add(new LogDTO(currentOrg, price.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_PRICE_MANAGEMENT, price.getName()));
-            });
-            productPriceMapper.batchInsert(prices);
-            productPriceFieldMapper.batchInsert(priceFields.stream().map(field -> BeanUtils.copyBean(new ProductPriceField(), field)).toList());
-            productPriceFieldBlobMapper.batchInsert(priceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductPriceFieldBlob(), field)).toList());
-            // record logs
-            logService.batchAdd(logs);
-        };
-        return new CustomFieldImportEventListener<>(fields, ProductPrice.class, currentOrg, currentUser, "product_price_field", afterDo, 2000, mergeCellMap, mergeRowDataMap);
+
+        CustomImportAfterDoConsumer<ProductPrice, BaseResourceSubField> afterDo =
+                (prices, priceFields, priceFieldBlobs) -> {
+
+                    List<LogDTO> logs = new ArrayList<>();
+
+                    prices.forEach(price -> {
+                        price.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
+                        logs.add(new LogDTO(
+                                currentOrg,
+                                price.getId(),
+                                currentUser,
+                                LogType.ADD,
+                                LogModule.PRODUCT_PRICE_MANAGEMENT,
+                                price.getName()
+                        ));
+                    });
+
+                    productPriceMapper.batchInsert(prices);
+
+                    productPriceFieldMapper.batchInsert(
+                            priceFields.stream()
+                                    .map(field -> BeanUtils.copyBean(new ProductPriceField(), field))
+                                    .toList()
+                    );
+
+                    productPriceFieldBlobMapper.batchInsert(
+                            priceFieldBlobs.stream()
+                                    .map(field -> BeanUtils.copyBean(new ProductPriceFieldBlob(), field))
+                                    .toList()
+                    );
+
+                    // record logs
+                    logService.batchAdd(logs);
+                };
+
+        return new CustomFieldImportEventListener<>(
+                fields,
+                ProductPrice.class,
+                currentOrg,
+                currentUser,
+                "product_price_field",
+                afterDo,
+                2000,
+                mergeCellMap,
+                mergeRowDataMap
+        );
     }
 
     /**
      * 构建列表数据
      *
      * @param listData 列表数据
+     *
      * @return 列表数据
      */
     public List<ProductPriceResponse> buildList(List<ProductPriceResponse> listData) {
@@ -406,6 +521,7 @@ public class ProductPriceService {
      * 处理列表数据
      *
      * @param listData 列表数据
+     *
      * @return 列表数据
      */
     public List<ProductPriceResponse> processList(List<ProductPriceResponse> listData, ModuleFormConfigDTO priceFormConf) {
@@ -458,6 +574,7 @@ public class ProductPriceService {
      * 获取下一个排序值
      *
      * @param orgId 组织ID
+     *
      * @return 下一个排序值
      */
     public Long getNextOrder(String orgId) {
@@ -469,6 +586,7 @@ public class ProductPriceService {
      * 获取价格表名称
      *
      * @param id id
+     *
      * @return 名称
      */
     public String getProductPriceName(String id) {
@@ -480,6 +598,7 @@ public class ProductPriceService {
      * 通过ID集合获取价格表名称串
      *
      * @param ids ID集合
+     *
      * @return 名称字符串
      */
     public String getProductPriceNameByIds(List<String> ids) {
@@ -495,6 +614,7 @@ public class ProductPriceService {
      * 通过名称获取价格表集合
      *
      * @param names 名称集合
+     *
      * @return 价格表集合
      */
     public List<ProductPrice> getProductPriceListByNames(List<String> names) {
@@ -503,44 +623,66 @@ public class ProductPriceService {
         return productPriceMapper.selectListByLambda(lambdaQueryWrapper);
     }
 
-	/**
-	 * 复制价格表自定义字段信息
-	 * @param sourceId 源价格表ID
-	 * @param targetId 目标价格表ID
-	 */
-	private void copyPriceFields(String sourceId, String targetId, String currentOrg, String currentUser) {
-		LambdaQueryWrapper<ProductPriceField> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
-		fieldLambdaQueryWrapper.eq(ProductPriceField::getResourceId, sourceId);
-		List<ProductPriceField> productPriceFields = productPriceFieldMapper.selectListByLambda(fieldLambdaQueryWrapper);
-		LambdaQueryWrapper<ProductPriceFieldBlob> blobLambdaQueryWrapper = new LambdaQueryWrapper<>();
-		blobLambdaQueryWrapper.eq(ProductPriceFieldBlob::getResourceId, sourceId);
-		List<ProductPriceFieldBlob> productPriceFieldBlobs = productPriceFieldBlobMapper.selectListByLambda(blobLambdaQueryWrapper);
-		if (CollectionUtils.isNotEmpty(productPriceFields)) {
-			List<ProductPriceField> fields = productPriceFields.stream().peek(f -> {
-				f.setId(IDGenerator.nextStr());
-				f.setResourceId(targetId);
-			}).toList();
-			productPriceFieldMapper.batchInsert(fields);
-		}
-		Map<String, String> attachmentIdMap = new HashMap<>(8);
-		List<String> attachmentFieldIds = moduleFormService.getFieldIdsOfForm(FormKey.PRICE.getKey(), currentOrg);
-		if (CollectionUtils.isNotEmpty(productPriceFieldBlobs)) {
-			List<ProductPriceFieldBlob> blobs = productPriceFieldBlobs.stream().peek(b -> {
-				b.setId(IDGenerator.nextStr());
-				b.setResourceId(targetId);
-				if (attachmentFieldIds.contains(b.getFieldId()) && b.getFieldValue() != null) {
-					List<String> attachmentIds = JSON.parseArray(b.getFieldValue().toString(), String.class);
-					List<String> copyAttachmentIds = new ArrayList<>();
-					attachmentIds.forEach(attachmentId -> {
-						attachmentIdMap.putIfAbsent(attachmentId, IDGenerator.nextStr());
-						copyAttachmentIds.add(attachmentIdMap.get(attachmentId));
-					});
-					b.setFieldValue(JSON.toJSONString(copyAttachmentIds));
-				}
-			}).toList();
-			productPriceFieldBlobMapper.batchInsert(blobs);
-		}
-		// 复制附件信息
-		attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser);
-	}
+    /**
+     * 复制价格表自定义字段信息
+     *
+     * @param sourceId 源价格表ID
+     * @param targetId 目标价格表ID
+     */
+    private void copyPriceFields(String sourceId, String targetId, String currentOrg, String currentUser) {
+
+        // 1 普通字段
+        LambdaQueryWrapper<ProductPriceField> fieldQuery = new LambdaQueryWrapper<>();
+        fieldQuery.eq(ProductPriceField::getResourceId, sourceId);
+        List<ProductPriceField> sourceFields = productPriceFieldMapper.selectListByLambda(fieldQuery);
+
+        if (CollectionUtils.isNotEmpty(sourceFields)) {
+            List<ProductPriceField> targetFields = sourceFields.stream()
+                    .peek(field -> {
+                        field.setId(IDGenerator.nextStr());
+                        field.setResourceId(targetId);
+                    })
+                    .toList();
+
+            productPriceFieldMapper.batchInsert(targetFields);
+        }
+
+        // 2 Blob 字段（含附件）
+        LambdaQueryWrapper<ProductPriceFieldBlob> blobQuery = new LambdaQueryWrapper<>();
+        blobQuery.eq(ProductPriceFieldBlob::getResourceId, sourceId);
+        List<ProductPriceFieldBlob> sourceBlobs = productPriceFieldBlobMapper.selectListByLambda(blobQuery);
+
+        Map<String, String> attachmentIdMap = new HashMap<>(8);
+        List<String> attachmentFieldIds = moduleFormService.getFieldIdsOfForm(FormKey.PRICE.getKey(), currentOrg);
+
+        if (CollectionUtils.isNotEmpty(sourceBlobs)) {
+            List<ProductPriceFieldBlob> targetBlobs = sourceBlobs.stream()
+                    .peek(blob -> {
+                        blob.setId(IDGenerator.nextStr());
+                        blob.setResourceId(targetId);
+
+                        if (attachmentFieldIds.contains(blob.getFieldId()) && blob.getFieldValue() != null) {
+
+                            List<String> attachmentIds = JSON.parseArray(
+                                    blob.getFieldValue().toString(),
+                                    String.class
+                            );
+
+                            List<String> copyAttachmentIds = new ArrayList<>();
+                            attachmentIds.forEach(id -> {
+                                attachmentIdMap.putIfAbsent(id, IDGenerator.nextStr());
+                                copyAttachmentIds.add(attachmentIdMap.get(id));
+                            });
+
+                            blob.setFieldValue(JSON.toJSONString(copyAttachmentIds));
+                        }
+                    })
+                    .toList();
+
+            productPriceFieldBlobMapper.batchInsert(targetBlobs);
+        }
+
+        // 3 复制附件实体
+        attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser);
+    }
 }
