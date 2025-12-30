@@ -121,6 +121,7 @@ public class OpportunityQuotationService {
         opportunityQuotation.setName(request.getName());
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
         opportunityQuotation.setOpportunityId(request.getOpportunityId());
+        opportunityQuotation.setUntilTime(request.getUntilTime());
         opportunityQuotation.setCreateUser(userId);
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());

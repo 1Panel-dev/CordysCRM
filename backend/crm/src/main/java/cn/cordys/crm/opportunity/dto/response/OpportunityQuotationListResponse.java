@@ -39,6 +39,9 @@ public class OpportunityQuotationListResponse {
     @Schema(description = "审核状态")
     private String approvalStatus;
 
+    @Schema(description = "有效期至")
+    private Long untilTime;
+
     @Schema(description = "创建人")
     private String createUser;
 

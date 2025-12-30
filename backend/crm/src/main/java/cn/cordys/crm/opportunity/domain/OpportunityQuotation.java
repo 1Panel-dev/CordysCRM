@@ -19,6 +19,9 @@ public class OpportunityQuotation extends BaseModel {
     @Schema(description = "商机id")
     private String opportunityId;
 
+    @Schema(description = "有效期至")
+    private Long untilTime;
+
     @Schema(description = "累计金额")
     private BigDecimal amount;
 
