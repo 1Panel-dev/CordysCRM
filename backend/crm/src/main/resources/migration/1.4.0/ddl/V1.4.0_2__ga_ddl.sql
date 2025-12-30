@@ -3,16 +3,16 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE opportunity_quotation
 (
-    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`            VARCHAR(255) NOT NULL COMMENT '名称',
-    `opportunity_id`  VARCHAR(32)  NOT NULL COMMENT '商机id',
+    `id`              VARCHAR(32)    NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255)   NOT NULL COMMENT '名称',
+    `opportunity_id`  VARCHAR(32)    NOT NULL COMMENT '商机id',
     `amount`          DECIMAL(14, 2) NOT NULL COMMENT '累计金额',
-    `approval_status` VARCHAR(50)  NOT NULL COMMENT '审核状态',
-    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
-    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `approval_status` VARCHAR(50)    NOT NULL COMMENT '审核状态',
+    `organization_id` VARCHAR(32)    NOT NULL COMMENT '组织ID',
+    `create_time`     BIGINT         NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT         NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)    NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)    NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '商机报价单'
 ENGINE = InnoDB
@@ -95,7 +95,7 @@ CREATE TABLE contract
     `owner`           VARCHAR(32)  NOT NULL COMMENT '合同负责人',
     `amount`          DECIMAL(20, 10) COMMENT '金额',
     `number`          VARCHAR(50)  NOT NULL COMMENT '编号',
-    `approval_status`   VARCHAR(50) COMMENT '审核状态',
+    `approval_status` VARCHAR(50) COMMENT '审核状态',
     `archived_status` VARCHAR(50)  NOT NULL COMMENT '归档状态',
     `status`          VARCHAR(50)  NOT NULL COMMENT '合同状态',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
@@ -279,8 +279,8 @@ CREATE INDEX idx_resource_id ON product_price_field_blob (resource_id ASC);
 CREATE INDEX idx_ref_sub_id ON product_price_field_blob (ref_sub_id ASC);
 
 -- modify record, plan content field length (3000)
-ALTER TABLE follow_up_record MODIFY COLUMN content VARCHAR(3000) NOT NULL COMMENT '跟进内容';
-ALTER TABLE follow_up_plan MODIFY COLUMN content VARCHAR(3000) NOT NULL COMMENT '跟进内容';
+ALTER TABLE follow_up_record MODIFY COLUMN content VARCHAR (3000) NOT NULL COMMENT '跟进内容';
+ALTER TABLE follow_up_plan MODIFY COLUMN content VARCHAR (3000) NOT NULL COMMENT '跟进内容';
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
