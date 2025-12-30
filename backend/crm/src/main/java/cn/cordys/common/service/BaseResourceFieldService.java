@@ -65,6 +65,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private FieldSourceServiceProvider fieldSourceServiceProvider;
 
 	private static final String SOURCE_DETAIL_ID = "id";
+	private static final String ROW_BIZ_ID = "id";
 	private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -258,6 +259,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         });
         int rowId = 1;
         for (Map<String, Object> subValue : subValues) {
+			String bizId = IDGenerator.nextStr();
             for (Map.Entry<String, Object> kv : subValue.entrySet()) {
                 BaseField field = subFieldMap.get(kv.getKey());
                 if (field == null) {
@@ -273,11 +275,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     V v = supplyNewResource(this::newResourceFieldBlob, resourceId, kv.getKey(), strValue);
                     setResourceFieldValue(v, "rowId", String.valueOf(rowId));
                     setResourceFieldValue(v, "refSubId", subField.getId());
+					setResourceFieldValue(v, "bizId", bizId);
                     fieldBlobs.add(v);
                 } else {
                     T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), strValue);
                     setResourceFieldValue(t, "rowId", String.valueOf(rowId));
                     setResourceFieldValue(t, "refSubId", subField.getId());
+					setResourceFieldValue(t, "bizId", bizId);
                     fields.add(t);
                 }
             }
@@ -840,7 +844,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 						subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
 						int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
 						if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
-							subFieldValueMap.get(subResource.getRefSubId()).add(new HashMap<>(8));
+							Map<String, Object> initRowMap = new HashMap<>(8) {{put(ROW_BIZ_ID, subResource.getBizId());}};
+							subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
 						}
 						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
 						rowMap.put(subResource.getFieldId(), objectValue);

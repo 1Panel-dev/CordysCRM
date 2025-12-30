@@ -84,8 +84,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected int maxHeadRow;
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
 
-    protected String specialSubRepeatColumnName = "";
-
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null);
     }
@@ -100,9 +98,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 for (BaseField f : subField.getSubFields()) {
                     if (isInvalidField(f)) {
                         continue;
-                    }
-                    if (Strings.CS.equals(f.getBusinessKey(), BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
-                        specialSubRepeatColumnName = f.getName();
                     }
                     this.fieldMap.put(f.getName(), f);
                     refSubMap.put(f.getName(), subField.getId());
@@ -185,9 +180,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
         StringBuilder errText = new StringBuilder();
-        if (StringUtils.isNotEmpty(specialSubRepeatColumnName)) {
-            checkMergedDuplicateOnRow(rowIndex, specialSubRepeatColumnName);
-        }
         headMap.forEach((k, v) -> {
             if (!isValidateCell(rowIndex, k)) {
                 return;
@@ -239,73 +231,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         // 不属于合并单元格，直接校验
         return true;
     }
-
-    /**
-     * 校验合并行内特殊列是否重复
-     *
-     * @param rowIndex     行序号
-     * @param checkColName 校验的列名
-     */
-    private void checkMergedDuplicateOnRow(int rowIndex, String checkColName) {
-        if (mergeCellMap == null || mergeCellMap.isEmpty()) {
-            return;
-        }
-
-        Integer targetColIndex = null;
-        for (Map.Entry<Integer, String> e : headMap.entrySet()) {
-            if (e.getValue() != null && checkColName.trim().equals(e.getValue().trim())) {
-                targetColIndex = e.getKey();
-                break;
-            }
-        }
-        if (targetColIndex == null) {
-            return;
-        }
-
-        List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-        if (CollectionUtils.isEmpty(cellExtras)) {
-            return;
-        }
-
-        for (CellExtra extra : cellExtras) {
-            if (rowIndex != extra.getFirstRowIndex()) {
-                continue;
-            }
-
-            int first = extra.getFirstRowIndex();
-            int last = extra.getLastRowIndex();
-
-            Map<String, List<Integer>> valToRows = new HashMap<>(8);
-            for (int r = first; r <= last; r++) {
-                Map<Integer, String> rowData = mergeRowDataMap.get(r);
-                if (rowData == null) {
-                    continue;
-                }
-                String val = rowData.get(targetColIndex);
-                if (StringUtils.isEmpty(val)) {
-                    continue;
-                }
-                valToRows.computeIfAbsent(val, k -> new ArrayList<>()).add(r);
-            }
-
-            for (Map.Entry<String, List<Integer>> en : valToRows.entrySet()) {
-                List<Integer> dupRows = en.getValue();
-                if (dupRows.size() <= 1) {
-                    continue;
-                }
-                String dupVal = en.getKey();
-                for (Integer dupRow : dupRows) {
-                    if (!errRows.contains(dupRow)) {
-                        String detailMsg = Translator.getWithArgs("row.error.tip", dupRow + 1)
-                                + " " + checkColName + Translator.get("cell.not.unique") + " [" + dupVal + "]";
-                        errList.add(new ExcelErrData(dupRow, detailMsg));
-                        errRows.add(dupRow);
-                    }
-                }
-            }
-        }
-    }
-
 
     /**
      * 检查字段值唯一
