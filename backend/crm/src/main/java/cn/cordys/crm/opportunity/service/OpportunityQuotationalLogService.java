@@ -21,7 +21,7 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
 
         for (JsonDifferenceDTO differ : differences) {
 
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.QUOTATION_PRODUCT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(), "product")) {
                 setProductName(differ);
                 continue;
             }
