@@ -20,6 +20,9 @@ public interface ExtUserMapper {
 
     List<String> selectUserNameByIds(@Param("userIds") List<String> userIds);
 
+    List<String> selectUserIdsByRoleIds(@Param("roleIds") List<String> roleIds);
+
+
     List<String> selectUserIdsByNames(@Param("names") List<String> names);
 
     List<User> getOrgUserByUserIds(@Param("organizationId") String organizationId, @Param("userIds") List<String> userIds);

@@ -11,7 +11,6 @@ import cn.cordys.crm.system.dto.request.NotificationRequest;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
-import cn.cordys.crm.system.notice.sse.SseService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -40,8 +39,6 @@ public class NotificationService {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private SendModuleService sendModuleService;
-    @Resource
-    private SseService sseService;
     @Resource
     private MessagePublisher messagePublisher;
 

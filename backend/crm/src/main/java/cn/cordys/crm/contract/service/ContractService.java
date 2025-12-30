@@ -33,12 +33,16 @@ import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -93,6 +97,11 @@ public class ContractService {
     private SerialNumGenerator serialNumGenerator;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
+
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
@@ -502,6 +511,44 @@ public class ContractService {
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
+
+        if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
+            String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
+                    NotificationConstants.Event.CONTRACT_VOID : NotificationConstants.Event.CONTRACT_ARCHIVED;
+            Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
+            sendNotice(contract, userId, orgId, event, customer.getName());
+        }
+
+    }
+
+    /**
+     * 发送通知
+     *
+     * @param contract 合同实体
+     * @param userId   用户ID
+     * @param orgId    组织ID
+     * @param event    事件类型
+     */
+    private void sendNotice(Contract contract, String userId, String orgId, String event, String customerName) {
+        //查询通知配置的接收范围
+        List<String> receiveUserIds = new ArrayList<>();
+        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+                .eq(MessageTaskConfig::getOrganizationId, orgId)
+                .eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
+                .eq(MessageTaskConfig::getEvent, event));
+        if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
+            MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
+            MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigDTO.class);
+            receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(messageTaskConfigDTO, contract.getCreateUser(), contract.getOwner(), orgId);
+        } else {
+            //默认通知创建人
+            receiveUserIds.add(contract.getOwner());
+        }
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("customerName", customerName);
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT, event,
+                paramMap, userId, orgId, receiveUserIds, true);
     }
 
     private void updateStatusSnapshot(String id, String stage, String approvalStatus) {

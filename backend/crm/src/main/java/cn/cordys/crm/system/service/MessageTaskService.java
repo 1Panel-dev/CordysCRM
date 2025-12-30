@@ -8,6 +8,8 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.domain.MessageTaskConfig;
+import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.log.MessageTaskLogDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
@@ -16,6 +18,7 @@ import cn.cordys.crm.system.dto.response.MessageTaskDetailDTO;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,10 @@ public class MessageTaskService {
 
     @Resource
     private BaseMapper<MessageTask> messageTaskMapper;
+
+    @Resource
+    private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
+
 
     @Resource
     private LogService logService;
@@ -82,7 +89,7 @@ public class MessageTaskService {
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
         MessageTask messageByModuleAndEvent = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
         if (messageByModuleAndEvent != null) {
-            return updateMessageTasks(messageTaskRequest, userId, messageByModuleAndEvent, eventMap);
+            return updateMessageTasks(messageTaskRequest, userId, messageByModuleAndEvent, eventMap, organizationId);
         } else {
             //不存在则新增
             messageTask.setId(IDGenerator.nextStr());
@@ -101,6 +108,16 @@ public class MessageTaskService {
             String template = MessageTemplateUtils.getTemplate(messageTaskRequest.getEvent());
             messageTask.setTemplate(template.getBytes(StandardCharsets.UTF_8));
             messageTaskMapper.insert(messageTask);
+            //新增config
+            if (messageTaskRequest.getConfig() != null) {
+                MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
+                messageTaskConfig.setId(IDGenerator.nextStr());
+                messageTaskConfig.setOrganizationId(organizationId);
+                messageTaskConfig.setTaskType(messageTaskRequest.getModule());
+                messageTaskConfig.setEvent(messageTaskRequest.getEvent());
+                messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
+                messageTaskConfigMapper.insert(messageTaskConfig);
+            }
             // 添加日志上下文
             MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), messageTaskRequest.isDingTalkEnable(), messageTaskRequest.isLarkEnable(), eventMap);
             LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
@@ -118,7 +135,7 @@ public class MessageTaskService {
      * @param messageTaskRequest 入参
      * @param userId             当前用户ID
      */
-    public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask, Map<String, String> eventMap) {
+    public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask, Map<String, String> eventMap, String organizationId) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());
         messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
@@ -129,6 +146,18 @@ public class MessageTaskService {
         messageTask.setUpdateUser(userId);
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTaskMapper.update(messageTask);
+        // 更新config
+        if (messageTaskRequest.getConfig() != null) {
+            List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+                    .eq(MessageTaskConfig::getOrganizationId, organizationId)
+                    .eq(MessageTaskConfig::getTaskType, messageTaskRequest.getModule())
+                    .eq(MessageTaskConfig::getEvent, messageTaskRequest.getEvent()));
+            if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
+                MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
+                messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
+                messageTaskConfigMapper.update(messageTaskConfig);
+            }
+        }
         // 添加日志上下文
         MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), oldMessageTask.getWeComEnable(), oldMessageTask.getDingTalkEnable(), oldMessageTask.getLarkEnable(), eventMap);
         MessageTaskLogDTO newDTO = buildLogDTO(oldMessageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), messageTaskRequest.isDingTalkEnable(), messageTaskRequest.isLarkEnable(), eventMap);
@@ -144,7 +173,6 @@ public class MessageTaskService {
      * 根据项目id 获取当前项目的消息设置
      *
      * @param organizationId 组织ID
-     *
      * @return List<MessageTaskDTO>
      */
     public List<MessageTaskDTO> getMessageList(String organizationId) {
@@ -206,5 +234,25 @@ public class MessageTaskService {
             logDTOList.add(logDTO);
         }
         logService.batchAdd(logDTOList);
+    }
+
+    /**
+     * 获取消息配置的config
+     *
+     * @param module         模块
+     * @param event          事件
+     * @param organizationId 组织ID
+     * @return MessageTaskConfigDTO
+     */
+    public MessageTaskConfigDTO getMessageConfig(String module, String event, String organizationId) {
+        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+                .eq(MessageTaskConfig::getOrganizationId, organizationId)
+                .eq(MessageTaskConfig::getTaskType, module)
+                .eq(MessageTaskConfig::getEvent, event));
+        if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
+            MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
+            return JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigDTO.class);
+        }
+        return null;
     }
 }

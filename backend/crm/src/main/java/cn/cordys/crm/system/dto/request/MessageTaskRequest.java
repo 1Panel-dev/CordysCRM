@@ -3,6 +3,7 @@ package cn.cordys.crm.system.dto.request;
 
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
+import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -36,4 +37,6 @@ public class MessageTaskRequest {
     @Schema(description = "飞书启用")
     private boolean larkEnable;
 
+    @Schema(description = "消息配置")
+    private MessageTaskConfigDTO config;
 }

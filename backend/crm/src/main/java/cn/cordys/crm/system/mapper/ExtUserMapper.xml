@@ -3,16 +3,15 @@
 <mapper namespace="cn.cordys.crm.system.mapper.ExtUserMapper">
 
     <select id="selectByPhoneOrEmail" resultType="cn.cordys.security.UserDTO">
-        SELECT
-            sys_user.*,
-            sys_user_extend.avatar,
-            sys_user_extend.platform_info
-        FROM
-            sys_user
-        LEFT JOIN sys_user_extend
-            ON sys_user.id = sys_user_extend.id
-        WHERE
-            sys_user.id = #{id} OR sys_user.phone = #{id} OR sys_user.email = #{id}
+        SELECT sys_user.*,
+               sys_user_extend.avatar,
+               sys_user_extend.platform_info
+        FROM sys_user
+                 LEFT JOIN sys_user_extend
+                           ON sys_user.id = sys_user_extend.id
+        WHERE sys_user.id = #{id}
+           OR sys_user.phone = #{id}
+           OR sys_user.email = #{id}
     </select>
 
     <select id="selectUserOptionByIds" resultType="cn.cordys.common.dto.OptionDTO">
@@ -38,29 +37,26 @@
     </select>
 
     <select id="getUserDetail" resultType="cn.cordys.crm.system.dto.response.UserResponse">
-        SELECT
-            sou.id,
-            sou.user_id,
-            sou.organization_id,
-            sou.department_id,
-            su.NAME userName,
-            sou.`enable`,
-            su.gender,
-            su.phone,
-            su.email,
-            sou.supervisor_id,
-            sou.employee_id,
-            sou.position,
-            sou.employee_type,
-            sou.work_city,
-            sou.onboarding_date,
-            sd.`name` departmentName
-        FROM
-            sys_user su
-                INNER JOIN sys_organization_user sou ON su.id = sou.user_id
-                INNER JOIN sys_department sd on sd.id = sou.department_id
-        WHERE
-            sou.id = #{id}
+        SELECT sou.id,
+               sou.user_id,
+               sou.organization_id,
+               sou.department_id,
+               su.NAME   userName,
+               sou.`enable`,
+               su.gender,
+               su.phone,
+               su.email,
+               sou.supervisor_id,
+               sou.employee_id,
+               sou.position,
+               sou.employee_type,
+               sou.work_city,
+               sou.onboarding_date,
+               sd.`name` departmentName
+        FROM sys_user su
+                 INNER JOIN sys_organization_user sou ON su.id = sou.user_id
+                 INNER JOIN sys_department sd on sd.id = sou.department_id
+        WHERE sou.id = #{id}
     </select>
 
     <select id="getUserDetailList" resultType="cn.cordys.crm.system.dto.response.UserResponse">
@@ -91,11 +87,11 @@
         </foreach>
     </select>
 
-    
+
     <select id="getOrgUserByUserIds" resultType="cn.cordys.crm.system.domain.User">
         SELECT sys_user.id, sys_user.name, sys_user.email, sys_user.phone
         FROM sys_user LEFT JOIN sys_organization_user on sys_organization_user.user_id = sys_user.id
-        WHERE  sys_organization_user.organization_id = #{organizationId}
+        WHERE sys_organization_user.organization_id = #{organizationId}
         AND sys_user.id IN
         <foreach collection="userIds" item="id" index="index"
                  open="(" close=")" separator=",">
@@ -130,9 +126,11 @@
 
 
     <select id="getAllUserIds" resultType="cn.cordys.crm.system.domain.User">
-        select sys_user.id from sys_user
-        LEFT JOIN sys_organization_user ON sys_user.id = sys_organization_user.user_id
-        WHERE sys_organization_user.organization_id = #{orgId} and sys_user.id != 'admin'
+        select sys_user.id
+        from sys_user
+                 LEFT JOIN sys_organization_user ON sys_user.id = sys_organization_user.user_id
+        WHERE sys_organization_user.organization_id = #{orgId}
+          and sys_user.id != 'admin'
     </select>
 
 
@@ -173,25 +171,25 @@
         FROM sys_user su
         INNER JOIN sys_organization_user sou on su.id = sou.user_id
         LEFT JOIN
-            ( SELECT user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
+        ( SELECT user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
         WHERE sou.organization_id = #{orgId}
         ORDER BY sou.enable DESC,
-            <if test="defaultOrder != null and defaultOrder != ''">
-                ${defaultOrder},
-            </if>
-            is_commander DESC, sou.create_time DESC, su.name DESC
+        <if test="defaultOrder != null and defaultOrder != ''">
+            ${defaultOrder},
+        </if>
+        is_commander DESC, sou.create_time DESC, su.name DESC
     </select>
 
     <select id="getUserDeptByUserIds" resultType="cn.cordys.common.dto.UserDeptDTO">
         select sou.user_id, sd.id as deptId, sd.`name` as deptName
         from sys_organization_user sou
         join sys_department sd
-            on sou.department_id = sd.id
-            and sou.organization_id = #{orgId}
-            and sou.user_id in
-            <foreach collection="userIds" item="userId" open="(" separator="," close=")">
-                #{userId}
-            </foreach>
+        on sou.department_id = sd.id
+        and sou.organization_id = #{orgId}
+        and sou.user_id in
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
     </select>
     <select id="selectUserNameByIds" resultType="java.lang.String">
         SELECT name
@@ -216,18 +214,28 @@
     <select id="getOrgUserResourceIds" resultType="java.lang.String">
         SELECT distinct sou.resource_user_id
         FROM sys_organization_user sou
-        WHERE  sou.organization_id = #{orgId}
+        WHERE sou.organization_id = #{orgId}
         AND sou.user_id IN
         <foreach collection="userIds" item="id" index="index"
                  open="(" close=")" separator=",">
-        #{id}
+            #{id}
         </foreach>
     </select>
     <select id="selectNameAndEmail" resultType="cn.cordys.security.UserDTO">
         SELECT su.id, su.name, su.email, sou.enable, sou.department_id
         FROM sys_user su
-        JOIN sys_organization_user sou ON su.id = sou.user_id
-        WHERE sou.organization_id = #{orgId} and su.id != 'admin'
+                 JOIN sys_organization_user sou ON su.id = sou.user_id
+        WHERE sou.organization_id = #{orgId}
+          and su.id != 'admin'
+    </select>
+    <select id="selectUserIdsByRoleIds" resultType="java.lang.String">
+        SELECT distinct sur.user_id
+        FROM sys_user_role sur
+        WHERE sur.role_id IN
+        <foreach collection="roleIds" item="roleId" index="index"
+                 open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
     </select>
 
     <update id="updateUser" parameterType="cn.cordys.crm.system.domain.User">
@@ -272,6 +280,8 @@
 
 
     <update id="updateUserInfo" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
-        update sys_user set email = #{user.id} where id = #{user.userId}
+        update sys_user
+        set email = #{user.id}
+        where id = #{user.userId}
     </update>
 </mapper>
