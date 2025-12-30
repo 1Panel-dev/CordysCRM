@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author song-cc-rock
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,4 +18,7 @@ public class BaseResourceSubField extends BaseResourceField{
 
 	@Schema(description = "行ID")
 	private String rowId;
+
+	@Schema(description = "行唯一标识")
+	private String bizId;
 }
