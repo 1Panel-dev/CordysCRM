@@ -27,6 +27,7 @@ export enum TableKeyEnum {
   FOLLOW_RECORD = 'followRecord',
   CONTRACT = 'contract',
   CONTRACT_PAYMENT = 'contractPayment',
+  CONTRACT_PAYMENT_RECORD = 'contractPaymentRecord',
   PRICE = 'price',
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索

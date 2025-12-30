@@ -96,6 +96,7 @@
           :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
           :source-id="props.sourceId"
         />
+        <!-- TODO lmy 客户的回款记录tab -->
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -260,6 +261,7 @@
         enable: true,
         permission: ['CONTRACT_PAYMENT_PLAN:READ'],
       },
+      // TODO lmy 客户的回款记录tab
     ];
     if (collaborationType.value) {
       return fullList.filter((item) => item.name !== 'collaborator');

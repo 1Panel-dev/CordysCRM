@@ -273,6 +273,12 @@ export const {
   enablePaymentPlanView,
   deletePaymentPlanView,
   dragPaymentPlanView,
+  getPaymentRecordFormConfig,
+  addPaymentRecord,
+  updatePaymentRecord,
+  getPaymentRecordDetail,
+  getPaymentRecordList,
+  deletePaymentRecord,
 } = contractApi;
 
 export const {

@@ -13,6 +13,7 @@ import {
   getAccountPaymentStatistic,
 } from '@/api/modules';
 
+// TODO lmy 客户的回款记录tab
 export type TimelineType = FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT;
 
 export default function useContractTimeline(formKey: TimelineType, sourceId: string) {

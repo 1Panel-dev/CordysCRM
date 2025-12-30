@@ -81,6 +81,7 @@
             FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
             FormDesignKeyEnum.CONTRACT,
             FormDesignKeyEnum.CONTRACT_PAYMENT,
+            FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
           ].includes(props.type)
         "
         type="default"

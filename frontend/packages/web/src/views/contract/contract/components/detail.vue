@@ -29,7 +29,7 @@
             @init="handleInit"
           />
         </div>
-        <template v-if="activeTab !== 'contract'">
+        <template v-if="activeTab === 'payment'">
           <PaymentTable
             :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
             :sourceId="props.sourceId"
@@ -40,6 +40,9 @@
               detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
             "
           />
+        </template>
+        <template v-if="activeTab === 'paymentRecord'">
+          <!-- TODO lmy table还是？ -->
         </template>
       </CrmCard>
     </div>
@@ -115,6 +118,11 @@
         name: 'payment',
         tab: t('module.paymentPlan'),
         permission: ['CONTRACT_PAYMENT_PLAN:READ'],
+      },
+      {
+        name: 'paymentRecord',
+        tab: t('module.paymentRecord'),
+        permission: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
       },
     ].filter((item) => hasAnyPermission(item.permission))
   );

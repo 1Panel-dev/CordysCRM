@@ -169,6 +169,7 @@
       | 'contact'
       | 'contract'
       | 'contractPaymentPlan'
+      | 'contractPaymentRecord'
       | 'price';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
@@ -194,6 +195,7 @@
     contact: t('menu.contact'),
     contract: t('module.contract'),
     contractPaymentPlan: t('module.paymentPlan'),
+    contractPaymentRecord: t('module.paymentRecord'),
     price: t('module.productManagementPrice'),
   };
 
@@ -294,6 +296,7 @@
     openSea: exportCustomerOpenSeaAll,
     contract: exportContractAll,
     contractPaymentPlan: exportPaymentPlanAll,
+    contractPaymentRecord: exportPaymentPlanAll,
     price: exportProductPriceAll,
   };
 
@@ -306,6 +309,7 @@
     openSea: exportCustomerOpenSeaSelected,
     contract: exportContractSelected,
     contractPaymentPlan: exportPaymentPlanSelected,
+    contractPaymentRecord: exportPaymentPlanAll,
     price: exportProductPriceSelected,
   };
 

@@ -20,8 +20,9 @@ export enum FormDesignKeyEnum {
   FOLLOW_RECORD = 'followRecord',
   CONTRACT = 'contract', // 合同
   CONTRACT_SNAPSHOT = 'contractSnapshot', // 合同快照
-  CONTRACT_PAYMENT = 'contractPaymentPlan', // 回款
-  CONTRACT_CONTRACT_PAYMENT = 'contractContractPayment', // 合同下的回款
+  CONTRACT_PAYMENT = 'contractPaymentPlan', // 回款计划
+  CONTRACT_CONTRACT_PAYMENT = 'contractContractPayment', // 合同下的回款计划
+  CONTRACT_PAYMENT_RECORD = 'contractPaymentRecord', // 回款记录
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
   OPPORTUNITY_QUOTATION_SNAPSHOT = 'quotationSnapshot', // 商机快照报价单

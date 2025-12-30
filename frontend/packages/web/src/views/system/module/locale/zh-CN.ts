@@ -104,6 +104,8 @@ export default {
   'module.contract': '合同',
   'module.formSettings': '表单设置',
   'module.paymentPlan': '回款计划',
+  'module.paymentRecord': '回款记录',
+  'module.paymentRecordFormSetting': '回款记录表单设置',
   'module.priceTableFormSetting': '价格表表单设置',
   'module.tender': '标讯',
 };

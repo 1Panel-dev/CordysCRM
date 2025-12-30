@@ -45,6 +45,23 @@ import {
   BatchApproveContractUrl,
   ApproveContractUrl,
   RevokeContractUrl,
+  PaymentRecordPageUrl,
+  PaymentRecordAddUrl,
+  PaymentRecordUpdateUrl,
+  PaymentRecordDeleteUrl,
+  GetPaymentRecordDetailUrl,
+  GetPaymentRecordFormConfigUrl,
+  GetPaymentRecordTabUrl,
+  ExportPaymentRecordAllUrl,
+  ExportPaymentRecordSelectedUrl,
+  AddPaymentRecordViewUrl,
+  UpdatePaymentRecordViewUrl,
+  GetPaymentRecordViewListUrl,
+  GetPaymentRecordViewDetailUrl,
+  FixedPaymentRecordViewUrl,
+  EnablePaymentRecordViewUrl,
+  DeletePaymentRecordViewUrl,
+  DragPaymentRecordViewUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -66,6 +83,10 @@ import type {
   SavePaymentPlanParams,
   UpdatePaymentPlanParams,
   ApprovalContractParams,
+  PaymentRecordItem,
+  PaymentRecordDetail,
+  SavePaymentRecordParams,
+  UpdatePaymentRecordParams,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
@@ -278,6 +299,93 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragPaymentPlanViewUrl, data });
   }
 
+  // 回款记录列表
+  function getPaymentRecordList(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentRecordItem>>({ url: PaymentRecordPageUrl, data }, { ignoreCancelToken: true });
+  }
+
+  // 添加回款记录
+  function addPaymentRecord(data: SavePaymentRecordParams) {
+    return CDR.post({ url: PaymentRecordAddUrl, data });
+  }
+
+  // 更新回款记录
+  function updatePaymentRecord(data: UpdatePaymentRecordParams) {
+    return CDR.post({ url: PaymentRecordUpdateUrl, data });
+  }
+
+  // 删除回款记录
+  function deletePaymentRecord(id: string) {
+    return CDR.get({ url: `${PaymentRecordDeleteUrl}/${id}` });
+  }
+
+  // 回款记录详情
+  function getPaymentRecordDetail(id: string) {
+    return CDR.get<PaymentRecordDetail>({ url: `${GetPaymentRecordDetailUrl}/${id}` });
+  }
+
+  // 获取回款记录表单配置
+  function getPaymentRecordFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: GetPaymentRecordFormConfigUrl,
+    });
+  }
+
+  // 获取回款记录 tab 显隐
+  function getPaymentRecordTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetPaymentRecordTabUrl });
+  }
+
+  // 导出全量回款记录
+  function exportPaymentRecordAll(data: TableExportParams) {
+    return CDR.post({ url: ExportPaymentRecordAllUrl, data });
+  }
+
+  // 导出选中回款记录
+  function exportPaymentRecordSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportPaymentRecordSelectedUrl, data });
+  }
+
+  // 添加视图
+  function addPaymentRecordView(data: ViewParams) {
+    return CDR.post({ url: AddPaymentRecordViewUrl, data });
+  }
+
+  // 更新视图
+  function updatePaymentRecordView(data: ViewParams) {
+    return CDR.post({ url: UpdatePaymentRecordViewUrl, data });
+  }
+
+  // 获取视图列表
+  function getPaymentRecordViewList() {
+    return CDR.get<ViewItem[]>({ url: GetPaymentRecordViewListUrl });
+  }
+
+  // 获取视图详情
+  function getPaymentRecordViewDetail(id: string) {
+    return CDR.get({ url: `${GetPaymentRecordViewDetailUrl}/${id}` });
+  }
+
+  // 固定视图
+  function fixedPaymentRecordView(id: string) {
+    return CDR.get({ url: `${FixedPaymentRecordViewUrl}/${id}` });
+  }
+
+  // 启用视图
+  function enablePaymentRecordView(id: string) {
+    return CDR.get({ url: `${EnablePaymentRecordViewUrl}/${id}` });
+  }
+
+  // 删除视图
+  function deletePaymentRecordView(id: string) {
+    return CDR.get({ url: `${DeletePaymentRecordViewUrl}/${id}` });
+  }
+
+  // 拖拽排序视图
+  function dragPaymentRecordView(data: TableDraggedParams) {
+    return CDR.post({ url: DragPaymentRecordViewUrl, data });
+  }
+
   return {
     exportContractAll,
     exportContractSelected,
@@ -322,5 +430,23 @@ export default function useContractApi(CDR: CordysAxios) {
     enablePaymentPlanView,
     deletePaymentPlanView,
     dragPaymentPlanView,
+    // 回款记录
+    getPaymentRecordFormConfig,
+    addPaymentRecord,
+    updatePaymentRecord,
+    getPaymentRecordDetail,
+    getPaymentRecordList,
+    deletePaymentRecord,
+    getPaymentRecordTab,
+    exportPaymentRecordAll,
+    exportPaymentRecordSelected,
+    addPaymentRecordView,
+    updatePaymentRecordView,
+    getPaymentRecordViewList,
+    getPaymentRecordViewDetail,
+    fixedPaymentRecordView,
+    enablePaymentRecordView,
+    deletePaymentRecordView,
+    dragPaymentRecordView,
   };
 }
