@@ -74,6 +74,7 @@
   <stepSettingDrawer v-model:visible="businessManagementStepSetVisible" />
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
+  <ContractPaymentRecordFormDrawer v-model:visible="contractPaymentRecordFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -95,6 +96,7 @@
   import MoveLeadReasonDrawer from './clueManagement/moveReasonDrawer.vue';
   import ContractFormFormDrawer from './contract/contractFormFormDrawer.vue';
   import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
+  import ContractPaymentRecordFormDrawer from './contract/contractPaymentRecordFormDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import MoveAccountReasonDrawer from './customManagement/moveReasonDrawer.vue';
@@ -364,6 +366,10 @@
           label: `${t('module.paymentPlan')}${t('module.formSettings')}`,
           key: 'newContractPaymentPlanForm',
         },
+        {
+          label: t('module.paymentRecordFormSetting'),
+          key: 'newContractPaymentRecordForm',
+        },
       ],
     },
     {
@@ -496,6 +502,7 @@
 
   const contractFormVisible = ref(false);
   const contractPaymentPlanFormVisible = ref(false);
+  const contractPaymentRecordFormVisible = ref(false);
 
   function handleSelect(key: string, item: ModuleConfigItem) {
     selectKey.value = item.key;
@@ -516,6 +523,8 @@
           contractFormVisible.value = true;
         } else if (key === 'newContractPaymentPlanForm') {
           contractPaymentPlanFormVisible.value = true;
+        } else if (key === 'newContractPaymentRecordForm') {
+          contractPaymentRecordFormVisible.value = true;
         }
         break;
       case ModuleConfigEnum.CLUE_MANAGEMENT:

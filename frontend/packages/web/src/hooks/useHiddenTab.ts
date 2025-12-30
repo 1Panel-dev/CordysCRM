@@ -15,6 +15,7 @@ import {
   getFollowRecordTab,
   getOptTab,
   getPaymentPlanTab,
+  getPaymentRecordTab,
   getQuotationTab,
 } from '@/api/modules';
 
@@ -29,7 +30,8 @@ export type TabType =
   | FormDesignKeyEnum.FOLLOW_RECORD
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.CONTRACT_PAYMENT
-  | FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
+  | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
+  | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
 
@@ -45,6 +47,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordTab,
     [FormDesignKeyEnum.CONTRACT]: getContractTab,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanTab,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordTab,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationTab,
   };
 
@@ -202,6 +205,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CONTRACT]: allContractTabList,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: allPlanTabList,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: allQuotationTabList,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: allRecordTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);

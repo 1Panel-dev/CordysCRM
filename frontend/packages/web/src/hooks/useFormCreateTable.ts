@@ -50,6 +50,7 @@ export type FormKey =
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT
+  | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.PRICE;
 
 export interface FormCreateTableProps {
@@ -102,6 +103,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTRACT]: TableKeyEnum.CONTRACT,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
     [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: TableKeyEnum.CONTRACT_PAYMENT_RECORD,
     [FormDesignKeyEnum.PRICE]: TableKeyEnum.PRICE,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
@@ -779,6 +781,19 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,
     [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: paymentInternalColumns,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: [
+      {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: 'default',
+        render: (row: any) => row.departmentName || '-',
+      },
+    ],
     [FormDesignKeyEnum.PRICE]: [],
   };
   const staticColumns: CrmDataTableColumn[] = [
@@ -984,9 +999,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             (field.businessKey === 'name' &&
               ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey) &&
               !field.resourceFieldId) ||
-            ([FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT].includes(
-              props.formKey
-            ) &&
+            ([
+              FormDesignKeyEnum.CONTRACT_PAYMENT,
+              FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT,
+              FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+            ].includes(props.formKey) &&
               field.businessKey === 'contractId')
           ) {
             return {

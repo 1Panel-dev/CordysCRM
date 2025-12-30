@@ -20,6 +20,7 @@ import {
   addOptFollowPlan,
   addOptFollowRecord,
   addPaymentPlan,
+  addPaymentRecord,
   addProduct,
   addProductPrice,
   addQuotation,
@@ -69,6 +70,9 @@ import {
   getPaymentPlanDetail,
   getPaymentPlanFormConfig,
   getPaymentPlanList,
+  getPaymentRecordDetail,
+  getPaymentRecordFormConfig,
+  getPaymentRecordList,
   getPoolClue,
   getProduct,
   getProductFormConfig,
@@ -95,6 +99,7 @@ import {
   updateOptFollowPlan,
   updateOptFollowRecord,
   updatePaymentPlan,
+  updatePaymentRecord,
   updateProduct,
   updateProductPrice,
   updateQuotation,
@@ -692,6 +697,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -727,6 +733,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlan,
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: addPaymentPlan,
   [FormDesignKeyEnum.PRICE]: addProductPrice,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: addPaymentRecord,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -762,6 +769,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlan,
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: updatePaymentPlan,
   [FormDesignKeyEnum.PRICE]: updateProductPrice,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: updatePaymentRecord,
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -795,6 +803,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationDetail,
   [FormDesignKeyEnum.PRICE]: getProductPrice,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationSnapshotDetail,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -822,6 +831,7 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getContractPaymentPlanList,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationList,
   [FormDesignKeyEnum.PRICE]: getProductPriceList,
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordList,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {

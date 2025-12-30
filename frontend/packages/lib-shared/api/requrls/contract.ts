@@ -55,3 +55,26 @@ export const FixedPaymentPlanViewUrl = '/contract/payment-plan/view/fixed'; // �
 export const EnablePaymentPlanViewUrl = '/contract/payment-plan/view/enable'; // 启用回款计划视图
 export const DeletePaymentPlanViewUrl = '/contract/payment-plan/view/delete'; // 删除回款计划视图
 export const DragPaymentPlanViewUrl = '/contract/payment-plan/view/edit/pos'; // 拖拽回款计划视图排序
+
+// 回款记录列表
+export const PaymentRecordPageUrl = '/contract/payment-record/page'; // 回款记录列表
+export const PaymentRecordAddUrl = '/contract/payment-record/add'; // 添加回款记录
+export const PaymentRecordUpdateUrl = '/contract/payment-record/update'; // 更新回款记录
+export const PaymentRecordDeleteUrl = '/contract/payment-record/delete'; // 删除回款记录
+export const GetPaymentRecordDetailUrl = '/contract/payment-record/get'; // 获取回款记录详情
+export const GetPaymentRecordFormConfigUrl = '/contract/payment-record/module/form'; // 回款记录表单配置
+export const GetPaymentRecordTabUrl = '/contract/payment-record/tab'; // 回款记录tab显隐
+
+// 回款记录导出
+export const ExportPaymentRecordAllUrl = '/contract/payment-record/export-all'; // 回款记录导出全量
+export const ExportPaymentRecordSelectedUrl = '/contract/payment-record/export-select'; // 回款记录导出选中
+
+// 回款记录视图
+export const AddPaymentRecordViewUrl = '/contract/payment-record/view/add'; // 添加回款记录视图
+export const UpdatePaymentRecordViewUrl = '/contract/payment-record/view/update'; // 更新回款记录视图
+export const GetPaymentRecordViewListUrl = '/contract/payment-record/view/list'; // 获取回款记录视图列表
+export const GetPaymentRecordViewDetailUrl = '/contract/payment-record/view/detail'; // 获取回款记录视图详情
+export const FixedPaymentRecordViewUrl = '/contract/payment-record/view/fixed'; // 固定回款记录视图
+export const EnablePaymentRecordViewUrl = '/contract/payment-record/view/enable'; // 启用回款记录视图
+export const DeletePaymentRecordViewUrl = '/contract/payment-record/view/delete'; // 删除回款记录视图
+export const DragPaymentRecordViewUrl = '/contract/payment-record/view/edit/pos'; // 拖拽回款记录视图排序

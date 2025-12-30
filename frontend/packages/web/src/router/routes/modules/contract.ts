@@ -36,6 +36,16 @@ const contract: AppRouteRecordRaw = {
         permissions: ['CONTRACT_PAYMENT_PLAN:READ'],
       },
     },
+    {
+      path: 'contractPaymentRecord',
+      name: ContractRouteEnum.CONTRACT_PAYMENT_RECORD,
+      component: () => import('@/views/contract/contractPaymentRecord/index.vue'),
+      meta: {
+        locale: 'module.paymentRecord',
+        isTopMenu: true,
+        permissions: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
+      },
+    },
   ],
 };
 

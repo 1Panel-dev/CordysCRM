@@ -27,4 +27,5 @@ export default {
   'contract.expectedPaymentAmount': 'Expected payment amount',
   'contract.isPlanCompleted': 'Plan completed',
   'contract.approvalStatus': 'Approval Status',
+  'contract.paymentRecord.new': 'Create payment record',
 };

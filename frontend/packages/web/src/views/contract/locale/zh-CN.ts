@@ -27,4 +27,5 @@ export default {
   'contract.expectedPaymentAmount': '预计回款金额',
   'contract.isPlanCompleted': '是否完成计划',
   'contract.approvalStatus': '审批状态',
+  'contract.paymentRecord.new': '新建回款',
 };

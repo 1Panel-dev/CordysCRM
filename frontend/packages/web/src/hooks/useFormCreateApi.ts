@@ -237,14 +237,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalFields,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalFields,
-    [FormDesignKeyEnum.CONTRACT]: [
+    [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: [
       {
         title: t('org.department'),
         key: 'departmentName',
-      },
-      {
-        title: t('contract.voidReason'),
-        key: 'voidReason',
       },
       {
         title: t('opportunity.quotation.amount'),
@@ -385,7 +381,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } else if (
       item.type === FieldTypeEnum.DATA_SOURCE &&
       item.dataSourceType === FieldDataSourceTypeEnum.CONTRACT &&
-      [FormDesignKeyEnum.CONTRACT_PAYMENT].includes(props.formKey.value)
+      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD].includes(props.formKey.value)
     ) {
       descriptions.value.push({
         label: item.name,
@@ -829,7 +825,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (props.formKey.value === FormDesignKeyEnum.CONTRACT_PAYMENT && props.sourceId?.value) {
+    if (
+      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD].includes(props.formKey.value) &&
+      props.sourceId?.value
+    ) {
       // 合同详情下创建计划，自动带入合同信息
       if (field.businessKey === 'contractId') {
         specialInitialOptions.value = [

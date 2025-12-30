@@ -109,6 +109,8 @@ export default {
   'module.contract': 'Contract',
   'module.formSettings': 'Form Settings',
   'module.paymentPlan': 'Payment Plan',
+  'module.paymentRecord': 'Payment Record',
+  'module.paymentRecordFormSetting': 'Payment Record Form Setting',
   'module.priceTableFormSetting': 'Price Table Form Setting',
   'module.tender': 'Tender',
 };

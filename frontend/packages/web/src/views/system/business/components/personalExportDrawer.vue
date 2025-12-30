@@ -198,6 +198,8 @@
         return t('module.contract');
       case SystemResourceMessageTypeEnum.CONTRACT_PAYMENT_PLAN:
         return t('module.paymentPlan');
+      case SystemResourceMessageTypeEnum.CONTRACT_PAYMENT_RECORD:
+        return t('module.paymentRecord');
       case SystemResourceMessageTypeEnum.PRODUCT_PRICE:
         return t('module.productManagementPrice');
       default:
