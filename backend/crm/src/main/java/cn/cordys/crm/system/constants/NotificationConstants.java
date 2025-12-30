@@ -110,22 +110,40 @@ public class NotificationConstants {
         @Schema(description = "message.business_quotation_deleted")
         String BUSINESS_QUOTATION_DELETED = "BUSINESS_QUOTATION_DELETED";
 
-        @Schema(description = "message.contract_add")
-        String CONTRACT_ADD = "CONTRACT_ADD";
+        @Schema(description = "message.business_quotation_expired")
+        String BUSINESS_QUOTATION_EXPIRED = "BUSINESS_QUOTATION_EXPIRED";
 
-        @Schema(description = "message.contract_delete")
-        String CONTRACT_ADD_DELETE = "CONTRACT_ADD_DELETE";
+        @Schema(description = "message.business_quotation_expiring")
+        String BUSINESS_QUOTATION_EXPIRING = "BUSINESS_QUOTATION_EXPIRING";
 
-        @Schema(description = "message.contract_payment_plan_add")
-        String CONTRACT_PAYMENT_PLAN = "CONTRACT_PAYMENT_PLAN";
+        @Schema(description = "message.contract_archived")
+        String CONTRACT_ARCHIVED = "CONTRACT_ARCHIVED";
 
-        @Schema(description = "message.contract_payment_plan_delete")
-        String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN_DELETE";
+        @Schema(description = "message.contract_void")
+        String CONTRACT_VOID = "CONTRACT_VOID";
+
+        @Schema(description = "message.contract_expired")
+        String CONTRACT_EXPIRED = "CONTRACT_EXPIRED";
+
+        @Schema(description = "message.contract_expiring")
+        String CONTRACT_EXPIRING = "CONTRACT_EXPIRING";
+
+        @Schema(description = "message.contract_payment_expired")
+        String CONTRACT_PAYMENT_EXPIRED = "CONTRACT_PAYMENT_EXPIRED";
+
+        @Schema(description = "message.contract_payment_expiring")
+        String CONTRACT_PAYMENT_EXPIRING = "CONTRACT_PAYMENT_EXPIRING";
+
+
     }
 
     public interface RelatedUser {
         @Schema(description = "message.operator")
         String OPERATOR = "OPERATOR"; //操作人
+        @Schema(description = "message.owner")
+        String OWNER = "OWNER"; //负责人
+        @Schema(description = "message.create_user")
+        String CREATE_USER = "CREATE_USER"; //创建人
     }
 
 
@@ -223,6 +241,34 @@ public class NotificationConstants {
         //${OPERATOR}删除了${name}报价单
         @Schema(description = "message.business_quotation_deleted_text")
         String BUSINESS_QUOTATION_DELETED_TEXT = "BUSINESS_QUOTATION_DELETED_TEXT";
+
+        //您负责的${customerName}报价单还有${expireDays}天到期；
+        @Schema(description = "message.business_quotation_expiring_text")
+        String BUSINESS_QUOTATION_EXPIRING_TEXT = "BUSINESS_QUOTATION_EXPIRING_TEXT";
+
+        //您负责的${customerName}的报价单已经到期；
+        @Schema(description = "message.business_quotation_expired_text")
+        String BUSINESS_QUOTATION_EXPIRED_TEXT = "BUSINESS_QUOTATION_EXPIRED_TEXT";
+
+        //您负责的${customerName}合同已被归档；
+        @Schema(description = "message.contract_archived_text")
+        String CONTRACT_ARCHIVED_TEXT = "CONTRACT_ARCHIVED_TEXT";
+        //您负责的${customerName}合同已被作废；
+        @Schema(description = "message.contract_void_text")
+        String CONTRACT_VOID_TEXT = "CONTRACT_VOID_TEXT";
+        //您负责的${customerName}合同还有${expireDays}天到期；
+        @Schema(description = "message.contract_expiring_text")
+        String CONTRACT_EXPIRING_TEXT = "CONTRACT_EXPIRING_TEXT";
+        //您负责的${customerName}合同已经到期；
+        @Schema(description = "message.contract_expired_text")
+        String CONTRACT_EXPIRED_TEXT = "CONTRACT_EXPIRED_TEXT";
+
+        //您负责的${customerName}合同的回款计划还有${expireDays}天到期；
+        @Schema(description = "message.contract_payment_expiring_text")
+        String CONTRACT_PAYMENT_EXPIRING_TEXT = "CONTRACT_PAYMENT_EXPIRING_TEXT";
+        //您负责的${customerName}合同的回款计划已经到期；
+        @Schema(description = "message.contract_payment_expired_text")
+        String CONTRACT_PAYMENT_EXPIRED_TEXT = "CONTRACT_PAYMENT_EXPIRED_TEXT";
     }
 
 

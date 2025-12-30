@@ -185,6 +185,69 @@
         "emailEnable": false,
         "sysEnable": false,
         "weComEnable": false
+      },
+      {
+        "event": "BUSINESS_QUOTATION_EXPIRED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "BUSINESS_QUOTATION_EXPIRING",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      }
+    ]
+  },
+  {
+    "organizationId": "",
+    "module": "CONTRACT",
+    "moduleName": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "CONTRACT_ARCHIVED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_VOID",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_EXPIRING",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_EXPIRED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_PAYMENT_EXPIRED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_PAYMENT_EXPIRING",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   }

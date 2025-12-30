@@ -27,9 +27,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentPlanGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
-import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -69,8 +67,6 @@ public class ContractPaymentPlanService {
     private ModuleFormService moduleFormService;
     @Resource
     private ContractPaymentPlanFieldService contractPaymentPlanFieldService;
-    @Resource
-    private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private PermissionCache permissionCache;
     @Resource
@@ -119,11 +115,11 @@ public class ContractPaymentPlanService {
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = contractPaymentPlanFieldService.getResourceFieldMap(planIds, true);
-		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentPlanFieldService.setBusinessRefFieldValue(list,
-				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), caseCustomFiledMap);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentPlanFieldService.setBusinessRefFieldValue(list,
+                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), caseCustomFiledMap);
 
 
-		List<String> ownerIds = list.stream()
+        List<String> ownerIds = list.stream()
                 .map(ContractPaymentPlanListResponse::getOwner)
                 .distinct()
                 .toList();
@@ -178,8 +174,8 @@ public class ContractPaymentPlanService {
         Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlanGetResponse.getContractId());
         // 获取模块字段
         List<BaseModuleFieldValue> contractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
-		contractPaymentPlanFields = contractPaymentPlanFieldService.setBusinessRefFieldValue(List.of(contractPaymentPlanGetResponse),
-				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), new HashMap<>(Map.of(id, contractPaymentPlanFields))).get(id);
+        contractPaymentPlanFields = contractPaymentPlanFieldService.setBusinessRefFieldValue(List.of(contractPaymentPlanGetResponse),
+                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), new HashMap<>(Map.of(id, contractPaymentPlanFields))).get(id);
         ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(orgId);
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractPaymentPlanFormConfig, contractPaymentPlanFields);
@@ -242,11 +238,6 @@ public class ContractPaymentPlanService {
         baseService.handleAddLog(contractPaymentPlan, request.getModuleFields());
         OperationLogContext.getContext().setResourceName(resourceName);
         OperationLogContext.getContext().setResourceId(contractPaymentPlan.getId());
-
-        // 通知
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
-                NotificationConstants.Event.CONTRACT_PAYMENT_PLAN, resourceName, userId,
-                orgId, List.of(contractPaymentPlan.getOwner()), true);
         return contractPaymentPlan;
     }
 
@@ -307,10 +298,6 @@ public class ContractPaymentPlanService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(resourceName);
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT,
-                NotificationConstants.Event.CONTRACT_PAYMENT_PLAN_DELETE, resourceName, userId,
-                orgId, List.of(originContractPaymentPlan.getOwner()), true);
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {

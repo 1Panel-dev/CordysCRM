@@ -6,6 +6,7 @@ import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
 import cn.cordys.crm.system.dto.response.MessageTaskDTO;
@@ -46,6 +47,14 @@ public class MessageTaskController {
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<MessageTaskDTO> getMessageList() {
         return messageTaskService.getMessageList(OrganizationContext.getOrganizationId());
+    }
+
+    //获取消息配置的config
+    @GetMapping("get/config")
+    @Operation(summary = "项目管理-消息管理-消息设置-获取消息配置")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
+    public MessageTaskConfigDTO getMessageConfig(@RequestParam String module, @RequestParam String event) {
+        return messageTaskService.getMessageConfig(module, event, OrganizationContext.getOrganizationId());
     }
 
 

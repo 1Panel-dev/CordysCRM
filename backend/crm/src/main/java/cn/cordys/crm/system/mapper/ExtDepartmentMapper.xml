@@ -42,21 +42,33 @@
     </select>
 
     <delete id="deleteByOrgId">
-        DELETE FROM sys_department WHERE organization_id  = #{orgId} and parent_id != 'NONE'
+        DELETE
+        FROM sys_department
+        WHERE organization_id = #{orgId}
+          and parent_id != 'NONE'
     </delete>
 
 
     <select id="selectAllDepartmentIds" resultType="java.lang.String">
-        select id from sys_department where organization_id = #{orgId}
+        select id
+        from sys_department
+        where organization_id = #{orgId}
     </select>
 
 
     <select id="selectDepartment" resultType="cn.cordys.common.dto.BaseTreeNode">
-        select id, name, parent_id, organization_id from sys_department where name = #{name} and organization_id = #{orgId}
+        select id, name, parent_id, organization_id
+        from sys_department
+        where name = #{name}
+          and organization_id = #{orgId}
     </select>
 
     <select id="countByName" resultType="java.lang.Integer">
-        select count(id) from sys_department where name = #{name} and organization_id = #{orgId} and parent_id = #{parentId}
+        select count(id)
+        from sys_department
+        where name = #{name}
+          and organization_id = #{orgId}
+          and parent_id = #{parentId}
     </select>
 
 
@@ -87,7 +99,9 @@
 
 
     <select id="selectChildrenIds" resultType="java.lang.String">
-        SELECT id FROM sys_department WHERE parent_id  = #{parentId}
+        SELECT id
+        FROM sys_department
+        WHERE parent_id = #{parentId}
         ORDER BY pos ASC
     </select>
 
@@ -106,7 +120,11 @@
 
 
     <select id="getInternalDepartment" resultType="cn.cordys.crm.system.domain.Department">
-        SELECT * FROM sys_department WHERE organization_id = #{orgId} AND resource = #{resource} AND parent_id = 'NONE'
+        SELECT *
+        FROM sys_department
+        WHERE organization_id = #{orgId}
+          AND resource = #{resource}
+          AND parent_id = 'NONE'
     </select>
 
 
@@ -149,7 +167,9 @@
 
 
     <select id="getDepartmentByOrgId" resultType="cn.cordys.crm.system.domain.Department">
-        SELECT * FROM sys_department WHERE organization_id = #{orgId}
+        SELECT *
+        FROM sys_department
+        WHERE organization_id = #{orgId}
     </select>
 
 
@@ -199,8 +219,13 @@
     <select id="selectByOrgId" resultType="cn.cordys.crm.system.domain.DepartmentCommander">
         select user_id, department_id
         from sys_department_commander sdc
-        join sys_department sd on sdc.department_id = sd.id
+                 join sys_department sd on sdc.department_id = sd.id
         where sd.organization_id = #{orgId}
+    </select>
+    <select id="getParentIdById" resultType="java.lang.String">
+        select parent_id
+        from sys_department
+        where id = #{id}
     </select>
 
     <delete id="deleteDepartmentByIds">
