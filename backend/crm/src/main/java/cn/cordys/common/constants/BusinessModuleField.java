@@ -212,7 +212,6 @@ public enum BusinessModuleField {
 	QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_PRODUCT("quotationProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
 	QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
 	/**
