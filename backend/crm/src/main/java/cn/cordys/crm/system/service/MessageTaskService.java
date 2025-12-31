@@ -110,13 +110,7 @@ public class MessageTaskService {
             messageTaskMapper.insert(messageTask);
             //新增config
             if (messageTaskRequest.getConfig() != null) {
-                MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
-                messageTaskConfig.setId(IDGenerator.nextStr());
-                messageTaskConfig.setOrganizationId(organizationId);
-                messageTaskConfig.setTaskType(messageTaskRequest.getModule());
-                messageTaskConfig.setEvent(messageTaskRequest.getEvent());
-                messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
-                messageTaskConfigMapper.insert(messageTaskConfig);
+                saveConfig(messageTaskRequest, organizationId);
             }
             // 添加日志上下文
             MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), messageTaskRequest.isDingTalkEnable(), messageTaskRequest.isLarkEnable(), eventMap);
@@ -156,6 +150,9 @@ public class MessageTaskService {
                 MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
                 messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
                 messageTaskConfigMapper.update(messageTaskConfig);
+            } else {
+                //不存在则新增
+                saveConfig(messageTaskRequest, organizationId);
             }
         }
         // 添加日志上下文
@@ -167,6 +164,16 @@ public class MessageTaskService {
         logService.add(logDTO);
 
         return messageTask;
+    }
+
+    private void saveConfig(MessageTaskRequest messageTaskRequest, String organizationId) {
+        MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
+        messageTaskConfig.setId(IDGenerator.nextStr());
+        messageTaskConfig.setOrganizationId(organizationId);
+        messageTaskConfig.setTaskType(messageTaskRequest.getModule());
+        messageTaskConfig.setEvent(messageTaskRequest.getEvent());
+        messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
+        messageTaskConfigMapper.insert(messageTaskConfig);
     }
 
     /**

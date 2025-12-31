@@ -5,11 +5,15 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.TimeDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
+import cn.cordys.crm.system.dto.request.MessageTaskConfigRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import jakarta.annotation.Resource;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +34,9 @@ public class MessageTaskControllerTest extends BaseTest {
 
     public static final String GET_MESSAGE_TASK = "/message/task/get";
 
+    public static final String GET_MESSAGE_TASK_CONFIG = "/message/task/config/query";
+
+
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
     @Resource
@@ -43,6 +50,8 @@ public class MessageTaskControllerTest extends BaseTest {
         messageTaskRequest.setEvent(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS);
         messageTaskRequest.setEmailEnable(true);
         messageTaskRequest.setSysEnable(true);
+        MessageTaskConfigDTO messageTaskConfigDTO = getMessageTaskConfigDTO();
+        messageTaskRequest.setConfig(messageTaskConfigDTO);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
@@ -80,6 +89,21 @@ public class MessageTaskControllerTest extends BaseTest {
 
     }
 
+    private @NotNull MessageTaskConfigDTO getMessageTaskConfigDTO() {
+        MessageTaskConfigDTO messageTaskConfigDTO = new MessageTaskConfigDTO();
+        TimeDTO timeDTO = new TimeDTO();
+        timeDTO.setTimeValue(3);
+        timeDTO.setTimeUnit("DAY");
+        List<TimeDTO> timeDTOList = List.of(timeDTO);
+        messageTaskConfigDTO.setTimeList(timeDTOList);
+        messageTaskConfigDTO.setOwnerEnable(true);
+        messageTaskConfigDTO.setOwnerLevel(0);
+        messageTaskConfigDTO.setUserIds(List.of("OWNER"));
+        messageTaskConfigDTO.setRoleEnable(true);
+        messageTaskConfigDTO.setRoleIds(List.of("org_admin"));
+        return messageTaskConfigDTO;
+    }
+
     @Test
     @Order(2)
     void testGetMessageTask() throws Exception {
@@ -99,5 +123,18 @@ public class MessageTaskControllerTest extends BaseTest {
         this.requestPostWithOk(BATCH_SAVE_MESSAGE_TASK, messageTaskRequest);
         MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, DEFAULT_ORGANIZATION_ID);
         Assertions.assertTrue(messageTask1.getEmailEnable());
+    }
+
+    @Test
+    @Order(4)
+    void testGetMessageTaskConfig() throws Exception {
+        MessageTaskConfigRequest messageTaskConfigRequest = new MessageTaskConfigRequest();
+        messageTaskConfigRequest.setModule(NotificationConstants.Module.CUSTOMER);
+        messageTaskConfigRequest.setEvent(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(GET_MESSAGE_TASK_CONFIG, messageTaskConfigRequest);
+        String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
+        MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTaskConfigDTO.class);
+        Assertions.assertNotNull(messageTaskConfigDTO);
     }
 }
