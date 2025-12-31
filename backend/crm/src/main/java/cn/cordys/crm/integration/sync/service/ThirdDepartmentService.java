@@ -171,7 +171,7 @@ public class ThirdDepartmentService {
     /**
      * 获取第三方访问令牌
      */
-    private String getToken(String type, ThirdConfigBaseDTO thirdConfig) {
+    private String getToken(String type, ThirdConfigBaseDTO<?> thirdConfig) {
         Objects.requireNonNull(thirdConfig, "第三方配置信息不能为空");
 
         var deptType = parseDepartmentType(type);
@@ -198,8 +198,8 @@ public class ThirdDepartmentService {
     /**
      * 获取第三方配置
      */
-    private ThirdConfigBaseDTO getThirdConfig(String orgId, String type) {
-        List<ThirdConfigBaseDTO> configs = integrationConfigService.getThirdConfig(orgId);
+    private ThirdConfigBaseDTO<?> getThirdConfig(String orgId, String type) {
+        List<ThirdConfigBaseDTO<?>> configs = integrationConfigService.getThirdConfig(orgId);
         if (CollectionUtils.isEmpty(configs)) {
             throw new GenericException("未配置企业信息");
         }

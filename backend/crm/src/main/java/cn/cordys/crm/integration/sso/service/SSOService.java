@@ -113,7 +113,7 @@ public class SSOService {
 
         OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
-        ThirdConfigBaseDTO config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
+        ThirdConfigBaseDTO<?> config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 
         if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
@@ -130,8 +130,8 @@ public class SSOService {
     public SessionUser exchangeWeComCode(String code) {
         validateCode(code);
 
-        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.WECOM.name());
-        WecomThirdConfigRequest weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);;
+        ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.WECOM.name());
+        WecomThirdConfigRequest weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
         validateQrCodeEnabled(weComConfig.getStartEnable());
 
         return getWeComSessionUser(code, weComConfig, UserSource.QR_CODE.toString());
@@ -140,8 +140,9 @@ public class SSOService {
     public SessionUser exchangeDingTalkCode(String code) {
         validateCode(code);
 
-        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
-        DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);;
+        ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
+        DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+        ;
         validateQrCodeEnabled(dingTalkConfig.getStartEnable());
 
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.QR_CODE.toString());
@@ -361,16 +362,16 @@ public class SSOService {
                 .orElseGet(() -> CodingUtils.md5(user.getLastOrganizationId() + user.getId()));
     }
 
-    private ThirdConfigBaseDTO getThirdPartyConfig(String type) {
+    private ThirdConfigBaseDTO<?> getThirdPartyConfig(String type) {
         IntegrationConfigService integrationConfigService = CommonBeanFactory.getBean(IntegrationConfigService.class);
         assert integrationConfigService != null;
-        List<ThirdConfigBaseDTO> synOrganizationConfigs = integrationConfigService.getThirdConfig(DEFAULT_ORGANIZATION_ID);
+        List<ThirdConfigBaseDTO<?>> synOrganizationConfigs = integrationConfigService.getThirdConfig(DEFAULT_ORGANIZATION_ID);
 
         if (CollectionUtils.isEmpty(synOrganizationConfigs)) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_NOT_EXIST));
         }
 
-        ThirdConfigBaseDTO config = synOrganizationConfigs.stream()
+        ThirdConfigBaseDTO<?> config = synOrganizationConfigs.stream()
                 .filter(c -> Strings.CI.equals(c.getType(), type))
                 .findFirst()
                 .orElse(null);
@@ -393,7 +394,7 @@ public class SSOService {
 
         OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
-        ThirdConfigBaseDTO config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
+        ThirdConfigBaseDTO<?> config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 
         if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
@@ -412,7 +413,7 @@ public class SSOService {
     public SessionUser exchangeLarkCode(String code) {
         validateCode(code);
 
-        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
+        ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
         LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
         validateQrCodeEnabled(larkConfig.getStartEnable());
 
@@ -453,7 +454,7 @@ public class SSOService {
     public SessionUser exchangeLarkOauth2(String code, Boolean isMobile) {
         validateCode(code);
 
-        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
+        ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
         LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
         validateQrCodeEnabled(larkConfig.getStartEnable());
 

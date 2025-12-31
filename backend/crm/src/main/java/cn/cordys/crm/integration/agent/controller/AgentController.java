@@ -167,7 +167,7 @@ public class AgentController {
     @GetMapping("/application/config")
     @Operation(summary = "获取智能体设置")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public ThirdConfigBaseDTO getApplicationConfig() {
+    public ThirdConfigBaseDTO<?> getApplicationConfig() {
         return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), ThirdConfigTypeConstants.MAXKB.name());
     }
 }
