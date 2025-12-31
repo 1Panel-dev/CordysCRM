@@ -483,7 +483,7 @@ public class AgentBaseService extends DashboardSortService {
      * @param orgId
      * @return
      */
-    private ThirdConfigBaseDTO getConfig(String orgId) {
+    private ThirdConfigBaseDTO<?> getConfig(String orgId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
                 orgId, OrganizationConfigConstants.ConfigType.THIRD.name()
         );
@@ -517,14 +517,14 @@ public class AgentBaseService extends DashboardSortService {
      * @return
      */
     public List<OptionDTO> workspace(String orgId) {
-        ThirdConfigBaseDTO config = getConfig(orgId);
+        ThirdConfigBaseDTO<?> config = getConfig(orgId);
         if (config == null) {
             return Collections.emptyList();
         }
         return getWorkspace(config);
     }
 
-    private List<OptionDTO> getWorkspace(ThirdConfigBaseDTO baseConfig) {
+    private List<OptionDTO> getWorkspace(ThirdConfigBaseDTO<?> baseConfig) {
         MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.WORKSPACE),
@@ -549,14 +549,14 @@ public class AgentBaseService extends DashboardSortService {
      * @return
      */
     public List<OptionDTO> application(String workspaceId, String orgId) {
-        ThirdConfigBaseDTO config = getConfig(orgId);
+        ThirdConfigBaseDTO<?> config = getConfig(orgId);
         if (config == null) {
             return Collections.emptyList();
         }
         return getApplication(workspaceId, config);
     }
 
-    private List<OptionDTO> getApplication(String workspaceId, ThirdConfigBaseDTO baseConfig) {
+    private List<OptionDTO> getApplication(String workspaceId, ThirdConfigBaseDTO<?> baseConfig) {
         MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION), workspaceId),
@@ -581,14 +581,14 @@ public class AgentBaseService extends DashboardSortService {
      * @return
      */
     public ScriptResponse script(ScriptRequest request, String orgId) {
-        ThirdConfigBaseDTO config = getConfig(orgId);
+        ThirdConfigBaseDTO<?> config = getConfig(orgId);
         if (config == null) {
             return new ScriptResponse();
         }
         return getScript(request, config);
     }
 
-    private ScriptResponse getScript(ScriptRequest request, ThirdConfigBaseDTO baseConfig) {
+    private ScriptResponse getScript(ScriptRequest request, ThirdConfigBaseDTO<?> baseConfig) {
         MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         ScriptResponse response = new ScriptResponse();
         List<ParameterDTO> parameters = new ArrayList<>();
@@ -644,14 +644,14 @@ public class AgentBaseService extends DashboardSortService {
      * @return
      */
     public String edition(String orgId) {
-        ThirdConfigBaseDTO config = getConfig(orgId);
+        ThirdConfigBaseDTO<?> config = getConfig(orgId);
         if (config == null) {
             throw new GenericException(Translator.get("third.config.not.exist"));
         }
         return getEdition(config);
     }
 
-    private String getEdition(ThirdConfigBaseDTO baseConfig) {
+    private String getEdition(ThirdConfigBaseDTO<?> baseConfig) {
         MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.EDITION),

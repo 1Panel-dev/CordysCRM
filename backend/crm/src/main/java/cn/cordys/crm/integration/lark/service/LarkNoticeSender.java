@@ -81,7 +81,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             LogUtils.warn("没有配置飞书通知信息，无法发送消息");
             return;
         }
-        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+        ThirdConfigBaseDTO<?> thirdConfigurationDTO = JSON.parseObject(
                 new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
         LarkThirdConfigRequest larkThirdConfigRequest = new LarkThirdConfigRequest();

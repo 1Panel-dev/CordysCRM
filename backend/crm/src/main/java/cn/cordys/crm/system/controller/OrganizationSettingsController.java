@@ -63,7 +63,7 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party")
     @Operation(summary = "获取三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public List<ThirdConfigBaseDTO> getThirdConfig() {
+    public List<ThirdConfigBaseDTO<?>> getThirdConfig() {
         return integrationConfigService.getThirdConfig(OrganizationContext.getOrganizationId());
     }
 
