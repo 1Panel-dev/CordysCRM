@@ -78,6 +78,16 @@
         </include>
     </select>
 
+    <select id="getQuotationByTimestamp"
+            resultType="cn.cordys.crm.opportunity.domain.OpportunityQuotation">
+        select oq.*
+        from opportunity_quotation oq
+        where oq.organization_id = #{orgId}
+          and oq.until_time <![CDATA[>=]]> #{timestampOld}
+          and oq.until_time <![CDATA[<]]> #{timestamp}
+          and oq.approval_status != 'VOIDED'
+    </select>
+
     <!-- common sql start -->
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">

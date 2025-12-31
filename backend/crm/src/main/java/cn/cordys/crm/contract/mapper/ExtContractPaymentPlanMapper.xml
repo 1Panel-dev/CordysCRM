@@ -4,8 +4,8 @@
 <mapper namespace="cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper">
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
         select cpp.id, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
-               cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
-               c.name as contract_name
+        cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
+        c.name as contract_name
         from contract_payment_plan cpp
         join contract c on c.id = cpp.contract_id
 
@@ -74,8 +74,8 @@
 
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
         select cpp.id, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
-            cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
-            c.name as contract_name
+        cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
+        c.name as contract_name
         from contract_payment_plan cpp
         join contract c on c.id = cpp.contract_id
 
@@ -122,12 +122,19 @@
             and cpp.owner = #{userId}
         </if>
     </select>
+    <select id="selectByTimestamp" resultType="cn.cordys.crm.contract.domain.ContractPaymentPlan">
+        select cpp.*
+        from contract_payment_plan cpp
+        where cpp.organization_id = #{orgId}
+          and cpp.plan_end_time <![CDATA[>=]]> #{timestampOld}
+          and cpp.plan_end_time <![CDATA[<]]> #{timestamp}
+    </select>
 
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
-                <bind name="sortType" value="${sort}.type" />
-                <bind name="sortName" value="${sort}.name" />
+                <bind name="sortType" value="${sort}.type"/>
+                <bind name="sortName" value="${sort}.name"/>
                 order by
                 <choose>
                     <when test="${sort}.name in
