@@ -27,6 +27,7 @@
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :filter-params="getParams()"
+      :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
       @change="($event, source) => emit('change', $event, source)"
     />

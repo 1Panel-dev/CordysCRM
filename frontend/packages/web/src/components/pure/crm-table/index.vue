@@ -90,6 +90,7 @@
         :min-row-height="tableLineHeight"
         :header-height="tableLineHeight"
         :row-props="rowProps"
+        :children-key="props.childrenKey"
         @update:sorter="handleSorterChange"
         @update:filters="handleFiltersChange"
         @update:checked-row-keys="handleCheck"
@@ -178,6 +179,7 @@
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
     fullscreenTargetRef?: HTMLElement | null;
     class?: string; // 自定义样式类
+    childrenKey?: string; // 子节点字段名
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;

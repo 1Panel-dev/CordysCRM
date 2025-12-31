@@ -1,4 +1,4 @@
-import { NImage, NImageGroup, NSwitch } from 'naive-ui';
+import { NImage, NImageGroup } from 'naive-ui';
 import dayjs from 'dayjs';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
@@ -6,10 +6,7 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
 import { formatNumberValue, transformData } from '@lib/shared/method/formCreate';
-import type { CommonList } from '@lib/shared/models/common';
-import type { ModuleField } from '@lib/shared/models/customer';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
