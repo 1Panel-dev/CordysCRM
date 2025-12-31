@@ -86,14 +86,14 @@ public class OrganizationSettingsController {
     @PostMapping("/third-party/edit")
     @Operation(summary = "编辑三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
-    public void editThirdConfig(@Validated @RequestBody ThirdConfigBaseDTO baseDTO) {
+    public void editThirdConfig(@Validated @RequestBody ThirdConfigBaseDTO<Object> baseDTO) {
         integrationConfigService.editThirdConfig(baseDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping(value = "/third-party/test")
     @Operation(summary = "校验配置是否链接成功")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public boolean validate(@RequestBody ThirdConfigBaseDTO baseDTO) {
+    public boolean validate(@RequestBody ThirdConfigBaseDTO<Object> baseDTO) {
         return integrationConfigService.testConnection(baseDTO);
     }
 
@@ -120,7 +120,7 @@ public class OrganizationSettingsController {
 
     @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
-    public ThirdConfigBaseDTO getThirdConfigByType(@PathVariable String type) {
+    public ThirdConfigBaseDTO<?> getThirdConfigByType(@PathVariable String type) {
         String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
         return integrationConfigService.getThirdConfigForPublic(type, organizationId);
     }
