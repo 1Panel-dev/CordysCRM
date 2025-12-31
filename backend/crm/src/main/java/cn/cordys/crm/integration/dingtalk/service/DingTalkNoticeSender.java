@@ -3,7 +3,8 @@ package cn.cordys.crm.integration.dingtalk.service;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.DingTalkThirdConfigRequest;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkMsgDTO;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkSendDTO;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkTextDTO;
@@ -17,6 +18,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
 
     @Override
@@ -77,21 +80,27 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
             LogUtils.warn("没有配置钉钉通知信息，无法发送消息");
             return;
         }
-        ThirdConfigurationDTO thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigurationDTO.class
+        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
+        DingTalkThirdConfigRequest dingTalkThirdConfigRequest = new DingTalkThirdConfigRequest();
+        if (thirdConfigurationDTO.getConfig() == null) {
+            dingTalkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), DingTalkThirdConfigRequest.class);
+        } else {
+            dingTalkThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), DingTalkThirdConfigRequest.class);
+        }
 
         //构建钉钉消息
         DingTalkSendDTO dingTalkSendDTO = new DingTalkSendDTO();
         String result = String.join(",", resourceUserIds);
         dingTalkSendDTO.setUserid_list(result);
         dingTalkSendDTO.setTo_all_user("false");
-        dingTalkSendDTO.setAgent_id(thirdConfigurationDTO.getAppId());
+        dingTalkSendDTO.setAgent_id(dingTalkThirdConfigRequest.getAppId());
         dingTalkSendDTO.setMsg(new DingTalkMsgDTO());
         dingTalkSendDTO.getMsg().setText(new DingTalkTextDTO(context));
         dingTalkSendDTO.getMsg().setMsgtype("text");
 
 
-        tokenService.sendDingNoticeByToken(dingTalkSendDTO, thirdConfigurationDTO.getAgentId(), thirdConfigurationDTO.getAppSecret());
+        tokenService.sendDingNoticeByToken(dingTalkSendDTO, dingTalkThirdConfigRequest.getAgentId(), dingTalkThirdConfigRequest.getAppSecret());
     }
 }

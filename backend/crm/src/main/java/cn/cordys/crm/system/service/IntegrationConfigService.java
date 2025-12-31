@@ -5,25 +5,16 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.agent.dto.MaxKBConfigDetailDTO;
-import cn.cordys.crm.integration.common.dto.ThirdConfigDetailDTO;
-import cn.cordys.crm.integration.common.dto.ThirdConfigDetailLogDTO;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
-import cn.cordys.crm.integration.common.dto.ThirdEnableDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.*;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
-import cn.cordys.crm.integration.dataease.dto.DeConfigDetailDTO;
-import cn.cordys.crm.integration.dataease.dto.DeConfigDetailLogDTO;
-import cn.cordys.crm.integration.qcc.dto.QccDetailDTO;
-import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailDTO;
-import cn.cordys.crm.integration.sqlbot.dto.SqlBotConfigDetailLogDTO;
 import cn.cordys.crm.integration.sso.service.AgentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdSwitchLogDTO;
@@ -36,6 +27,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -68,37 +60,144 @@ public class IntegrationConfigService {
 
     @Resource
     private AgentService agentService;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * 获取同步的组织配置
      */
-    public List<ThirdConfigurationDTO> getThirdConfig(String organizationId) {
+    public List<ThirdConfigBaseDTO> getThirdConfig(String organizationId) {
         List<OrganizationConfigDetail> organizationConfigDetails = initConfig(organizationId, SessionUtils.getUserId());
 
 
         // 构建第三方配置列表
-        List<ThirdConfigurationDTO> configDTOs = new ArrayList<>();
-
-        // 添加企业微信、飞书、钉钉配置
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.WECOM.name()));
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.LARK.name()));
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.DINGTALK.name()));
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.MAXKB.name()));
-
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.TENDER.name()));
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.QCC.name()));
-
-        // 添加数据看板配置
-        ThirdConfigurationDTO deEmbeddedConfig = getThirdConfigurationDTOByType(
-                organizationConfigDetails, ThirdConstants.ThirdDetailType.DE_BOARD.toString());
-        if (deEmbeddedConfig != null) {
-            deEmbeddedConfig.setType(DepartmentConstants.DE.name());
-            configDTOs.add(deEmbeddedConfig);
-        }
-        // 添加SQL机器人配置
-        addConfigIfExists(configDTOs, getThirdConfigurationDTOByType(organizationConfigDetails, DepartmentConstants.SQLBOT.name()));
+        List<ThirdConfigBaseDTO> configDTOs = new ArrayList<>();
+        buildDetailData(organizationConfigDetails, configDTOs);
 
         return configDTOs;
+    }
+
+    private void buildDetailData(List<OrganizationConfigDetail> details, List<ThirdConfigBaseDTO> configDTOs) {
+        ThirdConfigBaseDTO sqlBotConfig = new ThirdConfigBaseDTO();
+        SqlBotThirdConfigRequest sqlBotDTO = new SqlBotThirdConfigRequest();
+        for (OrganizationConfigDetail detail : details) {
+            ThirdConfigBaseDTO dto = new ThirdConfigBaseDTO();
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.WECOM_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                WecomThirdConfigRequest wecomThirdConfigRequest = new WecomThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    wecomThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), WecomThirdConfigRequest.class);
+                } else {
+                    wecomThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), WecomThirdConfigRequest.class);
+                }
+                wecomThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.WECOM.name());
+                dto.setConfig(wecomThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DINGTALK_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                DingTalkThirdConfigRequest dingTalkThirdConfigRequest = new DingTalkThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    dingTalkThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), DingTalkThirdConfigRequest.class);
+                } else {
+                    dingTalkThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), DingTalkThirdConfigRequest.class);
+                }
+                dingTalkThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.DINGTALK.name());
+                dto.setConfig(dingTalkThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.LARK_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                LarkThirdConfigRequest larkThirdConfigRequest = new LarkThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    larkThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), LarkThirdConfigRequest.class);
+                } else {
+                    larkThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), LarkThirdConfigRequest.class);
+                }
+                larkThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.LARK.name());
+                dto.setConfig(larkThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DE_BOARD.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                DeThirdConfigRequest deThirdConfigRequest = new DeThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    deThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), DeThirdConfigRequest.class);
+                } else {
+                    deThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), DeThirdConfigRequest.class);
+                }
+                deThirdConfigRequest.setDeBoardEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.DE.name());
+                dto.setConfig(deThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_CHAT.name())
+                    || Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_BOARD.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                SqlBotThirdConfigRequest sqlBotThirdConfigRequest = new SqlBotThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    sqlBotThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), SqlBotThirdConfigRequest.class);
+                } else {
+                    sqlBotThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), SqlBotThirdConfigRequest.class);
+                }
+                if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_CHAT.name())) {
+                    sqlBotDTO.setSqlBotChatEnable(detail.getEnable());
+                } else {
+                    sqlBotDTO.setSqlBotBoardEnable(detail.getEnable());
+                }
+                sqlBotDTO.setAppSecret(sqlBotThirdConfigRequest.getAppSecret());
+                //dto.setType(ThirdConfigTypeConstants.SQLBOT.name());
+                sqlBotConfig.setType(ThirdConfigTypeConstants.SQLBOT.name());
+                sqlBotConfig.setVerify(dto.getVerify());
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.MAXKB.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                MaxKBThirdConfigRequest maxKBThirdConfigRequest = new MaxKBThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    maxKBThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), MaxKBThirdConfigRequest.class);
+                } else {
+                    maxKBThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), MaxKBThirdConfigRequest.class);
+                }
+                maxKBThirdConfigRequest.setMkEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.MAXKB.name());
+                dto.setConfig(maxKBThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.TENDER.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                TenderThirdConfigRequest tenderThirdConfigRequest = new TenderThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    tenderThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), TenderThirdConfigRequest.class);
+                } else {
+                    tenderThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), TenderThirdConfigRequest.class);
+                }
+                tenderThirdConfigRequest.setTenderEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.TENDER.name());
+                dto.setConfig(tenderThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.QCC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                QccThirdConfigRequest qccThirdConfigRequest = new QccThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    qccThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), QccThirdConfigRequest.class);
+                } else {
+                    qccThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), QccThirdConfigRequest.class);
+                }
+                qccThirdConfigRequest.setQccEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.QCC.name());
+                dto.setConfig(qccThirdConfigRequest);
+                configDTOs.add(dto);
+            }
+
+        }
+
+        if (sqlBotConfig.getType() != null) {
+            sqlBotConfig.setConfig(sqlBotDTO);
+            configDTOs.add(sqlBotConfig);
+        }
     }
 
     private List<OrganizationConfigDetail> initConfig(String organizationId, String userId) {
@@ -110,7 +209,7 @@ public class IntegrationConfigService {
         List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper
                 .getOrganizationConfigDetails(organizationConfig.getId(), null);
 
-        OrganizationConfigDetail tenderConfig = organizationConfigDetails.stream().filter(detail -> Strings.CI.contains(detail.getType(), DepartmentConstants.TENDER.name()))
+        OrganizationConfigDetail tenderConfig = organizationConfigDetails.stream().filter(detail -> Strings.CI.contains(detail.getType(), ThirdConfigTypeConstants.TENDER.name()))
                 .findFirst().orElse(null);
         if (tenderConfig == null) {
             initTender(userId, organizationConfig);
@@ -126,7 +225,7 @@ public class IntegrationConfigService {
         tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
         tenderConfig.setVerify(true);
         OrganizationConfigDetail detail = createConfigDetail(userId, organizationConfig, JSON.toJSONString(tenderConfig));
-        detail.setType(DepartmentConstants.TENDER.name());
+        detail.setType(ThirdConfigTypeConstants.TENDER.name());
         detail.setEnable(true);
         detail.setName(Translator.get("third.setting"));
         organizationConfigDetailBaseMapper.insert(detail);
@@ -135,7 +234,7 @@ public class IntegrationConfigService {
     /**
      * 如果配置不为空，添加到列表中
      */
-    private void addConfigIfExists(List<ThirdConfigurationDTO> configs, ThirdConfigurationDTO config) {
+    private void addConfigIfExists(List<ThirdConfigBaseDTO> configs, ThirdConfigBaseDTO config) {
         if (config != null) {
             configs.add(config);
         }
@@ -146,9 +245,9 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 已查出的数据
      * @param type                      类型
-     * @return ThirdConfigurationDTO
+     * @return ThirdConfigBaseDTO
      */
-    private ThirdConfigurationDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
+    private ThirdConfigBaseDTO getThirdConfigurationDTOByType(List<OrganizationConfigDetail> organizationConfigDetails, String type) {
         List<OrganizationConfigDetail> detailList = organizationConfigDetails.stream()
                 .filter(t -> t.getType().contains(type))
                 .toList();
@@ -156,57 +255,80 @@ public class IntegrationConfigService {
         if (CollectionUtils.isEmpty(detailList)) {
             return null;
         }
-
-        ThirdEnableDTO enableDTO = new ThirdEnableDTO();
-
-        // 处理各种类型的启用状态
+        ThirdConfigBaseDTO dto = new ThirdConfigBaseDTO();
         for (OrganizationConfigDetail detail : detailList) {
-            String detailType = detail.getType();
-            Boolean isEnabled = detail.getEnable();
-
-            if (detailType.contains("SYNC")) {
-                enableDTO.setStartEnable(isEnabled);
-            } else if (detailType.contains("BOARD")) {
-                enableDTO.setBoardEnable(isEnabled);
-            } else if (detailType.contains("CHAT")) {
-                enableDTO.setChatEnable(isEnabled);
-            } else if (detailType.contains("MAXKB")) {
-                enableDTO.setMkEnable(isEnabled);
-            } else if (detailType.contains("TENDER")) {
-                enableDTO.setTenderEnable(isEnabled);
-            } else if (detailType.contains("QCC")) {
-                enableDTO.setQccEnable(isEnabled);
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.WECOM_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                WecomThirdConfigRequest wecomThirdConfigRequest = new WecomThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    wecomThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), WecomThirdConfigRequest.class);
+                } else {
+                    wecomThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), WecomThirdConfigRequest.class);
+                }
+                wecomThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.WECOM.name());
+                dto.setConfig(wecomThirdConfigRequest);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DINGTALK_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                DingTalkThirdConfigRequest dingTalkThirdConfigRequest = new DingTalkThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    dingTalkThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), DingTalkThirdConfigRequest.class);
+                } else {
+                    dingTalkThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), DingTalkThirdConfigRequest.class);
+                }
+                dingTalkThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.DINGTALK.name());
+                dto.setConfig(dingTalkThirdConfigRequest);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.LARK_SYNC.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                LarkThirdConfigRequest larkThirdConfigRequest = new LarkThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    larkThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), LarkThirdConfigRequest.class);
+                } else {
+                    larkThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), LarkThirdConfigRequest.class);
+                }
+                larkThirdConfigRequest.setStartEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.LARK.name());
+                dto.setConfig(larkThirdConfigRequest);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.MAXKB.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                MaxKBThirdConfigRequest maxKBThirdConfigRequest = new MaxKBThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    maxKBThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), MaxKBThirdConfigRequest.class);
+                } else {
+                    maxKBThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), MaxKBThirdConfigRequest.class);
+                }
+                maxKBThirdConfigRequest.setMkEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.MAXKB.name());
+                dto.setConfig(maxKBThirdConfigRequest);
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.TENDER.name())) {
+                dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                TenderThirdConfigRequest tenderThirdConfigRequest = new TenderThirdConfigRequest();
+                if (dto.getConfig() == null) {
+                    tenderThirdConfigRequest = JSON.parseObject(new String(detail.getContent()), TenderThirdConfigRequest.class);
+                } else {
+                    tenderThirdConfigRequest = MAPPER.convertValue(dto.getConfig(), TenderThirdConfigRequest.class);
+                }
+                tenderThirdConfigRequest.setTenderEnable(detail.getEnable());
+                dto.setType(ThirdConfigTypeConstants.TENDER.name());
+                dto.setConfig(tenderThirdConfigRequest);
             }
         }
 
-        return buildThirdConfigurationDTO(detailList.getFirst().getContent(), type, enableDTO);
-    }
 
-    /**
-     * 构建需要展示的数据结构
-     */
-    private ThirdConfigurationDTO buildThirdConfigurationDTO(byte[] content, String type, ThirdEnableDTO thirdEnableDTO) {
-        ThirdConfigurationDTO configDTO = JSON.parseObject(
-                new String(content), ThirdConfigurationDTO.class
-        );
+        return dto;
 
-        configDTO.setType(type);
-        configDTO.setStartEnable(thirdEnableDTO.isStartEnable());
-        configDTO.setDeBoardEnable(thirdEnableDTO.isBoardEnable());
-        configDTO.setSqlBotChatEnable(thirdEnableDTO.isChatEnable());
-        configDTO.setSqlBotBoardEnable(thirdEnableDTO.isBoardEnable());
-        configDTO.setMkEnable(thirdEnableDTO.isMkEnable());
-        configDTO.setTenderEnable(thirdEnableDTO.isTenderEnable());
-        configDTO.setQccEnable(thirdEnableDTO.isQccEnable());
-
-        return configDTO;
     }
 
     /**
      * 编辑配置
      */
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_THIRD, type = LogType.UPDATE, operator = "{#userId}")
-    public void editThirdConfig(ThirdConfigurationDTO configDTO, String organizationId, String userId) {
+    public void editThirdConfig(ThirdConfigBaseDTO configDTO, String organizationId, String userId) {
         // 获取或创建组织配置
         OrganizationConfig organizationConfig = getOrCreateOrganizationConfig(organizationId, userId);
 
@@ -223,7 +345,7 @@ public class IntegrationConfigService {
 
         //这里检查一下最近同步的来源是否和当前修改的一致，如果不一致，且当前平台开启同步按钮，则关闭其他平台按钮
         String lastSyncType = getLastSyncType(organizationConfig.getId());
-        if (lastSyncType != null && !Strings.CI.equals(lastSyncType, configDTO.getType()) && configDTO.getStartEnable()) {
+        if (lastSyncType != null && !Strings.CI.equals(lastSyncType, configDTO.getType()) && getEnable(configDTO)) {
             // 关闭其他平台按钮
             List<String> detailTypes = getDetailTypes(lastSyncType);
             detailTypes.forEach(detailType -> extOrganizationConfigDetailMapper.updateStatus(
@@ -237,6 +359,27 @@ public class IntegrationConfigService {
         } else {
             // 更新已有配置
             handleExistingConfigDetails(configDTO, userId, token, types, organizationConfig, existingDetails, typeEnableMap);
+        }
+    }
+
+    private boolean getEnable(ThirdConfigBaseDTO configDTO) {
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (typeConstants) {
+            case WECOM -> {
+                WecomThirdConfigRequest weComConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                return weComConfig.getStartEnable();
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                return dingTalkConfig.getStartEnable();
+            }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                return larkConfig.getStartEnable();
+            }
+            default -> {
+                return false;
+            }
         }
     }
 
@@ -267,7 +410,7 @@ public class IntegrationConfigService {
      * 处理新建配置详情
      */
     private void handleNewConfigDetails(
-            ThirdConfigurationDTO configDTO,
+            ThirdConfigBaseDTO configDTO,
             String userId,
             String token,
             List<String> types,
@@ -280,82 +423,94 @@ public class IntegrationConfigService {
     /**
      * 封装了各种 `add...Detail` 方法的统一入口
      */
-    private void addIntegrationDetail(ThirdConfigurationDTO configDTO, String userId, String token, List<String> types, OrganizationConfig organizationConfig, Map<String, Boolean> typeEnableMap) {
-        String type = configDTO.getType();
-        String jsonContent;
-        Boolean verify;
-
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            ThirdConfigDetailDTO weComConfig = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(weComConfig, configDTO);
-            if (configDTO.getStartEnable()) {
-                verifyWeCom(configDTO, token, weComConfig);
-            } else {
-                weComConfig.setVerify(configDTO.getVerify());
+    private void addIntegrationDetail(ThirdConfigBaseDTO configDTO, String userId, String token, List<String> types, OrganizationConfig organizationConfig, Map<String, Boolean> typeEnableMap) {
+        String jsonContent = null;
+        Boolean verify = false;
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (typeConstants) {
+            case WECOM -> {
+                WecomThirdConfigRequest wecomConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                if (wecomConfig.getStartEnable()) {
+                    verifyWeCom(wecomConfig.getAgentId(), token, configDTO);
+                }
+                configDTO.setConfig(wecomConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(wecomConfig)));
             }
-            jsonContent = JSON.toJSONString(weComConfig);
-            verify = weComConfig.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            ThirdConfigDetailDTO dingTalkConfigDetailDTO = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(dingTalkConfigDetailDTO, configDTO);
-            if (configDTO.getStartEnable()) {
-                verifyDingTalk(token, dingTalkConfigDetailDTO);
-            } else {
-                dingTalkConfigDetailDTO.setVerify(configDTO.getVerify());
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                if (dingTalkConfig.getStartEnable()) {
+                    verifyDingTalk(token, configDTO);
+                }
+                configDTO.setConfig(dingTalkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(dingTalkConfig)));
             }
-            jsonContent = JSON.toJSONString(dingTalkConfigDetailDTO);
-            verify = dingTalkConfigDetailDTO.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            ThirdConfigDetailDTO larkConfigDetailDTO = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(larkConfigDetailDTO, configDTO);
-            if (configDTO.getStartEnable()) {
-                verifyLark(token, larkConfigDetailDTO);
-            } else {
-                larkConfigDetailDTO.setVerify(configDTO.getVerify());
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                if (larkConfig.getStartEnable()) {
+                    verifyLark(token, configDTO);
+                }
+                configDTO.setConfig(larkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(larkConfig)));
             }
-            jsonContent = JSON.toJSONString(larkConfigDetailDTO);
-            verify = larkConfigDetailDTO.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
-            BeanUtils.copyBean(deConfig, configDTO);
-            if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
-                verifyDe(token, deConfig);
-            } else {
-                deConfig.setVerify(configDTO.getVerify());
+            case DE -> {
+                DeThirdConfigRequest deConfig = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                if (BooleanUtils.isTrue(deConfig.getDeBoardEnable())) {
+                    verifyDe(token, configDTO);
+                }
+                configDTO.setConfig(deConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(deConfig)));
             }
-            jsonContent = JSON.toJSONString(deConfig);
-            verify = deConfig.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
-            BeanUtils.copyBean(sqlBotConfig, configDTO);
-            if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
-                verifySqlBot(token, sqlBotConfig);
-            } else {
-                sqlBotConfig.setVerify(configDTO.getVerify());
+            case SQLBOT -> {
+                SqlBotThirdConfigRequest sqlBotConfig = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                if (sqlBotConfig.getSqlBotBoardEnable() || sqlBotConfig.getSqlBotChatEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(sqlBotConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(sqlBotConfig)));
             }
-            jsonContent = JSON.toJSONString(sqlBotConfig);
-            verify = sqlBotConfig.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
-            MaxKBConfigDetailDTO mkConfig = new MaxKBConfigDetailDTO();
-            BeanUtils.copyBean(mkConfig, configDTO);
-            mkConfig.setVerify(configDTO.getVerify());
-            jsonContent = JSON.toJSONString(mkConfig);
-            verify = mkConfig.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
-            TenderDetailDTO tenderConfig = new TenderDetailDTO();
-            tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
-            tenderConfig.setVerify(configDTO.getVerify());
-            jsonContent = JSON.toJSONString(tenderConfig);
-            verify = tenderConfig.getVerify();
-        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
-            QccDetailDTO qccConfig = new QccDetailDTO();
-            BeanUtils.copyBean(qccConfig, configDTO);
-            qccConfig.setVerify(configDTO.getVerify());
-            jsonContent = JSON.toJSONString(qccConfig);
-            verify = qccConfig.getVerify();
-        } else {
-            return;
+            case MAXKB -> {
+                MaxKBThirdConfigRequest mkConfig = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                if (mkConfig.getMkEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(mkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(mkConfig)));
+            }
+            case TENDER -> {
+                TenderThirdConfigRequest tenderConfig = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
+                if (tenderConfig.getTenderEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(tenderConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(tenderConfig)));
+            }
+            case QCC -> {
+                QccThirdConfigRequest qccConfig = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                if (qccConfig.getQccEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(qccConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                verify = configDTO.getVerify();
+                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(qccConfig)));
+            }
         }
+
 
         saveDetail(userId, organizationConfig, types, typeEnableMap, jsonContent, verify);
     }
@@ -365,7 +520,7 @@ public class IntegrationConfigService {
      * 处理已存在的配置详情
      */
     private void handleExistingConfigDetails(
-            ThirdConfigurationDTO configDTO,
+            ThirdConfigBaseDTO configDTO,
             String userId,
             String token,
             List<String> types,
@@ -373,17 +528,10 @@ public class IntegrationConfigService {
             List<OrganizationConfigDetail> existingDetails,
             Map<String, Boolean> typeEnableMap) {
 
-        // 原有的配置数据
-        ThirdConfigurationDTO oldConfig = JSON.parseObject(
-                new String(existingDetails.getFirst().getContent()), ThirdConfigurationDTO.class
-        );
-        oldConfig.setType(configDTO.getType());
-
         // 已存在类型的映射
         Map<String, OrganizationConfigDetail> existDetailTypeMap = existingDetails.stream()
                 .collect(Collectors.toMap(OrganizationConfigDetail::getType, t -> t));
-
-        // 遍历所有类型，处理更新或新建
+        //ThirdConfigTypeConstants type = ThirdConfigTypeConstants.fromString(configDTO.getType());
         for (String type : types) {
             if (!existDetailTypeMap.containsKey(type)) {
                 // 不存在的类型，需要新建
@@ -393,189 +541,231 @@ public class IntegrationConfigService {
                 OrganizationConfigDetail detail = existDetailTypeMap.get(type);
                 //如果更改的企业id和之前不一致，则如果之前的同步状态未true，则改为false
                 if (BooleanUtils.isTrue(organizationConfig.isSync()) && organizationConfig.getSyncResource() != null && Strings.CI.equals(organizationConfig.getSyncResource(), configDTO.getType())
-                        && !Strings.CI.equals(oldConfig.getCorpId(), configDTO.getCorpId())) {
+                        && syncCorpId(existingDetails.getFirst().getContent(), configDTO)) {
                     extOrganizationConfigMapper.updateSyncFlag(organizationConfig.getOrganizationId(), organizationConfig.getSyncResource(), organizationConfig.getType(), false);
                 }
-                updateExistingDetail(configDTO, userId, token, oldConfig, detail, typeEnableMap.get(type));
+                updateExistingDetail(configDTO, userId, token, detail, typeEnableMap.get(type), organizationConfig.getId());
             }
         }
+    }
 
-        // 添加日志上下文
-        logOperation(oldConfig, configDTO, organizationConfig.getId());
+    private boolean syncCorpId(byte[] content, ThirdConfigBaseDTO configDTO) {
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (typeConstants) {
+            case WECOM, DINGTALK, LARK -> {
+                WecomThirdConfigRequest oldConfig = JSON.parseObject(new String(content), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                return !Strings.CI.equals(oldConfig.getCorpId(), config.getCorpId());
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     /**
      * 更新已存在的配置详情
      */
     private void updateExistingDetail(
-            ThirdConfigurationDTO configDTO,
+            ThirdConfigBaseDTO configDTO,
             String userId,
             String token,
-            ThirdConfigurationDTO oldConfig,
             OrganizationConfigDetail detail,
-            Boolean enable) {
+            Boolean enable,
+            String id) {
 
-        updateIntegrationDetail(configDTO, userId, token, oldConfig, detail, enable);
+        updateIntegrationDetail(configDTO, userId, token, detail, enable, id);
     }
 
     /**
      * 封装了各种 `update...` 方法的统一入口
      */
     private void updateIntegrationDetail(
-            ThirdConfigurationDTO configDTO,
+            ThirdConfigBaseDTO configDTO,
             String userId,
             String token,
-            ThirdConfigurationDTO oldConfig,
             OrganizationConfigDetail detail,
-            Boolean enable) {
+            Boolean enable,
+            String id) {
 
         String type = configDTO.getType();
-        String jsonContent;
+        String jsonContent = null;
         boolean isVerified;
         String detailType = detail.getType();
-        boolean openEnable;
+        boolean openEnable = false;
 
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            ThirdConfigDetailDTO weComConfig = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(weComConfig, configDTO);
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (typeConstants) {
+            case WECOM -> {
+                WecomThirdConfigRequest wecomConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                if (wecomConfig.getStartEnable()) {
+                    verifyWeCom(wecomConfig.getAgentId(), token, configDTO);
+                }
+                configDTO.setConfig(wecomConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                isVerified = configDTO.getVerify() != null && configDTO.getVerify();
+                openEnable = isVerified && enable;
 
-            if (configDTO.getStartEnable()) {
-                verifyWeCom(configDTO, token, weComConfig);
-                configDTO.setVerify(weComConfig.getVerify());
-            } else {
-                weComConfig.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                WecomThirdConfigRequest oldConfig = new WecomThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), WecomThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(wecomConfig)));
             }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                if (dingTalkConfig.getStartEnable()) {
+                    verifyDingTalk(token, configDTO);
+                }
+                configDTO.setConfig(dingTalkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                isVerified = configDTO.getVerify() != null && configDTO.getVerify();
+                openEnable = isVerified && enable;
 
-            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
-
-            isVerified = weComConfig.getVerify() != null && weComConfig.getVerify();
-            jsonContent = JSON.toJSONString(weComConfig);
-            openEnable = isVerified && enable;
-
-        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            DeConfigDetailDTO deConfig = new DeConfigDetailDTO();
-            BeanUtils.copyBean(deConfig, configDTO);
-
-            if (Boolean.TRUE.equals(configDTO.getDeBoardEnable())) {
-                verifyDe(token, deConfig);
-                configDTO.setVerify(deConfig.getVerify());
-            } else {
-                deConfig.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                DingTalkThirdConfigRequest oldConfig = new DingTalkThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), DingTalkThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(dingTalkConfig)));
             }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                if (larkConfig.getStartEnable()) {
+                    verifyLark(token, configDTO);
+                }
+                configDTO.setConfig(larkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                isVerified = configDTO.getVerify() != null && configDTO.getVerify();
+                openEnable = isVerified && enable;
 
-            oldConfig.setDeBoardEnable(detail.getEnable());
-
-            jsonContent = JSON.toJSONString(deConfig);
-            openEnable = enable;
-
-        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            SqlBotConfigDetailDTO sqlBotConfig = new SqlBotConfigDetailDTO();
-            BeanUtils.copyBean(sqlBotConfig, configDTO);
-
-            if (configDTO.getSqlBotBoardEnable() || configDTO.getSqlBotChatEnable()) {
-                verifySqlBot(token, sqlBotConfig);
-                configDTO.setVerify(sqlBotConfig.getVerify());
-            } else {
-                sqlBotConfig.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                LarkThirdConfigRequest oldConfig = new LarkThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), LarkThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(larkConfig)));
             }
+            case DE -> {
+                DeThirdConfigRequest deConfig = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                if (BooleanUtils.isTrue(deConfig.getDeBoardEnable())) {
+                    verifyDe(token, configDTO);
+                }
+                configDTO.setConfig(deConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                openEnable = enable;
 
-            if (detailType.contains("CHAT")) {
-                oldConfig.setSqlBotChatEnable(detail.getEnable());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                DeThirdConfigRequest oldConfig = new DeThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), DeThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), DeThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(deConfig)));
             }
-            if (detailType.contains("BOARD")) {
-                oldConfig.setSqlBotBoardEnable(detail.getEnable());
+            case SQLBOT -> {
+                SqlBotThirdConfigRequest sqlBotConfig = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                if (sqlBotConfig.getSqlBotBoardEnable() || sqlBotConfig.getSqlBotChatEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(sqlBotConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                isVerified = configDTO.getVerify() != null && configDTO.getVerify();
+                openEnable = isVerified && enable;
+
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                SqlBotThirdConfigRequest oldConfig = new SqlBotThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), SqlBotThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), SqlBotThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(sqlBotConfig)));
             }
+            case MAXKB -> {
+                MaxKBThirdConfigRequest mkConfig = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                if (mkConfig.getMkEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(mkConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                openEnable = enable;
 
-            isVerified = sqlBotConfig.getVerify() != null && sqlBotConfig.getVerify();
-            jsonContent = JSON.toJSONString(sqlBotConfig);
-            openEnable = isVerified && enable;
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            ThirdConfigDetailDTO dingTalkConfigDetailDTO = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(dingTalkConfigDetailDTO, configDTO);
-
-            if (configDTO.getStartEnable()) {
-                verifyDingTalk(token, dingTalkConfigDetailDTO);
-                configDTO.setVerify(dingTalkConfigDetailDTO.getVerify());
-            } else {
-                dingTalkConfigDetailDTO.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                MaxKBThirdConfigRequest oldConfig = new MaxKBThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), MaxKBThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), MaxKBThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(mkConfig)));
             }
+            case TENDER -> {
+                TenderThirdConfigRequest tenderConfig = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
+                if (tenderConfig.getTenderEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(tenderConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                openEnable = enable;
 
-            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
-
-            isVerified = dingTalkConfigDetailDTO.getVerify() != null && dingTalkConfigDetailDTO.getVerify();
-            jsonContent = JSON.toJSONString(dingTalkConfigDetailDTO);
-
-            openEnable = isVerified && enable;
-
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            ThirdConfigDetailDTO larkConfigDetailDTO = new ThirdConfigDetailDTO();
-            BeanUtils.copyBean(larkConfigDetailDTO, configDTO);
-
-            if (configDTO.getStartEnable()) {
-                verifyLark(token, larkConfigDetailDTO);
-                configDTO.setVerify(larkConfigDetailDTO.getVerify());
-            } else {
-                larkConfigDetailDTO.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                TenderThirdConfigRequest oldConfig = new TenderThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), TenderThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), TenderThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(tenderConfig)));
             }
+            case QCC -> {
+                QccThirdConfigRequest qccConfig = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                if (qccConfig.getQccEnable()) {
+                    verifyToken(token, configDTO);
+                }
+                configDTO.setConfig(qccConfig);
+                jsonContent = JSON.toJSONString(configDTO);
+                openEnable = enable;
 
-            updateOldConfigEnableState(oldConfig, detailType, detail.getEnable());
-
-            isVerified = larkConfigDetailDTO.getVerify() != null && larkConfigDetailDTO.getVerify();
-            jsonContent = JSON.toJSONString(larkConfigDetailDTO);
-
-            openEnable = isVerified && enable;
-        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
-            MaxKBConfigDetailDTO mkConfig = new MaxKBConfigDetailDTO();
-            BeanUtils.copyBean(mkConfig, configDTO);
-            if (Boolean.TRUE.equals(configDTO.getMkEnable())) {
-                verifyMk(token, mkConfig);
-                configDTO.setVerify(mkConfig.getVerify());
-            } else {
-                mkConfig.setVerify(configDTO.getVerify());
+                ThirdConfigBaseDTO config = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
+                QccThirdConfigRequest oldConfig = new QccThirdConfigRequest();
+                if (config.getConfig() == null) {
+                    oldConfig = JSON.parseObject(new String(detail.getContent()), QccThirdConfigRequest.class);
+                } else {
+                    oldConfig = MAPPER.convertValue(config.getConfig(), QccThirdConfigRequest.class);
+                }
+                addLog(JSON.parseToMap(JSON.toJSONString(oldConfig)), configDTO, id, JSON.parseToMap(JSON.toJSONString(qccConfig)));
             }
-            oldConfig.setMkEnable(detail.getEnable());
-            jsonContent = JSON.toJSONString(mkConfig);
-            openEnable = enable;
-        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
-            TenderDetailDTO tenderConfig = new TenderDetailDTO();
-            tenderConfig.setVerify(configDTO.getVerify());
-            tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
-            if (Boolean.TRUE.equals(configDTO.getTenderEnable())) {
-                verifyTender(token, tenderConfig);
-                configDTO.setVerify(tenderConfig.getVerify());
-            } else {
-                tenderConfig.setVerify(configDTO.getVerify());
-            }
-            oldConfig.setTenderEnable(detail.getEnable());
-            jsonContent = JSON.toJSONString(tenderConfig);
-            openEnable = enable;
-        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
-            QccDetailDTO qccConfig = new QccDetailDTO();
-            BeanUtils.copyBean(qccConfig, configDTO);
-            if (Boolean.TRUE.equals(configDTO.getQccEnable())) {
-                verifyQcc(token, qccConfig);
-                configDTO.setVerify(qccConfig.getVerify());
-            } else {
-                qccConfig.setVerify(configDTO.getVerify());
-            }
-            oldConfig.setQccEnable(detail.getEnable());
-            jsonContent = JSON.toJSONString(qccConfig);
-            openEnable = enable;
-        } else {
-            return;
         }
 
         updateOrganizationConfigDetail(jsonContent, userId, detail, openEnable);
 
     }
 
-    private void updateOldConfigEnableState(ThirdConfigurationDTO oldConfig, String detailType, Boolean enable) {
-        if (detailType.contains("SYNC")) {
-            oldConfig.setStartEnable(enable);
-        }
+    private void addLog(Map<String, Object> oldMap, ThirdConfigBaseDTO configDTO, String id, Map<String, Object> newMap) {
+        oldMap.put("type", configDTO.getType());
+        oldMap.put("verify", configDTO.getVerify());
+        newMap.put("type", configDTO.getType());
+        newMap.put("verify", configDTO.getVerify());
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .resourceName(Translator.get("third.setting"))
+                .resourceId(id)
+                .originalValue(oldMap)
+                .modifiedValue(newMap)
+                .build());
     }
 
-    private void verifyDe(String token, DeConfigDetailDTO deConfig) {
+
+    private void verifyDe(String token, ThirdConfigBaseDTO deConfig) {
         deConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
@@ -611,120 +801,90 @@ public class IntegrationConfigService {
         return detail;
     }
 
-    private void verifyWeCom(ThirdConfigurationDTO configDTO, String token, ThirdConfigDetailDTO weComConfig) {
+    private void verifyWeCom(String agentId, String token, ThirdConfigBaseDTO weComConfig) {
         if (StringUtils.isNotBlank(token)) {
             // 验证应用ID
-            Boolean weComAgent = agentService.getWeComAgent(token, configDTO.getAgentId());
+            Boolean weComAgent = agentService.getWeComAgent(token, agentId);
             weComConfig.setVerify(weComAgent != null && weComAgent);
         } else {
             weComConfig.setVerify(false);
         }
     }
 
-    private void verifyDingTalk(String token, ThirdConfigDetailDTO dingTalkConfigDetailDTO) {
+    private void verifyDingTalk(String token, ThirdConfigBaseDTO dingTalkConfigDetailDTO) {
         dingTalkConfigDetailDTO.setVerify(StringUtils.isNotBlank(token));
     }
 
-    private void verifyLark(String token, ThirdConfigDetailDTO larkConfigDetailDTO) {
+    private void verifyLark(String token, ThirdConfigBaseDTO larkConfigDetailDTO) {
         larkConfigDetailDTO.setVerify(StringUtils.isNotBlank(token));
     }
 
-    private void verifySqlBot(String token, SqlBotConfigDetailDTO sqlBotConfig) {
-        sqlBotConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
-    }
-
-    private void verifyMk(String token, MaxKBConfigDetailDTO mkConfig) {
-        mkConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
-    }
-
-    private void verifyTender(String token, TenderDetailDTO tenderConfig) {
-        tenderConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
-    }
-
-    private void verifyQcc(String token, QccDetailDTO qccConfig) {
-        qccConfig.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
+    private void verifyToken(String token, ThirdConfigBaseDTO config) {
+        config.setVerify(StringUtils.isNotBlank(token) && Strings.CI.equals(token, "true"));
     }
 
     /**
      * 根据配置类型获取详情类型列表
      */
     private List<String> getDetailTypes(String type) {
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.WECOM_SYNC.toString()
-            );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString()
-            );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.LARK_SYNC.toString()
-            );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            return List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString());
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            return List.of(
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(type);
+        List<String> result = switch (typeConstants) {
+            case WECOM -> List.of(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
+            case DINGTALK -> List.of(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
+            case LARK -> List.of(ThirdConstants.ThirdDetailType.LARK_SYNC.toString());
+            case DE -> List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString());
+            case SQLBOT -> List.of(
                     ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(),
                     ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString()
             );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.MAXKB.toString()
-            );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.TENDER.toString()
-            );
-        }
-
-        if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
-            return List.of(
-                    ThirdConstants.ThirdDetailType.QCC.toString()
-            );
-        }
-
-
-        return new ArrayList<>();
+            case MAXKB -> List.of(ThirdConstants.ThirdDetailType.MAXKB.toString());
+            case TENDER -> List.of(ThirdConstants.ThirdDetailType.TENDER.toString());
+            case QCC -> List.of(ThirdConstants.ThirdDetailType.QCC.toString());
+            default -> Collections.emptyList();
+        };
+        return result;
     }
 
     /**
      * 获取类型启用状态映射
      */
-    private Map<String, Boolean> getTypeEnableMap(ThirdConfigurationDTO configDTO) {
+    private Map<String, Boolean> getTypeEnableMap(ThirdConfigBaseDTO configDTO) {
         Map<String, Boolean> map = new HashMap<>();
-        String type = configDTO.getType();
-
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name())) {
-            map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), configDTO.getStartEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.DINGTALK.name())) {
-            map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), configDTO.getStartEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), configDTO.getStartEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(),
-                    configDTO.getDeBoardEnable() != null && configDTO.getDeBoardEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            map.put(ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(), configDTO.getSqlBotChatEnable());
-            map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), configDTO.getSqlBotBoardEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
-            map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), configDTO.getMkEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.TENDER.name())) {
-            map.put(ThirdConstants.ThirdDetailType.TENDER.toString(), configDTO.getTenderEnable());
-        } else if (Strings.CI.equals(type, DepartmentConstants.QCC.name())) {
-            map.put(ThirdConstants.ThirdDetailType.QCC.toString(), configDTO.getQccEnable());
+        ThirdConfigTypeConstants type = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (type) {
+            case WECOM -> {
+                WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), config.getStartEnable());
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), config.getStartEnable());
+            }
+            case LARK -> {
+                LarkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), config.getStartEnable());
+            }
+            case DE -> {
+                DeThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(), config.getDeBoardEnable());
+            }
+            case SQLBOT -> {
+                SqlBotThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(), config.getSqlBotChatEnable());
+                map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), config.getSqlBotBoardEnable());
+            }
+            case MAXKB -> {
+                MaxKBThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), config.getMkEnable());
+            }
+            case TENDER -> {
+                TenderThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.TENDER.toString(), config.getTenderEnable());
+            }
+            case QCC -> {
+                QccThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                map.put(ThirdConstants.ThirdDetailType.QCC.toString(), config.getQccEnable());
+            }
         }
 
         return map;
@@ -733,32 +893,46 @@ public class IntegrationConfigService {
     /**
      * 获取验证所需的token
      */
-    private String getToken(ThirdConfigurationDTO configDTO) {
-        String type = configDTO.getType();
-
-        if (DepartmentConstants.WECOM.name().equals(type)) {
-            return tokenService.getAssessToken(configDTO.getCorpId(), configDTO.getAppSecret());
-        } else if (DepartmentConstants.DINGTALK.name().equals(type)) {
-            return tokenService.getDingTalkToken(configDTO.getAgentId(), configDTO.getAppSecret());
-        } else if (DepartmentConstants.LARK.name().equals(type)) {
-            return tokenService.getLarkToken(configDTO.getAgentId(), configDTO.getAppSecret());
-        } else if (DepartmentConstants.DE.name().equals(type)) {
-            boolean verify = validDeConfig(configDTO);
-            return verify ? "true" : null;
-        } else if (DepartmentConstants.SQLBOT.name().equals(type)) {
-            return tokenService.getSqlBotSrc(configDTO.getAppSecret()) ? "true" : null;
-        } else if (DepartmentConstants.MAXKB.name().equals(type)) {
-            return tokenService.getMaxKBToken(configDTO.getMkAddress(), configDTO.getAppSecret()) ? "true" : null;
-        } else if (DepartmentConstants.TENDER.name().equals(type)) {
-            return tokenService.getTender() ? "true" : null;
-        } else if (DepartmentConstants.QCC.name().equals(type)) {
-            return tokenService.getQcc(configDTO.getQccAddress(),configDTO.getQccAccessKey(),configDTO.getQccSecretKey())? "true":null;
+    private String getToken(ThirdConfigBaseDTO configDTO) {
+        ThirdConfigTypeConstants type = ThirdConfigTypeConstants.fromString(configDTO.getType());
+        switch (type) {
+            case WECOM -> {
+                WecomThirdConfigRequest weComConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                return tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                return tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
+            }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                return tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
+            }
+            case DE -> {
+                DeThirdConfigRequest deConfig = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                boolean verify = validDeConfig(deConfig);
+                return verify ? "true" : null;
+            }
+            case SQLBOT -> {
+                SqlBotThirdConfigRequest sqlBotConfig = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                return tokenService.getSqlBotSrc(sqlBotConfig.getAppSecret()) ? "true" : null;
+            }
+            case MAXKB -> {
+                MaxKBThirdConfigRequest mkConfig = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                return tokenService.getMaxKBToken(mkConfig.getMkAddress(), mkConfig.getAppSecret()) ? "true" : null;
+            }
+            case TENDER -> {
+                return tokenService.getTender() ? "true" : null;
+            }
+            case QCC -> {
+                QccThirdConfigRequest qccConfig = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                return tokenService.getQcc(qccConfig.getQccAddress(), qccConfig.getQccAccessKey(), qccConfig.getQccSecretKey()) ? "true" : null;
+            }
         }
-
         return null;
     }
 
-    private boolean validDeConfig(ThirdConfigurationDTO configDTO) {
+    private boolean validDeConfig(DeThirdConfigRequest configDTO) {
         // 校验url
         boolean verify = tokenService.pingDeUrl(configDTO.getRedirectUrl());
         DataEaseClient dataEaseClient = new DataEaseClient(configDTO);
@@ -799,108 +973,17 @@ public class IntegrationConfigService {
     }
 
     /**
-     * 记录操作日志
-     */
-    private void logOperation(ThirdConfigurationDTO oldConfig, ThirdConfigurationDTO newConfig, String id) {
-        Object oldLog = null;
-        Object newLog = null;
-
-        String type = newConfig.getType();
-
-        if (Strings.CI.equals(type, DepartmentConstants.WECOM.name()) ||
-                Strings.CI.equals(type, DepartmentConstants.DINGTALK.name()) ||
-                Strings.CI.equals(type, DepartmentConstants.LARK.name())) {
-            ThirdConfigDetailLogDTO oldDTO = new ThirdConfigDetailLogDTO();
-            ThirdConfigDetailLogDTO newDTO = new ThirdConfigDetailLogDTO();
-            BeanUtils.copyBean(oldDTO, oldConfig);
-            BeanUtils.copyBean(newDTO, newConfig);
-            oldLog = oldDTO;
-            newLog = newDTO;
-        } else if (Strings.CI.equals(type, DepartmentConstants.DE.name())) {
-            DeConfigDetailLogDTO oldDTO = getDeConfigDetailLogDTO(oldConfig);
-            DeConfigDetailLogDTO newDTO = getDeConfigDetailLogDTO(newConfig);
-            oldLog = oldDTO;
-            newLog = newDTO;
-        } else if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            SqlBotConfigDetailLogDTO oldDTO = getSqlBotConfigDetailLogDTO(oldConfig);
-            SqlBotConfigDetailLogDTO newDTO = getSqlBotConfigDetailLogDTO(newConfig);
-            oldLog = oldDTO;
-            newLog = newDTO;
-        } else if (Strings.CI.equals(type, DepartmentConstants.MAXKB.name())) {
-            Map<String, String> oldDTO = new HashMap<>(1);
-            oldDTO.put("mkAddress", oldConfig.getMkAddress());
-            oldDTO.put("apiKey", oldConfig.getAppSecret());
-            oldDTO.put("mkEnable", Translator.get("log.enable.".concat(oldConfig.getMkEnable().toString())));
-            Map<String, String> newDTO = new HashMap<>(1);
-            newDTO.put("mkAddress", newConfig.getMkAddress());
-            newDTO.put("apiKey", newConfig.getAppSecret());
-            newDTO.put("mkEnable", Translator.get("log.enable.".concat(newConfig.getMkEnable().toString())));
-            oldLog = oldDTO;
-            newLog = newDTO;
-        }
-
-        if (oldLog != null) {
-            OperationLogContext.setContext(LogContextInfo.builder()
-                    .resourceName(Translator.get("third.setting"))
-                    .resourceId(id)
-                    .originalValue(oldLog)
-                    .modifiedValue(newLog)
-                    .build());
-        }
-    }
-
-    private DeConfigDetailLogDTO getDeConfigDetailLogDTO(ThirdConfigurationDTO config) {
-        DeConfigDetailLogDTO dto = new DeConfigDetailLogDTO();
-        dto.setDeAppId(config.getAgentId());
-        dto.setDeAppSecret(config.getAppSecret());
-        dto.setDeBoardEnable(config.getDeBoardEnable());
-        dto.setDeUrl(config.getRedirectUrl());
-        dto.setDeAutoSync(config.getDeAutoSync());
-        dto.setDeAccessKey(config.getDeAccessKey());
-        dto.setDeSecretKey(config.getDeSecretKey());
-        dto.setDeOrgID(config.getDeOrgID());
-        return dto;
-    }
-
-    private SqlBotConfigDetailLogDTO getSqlBotConfigDetailLogDTO(ThirdConfigurationDTO config) {
-        SqlBotConfigDetailLogDTO dto = new SqlBotConfigDetailLogDTO();
-        dto.setSqlBotAppSecret(config.getAppSecret());
-        dto.setSqlBotChatEnable(config.getSqlBotChatEnable());
-        dto.setSqlBotBoardEnable(config.getSqlBotBoardEnable());
-        return dto;
-    }
-
-    /**
      * 测试连接
      */
-    public boolean testConnection(ThirdConfigurationDTO configDTO) {
-
-        if (Strings.CI.contains(configDTO.getType(), DepartmentConstants.TENDER.name())) {
-            String token = getToken(configDTO);
-            return StringUtils.isNotBlank(token);
-        }
-
-        if (Strings.CI.contains(configDTO.getType(), DepartmentConstants.QCC.name())) {
-            String token = getToken(configDTO);
-            return StringUtils.isNotBlank(token);
-        }
-
-        // 参数验证
-        if (StringUtils.isBlank(configDTO.getAppSecret())) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-
-        String type = configDTO.getType();
+    public boolean testConnection(ThirdConfigBaseDTO configDTO) {
         String token = getToken(configDTO);
-
-        // 验证token
-        if (DepartmentConstants.WECOM.name().equals(type) && StringUtils.isNotBlank(token)) {
-            Boolean weComAgent = agentService.getWeComAgent(token, configDTO.getAgentId());
+        if (ThirdConfigTypeConstants.WECOM.name().equals(configDTO.getType()) && StringUtils.isNotBlank(token)) {
+            WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+            Boolean weComAgent = agentService.getWeComAgent(token, config.getAgentId());
             if (weComAgent == null || !weComAgent) {
                 token = null;
             }
         }
-
         return StringUtils.isNotBlank(token);
     }
 
@@ -915,7 +998,7 @@ public class IntegrationConfigService {
     /**
      * 根据类型获取第三方配置
      */
-    public ThirdConfigurationDTO getThirdConfigForPublic(String type, String orgId) {
+    public ThirdConfigBaseDTO getThirdConfigForPublic(String type, String orgId) {
         // 确定配置类型和组织ID
         String configType = OrganizationConfigConstants.ConfigType.THIRD.name();
 
@@ -937,23 +1020,17 @@ public class IntegrationConfigService {
         }
 
         // 获取指定类型的配置
-        if (type.contains(DepartmentConstants.WECOM.name())) {
+        if (type.contains(ThirdConfigTypeConstants.WECOM.name())) {
             type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
         }
-        if (type.contains(DepartmentConstants.DINGTALK.name())) {
+        if (type.contains(ThirdConfigTypeConstants.DINGTALK.name())) {
             type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
         }
-        if (type.contains(DepartmentConstants.LARK.name())) {
+        if (type.contains(ThirdConfigTypeConstants.LARK.name())) {
             type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
         }
-        ThirdConfigurationDTO configDTO = getConfigurationByType(type, details);
+        ThirdConfigBaseDTO configDTO = getConfigurationByType(type, details);
 
-        // 隐藏敏感信息
-        if (!Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            configDTO.setAppSecret(null);
-            configDTO.setDeSecretKey(null);
-            configDTO.setDeAccessKey(null);
-        }
 
         return configDTO;
     }
@@ -961,31 +1038,17 @@ public class IntegrationConfigService {
     /**
      * 根据类型获取配置
      */
-    private ThirdConfigurationDTO getConfigurationByType(String type, List<OrganizationConfigDetail> details) {
+    private ThirdConfigBaseDTO getConfigurationByType(String type, List<OrganizationConfigDetail> details) {
         return getNormalConfiguration(type, details);
     }
 
     /**
      * 获取普通配置
      */
-    private ThirdConfigurationDTO getNormalConfiguration(String type, List<OrganizationConfigDetail> details) {
-        ThirdConfigurationDTO configDTO = getThirdConfigurationDTOByType(details, type);
-
+    private ThirdConfigBaseDTO getNormalConfiguration(String type, List<OrganizationConfigDetail> details) {
+        ThirdConfigBaseDTO configDTO = getThirdConfigurationDTOByType(details, type);
         if (configDTO == null) {
             throw new GenericException(Translator.get("third.config.not.exist"));
-        }
-
-        // 检查是否启用
-        if (Strings.CI.equals(type, DepartmentConstants.SQLBOT.name())) {
-            if (configDTO.getSqlBotChatEnable() == null || !configDTO.getSqlBotChatEnable()) {
-                throw new GenericException(Translator.get("third.config.un.enable"));
-            }
-        } else if (Strings.CI.equals(type, ThirdConstants.ThirdDetailType.DE_BOARD.name())) {
-            if (configDTO.getRedirectUrl() == null) {
-                throw new GenericException(Translator.get("third.config.un.enable"));
-            }
-        } else if (!configDTO.getStartEnable()) {
-            throw new GenericException(Translator.get("third.config.un.enable"));
         }
 
         return configDTO;
@@ -1033,12 +1096,12 @@ public class IntegrationConfigService {
         OptionDTO option = new OptionDTO();
         String type = detail.getType();
 
-        if (type.contains(DepartmentConstants.WECOM.name())) {
-            option.setId(DepartmentConstants.WECOM.name());
-        } else if (type.contains(DepartmentConstants.DINGTALK.name())) {
-            option.setId(DepartmentConstants.DINGTALK.name());
-        } else if (type.contains(DepartmentConstants.LARK.name())) {
-            option.setId(DepartmentConstants.LARK.name());
+        if (type.contains(ThirdConfigTypeConstants.WECOM.name())) {
+            option.setId(ThirdConfigTypeConstants.WECOM.name());
+        } else if (type.contains(ThirdConfigTypeConstants.DINGTALK.name())) {
+            option.setId(ThirdConfigTypeConstants.DINGTALK.name());
+        } else if (type.contains(ThirdConfigTypeConstants.LARK.name())) {
+            option.setId(ThirdConfigTypeConstants.LARK.name());
         }
 
         option.setName(detail.getEnable().toString());
@@ -1079,7 +1142,7 @@ public class IntegrationConfigService {
         return extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
 
-    public ThirdConfigurationDTO getApplicationConfig(String organizationId, String userId, String type) {
+    public ThirdConfigBaseDTO getApplicationConfig(String organizationId, String userId, String type) {
         List<OrganizationConfigDetail> organizationConfigDetails = initConfig(organizationId, userId);
         return getThirdConfigurationDTOByType(organizationConfigDetails, type);
 

@@ -6,7 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.NodeSortDTO;
@@ -95,7 +95,7 @@ public class DepartmentService extends MoveNodeService {
         department.setUpdateTime(System.currentTimeMillis());
         department.setCreateUser(userId);
         department.setUpdateUser(userId);
-        department.setResource(DepartmentConstants.INTERNAL.name());
+        department.setResource(ThirdConfigTypeConstants.INTERNAL.name());
         departmentMapper.insert(department);
 
         // 添加日志上下文
@@ -256,7 +256,7 @@ public class DepartmentService extends MoveNodeService {
         List<Department> departmentList = departmentMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(departmentList)) {
             departmentList.forEach(department -> {
-                if (Strings.CI.equalsAny(department.getResource(), DepartmentConstants.INTERNAL.name())
+                if (Strings.CI.equalsAny(department.getResource(), ThirdConfigTypeConstants.INTERNAL.name())
                         && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
                     throw new GenericException(Translator.get("department.internal"));
                 }
@@ -393,7 +393,7 @@ public class DepartmentService extends MoveNodeService {
         department.setUpdateTime(System.currentTimeMillis());
         department.setCreateUser(operatorId);
         department.setUpdateUser(operatorId);
-        department.setResource(DepartmentConstants.INTERNAL.name());
+        department.setResource(ThirdConfigTypeConstants.INTERNAL.name());
         departmentMapper.insert(department);
 
         LogDTO logDTO = new LogDTO(orgId, department.getId(), operatorId, LogType.ADD, LogModule.SYSTEM_ORGANIZATION, departmentName);

@@ -5,7 +5,7 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.constants.DataScopeDeptVariable;
 import cn.cordys.crm.integration.dataease.constants.DataScopeVariable;
@@ -67,7 +67,7 @@ public class DataEaseSyncService {
 
     public void syncDataEase(String orgId) {
         LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
-        ThirdConfigurationDTO thirdConfig;
+        DeThirdConfigRequest thirdConfig;
         try {
             thirdConfig = dataEaseService.getDeConfig(orgId);
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class DataEaseSyncService {
         }
     }
 
-    public void syncDataEase(String orgId, ThirdConfigurationDTO thirdConfig) {
+    public void syncDataEase(String orgId, DeThirdConfigRequest thirdConfig) {
         DataEaseClient dataEaseClient = new DataEaseClient(thirdConfig);
 
         DeTempResourceDTO deTempResourceDTO = new DeTempResourceDTO();
@@ -458,7 +458,6 @@ public class DataEaseSyncService {
      * @param userRoleMap
      * @param crmRoleMap
      * @param userId
-     *
      * @return
      */
     private List<RoleListResponse> getUserCrmRoles(Map<String, List<UserRole>> userRoleMap, Map<String, RoleListResponse> crmRoleMap, String userId) {
@@ -719,9 +718,9 @@ public class DataEaseSyncService {
         return sysVariable;
     }
 
-    public List<OptionDTO> getDeOrgList(ThirdConfigurationDTO thirdConfigurationDTO) {
+    public List<OptionDTO> getDeOrgList(DeThirdConfigRequest deThirdConfigRequest) {
         try {
-            DataEaseClient dataEaseClient = new DataEaseClient(thirdConfigurationDTO);
+            DataEaseClient dataEaseClient = new DataEaseClient(deThirdConfigRequest);
             return dataEaseClient.listOrg();
         } catch (Exception e) {
             LogUtils.error(e);

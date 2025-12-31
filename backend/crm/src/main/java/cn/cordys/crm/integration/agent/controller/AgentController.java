@@ -1,8 +1,8 @@
 package cn.cordys.crm.integration.agent.controller;
 
 
-import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.PageUtils;
@@ -15,7 +15,7 @@ import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import cn.cordys.crm.integration.agent.dto.response.ScriptResponse;
 import cn.cordys.crm.integration.agent.service.AgentBaseService;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
@@ -167,7 +167,7 @@ public class AgentController {
     @GetMapping("/application/config")
     @Operation(summary = "获取智能体设置")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public ThirdConfigurationDTO getApplicationConfig() {
-        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), DepartmentConstants.MAXKB.name());
+    public ThirdConfigBaseDTO getApplicationConfig() {
+        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), ThirdConfigTypeConstants.MAXKB.name());
     }
 }

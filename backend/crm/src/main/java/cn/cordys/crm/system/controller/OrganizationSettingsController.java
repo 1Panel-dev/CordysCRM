@@ -3,7 +3,8 @@ package cn.cordys.crm.system.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.integration.dataease.service.DataEaseService;
 import cn.cordys.crm.integration.dataease.service.DataEaseSyncService;
@@ -62,7 +63,7 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party")
     @Operation(summary = "获取三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public List<ThirdConfigurationDTO> getThirdConfig() {
+    public List<ThirdConfigBaseDTO> getThirdConfig() {
         return integrationConfigService.getThirdConfig(OrganizationContext.getOrganizationId());
     }
 
@@ -85,15 +86,15 @@ public class OrganizationSettingsController {
     @PostMapping("/third-party/edit")
     @Operation(summary = "编辑三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
-    public void editThirdConfig(@Validated @RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
-        integrationConfigService.editThirdConfig(thirdConfigurationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public void editThirdConfig(@Validated @RequestBody ThirdConfigBaseDTO baseDTO) {
+        integrationConfigService.editThirdConfig(baseDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping(value = "/third-party/test")
     @Operation(summary = "校验配置是否链接成功")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public boolean validate(@RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
-        return integrationConfigService.testConnection(thirdConfigurationDTO);
+    public boolean validate(@RequestBody ThirdConfigBaseDTO baseDTO) {
+        return integrationConfigService.testConnection(baseDTO);
     }
 
     @GetMapping(value = "/de-token")
@@ -113,13 +114,13 @@ public class OrganizationSettingsController {
     @PostMapping(value = "/de/org/list")
     @Operation(summary = "获取de组织列表")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public List<OptionDTO> getDeOrgList(@RequestBody ThirdConfigurationDTO thirdConfigurationDTO) {
-        return dataEaseSyncService.getDeOrgList(thirdConfigurationDTO);
+    public List<OptionDTO> getDeOrgList(@RequestBody DeThirdConfigRequest deThirdConfigRequest) {
+        return dataEaseSyncService.getDeOrgList(deThirdConfigRequest);
     }
 
     @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
-    public ThirdConfigurationDTO getThirdConfigByType(@PathVariable String type) {
+    public ThirdConfigBaseDTO getThirdConfigByType(@PathVariable String type) {
         String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
         return integrationConfigService.getThirdConfigForPublic(type, organizationId);
     }

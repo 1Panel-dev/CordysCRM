@@ -2,7 +2,7 @@ package cn.cordys.crm.integration.dataease.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
@@ -30,11 +30,11 @@ public class DataEaseService {
      */
     public DeAuthDTO getEmbeddedDeToken(String organizationId, String userId, boolean isModule) {
         // 获取组织配置
-        ThirdConfigurationDTO thirdConfig = getDeConfig(organizationId);
+        DeThirdConfigRequest thirdConfig = getDeConfig(organizationId);
         return getEmbeddedDeToken(userId, thirdConfig);
     }
 
-    public DeAuthDTO getEmbeddedDeToken(String account, ThirdConfigurationDTO thirdConfig) {
+    public DeAuthDTO getEmbeddedDeToken(String account, DeThirdConfigRequest thirdConfig) {
         // 生成token
         String token = generateJwtToken(
                 thirdConfig.getAgentId(),
@@ -48,7 +48,7 @@ public class DataEaseService {
                 .build();
     }
 
-    public ThirdConfigurationDTO getDeConfig(String organizationId) {
+    public DeThirdConfigRequest getDeConfig(String organizationId) {
         OrganizationConfig config =
                 extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
 
@@ -61,7 +61,7 @@ public class DataEaseService {
 
         // 解析配置
         return JSON.parseObject(
-                new String(configDetail.getContent()), ThirdConfigurationDTO.class
+                new String(configDetail.getContent()), DeThirdConfigRequest.class
         );
     }
 

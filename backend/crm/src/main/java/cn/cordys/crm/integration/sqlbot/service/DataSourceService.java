@@ -1,8 +1,8 @@
 package cn.cordys.crm.integration.sqlbot.service;
 
-import cn.cordys.common.constants.DepartmentConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.RoleDataScope;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.RoleDataScopeDTO;
@@ -14,17 +14,18 @@ import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.*;
 import cn.cordys.crm.integration.sqlbot.handler.TablePermissionHandler;
 import cn.cordys.crm.integration.sqlbot.handler.TablePermissionHandlerFactory;
 import cn.cordys.crm.integration.sqlbot.mapper.ExtDataSourceMapper;
+import cn.cordys.crm.system.domain.OrganizationConfigDetail;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.RoleScopeDept;
 import cn.cordys.crm.system.service.DepartmentService;
-import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.RoleService;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -64,8 +65,6 @@ public class DataSourceService {
     private DepartmentService departmentService;
     @Resource
     private RoleService roleService;
-    @Resource
-    private IntegrationConfigService integrationConfigService;
     @Value("${sqlbot.encrypt:false}")
     private boolean encryptEnabled;
     @Value("${sqlbot.aes-key:${random.value}}")
@@ -74,6 +73,8 @@ public class DataSourceService {
     private String aesIv;
     @Resource
     private ExtDataSourceMapper extDataSourceMapper;
+    @Resource
+    private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
 
     /**
      * 构造函数依赖注入
@@ -109,10 +110,14 @@ public class DataSourceService {
     public SQLBotDTO getDatabaseSchema(String userId, String orgId) {
         try {
             // 验证是否启用了 SQL Bot 功能
-            List<ThirdConfigurationDTO> configs = integrationConfigService.getThirdConfig(orgId);
-            configs.stream().filter(config -> Strings.CI.equals(config.getType(), DepartmentConstants.SQLBOT.name()) && config.getSqlBotChatEnable())
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("当前组织未配置 SQL Bot 功能"));
+            List<OrganizationConfigDetail> organizationConfigDetails = organizationConfigDetailMapper.selectListByLambda(
+                    new LambdaQueryWrapper<OrganizationConfigDetail>()
+                            .eq(OrganizationConfigDetail::getType, ThirdConfigTypeConstants.SQLBOT.name())
+                            .eq(OrganizationConfigDetail::getEnable, true)
+            );
+            if (CollectionUtils.isEmpty(organizationConfigDetails)) {
+                throw new IllegalArgumentException("当前组织未配置 SQL Bot 功能");
+            }
 
             var databaseName = extractDatabaseName();
             var allTables = Objects.requireNonNull(CommonBeanFactory.getBean(DataSourceService.class)).tableList(databaseName);
@@ -172,7 +177,6 @@ public class DataSourceService {
      * @param filteredTables
      * @param sqlBotTableMap
      * @param rolePermissions
-     *
      * @return
      */
     private List<TableDTO> filterTable(String userId, List<TableDTO> filteredTables, Map<String, SQLBotTable> sqlBotTableMap, List<RolePermissionDTO> rolePermissions) {

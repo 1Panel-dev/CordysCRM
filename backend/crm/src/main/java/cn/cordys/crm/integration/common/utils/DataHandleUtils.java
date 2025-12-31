@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.common.utils;
 
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -50,7 +50,7 @@ public class DataHandleUtils {
         this.departmentUserMap = departmentUserMap;
 
         assert departmentService != null;
-        this.internalDepartment = departmentService.getInternalDepartment(orgId, DepartmentConstants.INTERNAL.name());
+        this.internalDepartment = departmentService.getInternalDepartment(orgId, ThirdConfigTypeConstants.INTERNAL.name());
         this.nextPos = departmentService.getNextPos(orgId);
         this.type = type;
     }
