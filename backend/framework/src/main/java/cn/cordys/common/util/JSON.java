@@ -236,4 +236,6 @@ public class JSON {
         }
     }
 
+    public static final ObjectMapper MAPPER = new ObjectMapper();
+
 }

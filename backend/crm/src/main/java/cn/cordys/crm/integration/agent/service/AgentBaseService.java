@@ -99,7 +99,6 @@ public class AgentBaseService extends DashboardSortService {
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
     @Resource
     private QrCodeClient qrCodeClient;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * 添加智能体
@@ -503,7 +502,7 @@ public class AgentBaseService extends DashboardSortService {
         if (thirdConfigBaseDTO.getConfig() == null) {
             maxKBThirdConfigRequest = JSON.parseObject(new String(details.getFirst().getContent()), MaxKBThirdConfigRequest.class);
         } else {
-            maxKBThirdConfigRequest = MAPPER.convertValue(thirdConfigBaseDTO.getConfig(), MaxKBThirdConfigRequest.class);
+            maxKBThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigBaseDTO.getConfig(), MaxKBThirdConfigRequest.class);
         }
 
         thirdConfigBaseDTO.setConfig(maxKBThirdConfigRequest);
@@ -525,7 +524,7 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private List<OptionDTO> getWorkspace(ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.WORKSPACE),
                 "Bearer " + config.getAppSecret(),
@@ -557,7 +556,7 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private List<OptionDTO> getApplication(String workspaceId, ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 HttpRequestUtil.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION), workspaceId),
                 "Bearer " + config.getAppSecret(),
@@ -589,7 +588,7 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private ScriptResponse getScript(ScriptRequest request, ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         ScriptResponse response = new ScriptResponse();
         List<ParameterDTO> parameters = new ArrayList<>();
         String accessToken = qrCodeClient.exchange(
@@ -652,7 +651,7 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private String getEdition(ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.EDITION),
                 "Bearer " + config.getAppSecret(),

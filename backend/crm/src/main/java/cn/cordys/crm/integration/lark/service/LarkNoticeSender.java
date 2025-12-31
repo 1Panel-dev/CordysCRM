@@ -34,8 +34,6 @@ public class LarkNoticeSender extends AbstractNoticeSender {
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
@@ -88,7 +86,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         if (thirdConfigurationDTO.getConfig() == null) {
             larkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), LarkThirdConfigRequest.class);
         } else {
-            larkThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), LarkThirdConfigRequest.class);
+            larkThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), LarkThirdConfigRequest.class);
         }
 
 

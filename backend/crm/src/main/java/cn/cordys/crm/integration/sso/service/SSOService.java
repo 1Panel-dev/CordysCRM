@@ -75,8 +75,7 @@ public class SSOService {
     private OAuthUserService oauthUserService;
     @Resource
     private TokenService tokenService;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+ 
     public SessionUser exchangeGitOauth2(String code) {
         validateCode(code);
 
@@ -122,7 +121,7 @@ public class SSOService {
         if (config.getConfig() == null) {
             weComConfig = JSON.parseObject(content, WecomThirdConfigRequest.class);
         } else {
-            weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
+            weComConfig = JSON.MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
         }
         return getWeComSessionUser(code, weComConfig, UserSource.WECOM_OAUTH2.toString());
     }
@@ -131,7 +130,7 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.WECOM.name());
-        WecomThirdConfigRequest weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
+        WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
         validateQrCodeEnabled(weComConfig.getStartEnable());
 
         return getWeComSessionUser(code, weComConfig, UserSource.QR_CODE.toString());
@@ -141,7 +140,7 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
-        DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+        DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
         ;
         validateQrCodeEnabled(dingTalkConfig.getStartEnable());
 
@@ -403,7 +402,7 @@ public class SSOService {
         if (config.getConfig() == null) {
             dingTalkConfig = JSON.parseObject(content, DingTalkThirdConfigRequest.class);
         } else {
-            dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+            dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
         }
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DINGTALK_OAUTH2.toString());
 
@@ -414,7 +413,7 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
-        LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
+        LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
         validateQrCodeEnabled(larkConfig.getStartEnable());
 
         return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString(), false);
@@ -455,7 +454,7 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
-        LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
+        LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
         validateQrCodeEnabled(larkConfig.getStartEnable());
 
         return getLarkSessionUser(code, larkConfig, UserSource.LARK_OAUTH2.toString(), isMobile);

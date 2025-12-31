@@ -34,8 +34,6 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
@@ -87,7 +85,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         if (thirdConfigurationDTO.getConfig() == null) {
             dingTalkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), DingTalkThirdConfigRequest.class);
         } else {
-            dingTalkThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), DingTalkThirdConfigRequest.class);
+            dingTalkThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), DingTalkThirdConfigRequest.class);
         }
 
         //构建钉钉消息

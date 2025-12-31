@@ -6,6 +6,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
@@ -22,7 +23,6 @@ import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,8 +65,7 @@ public class ThirdDepartmentService {
     private LarkDepartmentService larkDepartmentService;
 
     @Resource
-    private IntegrationConfigService integrationConfigService;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private IntegrationConfigService integrationConfigService; 
 
     /**
      * 同步组织架构
@@ -177,15 +176,15 @@ public class ThirdDepartmentService {
         var deptType = parseDepartmentType(type);
         var accessToken = switch (deptType) {
             case WECOM -> {
-                WecomThirdConfigRequest wecomConfig = MAPPER.convertValue(thirdConfig.getConfig(), WecomThirdConfigRequest.class);
-                yield tokenService.getAssessToken(wecomConfig.getCorpId(), wecomConfig.getAppSecret());
+                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(thirdConfig.getConfig(), WecomThirdConfigRequest.class);
+                yield tokenService.getAssessToken(config.getCorpId(), config.getAppSecret());
             }
             case DINGTALK -> {
-                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(thirdConfig.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), DingTalkThirdConfigRequest.class);
                 yield tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
             }
             case LARK -> {
-                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(thirdConfig.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), LarkThirdConfigRequest.class);
                 yield tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
             }
             default -> throw new GenericException("不支持的同步类型：" + type);

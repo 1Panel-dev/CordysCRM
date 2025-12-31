@@ -27,7 +27,6 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -61,8 +60,6 @@ public class IntegrationConfigService {
 
     @Resource
     private AgentService agentService;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * 获取同步的组织配置
@@ -133,7 +130,7 @@ public class IntegrationConfigService {
     public boolean testConnection(ThirdConfigBaseDTO<?> configDTO) {
         String token = getToken(configDTO);
         if (ThirdConfigTypeConstants.WECOM.name().equals(configDTO.getType()) && StringUtils.isNotBlank(token)) {
-            WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+            WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
             Boolean weComAgent = agentService.getWeComAgent(token, config.getAgentId());
             if (weComAgent == null || !weComAgent) {
                 token = null;
@@ -437,7 +434,7 @@ public class IntegrationConfigService {
 
         return dto.getConfig() == null
                 ? JSON.parseObject(content, configClass)
-                : MAPPER.convertValue(dto.getConfig(), configClass);
+                : JSON.MAPPER.convertValue(dto.getConfig(), configClass);
     }
 
     /**
@@ -558,7 +555,7 @@ public class IntegrationConfigService {
         if (dto.getConfig() == null) {
             config = JSON.parseObject(new String(detail.getContent()), configClass);
         } else {
-            config = MAPPER.convertValue(dto.getConfig(), configClass);
+            config = JSON.MAPPER.convertValue(dto.getConfig(), configClass);
         }
 
         enableSetter.accept(config);
@@ -627,7 +624,7 @@ public class IntegrationConfigService {
         }
         switch (typeConstants) {
             case WECOM -> {
-                WecomThirdConfigRequest wecomConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest wecomConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 if (wecomConfig.getStartEnable()) {
                     verifyWeCom(wecomConfig.getAgentId(), token, configDTO);
                 }
@@ -637,7 +634,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(wecomConfig)));
             }
             case DINGTALK -> {
-                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
                 if (dingTalkConfig.getStartEnable()) {
                     verifyDingTalk(token, configDTO);
                 }
@@ -647,7 +644,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(dingTalkConfig)));
             }
             case LARK -> {
-                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
                 if (larkConfig.getStartEnable()) {
                     verifyLark(token, configDTO);
                 }
@@ -657,7 +654,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(larkConfig)));
             }
             case DE -> {
-                DeThirdConfigRequest deConfig = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                DeThirdConfigRequest deConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
                 if (BooleanUtils.isTrue(deConfig.getDeBoardEnable())) {
                     verifyDe(token, configDTO);
                 }
@@ -667,7 +664,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(deConfig)));
             }
             case SQLBOT -> {
-                SqlBotThirdConfigRequest sqlBotConfig = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                SqlBotThirdConfigRequest sqlBotConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
                 if (sqlBotConfig.getSqlBotBoardEnable() || sqlBotConfig.getSqlBotChatEnable()) {
                     verifyToken(token, configDTO);
                 }
@@ -677,7 +674,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(sqlBotConfig)));
             }
             case MAXKB -> {
-                MaxKBThirdConfigRequest mkConfig = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                MaxKBThirdConfigRequest mkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
                 if (mkConfig.getMkEnable()) {
                     verifyToken(token, configDTO);
                 }
@@ -687,7 +684,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(mkConfig)));
             }
             case TENDER -> {
-                TenderThirdConfigRequest tenderConfig = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                TenderThirdConfigRequest tenderConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
                 tenderConfig.setTenderAddress(TenderApiPaths.TENDER_API);
                 if (tenderConfig.getTenderEnable()) {
                     verifyToken(token, configDTO);
@@ -698,7 +695,7 @@ public class IntegrationConfigService {
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(tenderConfig)));
             }
             case QCC -> {
-                QccThirdConfigRequest qccConfig = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
                 if (qccConfig.getQccEnable()) {
                     verifyToken(token, configDTO);
                 }
@@ -804,7 +801,7 @@ public class IntegrationConfigService {
 
         switch (typeConstants) {
             case WECOM -> {
-                WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 if (config.getStartEnable()) {
                     verifyWeCom(config.getAgentId(), token, configDTO);
                 }
@@ -821,7 +818,7 @@ public class IntegrationConfigService {
             }
 
             case DINGTALK -> {
-                DingTalkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
 
                 if (config.getStartEnable()) {
                     verifyDingTalk(token, configDTO);
@@ -839,7 +836,7 @@ public class IntegrationConfigService {
             }
 
             case LARK -> {
-                LarkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
 
                 if (config.getStartEnable()) {
                     verifyLark(token, configDTO);
@@ -857,7 +854,7 @@ public class IntegrationConfigService {
             }
 
             case DE -> {
-                DeThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                DeThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
 
                 if (BooleanUtils.isTrue(config.getDeBoardEnable())) {
                     verifyDe(token, configDTO);
@@ -873,7 +870,7 @@ public class IntegrationConfigService {
             }
 
             case SQLBOT -> {
-                SqlBotThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                SqlBotThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
 
                 if (config.getSqlBotBoardEnable() || config.getSqlBotChatEnable()) {
                     verifyToken(token, configDTO);
@@ -891,7 +888,7 @@ public class IntegrationConfigService {
             }
 
             case MAXKB -> {
-                MaxKBThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
 
                 if (config.getMkEnable()) {
                     verifyToken(token, configDTO);
@@ -907,7 +904,7 @@ public class IntegrationConfigService {
             }
 
             case TENDER -> {
-                TenderThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                TenderThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
 
                 config.setTenderAddress(TenderApiPaths.TENDER_API);
 
@@ -925,7 +922,7 @@ public class IntegrationConfigService {
             }
 
             case QCC -> {
-                QccThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                QccThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
                 if (config.getQccEnable()) {
                     verifyToken(token, configDTO);
                 }
@@ -961,7 +958,7 @@ public class IntegrationConfigService {
         if (oldDto.getConfig() == null) {
             return JSON.parseObject(new String(detail.getContent()), clazz);
         }
-        return MAPPER.convertValue(oldDto.getConfig(), clazz);
+        return JSON.MAPPER.convertValue(oldDto.getConfig(), clazz);
     }
 
     /**
@@ -1153,36 +1150,36 @@ public class IntegrationConfigService {
         }
         switch (type) {
             case WECOM -> {
-                WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString(), config.getStartEnable());
             }
             case DINGTALK -> {
-                DingTalkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString(), config.getStartEnable());
             }
             case LARK -> {
-                LarkThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.LARK_SYNC.toString(), config.getStartEnable());
             }
             case DE -> {
-                DeThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                DeThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.DE_BOARD.toString(), config.getDeBoardEnable());
             }
             case SQLBOT -> {
-                SqlBotThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                SqlBotThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.SQLBOT_CHAT.toString(), config.getSqlBotChatEnable());
                 map.put(ThirdConstants.ThirdDetailType.SQLBOT_BOARD.toString(), config.getSqlBotBoardEnable());
             }
             case MAXKB -> {
-                MaxKBThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.MAXKB.toString(), config.getMkEnable());
             }
             case TENDER -> {
-                TenderThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
+                TenderThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), TenderThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.TENDER.toString(), config.getTenderEnable());
             }
             case QCC -> {
-                QccThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                QccThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
                 map.put(ThirdConstants.ThirdDetailType.QCC.toString(), config.getQccEnable());
             }
         }
@@ -1205,35 +1202,35 @@ public class IntegrationConfigService {
 
         switch (type) {
             case WECOM -> {
-                WecomThirdConfigRequest weComConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 return tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
             }
             case DINGTALK -> {
-                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
                 return tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
             }
             case LARK -> {
-                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
                 return tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
             }
             case DE -> {
-                DeThirdConfigRequest deConfig = MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
+                DeThirdConfigRequest deConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
                 boolean verify = validDeConfig(deConfig);
                 return verify ? "true" : null;
             }
             case SQLBOT -> {
-                SqlBotThirdConfigRequest sqlBotConfig = MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
+                SqlBotThirdConfigRequest sqlBotConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
                 return tokenService.getSqlBotSrc(sqlBotConfig.getAppSecret()) ? "true" : null;
             }
             case MAXKB -> {
-                MaxKBThirdConfigRequest mkConfig = MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
+                MaxKBThirdConfigRequest mkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
                 return tokenService.getMaxKBToken(mkConfig.getMkAddress(), mkConfig.getAppSecret()) ? "true" : null;
             }
             case TENDER -> {
                 return tokenService.getTender() ? "true" : null;
             }
             case QCC -> {
-                QccThirdConfigRequest qccConfig = MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
+                QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), QccThirdConfigRequest.class);
                 return tokenService.getQcc(qccConfig.getQccAddress(), qccConfig.getQccAccessKey(), qccConfig.getQccSecretKey()) ? "true" : null;
             }
             default -> {
@@ -1365,15 +1362,15 @@ public class IntegrationConfigService {
         }
         switch (typeConstants) {
             case WECOM -> {
-                WecomThirdConfigRequest weComConfig = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 return weComConfig.getStartEnable();
             }
             case DINGTALK -> {
-                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
                 return dingTalkConfig.getStartEnable();
             }
             case LARK -> {
-                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
                 return larkConfig.getStartEnable();
             }
             default -> {
@@ -1414,7 +1411,7 @@ public class IntegrationConfigService {
         switch (typeConstants) {
             case WECOM, DINGTALK, LARK -> {
                 WecomThirdConfigRequest oldConfig = JSON.parseObject(new String(content), WecomThirdConfigRequest.class);
-                WecomThirdConfigRequest config = MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 return !Strings.CI.equals(oldConfig.getCorpId(), config.getCorpId());
             }
             default -> {

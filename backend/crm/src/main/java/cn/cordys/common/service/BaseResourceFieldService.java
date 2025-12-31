@@ -27,7 +27,6 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
@@ -67,7 +66,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 	private static final String SOURCE_DETAIL_ID = "id";
 	private static final String ROW_BIZ_ID = "id";
 	private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	/**
 	 * 获取资源字段类型 (T)
@@ -483,7 +481,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
         details.forEach(detail -> {
-            Map<String, Object> detailMap = MAPPER.convertValue(detail, Map.class);
+            Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
             sourceBusinessFields.forEach(bsf -> {
                 DatasourceField sourceField = (DatasourceField) bsf;
                 Object val = detailMap.get(sourceField.getBusinessKey());
@@ -495,7 +493,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     try {
                         Object sourceObj = fieldSourceServiceProvider.safeGetById(sourceType, val.toString());
                         if (detail != null) {
-                            SourceDetailResolveContext.put(val.toString(), MAPPER.convertValue(sourceObj, Map.class));
+                            SourceDetailResolveContext.put(val.toString(), JSON.MAPPER.convertValue(sourceObj, Map.class));
                         }
                     } catch (Exception e) {
                         LogUtils.error(e);
@@ -911,7 +909,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				if (detail == null) {
 					SourceDetailResolveContext.remove(rf.getFieldValue().toString());
 				} else {
-					SourceDetailResolveContext.put(rf.getFieldValue().toString(), MAPPER.convertValue(detail, Map.class));
+					SourceDetailResolveContext.put(rf.getFieldValue().toString(), JSON.MAPPER.convertValue(detail, Map.class));
 				}
 			} catch (Exception e) {
 				LogUtils.error(e);

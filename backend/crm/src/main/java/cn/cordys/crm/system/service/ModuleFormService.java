@@ -78,8 +78,6 @@ public class ModuleFormService {
 	public static final String SUM_PREFIX = "sum_";
 	public static final String EXPORT_SYSTEM_TYPE = "system";
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
-
     static {
         TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
                 FieldType.DEPARTMENT.name(), "sys_department",
@@ -1685,7 +1683,7 @@ public class ModuleFormService {
 				if (detail == null) {
 					return;
 				}
-				final Map<String, Object> detailMap = MAPPER.convertValue(detail, Map.class);
+				final Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
 				sourceField.getShowFields().forEach(refId -> {
 					final BaseField showFieldConf = fieldMap.get(refId);
 					if (showFieldConf != null) {
@@ -1711,7 +1709,7 @@ public class ModuleFormService {
 						if (detail == null) {
 							return;
 						}
-						final Map<String, Object> detailMap = MAPPER.convertValue(detail, Map.class);
+						final Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
 						if (MapUtils.isEmpty(detailMap)) {
 							return;
 						}

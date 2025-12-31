@@ -17,7 +17,6 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -32,8 +31,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
-    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper; 
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
@@ -86,7 +84,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
         if (thirdConfigurationDTO.getConfig() == null) {
             wecomThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), WecomThirdConfigRequest.class);
         } else {
-            wecomThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), WecomThirdConfigRequest.class);
+            wecomThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), WecomThirdConfigRequest.class);
         }
 
         //构建企业微信消息
