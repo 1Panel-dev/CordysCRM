@@ -25,7 +25,7 @@ export default {
     'menu.settings.permission': '角色权限',
     'menu.settings.moduleSetting': '模块配置',
     'menu.opportunity': '商机',
-    'menu.quotation': '报价单',
+    'menu.quotation': '报价',
     'menu.collapsedOpportunity': '商机',
     'menu.collapsedProduct': '产品',
     'menu.clue': '线索',

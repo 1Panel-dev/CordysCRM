@@ -50,7 +50,7 @@ export default {
   'opportunity.noOpenSeaPermission': '无权查看公海客户',
   'opportunity.averageAmount': '平均金额',
   'opportunity.totalAmount': '总金额',
-  'opportunity.quotation': '报价单',
+  'opportunity.quotation': '报价',
   'opportunity.quotation.new': '新建报价单',
   'opportunity.quotation.voidTitleTip': '确认作废 {name} 报价单吗？',
   'opportunity.quotation.invalidContentTip': '作废后，报价单不可恢复，请谨慎操作！',

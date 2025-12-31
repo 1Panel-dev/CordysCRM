@@ -27,9 +27,10 @@
       v-model:selected-rows="selectedRows"
       :multiple="props.multiple"
       :source-type="props.dataSourceType"
-      :disabled-selection="tableDisabledSelection"
+      :disabled-selection="props.disabledSelection ? props.disabledSelection : undefined"
       :filter-params="filterParams"
       :fullscreen-target-ref="fullscreenTargetRef"
+      :fieldConfig="props.fieldConfig"
       @toggle-full-screen="(val) => (fullScreenModal = val)"
     />
   </CrmModal>
@@ -46,6 +47,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
 
+  import type { FormCreateField } from '../crm-form-create/types';
   import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
   interface DataSourceTableProps {
@@ -55,6 +57,7 @@
     disabledSelection?: (row: RowData) => boolean;
     maxTagCount?: number | 'responsive';
     filterParams?: FilterResult;
+    fieldConfig?: FormCreateField;
   }
 
   const props = withDefaults(defineProps<DataSourceTableProps>(), {
@@ -136,13 +139,6 @@
       selectedKeys.value = value.value;
       dataSourcesModalVisible.value = true;
     }
-  }
-
-  function tableDisabledSelection(row: RowData) {
-    if (props.disabledSelection) {
-      return props.disabledSelection(row);
-    }
-    return false;
   }
 
   watch(
