@@ -111,6 +111,7 @@ export default {
   'module.paymentPlan': 'Payment Plan',
   'module.paymentRecord': 'Payment Record',
   'module.paymentRecordFormSetting': 'Payment Record Form Setting',
+  'module.businessName': 'Business Name',
   'module.priceTableFormSetting': 'Price Table Form Setting',
   'module.tender': 'Tender',
 };

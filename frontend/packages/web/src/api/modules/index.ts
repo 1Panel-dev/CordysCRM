@@ -435,6 +435,15 @@ export const {
   enablePaymentRecordView,
   deletePaymentRecordView,
   dragPaymentRecordView,
+  preCheckImportBusinessName,
+  downloadBusinessNameTemplate,
+  importBusinessName,
+  getBusinessNameList,
+  addBusinessName,
+  updateBusinessName,
+  deleteBusinessName,
+  revokeBusinessName,
+  getBusinessNameDetail,
 } = contractApi;
 
 export const {

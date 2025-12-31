@@ -1,20 +1,24 @@
+import { ImportTypeExcludeFormDesignEnum } from '@lib/shared/enums/commonEnum';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 
 import {
   downloadAccountTemplate,
+  downloadBusinessNameTemplate,
   downloadContactTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
   downloadProductPriceTemplate,
   downloadProductTemplate,
   importAccount,
+  importBusinessName,
   importContact,
   importLead,
   importOpportunity,
   importProduct,
   importProductPrice,
   preCheckImportAccount,
+  preCheckImportBusinessName,
   preCheckImportContact,
   preCheckImportLead,
   preCheckImportOpt,
@@ -28,7 +32,8 @@ export type ImportApiType =
   | FormDesignKeyEnum.CUSTOMER
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.PRODUCT
-  | FormDesignKeyEnum.PRICE;
+  | FormDesignKeyEnum.PRICE
+  | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_NAME_IMPORT;
 
 export interface importRequestType {
   preCheck: (file: File) => Promise<{ data: ValidateInfo }>;
@@ -66,5 +71,10 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: preCheckImportProductPrice,
     save: importProductPrice,
     download: downloadProductPriceTemplate,
+  },
+  [ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_NAME_IMPORT]: {
+    preCheck: preCheckImportBusinessName,
+    save: importBusinessName,
+    download: downloadBusinessNameTemplate,
   },
 };

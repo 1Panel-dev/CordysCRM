@@ -78,3 +78,17 @@ export const FixedPaymentRecordViewUrl = '/contract/payment-record/view/fixed'; 
 export const EnablePaymentRecordViewUrl = '/contract/payment-record/view/enable'; // 启用回款记录视图
 export const DeletePaymentRecordViewUrl = '/contract/payment-record/view/delete'; // 删除回款记录视图
 export const DragPaymentRecordViewUrl = '/contract/payment-record/view/edit/pos'; // 拖拽回款记录视图排序
+
+
+// 合同-工商抬头导入
+export const PreCheckBusinessNameImportUrl = '/contract/business-name/import/pre-check';
+export const DownloadBusinessNameTemplateUrl = '/contract/business-name/template/download';
+export const ImportBusinessNameUrl = '/contract/business-name/import';
+
+// 合同-工商抬头列表
+export const BusinessNamePageUrl = '/contract/business-name/page';
+export const BusinessNameAddUrl = '/contract/business-name/add';
+export const BusinessNameUpdateUrl = '/contract/business-name/update';
+export const BusinessNameDeleteUrl = '/contract/business-name/delete';
+export const BusinessNameRevokeUrl = '/contract/business-name/revoke';
+export const GetBusinessNameDetailUrl = '/contract/business-name/get';

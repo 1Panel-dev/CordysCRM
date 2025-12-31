@@ -40,3 +40,7 @@ export enum ColumnTypeEnum {
   CUSTOM = 'custom',
   SUB_TABLE = 'subTable',
 }
+
+export enum ImportTypeExcludeFormDesignEnum {
+  CONTRACT_BUSINESS_NAME_IMPORT = 'contractBusinessNameImport',
+}
