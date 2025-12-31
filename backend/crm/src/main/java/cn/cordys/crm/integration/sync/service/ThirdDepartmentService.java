@@ -3,12 +3,15 @@ package cn.cordys.crm.integration.sync.service;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.DingTalkThirdConfigRequest;
+import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
+import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.common.utils.DataHandleUtils;
 import cn.cordys.crm.integration.dingtalk.service.DingTalkDepartmentService;
 import cn.cordys.crm.integration.lark.service.LarkDepartmentService;
@@ -19,6 +22,7 @@ import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +66,7 @@ public class ThirdDepartmentService {
 
     @Resource
     private IntegrationConfigService integrationConfigService;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * 同步组织架构
@@ -156,8 +161,8 @@ public class ThirdDepartmentService {
         logSyncOperation(logService, orgId, operatorId);
     }
 
-    private DepartmentConstants parseDepartmentType(String type) {
-        return Arrays.stream(DepartmentConstants.values())
+    private ThirdConfigTypeConstants parseDepartmentType(String type) {
+        return Arrays.stream(ThirdConfigTypeConstants.values())
                 .filter(e -> e.name().equalsIgnoreCase(type))
                 .findFirst()
                 .orElseThrow(() -> new GenericException("未知的同步类型：" + type));
@@ -166,23 +171,23 @@ public class ThirdDepartmentService {
     /**
      * 获取第三方访问令牌
      */
-    private String getToken(String type, ThirdConfigurationDTO thirdConfig) {
+    private String getToken(String type, ThirdConfigBaseDTO thirdConfig) {
         Objects.requireNonNull(thirdConfig, "第三方配置信息不能为空");
 
         var deptType = parseDepartmentType(type);
         var accessToken = switch (deptType) {
-            case WECOM -> tokenService.getAssessToken(
-                    thirdConfig.getCorpId(),
-                    thirdConfig.getAppSecret()
-            );
-            case DINGTALK -> tokenService.getDingTalkToken(
-                    thirdConfig.getAgentId(),
-                    thirdConfig.getAppSecret()
-            );
-            case LARK -> tokenService.getLarkToken(
-                    thirdConfig.getAgentId(),
-                    thirdConfig.getAppSecret()
-            );
+            case WECOM -> {
+                WecomThirdConfigRequest wecomConfig = MAPPER.convertValue(thirdConfig.getConfig(), WecomThirdConfigRequest.class);
+                yield tokenService.getAssessToken(wecomConfig.getCorpId(), wecomConfig.getAppSecret());
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(thirdConfig.getConfig(), DingTalkThirdConfigRequest.class);
+                yield tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
+            }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = MAPPER.convertValue(thirdConfig.getConfig(), LarkThirdConfigRequest.class);
+                yield tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
+            }
             default -> throw new GenericException("不支持的同步类型：" + type);
         };
 
@@ -193,8 +198,8 @@ public class ThirdDepartmentService {
     /**
      * 获取第三方配置
      */
-    private ThirdConfigurationDTO getThirdConfig(String orgId, String type) {
-        List<ThirdConfigurationDTO> configs = integrationConfigService.getThirdConfig(orgId);
+    private ThirdConfigBaseDTO getThirdConfig(String orgId, String type) {
+        List<ThirdConfigBaseDTO> configs = integrationConfigService.getThirdConfig(orgId);
         if (CollectionUtils.isEmpty(configs)) {
             throw new GenericException("未配置企业信息");
         }

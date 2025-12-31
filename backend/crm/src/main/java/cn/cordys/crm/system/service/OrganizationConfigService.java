@@ -5,14 +5,13 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -21,19 +20,15 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.utils.MailSender;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class OrganizationConfigService {
@@ -165,7 +160,6 @@ public class OrganizationConfigService {
      * 当前组织的用户数据是否是第三方同步的
      *
      * @param organizationId 组织ID
-     *
      * @return true 是第三方同步的 false 不是第三方同步的
      */
     public boolean syncCheck(String organizationId) {
@@ -175,11 +169,11 @@ public class OrganizationConfigService {
         if (organizationConfig == null || StringUtils.isBlank(organizationConfig.getSyncResource())) {
             return false;
         }
-        if (organizationConfig.getSyncResource().equals(DepartmentConstants.WECOM.name())) {
+        if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.WECOM.name())) {
             type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
-        } else if (organizationConfig.getSyncResource().equals(DepartmentConstants.DINGTALK.name())) {
+        } else if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.DINGTALK.name())) {
             type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
-        } else if (organizationConfig.getSyncResource().equals(DepartmentConstants.LARK.name())) {
+        } else if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.LARK.name())) {
             type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
         } else {
             return false;
@@ -198,78 +192,6 @@ public class OrganizationConfigService {
         extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name(), syncStatus);
     }
 
-    /**
-     * 数据升级
-     * 1. 给组织配置表添加同步回掉地址字段
-     * 2. 给组织配置详情表添加启用字段
-     */
-    public void upgradeData() {
-        // 构建查询条件，查找第三方配置的数据
-        LambdaQueryWrapper<OrganizationConfig> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OrganizationConfig::getType, OrganizationConfigConstants.ConfigType.THIRD.name())
-                .eq(OrganizationConfig::getSyncResource, DepartmentConstants.WECOM.name());
-
-        // 获取符合条件的所有组织配置
-        List<OrganizationConfig> organizationConfigs = organizationConfigBaseMapper.selectListByLambda(wrapper);
-
-        // 如果没有找到符合条件的配置，直接返回
-        if (organizationConfigs.isEmpty()) {
-            return;
-        }
-
-        // 获取所有匹配的组织配置的ID
-        List<String> ids = organizationConfigs.stream()
-                .map(OrganizationConfig::getId)
-                .collect(Collectors.toList());
-
-        // 构建查询条件，查找对应的组织配置详情
-        LambdaQueryWrapper<OrganizationConfigDetail> detailWrapper = new LambdaQueryWrapper<>();
-        detailWrapper.in(OrganizationConfigDetail::getId, ids);
-
-        // 获取所有符合条件的配置详情
-        List<OrganizationConfigDetail> organizationConfigDetails = organizationConfigDetailBaseMapper.selectListByLambda(detailWrapper);
-
-        // 如果有找到组织配置详情
-        if (!organizationConfigDetails.isEmpty()) {
-            // 获取第一个配置详情（配置是唯一的）
-            OrganizationConfigDetail organizationConfigDetail = organizationConfigDetails.getFirst();
-
-            // 解析配置详情中的内容为 ThirdConfigurationDTO 对象
-            ThirdConfigurationDTO thirdConfigurationDTO = JSON.parseObject(
-                    new String(organizationConfigDetail.getContent()), ThirdConfigurationDTO.class);
-
-            // 构建查询条件，查找授权配置
-            wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(OrganizationConfig::getType, OrganizationConfigConstants.ConfigType.AUTH.name());
-
-            // 获取所有授权配置
-            List<OrganizationConfig> authConfigs = organizationConfigBaseMapper.selectListByLambda(wrapper);
-
-            // 如果有找到授权配置
-            if (!authConfigs.isEmpty()) {
-                // 查找对应的授权配置详情
-                detailWrapper = new LambdaQueryWrapper<>();
-                detailWrapper.in(OrganizationConfigDetail::getConfigId,
-                        authConfigs.stream().map(OrganizationConfig::getId).collect(Collectors.toList()));
-                List<OrganizationConfigDetail> authConfigDetails = organizationConfigDetailBaseMapper.selectListByLambda(detailWrapper);
-                OrganizationConfigDetail oauthDetail = authConfigDetails.getFirst();
-                // 如果有找到授权配置详情
-                if (!authConfigDetails.isEmpty() && oauthDetail.getEnable()) {
-                    // 解析授权配置详情中的内容为 ThirdConfigurationDTO 对象
-                    ThirdConfigurationDTO authConfig = JSON.parseObject(
-                            new String(oauthDetail.getContent()), ThirdConfigurationDTO.class);
-
-                    // 如果第三方配置和授权配置的 corpId 一致，更新第三方配置的 redirectUrl
-                    if (Strings.CI.equals(thirdConfigurationDTO.getCorpId(), authConfig.getCorpId())) {
-                        thirdConfigurationDTO.setRedirectUrl(authConfig.getRedirectUrl());
-                        // 更新组织配置详情的内容
-                        organizationConfigDetail.setContent(JSON.toJSONBytes(thirdConfigurationDTO));
-                        organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-                    }
-                }
-            }
-        }
-    }
 
 }
 

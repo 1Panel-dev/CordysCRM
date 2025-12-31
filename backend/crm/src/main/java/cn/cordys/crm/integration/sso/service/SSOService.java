@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.sso.service;
 
-import cn.cordys.common.constants.DepartmentConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.exception.GenericException;
@@ -9,7 +9,10 @@ import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.DingTalkThirdConfigRequest;
+import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
+import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.common.service.OAuthUserService;
 import cn.cordys.crm.integration.dingtalk.response.DingTalkUserResponse;
 import cn.cordys.crm.integration.wecom.response.WeComUserResponse;
@@ -27,6 +30,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUser;
 import cn.cordys.security.UserDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +75,7 @@ public class SSOService {
     private OAuthUserService oauthUserService;
     @Resource
     private TokenService tokenService;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public SessionUser exchangeGitOauth2(String code) {
         validateCode(code);
@@ -98,7 +103,7 @@ public class SSOService {
         LoginRequest loginRequest = createLoginRequest(
                 name,
                 enableUser.getPassword(),
-                DepartmentConstants.WECOM.name()
+                ThirdConfigTypeConstants.WECOM.name()
         );
         return userLoginService.login(loginRequest);
     }
@@ -108,20 +113,26 @@ public class SSOService {
 
         OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
-        ThirdConfigurationDTO weComConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
+        ThirdConfigBaseDTO config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 
-        if (weComConfig == null) {
+        if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
-
+        WecomThirdConfigRequest weComConfig = new WecomThirdConfigRequest();
+        if (config.getConfig() == null) {
+            weComConfig = JSON.parseObject(content, WecomThirdConfigRequest.class);
+        } else {
+            weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
+        }
         return getWeComSessionUser(code, weComConfig, UserSource.WECOM_OAUTH2.toString());
     }
 
     public SessionUser exchangeWeComCode(String code) {
         validateCode(code);
 
-        ThirdConfigurationDTO weComConfig = getThirdPartyConfig(DepartmentConstants.WECOM.name());
-        validateQrCodeEnabled(weComConfig);
+        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.WECOM.name());
+        WecomThirdConfigRequest weComConfig = MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);;
+        validateQrCodeEnabled(weComConfig.getStartEnable());
 
         return getWeComSessionUser(code, weComConfig, UserSource.QR_CODE.toString());
     }
@@ -129,13 +140,14 @@ public class SSOService {
     public SessionUser exchangeDingTalkCode(String code) {
         validateCode(code);
 
-        ThirdConfigurationDTO dingTalkConfig = getThirdPartyConfig(DepartmentConstants.DINGTALK.name());
-        validateQrCodeEnabled(dingTalkConfig);
+        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
+        DingTalkThirdConfigRequest dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);;
+        validateQrCodeEnabled(dingTalkConfig.getStartEnable());
 
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.QR_CODE.toString());
     }
 
-    private SessionUser getWeComSessionUser(String code, ThirdConfigurationDTO weComConfig, String authenticateType) {
+    private SessionUser getWeComSessionUser(String code, WecomThirdConfigRequest weComConfig, String authenticateType) {
         // 获取assess_token
         String assessToken = tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
         if (StringUtils.isBlank(assessToken)) {
@@ -157,7 +169,7 @@ public class SSOService {
         // 创建登录请求并登录
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
-                DepartmentConstants.WECOM.name(),
+                ThirdConfigTypeConstants.WECOM.name(),
                 authenticateType
         );
 
@@ -165,7 +177,7 @@ public class SSOService {
         return userLoginService.login(loginRequest);
     }
 
-    private SessionUser getDingTalkSessionUser(String code, ThirdConfigurationDTO dingTalkConfig, String authenticateType) {
+    private SessionUser getDingTalkSessionUser(String code, DingTalkThirdConfigRequest dingTalkConfig, String authenticateType) {
         // 获取用户assess_token
         String assessToken = tokenService.getDingTalkUserToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret(), code);
         if (StringUtils.isBlank(assessToken)) {
@@ -190,7 +202,7 @@ public class SSOService {
         // 创建登录请求并登录
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
-                DepartmentConstants.DINGTALK.name(),
+                ThirdConfigTypeConstants.DINGTALK.name(),
                 authenticateType
         );
 
@@ -349,16 +361,16 @@ public class SSOService {
                 .orElseGet(() -> CodingUtils.md5(user.getLastOrganizationId() + user.getId()));
     }
 
-    private ThirdConfigurationDTO getThirdPartyConfig(String type) {
+    private ThirdConfigBaseDTO getThirdPartyConfig(String type) {
         IntegrationConfigService integrationConfigService = CommonBeanFactory.getBean(IntegrationConfigService.class);
         assert integrationConfigService != null;
-        List<ThirdConfigurationDTO> synOrganizationConfigs = integrationConfigService.getThirdConfig(DEFAULT_ORGANIZATION_ID);
+        List<ThirdConfigBaseDTO> synOrganizationConfigs = integrationConfigService.getThirdConfig(DEFAULT_ORGANIZATION_ID);
 
         if (CollectionUtils.isEmpty(synOrganizationConfigs)) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_NOT_EXIST));
         }
 
-        ThirdConfigurationDTO config = synOrganizationConfigs.stream()
+        ThirdConfigBaseDTO config = synOrganizationConfigs.stream()
                 .filter(c -> Strings.CI.equals(c.getType(), type))
                 .findFirst()
                 .orElse(null);
@@ -370,8 +382,8 @@ public class SSOService {
         return config;
     }
 
-    private void validateQrCodeEnabled(ThirdConfigurationDTO config) {
-        if (!config.getStartEnable()) {
+    private void validateQrCodeEnabled(Boolean enable) {
+        if (!enable) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_DISABLE));
         }
     }
@@ -381,12 +393,17 @@ public class SSOService {
 
         OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
-        ThirdConfigurationDTO dingTalkConfig = JSON.parseObject(content, ThirdConfigurationDTO.class);
+        ThirdConfigBaseDTO config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 
-        if (dingTalkConfig == null) {
+        if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
-
+        DingTalkThirdConfigRequest dingTalkConfig = new DingTalkThirdConfigRequest();
+        if (config.getConfig() == null) {
+            dingTalkConfig = JSON.parseObject(content, DingTalkThirdConfigRequest.class);
+        } else {
+            dingTalkConfig = MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+        }
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DINGTALK_OAUTH2.toString());
 
 
@@ -395,13 +412,14 @@ public class SSOService {
     public SessionUser exchangeLarkCode(String code) {
         validateCode(code);
 
-        ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
-        validateQrCodeEnabled(larkConfig);
+        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
+        LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
+        validateQrCodeEnabled(larkConfig.getStartEnable());
 
         return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString(), false);
     }
 
-    private SessionUser getLarkSessionUser(String code, ThirdConfigurationDTO larkConfig, String loginType, Boolean isMobile) {
+    private SessionUser getLarkSessionUser(String code, LarkThirdConfigRequest larkConfig, String loginType, Boolean isMobile) {
         if (isMobile) {
             // 移动端需要变更域名
             larkConfig.setRedirectUrl(larkConfig.getRedirectUrl() + "/mobile");
@@ -424,7 +442,7 @@ public class SSOService {
         // 创建登录请求并登录
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
-                DepartmentConstants.LARK.name(),
+                ThirdConfigTypeConstants.LARK.name(),
                 loginType
         );
 
@@ -435,8 +453,9 @@ public class SSOService {
     public SessionUser exchangeLarkOauth2(String code, Boolean isMobile) {
         validateCode(code);
 
-        ThirdConfigurationDTO larkConfig = getThirdPartyConfig(DepartmentConstants.LARK.name());
-        validateQrCodeEnabled(larkConfig);
+        ThirdConfigBaseDTO config = getThirdPartyConfig(ThirdConfigTypeConstants.LARK.name());
+        LarkThirdConfigRequest larkConfig = MAPPER.convertValue(config.getConfig(), LarkThirdConfigRequest.class);
+        validateQrCodeEnabled(larkConfig.getStartEnable());
 
         return getLarkSessionUser(code, larkConfig, UserSource.LARK_OAUTH2.toString(), isMobile);
     }

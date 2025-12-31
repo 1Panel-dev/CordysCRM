@@ -3,7 +3,8 @@ package cn.cordys.crm.integration.wecom.service;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.wecom.dto.Text;
 import cn.cordys.crm.integration.wecom.dto.WeComSendDTO;
@@ -16,6 +17,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -31,7 +33,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
-
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
@@ -77,18 +79,24 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             LogUtils.warn("没有配置企业微信通知信息，无法发送消息");
             return;
         }
-        ThirdConfigurationDTO thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigurationDTO.class
+        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
+        WecomThirdConfigRequest wecomThirdConfigRequest = new WecomThirdConfigRequest();
+        if (thirdConfigurationDTO.getConfig() == null) {
+            wecomThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), WecomThirdConfigRequest.class);
+        } else {
+            wecomThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), WecomThirdConfigRequest.class);
+        }
 
         //构建企业微信消息
         WeComSendDTO weComSendDTO = new WeComSendDTO();
         String result = String.join("|", resourceUserIds);
         weComSendDTO.setTouser(result);
-        weComSendDTO.setAgentid(Integer.parseInt(thirdConfigurationDTO.getAgentId()));
+        weComSendDTO.setAgentid(Integer.parseInt(wecomThirdConfigRequest.getAgentId()));
         weComSendDTO.setText(new Text(context));
         weComSendDTO.setMsgtype("text");
 
-        tokenService.sendNoticeByToken(weComSendDTO, thirdConfigurationDTO.getCorpId(), thirdConfigurationDTO.getAppSecret());
+        tokenService.sendNoticeByToken(weComSendDTO, wecomThirdConfigRequest.getCorpId(), wecomThirdConfigRequest.getAppSecret());
     }
 }

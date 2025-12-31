@@ -3,7 +3,9 @@ package cn.cordys.crm.integration.lark.service;
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.LogUtils;
-import cn.cordys.crm.integration.common.dto.ThirdConfigurationDTO;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
+import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkTextDTO;
 import cn.cordys.crm.integration.sso.service.TokenService;
@@ -16,6 +18,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
 
     @Override
@@ -77,9 +81,17 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             LogUtils.warn("没有配置飞书通知信息，无法发送消息");
             return;
         }
-        ThirdConfigurationDTO thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigurationDTO.class
+        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
+        LarkThirdConfigRequest larkThirdConfigRequest = new LarkThirdConfigRequest();
+        if (thirdConfigurationDTO.getConfig() == null) {
+            larkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), LarkThirdConfigRequest.class);
+        } else {
+            larkThirdConfigRequest = MAPPER.convertValue(thirdConfigurationDTO.getConfig(), LarkThirdConfigRequest.class);
+        }
+
+
         for (String resourceUserId : resourceUserIds) {
             LogUtils.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
             LarkSendMessageDTO larkSendMessageDTO = new LarkSendMessageDTO();
@@ -88,7 +100,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             LarkTextDTO larkTextDTO = new LarkTextDTO();
             larkTextDTO.setText(context);
             larkSendMessageDTO.setContent(JSON.toJSONString(larkTextDTO));
-            tokenService.sendLarkNoticeByToken(larkSendMessageDTO, thirdConfigurationDTO.getAgentId(), thirdConfigurationDTO.getAppSecret());
+            tokenService.sendLarkNoticeByToken(larkSendMessageDTO, larkThirdConfigRequest.getAgentId(), larkThirdConfigRequest.getAppSecret());
         }
 
     }
