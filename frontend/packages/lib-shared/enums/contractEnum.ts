@@ -12,3 +12,10 @@ export enum ContractPaymentPlanEnum {
   PARTIALLY_COMPLETED = 'PARTIALLY_COMPLETED', // 部分完成
   COMPLETED = 'COMPLETED', // 已完成
 }
+
+export enum ContractBusinessNameStatusEnum {
+  APPROVED = 'APPROVED', // 通过
+  UNAPPROVED = 'UNAPPROVED', // 未通过
+  APPROVING = 'APPROVING', // 提审中
+  REVOKED = 'REVOKED', // 撤销
+}

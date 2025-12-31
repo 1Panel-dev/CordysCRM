@@ -250,6 +250,11 @@
         label: t('system.message.opportunityMessage'),
         count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY] || 0,
       },
+      {
+        value: SystemResourceMessageTypeEnum.CONTRACT,
+        label: t('module.contract'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.CONTRACT] || 0,
+      },
     ];
 
     if (isAnnouncementTab) {

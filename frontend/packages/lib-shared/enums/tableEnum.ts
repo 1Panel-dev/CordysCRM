@@ -36,6 +36,7 @@ export enum TableKeyEnum {
   SEARCH_ADVANCED_PUBLIC = 'searchAdvancedPublic', // 公海
   SEARCH_ADVANCED_CLUE_POOL = 'searchAdvancedCluePool', // 线索池
   SEARCH_ADVANCED_OPPORTUNITY = 'searchAdvancedOpportunity', // 商机
+  CONTRACT_BUSINESS_NAME = 'contractBusinessName', // 工商抬头
 }
 
 // 具有特殊功能的列

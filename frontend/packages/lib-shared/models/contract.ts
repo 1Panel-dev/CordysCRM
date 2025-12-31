@@ -1,6 +1,7 @@
 import { ModuleField } from '@lib/shared/models/customer';
 import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+import { ContractBusinessNameStatusEnum } from '@lib/shared/enums/contractEnum';
 
 // 合同列表项
 export interface ContractItem {
@@ -123,5 +124,27 @@ export interface SavePaymentRecordParams {
 
 // 更新回款记录参数
 export interface UpdatePaymentRecordParams extends SavePaymentRecordParams {
+  id: string;
+}
+
+// todo xxw 工商合同列表项
+export interface BusinessNameItem {
+  id: string;
+  name: string;
+  address: string;
+  status: ContractBusinessNameStatusEnum;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  createUserName: string;
+  updateUserName: string;
+}
+
+export interface SaveBusinessNameParams {
+  // todo xxw 工商合同添加参数
+}
+
+export interface UpdateBusinessNameParams extends SaveBusinessNameParams {
   id: string;
 }

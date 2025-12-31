@@ -279,6 +279,15 @@ export const {
   getPaymentRecordDetail,
   getPaymentRecordList,
   deletePaymentRecord,
+  preCheckImportBusinessName,
+  downloadBusinessNameTemplate,
+  importBusinessName,
+  getBusinessNameList,
+  addBusinessName,
+  updateBusinessName,
+  deleteBusinessName,
+  revokeBusinessName,
+  getBusinessNameDetail,
 } = contractApi;
 
 export const {

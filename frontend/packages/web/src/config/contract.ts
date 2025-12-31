@@ -1,4 +1,8 @@
-import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+import {
+  ContractBusinessNameStatusEnum,
+  ContractPaymentPlanEnum,
+  ContractStatusEnum,
+} from '@lib/shared/enums/contractEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { hasAllPermission } from '@/utils/permission';
@@ -52,6 +56,34 @@ export const contractStatusOptions = [
 ];
 
 export const contractPaymentPlanStatusOptions = Object.entries(contractPaymentPlanStatus).map(([key, value]) => ({
+  label: value.label,
+  value: key,
+}));
+
+export const contractBusinessNameStatusMap = {
+  [ContractBusinessNameStatusEnum.APPROVED]: {
+    label: t('common.pass'),
+    icon: 'iconicon_succeed_filled',
+    color: 'var(--success-green)',
+  },
+  [ContractBusinessNameStatusEnum.UNAPPROVED]: {
+    label: t('common.unPass'),
+    icon: 'iconicon_close_circle_filled',
+    color: 'var(--error-red)',
+  },
+  [ContractBusinessNameStatusEnum.APPROVING]: {
+    label: t('common.review'),
+    icon: 'iconicon_wait',
+    color: 'var(--info-blue)',
+  },
+  [ContractBusinessNameStatusEnum.REVOKED]: {
+    label: t('common.revoke'),
+    icon: 'iconicon_skip_planarity',
+    color: 'var(--text-n4)',
+  },
+};
+
+export const contractBusinessNameStatusOptions = Object.entries(contractBusinessNameStatusMap).map(([key, value]) => ({
   label: value.label,
   value: key,
 }));
