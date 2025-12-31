@@ -9,7 +9,7 @@ export default {
   'formCreate.member': '成员',
   'formCreate.department': '部门',
   'formCreate.price': '价格表',
-  'formCreate.quotation': '报价单',
+  'formCreate.quotation': '报价',
   'formCreate.pickDate': '选择日期',
   'formCreate.pickTime': '选择时间',
   'formCreate.next': '下一步',

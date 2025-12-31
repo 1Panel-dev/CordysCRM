@@ -10,6 +10,8 @@
       v-model:checked-row-keys="selectedKeys"
       v-bind="propsRes"
       :fullscreen-target-ref="props.fullscreenTargetRef"
+      :childrenKey="subFieldKey"
+      :columns="columns"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -34,9 +36,10 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey } from 'naive-ui';
+  import { DataTableRowKey, NImage, NImageGroup } from 'naive-ui';
 
-  import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
 
@@ -48,6 +51,7 @@
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import type { FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
@@ -58,6 +62,7 @@
       disabledSelection?: (row: RowData) => boolean;
       filterParams?: FilterResult;
       fullscreenTargetRef?: HTMLElement | null;
+      fieldConfig?: FormCreateField;
     }>(),
     {
       multiple: true,
@@ -77,7 +82,7 @@
     default: [],
   });
 
-  const columns: CrmDataTableColumn[] = [
+  const columns = ref<CrmDataTableColumn[]>([
     {
       type: 'selection',
       multiple: props.multiple,
@@ -86,6 +91,7 @@
         return props.disabledSelection ? props.disabledSelection(row) : false;
       },
       resizable: false,
+      fixed: 'left',
     },
     {
       title: t('common.name'),
@@ -94,11 +100,12 @@
         tooltip: true,
       },
       resizable: false,
+      fixed: 'left',
     },
-  ];
+  ]);
 
   if (props.sourceType === FieldDataSourceTypeEnum.CONTACT) {
-    columns.push(
+    columns.value.push(
       {
         title: t('crmFormDesign.phone'),
         key: 'phone',
@@ -119,16 +126,95 @@
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey: computed(() => formKeyMap[props.sourceType] as FormDesignKeyEnum),
   });
+  const subField = computed(() =>
+    fieldList.value.find((field) => [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type))
+  );
+  // 计算子表格字段的key
+  const subFieldKey = computed(() => {
+    if (
+      formKeyMap[props.sourceType] === FormDesignKeyEnum.PRICE &&
+      props.fieldConfig?.showFields?.some((sf) => subField.value?.subFields?.some((sub) => sub.id === sf))
+    ) {
+      const field = fieldList.value.find((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
+      return field?.businessKey || field?.id;
+    }
+    return undefined;
+  });
+
+  watch(
+    () => subFieldKey.value,
+    (val) => {
+      if (val) {
+        columns.value = [
+          ...columns.value.map((col) => {
+            if (col.type === 'selection') {
+              col.multiple = true;
+              return col;
+            }
+            if (col.key === 'name') {
+              col.width = 250;
+              return col;
+            }
+            return col;
+          }),
+          ...(subField.value?.subFields || []).map((field) => ({
+            title: field.name,
+            key: field.id,
+            width: 120,
+            ellipsis: {
+              tooltip: true,
+            },
+            resizable: true,
+            render:
+              field.type === FieldTypeEnum.PICTURE
+                ? (row: any) =>
+                    h(
+                      'div',
+                      {
+                        class: 'flex items-center',
+                      },
+                      [
+                        h(
+                          NImageGroup,
+                          {},
+                          {
+                            default: () =>
+                              row[field.businessKey || field.id]?.length
+                                ? (row[field.businessKey || field.id] || []).map((_key: string) =>
+                                    h(NImage, {
+                                      class: 'h-[40px] w-[40px] mr-[4px]',
+                                      src: `${PreviewPictureUrl}/${_key}`,
+                                    })
+                                  )
+                                : '-',
+                          }
+                        ),
+                      ]
+                    )
+                : undefined,
+          })),
+        ];
+      }
+    },
+    { immediate: true }
+  );
 
   const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
     sourceApi[props.sourceType],
     {
-      columns,
+      columns: columns.value,
       showSetting: false,
       crmPagination: {
         showSizePicker: false,
       },
       containerClass: '.crm-data-source-table',
+      childrenKey: subFieldKey.value,
+      rowClassName: (row) => {
+        if (subFieldKey.value && row[subFieldKey.value]?.length) {
+          return 'crm-data-source-has-subfields';
+        }
+        return '';
+      },
     },
     (item, originalData) => {
       return transformData({
@@ -173,16 +259,30 @@
 
 <style lang="less">
   .crm-data-source-table {
-    .n-checkbox--disabled {
+    .n-checkbox--disabled .n-checkbox--checked {
       .check-icon {
         opacity: 1 !important;
         transform: scale(1) !important;
       }
     }
-    .n-radio--disabled {
+    .n-radio--disabled .n-checkbox--checked {
       .n-radio__dot::before {
         opacity: 1 !important;
         transform: scale(1) !important;
+      }
+    }
+    .crm-data-source-has-subfields {
+      .n-data-table-td--selection {
+        .n-checkbox,
+        .n-radio {
+          @apply hidden;
+        }
+      }
+    }
+    .n-data-table-td {
+      @apply whitespace-nowrap;
+      .n-ellipsis {
+        width: calc(100% - 24px);
       }
     }
   }

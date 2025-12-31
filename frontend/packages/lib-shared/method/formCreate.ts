@@ -108,6 +108,9 @@ export function initFieldValue(field: FormCreateField, value: string | number | 
 }
 
 export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
+  if (fieldValue === undefined || fieldValue === null) {
+    return '-';
+  }
   const { t } = useI18n();
   let value: string | string[] = fieldValue || '';
   if (options) {
@@ -233,11 +236,11 @@ export function transformData({
           if (subField.resourceFieldId) {
             subItem[subField.id] = parseModuleFieldValue(
               subField,
-              subItem[subField.businessKey || subField.id],
+              subItem[subField.id],
+              // 数据源显示字段不使用业务 key，直接使用字段 id 去取值
               originalData?.optionMap?.[subField.id]
             );
           } else {
-            // 不使用业务 key，直接使用字段 id 去取值
             subItem[subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.businessKey || subField.id],
@@ -362,7 +365,6 @@ export function transformData({
       customFieldAttr[field.fieldId] = field.fieldValue;
     }
   });
-
   return {
     ...item,
     ...customFieldAttr,

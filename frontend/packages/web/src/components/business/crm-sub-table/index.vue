@@ -299,15 +299,6 @@
                 formDetail: props.formDetail,
                 disabled: props.disabled,
                 class: 'w-[240px]',
-                disabledSelection: (r: Record<string, any>) => {
-                  if (key === 'product') {
-                    // 产品列不允许重复选择
-                    return data.value.some(
-                      (dataRow, dataRowIndex) => dataRowIndex !== rowIndex && dataRow[key].includes(r.id)
-                    );
-                  }
-                  return false;
-                },
                 onChange: (val, source) => {
                   row[key] = val;
                   sumInitialOptions.value = sumInitialOptions.value.concat(
@@ -321,17 +312,7 @@
                       let fieldVal: string | string[] = '';
                       if (targetSource) {
                         const sourceFieldVal = targetSource[sf.businessKey || sf.id];
-                        if (sf.subTableFieldId) {
-                          // 根据同一行选择的业务产品字段值去获取价格表内对应产品的字段值 TODO:后续应该使用字段联动配置去实现
-                          if (targetSource.products && row.product?.length) {
-                            fieldVal =
-                              targetSource.products.find((st: any) => st.product === row.product[0])?.[sf.id] || '';
-                          } else {
-                            fieldVal = '';
-                          }
-                        } else {
-                          fieldVal = sourceFieldVal;
-                        }
+                        fieldVal = sourceFieldVal;
                       }
                       if (Array.isArray(fieldVal)) {
                         row[sf.id] = fieldVal.join(',');
