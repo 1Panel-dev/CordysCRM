@@ -1,12 +1,12 @@
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.dto.response.AnnouncementDTO;
 import cn.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import cn.cordys.crm.system.service.AnnouncementService;
 import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class NotifyOnJob {
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
     @Resource
@@ -31,7 +32,7 @@ public class NotifyOnJob {
         try {
             this.addNotification();
         } catch (Exception e) {
-            LogUtils.error("公告通知异常: ", e.getMessage());
+            log.error("公告通知异常: ", e.getMessage());
         }
     }
 
@@ -50,7 +51,7 @@ public class NotifyOnJob {
         if (CollectionUtils.isEmpty(announcements)) {
             return;
         }
-        LogUtils.info("公告通知数量: {}", announcements.size());
+        log.info("公告通知数量: {}", announcements.size());
         //将公告根据接收人生成相关的通知
         List<String> ids = new ArrayList<>();
         for (AnnouncementDTO announcementDTO : announcements) {

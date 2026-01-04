@@ -3,7 +3,6 @@ package cn.cordys.common.security.realm;
 
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.permission.PermissionUtils;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.service.UserLoginService;
 import cn.cordys.security.SessionConstants;
@@ -11,6 +10,7 @@ import cn.cordys.security.SessionUser;
 import cn.cordys.security.SessionUtils;
 import cn.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Lazy;
  * set realm
  * </p>
  */
+@Slf4j
 public class LocalRealm extends AuthorizingRealm {
     @Resource
     @Lazy
@@ -80,7 +81,7 @@ public class LocalRealm extends AuthorizingRealm {
     private UserDTO getUserWithOutAuthenticate(String userId) {
         UserDTO user = userLoginService.authenticateUser(userId);
         if (user == null) {
-            LogUtils.warn("The user does not exist: " + userId);
+            log.warn("The user does not exist: " + userId);
             throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         return user;
@@ -89,7 +90,7 @@ public class LocalRealm extends AuthorizingRealm {
     private AuthenticationInfo loginLocalMode(String userId, String password) {
         UserDTO user = userLoginService.authenticateUser(userId);
         if (user == null) {
-            LogUtils.warn("The user does not exist: " + userId);
+            log.warn("The user does not exist: " + userId);
             throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         // 密码验证

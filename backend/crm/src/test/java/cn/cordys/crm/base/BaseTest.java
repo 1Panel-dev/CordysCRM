@@ -7,7 +7,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.system.domain.RolePermission;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
@@ -15,6 +15,7 @@ import cn.cordys.security.SessionConstants;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.Resource;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -48,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Slf4j
 public abstract class BaseTest {
     public static final String DEFAULT_ORGANIZATION_ID = "100001";
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
@@ -156,7 +158,7 @@ public abstract class BaseTest {
             MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url, uriVariables);
             return setRequestBuilderHeader(requestBuilder, adminAuthInfo);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         return null;
     }

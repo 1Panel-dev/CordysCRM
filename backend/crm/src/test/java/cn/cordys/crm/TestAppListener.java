@@ -4,11 +4,12 @@ import cn.cordys.common.service.DataInitService;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.util.HikariCPUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.rsa.RsaKey;
 import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.system.service.ExtScheduleService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 class TestAppListener implements ApplicationRunner {
     @Resource
     private DefaultUidGenerator uidGenerator;
@@ -39,24 +41,24 @@ class TestAppListener implements ApplicationRunner {
      */
     @Override
     public void run(ApplicationArguments args) {
-        LogUtils.info("===== 开始初始化配置 =====");
+        log.info("===== 开始初始化配置 =====");
 
         // 初始化唯一ID生成器
         uidGenerator.init();
 
         // 初始化RSA配置
-        LogUtils.info("初始化RSA配置");
+        log.info("初始化RSA配置");
         initializeRsaConfiguration();
 
-        LogUtils.info("初始化定时任务");
+        log.info("初始化定时任务");
         extScheduleService.startEnableSchedules();
 
-        LogUtils.info("初始化默认组织数据");
+        log.info("初始化默认组织数据");
         dataInitService.initOneTime();
 
         HikariCPUtils.printHikariCPStatus();
 
-        LogUtils.info("===== 完成初始化配置 =====");
+        log.info("===== 完成初始化配置 =====");
     }
 
     /**
@@ -77,7 +79,7 @@ class TestAppListener implements ApplicationRunner {
                 return;
             }
         } catch (Exception e) {
-            LogUtils.error("从 Redis 获取 RSA 配置失败", e);
+            log.error("从 Redis 获取 RSA 配置失败", e);
         }
 
         try {
@@ -86,7 +88,7 @@ class TestAppListener implements ApplicationRunner {
             stringRedisTemplate.opsForValue().set(redisKey, JSON.toJSONString(rsaKey));
             RsaUtils.setRsaKey(rsaKey);
         } catch (Exception e) {
-            LogUtils.error("初始化 RSA 配置失败", e);
+            log.error("初始化 RSA 配置失败", e);
         }
     }
 }

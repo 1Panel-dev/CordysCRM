@@ -1,13 +1,14 @@
 package cn.cordys.crm.system.job;
 
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.job.listener.ExecuteEvent;
 import cn.cordys.quartz.anno.QuartzScheduled;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class TaskCleanupJob {
 
     private final ApplicationEventPublisher publisher;
@@ -30,9 +31,9 @@ public class TaskCleanupJob {
 
 
     public void runAll() {
-        LogUtils.info("开始执行所有清理任务");
+        log.info("开始执行所有清理任务");
         publisher.publishEvent(new ExecuteEvent(this));
-        LogUtils.info("所有清理任务执行完成");
+        log.info("所有清理任务执行完成");
     }
 
 }

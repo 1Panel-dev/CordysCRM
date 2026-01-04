@@ -3,7 +3,6 @@ package cn.cordys.crm.system.excel.listener;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.excel.domain.UserExcelData;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
@@ -15,6 +14,7 @@ import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.event.AnalysisEventListener;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -25,6 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
     protected static final int NAME_LENGTH = 255;
@@ -72,7 +73,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         try {
             genExcelHeadToFieldNameDicAndGetNotRequiredFields();
         } catch (NoSuchFieldException e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         formatHeadMap();
         super.invokeHeadMap(headMap, context);
@@ -104,7 +105,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
             }
         } catch (NoSuchFieldException e) {
             errMsg = new StringBuilder(Translator.get("parse_data_error"));
-            LogUtils.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
 
         if (!errMsg.isEmpty()) {

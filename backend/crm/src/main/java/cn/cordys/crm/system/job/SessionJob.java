@@ -1,10 +1,10 @@
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.service.SystemService;
 import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class SessionJob {
 
     @Resource
@@ -71,7 +72,7 @@ public class SessionJob {
                     userCount.merge(userId, 1L, Long::sum);
 
                     // 记录日志并检查会话的过期时间
-                    LogUtils.info("{} : {} 过期时间: {}", key, userId, expire);
+                    log.info("{} : {} 过期时间: {}", key, userId, expire);
 
                     // 如果过期时间为 -1，则手动设置过期时间为 30 秒
                     if (expire != null && expire == -1) {
@@ -81,9 +82,9 @@ public class SessionJob {
             }
             // 清理缓存
             systemService.clearFormCache();
-            LogUtils.info("用户会话统计: {}", JSON.toJSONString(userCount));
+            log.info("用户会话统计: {}", JSON.toJSONString(userCount));
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 }

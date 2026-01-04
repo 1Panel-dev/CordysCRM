@@ -3,9 +3,9 @@ package cn.cordys.common.uid.impl;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.BitsAllocator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.TimeUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class DefaultUidGenerator implements DisposableBean {
     /**
      * Bits allocate
@@ -62,14 +63,14 @@ public class DefaultUidGenerator implements DisposableBean {
             throw new RuntimeException("Worker id " + workerId + " exceeds the max " + bitsAllocator.getMaxWorkerId());
         }
 
-        LogUtils.info("Initialized bits(1, {}, {}, {}) for workerID:{}", timeBits, workerBits, seqBits, workerId);
+        log.info("Initialized bits(1, {}, {}, {}) for workerID:{}", timeBits, workerBits, seqBits, workerId);
     }
 
     public long getUID() throws GenericException {
         try {
             return nextId();
         } catch (Exception e) {
-            LogUtils.error("Generate unique id exception. ", e);
+            log.error("Generate unique id exception. ", e);
             throw new RuntimeException(e);
         }
     }
@@ -180,6 +181,6 @@ public class DefaultUidGenerator implements DisposableBean {
 
     @Override
     public void destroy() {
-        LogUtils.info("Shutdown UidGenerator...");
+        log.info("Shutdown UidGenerator...");
     }
 }

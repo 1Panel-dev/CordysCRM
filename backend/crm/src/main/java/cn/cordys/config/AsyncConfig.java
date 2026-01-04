@@ -1,6 +1,7 @@
 package cn.cordys.config;
 
-import cn.cordys.common.util.LogUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @EnableAsync
 @Configuration
+@Slf4j
 public class AsyncConfig implements AsyncConfigurer {
 
     // 核心线程数
@@ -43,6 +45,6 @@ public class AsyncConfig implements AsyncConfigurer {
      */
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return (ex, method, params) -> LogUtils.error("异步任务异常: " + method.getName() + " - " + ex.getMessage());
+        return (ex, method, params) -> log.error("异步任务异常: " + method.getName() + " - " + ex.getMessage());
     }
 }

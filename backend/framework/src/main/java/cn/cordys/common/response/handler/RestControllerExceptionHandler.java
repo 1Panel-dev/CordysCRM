@@ -3,11 +3,11 @@ package cn.cordys.common.response.handler;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.exception.IResultCode;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -33,6 +33,7 @@ import java.util.Map;
  * 全局异常处理器，处理各类异常并返回统一格式的错误响应。
  */
 @RestControllerAdvice
+@Slf4j
 public class RestControllerExceptionHandler {
 
     /**
@@ -63,7 +64,7 @@ public class RestControllerExceptionHandler {
     public static String getStackTraceAsString(Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw, true));
-        LogUtils.error(sw.toString());
+        log.error(sw.toString());
         return sw.toString();
     }
 
@@ -151,7 +152,7 @@ public class RestControllerExceptionHandler {
 
     @ExceptionHandler({NoResourceFoundException.class, UnavailableSecurityManagerException.class})
     public ResponseEntity<ResultHolder> handleNoResourceFoundException(NoResourceFoundException e) {
-        LogUtils.error("No static resource");
+        log.error("No static resource");
         return null;
     }
 

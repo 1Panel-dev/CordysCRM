@@ -4,10 +4,11 @@ import cn.cordys.common.uid.utils.DockerUtils;
 import cn.cordys.common.uid.utils.NetUtils;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.uid.worker.WorkerNodeType;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.system.domain.WorkerNode;
 import cn.cordys.crm.system.mapper.ExtWorkerNodeMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
  * the worker id will be discarded after assigned to the UidGenerator
  */
 @Service
+@Slf4j
 public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
     @Resource
     private ExtWorkerNodeMapper extWorkerNodeMapper;
@@ -34,11 +36,11 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
 
             // add worker node for new (ignore the same IP + PORT)
             extWorkerNodeMapper.insert(workerNode);
-            LogUtils.info("Add worker node:" + workerNode);
+            log.info("Add worker node:" + workerNode);
 
             return workerNode.getId();
         } catch (Exception e) {
-            LogUtils.error("Assign worker id exception. ", e);
+            log.error("Assign worker id exception. ", e);
             return 1;
         }
     }

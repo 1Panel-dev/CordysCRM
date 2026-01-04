@@ -1,6 +1,7 @@
 package cn.cordys.mybatis.lambda;
 
-import cn.cordys.common.util.LogUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -11,6 +12,7 @@ import java.lang.reflect.Proxy;
  * 该工具类提供了从 Lambda 表达式中提取方法名称的功能，支持多种方式，包括代理、反射和序列化。
  * </p>
  */
+@Slf4j
 public final class LambdaUtils {
 
     /**
@@ -38,7 +40,7 @@ public final class LambdaUtils {
             return lambdaMeta.getImplMethodName();
         } catch (Throwable e) {
             // 3. 反射失败时，使用序列化方式读取 Lambda 元信息
-            LogUtils.error("Extract lambda meta error", e);
+            log.error("Extract lambda meta error", e);
             return new ShadowLambdaMeta(SerializedLambda.extract(func)).getImplMethodName();
         }
     }

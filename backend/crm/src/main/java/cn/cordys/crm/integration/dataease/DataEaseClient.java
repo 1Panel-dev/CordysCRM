@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.dataease;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.*;
 import cn.cordys.crm.integration.dataease.dto.request.*;
@@ -10,6 +9,7 @@ import cn.cordys.crm.integration.dataease.dto.response.*;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 public class DataEaseClient {
 
     protected static final RestTemplate restTemplate = new RestTemplate();
@@ -53,7 +54,7 @@ public class DataEaseClient {
             get("user/personInfo");
             return true;
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return false;
         }
     }

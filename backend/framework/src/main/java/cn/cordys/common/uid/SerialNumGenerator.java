@@ -1,8 +1,8 @@
 package cn.cordys.common.uid;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.quartz.anno.QuartzScheduled;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.Cursor;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@Slf4j
 public class SerialNumGenerator {
 
     private static final int RULE_SIZE = 5;
@@ -48,7 +49,7 @@ public class SerialNumGenerator {
                     .formatted(r.p1(), r.p2(), date, r.mid(), seq);
 
         } catch (Exception e) {
-            LogUtils.error("生成流水号失败", e);
+            log.error("生成流水号失败", e);
             return null;
         }
     }
@@ -67,18 +68,18 @@ public class SerialNumGenerator {
             );
         }
 
-		private boolean equals(Rule other) {
-			return Strings.CS.equals(this.p1, other.p1)
-					&& Strings.CS.equals(this.p2, other.p2)
-					&& Strings.CS.equals(this.datePattern, other.datePattern)
-					&& Strings.CS.equals(this.mid, other.mid)
-					&& this.width == other.width;
-		}
+        private boolean equals(Rule other) {
+            return Strings.CS.equals(this.p1, other.p1)
+                    && Strings.CS.equals(this.p2, other.p2)
+                    && Strings.CS.equals(this.datePattern, other.datePattern)
+                    && Strings.CS.equals(this.mid, other.mid)
+                    && this.width == other.width;
+        }
     }
 
     @QuartzScheduled(cron = "0 0 1 1,16 * ?")
     public void clean() {
-        LogUtils.info("开始清理过期流水号");
+        log.info("开始清理过期流水号");
 
         String currentMonth = new SimpleDateFormat("yyyyMM").format(new Date());
 
@@ -87,31 +88,31 @@ public class SerialNumGenerator {
                 String serialDate = key.substring(key.lastIndexOf(":") + 1);
                 if (!currentMonth.equals(serialDate)) {
                     redis.delete(key);
-                    LogUtils.info("删除过期Key: {}", key);
+                    log.info("删除过期Key: {}", key);
                 }
             });
         } catch (Exception e) {
-            LogUtils.error("流水号过期Key清理异常: ", e);
+            log.error("流水号过期Key清理异常: ", e);
         }
 
-        LogUtils.info("流水号过期Key清理完成");
+        log.info("流水号过期Key清理完成");
     }
 
-	public boolean sameRule(List<String> oRules, List<String> nRules) {
-		if (oRules.size() != nRules.size() && oRules.size() != RULE_SIZE) {
-			return false;
-		}
-		Rule or = Rule.from(oRules);
-		Rule nr = Rule.from(nRules);
-		return or.equals(nr);
-	}
+    public boolean sameRule(List<String> oRules, List<String> nRules) {
+        if (oRules.size() != nRules.size() && oRules.size() != RULE_SIZE) {
+            return false;
+        }
+        Rule or = Rule.from(oRules);
+        Rule nr = Rule.from(nRules);
+        return or.equals(nr);
+    }
 
-	/**
-	 * 重置指定规则的流水号
-	 */
-	public void resetKey(String datePattern, String formKey, String orgId) {
-		String date = new SimpleDateFormat(datePattern).format(new Date());
-		String key = "%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date);
-		redis.delete(key);
-	}
+    /**
+     * 重置指定规则的流水号
+     */
+    public void resetKey(String datePattern, String formKey, String orgId) {
+        String date = new SimpleDateFormat(datePattern).format(new Date());
+        String key = "%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date);
+        redis.delete(key);
+    }
 }

@@ -6,7 +6,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JsonDifferenceUtils;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.OperationLog;
 import cn.cordys.crm.system.domain.OperationLogBlob;
@@ -17,6 +17,7 @@ import cn.cordys.crm.system.mapper.ExtOperationLogMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class SysOperationLogService {
 
     @Resource
@@ -133,7 +135,7 @@ public class SysOperationLogService {
             }
             logResponse.setDiffs(differences);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw new GenericException(Translator.get("data_parsing_exception"));
         }
 

@@ -6,13 +6,17 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.CaseFormatUtils;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.metadata.CellExtra;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -22,9 +26,12 @@ import java.util.*;
 
 /**
  * 自定义字段导入处理器
+ *
  * @param <T> 业务实体
+ *
  * @author song-cc-rock
  */
+@Slf4j
 public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventListener {
 
     /**
@@ -45,13 +52,13 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 业务实体
      */
     private final Class<T> entityClass;
-	/**
-	 * method cache
-	 */
-	private final Map<String, Method> methodCache = new HashMap<>();
-	/**
-	 * 操作人
-	 */
+    /**
+     * method cache
+     */
+    private final Map<String, Method> methodCache = new HashMap<>();
+    /**
+     * 操作人
+     */
     private final String operator;
     /**
      * 后置处理函数(入库)
@@ -61,22 +68,22 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 序列化字段及生成器
      */
     private BaseField serialField;
-	private final SerialNumGenerator serialNumGenerator;
+    private final SerialNumGenerator serialNumGenerator;
     /**
      * 成功条数
      */
-	@Getter
+    @Getter
     private int successCount;
-	/**
-	 * 临时合并实体
-	 */
-	private T mergedTmpEntity;
-	private int subRowId;
+    /**
+     * 临时合并实体
+     */
+    private T mergedTmpEntity;
+    private int subRowId;
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
-										  CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
-										  Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
-		super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
+                                          CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
+                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+        super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
@@ -92,24 +99,24 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-		super.invokeHeadMap(headMap, context);
+        super.invokeHeadMap(headMap, context);
         Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
         anySerial.ifPresent(field -> serialField = field);
     }
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
-		super.invoke(data, analysisContext);
+        super.invoke(data, analysisContext);
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-		if (this.errRows.contains(rowIndex)) {
-			// 有错误跳过该行
-			return;
-		}
-		// build entity by row-data
-		buildEntityFromRow(rowIndex, data);
-		if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
-			batchProcessData();
-		}
+        if (this.errRows.contains(rowIndex)) {
+            // 有错误跳过该行
+            return;
+        }
+        // build entity by row-data
+        buildEntityFromRow(rowIndex, data);
+        if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+            batchProcessData();
+        }
     }
 
     @Override
@@ -117,7 +124,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         if (CollectionUtils.isNotEmpty(this.dataList) || CollectionUtils.isNotEmpty(this.fields) || CollectionUtils.isNotEmpty(this.blobFields)) {
             batchProcessData();
         }
-        LogUtils.info("数据导入完成, 总行数: {}", successCount);
+        log.info("数据导入完成, 总行数: {}", successCount);
     }
 
     /**
@@ -129,7 +136,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             consumer.accept(this.dataList, this.fields, this.blobFields);
         } catch (Exception e) {
             // 入库异常,不影响后续批次
-            LogUtils.error("批量插入异常: {}", e.getCause().getMessage());
+            log.error("批量插入异常: {}", e.getCause().getMessage());
             throw new GenericException(e.getCause());
         } finally {
             // 批次插入成功, 统计&&清理
@@ -148,24 +155,24 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private void buildEntityFromRow(Integer rowIndex, Map<Integer, String> rowData) {
         try {
-			if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
-				// 非合并行才创建实体
-				String rowKey = IDGenerator.nextStr();
-				mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
-				setInternal(mergedTmpEntity, rowKey);
-				subRowId = 1;
-			} else {
-				subRowId++;
-			}
-			if (mergedTmpEntity == null) {
-				return;
-			}
-			Optional<Object> id = Optional.ofNullable(getResourceId(mergedTmpEntity));
-			if (id.isEmpty()) {
-				return;
-			}
-			String bizId = IDGenerator.nextStr();
-			headMap.forEach((k, v) -> {
+            if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
+                // 非合并行才创建实体
+                String rowKey = IDGenerator.nextStr();
+                mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
+                setInternal(mergedTmpEntity, rowKey);
+                subRowId = 1;
+            } else {
+                subRowId++;
+            }
+            if (mergedTmpEntity == null) {
+                return;
+            }
+            Optional<Object> id = Optional.ofNullable(getResourceId(mergedTmpEntity));
+            if (id.isEmpty()) {
+                return;
+            }
+            String bizId = IDGenerator.nextStr();
+            headMap.forEach((k, v) -> {
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
                     return;
@@ -174,28 +181,28 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (val == null) {
                     return;
                 }
-				if (!refSubMap.containsKey(field.getName()) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
-					// 除合并的首行外, 其余合并行非子表字段都跳过
-					return;
-				}
+                if (!refSubMap.containsKey(field.getName()) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
+                    // 除合并的首行外, 其余合并行非子表字段都跳过
+                    return;
+                }
                 if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
                     try {
                         setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
                     } catch (Exception e) {
-                        LogUtils.error("导入错误, 无法设置字段值. {}", e.getMessage());
+                        log.error("导入错误, 无法设置字段值. {}", e.getMessage());
                         throw new GenericException(e);
                     }
                 } else {
-					BaseResourceSubField resourceField = new BaseResourceSubField();
+                    BaseResourceSubField resourceField = new BaseResourceSubField();
                     resourceField.setId(IDGenerator.nextStr());
                     resourceField.setResourceId(id.get().toString());
                     resourceField.setFieldId(field.idOrBusinessKey());
                     resourceField.setFieldValue(val);
-					if (refSubMap.containsKey(field.getName())) {
-						resourceField.setRefSubId(refSubMap.get(field.getName()));
-						resourceField.setRowId(String.valueOf(subRowId));
-						resourceField.setBizId(bizId);
-					}
+                    if (refSubMap.containsKey(field.getName())) {
+                        resourceField.setRefSubId(refSubMap.get(field.getName()));
+                        resourceField.setRowId(String.valueOf(subRowId));
+                        resourceField.setBizId(bizId);
+                    }
                     if (field.isBlob()) {
                         if (val instanceof List<?> valList) {
                             resourceField.setFieldValue(JSON.toJSONString(valList));
@@ -206,28 +213,28 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     }
                 }
             });
-			if (isNormalRow(rowIndex) || isMergedLastRow(rowIndex)) {
-				if (serialField != null) {
-					BaseResourceSubField serialResource = new BaseResourceSubField();
-					serialResource.setId(IDGenerator.nextStr());
-					serialResource.setResourceId(id.get().toString());
-					serialResource.setFieldId(serialField.idOrBusinessKey());
-					String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
-							currentOrg, entityClass.getSimpleName().toLowerCase());
-					serialResource.setFieldValue(serialNo);
-					if (refSubMap.containsKey(serialField.getName())) {
-						serialResource.setRefSubId(refSubMap.get(serialField.getName()));
-						serialResource.setRowId(String.valueOf(subRowId));
-						serialResource.setBizId(bizId);
-					}
-					fields.add(serialResource);
-				}
-				// 合并最后行, 添加并清除实体
-				dataList.add(mergedTmpEntity);
-				mergedTmpEntity = null;
-			}
+            if (isNormalRow(rowIndex) || isMergedLastRow(rowIndex)) {
+                if (serialField != null) {
+                    BaseResourceSubField serialResource = new BaseResourceSubField();
+                    serialResource.setId(IDGenerator.nextStr());
+                    serialResource.setResourceId(id.get().toString());
+                    serialResource.setFieldId(serialField.idOrBusinessKey());
+                    String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
+                            currentOrg, entityClass.getSimpleName().toLowerCase());
+                    serialResource.setFieldValue(serialNo);
+                    if (refSubMap.containsKey(serialField.getName())) {
+                        serialResource.setRefSubId(refSubMap.get(serialField.getName()));
+                        serialResource.setRowId(String.valueOf(subRowId));
+                        serialResource.setBizId(bizId);
+                    }
+                    fields.add(serialResource);
+                }
+                // 合并最后行, 添加并清除实体
+                dataList.add(mergedTmpEntity);
+                mergedTmpEntity = null;
+            }
         } catch (Exception e) {
-            LogUtils.error("导入错误, 原因: {}", e.getMessage());
+            log.error("导入错误, 原因: {}", e.getMessage());
             throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
     }
@@ -240,8 +247,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      *
      * @return 值
      */
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	private Object convertValue(String text, BaseField field) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Object convertValue(String text, BaseField field) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -249,7 +256,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
             return customFieldResolver.textToValue(field, text);
         } catch (Exception e) {
-            LogUtils.error(String.format("解析字段[%s]错误, [%s]不能被转换; 原因: %s", field.getName(), text, e.getMessage()));
+            log.error(String.format("解析字段[%s]错误, [%s]不能被转换; 原因: %s", field.getName(), text, e.getMessage()));
         }
         return null;
     }
@@ -262,47 +269,53 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             if (method.getName().startsWith("set") && method.getParameterCount() == 1) {
                 String fieldName = method.getName().substring(3);
                 String property = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-				methodCache.put("set:" + property, method);
+                methodCache.put("set:" + property, method);
             } else if (method.getParameterCount() == 0 && Strings.CS.equals(method.getName(), "getId")) {
-				methodCache.put("get:id", method);
-			}
+                methodCache.put("get:id", method);
+            }
         }
     }
 
-	/**
-	 * 判断是否合并首行
-	 * @param rowIndex 行号
-	 * @return 是否为合并首行
-	 */
-	private boolean isMergeFirstRow(int rowIndex) {
-		if (mergeCellMap == null) {
-			return false;
-		}
-		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
-	}
+    /**
+     * 判断是否合并首行
+     *
+     * @param rowIndex 行号
+     *
+     * @return 是否为合并首行
+     */
+    private boolean isMergeFirstRow(int rowIndex) {
+        if (mergeCellMap == null) {
+            return false;
+        }
+        List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+        return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
+    }
 
-	/**
-	 * 判断当前行是否为合并尾行
-	 * @param rowIndex 行号
-	 * @return 是否为合并尾行
-	 */
-	private boolean isMergedLastRow(int rowIndex) {
-		if (mergeCellMap == null) {
-			return false;
-		}
-		List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-		return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
-	}
+    /**
+     * 判断当前行是否为合并尾行
+     *
+     * @param rowIndex 行号
+     *
+     * @return 是否为合并尾行
+     */
+    private boolean isMergedLastRow(int rowIndex) {
+        if (mergeCellMap == null) {
+            return false;
+        }
+        List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
+        return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
+    }
 
-	/**
-	 * 非合并行
-	 * @param rowIndex 行号
-	 * @return 是否为正常行
-	 */
-	private boolean isNormalRow(int rowIndex) {
-		return mergeCellMap == null || !mergeCellMap.containsKey(rowIndex);
-	}
+    /**
+     * 非合并行
+     *
+     * @param rowIndex 行号
+     *
+     * @return 是否为正常行
+     */
+    private boolean isNormalRow(int rowIndex) {
+        return mergeCellMap == null || !mergeCellMap.containsKey(rowIndex);
+    }
 
     /**
      * 设置entity内部字段
@@ -313,12 +326,12 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @throws Exception 异常
      */
     private void setInternal(T instance, String rowKey) throws Exception {
-		methodCache.get("set:id").invoke(instance, rowKey);
-		methodCache.get("set:createUser").invoke(instance, operator);
-		methodCache.get("set:createTime").invoke(instance, System.currentTimeMillis());
-		methodCache.get("set:updateUser").invoke(instance, operator);
-		methodCache.get("set:updateTime").invoke(instance, System.currentTimeMillis());
-		methodCache.get("set:organizationId").invoke(instance, currentOrg);
+        methodCache.get("set:id").invoke(instance, rowKey);
+        methodCache.get("set:createUser").invoke(instance, operator);
+        methodCache.get("set:createTime").invoke(instance, System.currentTimeMillis());
+        methodCache.get("set:updateUser").invoke(instance, operator);
+        methodCache.get("set:updateTime").invoke(instance, System.currentTimeMillis());
+        methodCache.get("set:organizationId").invoke(instance, currentOrg);
     }
 
     /**
@@ -337,17 +350,20 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         }
     }
 
-	/**
-	 * 获取资源ID
-	 * @param instance 实例对象
-	 * @return 资源ID
-	 * @throws Exception 异常信息
-	 */
-	private Object getResourceId(T instance) throws Exception {
-		Method getter = methodCache.get("get:id");
-		if (getter != null) {
-			return getter.invoke(instance);
-		}
-		return null;
-	}
+    /**
+     * 获取资源ID
+     *
+     * @param instance 实例对象
+     *
+     * @return 资源ID
+     *
+     * @throws Exception 异常信息
+     */
+    private Object getResourceId(T instance) throws Exception {
+        Method getter = methodCache.get("get:id");
+        if (getter != null) {
+            return getter.invoke(instance);
+        }
+        return null;
+    }
 }

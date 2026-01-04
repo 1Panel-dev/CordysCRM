@@ -52,6 +52,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -67,6 +68,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ProductPriceService {
 
     @Resource
@@ -371,7 +373,7 @@ public class ProductPriceService {
                     .build();
 
         } catch (Exception e) {
-            LogUtils.error("price import pre-check error: {}", e.getMessage(), e);
+            log.error("price import pre-check error: {}", e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }
@@ -430,7 +432,7 @@ public class ProductPriceService {
                     .build();
 
         } catch (Exception e) {
-            LogUtils.error("价格表导入失败, 原因: {}", e.getMessage(), e);
+            log.error("价格表导入失败, 原因: {}", e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }

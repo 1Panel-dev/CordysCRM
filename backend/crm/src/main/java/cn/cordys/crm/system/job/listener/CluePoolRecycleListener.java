@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.common.constants.InternalUser;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.clue.domain.CluePoolRecycleRule;
@@ -13,6 +12,7 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationListener;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  * 负责监听执行事件并将符合条件的线索回收到线索池
  */
 @Component
+@Slf4j
 public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent> {
 
     @Resource
@@ -49,7 +50,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         try {
             recycle();
         } catch (Exception e) {
-            LogUtils.error("定时回收线索池异常：", e.getMessage());
+            log.error("定时回收线索池异常：", e.getMessage());
         }
     }
 
@@ -57,12 +58,12 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
      * 回收线索到线索池
      */
     public void recycle() {
-        LogUtils.info("开始回收线索资源");
+        log.info("开始回收线索资源");
 
         // 获取启用的自动回收线索池
         List<CluePool> enabledPools = getEnabledPools();
         if (CollectionUtils.isEmpty(enabledPools)) {
-            LogUtils.info("没有启用的自动回收线索池，回收任务结束");
+            log.info("没有启用的自动回收线索池，回收任务结束");
             return;
         }
 
@@ -75,7 +76,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         // 获取需要检查的线索列表
         List<Clue> clues = getCluesForRecycle(recycleOwnersIds);
         if (CollectionUtils.isEmpty(clues)) {
-            LogUtils.info("没有需要回收的线索，回收任务结束");
+            log.info("没有需要回收的线索，回收任务结束");
             return;
         }
 
@@ -85,7 +86,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         // 处理每个线索的回收
         processCluesRecycle(clues, ownersPoolMap, recycleRuleMap);
 
-        LogUtils.info("线索资源回收完成");
+        log.info("线索资源回收完成");
     }
 
     /**

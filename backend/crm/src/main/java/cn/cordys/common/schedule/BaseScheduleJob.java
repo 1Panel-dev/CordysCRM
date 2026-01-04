@@ -1,6 +1,7 @@
 package cn.cordys.common.schedule;
 
-import cn.cordys.common.util.LogUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -15,6 +16,7 @@ import org.quartz.JobKey;
  *
  * @since 1.0
  */
+@Slf4j
 public abstract class BaseScheduleJob implements Job {
 
     /**
@@ -47,7 +49,7 @@ public abstract class BaseScheduleJob implements Job {
         this.expression = jobDataMap.getString("expression");
 
         // 记录日志，显示当前任务的执行情况
-        LogUtils.info(jobKey.getGroup() + " Running: " + resourceId);
+        log.info(jobKey.getGroup() + " Running: " + resourceId);
 
         // 调用子类实现的业务逻辑
         businessExecute(context);

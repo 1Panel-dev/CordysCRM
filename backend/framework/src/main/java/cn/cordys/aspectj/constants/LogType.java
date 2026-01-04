@@ -106,6 +106,7 @@ public final class LogType {
      *
      * @param logType 当前日志类型
      * @param keyword 待匹配的日志类型关键字
+     *
      * @return 如果日志类型包含关键字，则返回 true，否则返回 false
      */
     public static boolean contains(String logType, String keyword) {

@@ -8,7 +8,6 @@ import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.dto.request.ClueExportRequest;
@@ -24,6 +23,7 @@ import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +35,7 @@ import java.util.Locale;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CluePoolExportService extends ClueExportService {
 
     @Resource
@@ -109,7 +110,7 @@ public class CluePoolExportService extends ClueExportService {
                 try {
                     data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
                 } catch (InterruptedException e) {
-                    LogUtils.error("任务停止中断", e);
+                    log.error("任务停止中断", e);
                     exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
                 }
                 writer.write(data, sheet);

@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.dingtalk.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.DingTalkThirdConfigRequest;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkMsgDTO;
@@ -18,14 +17,15 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class DingTalkNoticeSender extends AbstractNoticeSender {
 
     @Resource
@@ -40,9 +40,9 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         String context = super.getContext(messageDetailDTO, noticeModel);
         try {
             sendDingTalk(context, noticeModel, messageDetailDTO.getOrganizationId());
-            LogUtils.debug("发送钉钉消息结束");
+            log.debug("发送钉钉消息结束");
         } catch (Exception e) {
-            LogUtils.error("钉钉消息通知失败：" + e);
+            log.error("钉钉消息通知失败：" + e);
         }
     }
 
@@ -62,20 +62,20 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         //查询同步过的resourceId，这里已经确定是否同步了钉钉，没同步，消息无法发送
         List<String> resourceUserIds = super.getResourceUserIds(userIds, organizationId);
         if (CollectionUtils.isEmpty(resourceUserIds)) {
-            LogUtils.warn("没有同步钉钉用户，无法发送消息");
+            log.warn("没有同步钉钉用户，无法发送消息");
             return;
         }
         //查询三方配置
         OrganizationConfig organizationConfig = extOrganizationConfigMapper
                 .getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
-            LogUtils.warn("没有配置钉钉信息，无法发送消息");
+            log.warn("没有配置钉钉信息，无法发送消息");
             return;
         }
         //获取企业微信通知的配置数据
         OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
-            LogUtils.warn("没有配置钉钉通知信息，无法发送消息");
+            log.warn("没有配置钉钉通知信息，无法发送消息");
             return;
         }
         ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(

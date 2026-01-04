@@ -25,7 +25,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
@@ -71,6 +71,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -89,6 +90,7 @@ import java.util.stream.Stream;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CustomerService {
 
     @Resource
@@ -739,7 +741,7 @@ public class CustomerService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("customer import error: ", e.getMessage());
+            log.error("customer import error: ", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
@@ -760,7 +762,7 @@ public class CustomerService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("customer import pre-check error: {}", e.getMessage());
+            log.error("customer import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

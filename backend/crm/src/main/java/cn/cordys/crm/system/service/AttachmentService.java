@@ -2,7 +2,6 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.file.engine.DefaultRepositoryDir;
@@ -12,6 +11,7 @@ import cn.cordys.file.engine.StorageType;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  * @author song-cc-rock
  */
 @Service
+@Slf4j
 public class AttachmentService {
 
     @Resource
@@ -117,7 +118,7 @@ public class AttachmentService {
             return responseBuilder
                     .body(new InputStreamResource(fileStream));
         } catch (Exception e) {
-            LogUtils.error(e.getMessage());
+            log.error(e.getMessage());
             return null;
         }
     }
@@ -190,50 +191,53 @@ public class AttachmentService {
         }
     }
 
-	/**
-	 * 通过ID映射批量复制附件
-	 * @param oldOfNewIdMap {旧的附件ID: 新的附件ID} 集合
-	 * @param targetId 目标资源ID
-	 * @param currentUser 当前操作用户
-	 */
-	public void batchCopyOfIdMap(Map<String, String> oldOfNewIdMap, String targetId, String currentUser) {
-		LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.in(Attachment::getId, oldOfNewIdMap.keySet().stream().toList());
-		List<Attachment> attachments = attachmentMapper.selectListByLambda(queryWrapper);
-		Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
-		List<Attachment> newAttachments = new ArrayList<>();
-		oldOfNewIdMap.forEach((oId, nId) -> {
-			if (!attachmentMap.containsKey(oId)) {
-				return;
-			}
-			Attachment oldAttachment = attachmentMap.get(oId);
-			// 复制文件
-			FileCopyRequest copyRequest = new FileCopyRequest(
-					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
-					DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
-					oldAttachment.getName());
-			Thread.startVirtualThread(() -> {
-				fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
-			});
-			// 复制附件记录
-			oldAttachment.setId(nId);
-			oldAttachment.setResourceId(targetId);
-			oldAttachment.setCreateTime(System.currentTimeMillis());
-			oldAttachment.setCreateUser(currentUser);
-			oldAttachment.setUpdateTime(System.currentTimeMillis());
-			oldAttachment.setUpdateUser(currentUser);
-			newAttachments.add(oldAttachment);
-		});
-		attachmentMapper.batchInsert(newAttachments);
-	}
+    /**
+     * 通过ID映射批量复制附件
+     *
+     * @param oldOfNewIdMap {旧的附件ID: 新的附件ID} 集合
+     * @param targetId      目标资源ID
+     * @param currentUser   当前操作用户
+     */
+    public void batchCopyOfIdMap(Map<String, String> oldOfNewIdMap, String targetId, String currentUser) {
+        LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Attachment::getId, oldOfNewIdMap.keySet().stream().toList());
+        List<Attachment> attachments = attachmentMapper.selectListByLambda(queryWrapper);
+        Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
+        List<Attachment> newAttachments = new ArrayList<>();
+        oldOfNewIdMap.forEach((oId, nId) -> {
+            if (!attachmentMap.containsKey(oId)) {
+                return;
+            }
+            Attachment oldAttachment = attachmentMap.get(oId);
+            // 复制文件
+            FileCopyRequest copyRequest = new FileCopyRequest(
+                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
+                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
+                    oldAttachment.getName());
+            Thread.startVirtualThread(() -> {
+                fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+            });
+            // 复制附件记录
+            oldAttachment.setId(nId);
+            oldAttachment.setResourceId(targetId);
+            oldAttachment.setCreateTime(System.currentTimeMillis());
+            oldAttachment.setCreateUser(currentUser);
+            oldAttachment.setUpdateTime(System.currentTimeMillis());
+            oldAttachment.setUpdateUser(currentUser);
+            newAttachments.add(oldAttachment);
+        });
+        attachmentMapper.batchInsert(newAttachments);
+    }
 
-	/**
-	 * 编码文件名
-	 * @param fileName 文件名
-	 * @return 编码后文件名
-	 */
-	private String encodeName(String fileName) {
-		return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
-				.replaceAll("\\+", "%20");
-	}
+    /**
+     * 编码文件名
+     *
+     * @param fileName 文件名
+     *
+     * @return 编码后文件名
+     */
+    private String encodeName(String fileName) {
+        return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+    }
 }

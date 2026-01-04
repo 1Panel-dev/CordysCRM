@@ -23,7 +23,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
@@ -44,6 +44,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ModuleFormService {
 
     public static final Map<String, String> TYPE_SOURCE_MAP;
@@ -587,7 +589,7 @@ public class ModuleFormService {
             return new ArrayList<>();
         }
         if (!TYPE_SOURCE_MAP.containsKey(type)) {
-            LogUtils.error("未知的数据源类型：{}", type);
+            log.error("未知的数据源类型：{}", type);
             return new ArrayList<>();
         }
         return extModuleFieldMapper.getSourceOptionsByKeywords(TYPE_SOURCE_MAP.get(type), nameList);
@@ -608,7 +610,7 @@ public class ModuleFormService {
             String businessKey = subFieldBusinessMap.get(bfv.getFieldId());
             Field field = ReflectionUtils.findField(resource.getClass(), f -> Strings.CS.equals(f.getName(), businessKey));
             if (field == null) {
-                LogUtils.error("Cannot find field `{}`", businessKey);
+                log.error("Cannot find field `{}`", businessKey);
                 return;
             }
             ReflectionUtils.setField(field, resource, bfv.getFieldValue());
@@ -617,7 +619,7 @@ public class ModuleFormService {
         fieldValues.removeIf(fv -> subFieldBusinessMap.containsKey(fv.getFieldId()));
         Field moduleFields = ReflectionUtils.findField(resource.getClass(), f -> Strings.CS.equals(f.getName(), "moduleFields"));
         if (moduleFields == null) {
-            LogUtils.error("No such field `moduleFields` in resource");
+            log.error("No such field `moduleFields` in resource");
             return;
         }
         ReflectionUtils.setField(moduleFields, resource, fieldValues);
@@ -896,7 +898,7 @@ public class ModuleFormService {
             moduleFieldMapper.batchInsert(fields);
             moduleFieldBlobMapper.batchInsert(fieldBlobs);
         } catch (Exception e) {
-            LogUtils.error("表单字段初始化失败: {}", e.getMessage());
+            log.error("表单字段初始化失败: {}", e.getMessage());
             throw new GenericException("表单字段初始化失败", e);
         }
     }
@@ -1233,7 +1235,7 @@ public class ModuleFormService {
                 sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
             } catch (Exception e) {
                 sourceValue = null;
-                LogUtils.error("Apply source value error: {}", e.getMessage());
+                log.error("Apply source value error: {}", e.getMessage());
             }
 
             // 源对象中无值, 跳过取值
@@ -1481,7 +1483,7 @@ public class ModuleFormService {
 						try {
 							org.apache.commons.beanutils.BeanUtils.populate(linkField, field);
 						} catch (IllegalAccessException | InvocationTargetException e) {
-							LogUtils.error("Populate old link field error: {}", e.getMessage());
+							log.error("Populate old link field error: {}", e.getMessage());
 						}
 						return linkField;
                     }).toList();

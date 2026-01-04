@@ -8,9 +8,9 @@ import cn.cordys.aspectj.constants.CodeVariableType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.handler.OperationLogService;
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.security.SessionUtils;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * 该类支持基于注解的日志模板解析，能够在方法执行的前后记录业务操作日志。
  * </p>
  */
+@Slf4j
 public class OperationOperationLogInterceptor extends OperationLogValueParser implements MethodInterceptor, Serializable, SmartInitializingSingleton {
 
     @Setter
@@ -77,7 +78,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
         try {
             operations = operationLogSource.computeLogRecordOperations(method, targetClass);
         } catch (Exception e) {
-            LogUtils.error("日志解析异常", e);
+            log.error("日志解析异常", e);
         }
 
         try {
@@ -120,7 +121,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
                     handleSuccessLog(methodExecuteResult, operation);
                 }
             } catch (Exception e) {
-                LogUtils.error("日志执行异常", e);
+                log.error("日志执行异常", e);
             }
         }
     }

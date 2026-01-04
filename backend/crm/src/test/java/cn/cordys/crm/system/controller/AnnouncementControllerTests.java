@@ -3,13 +3,13 @@ package cn.cordys.crm.system.controller;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.handler.ResultHolder;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.domain.Announcement;
 import cn.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import cn.cordys.crm.system.dto.request.AnnouncementRequest;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Slf4j
 public class AnnouncementControllerTests extends BaseTest {
     @Resource
     private BaseMapper<Announcement> announcementMapper;
@@ -65,7 +66,7 @@ public class AnnouncementControllerTests extends BaseTest {
         var tableData = JSON.parseObject(JSON.toJSONString(
                         JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
                 Pager.class);
-        LogUtils.info(tableData.getList().toString());
+        log.info(tableData.getList().toString());
 
     }
 

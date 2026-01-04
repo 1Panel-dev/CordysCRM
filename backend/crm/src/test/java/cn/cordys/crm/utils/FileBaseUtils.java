@@ -1,6 +1,7 @@
 package cn.cordys.crm.utils;
 
-import cn.cordys.common.util.LogUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,6 +10,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Slf4j
 public class FileBaseUtils {
 
     public static byte[] getFileBytes(String filePath) {
@@ -49,7 +51,7 @@ public class FileBaseUtils {
             return hexString.toString();
         } catch (IOException | NoSuchAlgorithmException e) {
             // 使用标准日志框架记录异常信息
-            LogUtils.error("getFileMD5 error", e);
+            log.error("getFileMD5 error", e);
             return null;
         }
     }

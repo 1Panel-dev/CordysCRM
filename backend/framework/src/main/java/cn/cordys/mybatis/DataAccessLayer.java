@@ -1,8 +1,8 @@
 package cn.cordys.mybatis;
 
 import cn.cordys.common.util.CodingUtils;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 支持多种 CRUD 操作。
  */
 @Component
+@Slf4j
 public class DataAccessLayer implements ApplicationContextAware {
 
     private static volatile ApplicationContext applicationContext;
@@ -112,7 +113,7 @@ public class DataAccessLayer implements ApplicationContextAware {
 
                     var count = mappedStatementCount.incrementAndGet();
                     if (count % 500 == 0) {
-                        LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
+                        log.info("当前缓存的 MappedStatement 总量：{}", count);
                     }
                 }
             }

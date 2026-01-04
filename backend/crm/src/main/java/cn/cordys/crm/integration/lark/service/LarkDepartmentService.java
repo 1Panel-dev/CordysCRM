@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.lark.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.client.QrCodeClient;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
 import cn.cordys.crm.integration.lark.dto.LarkDepartment;
@@ -15,6 +14,7 @@ import cn.cordys.crm.integration.lark.response.LarkUserResponse;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.http.MediaType;
@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class LarkDepartmentService {
 
     @Resource
@@ -37,6 +38,7 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      根部门ID
+     *
      * @return 子部门列表
      */
     public List<LarkDepartment> getAllSubDepartments(String tenantAccessToken, String departmentId) {
@@ -67,7 +69,7 @@ public class LarkDepartmentService {
                 hasMore = data != null && data.isHasMore();
                 pageToken = data != null ? data.getPageToken() : null;
             } else {
-                LogUtils.error("Failed to get sub-departments from Lark: {}", larkResponse.getCode() + ":" + larkResponse.getMsg());
+                log.error("Failed to get sub-departments from Lark: {}", larkResponse.getCode() + ":" + larkResponse.getMsg());
                 throw new GenericException("Failed to get sub-departments from Lark: " + larkResponse.getMsg());
             }
         } while (hasMore);
@@ -80,6 +82,7 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      部门ID
+     *
      * @return 部门直属用户列表
      */
     public List<LarkUser> getDepartmentUsers(String tenantAccessToken, String departmentId) {
@@ -113,7 +116,7 @@ public class LarkDepartmentService {
                 hasMore = data != null && data.isHasMore();
                 pageToken = data != null ? data.getPageToken() : null;
             } else {
-                LogUtils.error("Failed to get department users from Lark: {}", larkUserResponse.getCode() + ":" + larkUserResponse.getMsg());
+                log.error("Failed to get department users from Lark: {}", larkUserResponse.getCode() + ":" + larkUserResponse.getMsg());
                 throw new GenericException("Failed to get department users from Lark: " + larkUserResponse.getMsg());
             }
         } while (hasMore);
@@ -126,6 +129,7 @@ public class LarkDepartmentService {
      * 将飞书部门转化为CRM部门
      *
      * @param tenantAccessToken 租户访问令牌
+     *
      * @return CRM部门列表
      */
     public List<ThirdDepartment> getDepartmentList(String tenantAccessToken) {
@@ -166,6 +170,7 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentIds     部门ID列表
+     *
      * @return 部门ID与用户列表的映射
      */
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
@@ -194,6 +199,7 @@ public class LarkDepartmentService {
      * 获取企业信息
      *
      * @param tenantAccessToken 租户访问令牌
+     *
      * @return 企业信息
      */
     public LarkTenant getTenantInfo(String tenantAccessToken) {
@@ -214,11 +220,11 @@ public class LarkDepartmentService {
                 }
                 return null;
             } else {
-                LogUtils.error("Failed to get tenant info from Lark: {}", larkTenantResponse.getCode() + ":" + larkTenantResponse.getMsg());
+                log.error("Failed to get tenant info from Lark: {}", larkTenantResponse.getCode() + ":" + larkTenantResponse.getMsg());
                 throw new GenericException("Failed to get tenant info from Lark: " + larkTenantResponse.getMsg());
             }
         } catch (Exception e) {
-            LogUtils.error("Error while getting tenant info from Lark", e);
+            log.error("Error while getting tenant info from Lark", e);
             // 根据您的要求，捕获错误并可以返回 null 或抛出自定义异常
             // 这里我们返回 null
             return null;

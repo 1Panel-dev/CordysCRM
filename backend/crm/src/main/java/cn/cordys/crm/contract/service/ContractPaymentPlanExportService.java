@@ -5,7 +5,7 @@ import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
@@ -23,6 +23,7 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ContractPaymentPlanExportService extends BaseExportService {
 
     @Resource
@@ -162,7 +164,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
                 try {
                     data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
                 } catch (InterruptedException e) {
-                    LogUtils.error("任务停止中断", e);
+                    log.error("任务停止中断", e);
                     exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), exportDTO.getUserId());
                 }
                 writer.write(data, sheet);

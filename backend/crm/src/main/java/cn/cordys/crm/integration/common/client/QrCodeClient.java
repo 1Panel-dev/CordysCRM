@@ -3,8 +3,9 @@ package cn.cordys.crm.integration.common.client;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 
 @Service
+@Slf4j
 public class QrCodeClient {
 
     private static final RestTemplate restTemplate;
@@ -48,7 +50,7 @@ public class QrCodeClient {
             var forEntity = restTemplate.getForEntity(url, Object.class);
             return handleRequestError(forEntity);
         } catch (Exception e) {
-            LogUtils.error("HttpClient查询失败", e);
+            log.error("HttpClient查询失败", e);
             throw new GenericException(Translator.get("sync.organization.http.error") + ": " + e.getMessage());
         }
     }
@@ -63,7 +65,7 @@ public class QrCodeClient {
             var forEntity = restTemplate.exchange(url, HttpMethod.GET, request, Object.class);
             return handleRequestError(forEntity);
         } catch (Exception e) {
-            LogUtils.error("HttpClient查询失败", e);
+            log.error("HttpClient查询失败", e);
             throw new GenericException(Translator.get("sync.organization.http.error") + ": " + e.getMessage());
         }
     }
@@ -81,7 +83,7 @@ public class QrCodeClient {
             }
             return JSON.toJSONString(forEntity.getBody());
         } catch (Exception e) {
-            LogUtils.error("HttpClient查询失败", e);
+            log.error("HttpClient查询失败", e);
             throw new GenericException(Translator.get("sync.organization.http.error") + ": " + e.getMessage());
         }
     }
@@ -96,7 +98,7 @@ public class QrCodeClient {
             var forEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
             return handleRequestError(forEntity);
         } catch (Exception e) {
-            LogUtils.error("HttpClient查询失败", e);
+            log.error("HttpClient查询失败", e);
             throw new GenericException(Translator.get("sync.organization.http.error") + ": " + e.getMessage());
         }
     }

@@ -8,7 +8,6 @@ import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.crm.customer.dto.request.CustomerContactExportRequest;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
@@ -25,6 +24,7 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CustomerContactExportService extends BaseExportService {
     @Resource
     private ExportTaskService exportTaskService;
@@ -180,7 +181,7 @@ public class CustomerContactExportService extends BaseExportService {
                 try {
                     data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
                 } catch (InterruptedException e) {
-                    LogUtils.error("任务停止中断", e);
+                    log.error("任务停止中断", e);
                     exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
                 }
                 writer.write(data, sheet);

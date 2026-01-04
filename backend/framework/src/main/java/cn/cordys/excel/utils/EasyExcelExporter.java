@@ -1,12 +1,12 @@
 package cn.cordys.excel.utils;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.LogUtils;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.write.handler.WriteHandler;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public class EasyExcelExporter {
     public void buildExportResponse(HttpServletResponse response, String fileName) {
         response.setContentType("application/vnd.ms-excel");
@@ -32,7 +33,7 @@ public class EasyExcelExporter {
                     .sheet(sheetName)
                     .doWrite(data);
         } catch (IOException e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }
@@ -53,7 +54,7 @@ public class EasyExcelExporter {
                     .build();
             writer.write(new ArrayList<>(), tipSheet);
         } catch (IOException e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }

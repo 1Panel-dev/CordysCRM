@@ -1,6 +1,7 @@
 package cn.cordys.common.util;
 
 import jakarta.servlet.Filter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
  * 实现了ApplicationContextAware接口，以便在需要时获取Spring的应用上下文。
  */
 @Component
+@Slf4j
 public class CommonBeanFactory implements ApplicationContextAware {
 
     public static String BASE_X_P = "cn.cordys.xpack";
@@ -104,7 +106,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
             }
         } catch (Exception e) {
             // 记录错误日志
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         return null;
     }

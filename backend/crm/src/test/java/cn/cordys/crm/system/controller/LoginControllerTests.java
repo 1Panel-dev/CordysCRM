@@ -1,9 +1,10 @@
 package cn.cordys.crm.system.controller;
 
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Slf4j
 public class LoginControllerTests {
     @Resource
     private MockMvc mockMvc;
@@ -52,6 +54,6 @@ public class LoginControllerTests {
 
         // 验证返回结果
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        LogUtils.info(contentAsString);
+        log.info(contentAsString);
     }
 }

@@ -61,6 +61,6 @@ public class OperationLogConfig implements ImportAware {
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
         // 如果需要在导入时读取其他的配置信息，可以在这里处理
-        // LogUtils.info("Log record configuration is enabled by default");
+        // log.info("Log record configuration is enabled by default");
     }
 }

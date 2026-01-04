@@ -16,7 +16,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.product.domain.Product;
@@ -48,6 +48,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ProductService {
 
     @Resource
@@ -363,7 +365,7 @@ public class ProductService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("product import error: {}", e.getMessage());
+            log.error("product import error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
@@ -384,7 +386,7 @@ public class ProductService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("product import pre-check error: {}", e.getMessage());
+            log.error("product import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

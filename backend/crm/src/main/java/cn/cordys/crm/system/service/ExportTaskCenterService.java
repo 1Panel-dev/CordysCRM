@@ -3,7 +3,7 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.constants.TopicConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.redis.MessagePublisher;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
@@ -15,6 +15,7 @@ import cn.cordys.file.engine.StorageType;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.List;
  * @author song-cc-rock
  */
 @Service
+@Slf4j
 public class ExportTaskCenterService {
 
     @Resource
@@ -85,7 +87,7 @@ public class ExportTaskCenterService {
             FileRequest request = new FileRequest(filePath, StorageType.LOCAL.name(), exportTask.getFileName() + ".xlsx");
             return fileCommonService.download(request);
         } catch (Exception e) {
-            LogUtils.error("下载导出任务文件失败，任务ID: " + taskId, e);
+            log.error("下载导出任务文件失败，任务ID: " + taskId, e);
             throw new RuntimeException(e);
         }
     }
@@ -108,7 +110,7 @@ public class ExportTaskCenterService {
                 FileRequest request = new FileRequest(getFilePath(exportTask), StorageType.LOCAL.name(), exportTask.getFileName() + ".xlsx");
                 fileCommonService.deleteFolder(request, false);
             } catch (GenericException e) {
-                LogUtils.error("定时任务删除导出任务文件失败，任务ID: " + exportTask.getId(), e);
+                log.error("定时任务删除导出任务文件失败，任务ID: " + exportTask.getId(), e);
                 throw new RuntimeException(e);
             }
         });

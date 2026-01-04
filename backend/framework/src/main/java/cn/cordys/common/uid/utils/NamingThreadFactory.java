@@ -1,8 +1,9 @@
 package cn.cordys.common.uid.utils;
 
-import cn.cordys.common.util.LogUtils;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Named thread in ThreadFactory. If there is no specified name for thread, it
  * will auto detect using the invoker classname instead.
  */
+@Slf4j
 public class NamingThreadFactory implements ThreadFactory {
     /**
      * Is daemon thread
@@ -74,7 +76,7 @@ public class NamingThreadFactory implements ThreadFactory {
         thread.setName(prefix + "-" + getSequence(prefix));
 
         // no specified uncaughtExceptionHandler, just do logging.
-        thread.setUncaughtExceptionHandler(Objects.requireNonNullElseGet(this.uncaughtExceptionHandler, () -> (t, e) -> LogUtils.error("unhandled exception in thread: " + t.getName(), e)));
+        thread.setUncaughtExceptionHandler(Objects.requireNonNullElseGet(this.uncaughtExceptionHandler, () -> (t, e) -> log.error("unhandled exception in thread: " + t.getName(), e)));
 
         return thread;
     }
