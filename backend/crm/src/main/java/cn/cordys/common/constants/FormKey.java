@@ -53,6 +53,10 @@ public enum FormKey {
      * 合同
      */
     CONTRACT("contract"),
+    /**
+     * 发票
+     */
+    INVOICE("invoice"),
 	/**
 	 * 合同回款计划
 	 */

@@ -131,5 +131,9 @@ public class LogModule {
      * 合同回款计划
      */
     public static final String CONTRACT_PAYMENT = "CONTRACT_PAYMENT";
+    /**
+     * 发票
+     */
+    public static final String CONTRACT_INVOICE = "CONTRACT_INVOICE";
 
 }

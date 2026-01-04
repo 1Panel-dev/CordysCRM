@@ -1660,7 +1660,7 @@
       "placeholder": "无需录入, 自动生成",
       "showLabel": true,
       "serialNumberRules": [
-        "Opp",
+        "Con",
         "-",
         "yyyyMM",
         "-",
@@ -1750,6 +1750,235 @@
     {
       "name": "负责人",
       "internalKey": "contractOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "invoice": [
+    {
+      "name": "基本信息",
+      "internalKey": "invoiceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "合同",
+      "internalKey": "invoiceContract",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "发票编号",
+      "internalKey": "invoiceNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "Inv",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "mobile": true,
+      "disableProps": [
+        "serialNumberRules"
+      ]
+    },
+    {
+      "name": "开票类型",
+      "internalKey": "invoiceType",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "专票",
+          "value": "1"
+        },
+        {
+          "label": "普票",
+          "value": "2"
+        },
+        {
+          "label": "制造业",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "开票项目名称",
+      "internalKey": "invoiceProjectName",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "产品1",
+          "value": "1"
+        },
+        {
+          "label": "产品2",
+          "value": "2"
+        },
+        {
+          "label": "产品3",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "规格型号",
+      "internalKey": "invoiceSpecification",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "sku1",
+          "value": "1"
+        },
+        {
+          "label": "sku2",
+          "value": "2"
+        },
+        {
+          "label": "sku3",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "单位",
+      "internalKey": "invoiceUnit",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "个",
+          "value": "1"
+        },
+        {
+          "label": "套",
+          "value": "2"
+        },
+        {
+          "label": "年",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "数量",
+      "internalKey": "invoiceQuantity",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "numberFormat": "number"
+    },
+    {
+      "name": "税率",
+      "internalKey": "invoiceTaxRate",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "numberFormat": "percent",
+      "decimalPlaces": true,
+      "precision": 2
+    },
+    {
+      "name": "工商抬头",
+      "internalKey": "invoiceBusinessTitle",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "BUSINESS_TITLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "金额",
+      "internalKey": "invoiceAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "开票时间",
+      "internalKey": "invoiceTime",
+      "type": "DATE_TIME",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "dateType": "date",
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "invoiceOwner",
       "type": "MEMBER",
       "hasCurrentUser": true,
       "showLabel": true,
