@@ -1,11 +1,11 @@
 package cn.cordys.crm.system.service;
 
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.constants.LicenseStatus;
 import cn.cordys.crm.system.dto.VersionInfoDTO;
 import cn.cordys.crm.system.utils.ArchUtils;
 import cn.cordys.crm.system.utils.CSHttpClient;
 import cn.cordys.crm.system.utils.CopyrightUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.cache.Cache;
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class SystemService {
 
     private static final String CACHE_COPYRIGHT = "copyright_cache";
@@ -96,7 +97,7 @@ public class SystemService {
                     "product", PRODUCT
             ));
         } catch (Exception e) {
-            LogUtils.info("检查版本信息失败: {}", e.getMessage());
+            log.info("检查版本信息失败: {}", e.getMessage());
         }
 
         String latest = info != null
@@ -124,7 +125,7 @@ public class SystemService {
      */
     public void clearFormCache() {
         if (cacheManager == null) {
-            LogUtils.info("CacheManager 未初始化，跳过清理。");
+            log.info("CacheManager 未初始化，跳过清理。");
             return;
         }
         String[] cacheNames = {CACHE_FORM, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE};
@@ -135,7 +136,7 @@ public class SystemService {
                     cache.clear();
                 }
             } catch (Exception e) {
-                LogUtils.info("清理缓存失败：{} - {}", cacheName, e.getMessage());
+                log.info("清理缓存失败：{} - {}", cacheName, e.getMessage());
             }
         }
     }
@@ -146,7 +147,7 @@ public class SystemService {
             return Strings.CI.equals(status, LicenseStatus.NOT_FOUND.getName()) ? EDITION_CE : EDITION_EE;
         } catch (Exception e) {
             // 许可异常时默认为 CE
-            LogUtils.info("获取许可状态失败，默认使用 CE：{}", e.getMessage());
+            log.info("获取许可状态失败，默认使用 CE：{}", e.getMessage());
             return EDITION_CE;
         }
     }

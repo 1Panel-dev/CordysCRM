@@ -1,6 +1,6 @@
 package cn.cordys.common.service;
 
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.OnceInterface;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.system.domain.Parameter;
@@ -10,6 +10,7 @@ import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
@@ -22,6 +23,7 @@ import java.util.List;
  * @date 2025-01-03 12:01:54
  */
 @Service
+@Slf4j
 public class DataInitService {
     @Resource
     private ModuleService moduleService;
@@ -66,7 +68,7 @@ public class DataInitService {
                 insertParameterOnceKey(key);
             }
         } catch (Throwable e) {
-            LogUtils.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 

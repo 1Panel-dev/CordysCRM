@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -10,6 +9,7 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationListener;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 @Component
+@Slf4j
 public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEvent> {
 
     @Resource
@@ -56,7 +57,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
         try {
             this.followUpPlanRemind();
         } catch (Exception e) {
-            LogUtils.error("跟进计划到期提醒异常: ", e.getMessage());
+            log.error("跟进计划到期提醒异常: ", e.getMessage());
         }
     }
 
@@ -67,7 +68,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
      * </p>
      */
     public void followUpPlanRemind() {
-        LogUtils.info("跟进计划到期提醒");
+        log.info("跟进计划到期提醒");
         // 获取当天零点的时间戳（毫秒）
         long timestamp = LocalDate.now()
                 .atStartOfDay(ZoneId.systemDefault())
@@ -149,6 +150,6 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
             }
         }
 
-        LogUtils.info("跟进计划到期提醒完成");
+        log.info("跟进计划到期提醒完成");
     }
 }

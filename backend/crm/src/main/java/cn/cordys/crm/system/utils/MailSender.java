@@ -2,7 +2,6 @@ package cn.cordys.crm.system.utils;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
@@ -13,6 +12,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 @Component
+@Slf4j
 public class MailSender {
 
     @Resource
@@ -34,16 +35,16 @@ public class MailSender {
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     public void send(String subject, String context, String[] users, String[] cc, String organizationId) throws Exception {
-        LogUtils.debug("发送邮件开始 ");
+        log.debug("发送邮件开始 ");
         //
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
-            LogUtils.error("邮件未设置 ");
+            log.error("邮件未设置 ");
             throw new GenericException(Translator.get("email.config.not.exist.text"));
         }
         OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
         if (organizationConfigDetail == null) {
-            LogUtils.error("邮件内容为空 ");
+            log.error("邮件内容为空 ");
             throw new GenericException(Translator.get("email.config.is.null"));
         }
         EmailDTO emailDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
@@ -75,14 +76,14 @@ public class MailSender {
         }
         helper.setFrom(from);
 
-        LogUtils.debug("发件人地址" + javaMailSender.getUsername());
-        LogUtils.debug("helper" + helper);
+        log.debug("发件人地址" + javaMailSender.getUsername());
+        log.debug("helper" + helper);
         if (subject.length() > 60) {
             subject = subject.substring(0, 59);
         }
         helper.setSubject("Cordys CRM " + subject);
 
-        LogUtils.info("收件人地址: {}", Arrays.asList(users));
+        log.info("收件人地址: {}", Arrays.asList(users));
         helper.setText(context, true);
         // 有抄送
         if (cc != null && cc.length > 0) {
@@ -99,7 +100,7 @@ public class MailSender {
                 try {
                     javaMailSender.send(mimeMessage);
                 } catch (Exception e) {
-                    LogUtils.error("发送邮件失败: ", e);
+                    log.error("发送邮件失败: ", e);
                     throw new GenericException(Translator.get("email_setting_send_error"), e);
                 }
             }

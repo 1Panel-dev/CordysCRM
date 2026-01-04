@@ -1,8 +1,8 @@
 package cn.cordys.crm.system.utils;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -24,6 +24,7 @@ import java.util.Map;
  * 提供简单的 GET 请求能力，并从响应头 {@code Date} 解析服务端年份。
  * 线程安全，可复用。
  */
+@Slf4j
 public class CSHttpClient {
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()
@@ -54,7 +55,7 @@ public class CSHttpClient {
             dateHeader = response.headers().firstValue("Date").orElse(null);
             info = handleResponse(response);
         } catch (Exception e) {
-            LogUtils.warn("GET 请求失败: {}", e.toString());
+            log.warn("GET 请求失败: {}", e.toString());
             info = new DownloadInfo();
         }
 

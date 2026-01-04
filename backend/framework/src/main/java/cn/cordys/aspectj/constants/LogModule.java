@@ -95,7 +95,7 @@ public class LogModule {
      */
     public static final String OPPORTUNITY_INDEX = "OPPORTUNITY_INDEX";
 
-     /**
+    /**
      * 商机报价
      */
     public static final String OPPORTUNITY_QUOTATION = "OPPORTUNITY_QUOTATION";
@@ -110,10 +110,10 @@ public class LogModule {
      */
     public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT_PRO";
 
-	/**
-	 * 产品价格表
-	 */
-	public static final String PRODUCT_PRICE_MANAGEMENT = "PRODUCT_MANAGEMENT_PRICE";
+    /**
+     * 产品价格表
+     */
+    public static final String PRODUCT_PRICE_MANAGEMENT = "PRODUCT_MANAGEMENT_PRICE";
 
     /**
      * 客户公海

@@ -23,7 +23,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.domain.Customer;
@@ -74,6 +74,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -94,6 +95,7 @@ import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OpportunityService {
 
     public static final String SUCCESS = "SUCCESS";
@@ -715,7 +717,7 @@ public class OpportunityService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("opportunity import error: ", e.getMessage());
+            log.error("opportunity import error: ", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
@@ -735,7 +737,7 @@ public class OpportunityService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("opportunity import pre-check error: {}", e.getMessage());
+            log.error("opportunity import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

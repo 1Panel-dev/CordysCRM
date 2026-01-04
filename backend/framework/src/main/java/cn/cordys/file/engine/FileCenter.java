@@ -1,7 +1,7 @@
 package cn.cordys.file.engine;
 
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 
 import static cn.cordys.file.engine.StorageType.LOCAL;
@@ -13,6 +13,7 @@ import static cn.cordys.file.engine.StorageType.S3;
  * 该类封装了不同存储类型（如 MINIO、LOCAL）的文件仓库获取逻辑，并允许根据存储类型返回相应的 {@link FileRepository} 实现。
  * </p>
  */
+@Slf4j
 public class FileCenter {
     // 默认存储类型
     private static StorageType defStorageType = null;
@@ -48,7 +49,7 @@ public class FileCenter {
         if (defStorageType == null) {
             defStorageType = LOCAL;
         }
-        LogUtils.info("Default storage type is set to: " + defStorageType);
+        log.info("Default storage type is set to: " + defStorageType);
         return getRepository(defStorageType.name());
     }
 }

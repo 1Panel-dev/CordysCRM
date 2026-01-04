@@ -1,9 +1,9 @@
 package cn.cordys.crm.system.service;
 
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.file.engine.FileCenter;
 import cn.cordys.file.engine.FileCopyRequest;
 import cn.cordys.file.engine.FileRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +19,7 @@ import java.util.List;
  * @author song-cc-rock
  */
 @Service
+@Slf4j
 public class FileCommonService {
 
     /**
@@ -44,7 +45,7 @@ public class FileCommonService {
         try {
             FileCenter.getRepository(request.getStorage()).saveFile(file, request);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -59,7 +60,7 @@ public class FileCommonService {
             FileInputStream inputStream = new FileInputStream(file);
             FileCenter.getRepository(request.getStorage()).saveFile(inputStream, request);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -74,7 +75,7 @@ public class FileCommonService {
         try {
             return FileCenter.getRepository(request.getStorage()).getFolderFiles(request);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -89,7 +90,7 @@ public class FileCommonService {
         try {
             FileCenter.getRepository(storage).copyFile(request);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -104,7 +105,7 @@ public class FileCommonService {
         try {
             return FileCenter.getRepository(request.getStorage()).getFileAsStream(request);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -118,7 +119,7 @@ public class FileCommonService {
         try {
             FileCenter.getRepository(request.getStorage()).deleteFolder(request, onlyDir);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 

@@ -1,9 +1,9 @@
 package cn.cordys.common.schedule;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.domain.Schedule;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 
 /**
@@ -20,6 +20,7 @@ import org.quartz.*;
  *
  * @since 1.0
  */
+@Slf4j
 public class ScheduleManager {
 
     @Resource
@@ -34,7 +35,7 @@ public class ScheduleManager {
         try {
             schedule.start();
         } catch (Exception e) {
-            LogUtils.error("启动调度器失败", e);
+            log.error("启动调度器失败", e);
             throw new RuntimeException("启动调度器失败", e);
         }
     }
@@ -76,7 +77,7 @@ public class ScheduleManager {
      */
     public void addCronJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> jobClass, String cron, JobDataMap jobDataMap) {
         try {
-            LogUtils.info("addCronJob: " + triggerKey.getName() + "," + triggerKey.getGroup());
+            log.info("addCronJob: " + triggerKey.getName() + "," + triggerKey.getGroup());
             JobBuilder jobBuilder = JobBuilder.newJob(jobClass).withIdentity(jobKey);
             if (jobDataMap != null) {
                 jobBuilder.usingJobData(jobDataMap);
@@ -90,7 +91,7 @@ public class ScheduleManager {
             scheduler.scheduleJob(jobBuilder.build(), trigger);
 
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw new GenericException("定时任务配置异常: " + e.getMessage(), e);
         }
     }
@@ -117,7 +118,7 @@ public class ScheduleManager {
      */
     public void modifyCronJobTime(TriggerKey triggerKey, String cron) throws SchedulerException {
 
-        LogUtils.info("modifyCronJobTime: " + triggerKey.getName() + "," + triggerKey.getGroup());
+        log.info("modifyCronJobTime: " + triggerKey.getName() + "," + triggerKey.getGroup());
         try {
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             if (trigger == null) {
@@ -147,12 +148,12 @@ public class ScheduleManager {
      */
     public void removeJob(JobKey jobKey, TriggerKey triggerKey) {
         try {
-            LogUtils.info("RemoveJob: " + jobKey.getName() + "," + jobKey.getGroup());
+            log.info("RemoveJob: " + jobKey.getName() + "," + jobKey.getGroup());
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
             scheduler.deleteJob(jobKey);
         } catch (Exception e) {
-            LogUtils.error("删除任务失败", e);
+            log.error("删除任务失败", e);
             throw new RuntimeException("删除任务失败", e);
         }
     }
@@ -168,7 +169,7 @@ public class ScheduleManager {
                 schedule.shutdown();
             }
         } catch (Exception e) {
-            LogUtils.error("关闭调度器失败", e);
+            log.error("关闭调度器失败", e);
             throw new RuntimeException("关闭调度器失败", e);
         }
     }
@@ -187,7 +188,7 @@ public class ScheduleManager {
      */
     public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron, JobDataMap jobDataMap)
             throws SchedulerException {
-        LogUtils.info("AddOrUpdateCronJob: " + jobKey.getName() + "," + triggerKey.getGroup());
+        log.info("AddOrUpdateCronJob: " + jobKey.getName() + "," + triggerKey.getGroup());
 
         if (scheduler.checkExists(triggerKey)) {
             modifyCronJobTime(triggerKey, cron);

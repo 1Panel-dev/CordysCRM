@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.agent.constant.MaxKBApiPaths;
 import cn.cordys.crm.integration.agent.response.MaxKBResponseEntity;
@@ -26,6 +25,7 @@ import cn.cordys.crm.integration.wecom.dto.WeComSendDTO;
 import cn.cordys.crm.integration.wecom.dto.WeComToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
@@ -47,6 +47,7 @@ import static cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths.DING_
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class TokenService {
 
     @Resource
@@ -68,16 +69,16 @@ public class TokenService {
             weComToken = JSON.parseObject(response, WeComToken.class);
 
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.get.token.error"), e);
+            log.error(Translator.get("auth.get.token.error"), e);
         }
 
         if (weComToken.getErrCode() == null) {
-            LogUtils.error(Translator.get("auth.get.token.res.error"));
+            log.error(Translator.get("auth.get.token.res.error"));
             return null;
         }
 
         if (weComToken.getErrCode() != 0) {
-            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + weComToken.getErrMsg());
+            log.error(Translator.get("auth.get.token.res.error") + ":" + weComToken.getErrMsg());
             return null;
         }
         return weComToken.getAccessToken();
@@ -104,7 +105,7 @@ public class TokenService {
             );
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.get.token.error"), e);
+            log.error(Translator.get("auth.get.token.error"), e);
         }
 
         return dingTalkToken.getAccessToken();
@@ -132,7 +133,7 @@ public class TokenService {
             String response = qrCodeClient.postExchange(DING_USER_TOKEN_URL, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.get.token.error"), e);
+            log.error(Translator.get("auth.get.token.error"), e);
         }
 
         return dingTalkToken.getAccessToken();
@@ -162,11 +163,11 @@ public class TokenService {
             larkToken = JSON.parseObject(response, LarkToken.class);
 
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.get.token.error"), e);
+            log.error(Translator.get("auth.get.token.error"), e);
         }
 
         if (larkToken.getCode() != 0) {
-            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
+            log.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
         }
 
         return larkToken.getTenantAccessToken();
@@ -195,7 +196,7 @@ public class TokenService {
                 socket.connect(new java.net.InetSocketAddress(host, port), 3000);
             }
         } catch (Exception e) {
-            LogUtils.error("de embedded url connect error: " + e.getMessage());
+            log.error("de embedded url connect error: " + e.getMessage());
             return false;
         }
 
@@ -224,7 +225,7 @@ public class TokenService {
             int responseCode = connection.getResponseCode();
             return responseCode == HttpURLConnection.HTTP_OK;
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return false;
         }
 
@@ -251,17 +252,17 @@ public class TokenService {
             resultObj = JSON.parseObject(content, new TypeReference<HashMap<String, String>>() {
             });
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.token.error"));
+            log.error(Translator.get("auth.token.error"));
 
         }
         String accessToken = null;
         if (MapUtils.isEmpty(resultObj)) {
-            LogUtils.error(Translator.get("auth.token.error"));
+            log.error(Translator.get("auth.token.error"));
         } else {
             accessToken = resultObj.get("access_token");
         }
         if (StringUtils.isBlank(accessToken)) {
-            LogUtils.error(Translator.get("auth.token.error"));
+            log.error(Translator.get("auth.token.error"));
         }
 
         return accessToken;
@@ -309,11 +310,11 @@ public class TokenService {
             larkToken = JSON.parseObject(response, LarkToken.class);
 
         } catch (Exception e) {
-            LogUtils.error(Translator.get("auth.get.token.error"), e);
+            log.error(Translator.get("auth.get.token.error"), e);
         }
 
         if (larkToken.getCode() != 0) {
-            LogUtils.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
+            log.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
         }
 
         return larkToken.getAccessToken();
@@ -351,7 +352,7 @@ public class TokenService {
             connection.connect();
             return true;
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return false;
         }
 
@@ -372,7 +373,7 @@ public class TokenService {
             HttpRequestUtil.sendGetRequest(url, headers);
             return true;
         } catch (Exception e) {
-            LogUtils.error("测试连接失败", e);
+            log.error("测试连接失败", e);
             return false;
         }
     }
@@ -386,7 +387,7 @@ public class TokenService {
             String response = HttpRequestUtil.sendGetRequest(url, null);
             WeComDetail weComDetail = JSON.parseObject(response, WeComDetail.class);
 
-            LogUtils.info(
+            log.info(
                     "企业微信 Agent 连接测试结果：errCode={}, errMsg={}",
                     weComDetail.getErrCode(),
                     weComDetail.getErrMsg()
@@ -394,7 +395,7 @@ public class TokenService {
 
             return weComDetail.getErrCode() != null && weComDetail.getErrCode() == 0;
         } catch (Exception e) {
-            LogUtils.error("企业微信 Agent 连接测试异常", e);
+            log.error("企业微信 Agent 连接测试异常", e);
             return false;
         }
     }

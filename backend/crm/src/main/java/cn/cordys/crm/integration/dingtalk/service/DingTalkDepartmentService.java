@@ -1,7 +1,6 @@
 package cn.cordys.crm.integration.dingtalk.service;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkDepartment;
@@ -13,12 +12,14 @@ import cn.cordys.crm.integration.dingtalk.response.UserListResponse;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
 
 @Service
+@Slf4j
 public class DingTalkDepartmentService {
 
 
@@ -83,6 +84,7 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
+     *
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
@@ -112,7 +114,7 @@ public class DingTalkDepartmentService {
             response.setDepartments(departments);
             response.setUsers(usersByDept);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         return response;
     }
@@ -123,6 +125,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 部门ID列表
      */
     private List<Long> getAllSubDepartmentIds(String accessToken, Long deptId) {
@@ -142,7 +145,7 @@ public class DingTalkDepartmentService {
                 }
             }
         } catch (IOException | InterruptedException e) {
-            LogUtils.error("获取子部门ID失败", e);
+            log.error("获取子部门ID失败", e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -155,6 +158,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
@@ -168,7 +172,7 @@ public class DingTalkDepartmentService {
                 return Optional.of(response.getResult());
             }
         } catch (IOException | InterruptedException e) {
-            LogUtils.error("获取部门详情失败", e);
+            log.error("获取部门详情失败", e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
         }
@@ -181,6 +185,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {
@@ -212,7 +217,7 @@ public class DingTalkDepartmentService {
                     hasMore = false;
                 }
             } catch (IOException | InterruptedException e) {
-                LogUtils.error("获取部门用户失败", e);
+                log.error("获取部门用户失败", e);
                 Thread.currentThread().interrupt();
                 hasMore = false;
             }

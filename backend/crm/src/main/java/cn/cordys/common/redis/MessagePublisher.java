@@ -1,12 +1,14 @@
 package cn.cordys.common.redis;
 
 import cn.cordys.common.constants.TopicConstants;
-import cn.cordys.common.util.LogUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class MessagePublisher {
 
     private final StringRedisTemplate redisTemplate;
@@ -35,7 +37,7 @@ public class MessagePublisher {
             ChannelTopic topic = new ChannelTopic(topicName);
             redisTemplate.convertAndSend(topic.getTopic(), message);
         } catch (Exception e) {
-            LogUtils.error("发布消息到主题失败", e);
+            log.error("发布消息到主题失败", e);
         }
     }
 }

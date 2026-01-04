@@ -4,7 +4,6 @@ import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.DataScopeService;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
 import cn.cordys.crm.integration.dataease.constants.DataScopeDeptVariable;
@@ -23,6 +22,7 @@ import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.quartz.anno.QuartzScheduled;
 import cn.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.stream;
 
 @Service
+@Slf4j
 public class DataEaseSyncService {
     public static final String NONE_DATA_SCOPE = "NONE";
     @Resource
@@ -60,7 +61,7 @@ public class DataEaseSyncService {
         Set<String> orgIds = extOrganizationMapper.selectAllOrganizationIds();
         // 同步角色
         for (String orgId : orgIds) {
-            LogUtils.info("定时同步DataEase数据，组织ID: " + orgId);
+            log.info("定时同步DataEase数据，组织ID: " + orgId);
             syncDataEase(orgId);
         }
     }
@@ -71,7 +72,7 @@ public class DataEaseSyncService {
         try {
             thirdConfig = dataEaseService.getDeConfig(orgId);
         } catch (Exception e) {
-            LogUtils.error("获取DataEase配置失败，组织ID: " + orgId, e);
+            log.error("获取DataEase配置失败，组织ID: " + orgId, e);
             return;
         }
         if (thirdConfig == null || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
@@ -80,7 +81,7 @@ public class DataEaseSyncService {
         try {
             syncDataEase(orgId, thirdConfig);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw e;
         }
     }
@@ -299,7 +300,7 @@ public class DataEaseSyncService {
                     dataEaseClient.editUser(userUpdateRequest);
                 }
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -320,7 +321,7 @@ public class DataEaseSyncService {
                 .filter(crmUser -> crmUser.getEnable() && !deTempResourceDTO.getDeUserIds().contains(crmUser.getId()))
                 .forEach(crmUser -> {
                     if (StringUtils.isBlank(crmUser.getEmail())) {
-                        LogUtils.error("同步用户到 DataEase 失败，用户[ {} ]邮箱为空", crmUser.getName());
+                        log.error("同步用户到 DataEase 失败，用户[ {} ]邮箱为空", crmUser.getName());
                         return;
                     }
                     List<RoleListResponse> userCrmRoles = getUserCrmRoles(userRoleMap, crmRoleMap, crmUser.getId());
@@ -342,7 +343,7 @@ public class DataEaseSyncService {
                             dataEaseClient.createUser(userCreateRequest);
                         }
                     } catch (Exception e) {
-                        LogUtils.error(e);
+                        log.error(e.getMessage(), e);
                     }
                 });
     }
@@ -458,6 +459,7 @@ public class DataEaseSyncService {
      * @param userRoleMap
      * @param crmRoleMap
      * @param userId
+     *
      * @return
      */
     private List<RoleListResponse> getUserCrmRoles(Map<String, List<UserRole>> userRoleMap, Map<String, RoleListResponse> crmRoleMap, String userId) {
@@ -558,7 +560,7 @@ public class DataEaseSyncService {
                     roleDTO.setName(crmRole.getName());
                     roleMap.put(roleDTO.getName(), roleDTO);
                 } catch (Exception e) {
-                    LogUtils.error(e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }
@@ -608,7 +610,7 @@ public class DataEaseSyncService {
                             SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(variableValueCreateRequest);
                             variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
                         } catch (Exception e) {
-                            LogUtils.error(e);
+                            log.error(e.getMessage(), e);
                         }
                     }
                 }
@@ -624,7 +626,7 @@ public class DataEaseSyncService {
                     SysVariableDTO dataScopeDeptVariable = createDataScopeDeptVariable(dataEaseClient, value.name(), deptIds, variableValueMap);
                     sysVariableMap.put(value.name(), dataScopeDeptVariable);
                 } catch (Exception e) {
-                    LogUtils.error(e);
+                    log.error(e.getMessage(), e);
                 }
             } else {
                 // 同步部门
@@ -650,7 +652,7 @@ public class DataEaseSyncService {
                         SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(variableValueCreateRequest);
                         variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
                     } catch (Exception e) {
-                        LogUtils.error(e);
+                        log.error(e.getMessage(), e);
                     }
                 }
 
@@ -688,7 +690,7 @@ public class DataEaseSyncService {
                 SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(sysVariableValueCreateRequest);
                 variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
         return sysVariable;
@@ -712,7 +714,7 @@ public class DataEaseSyncService {
                 SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(sysVariableValueCreateRequest);
                 variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
         return sysVariable;
@@ -723,7 +725,7 @@ public class DataEaseSyncService {
             DataEaseClient dataEaseClient = new DataEaseClient(deThirdConfigRequest);
             return dataEaseClient.listOrg();
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return List.of();
         }
     }

@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.notice;
 
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.dingtalk.service.DingTalkNoticeSender;
 import cn.cordys.crm.integration.lark.service.LarkNoticeSender;
 import cn.cordys.crm.integration.wecom.service.WeComNoticeSender;
@@ -11,6 +10,7 @@ import cn.cordys.crm.system.notice.message.MessageDetailService;
 import cn.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import cn.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -22,6 +22,7 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NoticeSendService {
 
     private final MailNoticeSender mailNoticeSender;
@@ -42,7 +43,7 @@ public class NoticeSendService {
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
-            LogUtils.error("Error sending notification", e);
+            log.error("Error sending notification", e);
         }
     }
 
@@ -70,7 +71,7 @@ public class NoticeSendService {
                 if (weComNoticeSender != null) {
                     weComNoticeSender.sendWeCom(clonedMessageDetail, clonedNoticeModel);
                 } else {
-                    LogUtils.warn("WeComNoticeSender bean not found, skipping WeCom notification.");
+                    log.warn("WeComNoticeSender bean not found, skipping WeCom notification.");
                 }
             }
             if (clonedMessageDetail.isDingTalkEnable()) {
@@ -78,7 +79,7 @@ public class NoticeSendService {
                 if (dingTalkNoticeSender != null) {
                     dingTalkNoticeSender.sendDingTalk(clonedMessageDetail, clonedNoticeModel);
                 } else {
-                    LogUtils.warn("DingTalkNoticeSender bean not found, skipping DingTalk notification.");
+                    log.warn("DingTalkNoticeSender bean not found, skipping DingTalk notification.");
                 }
             }
             if (clonedMessageDetail.isLarkEnable()) {
@@ -86,11 +87,11 @@ public class NoticeSendService {
                 if (larkNoticeSender != null) {
                     larkNoticeSender.sendLark(clonedMessageDetail, clonedNoticeModel);
                 } else {
-                    LogUtils.warn("LarkNoticeSender bean not found, skipping Lark notification.");
+                    log.warn("LarkNoticeSender bean not found, skipping Lark notification.");
                 }
             }
         } catch (Exception e) {
-            LogUtils.error("Error sending individual notification", e);
+            log.error("Error sending individual notification", e);
         }
     }
 
@@ -107,7 +108,7 @@ public class NoticeSendService {
                     .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
-            LogUtils.error("Error sending notification", e);
+            log.error("Error sending notification", e);
         }
     }
 
@@ -127,7 +128,7 @@ public class NoticeSendService {
             messageDetails.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
-            LogUtils.error("Error sending other notifications", e);
+            log.error("Error sending other notifications", e);
         }
     }
 }

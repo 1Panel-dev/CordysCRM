@@ -1,7 +1,7 @@
 package cn.cordys.file.engine;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.LogUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.util.FileUtil;
@@ -28,6 +28,7 @@ import java.util.List;
  * </p>
  */
 @Component
+@Slf4j
 public class LocalRepository implements FileRepository {
 
     /**
@@ -146,7 +147,7 @@ public class LocalRepository implements FileRepository {
             try {
                 FileUtils.deleteDirectory(folder);
             } catch (IOException e) {
-                LogUtils.error("Failed to delete folder: " + folderPath, e);
+                log.error("Failed to delete folder: " + folderPath, e);
             }
         }
     }

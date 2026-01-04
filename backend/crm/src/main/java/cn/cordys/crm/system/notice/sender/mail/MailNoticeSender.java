@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.notice.sender.mail;
 
 
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.notice.common.NoticeModel;
@@ -9,6 +8,7 @@ import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
 import cn.cordys.crm.system.utils.MailSender;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class MailNoticeSender extends AbstractNoticeSender {
 
     @Resource
@@ -44,9 +45,9 @@ public class MailNoticeSender extends AbstractNoticeSender {
         String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
             sendMail(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
-            LogUtils.debug("发送邮件结束");
+            log.debug("发送邮件结束");
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 

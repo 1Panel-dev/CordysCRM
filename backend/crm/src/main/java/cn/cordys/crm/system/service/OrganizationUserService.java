@@ -13,7 +13,10 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CodingUtils;
+import cn.cordys.common.util.SubListUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
@@ -38,6 +41,7 @@ import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -57,6 +61,7 @@ import java.util.stream.Collectors;
 
 @Service("organizationUserService")
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OrganizationUserService {
 
     @Resource
@@ -672,7 +677,7 @@ public class OrganizationUserService {
             response.setSuccessCount(eventListener.getList().size());
             response.setFailCount(eventListener.getErrList().size());
         } catch (Exception e) {
-            LogUtils.error("checkImportExcel error", e);
+            log.error("checkImportExcel error", e);
             throw new GenericException(Translator.get("check_import_excel_error"));
         }
     }
@@ -702,7 +707,7 @@ public class OrganizationUserService {
             response.setFailCount(eventListener.getErrList().size());
             return response;
         } catch (Exception e) {
-            LogUtils.error("checkImportExcel error", e);
+            log.error("checkImportExcel error", e);
             throw new GenericException(Translator.get("check_import_excel_error"));
         }
     }

@@ -25,7 +25,6 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.constants.ClueStatus;
@@ -84,6 +83,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -102,6 +102,7 @@ import java.util.stream.Stream;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ClueService {
 
     @Resource
@@ -295,18 +296,20 @@ public class ClueService {
 
     public ClueGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         ClueGetResponse getResponse = get(id);
-		if (getResponse == null) {
-			throw new GenericException(Translator.get("clue.not.exist"));
-		}
+        if (getResponse == null) {
+            throw new GenericException(Translator.get("clue.not.exist"));
+        }
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return getResponse;
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 线索ID
-	 * @return 线索详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 线索ID
+     *
+     * @return 线索详情
+     */
     public ClueGetResponse get(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         if (clue == null) {
@@ -926,6 +929,7 @@ public class ClueService {
      * 同名客户选择器
      *
      * @param customers 客户列表
+     *
      * @return 客户
      */
     public Customer selectorCs(List<Customer> customers, String clueOwner) {
@@ -944,6 +948,7 @@ public class ClueService {
      * @param clue        线索
      * @param currentUser 当前用户
      * @param orgId       组织ID
+     *
      * @return 客户
      */
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
@@ -954,7 +959,7 @@ public class ClueService {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId()),
                     customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CUSTOMER.name());
         } catch (Exception e) {
-            LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
+            log.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.customer.error"));
         }
         // 部分内置字段未配置联动, 取线索值即可
@@ -975,6 +980,7 @@ public class ClueService {
      * @param contactId   联系人ID
      * @param currentUser 当前用户
      * @param orgId       组织ID
+     *
      * @return 商机
      */
     public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
@@ -984,7 +990,7 @@ public class ClueService {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId()),
                     opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_OPPORTUNITY.name());
         } catch (Exception e) {
-            LogUtils.error("Attempt to fill linked form values error: {}", e.getMessage());
+            log.error("Attempt to fill linked form values error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.opportunity.error"));
         }
         OpportunityAddRequest addRequest = new OpportunityAddRequest();
@@ -1062,6 +1068,7 @@ public class ClueService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -1077,6 +1084,7 @@ public class ClueService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -1102,7 +1110,7 @@ public class ClueService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("clue import error: ", e.getMessage());
+            log.error("clue import error: ", e);
             throw new GenericException(e.getMessage());
         }
     }
@@ -1112,6 +1120,7 @@ public class ClueService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -1122,7 +1131,7 @@ public class ClueService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("clue import pre-check error: {}", e.getMessage());
+            log.error("clue import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

@@ -2,11 +2,11 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.schedule.ScheduleManager;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.domain.Schedule;
 import cn.cordys.crm.system.mapper.ExtScheduleMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobKey;
 import org.quartz.TriggerKey;
 import org.springframework.stereotype.Service;
@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ExtScheduleService {
 
     // TODO: Add RESOURCE_TYPES
@@ -46,7 +47,7 @@ public class ExtScheduleService {
                     if (RESOURCE_TYPES.contains(schedule.getResourceType())) {
                         removeJob(schedule); // 删除关闭的job
                     }
-                    LogUtils.info("初始化任务：" + JSON.toJSONString(schedule));
+                    log.info("初始化任务：" + JSON.toJSONString(schedule));
                     scheduleManager.addOrUpdateCronJob(
                             new JobKey(schedule.getKey(), schedule.getJob()),
                             new TriggerKey(schedule.getKey(), schedule.getJob()),
@@ -58,9 +59,9 @@ public class ExtScheduleService {
                     removeJob(schedule); // 删除关闭的job
                 }
             } catch (ClassNotFoundException e) {
-                LogUtils.error("任务类未找到：" + schedule.getJob(), e);
+                log.error("任务类未找到：" + schedule.getJob(), e);
             } catch (Exception e) {
-                LogUtils.error("初始化任务失败", e);
+                log.error("初始化任务失败", e);
             }
         });
     }

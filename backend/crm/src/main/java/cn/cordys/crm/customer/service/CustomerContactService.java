@@ -21,7 +21,6 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
@@ -59,6 +58,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,6 +76,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CustomerContactService {
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
@@ -193,11 +194,13 @@ public class CustomerContactService {
         return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-	/**
-	 * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 联系人ID
-	 * @return 联系人详情
-	 */
+    /**
+     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 联系人ID
+     *
+     * @return 联系人详情
+     */
     public CustomerContactGetResponse get(String id) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         if (customerContact == null) {
@@ -474,6 +477,7 @@ public class CustomerContactService {
      * @param phone      联系人电话
      * @param customerId 客户ID
      * @param orgId      组织ID
+     *
      * @return 是否唯一
      */
     public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
@@ -555,6 +559,7 @@ public class CustomerContactService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
+     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -570,6 +575,7 @@ public class CustomerContactService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     *
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
@@ -593,7 +599,7 @@ public class CustomerContactService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("contact import error: ", e.getMessage());
+            log.error("contact import error: ", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
@@ -603,6 +609,7 @@ public class CustomerContactService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
+     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -613,7 +620,7 @@ public class CustomerContactService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("contact import pre-check error: {}", e.getMessage());
+            log.error("contact import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
@@ -647,6 +654,7 @@ public class CustomerContactService {
      * 联系人是否有唯一字段
      *
      * @param orgId 组织ID
+     *
      * @return 是否唯一
      */
     public Map<String, Boolean> getUniqueMap(String orgId) {

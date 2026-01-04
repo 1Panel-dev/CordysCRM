@@ -2,7 +2,9 @@ package cn.cordys.common.util;
 
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class HikariCPUtils {
     /**
      * 获取 HikariCP 连接池的使用情况
@@ -51,10 +53,10 @@ public class HikariCPUtils {
     public static void printHikariCPStatus() {
         HikariDataSource dataSource = CommonBeanFactory.getBean(HikariDataSource.class);
         if (dataSource == null) {
-            LogUtils.error("HikariDataSource not found");
+            log.error("HikariDataSource not found");
             return;
         }
-        LogUtils.info(getHikariCPStatus(dataSource));
-        LogUtils.info(getHikariCPConfig(dataSource));
+        log.info(getHikariCPStatus(dataSource));
+        log.info(getHikariCPConfig(dataSource));
     }
 }

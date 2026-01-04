@@ -1,6 +1,6 @@
 package cn.cordys.common.redis;
 
-import cn.cordys.common.util.LogUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import java.util.Map;
  * 负责接收并处理来自Redis频道的消息
  */
 @Service
+@Slf4j
 public class MessageSubscriber implements MessageListener {
 
     /**
@@ -40,7 +41,7 @@ public class MessageSubscriber implements MessageListener {
             // 处理消息
             processMessage(messageBody, channel);
         } catch (Exception e) {
-            LogUtils.error("处理订阅消息时发生异常", e);
+            log.error("处理订阅消息时发生异常", e);
         }
     }
 
@@ -54,7 +55,7 @@ public class MessageSubscriber implements MessageListener {
         // 根据频道区分不同的业务逻辑处理
         TopicConsumer consumer = consumerMap.get(channel);
         if (consumer == null) {
-            LogUtils.error("未找到对应的消费者处理频道: {}", channel);
+            log.error("未找到对应的消费者处理频道: {}", channel);
             return;
         }
         consumer.consume(message);

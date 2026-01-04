@@ -1,6 +1,6 @@
 package cn.cordys.common.service;
 
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
@@ -12,6 +12,7 @@ import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.Map;
  * @author song-cc-rock
  */
 @Service
+@Slf4j
 public class FieldSourceServiceProvider {
 
     private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
@@ -75,13 +77,13 @@ public class FieldSourceServiceProvider {
     public Object getById(FieldSourceType type, Object id) {
         Object service = getService(type);
         if (service == null || !(id instanceof String) || ((String) id).isEmpty()) {
-            LogUtils.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
+            log.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
             return null;
         }
         try {
             return service.getClass().getMethod("get", String.class).invoke(service, id.toString());
         } catch (Exception e) {
-            LogUtils.error("获取数据源详情异常：" + id, e);
+            log.error("获取数据源详情异常：" + id, e);
             return null;
         }
     }

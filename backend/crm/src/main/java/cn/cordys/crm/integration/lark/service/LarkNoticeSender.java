@@ -2,10 +2,8 @@ package cn.cordys.crm.integration.lark.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
-import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkTextDTO;
 import cn.cordys.crm.integration.sso.service.TokenService;
@@ -18,14 +16,15 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class LarkNoticeSender extends AbstractNoticeSender {
 
     @Resource
@@ -41,9 +40,9 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
             sendLark(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
-            LogUtils.debug("发送飞书消息结束");
+            log.debug("发送飞书消息结束");
         } catch (Exception e) {
-            LogUtils.error("飞书消息通知失败：" + e);
+            log.error("飞书消息通知失败：" + e);
         }
     }
 
@@ -63,20 +62,20 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         //查询同步过的resourceId，这里已经确定是否同步了飞书，没同步，消息无法发送
         List<String> resourceUserIds = super.getResourceUserIds(userIds, organizationId);
         if (CollectionUtils.isEmpty(resourceUserIds)) {
-            LogUtils.warn("没有同步飞书用户，无法发送消息");
+            log.warn("没有同步飞书用户，无法发送消息");
             return;
         }
         //查询三方配置
         OrganizationConfig organizationConfig = extOrganizationConfigMapper
                 .getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
-            LogUtils.warn("没有配置飞书信息，无法发送消息");
+            log.warn("没有配置飞书信息，无法发送消息");
             return;
         }
         //获取通知的配置数据
         OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.LARK_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
-            LogUtils.warn("没有配置飞书通知信息，无法发送消息");
+            log.warn("没有配置飞书通知信息，无法发送消息");
             return;
         }
         ThirdConfigBaseDTO<?> thirdConfigurationDTO = JSON.parseObject(
@@ -91,7 +90,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
 
 
         for (String resourceUserId : resourceUserIds) {
-            LogUtils.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
+            log.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
             LarkSendMessageDTO larkSendMessageDTO = new LarkSendMessageDTO();
             larkSendMessageDTO.setReceive_id(resourceUserId);
             larkSendMessageDTO.setMsg_type("text");

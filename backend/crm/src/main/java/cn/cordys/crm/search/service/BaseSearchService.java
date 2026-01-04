@@ -9,7 +9,7 @@ import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.customer.domain.CustomerPool;
@@ -27,6 +27,7 @@ import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.Strings;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     @Resource
@@ -452,7 +454,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 }
                 returnOpportunityFields.add(baseModuleFieldValue);
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
         return returnOpportunityFields;

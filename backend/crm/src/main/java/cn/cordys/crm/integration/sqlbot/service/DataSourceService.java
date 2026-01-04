@@ -13,7 +13,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.*;
 import cn.cordys.crm.integration.sqlbot.handler.TablePermissionHandler;
@@ -27,6 +27,7 @@ import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
  * 数据源服务，用于处理数据库连接和表结构信息
  */
 @Service
+@Slf4j
 public class DataSourceService {
 
     private static final DatabaseConfig MYSQL_CONFIG = new DatabaseConfig(
@@ -156,7 +158,7 @@ public class DataSourceService {
 
             return SQLBotDTO.builder().code(0).data(List.of(dataSourceDTO)).build();
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             return SQLBotDTO.builder().code(1).message("获取数据库结构失败: " + RestControllerExceptionHandler.getStackTraceAsString(e)).build();
         }
     }

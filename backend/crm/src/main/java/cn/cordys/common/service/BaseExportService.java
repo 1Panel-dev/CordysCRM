@@ -13,7 +13,10 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.SubListUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -33,6 +36,7 @@ import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -46,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 public abstract class BaseExportService {
 
     /**
@@ -257,7 +262,7 @@ public abstract class BaseExportService {
                     try {
                         mergeResult = getExportMergeData(task.getId(), exportParam);
                     } catch (InterruptedException e) {
-                        LogUtils.error("任务停止中断", e);
+                        log.error("任务停止中断", e);
                         exportTaskService.update(task.getId(), ExportConstants.ExportStatus.STOP.toString(), exportParam.getUserId());
                     }
                     // 写入数据
@@ -568,14 +573,14 @@ public abstract class BaseExportService {
                         userId
                 );
             } catch (InterruptedException e) {
-                LogUtils.error("任务停止中断", e);
+                log.error("任务停止中断", e);
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.STOP.name(),
                         userId
                 );
             } catch (Exception e) {
-                LogUtils.error("导出任务异常", e);
+                log.error("导出任务异常", e);
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.ERROR.name(),

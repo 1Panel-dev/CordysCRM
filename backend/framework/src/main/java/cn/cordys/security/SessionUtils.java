@@ -1,7 +1,7 @@
 package cn.cordys.security;
 
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.LogUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
@@ -21,6 +21,7 @@ import static cn.cordys.security.SessionConstants.ATTR_USER;
  * 包含获取当前用户信息、获取 Session ID、踢除用户等功能。
  * </p>
  */
+@Slf4j
 public class SessionUtils {
 
     /**
@@ -44,7 +45,7 @@ public class SessionUtils {
             Session session = subject.getSession();
             return (SessionUser) session.getAttribute(ATTR_USER);
         } catch (Exception e) {
-            LogUtils.warn("后台获取在线用户失败: " + e.getMessage());
+            log.warn("后台获取在线用户失败: " + e.getMessage());
             return null;
         }
     }
@@ -101,7 +102,7 @@ public class SessionUtils {
             try {
                 SessionUtils.kickOutUser(kickUserId);
             } catch (Exception e) {
-                LogUtils.error("踢出用户失败: " + e.getMessage());
+                log.error("踢出用户失败: " + e.getMessage());
             }
         } else {
             // 管理员重置他人密码，踢出该用户

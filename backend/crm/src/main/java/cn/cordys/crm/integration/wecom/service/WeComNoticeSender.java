@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.wecom.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
 import cn.cordys.crm.integration.sso.service.TokenService;
@@ -18,12 +17,14 @@ import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class WeComNoticeSender extends AbstractNoticeSender {
 
     @Resource
@@ -31,7 +32,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
     @Resource
-    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper; 
+    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
@@ -39,9 +40,9 @@ public class WeComNoticeSender extends AbstractNoticeSender {
         String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
             sendWeCom(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
-            LogUtils.debug("发送企业微信结束");
+            log.debug("发送企业微信结束");
         } catch (Exception e) {
-            LogUtils.error("企业微信消息通知失败：" + e);
+            log.error("企业微信消息通知失败：" + e);
         }
     }
 
@@ -61,20 +62,20 @@ public class WeComNoticeSender extends AbstractNoticeSender {
         //查询同步过的resourceId，这里已经确定是否同步了企业微信，没同步，消息无法发送
         List<String> resourceUserIds = super.getResourceUserIds(userIds, organizationId);
         if (CollectionUtils.isEmpty(resourceUserIds)) {
-            LogUtils.warn("没有同步企业微信用户，无法发送消息");
+            log.warn("没有同步企业微信用户，无法发送消息");
             return;
         }
         //查询三方配置
         OrganizationConfig organizationConfig = extOrganizationConfigMapper
                 .getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
-            LogUtils.warn("没有配置企业微信信息，无法发送消息");
+            log.warn("没有配置企业微信信息，无法发送消息");
             return;
         }
         //获取企业微信通知的配置数据
         OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
-            LogUtils.warn("没有配置企业微信通知信息，无法发送消息");
+            log.warn("没有配置企业微信通知信息，无法发送消息");
             return;
         }
         ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(

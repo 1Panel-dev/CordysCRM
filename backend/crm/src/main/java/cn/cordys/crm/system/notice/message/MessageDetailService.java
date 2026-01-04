@@ -2,12 +2,12 @@ package cn.cordys.crm.system.notice.message;
 
 
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class MessageDetailService {
 
     @Resource
@@ -39,7 +40,7 @@ public class MessageDetailService {
         try {
             return getMessageDetailDTOs(module, useTemplate, template, organizationId);
         } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return new ArrayList<>();
         }
     }

@@ -2,13 +2,14 @@ package cn.cordys.crm.integration.wecom.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
+
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.response.WeComDepartmentListResponse;
 import cn.cordys.crm.integration.wecom.response.WeComUserListResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import static cn.cordys.crm.integration.common.utils.HttpRequestUtil.urlTransfer
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class WeComDepartmentService {
 
     /**
@@ -56,7 +58,7 @@ public class WeComDepartmentService {
             String responseStr = HttpRequestUtil.sendGetRequest(url, null);
             return JSON.parseObject(responseStr, WeComDepartmentListResponse.class);
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
             throw new GenericException("调用接口获取部门列表失败：" + e.getMessage());
         }
     }

@@ -10,7 +10,6 @@ import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.home.constants.HomeStatisticPeriod;
@@ -27,6 +26,7 @@ import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class HomeStatisticService {
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -77,7 +78,7 @@ public class HomeStatisticService {
                 }
             }
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         return clueStatistic;
     }
@@ -114,7 +115,7 @@ public class HomeStatisticService {
                     }
                 }
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
         return opportunityStatistic;
@@ -153,7 +154,7 @@ public class HomeStatisticService {
                     }
                 }
             } catch (Exception e) {
-                LogUtils.error(e);
+                log.error(e.getMessage(), e);
             }
         }
         return opportunityStatistic;
@@ -245,7 +246,7 @@ public class HomeStatisticService {
                 response.setPriorPeriodCompareRate(getPriorPeriodCompareRate(count, periodCount));
             }
         } catch (Exception e) {
-            LogUtils.error(e);
+            log.error(e.getMessage(), e);
         }
         return response;
     }

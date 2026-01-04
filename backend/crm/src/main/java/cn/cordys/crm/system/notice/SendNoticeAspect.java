@@ -3,10 +3,10 @@ package cn.cordys.crm.system.notice;
 
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +34,7 @@ import java.util.Objects;
 
 @Aspect
 @Component
+@Slf4j
 public class SendNoticeAspect {
     private final static String ID = "id";
     private final static String CREATE_USER = "createUser";
@@ -78,7 +79,7 @@ public class SendNoticeAspect {
                 source.set(JSON.toJSONString(v));
             }
         } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -136,7 +137,7 @@ public class SendNoticeAspect {
                     module = titleExp.getValue(resources, String.class);
 
                 } catch (Exception e) {
-                    LogUtils.info("使用原值");
+                    log.info("使用原值");
                 }
             }
             String event = sendNotice.event();
@@ -146,11 +147,11 @@ public class SendNoticeAspect {
                     Expression titleExp = parser.parseExpression(event);
                     event = titleExp.getValue(context, String.class);
                 } catch (Exception e) {
-                    LogUtils.info("使用原值");
+                    log.info("使用原值");
                 }
             }
 
-            LogUtils.info("event:" + event);
+            log.info("event:" + event);
             String resultStr = JSON.toJSONString(retValue);
             Map object = JSON.parseMap(resultStr);
             if (MapUtils.isNotEmpty(object)) {
@@ -174,7 +175,7 @@ public class SendNoticeAspect {
             }
             commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             source.remove();
         }

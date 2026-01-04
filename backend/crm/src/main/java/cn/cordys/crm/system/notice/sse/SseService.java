@@ -2,7 +2,6 @@ package cn.cordys.crm.system.notice.sse;
 
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.LogUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Notification;
@@ -11,6 +10,7 @@ import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.notice.dto.SseMessageDTO;
 import cn.cordys.crm.system.service.SendModuleService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Slf4j
 public class SseService {
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";
@@ -43,10 +44,10 @@ public class SseService {
      * 添加或获取现有客户端流
      */
     public Flux<String> addClient(String userId, String clientId) {
-        LogUtils.info("当前在线用户数: {} ", userClients.size());
+        log.info("当前在线用户数: {} ", userClients.size());
 
         if (StringUtils.isAnyBlank(userId, clientId)) {
-            LogUtils.info("User ID or Client ID is blank, cannot add client.");
+            log.info("User ID or Client ID is blank, cannot add client.");
             return null;
         }
         Map<String, ClientSinkWrapper> inner = userClients.computeIfAbsent(userId,
@@ -109,7 +110,7 @@ public class SseService {
     public void broadcastPeriodically(String userId, String sendType) {
         SseMessageDTO msg = buildMessage(userId, sendType);
         sendToUser(userId, msg);
-        LogUtils.info("Broadcast to user {} at {}", userId, System.currentTimeMillis());
+        log.info("Broadcast to user {} at {}", userId, System.currentTimeMillis());
     }
 
     /**
