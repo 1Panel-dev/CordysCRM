@@ -202,5 +202,13 @@ public class PermissionConstants {
     /*------ start: TENDER ------*/
     public static final String TENDER_READ = "TENDER:READ";
     /*------ end: TENDER ------*/
+
+
+    /*------ start: CONTRACT_INVOICE_ROLE ------*/
+    public static final String CONTRACT_INVOICE_READ = "CONTRACT_INVOICE:READ";
+    public static final String CONTRACT_INVOICE_ADD = "CONTRACT_INVOICE:ADD";
+    public static final String CONTRACT_INVOICE_UPDATE = "CONTRACT_INVOICE:UPDATE";
+    public static final String CONTRACT_INVOICE_DELETE = "CONTRACT_INVOICE:DELETE";
+    /*------ end: CONTRACT_INVOICE_ROLE ------*/
 }
 

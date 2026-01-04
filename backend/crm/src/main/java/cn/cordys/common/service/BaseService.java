@@ -125,6 +125,17 @@ public class BaseService {
     /**
      * 设置创建人、更新人和责任人名称
      *
+     * @param object
+     * @param <T>
+     * @return
+     */
+    public <T> T setCreateAndUpdateOwnerUserName(T object) {
+        return setCreateUpdateOwnerUserName(List.of(object)).getFirst();
+    }
+
+    /**
+     * 设置创建人、更新人和责任人名称
+     *
      * @param list
      * @param <T>
      * @return

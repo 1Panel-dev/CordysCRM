@@ -564,6 +564,24 @@
             "id": "CONTRACT_PAYMENT_PLAN:EXPORT"
           }
         ]
+      },
+      {
+        "id": "CONTRACT_INVOICE",
+        "name": "permission.contract.invoice.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_INVOICE:READ"
+          },
+          {
+            "id": "CONTRACT_INVOICE:ADD"
+          },
+          {
+            "id": "CONTRACT_INVOICE:UPDATE"
+          },
+          {
+            "id": "CONTRACT_INVOICE:DELETE"
+          }
+        ]
       }
     ]
   }
