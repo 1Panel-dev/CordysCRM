@@ -253,9 +253,25 @@ public enum BusinessModuleField {
     CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey());
+    CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
     /*------ end: CONTRACT ------*/
+
+    /**
+     * 发票
+     */
+    /*------ start: CONTRACT_INVOICE ------*/
+    INVOICE_NO("invoiceNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
+    INVOICE_OWNER("invoiceOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
+    INVOICE_AMOUNT("invoiceAmount", "amount", Set.of("rules.required", "mobile"), FormKey.INVOICE.getKey()),
+    INVOICE_CONTRACT_ID("invoiceContract", "contractId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
+    INVOICE_INVOICE_TYPE("invoiceType", "invoiceType", Set.of("mobile"), FormKey.INVOICE.getKey()),
+    INVOICE_TAX_RATE("invoiceTaxRate", "taxRate", Set.of("mobile"), FormKey.INVOICE.getKey()),
+    INVOICE_OFFICIAL_REGISTERED_ID("invoiceBusinessTitle", "businessTitleId", Set.of("mobile", "dataSourceType"), FormKey.INVOICE.getKey()),
+    /*------ end: CONTRACT_INVOICE ------*/
+
+
+    ;
 
 
     /**
