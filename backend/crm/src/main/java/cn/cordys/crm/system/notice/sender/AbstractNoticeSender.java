@@ -90,8 +90,8 @@ public abstract class AbstractNoticeSender implements NoticeSender {
                 }
             }
         } else {
-            realReceivers = receivers;
+            realReceivers.addAll(receivers);
         }
-        return realReceivers;
+        return realReceivers.stream().distinct().toList();
     }
 }

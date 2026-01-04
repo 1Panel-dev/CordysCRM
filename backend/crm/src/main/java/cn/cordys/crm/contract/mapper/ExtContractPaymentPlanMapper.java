@@ -22,5 +22,5 @@ public interface ExtContractPaymentPlanMapper {
 
     CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatisticByCustomerId(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    List<ContractPaymentPlan> selectByTimestamp(long timestamp, long timestampOld, String organizationId);
+    List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp, @Param("timestampOld") long timestampOld, @Param("orgId") String organizationId);
 }

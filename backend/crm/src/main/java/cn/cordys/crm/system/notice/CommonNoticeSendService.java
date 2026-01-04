@@ -127,7 +127,7 @@ public class CommonNoticeSendService {
                 .paramMap(paramMap)
                 .event(event)
                 .status((String) paramMap.get("status"))
-                .excludeSelf(true)
+                .excludeSelf(excludeSelf)
                 .receivers(receivers)
                 .build();
         noticeSendService.sendOther(taskType, noticeModel, excludeSelf);
