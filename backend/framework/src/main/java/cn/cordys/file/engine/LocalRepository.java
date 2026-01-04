@@ -147,7 +147,7 @@ public class LocalRepository implements FileRepository {
             try {
                 FileUtils.deleteDirectory(folder);
             } catch (IOException e) {
-                log.error("Failed to delete folder: " + folderPath, e);
+                log.error("Failed to delete folder: {}", folderPath, e);
             }
         }
     }

@@ -485,7 +485,7 @@ public class IntegrationConfigService {
         buildDetailData(detailList, configDTOs);
 
         if (CollectionUtils.isNotEmpty(configDTOs)) {
-            return configDTOs.get(0);
+            return configDTOs.getFirst();
         }
         return new ThirdConfigBaseDTO<>();
     }
