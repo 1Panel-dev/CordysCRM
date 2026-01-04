@@ -178,17 +178,6 @@ public class IntegrationConfigService {
             throw new GenericException(Translator.get("third.config.not.exist"));
         }
 
-        // 获取指定类型的配置
-        if (type.contains(ThirdConfigTypeConstants.WECOM.name())) {
-            type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
-        }
-        if (type.contains(ThirdConfigTypeConstants.DINGTALK.name())) {
-            type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
-        }
-        if (type.contains(ThirdConfigTypeConstants.LARK.name())) {
-            type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
-        }
-
         return getConfigurationByType(type, details);
     }
 
@@ -492,57 +481,13 @@ public class IntegrationConfigService {
                 .filter(t -> t.getType().contains(type))
                 .toList();
 
-        if (CollectionUtils.isEmpty(detailList)) {
-            return null;
+        List<ThirdConfigBaseDTO<?>> configDTOs = new ArrayList<>();
+        buildDetailData(detailList, configDTOs);
+
+        if (CollectionUtils.isNotEmpty(configDTOs)) {
+            return configDTOs.get(0);
         }
-        ThirdConfigBaseDTO dto = new ThirdConfigBaseDTO();
-
-        for (OrganizationConfigDetail detail : detailList) {
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.WECOM_SYNC.name())) {
-                dto = buildDTO(detail, WecomThirdConfigRequest.class, ThirdConfigTypeConstants.WECOM.name(),
-                        cfg -> cfg.setStartEnable(detail.getEnable()));
-            }
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DINGTALK_SYNC.name())) {
-                dto = buildDTO(detail, DingTalkThirdConfigRequest.class, ThirdConfigTypeConstants.DINGTALK.name(),
-                        cfg -> cfg.setStartEnable(detail.getEnable()));
-            }
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.LARK_SYNC.name())) {
-                dto = buildDTO(detail, LarkThirdConfigRequest.class, ThirdConfigTypeConstants.LARK.name(),
-                        cfg -> cfg.setStartEnable(detail.getEnable()));
-            }
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.MAXKB.name())) {
-                dto = buildDTO(detail, MaxKBThirdConfigRequest.class, ThirdConfigTypeConstants.MAXKB.name(),
-                        cfg -> cfg.setMkEnable(detail.getEnable()));
-            }
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.TENDER.name())) {
-                dto = buildDTO(detail, TenderThirdConfigRequest.class, ThirdConfigTypeConstants.TENDER.name(),
-                        cfg -> cfg.setTenderEnable(detail.getEnable()));
-            }
-
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DE_BOARD.name())) {
-                dto = buildDTO(detail, DeThirdConfigRequest.class, ThirdConfigTypeConstants.DE.name(),
-                        cfg -> cfg.setDeBoardEnable(detail.getEnable()));
-            }
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_CHAT.name())) {
-                dto = buildDTO(detail, SqlBotThirdConfigRequest.class, ThirdConfigTypeConstants.SQLBOT.name(),
-                        cfg -> cfg.setSqlBotChatEnable(detail.getEnable()));
-            }
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_BOARD.name())) {
-                dto = buildDTO(detail, SqlBotThirdConfigRequest.class, ThirdConfigTypeConstants.SQLBOT.name(),
-                        cfg -> cfg.setSqlBotBoardEnable(detail.getEnable()));
-            }
-            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.QCC.name())) {
-                dto = buildDTO(detail, QccThirdConfigRequest.class, ThirdConfigTypeConstants.QCC.name(),
-                        cfg -> cfg.setQccEnable(detail.getEnable()));
-            }
-        }
-
-        return dto;
+        return new ThirdConfigBaseDTO<>();
     }
 
     /**
