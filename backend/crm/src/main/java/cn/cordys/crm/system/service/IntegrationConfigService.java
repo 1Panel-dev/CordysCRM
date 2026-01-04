@@ -15,7 +15,6 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.*;
 import cn.cordys.crm.integration.dataease.DataEaseClient;
-import cn.cordys.crm.integration.sso.service.AgentService;
 import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdSwitchLogDTO;
 import cn.cordys.crm.integration.tender.constant.TenderApiPaths;
@@ -57,9 +56,6 @@ public class IntegrationConfigService {
 
     @Resource
     private TokenService tokenService;
-
-    @Resource
-    private AgentService agentService;
 
     /**
      * 获取同步的组织配置
@@ -131,8 +127,8 @@ public class IntegrationConfigService {
         String token = getToken(configDTO);
         if (ThirdConfigTypeConstants.WECOM.name().equals(configDTO.getType()) && StringUtils.isNotBlank(token)) {
             WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
-            Boolean weComAgent = agentService.getWeComAgent(token, config.getAgentId());
-            if (weComAgent == null || !weComAgent) {
+            boolean weComAgent = tokenService.checkWeComAgentAvailable(token, config.getAgentId());
+            if (!weComAgent) {
                 token = null;
             }
         }
@@ -1070,8 +1066,8 @@ public class IntegrationConfigService {
     private void verifyWeCom(String agentId, String token, ThirdConfigBaseDTO<?> weComConfig) {
         if (StringUtils.isNotBlank(token)) {
             // 验证应用ID
-            Boolean weComAgent = agentService.getWeComAgent(token, agentId);
-            weComConfig.setVerify(weComAgent != null && weComAgent);
+            Boolean weComAgent = tokenService.checkWeComAgentAvailable(token, agentId);
+            weComConfig.setVerify(weComAgent);
         } else {
             weComConfig.setVerify(false);
         }

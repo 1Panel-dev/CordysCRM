@@ -4,7 +4,7 @@ import cn.cordys.crm.integration.wecom.response.WeComResponseEntity;
 import lombok.Data;
 
 @Data
-public class WeComAgentDetail extends WeComResponseEntity {
+public class WeComDetail extends WeComResponseEntity {
     /**
      * 应用id
      */
