@@ -123,13 +123,13 @@
                 <version>${jacoco.version}</version>
                 <configuration>
                     <excludes>
-                        <exclude>io/cordys/crm/*/mapper/**</exclude>
-                        <exclude>io/cordys/crm/*/domain/**</exclude>
-                        <exclude>io/cordys/common/**</exclude>
-                        <exclude>io/cordys/config/**</exclude>
-                        <exclude>io/cordys/aspectj/**</exclude>
-                        <exclude>io/cordys/mybatis/**</exclude>
-                        <exclude>io/cordys/security/**</exclude>
+                        <exclude>cn/cordys/crm/*/mapper/**</exclude>
+                        <exclude>cn/cordys/crm/*/domain/**</exclude>
+                        <exclude>cn/cordys/common/**</exclude>
+                        <exclude>cn/cordys/config/**</exclude>
+                        <exclude>cn/cordys/aspectj/**</exclude>
+                        <exclude>cn/cordys/mybatis/**</exclude>
+                        <exclude>cn/cordys/security/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
