@@ -523,6 +523,23 @@ public class IntegrationConfigService {
                 dto = buildDTO(detail, TenderThirdConfigRequest.class, ThirdConfigTypeConstants.TENDER.name(),
                         cfg -> cfg.setTenderEnable(detail.getEnable()));
             }
+
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.DE_BOARD.name())) {
+                dto = buildDTO(detail, DeThirdConfigRequest.class, ThirdConfigTypeConstants.DE.name(),
+                        cfg -> cfg.setDeBoardEnable(detail.getEnable()));
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_CHAT.name())) {
+                dto = buildDTO(detail, SqlBotThirdConfigRequest.class, ThirdConfigTypeConstants.SQLBOT.name(),
+                        cfg -> cfg.setSqlBotChatEnable(detail.getEnable()));
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.SQLBOT_BOARD.name())) {
+                dto = buildDTO(detail, SqlBotThirdConfigRequest.class, ThirdConfigTypeConstants.SQLBOT.name(),
+                        cfg -> cfg.setSqlBotBoardEnable(detail.getEnable()));
+            }
+            if (Strings.CI.equals(detail.getType(), ThirdConstants.ThirdDetailType.QCC.name())) {
+                dto = buildDTO(detail, QccThirdConfigRequest.class, ThirdConfigTypeConstants.QCC.name(),
+                        cfg -> cfg.setQccEnable(detail.getEnable()));
+            }
         }
 
         return dto;
