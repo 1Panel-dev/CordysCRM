@@ -118,7 +118,6 @@ public class OrganizationUserService {
      * 员工列表查询
      *
      * @param request
-     *
      * @return
      */
     public List<UserPageResponse> list(UserPageRequest request) {
@@ -305,7 +304,6 @@ public class OrganizationUserService {
      *
      * @param request
      * @param operatorId
-     *
      * @return
      */
     private User addUserBaseData(UserAddRequest request, String operatorId, String id) {
@@ -327,7 +325,6 @@ public class OrganizationUserService {
      * 获取用户详情
      *
      * @param id
-     *
      * @return
      */
     public UserResponse getUserDetail(String id) {
@@ -497,10 +494,10 @@ public class OrganizationUserService {
         }
 
         List<LogDTO> logs = new ArrayList<>();
-        User originPasswdUser = new User();
-        originPasswdUser.setPassword("############");
-        User newPasswdUser = new User();
-        newPasswdUser.setPassword("************");
+        Map<String, String> oldMap = new HashMap<>();
+        oldMap.put("userPassword", "############");
+        Map<String, String> newMap = new HashMap<>();
+        newMap.put("userPassword", "************");
         userList.forEach(user -> {
             if (!Strings.CI.equals(user.getId(), InternalUser.ADMIN.getValue())) {
                 user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
@@ -508,8 +505,8 @@ public class OrganizationUserService {
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
             LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
-            logDTO.setOriginalValue(originPasswdUser);
-            logDTO.setModifiedValue(newPasswdUser);
+            logDTO.setOriginalValue(oldMap);
+            logDTO.setModifiedValue(newMap);
             logs.add(logDTO);
             // 踢出该用户
             SessionUtils.kickOutUser(operatorId, user.getId());
@@ -653,7 +650,6 @@ public class OrganizationUserService {
      * 导入excel检查
      *
      * @param file
-     *
      * @return
      */
     public UserImportResponse preCheck(MultipartFile file, String orgId) {
@@ -689,7 +685,6 @@ public class OrganizationUserService {
      * @param file
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     public UserImportResponse importByExcel(MultipartFile file, String operatorId, String orgId) {
@@ -796,7 +791,6 @@ public class OrganizationUserService {
      * @param supervisorList
      * @param departmentId
      * @param name
-     *
      * @return
      */
     private String handleSupervisor(List<UserImportDTO> supervisorList, String departmentId, String name) {
@@ -825,7 +819,6 @@ public class OrganizationUserService {
      * 导入校验电话号码唯一
      *
      * @param phone
-     *
      * @return
      */
     public boolean checkPhone(String phone) {
@@ -836,7 +829,6 @@ public class OrganizationUserService {
      * 导入校验邮箱唯一
      *
      * @param email
-     *
      * @return
      */
     public boolean checkEmail(String email) {
@@ -847,7 +839,6 @@ public class OrganizationUserService {
      * 获取系统用户options
      *
      * @param orgId 组织ID
-     *
      * @return 用户选项列表
      */
     public List<OptionDTO> getUserOptions(String orgId) {
@@ -984,7 +975,6 @@ public class OrganizationUserService {
      *
      * @param departmentId
      * @param orgId
-     *
      * @return
      */
     public List<DeptUserTreeNode> getUserTreeByDepId(String departmentId, String orgId) {
