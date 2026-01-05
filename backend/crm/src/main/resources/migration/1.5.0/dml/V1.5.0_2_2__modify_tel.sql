@@ -4,6 +4,9 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 alter table opportunity_quotation
     add until_time bigint not null comment '有效期至';
 
+-- modify form_key length to 50
+ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR(50);
+
 CREATE INDEX idx_until_time
     ON opportunity_quotation (until_time);
 

@@ -116,8 +116,5 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_invoice_id ON contract_invoice_snapshot (invoice_id ASC);
 
--- modify form_key length to 50
-ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR(50);
-
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
