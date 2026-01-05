@@ -23,15 +23,15 @@ CREATE TABLE business_title
 (
     `id`                    VARCHAR(32)  NOT NULL COMMENT 'id',
     `business_name`         VARCHAR(255) NOT NULL COMMENT '公司名称',
-    `type`                  VARCHAR(50)  NOT NULL COMMENT '来源类型',
-    `identification_number` VARCHAR(255) NOT NULL COMMENT '纳税人识别号',
-    `opening_bank`          VARCHAR(255) NOT NULL COMMENT '开户银行',
-    `bank_account`          VARCHAR(50)  NOT NULL COMMENT '银行账号',
-    `registration_address`  VARCHAR(255) NOT NULL COMMENT '注册地址',
-    `phone_number`          VARCHAR(50)  NOT NULL COMMENT '注册电话',
-    `registered_capital`    DECIMAL(20)  NOT NULL COMMENT '注册资本',
-    `customer_size`         VARCHAR(50)  NOT NULL COMMENT '客户规模',
-    `registration_number`   VARCHAR(255) NOT NULL COMMENT '工商注册号',
+    `type`                  VARCHAR(50) COMMENT '来源类型',
+    `identification_number` VARCHAR(255) COMMENT '纳税人识别号',
+    `opening_bank`          VARCHAR(255) COMMENT '开户银行',
+    `bank_account`          VARCHAR(50) COMMENT '银行账号',
+    `registration_address`  VARCHAR(255) COMMENT '注册地址',
+    `phone_number`          VARCHAR(50) COMMENT '注册电话',
+    `registered_capital`    DECIMAL(20) COMMENT '注册资本',
+    `customer_size`         VARCHAR(50) COMMENT '客户规模',
+    `registration_number`   VARCHAR(255) COMMENT '工商注册号',
     `approval_status`       VARCHAR(50) COMMENT '审核状态',
     `unapproved_reason`     VARCHAR(255) COMMENT '不通过原因',
     `organization_id`       VARCHAR(50)  NOT NULL COMMENT '组织id',
@@ -49,6 +49,17 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_organization_id ON business_title (organization_id ASC);
 CREATE INDEX idx_business_name ON business_title (business_name ASC);
 
+
+CREATE TABLE business_title_config
+(
+    `id`       VARCHAR(32)  NOT NULL COMMENT 'id',
+    `field`    VARCHAR(255) NOT NULL COMMENT '字段',
+    `required` BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否必填',
+    PRIMARY KEY (id)
+) COMMENT = '工商抬头配置表'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE contract_invoice
 (
