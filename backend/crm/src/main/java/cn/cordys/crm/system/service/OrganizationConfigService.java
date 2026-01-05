@@ -117,7 +117,7 @@ public class OrganizationConfigService {
 
     public void verifyEmailConnection(EmailDTO emailDTO) {
         try {
-            JavaMailSenderImpl javaMailSender = mailSender.getMailSender(emailDTO);
+            JavaMailSenderImpl javaMailSender = mailSender.buildMailSender(emailDTO);
             javaMailSender.testConnection();
 
             String recipient = emailDTO.getRecipient();
