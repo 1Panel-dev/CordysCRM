@@ -33,5 +33,9 @@ public enum FieldSourceType {
 	/**
 	 * 报价单来源
 	 */
-	QUOTATION
+	QUOTATION,
+	/**
+	 * 回款计划
+	 */
+	PAYMENT_PLAN
 }
