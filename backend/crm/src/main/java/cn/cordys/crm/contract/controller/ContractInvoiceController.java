@@ -12,10 +12,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.ContractInvoice;
-import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
-import cn.cordys.crm.contract.dto.request.ContractInvoiceExportRequest;
-import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
-import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
+import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.service.ContractInvoiceExportService;
@@ -27,6 +24,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -149,5 +147,12 @@ public class ContractInvoiceController {
                 .formKey(FormKey.INVOICE.getKey())
                 .build();
         return contractInvoiceExportService.exportAllWithMergeStrategy(exportDTO);
+    }
+
+    @PostMapping("/batch/delete")
+    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_DELETE)
+    @Operation(summary = "批量删除客户")
+    public void batchDelete(@RequestBody @NotNull List<String> ids) {
+        contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
