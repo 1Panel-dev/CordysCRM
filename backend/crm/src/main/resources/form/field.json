@@ -2007,6 +2007,11 @@
         "-",
         "6"
       ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
       "readable": true,
       "editable": false,
       "fieldWidth": 1
@@ -2015,6 +2020,22 @@
       "name": "回款名称",
       "internalKey": "contractPaymentRecordName",
       "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractPaymentRecordOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
       "showLabel": true,
       "readable": true,
       "editable": true,
@@ -2113,6 +2134,11 @@
           "label": "中国建设银行",
           "value": "4"
         }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -2123,7 +2149,12 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "options": []
+      "options": [],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
     }
   ]
 }
