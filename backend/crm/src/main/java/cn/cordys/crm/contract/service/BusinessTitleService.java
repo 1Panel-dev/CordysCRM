@@ -5,9 +5,11 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -16,10 +18,13 @@ import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.BusinessTitleAddRequest;
+import cn.cordys.crm.contract.dto.request.BusinessTitleApprovalRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitlePageRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitleUpdateRequest;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
 import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
+import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -30,7 +35,9 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -42,6 +49,10 @@ public class BusinessTitleService {
     private BaseMapper<ContractInvoice> contractInvoiceMapper;
     @Resource
     private ExtBusinessTitleMapper extBusinessTitleMapper;
+    @Resource
+    private LogService logService;
+    @Resource
+    private BaseService baseService;
 
 
     /**
@@ -160,6 +171,7 @@ public class BusinessTitleService {
     public Pager<List<BusinessTitleListResponse>> list(BusinessTitlePageRequest request, String userId, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<BusinessTitleListResponse> list = extBusinessTitleMapper.list(request, orgId, userId);
+        baseService.setCreateAndUpdateUserName(list);
         return PageUtils.setPageInfo(page, list);
     }
 
@@ -170,8 +182,70 @@ public class BusinessTitleService {
      * @param id
      * @return
      */
-    public BusinessTitle get(String id) {
+    public BusinessTitleListResponse get(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
-        return businessTitle;
+        BusinessTitleListResponse businessTitleListResponse = BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
+        baseService.setCreateAndUpdateUserName(List.of(businessTitleListResponse));
+        return businessTitleListResponse;
+    }
+
+
+    /**
+     * 审核通过/不通过
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public void approvalContract(BusinessTitleApprovalRequest request, String userId, String orgId) {
+        BusinessTitle businessTitle = checkTitle(request.getId());
+
+        String state = businessTitle.getApprovalStatus();
+        businessTitle.setApprovalStatus(request.getApprovalStatus());
+        businessTitle.setUpdateTime(System.currentTimeMillis());
+        businessTitle.setUpdateUser(userId);
+        businessTitleMapper.update(businessTitle);
+        // 添加日志上下文
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, businessTitle.getBusinessName(), state, request.getApprovalStatus());
+        logService.add(logDTO);
+    }
+
+
+    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
+        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.BUSINESS_TITLE, response);
+        Map<String, String> oldMap = new HashMap<>();
+        oldMap.put("approvalStatus", Translator.get("contract.approval_status." + state.toLowerCase()));
+        logDTO.setOriginalValue(oldMap);
+        Map<String, String> newMap = new HashMap<>();
+        newMap.put("approvalStatus", Translator.get("contract.approval_status." + newState.toLowerCase()));
+        logDTO.setModifiedValue(newMap);
+        return logDTO;
+    }
+
+
+    /**
+     * 撤销审核
+     *
+     * @param id
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public String revoke(String id, String userId, String orgId) {
+        BusinessTitle businessTitle = checkTitle(id);
+
+        String originApprovalStatus = businessTitle.getApprovalStatus();
+
+        businessTitle.setApprovalStatus(ApprovalState.REVOKED.toString());
+        businessTitle.setUpdateUser(userId);
+        businessTitle.setUpdateTime(System.currentTimeMillis());
+        businessTitleMapper.update(businessTitle);
+
+
+        // 添加日志上下文
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, businessTitle.getBusinessName(), originApprovalStatus, ApprovalState.REVOKED.toString());
+        logService.add(logDTO);
+
+        return businessTitle.getApprovalStatus();
     }
 }
