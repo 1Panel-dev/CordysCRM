@@ -181,4 +181,16 @@
         </choose>
     </sql>
 
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
+        SELECT
+        bt.*
+        FROM
+        business_title bt
+        where bt.organization_id = #{orgId}
+        and bt.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>
