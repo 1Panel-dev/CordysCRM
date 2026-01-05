@@ -1992,5 +1992,138 @@
         }
       ]
     }
+  ],
+  "contractPaymentRecord": [
+    {
+      "name": "回款编码",
+      "internalKey": "contractPaymentRecordNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "PAY",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1
+    },
+    {
+      "name": "回款名称",
+      "internalKey": "contractPaymentRecordName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "合同名称",
+      "internalKey": "contractPaymentRecordContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款计划",
+      "internalKey": "contractPaymentRecordPlan",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "PAYMENT_PLAN",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "回款时间",
+      "internalKey": "contractPaymentRecordEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款金额",
+      "internalKey": "contractPaymentRecordAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "decimalPlaces": true,
+      "precision": 2,
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "收款银行",
+      "internalKey": "contractPaymentRecordBank",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "中国银行",
+          "value": "1"
+        },
+        {
+          "label": "中国农业银行",
+          "value": "2"
+        },
+        {
+          "label": "中国工商银行",
+          "value": "3"
+        },
+        {
+          "label": "中国建设银行",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "name": "收款银行账号",
+      "internalKey": "contractPaymentRecordBankNo",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": []
+    }
   ]
 }

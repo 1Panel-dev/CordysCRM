@@ -53,6 +53,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initFormScenarioProp, "init.record.form.scenario");
             initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
+            initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
         } finally {
             lock.unlock();
         }
