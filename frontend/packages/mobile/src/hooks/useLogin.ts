@@ -124,7 +124,7 @@ export default function useLogin() {
     );
     if (res) {
       const { data } = res.data;
-      const redirectUrl = platform.authUrl(data);
+      const redirectUrl = platform.authUrl(data.config);
       window.location.replace(redirectUrl);
     }
   }
