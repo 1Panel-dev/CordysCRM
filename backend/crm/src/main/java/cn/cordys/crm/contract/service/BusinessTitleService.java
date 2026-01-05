@@ -65,6 +65,8 @@ public class BusinessTitleService {
      */
     @OperationLog(module = LogModule.BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.businessName}")
     public BusinessTitle add(BusinessTitleAddRequest request, String userId, String orgId) {
+        checkName(request.getBusinessName(), orgId, null);
+
         BusinessTitle businessTitle = BeanUtils.copyBean(new BusinessTitle(), request);
         if (Strings.CI.equals(BusinessTitleType.CUSTOM.name(), businessTitle.getType())) {
             businessTitle.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
@@ -87,6 +89,19 @@ public class BusinessTitleService {
                         .build()
         );
         return businessTitle;
+    }
+
+
+    /**
+     * 校验名称
+     * @param businessName
+     * @param orgId
+     * @param id
+     */
+    private void checkName(String businessName, String orgId,String id) {
+        if (extBusinessTitleMapper.countByName(businessName, orgId, id) > 0) {
+            throw new GenericException(Translator.get("business_title.exist"));
+        }
     }
 
 

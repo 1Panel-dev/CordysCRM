@@ -193,4 +193,14 @@
         </foreach>
     </select>
 
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id) from business_title bt
+        where bt.organization_id = #{orgId}
+        and bt.business_name = #{businessName}
+        <if test="id != null and id != ''">
+            AND bt.id != #{id}
+        </if>
+    </select>
+
 </mapper>
