@@ -77,6 +77,7 @@ public class ModuleFormService {
     private static final String SUB_FIELDS = "subFields";
 	public static final String SUM_PREFIX = "sum_";
 	public static final String EXPORT_SYSTEM_TYPE = "system";
+	private static final String PRICE_SUB_ROW_KEY = "price_sub";
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -1720,9 +1721,9 @@ public class ModuleFormService {
 							if (showFieldConf == null) {
 								return;
 							}
-							if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+							if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(PRICE_SUB_ROW_KEY)) {
 								Object matchVal = baseResourceFieldService.matchSubFieldValueOfDetailMap(showFieldConf.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-										BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), sfv.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
+										sfv.get(PRICE_SUB_ROW_KEY).toString());
 								if (matchVal != null) {
 									showFieldMap.put(showFieldConf.getId(), matchVal);
 								}
