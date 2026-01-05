@@ -15,6 +15,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -34,104 +35,112 @@ public class MailSender {
     @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
-    public void send(String subject, String context, String[] users, String[] cc, String organizationId) throws Exception {
-        log.debug("发送邮件开始 ");
-        //
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
-        if (organizationConfig == null) {
-            log.error("邮件未设置 ");
+    public void send(String subject,
+                     String context,
+                     String[] users,
+                     String[] cc,
+                     String organizationId) {
+
+        OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
+                organizationId,
+                OrganizationConfigConstants.ConfigType.EMAIL.name()
+        );
+        if (config == null) {
+            log.error("邮件配置不存在");
             throw new GenericException(Translator.get("email.config.not.exist.text"));
         }
-        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
-        if (organizationConfigDetail == null) {
-            log.error("邮件内容为空 ");
+
+        OrganizationConfigDetail detail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(config.getId());
+        if (detail == null) {
+            log.error("邮件配置内容为空");
             throw new GenericException(Translator.get("email.config.is.null"));
         }
-        EmailDTO emailDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
-        JavaMailSenderImpl javaMailSender = getMailSender(emailDTO);
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-        String username = javaMailSender.getUsername();
-        String email;
-        if (username.contains("@")) {
-            email = username;
-        } else {
-            String mailHost = javaMailSender.getHost();
-            String domainName = Objects.requireNonNull(mailHost).substring(mailHost.indexOf(".") + 1);
-            email = username + "@" + domainName;
+
+        EmailDTO emailDTO = JSON.parseObject(
+                new String(detail.getContent(), StandardCharsets.UTF_8),
+                EmailDTO.class
+        );
+
+        JavaMailSenderImpl mailSender = buildMailSender(emailDTO);
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom(buildFromAddress(mailSender, emailDTO));
+            helper.setSubject(buildSubject(subject));
+            helper.setText(context, true);
+
+            log.info("收件人: {}", Arrays.toString(users));
+
+            if (cc != null && cc.length > 0) {
+                helper.setTo(users);
+                helper.setCc(cc);
+                mailSender.send(message);
+            } else {
+                for (String user : users) {
+                    helper.setTo(user);
+                    mailSender.send(message);
+                }
+            }
+        } catch (Exception e) {
+            log.error("发送邮件失败", e);
+            throw new GenericException(Translator.get("email_setting_send_error"), e);
         }
+    }
+
+    public JavaMailSenderImpl buildMailSender(EmailDTO emailDTO) {
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        sender.setProtocol("smtp");
+        sender.setHost(emailDTO.getHost());
+        sender.setPort(Integer.parseInt(emailDTO.getPort()));
+        sender.setUsername(emailDTO.getAccount());
+        sender.setPassword(emailDTO.getPassword());
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.timeout", "30000");
+        props.put("mail.smtp.connectiontimeout", "5000");
+        props.put("mail.smtp.ssl.trust", sender.getHost());
+
+        if (BooleanUtils.toBoolean(emailDTO.getSsl())) {
+            sender.setProtocol("smtps");
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        }
+
+        if (BooleanUtils.toBoolean(emailDTO.getTsl())) {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+        }
+
+        sender.setJavaMailProperties(props);
+        return sender;
+    }
+
+    private InternetAddress buildFromAddress(JavaMailSenderImpl sender, EmailDTO emailDTO) throws Exception {
+        String username = sender.getUsername();
+        String email = Strings.CS.contains(username, "@")
+                ? username
+                : username + "@" + Objects.requireNonNull(sender.getHost()).substring(sender.getHost().indexOf('.') + 1);
+
         InternetAddress from = new InternetAddress();
         String smtpFrom = emailDTO.getFrom();
+
         if (StringUtils.isBlank(smtpFrom)) {
             from.setAddress(email);
             from.setPersonal(username);
         } else {
-            // 指定发件人后，address 应该是邮件服务器验证过的发件人
-            if (smtpFrom.contains("@")) {
-                from.setAddress(smtpFrom);
-            } else {
-                from.setAddress(email);
-            }
+            from.setAddress(smtpFrom.contains("@") ? smtpFrom : email);
             from.setPersonal(smtpFrom);
         }
-        helper.setFrom(from);
+        return from;
+    }
 
-        log.debug("发件人地址" + javaMailSender.getUsername());
-        log.debug("helper" + helper);
-        if (subject.length() > 60) {
+    private String buildSubject(String subject) {
+        if (StringUtils.length(subject) > 60) {
             subject = subject.substring(0, 59);
         }
-        helper.setSubject("Cordys CRM " + subject);
-
-        log.info("收件人地址: {}", Arrays.asList(users));
-        helper.setText(context, true);
-        // 有抄送
-        if (cc != null && cc.length > 0) {
-            //设置抄送人 CC（Carbon Copy）
-            helper.setCc(cc);
-            // to 参数表示收件人
-            helper.setTo(users);
-            javaMailSender.send(mimeMessage);
-        }
-        // 无抄送
-        else {
-            for (String u : users) {
-                helper.setTo(u);
-                try {
-                    javaMailSender.send(mimeMessage);
-                } catch (Exception e) {
-                    log.error("发送邮件失败: ", e);
-                    throw new GenericException(Translator.get("email_setting_send_error"), e);
-                }
-            }
-        }
+        return "Cordys CRM " + subject;
     }
 
-    public JavaMailSenderImpl getMailSender(EmailDTO emailDTO) {
-        Properties props = new Properties();
-        JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
-        javaMailSender.setDefaultEncoding(StandardCharsets.UTF_8.name());
-        javaMailSender.setProtocol("smtp");
-        javaMailSender.setHost(emailDTO.getHost());
-        javaMailSender.setPort(Integer.parseInt(emailDTO.getPort()));
-        javaMailSender.setUsername(emailDTO.getAccount());
-        javaMailSender.setPassword(emailDTO.getPassword());
-
-        if (BooleanUtils.toBoolean(emailDTO.getSsl())) {
-            javaMailSender.setProtocol("smtps");
-            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        }
-        if (BooleanUtils.toBoolean(emailDTO.getTsl())) {
-            String result = BooleanUtils.toString(BooleanUtils.toBoolean(emailDTO.getTsl()), "true", "false");
-            props.put("mail.smtp.starttls.enable", result);
-            props.put("mail.smtp.starttls.required", result);
-        }
-
-        props.put("mail.smtp.ssl.trust", javaMailSender.getHost());
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.timeout", "30000");
-        props.put("mail.smtp.connectiontimeout", "5000");
-        javaMailSender.setJavaMailProperties(props);
-        return javaMailSender;
-    }
 }

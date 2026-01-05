@@ -496,39 +496,6 @@ public class IntegrationConfigService {
     }
 
     /**
-     * 构建DTO
-     *
-     * @param detail       配置详情
-     * @param configClass  配置类
-     * @param type         类型
-     * @param enableSetter 启用设置器
-     * @param <T>          配置类型
-     *
-     * @return 配置DTO
-     */
-    private <T> ThirdConfigBaseDTO<?> buildDTO(
-            OrganizationConfigDetail detail,
-            Class<T> configClass,
-            String type,
-            Consumer<T> enableSetter) {
-
-        ThirdConfigBaseDTO dto = JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class);
-
-        T config;
-        if (dto.getConfig() == null) {
-            config = JSON.parseObject(new String(detail.getContent()), configClass);
-        } else {
-            config = JSON.MAPPER.convertValue(dto.getConfig(), configClass);
-        }
-
-        enableSetter.accept(config);
-
-        dto.setType(type);
-        dto.setConfig(config);
-        return dto;
-    }
-
-    /**
      * 获取或创建组织配置
      *
      * @param organizationId 组织ID
