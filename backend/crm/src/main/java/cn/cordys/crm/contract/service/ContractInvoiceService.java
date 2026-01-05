@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
@@ -35,6 +36,7 @@ import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -67,6 +69,8 @@ public class ContractInvoiceService {
     @Resource
     private ExtContractInvoiceMapper extContractInvoiceMapper;
     @Resource
+    private BaseMapper<ContractInvoice> contractInvoiceMapper;
+    @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private PermissionCache permissionCache;
@@ -76,6 +80,8 @@ public class ContractInvoiceService {
     private SerialNumGenerator serialNumGenerator;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private LogService logService;
 
     /**
      * 合同列表
@@ -209,10 +215,12 @@ public class ContractInvoiceService {
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-        optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+        if (contract != null) {
+            optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+            response.setContractName(contract.getName());
+        }
         optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), Collections.singletonList(new OptionDTO(response.getId(), response.getOwnerName())));
         response.setOptionMap(optionMap);
-        response.setContractName(contract.getName());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
         return response;
@@ -273,8 +281,10 @@ public class ContractInvoiceService {
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
             Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
 
+            String resourceName = contract == null ? invoice.getContractId() : contract.getName();
+
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields, request.getId(), contract.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields, request.getId(), resourceName, Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("invoice.not.exist"));
         });
@@ -324,8 +334,10 @@ public class ContractInvoiceService {
 
         Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
 
+        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
+
         // 添加日志上下文
-        OperationLogContext.setResourceName(contract.getName());
+        OperationLogContext.setResourceName(resourceName);
     }
 
     public ContractInvoiceGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
@@ -411,5 +423,38 @@ public class ContractInvoiceService {
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_INVOICE_READ, rolePermissions);
+    }
+
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<ContractInvoice> invoices = contractInvoiceMapper.selectByIds(ids);
+        List<String> owners = getOwners(invoices);
+        dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CONTRACT_INVOICE_DELETE);
+
+        List<String> contractIds = invoices.stream().map(ContractInvoice::getContractId)
+                .distinct()
+                .toList();
+
+        Map<String, String> contractNameMap = contractMapper.selectByIds(contractIds)
+                .stream().collect(Collectors.toMap(Contract::getId, Contract::getName));
+
+        List<LogDTO> logs = invoices.stream()
+                .map(invoice ->
+                        new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_INDEX, contractNameMap.get(invoice.getContractId()))
+                )
+                .toList();
+        logService.batchAdd(logs);
+
+        // 消息通知 todo
+//        invoices.forEach(invoice ->
+//                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+//                        NotificationConstants.Event.CUSTOMER_DELETED, contractNameMap.get(invoice.getContractId()), userId,
+//                        orgId, List.of(invoice.getOwner()), true)
+//        );
+    }
+
+    private List<String> getOwners(List<ContractInvoice> invoices) {
+        return invoices.stream().map(ContractInvoice::getOwner)
+                .distinct()
+                .toList();
     }
 }
