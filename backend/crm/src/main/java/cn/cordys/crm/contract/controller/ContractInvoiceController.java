@@ -1,8 +1,11 @@
 package cn.cordys.crm.contract.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
@@ -10,11 +13,14 @@ import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractInvoiceExportRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
+import cn.cordys.crm.contract.service.ContractInvoiceExportService;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -22,6 +28,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +43,8 @@ public class ContractInvoiceController {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
+    @Resource
+    private ContractInvoiceExportService contractInvoiceExportService;
     @Resource
     private DataScopeService dataScopeService;
 
@@ -96,5 +105,49 @@ public class ContractInvoiceController {
     @Operation(summary = "tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return contractInvoiceService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中合同")
+    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CONTRACT_INVOICE.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CONTRACT_INVOICE)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.CONTRACT.getKey())
+                .build();
+        return contractInvoiceExportService.exportSelectWithMergeStrategy(exportDTO);
+    }
+
+    @PostMapping("/export-all")
+    @Operation(summary = "导出全部合同")
+    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
+    public String exportAll(@Validated @RequestBody ContractInvoiceExportRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_EXPORT);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CONTRACT_INVOICE.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CONTRACT_INVOICE)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.INVOICE.getKey())
+                .build();
+        return contractInvoiceExportService.exportAllWithMergeStrategy(exportDTO);
     }
 }

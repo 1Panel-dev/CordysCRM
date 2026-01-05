@@ -208,6 +208,8 @@ public class PermissionConstants {
     public static final String CONTRACT_INVOICE_READ = "CONTRACT_INVOICE:READ";
     public static final String CONTRACT_INVOICE_ADD = "CONTRACT_INVOICE:ADD";
     public static final String CONTRACT_INVOICE_UPDATE = "CONTRACT_INVOICE:UPDATE";
+    public static final String CONTRACT_INVOICE_EXPORT = "CONTRACT_INVOICE:EXPORT";
+    public static final String CONTRACT_INVOICE_APPROVAL = "CONTRACT_INVOICE:APPROVAL";
     public static final String CONTRACT_INVOICE_DELETE = "CONTRACT_INVOICE:DELETE";
     /*------ end: CONTRACT_INVOICE_ROLE ------*/
 }
