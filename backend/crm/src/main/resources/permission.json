@@ -566,6 +566,40 @@
         ]
       },
       {
+        "id": "BUSINESS_TITLE",
+        "name": "permission.business_title.name",
+        "permissions": [
+          {
+            "id": "BUSINESS_TITLE:READ",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:ADD",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:UPDATE",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:DELETE",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:EXPORT",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:IMPORT",
+            "license": false
+          },
+          {
+            "id": "BUSINESS_TITLE:APPROVAL",
+            "license": false
+          }
+        ]
+      },
+      {
         "id": "CONTRACT_INVOICE",
         "name": "permission.contract.invoice.name",
         "permissions": [
