@@ -4,18 +4,21 @@ package cn.cordys.crm.system.service;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
-import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.MessageTaskConfigWithNameDTO;
 import cn.cordys.crm.system.dto.log.MessageTaskLogDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
 import cn.cordys.crm.system.dto.response.MessageTaskDTO;
 import cn.cordys.crm.system.dto.response.MessageTaskDetailDTO;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
+import cn.cordys.crm.system.mapper.ExtRoleMapper;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -46,6 +49,12 @@ public class MessageTaskService {
 
     @Resource
     private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
+
+    @Resource
+    private ExtUserMapper extUserMapper;
+
+    @Resource
+    private ExtRoleMapper extRoleMapper;
 
 
     @Resource
@@ -249,16 +258,30 @@ public class MessageTaskService {
      * @param module         模块
      * @param event          事件
      * @param organizationId 组织ID
-     * @return MessageTaskConfigDTO
+     * @return MessageTaskConfigWithNameDTO
      */
-    public MessageTaskConfigDTO getMessageConfig(String module, String event, String organizationId) {
+    public MessageTaskConfigWithNameDTO getMessageConfig(String module, String event, String organizationId) {
         List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
                 .eq(MessageTaskConfig::getOrganizationId, organizationId)
                 .eq(MessageTaskConfig::getTaskType, module)
                 .eq(MessageTaskConfig::getEvent, event));
         if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
             MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
-            return JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigDTO.class);
+            MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO = JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigWithNameDTO.class);
+            if (CollectionUtils.isNotEmpty(messageTaskConfigWithNameDTO.getUserIds())) {
+                messageTaskConfigWithNameDTO.setUserIdNames(extUserMapper.selectUserOptionByIds(messageTaskConfigWithNameDTO.getUserIds()));
+                if (messageTaskConfigWithNameDTO.getUserIds().contains("OWNER")) {
+                    messageTaskConfigWithNameDTO.getUserIdNames().addFirst(new OptionDTO("OWNER", Translator.get("message.owner")));
+                }
+                if (messageTaskConfigWithNameDTO.getUserIds().contains("CREATE_USER")) {
+                    messageTaskConfigWithNameDTO.getUserIdNames().addFirst(new OptionDTO("CREATE_USER", Translator.get("message.create_user")));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(messageTaskConfigWithNameDTO.getRoleIds())) {
+                messageTaskConfigWithNameDTO.setRoleIdNames(new ArrayList<>());
+                messageTaskConfigWithNameDTO.getRoleIds().forEach(roleKey -> messageTaskConfigWithNameDTO.getRoleIdNames().addFirst(new OptionDTO(roleKey, Translator.get("role." + roleKey, roleKey))));
+            }
+            return messageTaskConfigWithNameDTO;
         }
         return null;
     }

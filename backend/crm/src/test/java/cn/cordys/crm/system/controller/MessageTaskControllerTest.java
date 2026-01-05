@@ -6,6 +6,7 @@ import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.MessageTaskConfigWithNameDTO;
 import cn.cordys.crm.system.dto.TimeDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskConfigRequest;
@@ -134,7 +135,8 @@ public class MessageTaskControllerTest extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(GET_MESSAGE_TASK_CONFIG, messageTaskConfigRequest);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTaskConfigDTO.class);
+        MessageTaskConfigWithNameDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTaskConfigWithNameDTO.class);
         Assertions.assertNotNull(messageTaskConfigDTO);
+        System.out.println(JSON.toJSONString(messageTaskConfigDTO));
     }
 }
