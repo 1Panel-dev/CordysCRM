@@ -116,5 +116,61 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_invoice_id ON contract_invoice_snapshot (invoice_id ASC);
 
+-- init contract_payment_record field
+CREATE TABLE contract_payment_record(
+    `id`                VARCHAR(32)     NOT NULL    COMMENT 'id' ,
+    `name`              VARCHAR(255)    NOT NULL    COMMENT '回款名称' ,
+    `no`                VARCHAR(50)                 COMMENT '回款编号' ,
+    `owner`             VARCHAR(32)     NOT NULL    COMMENT '负责人' ,
+    `contract_id`       VARCHAR(32)     NOT NULL    COMMENT '合同ID' ,
+    `payment_plan_id`   VARCHAR(32)                 COMMENT '回款计划ID' ,
+    `record_amount`     DECIMAL(20,10)              COMMENT '回款金额' ,
+    `record_end_time`   BIGINT                      COMMENT '回款时间' ,
+    `record_bank`       VARCHAR(32)                 COMMENT '收款银行' ,
+    `record_bank_no`    VARCHAR(32)                 COMMENT '收款账号' ,
+    `organization_id`   VARCHAR(32)     NOT NULL    COMMENT '组织id' ,
+    `create_time`       BIGINT          NOT NULL    COMMENT '创建时间' ,
+    `update_time`       BIGINT          NOT NULL    COMMENT '更新时间' ,
+    `create_user`       VARCHAR(32)     NOT NULL    COMMENT '创建人' ,
+    `update_user`       VARCHAR(32)     NOT NULL    COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '合同回款记录'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_contract_id ON contract_payment_record(contract_id ASC);
+CREATE INDEX idx_plan_id ON contract_payment_record(payment_plan_id ASC);
+CREATE INDEX idx_owner ON contract_payment_record(owner ASC);
+
+CREATE TABLE contract_payment_record_field(
+    `id`                VARCHAR(32)     NOT NULL   COMMENT 'id' ,
+    `resource_id`       VARCHAR(32)     NOT NULL   COMMENT '回款记录id' ,
+    `field_id`          VARCHAR(32)     NOT NULL   COMMENT '自定义属性id' ,
+    `field_value`       VARCHAR(255)    NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '合同回款记录自定义属性'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON contract_payment_record_field(resource_id ASC);
+
+CREATE TABLE contract_payment_record_field_blob(
+    `id`                VARCHAR(32)     NOT NULL   COMMENT 'id' ,
+    `resource_id`       VARCHAR(32)     NOT NULL   COMMENT '回款记录id' ,
+    `field_id`          VARCHAR(32)     NOT NULL   COMMENT '自定义属性id' ,
+    `field_value`       TEXT            NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '合同回款记录自定义属性大文本'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON contract_payment_record_field_blob(resource_id ASC);
+
+-- modify form_key length to 50
+ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR(50);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
