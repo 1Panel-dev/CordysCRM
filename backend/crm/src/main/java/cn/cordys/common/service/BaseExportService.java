@@ -592,4 +592,93 @@ public abstract class BaseExportService {
             }
         });
     }
+
+    protected void exportSelectData(ExportTask exportTask, ExportDTO exportDTO) {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        // 准备导出文件
+        File file = prepareExportFile(exportTask.getFileId(), exportDTO.getFileName(), exportTask.getOrganizationId());
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            SubListUtils.dealForSubList(exportDTO.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
+                List<List<Object>> data = null;
+                try {
+                    data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
+                } catch (InterruptedException e) {
+                    log.error("任务停止中断", e);
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), exportDTO.getUserId());
+                }
+                writer.write(data, sheet);
+            });
+        }
+
+        //更新导出任务状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
+    /**
+     * 导出选择数据
+     *
+     * @return 导出任务ID
+     */
+    public String exportSelect(ExportDTO exportDTO) {
+        String fileName = exportDTO.getFileName();
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        checkFileName(fileName);
+        // 用户导出数量限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportDTO.getExportType(), fileName);
+
+        runExport(orgId, userId, exportDTO.getLogModule(), exportDTO.getLocale(), exportTask, exportDTO.getFileName(),
+                () -> exportSelectData(exportTask, exportDTO));
+
+        return exportTask.getId();
+    }
+
+    public String export(ExportDTO exportDTO) {
+        String userId = exportDTO.getUserId();
+        String orgId = exportDTO.getOrgId();
+        String exportType = exportDTO.getExportType();
+        String fileName = exportDTO.getFileName();
+        checkFileName(exportDTO.getFileName());
+        //用户导出数量 限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportType, fileName);
+
+        runExport(orgId, userId, exportDTO.getLogModule(), exportDTO.getLocale(), exportTask, exportDTO.getFileName(),
+                () -> exportCustomerData(exportTask, exportDTO));
+
+        return exportTask.getId();
+    }
+
+    public void exportCustomerData(ExportTask exportTask, ExportDTO exportDTO) throws Exception {
+        LocaleContextHolder.setLocale(exportDTO.getLocale());
+        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+        //表头信息
+        List<List<String>> headList = exportDTO.getHeadList().stream()
+                .map(head -> Collections.singletonList(head.getTitle()))
+                .toList();
+        //分批查询数据并写入文件
+        batchHandleData(exportTask.getFileId(),
+                headList,
+                exportTask,
+                exportDTO.getFileName(),
+                exportDTO.getPageRequest(),
+                t -> getExportData(exportTask.getId(), exportDTO));
+        //更新状态
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
 }
