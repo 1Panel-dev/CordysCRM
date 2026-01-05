@@ -1,10 +1,12 @@
 package cn.cordys.crm.system.controller;
 
+import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.common.response.handler.ResultHolder;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.domain.Role;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.MessageTaskConfigWithNameDTO;
 import cn.cordys.crm.system.dto.TimeDTO;
@@ -13,6 +15,7 @@ import cn.cordys.crm.system.dto.request.MessageTaskConfigRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
@@ -42,10 +45,25 @@ public class MessageTaskControllerTest extends BaseTest {
     private ExtMessageTaskMapper extMessageTaskMapper;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private BaseMapper<Role> roleBaseMapper;
 
     @Test
     @Order(1)
     void testSaveMessageTask() throws Exception {
+        //新增一个角色用于测试，每个属性都赋值，internal是false
+        Role role = new Role();
+        role.setId("test_role_id");
+        role.setName("测试自定义角色");
+        role.setInternal(false);
+        role.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        role.setDataScope(RoleDataScope.DEPT_AND_CHILD.name());
+        role.setCreateTime(System.currentTimeMillis());
+        role.setUpdateTime(System.currentTimeMillis());
+        role.setCreateUser("admin");
+        role.setUpdateUser("admin");
+        roleBaseMapper.insert(role);
+
         MessageTaskRequest messageTaskRequest = new MessageTaskRequest();
         messageTaskRequest.setModule(NotificationConstants.Module.CUSTOMER);
         messageTaskRequest.setEvent(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS);
@@ -101,7 +119,7 @@ public class MessageTaskControllerTest extends BaseTest {
         messageTaskConfigDTO.setOwnerLevel(0);
         messageTaskConfigDTO.setUserIds(List.of("OWNER"));
         messageTaskConfigDTO.setRoleEnable(true);
-        messageTaskConfigDTO.setRoleIds(List.of("org_admin"));
+        messageTaskConfigDTO.setRoleIds(List.of("org_admin", "test_role_id"));
         return messageTaskConfigDTO;
     }
 
@@ -137,6 +155,5 @@ public class MessageTaskControllerTest extends BaseTest {
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         MessageTaskConfigWithNameDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTaskConfigWithNameDTO.class);
         Assertions.assertNotNull(messageTaskConfigDTO);
-        System.out.println(JSON.toJSONString(messageTaskConfigDTO));
     }
 }

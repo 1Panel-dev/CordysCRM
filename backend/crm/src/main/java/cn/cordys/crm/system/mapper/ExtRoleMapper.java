@@ -16,5 +16,7 @@ public interface ExtRoleMapper {
 
     boolean checkUpdateExist(@Param("role") Role role);
 
+    List<String> getInternalRoleIds();
+
     List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
 }
