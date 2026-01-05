@@ -279,7 +279,26 @@ public class MessageTaskService {
             }
             if (CollectionUtils.isNotEmpty(messageTaskConfigWithNameDTO.getRoleIds())) {
                 messageTaskConfigWithNameDTO.setRoleIdNames(new ArrayList<>());
-                messageTaskConfigWithNameDTO.getRoleIds().forEach(roleKey -> messageTaskConfigWithNameDTO.getRoleIdNames().addFirst(new OptionDTO(roleKey, Translator.get("role." + roleKey, roleKey))));
+                List<String> internalRoleIds = extRoleMapper.getInternalRoleIds();
+                //过滤出非内置角色
+                List<String> nonInternalRoleIds = messageTaskConfigWithNameDTO.getRoleIds().stream()
+                        .filter(roleId -> !internalRoleIds.contains(roleId))
+                        .toList();
+                // 翻译非内置角色名称
+                if (CollectionUtils.isNotEmpty(nonInternalRoleIds)) {
+                    List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(nonInternalRoleIds);
+                    messageTaskConfigWithNameDTO.setRoleIdNames(idNameByIds);
+                }
+                //过滤出内置角色
+                List<String> internalRoles = messageTaskConfigWithNameDTO.getRoleIds().stream()
+                        .filter(internalRoleIds::contains)
+                        .toList();
+                // 翻译内置角色名称
+                if (CollectionUtils.isNotEmpty(internalRoles)) {
+                    for (String internalRole : internalRoles) {
+                        messageTaskConfigWithNameDTO.getRoleIdNames().add(new OptionDTO(internalRole, Translator.get("role." + internalRole, internalRole)));
+                    }
+                }
             }
             return messageTaskConfigWithNameDTO;
         }
