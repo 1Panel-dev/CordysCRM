@@ -155,4 +155,17 @@ public class ContractInvoiceController {
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
         contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+    @PostMapping("/approval")
+    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_APPROVAL)
+    @Operation(summary = "审核通过/不通过")
+    public void approval(@Validated @RequestBody ContractInvoiceApprovalRequest request) {
+        contractInvoiceService.approvalContractInvoice(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/revoke/{id}")
+    @Operation(summary = "撤销审批")
+    public String revoke(@PathVariable("id") String id) {
+        return contractInvoiceService.revoke(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

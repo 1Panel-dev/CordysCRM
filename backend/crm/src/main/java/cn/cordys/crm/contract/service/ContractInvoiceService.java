@@ -27,11 +27,13 @@ import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractInvoiceApprovalRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
+import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -46,6 +48,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -456,5 +459,89 @@ public class ContractInvoiceService {
         return invoices.stream().map(ContractInvoice::getOwner)
                 .distinct()
                 .toList();
+    }
+
+    /**
+     * 审核通过/不通过
+     *
+     * @param request
+     * @param userId
+     */
+    public void approvalContractInvoice(ContractInvoiceApprovalRequest request, String userId, String orgId) {
+        ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(request.getId());
+        if (invoice == null) {
+            throw new GenericException(Translator.get("invoice.not.exist"));
+        }
+        dataScopeService.checkDataPermission(userId, orgId, invoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_APPROVAL);
+
+        String state = invoice.getApprovalStatus();
+        invoice.setApprovalStatus(request.getApprovalStatus());
+        invoice.setUpdateTime(System.currentTimeMillis());
+        invoice.setUpdateUser(userId);
+        invoiceMapper.update(invoice);
+
+        updateStatusSnapshot(request.getId(), request.getApprovalStatus());
+
+        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
+        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
+
+        // 添加日志上下文
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, resourceName, state, request.getApprovalStatus());
+        logService.add(logDTO);
+    }
+
+    public String revoke(String id, String userId, String orgId) {
+        ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(id);
+        if (invoice == null) {
+            throw new GenericException(Translator.get("invoice.not.exist"));
+        }
+        dataScopeService.checkDataPermission(userId, orgId, invoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_UPDATE);
+
+        String originApprovalStatus = invoice.getApprovalStatus();
+        if (!Strings.CI.equals(invoice.getCreateUser(), userId) || !Strings.CI.equals(invoice.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
+            return invoice.getApprovalStatus();
+        }
+        invoice.setApprovalStatus(ApprovalState.REVOKED.toString());
+        invoice.setUpdateUser(userId);
+        invoice.setUpdateTime(System.currentTimeMillis());
+        invoiceMapper.update(invoice);
+
+        //更新快照
+        updateStatusSnapshot(id, ApprovalState.REVOKED.toString());
+
+        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
+        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
+
+        // 添加日志上下文
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, resourceName, originApprovalStatus, ApprovalState.REVOKED.toString());
+        logService.add(logDTO);
+
+        return invoice.getApprovalStatus();
+    }
+
+    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String originStatus, String newState) {
+        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INVOICE, response);
+        Map<String, String> oldMap = new HashMap<>();
+        oldMap.put("approvalStatus", Translator.get("contract.approval_status." + originStatus.toLowerCase()));
+        logDTO.setOriginalValue(oldMap);
+        Map<String, String> newMap = new HashMap<>();
+        newMap.put("approvalStatus", Translator.get("contract.approval_status." + newState.toLowerCase()));
+        logDTO.setModifiedValue(newMap);
+        return logDTO;
+    }
+
+    private void updateStatusSnapshot(String id, String approvalStatus) {
+        LambdaQueryWrapper<ContractInvoiceSnapshot> delWrapper = new LambdaQueryWrapper<>();
+        delWrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
+        List<ContractInvoiceSnapshot> invoiceSnapshots = snapshotBaseMapper.selectListByLambda(delWrapper);
+        ContractInvoiceSnapshot first = invoiceSnapshots.getFirst();
+        if (first != null) {
+            ContractInvoiceGetResponse response = JSON.parseObject(first.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            if (StringUtils.isNotBlank(approvalStatus)) {
+                response.setApprovalStatus(approvalStatus);
+            }
+            first.setInvoiceValue(JSON.toJSONString(response));
+            snapshotBaseMapper.update(first);
+        }
     }
 }
