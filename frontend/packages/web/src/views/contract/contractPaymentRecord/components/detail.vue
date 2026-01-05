@@ -97,7 +97,7 @@
     openModal({
       type: 'error',
       title: t('system.personal.confirmDelete'),
-      content: t('common.deleteConfirmContent'), // TODO lmy
+      content: t('contract.paymentRecord.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {

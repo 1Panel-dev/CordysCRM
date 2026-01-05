@@ -96,7 +96,11 @@
           :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
           :source-id="props.sourceId"
         />
-        <!-- TODO lmy 客户的回款记录tab -->
+        <ContractTimeline
+          v-else-if="activeTab === 'contractPaymentRecord'"
+          :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
+          :source-id="props.sourceId"
+        />
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -261,7 +265,12 @@
         enable: true,
         permission: ['CONTRACT_PAYMENT_PLAN:READ'],
       },
-      // TODO lmy 客户的回款记录tab
+      {
+        name: 'contractPaymentRecord',
+        tab: t('module.paymentRecord'),
+        enable: true,
+        permission: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
+      },
     ];
     if (collaborationType.value) {
       return fullList.filter((item) => item.name !== 'collaborator');

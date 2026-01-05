@@ -120,6 +120,8 @@ import {
   GetAccountContractStatisticUrl,
   GetAccountPaymentListUrl,
   GetAccountPaymentStatisticUrl,
+  GetAccountPaymentRecordStatisticUrl,
+  GetAccountPaymentRecordListUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   ChartResponseDataItem,
@@ -178,7 +180,7 @@ import type {
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
-import type { ContractItem } from '@lib/shared/models/contract';
+import type { ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
   function addCustomer(data: SaveCustomerParams) {
@@ -762,12 +764,20 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${GetAccountContractStatisticUrl}/${id}` });
   }
 
-    function getAccountPayment(data: TableQueryParams) {
-    return CDR.post<CommonList<ContractItem>>({ url: GetAccountPaymentListUrl, data });
+  function getAccountPayment(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentPlanItem>>({ url: GetAccountPaymentListUrl, data });
   }
 
   function getAccountPaymentStatistic(id: string) {
     return CDR.get({ url: `${GetAccountPaymentStatisticUrl}/${id}` });
+  }
+
+  function getAccountPaymentRecord(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentRecordItem>>({ url: GetAccountPaymentRecordListUrl, data });
+  }
+
+  function getAccountPaymentRecordStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountPaymentRecordStatisticUrl}/${id}` });
   }
 
   return {
@@ -891,5 +901,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAccountContractStatistic,
     getAccountPayment,
     getAccountPaymentStatistic,
+    getAccountPaymentRecord,
+    getAccountPaymentRecordStatistic,
   };
 }

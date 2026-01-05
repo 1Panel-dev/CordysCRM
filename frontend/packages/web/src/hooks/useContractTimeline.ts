@@ -10,11 +10,15 @@ import {
   getAccountContract,
   getAccountContractStatistic,
   getAccountPayment,
+  getAccountPaymentRecord,
+  getAccountPaymentRecordStatistic,
   getAccountPaymentStatistic,
 } from '@/api/modules';
 
-// TODO lmy 客户的回款记录tab
-export type TimelineType = FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT;
+export type TimelineType =
+  | FormDesignKeyEnum.CONTRACT_PAYMENT
+  | FormDesignKeyEnum.CONTRACT
+  | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
 
 export default function useContractTimeline(formKey: TimelineType, sourceId: string) {
   const { t } = useI18n();
@@ -27,6 +31,13 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
       },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
+      {
+        key: 'totalPlanAmount',
+        label: t('contract.customerPaymentAmount'),
+      },
+    ],
+    // TODO lmy 应回款 已回款金额 带回款金额
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: [
       {
         key: 'totalPlanAmount',
         label: t('contract.customerPaymentAmount'),
@@ -69,16 +80,23 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
       { key: 'planAmount', label: t('contract.expectedPaymentAmount'), value: '' },
       { key: 'planStatus', label: t('contract.isPlanCompleted'), value: '' },
     ],
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: [
+      { key: 'contractName', label: t('contract.paymentContract'), value: '' },
+      { key: 'paymentTime', label: t('contract.paymentTime'), value: '' },
+      { key: 'paymentAmount', label: t('contract.paymentAmount'), value: '' },
+    ],
   };
 
   const getListApiMap: Record<TimelineType, any> = {
     [FormDesignKeyEnum.CONTRACT]: getAccountContract,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getAccountPayment,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getAccountPaymentRecord,
   };
 
   const statisticApiMap: Record<TimelineType, any> = {
     [FormDesignKeyEnum.CONTRACT]: getAccountContractStatistic,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getAccountPaymentStatistic,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getAccountPaymentRecordStatistic,
   };
 
   const data = ref<ContractItem[]>([]);

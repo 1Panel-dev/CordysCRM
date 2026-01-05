@@ -90,6 +90,8 @@ export const GetAccountContractListUrl = '/account/contract/page'; // 客户详�
 export const GetAccountContractStatisticUrl = '/account/contract/statistic'; // 客户详情-合同列表统计
 export const GetAccountPaymentListUrl = '/account/contract/payment-plan/page'; // 客户详情-回款列表
 export const GetAccountPaymentStatisticUrl = '/account/contract/payment-plan/statistic'; // 客户详情-回款列表统计
+export const GetAccountPaymentRecordListUrl = '/account/contract/payment-record/page'; // 客户详情-回款列表
+export const GetAccountPaymentRecordStatisticUrl = '/account/contract/payment-record/statistic'; // 客户详情-回款列表统计
 // 视图
 export const GetCustomerViewDetailUrl = '/account/view/detail';
 export const GetCustomerViewListUrl = '/account/view/list';
