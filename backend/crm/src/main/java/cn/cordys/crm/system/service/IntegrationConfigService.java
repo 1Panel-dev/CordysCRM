@@ -477,8 +477,13 @@ public class IntegrationConfigService {
     private ThirdConfigBaseDTO<?> getThirdConfigurationDTOByType(
             List<OrganizationConfigDetail> organizationConfigDetails, String type) {
 
+        if (Strings.CI.equals(ThirdConfigTypeConstants.DE.name(), type)) {
+            type = ThirdConstants.ThirdDetailType.DE_BOARD.name();
+        }
+
+        String finalType = type;
         List<OrganizationConfigDetail> detailList = organizationConfigDetails.stream()
-                .filter(t -> t.getType().contains(type))
+                .filter(t -> t.getType().contains(finalType))
                 .toList();
 
         List<ThirdConfigBaseDTO<?>> configDTOs = new ArrayList<>();
