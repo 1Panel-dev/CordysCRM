@@ -29,6 +29,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
 
         ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null,false);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null, false);
         List<AdvancedCustomerContactResponse> buildListData = buildCustomerContactData(list, orgId, userId);
         Map<String, List<OptionDTO>> optionMap = buildCustomerContactOptionMap(orgId, buildListData);
         // 查询重复联系人列表
@@ -137,9 +138,15 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
             advancedCustomerContactResponse.setHasPermission(hasPermission);
             if (!hasPermission) {
                 advancedCustomerContactResponse.setModuleFields(new ArrayList<>());
-                advancedCustomerContactResponse.setPhone(null);
-                advancedCustomerContactResponse.setDisableReason(null);
-                advancedCustomerContactResponse.setName(null);
+                if (StringUtils.isNotBlank(customerListResponse.getCustomerName())) {
+                    advancedCustomerContactResponse.setCustomerName((String) getInputFieldValue(customerListResponse.getCustomerName(), customerListResponse.getCustomerName().length()));
+                }
+                if (StringUtils.isNotBlank(customerListResponse.getName())) {
+                    advancedCustomerContactResponse.setName((String) getInputFieldValue(customerListResponse.getName(), customerListResponse.getName().length()));
+                }
+                if (StringUtils.isNotBlank(customerListResponse.getPhone())) {
+                    advancedCustomerContactResponse.setPhone((String) getPhoneFieldValue(customerListResponse.getPhone(), customerListResponse.getPhone().length()));
+                }
             }
             returnList.add(advancedCustomerContactResponse);
         });
