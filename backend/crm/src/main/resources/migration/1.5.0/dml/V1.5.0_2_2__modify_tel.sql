@@ -15,5 +15,18 @@ CREATE INDEX idx_plan_end_time
     ON contract_payment_plan (plan_end_time);
 
 
+INSERT INTO business_title_config (id, field, required)
+VALUES
+    (UUID_SHORT(), 'business_name', true),
+    (UUID_SHORT(), 'identification_number', true),
+    (UUID_SHORT(), 'opening_bank', false),
+    (UUID_SHORT(), 'bank_account', false),
+    (UUID_SHORT(), 'registration_address', false),
+    (UUID_SHORT(), 'phone_number', false),
+    (UUID_SHORT(), 'registered_capital', false),
+    (UUID_SHORT(), 'customer_size', false),
+    (UUID_SHORT(), 'registration_number', false);
+
+
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
