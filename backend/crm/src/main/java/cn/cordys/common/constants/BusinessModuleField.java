@@ -234,7 +234,7 @@ public enum BusinessModuleField {
     /**
      * 计划回款时间
      */
-    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 
@@ -268,10 +268,7 @@ public enum BusinessModuleField {
     INVOICE_INVOICE_TYPE("invoiceType", "invoiceType", Set.of("mobile"), FormKey.INVOICE.getKey()),
     INVOICE_TAX_RATE("invoiceTaxRate", "taxRate", Set.of("mobile"), FormKey.INVOICE.getKey()),
     INVOICE_OFFICIAL_REGISTERED_ID("invoiceBusinessTitle", "businessTitleId", Set.of("mobile", "dataSourceType"), FormKey.INVOICE.getKey()),
-    /*------ end: CONTRACT_INVOICE ------*/
-
-
-    ;
+    /*------ end: CONTRACT_INVOICE ------*/;
 
 
     /**
