@@ -46,4 +46,10 @@ public class BusinessTitle extends BaseModel {
 
 	@Schema(description = "审核状态")
 	private String approvalStatus;
+
+	@Schema(description = "不通过原因")
+	private String unapprovedReason;
+
+	@Schema(description = "组织id")
+	private String organizationId;
 }

@@ -135,5 +135,9 @@ public class LogModule {
      * 发票
      */
     public static final String CONTRACT_INVOICE = "CONTRACT_INVOICE";
+    /**
+     * 工商抬头
+     */
+    public static final String BUSINESS_TITLE = "BUSINESS_TITLE";
 
 }
