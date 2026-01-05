@@ -25,7 +25,12 @@
         >
           {{ t('contract.paymentRecord.new') }}
         </n-button>
-        <!-- TODO lmy 导入 -->
+        <CrmImportButton
+          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !isContractTab"
+          :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
+          :title="t('module.paymentRecord')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
           type="primary"
@@ -99,7 +104,6 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { PaymentRecordItem } from '@lib/shared/models/contract';
 
-  import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -108,12 +112,13 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deletePaymentRecord, updatePaymentRecord } from '@/api/modules';
+  import { deletePaymentRecord } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -264,7 +269,7 @@
     openModal({
       type: 'error',
       title: t('system.personal.confirmDelete'),
-      content: t('common.deleteConfirmContent'), // TODO lmy 删除以后需要扣除已经款金额；
+      content: t('contract.paymentRecord.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {

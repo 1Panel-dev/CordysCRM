@@ -79,6 +79,9 @@ export const EnablePaymentRecordViewUrl = '/contract/payment-record/view/enable'
 export const DeletePaymentRecordViewUrl = '/contract/payment-record/view/delete'; // 删除回款记录视图
 export const DragPaymentRecordViewUrl = '/contract/payment-record/view/edit/pos'; // 拖拽回款记录视图排序
 
+export const PreCheckPaymentRecordImportUrl = '/contract/payment-record/import/pre-check';
+export const DownloadPaymentRecordTemplateUrl = '/contract/payment-record/template/download';
+export const ImportPaymentRecordUrl = '/contract/payment-record/import';
 
 // 合同-工商抬头导入
 export const PreCheckBusinessNameImportUrl = '/contract/business-name/import/pre-check';

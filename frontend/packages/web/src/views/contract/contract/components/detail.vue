@@ -42,7 +42,16 @@
           />
         </template>
         <template v-if="activeTab === 'paymentRecord'">
-          <!-- TODO lmy table还是？ -->
+          <PaymentRecordTable
+            :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
+            :sourceId="props.sourceId"
+            :sourceName="title"
+            isContractTab
+            :readonly="
+              detailInfo?.stage === ContractStatusEnum.VOID ||
+              detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
+            "
+          />
         </template>
       </CrmCard>
     </div>
@@ -75,6 +84,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
+  import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
 
   import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';

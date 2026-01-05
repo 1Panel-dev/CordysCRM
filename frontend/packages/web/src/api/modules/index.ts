@@ -373,6 +373,8 @@ export const {
   getAccountContractStatistic,
   getAccountPayment,
   getAccountPaymentStatistic,
+  getAccountPaymentRecord,
+  getAccountPaymentRecordStatistic,
 } = customerApi;
 
 export const {
@@ -435,6 +437,9 @@ export const {
   enablePaymentRecordView,
   deletePaymentRecordView,
   dragPaymentRecordView,
+  preCheckImportContractPaymentRecord,
+  importContractPaymentRecord,
+  downloadContractPaymentRecordTemplate,
   preCheckImportBusinessName,
   downloadBusinessNameTemplate,
   importBusinessName,

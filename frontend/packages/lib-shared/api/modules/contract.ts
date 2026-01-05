@@ -1,6 +1,7 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import type { TableQueryParams } from '@lib/shared/models/common';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 
 import {
   ContractPageUrl,
@@ -62,6 +63,9 @@ import {
   EnablePaymentRecordViewUrl,
   DeletePaymentRecordViewUrl,
   DragPaymentRecordViewUrl,
+  PreCheckPaymentRecordImportUrl,
+  DownloadPaymentRecordTemplateUrl,
+  ImportPaymentRecordUrl,
   DownloadBusinessNameTemplateUrl,
   ImportBusinessNameUrl,
   PreCheckBusinessNameImportUrl,
@@ -101,7 +105,6 @@ import type {
   UpdateBusinessNameParams,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
-import { ValidateInfo } from '@lib/shared/models/system/org';
 export default function useContractApi(CDR: CordysAxios) {
   // 合同列表
   function getContractList(data: TableQueryParams) {
@@ -399,23 +402,45 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragPaymentRecordViewUrl, data });
   }
 
+  function preCheckImportContractPaymentRecord(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>(
+      { url: PreCheckPaymentRecordImportUrl },
+      { fileList: [file] },
+      'file'
+    );
+  }
+
+  function downloadContractPaymentRecordTemplate() {
+    return CDR.get(
+      {
+        url: DownloadPaymentRecordTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContractPaymentRecord(file: File) {
+    return CDR.uploadFile({ url: ImportPaymentRecordUrl }, { fileList: [file] }, 'file');
+  }
+
   // 合同-工商抬头导入
   function preCheckImportBusinessName(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({url: PreCheckBusinessNameImportUrl}, {fileList: [file]}, 'file');
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckBusinessNameImportUrl }, { fileList: [file] }, 'file');
   }
-  
+
   function downloadBusinessNameTemplate() {
     return CDR.get(
       {
-         url: DownloadBusinessNameTemplateUrl,
-          responseType: 'blob',
+        url: DownloadBusinessNameTemplateUrl,
+        responseType: 'blob',
       },
-      {isTransformResponse: false, isReturnNativeResponse: true}
-      );
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
   }
-  
+
   function importBusinessName(file: File) {
-    return CDR.uploadFile({url: ImportBusinessNameUrl}, {fileList: [file]}, 'file');
+    return CDR.uploadFile({ url: ImportBusinessNameUrl }, { fileList: [file] }, 'file');
   }
 
   // 工商抬头列表
@@ -444,10 +469,9 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 工商抬头详情 todo xinxinwu
-  function getBusinessNameDetail (id: string) {
+  function getBusinessNameDetail(id: string) {
     return CDR.get<BusinessNameItem>({ url: `${GetBusinessNameDetailUrl}/${id}` });
   }
-  
 
   return {
     exportContractAll,
@@ -511,6 +535,9 @@ export default function useContractApi(CDR: CordysAxios) {
     enablePaymentRecordView,
     deletePaymentRecordView,
     dragPaymentRecordView,
+    preCheckImportContractPaymentRecord,
+    importContractPaymentRecord,
+    downloadContractPaymentRecordTemplate,
     // 合同工商抬头
     preCheckImportBusinessName,
     downloadBusinessNameTemplate,

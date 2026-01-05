@@ -28,6 +28,10 @@ export default {
   'contract.isPlanCompleted': 'Plan completed',
   'contract.approvalStatus': 'Approval Status',
   'contract.paymentRecord.new': 'Create payment record',
+  'contract.paymentTime': 'Payment time',
+  'contract.paymentAmount': 'Payment amount',
+  'contract.paymentRecord.deleteConfirmContent':
+    'After deletion, the amount already received will be deducted. Please proceed with caution!',
   'contract.businessName.add': 'Create business name',
   'contract.businessName.update': 'Update business name',
   'contract.businessName.companyName': 'Company name',
