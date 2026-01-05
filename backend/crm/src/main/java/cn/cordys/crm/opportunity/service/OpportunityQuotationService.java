@@ -613,9 +613,6 @@ public class OpportunityQuotationService {
             if (product.get("amount") == null) {
                 throw new GenericException(Translator.get("opportunity.quotation.product.amount.invalid"));
             }
-            if (product.get("product") == null) {
-                throw new GenericException(Translator.get("opportunity.quotation.product.invalid"));
-            }
         }
     }
 
