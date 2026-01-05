@@ -14,7 +14,7 @@
           route.name?.toString().includes(DashboardRouteEnum.DASHBOARD) ||
           route.name?.toString().includes(TenderRouteEnum.TENDER)
         "
-        class="flex justify-center px-[24px] py-[14px]"
+        :class="`flex justify-center py-[14px] ${appStore.menuCollapsed ? 'px-[16px]' : 'px-[24px]'}`"
       >
         <CrmSvg v-if="appStore.menuCollapsed" name="CORDYS" height="40px" width="40px" />
         <CrmSvg v-else name="logo_CORDYS" height="28px" width="130px" />

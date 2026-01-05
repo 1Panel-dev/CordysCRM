@@ -23,7 +23,7 @@
         v-else
         id="iframe-tender-view"
         style="width: 100%; height: 100%; border: 0"
-        :src="tenderConfig?.tenderAddress"
+        :src="tenderConfig?.config?.tenderAddress"
       ></iframe>
     </n-spin>
   </div>
@@ -32,13 +32,15 @@
 <script setup lang="ts">
   import { NEmpty, NSpin } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { ConfigSynchronization } from '@lib/shared/models/system/business';
+  import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 
   import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { getTenderConfig } from '@/api/modules';
+  import { defaultThirdPartTenderConfig } from '@/config/business';
   import useLocalForage from '@/hooks/useLocalForage';
 
   const { t } = useI18n();
@@ -53,7 +55,11 @@
 
   const loading = ref(false);
   const isError = ref(false);
-  const tenderConfig = ref<ConfigSynchronization>();
+  const tenderConfig = ref<ThirdPartyResourceConfig>({
+    type: CompanyTypeEnum.TENDER,
+    verify: false,
+    config: defaultThirdPartTenderConfig,
+  });
   async function init() {
     try {
       isError.value = false;

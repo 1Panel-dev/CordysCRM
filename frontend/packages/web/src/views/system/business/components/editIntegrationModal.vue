@@ -6,7 +6,7 @@
   >
     <n-form
       ref="formRef"
-      :model="form"
+      :model="form.config"
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
@@ -15,7 +15,7 @@
       <!-- 应用 key 第一版没有 -->
       <!-- <n-form-item v-if="['DINGTALK'].includes(form?.type)" path="appKey" :label="t('system.business.appKey')">
         <n-input
-          v-model:value="form.appKey"
+          v-model:value="form.config.appKey"
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
@@ -25,20 +25,20 @@
       <!-- MaxKB -->
       <template v-if="[CompanyTypeEnum.MAXKB].includes(form?.type)">
         <n-form-item path="mkAddress" :label="t('system.business.agent.agentMaxKBUrl')">
-          <n-input v-model:value="form.mkAddress" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.config.mkAddress" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </template>
 
       <!-- 企业 ID -->
       <template v-if="platformType.includes(form?.type)">
         <n-form-item path="corpId" :label="t('system.business.corpId')">
-          <n-input v-model:value="form.corpId" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.config.corpId" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </template>
       <!-- DE 地址 -->
       <template v-if="[CompanyTypeEnum.DATA_EASE].includes(form?.type)">
         <n-form-item path="redirectUrl" :label="t('system.business.DE.url')">
-          <n-input v-model:value="form.redirectUrl" :placeholder="t('system.business.DE.urlPlaceholder')" />
+          <n-input v-model:value="form.config.redirectUrl" :placeholder="t('system.business.DE.urlPlaceholder')" />
         </n-form-item>
       </template>
       <!-- 应用 ID -->
@@ -58,7 +58,7 @@
           :label="form.type === CompanyTypeEnum.DATA_EASE ? 'APP ID' : t('system.business.agentId')"
         >
           <n-input
-            v-model:value="form.agentId"
+            v-model:value="form.config.agentId"
             :placeholder="
               form.type === CompanyTypeEnum.DATA_EASE ? t('system.business.DE.idPlaceholder') : t('common.pleaseInput')
             "
@@ -69,7 +69,7 @@
       <!-- 应用密钥 -->
       <n-form-item v-if="form.type !== CompanyTypeEnum.SQLBot" path="appSecret" :label="getAppSecretText">
         <n-input
-          v-model:value="form.appSecret"
+          v-model:value="form.config.appSecret"
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
@@ -83,7 +83,7 @@
 
       <n-form-item v-else path="appSecret" :label="t('system.business.SQLBot.embeddedScript')">
         <n-input
-          v-model:value="form.appSecret"
+          v-model:value="form.config.appSecret"
           type="textarea"
           :placeholder="`${t('common.pleaseInput')}${t('system.business.SQLBot.embeddedScript')}`"
         />
@@ -102,7 +102,7 @@
         :label="t('system.business.authenticationSettings.innerAppId')"
       >
         <n-input
-          v-model:value="form.appId"
+          v-model:value="form.config.appId"
           :placeholder="t('system.business.authenticationSettings.innerAppIdPlaceholder')"
         />
       </n-form-item>
@@ -113,7 +113,7 @@
         :label="t('system.business.authenticationSettings.callbackUrl')"
       >
         <n-input
-          v-model:value="form.redirectUrl"
+          v-model:value="form.config.redirectUrl"
           :placeholder="t('system.business.authenticationSettings.callbackUrlPlaceholder')"
         />
       </n-form-item>
@@ -121,12 +121,12 @@
       <!-- DE账号 -->
       <template v-if="form.type === CompanyTypeEnum.DATA_EASE">
         <n-form-item path="deAutoSync" :label="t('system.business.DE.autoSync')" class="autoSyncItem">
-          <n-switch v-model:value="form.deAutoSync" />
+          <n-switch v-model:value="form.config.deAutoSync" />
           <div class="w-full text-[12px] text-[var(--text-n4)]">{{ t('system.business.DE.autoSyncTip') }}</div>
         </n-form-item>
         <n-form-item path="deAccessKey" label="Access Key">
           <n-input
-            v-model:value="form.deAccessKey"
+            v-model:value="form.config.deAccessKey"
             type="password"
             show-password-on="click"
             :placeholder="t('common.pleaseInput')"
@@ -135,7 +135,7 @@
         </n-form-item>
         <n-form-item path="deSecretKey" label="Secret Key">
           <n-input
-            v-model:value="form.deSecretKey"
+            v-model:value="form.config.deSecretKey"
             type="password"
             show-password-on="click"
             :placeholder="t('common.pleaseInput')"
@@ -143,15 +143,15 @@
           />
         </n-form-item>
         <n-form-item path="deOrgID" :label="t('system.business.DE.org')">
-          <n-tooltip :disabled="!!form.deAccessKey && !!form.deSecretKey">
+          <n-tooltip :disabled="!!form.config.deAccessKey && !!form.config.deSecretKey">
             <template #trigger>
               <n-select
-                v-model:value="form.deOrgID"
+                v-model:value="form.config.deOrgID"
                 size="medium"
                 :options="DEOrgList"
                 label-field="name"
                 value-field="id"
-                :disabled="!form.deAccessKey || !form.deSecretKey"
+                :disabled="!form.config.deAccessKey || !form.config.deSecretKey"
                 :loading="orgListLoading"
                 filterable
               />
@@ -166,7 +166,7 @@
         <div v-if="platformType.includes(form.type)" class="ml-[4px] flex items-center gap-[8px]">
           <n-tooltip :disabled="form.verify">
             <template #trigger>
-              <n-switch v-model:value="form.startEnable" :rubber-band="false" :disabled="!form.verify" />
+              <n-switch v-model:value="form.config.startEnable" :rubber-band="false" :disabled="!form.verify" />
             </template>
             {{ t('system.business.notConfiguredTip') }}
           </n-tooltip>
@@ -229,22 +229,23 @@
     NTooltip,
     useMessage,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ConfigSynchronization, DEOrgItem } from '@lib/shared/models/system/business';
+  import type { DEOrgItem, ThirdPartyDEConfig, ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   import { getDEOrgList, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
-  import { platformType } from '@/config/business';
+  import { defaultThirdPartyConfigMap, platformType } from '@/config/business';
   import useModal from '@/hooks/useModal';
 
   const { t } = useI18n();
   const Message = useMessage();
 
   const props = defineProps<{
-    integration?: ConfigSynchronization;
+    integration?: ThirdPartyResourceConfig;
     title: string;
   }>();
 
@@ -257,43 +258,13 @@
     (e: 'initSync'): void;
   }>();
 
-  const form = ref<ConfigSynchronization>({
-    corpId: '',
-    agentId: '',
-    appSecret: '',
-    appId: '',
-    mkAddress: '',
+  const form = ref<ThirdPartyResourceConfig>({
     type: CompanyTypeEnum.WECOM,
-    redirectUrl: '',
-    deBoardEnable: false, // DE看板是否开启
-    verify: undefined,
-    deOrgID: '',
+    verify: false,
+    config: defaultThirdPartyConfigMap[CompanyTypeEnum.WECOM],
   });
   const DEOrgList = ref<DEOrgItem[]>([]);
   const orgListLoading = ref(false);
-
-  async function fetchDEOrgList() {
-    try {
-      orgListLoading.value = true;
-      DEOrgList.value = await getDEOrgList(form.value);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(e);
-    } finally {
-      orgListLoading.value = false;
-    }
-  }
-
-  watch(
-    () => props.integration,
-    (val) => {
-      form.value = { ...(val as ConfigSynchronization) };
-      if (showModal.value && props.integration?.type === CompanyTypeEnum.DATA_EASE) {
-        fetchDEOrgList();
-      }
-    },
-    { deep: true }
-  );
 
   const getAppSecretText = computed(() => {
     if (props.integration?.type === CompanyTypeEnum.DATA_EASE) return 'APP Secret';
@@ -386,6 +357,33 @@
     showModal.value = false;
   }
 
+  function makeParams() {
+    const { type, verify, config } = form.value;
+    const thirdConfigKeys = Object.keys(defaultThirdPartyConfigMap[type as CompanyTypeEnum]);
+    const params: Record<string, any> = {};
+    thirdConfigKeys.forEach((configKey: string) => {
+      params[configKey] = config[configKey];
+    });
+    return {
+      verify,
+      type,
+      config: params,
+    };
+  }
+
+  async function fetchDEOrgList() {
+    try {
+      orgListLoading.value = true;
+      const params = makeParams().config;
+      DEOrgList.value = await getDEOrgList(params as ThirdPartyDEConfig);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    } finally {
+      orgListLoading.value = false;
+    }
+  }
+
   /** *
    * 保存
    */
@@ -393,9 +391,7 @@
   async function handleSave() {
     try {
       loading.value = true;
-      await updateConfigSynchronization({
-        ...form.value,
-      });
+      await updateConfigSynchronization(makeParams());
       Message.success(t('common.updateSuccess'));
       showModal.value = false;
       emit('initSync');
@@ -407,7 +403,9 @@
     }
   }
 
-  const isChangeCorpId = computed(() => props.integration?.corpId && props.integration?.corpId !== form.value.corpId);
+  const isChangeCorpId = computed(
+    () => props.integration?.config?.corpId && props.integration?.config?.corpId !== form.value.config?.corpId
+  );
 
   function handleThirdConfig() {
     if (isChangeCorpId.value) {
@@ -452,9 +450,7 @@
       if (!error) {
         try {
           linkLoading.value = true;
-          const result = await testConfigSynchronization({
-            ...form.value,
-          });
+          const result = await testConfigSynchronization(makeParams());
           const isSuccess = result.data.data;
           form.value.verify = result.data.data;
           if (isSuccess) {
@@ -477,6 +473,17 @@
     if ([...platformType, CompanyTypeEnum.MAXKB].includes(form.value.type)) return 100;
     return 80;
   });
+
+  watch(
+    () => props.integration,
+    (val) => {
+      form.value = cloneDeep(val as ThirdPartyResourceConfig);
+      if (showModal.value && props.integration?.type === CompanyTypeEnum.DATA_EASE) {
+        fetchDEOrgList();
+      }
+    },
+    { deep: true }
+  );
 </script>
 
 <style lang="less">

@@ -95,6 +95,7 @@
 <script setup lang="ts">
   import { ref, RendererElement } from 'vue';
   import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
   import dayjs from 'dayjs';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
@@ -102,7 +103,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit, getCityPath } from '@lib/shared/method';
-  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
+  import type { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
   import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -139,7 +140,12 @@
     syncOrg,
     updateOrgUserName,
   } from '@/api/modules';
-  import { platFormNameMap, platformType } from '@/config/business';
+  import {
+    defaultThirdPartyBaseLoginConfig,
+    defaultThirdPartyConfigMap,
+    platFormNameMap,
+    platformType,
+  } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
   import { useAppStore } from '@/store';
@@ -172,12 +178,10 @@
    * 设置同步微信
    */
   const showSyncWeChatModal = ref<boolean>(false);
-  const currentIntegration = ref<ConfigSynchronization>({
+  const currentIntegration = ref<ThirdPartyResourceConfig>({
     type: CompanyTypeEnum.WECOM,
-    corpId: '',
-    agentId: '',
-    appSecret: '',
-    startEnable: false,
+    verify: false,
+    config: cloneDeep(defaultThirdPartyBaseLoginConfig),
   });
 
   async function settingPlatForm(e: MouseEvent) {
@@ -1034,11 +1038,14 @@
           (item) => platformType.includes(item.type) && item.type === appStore.activePlatformResource.syncResource
         );
         currentIntegration.value = {
-          ...currentIntegration.value,
-          ...platFormConfig,
           type: appStore.activePlatformResource.syncResource,
+          verify: platFormConfig?.verify || false,
+          config: {
+            ...defaultThirdPartyConfigMap[appStore.activePlatformResource.syncResource],
+            ...platFormConfig?.config,
+          },
         };
-        isHasConfig.value = !!platFormConfig && !!platFormConfig.startEnable && !!platFormConfig.verify;
+        isHasConfig.value = !!platFormConfig && !!platFormConfig.config.startEnable && !!platFormConfig.verify;
         renderSyncResult.value = renderSync();
       }
     } catch (error) {
@@ -1046,6 +1053,15 @@
       console.log(error);
     }
   }
+
+  watch(
+    () => showSyncWeChatModal.value,
+    (val) => {
+      if (val) {
+        initIntegration();
+      }
+    }
+  );
 
   onBeforeMount(() => {
     // TODO license 先放开

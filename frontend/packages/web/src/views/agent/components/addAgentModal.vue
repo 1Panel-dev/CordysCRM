@@ -386,7 +386,7 @@
     try {
       const res = await getMkApplication();
       if (res) {
-        isEnableConfig.value = !!res && !!res.mkEnable;
+        isEnableConfig.value = !!res && !!res.config && !!res.config?.mkEnable;
       }
     } catch (error) {
       // eslint-disable-next-line no-console

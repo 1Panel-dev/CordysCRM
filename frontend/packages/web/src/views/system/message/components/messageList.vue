@@ -301,7 +301,8 @@
         const platFormConfig = res.find(
           (item) => platformType.includes(item.type) && item.type === appStore.activePlatformResource.syncResource
         );
-        isEnableNoticeConfig.value = !!platFormConfig && !!platFormConfig.startEnable;
+        isEnableNoticeConfig.value =
+          !!platFormConfig && !!platFormConfig.config && !!platFormConfig.config?.startEnable;
       }
     } catch (error) {
       // eslint-disable-next-line no-console

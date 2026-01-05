@@ -27,6 +27,7 @@
 
   const initActive = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.DINGTALK);
+    const { config } = data;
 
     await load(true);
     const url = encodeURIComponent(window.location.origin);
@@ -38,12 +39,12 @@
       },
       {
         redirect_uri: url,
-        client_id: data.agentId ? data.agentId : '',
+        client_id: config.agentId ?? '',
         scope: 'openid corpid',
         response_type: 'code',
         state: 'fit2cloud-ding-qr',
         prompt: 'consent',
-        corpId: data.corpId ? data.corpId : '',
+        corpId: config.corpId ?? '',
       },
       async (loginResult) => {
         const { authCode } = loginResult;

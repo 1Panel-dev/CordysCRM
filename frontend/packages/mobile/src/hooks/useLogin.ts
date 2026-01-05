@@ -10,7 +10,7 @@ import {
   isWeComBrowser,
 } from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-import { ConfigSynchronization } from '@lib/shared/models/system/business';
+import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
 
 import { getThirdConfigByType, getThirdOauthCallback } from '@/api/modules';
@@ -28,7 +28,7 @@ const platformConfig = {
     type: 'wecom',
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
-    authUrl: (config: ConfigSynchronization) => {
+    authUrl: (config: Record<string, any>) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
         config.corpId
@@ -45,7 +45,7 @@ const platformConfig = {
     type: 'ding-talk',
     codeKey: 'authCode',
     codeKeysParams: ['code', 'authCode', 'state'],
-    authUrl: (config: ConfigSynchronization) => {
+    authUrl: (config: Record<string, any>) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
         redirectUrl
@@ -61,7 +61,7 @@ const platformConfig = {
     type: 'lark-mobile',
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
-    authUrl: (config: ConfigSynchronization) => {
+    authUrl: (config: Record<string, any>) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
         config.agentId
@@ -118,7 +118,7 @@ export default function useLogin() {
       return;
     }
 
-    const res = await getThirdConfigByType<AxiosResponse<Result<ConfigSynchronization>>>(
+    const res = await getThirdConfigByType<AxiosResponse<Result<ThirdPartyResourceConfig>>>(
       platform.platformConfigType,
       true
     );

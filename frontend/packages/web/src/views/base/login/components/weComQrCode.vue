@@ -33,12 +33,13 @@
 
   const init = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.WECOM);
+    const { config } = data;
     wwLogin.value = ww.createWWLoginPanel({
       el: '#wecom-qr',
       params: {
         login_type: WWLoginType.corpApp,
-        appid: data.corpId ? data.corpId : '',
-        agentid: data.agentId,
+        appid: config.corpId ?? '',
+        agentid: config.agentId,
         redirect_uri: window.location.origin,
         state: 'fit2cloud-wecom-qr',
         redirect_type: WWLoginRedirectType.callback,

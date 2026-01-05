@@ -14,38 +14,64 @@ export interface ConfigEmailParams {
   tsl: string; // TSL 开关
 }
 
-// 同步组织设置
-export interface ConfigSynchronization {
-  type: CompanyTypeEnum; // 类型
-  corpId?: string; // 企业ID
-  agentId?: string; // 应用ID
-  appSecret?: string; // 应用密钥
-  mkAddress?: string; // mk地址
-  sqlBotChatEnable?: boolean; // 智能问数是否开启
-  sqlBotBoardEnable?: boolean; // 智能问数仪表板是否开启
-  verify?: boolean; // 是否验证通过
-  redirectUrl?: string; // DE URL
-  deBoardEnable?: boolean; // DE看板是否开启
-  deAutoSync?: boolean; // DE自动同步
-  deAccessKey?: string; // DE访问密钥
-  deSecretKey?: string; // DE密钥
-  deOrgID?: string; // DE组织ID
-  tenderEnable?: boolean; // 大单网是否开启
-  tenderAddress?: string; // 大单网地址
-  // 前端渲染参数
-  startEnable?: boolean; // 同步用户
-  mkEnable?: boolean; // 智能体
-  appId?: string; // 钉钉内部应用id
+// 三方扫码登录配置基础类型
+export interface ThirdPartyBaseLoginConfig { 
+  agentId: string;
+  appSecret: string;
+  corpId: string;
+  startEnable: boolean;
+}
+// 钉钉扫码登录配置类型
+export interface ThirdPartyDingTalkLoginConfig extends ThirdPartyBaseLoginConfig { 
+  appId: string;
+}
+
+// 飞书扫码登录配置类型
+export interface ThirdPartyLarkLoginConfig extends ThirdPartyBaseLoginConfig { 
+  redirectUrl: string;
+}
+
+// DE配置类型
+export interface ThirdPartyDEConfig {
+  agentId:string;
+  appSecret:string;
+  deAccessKey:string;
+  deAutoSync: boolean;
+  deBoardEnable: boolean;
+  deOrgID: string;
+  deSecretKey: string;
+  redirectUrl: string;
+}
+// sql智能体配置类型
+export interface ThirdPartySQLBotConfig {
+  appSecret:string;
+  sqlBotChatEnable: boolean;
+  sqlBotBoardEnable: boolean;
+}
+// maxKB配置类型
+export interface ThirdPartyMKConfig {
+  appSecret:string;
+  mkAddress: string;
+  mkEnable: boolean;
+} 
+// 大单网配置类型
+export interface ThirdPartyTenderConfig {
+  tenderAddress:string;
+  tenderEnable:boolean;
+}
+
+export interface ThirdPartyResourceConfig{
+  type: CompanyTypeEnum;
+  verify: boolean;
+  config: Record<string, any>;
 }
 
 // 同步组织和扫码登录数据类型
-export interface SyncAndScanItem {
-  type: string; // 类型
+export interface SyncAndScanItem extends ThirdPartyResourceConfig {
   title: string;
   description: string;
   logo: string;
   hasConfig: boolean;
-  response: ConfigSynchronization;
 }
 
 export interface ThirdPartyResource {
@@ -67,13 +93,12 @@ export interface DEOrgItem {
 }
 
 // 同步组织和扫码卡片数据类型
-export interface IntegrationItem {
-  type: string; // 类型
+export interface IntegrationItem extends ThirdPartyResourceConfig {
+  type: CompanyTypeEnum; // 类型
   title: string;
   description: string;
   logo: string;
   hasConfig: boolean;
-  response: ConfigSynchronization;
 }
 
 // 三方类型集合设置
@@ -254,3 +279,7 @@ interface FileParamItem extends ParamItem {
 
 // 页面配置返回参数
 export type PageConfigReturns = FileParamItem[];
+
+
+
+

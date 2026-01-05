@@ -26,8 +26,9 @@
 </template>
 
 <script setup lang="ts">
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { ConfigSynchronization } from '@lib/shared/models/system/business';
+  import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
@@ -36,6 +37,7 @@
   import dashboardModule from './module.vue';
 
   import { getThirdPartyConfig } from '@/api/modules';
+  import { defaultThirdPartyConfigMap } from '@/config/business';
   import useLocalForage from '@/hooks/useLocalForage';
 
   const { t } = useI18n();
@@ -53,11 +55,15 @@
     },
   ];
 
-  const DEConfig = ref<ConfigSynchronization>();
+  const DEConfig = ref<ThirdPartyResourceConfig>({
+    type: CompanyTypeEnum.DATA_EASE,
+    verify: false,
+    config: defaultThirdPartyConfigMap[CompanyTypeEnum.DATA_EASE],
+  });
 
   async function init() {
     try {
-      DEConfig.value = await getThirdPartyConfig('DE_BOARD');
+      DEConfig.value = await getThirdPartyConfig(CompanyTypeEnum.DATA_EASE);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -65,7 +71,9 @@
   }
 
   const dashboardList = computed(() => {
-    return fullList.filter((item) => (item.key === 'DE' && DEConfig.value?.deBoardEnable) || item.key === 'LINK');
+    return fullList.filter(
+      (item) => (item.key === 'DE' && DEConfig.value?.config.deBoardEnable) || item.key === 'LINK'
+    );
   });
   const activeDashboard = ref(dashboardList.value[0].key);
   const activeDashboardKey = 'dashboard-active-tab';

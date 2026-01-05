@@ -1,4 +1,4 @@
-import { ConfigSynchronization } from '@lib/shared/models/system/business';
+import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 import type {
   AddAgentModuleParams,
   AddAgentParams,
@@ -147,7 +147,7 @@ export default function useAgentApi(CDR: CordysAxios) {
 
   // 获取智能体mk应用配置
   function getMkApplication() {
-    return CDR.get<ConfigSynchronization>({ url: getMkApplicationUrl });
+    return CDR.get<ThirdPartyResourceConfig>({ url: getMkApplicationUrl });
   }
 
   return {
