@@ -68,6 +68,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private static final String SOURCE_DETAIL_ID = "id";
     private static final String ROW_BIZ_ID = "id";
     private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
+    private static final String PRICE_SUB_ROW_KEY = "price_sub";
 
     /**
      * 获取资源字段类型 (T)
@@ -270,6 +271,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         for (Map<String, Object> subValue : subValues) {
             String bizId = IDGenerator.nextStr();
             for (Map.Entry<String, Object> kv : subValue.entrySet()) {
+				if (Strings.CS.equals(kv.getKey(), PRICE_SUB_ROW_KEY) && kv.getValue() != null) {
+					T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), kv.getValue().toString());
+					setResourceFieldValue(t, "rowId", String.valueOf(rowId));
+					setResourceFieldValue(t, "refSubId", subField.getId());
+					setResourceFieldValue(t, "bizId", bizId);
+					fields.add(t);
+					continue;
+				}
                 BaseField field = subFieldMap.get(kv.getKey());
                 if (field == null) {
                     continue;
@@ -564,13 +573,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param targetId     显示的子字段
      * @param sourceDetail 来源详情
      * @param subKey       子表格业务Key
-     * @param sourceRowKey 来源行Key
-     * @param sourceRowVal 来源行值
+     * @param rowKey 	   行Key
      *
      * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> sourceDetail, String subKey, String sourceRowKey, String sourceRowVal) {
+    public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> sourceDetail, String subKey, String rowKey) {
         if (MapUtils.isEmpty(sourceDetail) || !sourceDetail.containsKey(subKey)) {
             return null;
         }
@@ -578,7 +586,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<Map<String, Object>> rows = (List) sourceDetail.get(subKey);
         for (Map<String, Object> row : rows) {
             // 匹配行数据
-            if (row.containsKey(sourceRowKey) && Strings.CS.equals(sourceRowVal, row.get(sourceRowKey).toString())) {
+            if (row.containsKey(ROW_BIZ_ID) && Strings.CS.equals(rowKey, row.get(ROW_BIZ_ID).toString())) {
                 return row.get(targetId);
             }
         }
@@ -843,26 +851,30 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     .filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
                     .collect(Collectors.groupingBy(BaseResourceField::getResourceId));
             subResourceMap.forEach((resourceId, subResources) -> {
+				subResources.sort(Comparator.comparing(resource -> Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY) ? 0 : 1));
                 Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>(8);
                 subResources.forEach(resource -> {
                     if (resource.getFieldValue() != null) {
+						BaseResourceSubField subResource = (BaseResourceSubField) resource;
+						subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
+						int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
+						if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
+							Map<String, Object> initRowMap = new HashMap<>(8) {{
+								put(ROW_BIZ_ID, subResource.getBizId());
+							}};
+							subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
+						}
+						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
+						if (Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY)) {
+							rowMap.put(subResource.getFieldId(), resource.getFieldValue());
+							return;
+						}
                         BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
                         if (fieldConfig == null) {
                             return;
                         }
                         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
                         Object objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
-
-                        BaseResourceSubField subResource = (BaseResourceSubField) resource;
-                        subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
-                        int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
-                        if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
-                            Map<String, Object> initRowMap = new HashMap<>(8) {{
-                                put(ROW_BIZ_ID, subResource.getBizId());
-                            }};
-                            subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
-                        }
-                        Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
                         rowMap.put(subResource.getFieldId(), objectValue);
                         if (objectValue == null || !SourceDetailResolveContext.getSourceMap().containsKey(objectValue.toString())) {
                             return;
@@ -878,9 +890,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 if (showFieldConfig == null) {
                                     return;
                                 }
-                                if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(BusinessModuleField.PRICE_PRODUCT.getBusinessKey())) {
+                                if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(PRICE_SUB_ROW_KEY)) {
                                     Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-                                            BusinessModuleField.PRICE_PRODUCT.getBusinessKey(), rowMap.get(BusinessModuleField.PRICE_PRODUCT.getBusinessKey()).toString());
+											rowMap.get(PRICE_SUB_ROW_KEY).toString());
                                     if (matchVal != null) {
                                         rowMap.put(showFieldConfig.getId(), matchVal);
                                     }
