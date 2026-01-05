@@ -15,10 +15,11 @@
 
   const initActive = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.LARK);
+    const { config } = data;
 
     await load(true);
     const redirectUrL = encodeURIComponent(window.location.origin);
-    const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${data.agentId}&redirect_uri=${redirectUrL}&response_type=code&state=LARK`;
+    const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${config.agentId}&redirect_uri=${redirectUrL}&response_type=code&state=LARK`;
 
     const QRLoginObj = window.QRLogin({
       id: 'lark-qr',

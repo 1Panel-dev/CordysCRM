@@ -48,12 +48,13 @@ import type {
   AuthTableQueryParams,
   AuthUpdateParams,
   ConfigEmailParams,
-  ConfigSynchronization,
+  ThirdPartyResourceConfig,
   DEOrgItem,
   PageConfigReturns,
   SavePageConfigParams,
   ThirdPartyResource,
   UpdateApiKeyParams,
+  ThirdPartyDEConfig,
 } from '@lib/shared/models/system/business';
 import {
   ExportCenterItem,
@@ -82,22 +83,22 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 同步组织设置-测试连接
-  function testConfigSynchronization(data: ConfigSynchronization) {
+  function testConfigSynchronization(data: ThirdPartyResourceConfig) {
     return CDR.post({ url: TestConfigSynchronizationUrl, data }, { isReturnNativeResponse: true });
   }
 
   // 获取同步组织设置
   function getConfigSynchronization() {
-    return CDR.get<ConfigSynchronization[]>({ url: GetConfigSynchronizationUrl }, { ignoreCancelToken: true });
+    return CDR.get<ThirdPartyResourceConfig[]>({ url: GetConfigSynchronizationUrl }, { ignoreCancelToken: true });
   }
 
   // 更新同步组织设置
-  function updateConfigSynchronization(data: ConfigSynchronization) {
+  function updateConfigSynchronization(data: ThirdPartyResourceConfig) {
     return CDR.post({ url: UpdateConfigSynchronizationUrl, data }, { isReturnNativeResponse: true });
   }
 
   // 根据类型获取开启的三方扫码设置
-  function getThirdConfigByType<T = ConfigSynchronization>(type: string, isReturnNativeResponse = false) {
+  function getThirdConfigByType<T = ThirdPartyResourceConfig>(type: string, isReturnNativeResponse = false) {
     return CDR.get<T>(
       { url: `${GetThirdPartyConfigUrl}/${type}` },
       {
@@ -174,11 +175,11 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取第三方配置
   function getThirdPartyConfig(type: string) {
-    return CDR.get<ConfigSynchronization>({ url: `${GetThirdPartyConfigUrl}/${type}` }, { noErrorTip: true });
+    return CDR.get<ThirdPartyResourceConfig>({ url: `${GetThirdPartyConfigUrl}/${type}` }, { noErrorTip: true });
   }
 
   // 获取 DE 组织列表
-  function getDEOrgList(data: ConfigSynchronization) {
+  function getDEOrgList(data: ThirdPartyDEConfig) {
     return CDR.post<DEOrgItem[]>({ url: GetDEOrgListUrl, data });
   }
 
@@ -265,7 +266,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取招投标配置项
   function getTenderConfig() {
-    return CDR.get<ConfigSynchronization>({ url: GetTenderConfigUrl }, { ignoreCancelToken: true });
+    return CDR.get<ThirdPartyResourceConfig>({ url: GetTenderConfigUrl }, { ignoreCancelToken: true });
   }
 
   return {

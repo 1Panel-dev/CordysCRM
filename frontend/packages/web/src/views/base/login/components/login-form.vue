@@ -255,7 +255,7 @@
         showQrCodeTab.value = true;
         activeName.value = getLoginType() || activePlatformType.value;
       }
-      isShowQRCode.value = res.startEnable ?? false;
+      isShowQRCode.value = res.config?.startEnable ?? false;
     } catch (error) {
       isShowQRCode.value = false;
       // eslint-disable-next-line no-console

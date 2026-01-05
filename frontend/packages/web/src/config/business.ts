@@ -2,6 +2,15 @@ import { FormItemRule, InputProps } from 'naive-ui';
 
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import {
+  ThirdPartyBaseLoginConfig,
+  ThirdPartyDEConfig,
+  ThirdPartyDingTalkLoginConfig,
+  ThirdPartyLarkLoginConfig,
+  ThirdPartyMKConfig,
+  ThirdPartySQLBotConfig,
+  ThirdPartyTenderConfig,
+} from '@lib/shared/models/system/business';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
 
 const { t } = useI18n();
@@ -432,4 +441,63 @@ export const platFormNameMap: Record<string, string> = {
   [CompanyTypeEnum.DINGTALK]: t('login.form.DINGTALK'),
   [CompanyTypeEnum.LARK]: t('login.form.LARK'),
   [CompanyTypeEnum.WECOM]: t('login.form.WECOM'),
+};
+
+export const defaultThirdPartyBaseLoginConfig: ThirdPartyBaseLoginConfig = {
+  agentId: '',
+  appSecret: '',
+  corpId: '',
+  startEnable: false,
+};
+
+export const defaultThirdPartDingTalkLoginConfig: ThirdPartyDingTalkLoginConfig = {
+  ...defaultThirdPartyBaseLoginConfig,
+  appId: '',
+};
+
+export const defaultThirdPartLarkLoginConfig: ThirdPartyLarkLoginConfig = {
+  ...defaultThirdPartyBaseLoginConfig,
+  redirectUrl: '',
+};
+
+export const defaultThirdPartDEConfig: ThirdPartyDEConfig = {
+  agentId: '',
+  appSecret: '',
+  deAccessKey: '',
+  deAutoSync: false,
+  deBoardEnable: false,
+  deOrgID: '',
+  deSecretKey: '',
+  redirectUrl: '',
+};
+
+export const defaultThirdPartSQLBotConfig: ThirdPartySQLBotConfig = {
+  appSecret: '',
+  sqlBotChatEnable: false,
+  sqlBotBoardEnable: false,
+};
+
+export const defaultThirdPartMaxKBConfig: ThirdPartyMKConfig = {
+  appSecret: '',
+  mkAddress: '',
+  mkEnable: false,
+};
+
+export const defaultThirdPartTenderConfig: ThirdPartyTenderConfig = {
+  tenderAddress: '',
+  tenderEnable: false,
+};
+
+export const defaultThirdPartyConfigMap = {
+  [CompanyTypeEnum.WECOM]: defaultThirdPartyBaseLoginConfig,
+  [CompanyTypeEnum.DINGTALK]: defaultThirdPartDingTalkLoginConfig,
+  [CompanyTypeEnum.LARK]: defaultThirdPartLarkLoginConfig,
+  [CompanyTypeEnum.DATA_EASE]: defaultThirdPartDEConfig,
+  [CompanyTypeEnum.SQLBot]: defaultThirdPartSQLBotConfig,
+  [CompanyTypeEnum.MAXKB]: defaultThirdPartMaxKBConfig,
+  [CompanyTypeEnum.TENDER]: defaultThirdPartTenderConfig,
+  [CompanyTypeEnum.INTERNAL]: {},
+  [CompanyTypeEnum.WE_COM_OAUTH2]: {},
+  [CompanyTypeEnum.DINGTALK_OAUTH2]: {},
+  [CompanyTypeEnum.LARK_OAUTH2]: {},
 };
