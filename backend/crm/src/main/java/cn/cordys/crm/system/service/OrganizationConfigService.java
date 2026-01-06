@@ -103,8 +103,7 @@ public class OrganizationConfigService {
     }
 
     private OrganizationConfigDetail getOrganizationConfigDetail(String userId, OrganizationConfig organizationConfig, String jsonString) {
-        OrganizationConfigDetail organizationConfigDetail;
-        organizationConfigDetail = new OrganizationConfigDetail();
+        OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
         organizationConfigDetail.setId(IDGenerator.nextStr());
         organizationConfigDetail.setContent(jsonString.getBytes());
         organizationConfigDetail.setCreateTime(System.currentTimeMillis());
