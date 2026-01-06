@@ -508,6 +508,7 @@ export const {
   closeMessageSubscribe,
   getUnReadAnnouncement,
   setAllNotificationRead,
+  getMessageTaskConfigDetail,
 } = messageApi;
 
 export const {

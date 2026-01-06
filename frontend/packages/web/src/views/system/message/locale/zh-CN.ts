@@ -43,7 +43,7 @@ export default {
   'system.message.confirmCloseWeChatNotice': '确定关闭该企业微信通知吗？',
   'system.message.weComSwitchTip':
     '{type}无法获取接收消息的用户身份，请先完成{type}组织架构同步，确保系统与{type}的人员数据一致!',
-  'system.message.expirationTitle': '{type}即将到期配置',
+  'system.message.expirationTitle': '{type}配置',
   'system.message.endOfType': '距{type}结束',
   'system.message.timeNumberRepeatMsg': '数字重复，请重新输入',
   'system.message.expirationReminder': '到期提醒',

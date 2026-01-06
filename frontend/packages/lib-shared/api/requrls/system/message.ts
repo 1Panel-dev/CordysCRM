@@ -19,3 +19,4 @@ export const SubscribeMessageUrl = '/sse/subscribe'; // 客户端订阅 SSE 事�
 export const CloseMessageUrl = '/sse/close'; // 客户端关闭 SSE 事件流
 export const GetHomeMessageUrl = '/notification/last/list'; // 获取首页消息列表
 export const GetUnReadAnnouncement = '/notification/last/announcement/list'; // 获取用户未读公告列表
+export const getMessageTaskConfigDetailUrl = '/message/task/config/query'; // 获取消息任务配置详情

@@ -10,7 +10,12 @@
       :loading="loading"
       :max-height="licenseStore.expiredDuring ? 'calc(100vh - 306px)' : 'calc(100vh - 242px)'"
     />
-    <expirationSettingDrawer v-model:visible="showExpirationSetting" :detail="activeDetail" @ok="initMessageList" />
+    <expirationSettingDrawer
+      v-model:visible="showExpirationSetting"
+      :detail="activeDetail"
+      :show-time-setting="activeDetail?.event.includes(showTimeSettingEvent)"
+      @ok="initMessageList"
+    />
   </CrmCard>
 </template>
 
@@ -144,12 +149,25 @@
     }
   }
 
+  const needSetEndTimeEvent = [
+    'BUSINESS_QUOTATION_EXPIRED',
+    'BUSINESS_QUOTATION_EXPIRING',
+    'CONTRACT_ARCHIVED',
+    'CONTRACT_VOID',
+    'CONTRACT_EXPIRING',
+    'CONTRACT_EXPIRED',
+    'CONTRACT_PAYMENT_EXPIRED',
+    'CONTRACT_PAYMENT_EXPIRING',
+  ];
+
+  const showTimeSettingEvent = 'EXPIRING';
+
   const isEnableNoticeConfig = ref<boolean>(false);
   const platformName = computed(() => platFormNameMap[appStore.activePlatformResource.syncResource]);
   const isSyncFromThirdChecked = computed(() => appStore.activePlatformResource.sync);
 
   const showExpirationSetting = ref(false);
-  const activeDetail = ref<MessageConfigItem | null>(null);
+  const activeDetail = ref<MessageConfigItem>();
   function settingMessage(e: MouseEvent, row: MessageConfigItem) {
     showExpirationSetting.value = true;
     activeDetail.value = row;
@@ -182,7 +200,7 @@
           },
           [
             h('span', row.eventName as string),
-            hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])
+            hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) && needSetEndTimeEvent.includes(row.event as string)
               ? h(CrmIcon, {
                   type: 'iconicon_set_up',
                   size: 16,
