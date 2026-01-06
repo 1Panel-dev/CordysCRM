@@ -10,5 +10,5 @@ import cn.cordys.common.dto.BasePageRequest;
  */
 @Data
 public class ContractInvoicePageRequest extends BasePageRequest {
-
+    public String getContractId() {return null;}
 }

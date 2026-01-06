@@ -5,15 +5,14 @@
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse">
         SELECT
         ci.id,
-        ci.number,
         ci.contract_id,
         c.`name` AS contractName,
-        ci.number,
+        ci.name,
         ci.amount,
         ci.invoice_type,
         ci.tax_rate,
         ci.`owner`,
-        ci.official_registered_id,
+        ci.business_title_id,
         ci.create_user,
         ci.create_time,
         ci.update_user,
@@ -59,10 +58,9 @@
             and ci.owner = #{userId}
         </if>
 
-        <if test="!request.keyword != null and request.keyword != ''">
+        <if test="request.keyword != null and request.keyword != ''">
             and (
-            ci.number like concat('%', #{request.keyword},'%')
-            or c.name like concat('%', #{request.keyword},'%')
+            ci.name like concat('%', #{request.keyword},'%')
             )
         </if>
 
@@ -83,15 +81,14 @@
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse">
         SELECT
         ci.id,
-        ci.number,
         ci.contract_id,
         c.`name` AS contractName,
-        ci.number,
+        ci.name,
         ci.amount,
         ci.invoice_type,
         ci.tax_rate,
         ci.`owner`,
-        ci.official_registered_id,
+        ci.business_title_id,
         ci.create_user,
         ci.create_time,
         ci.update_user,
@@ -127,7 +124,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
                 {'owner', 'createTime', 'updateTime', 'contractId', 'createUser', 'updateUser',
-                 'departmentId', 'number', 'invoiceType', 'amount', 'taxRate', 'businessTitleId'}">
+                 'departmentId', 'name', 'invoiceType', 'amount', 'taxRate', 'businessTitleId'}">
                     <if test="condition.multipleValue">
                         left join contract_invoice_field_blob ${tablePrefix}_${i}
                         on ci.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -148,7 +145,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'owner', 'contract_id', 'amount', 'stage', 'update_user', 'create_time',
-                 'official_registered_id', 'update_time', 'create_user', 'department_id', 'tax_rate', 'number'}">
+                 'business_title_id', 'update_time', 'create_user', 'department_id', 'tax_rate', 'name'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_invoice_field sort_table
             on ci.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -204,16 +201,16 @@
                     <property name="column" value="ci.tax_rate"/>
                 </include>
             </when>
-            <when test="condition.name == 'number'">
+            <when test="condition.name == 'name'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="ci.number"/>
+                    <property name="column" value="ci.name"/>
                 </include>
             </when>
             <when test="condition.name == 'businessTitleId'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="ci.official_registered_id"/>
+                    <property name="column" value="ci.business_title_id"/>
                 </include>
             </when>
             <when test="condition.name == 'invoiceType'">
@@ -338,8 +335,8 @@
                     <when test="${sort}.name == 'tax_rate'">
                         ci.`id` ${sortType},  ci.id ASC
                     </when>
-                    <when test="${sort}.name == 'official_registered_id'">
-                        ci.`official_registered_id` ${sortType},  ci.id ASC
+                    <when test="${sort}.name == 'business_title_id'">
+                        ci.`business_title_id` ${sortType},  ci.id ASC
                     </when>
 
                     <otherwise>
@@ -361,15 +358,14 @@
     <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse">
         SELECT
             ci.id,
-            ci.number,
             ci.contract_id,
             c.`name` AS contractName,
-            ci.number,
+            ci.name,
             ci.amount,
             ci.invoice_type,
             ci.tax_rate,
             ci.`owner`,
-            ci.official_registered_id,
+            ci.business_title_id,
             ci.create_user,
             ci.create_time,
             ci.update_user,

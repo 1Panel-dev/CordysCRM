@@ -19,8 +19,8 @@ import java.math.BigDecimal;
 @Table(name = "contract_invoice")
 public class ContractInvoice extends BaseModel {
 
-	@Schema(description = "编号")
-	private String number;
+	@Schema(description = "发票名称")
+	private String name;
 
 	@Schema(description = "合同id")
 	private String contractId;
