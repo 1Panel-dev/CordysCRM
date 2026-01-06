@@ -38,8 +38,8 @@ public class BusinessTitleAddRequest {
     private BigDecimal registeredCapital;
 
     @Size(max = 50)
-    @Schema(description = "客户规模")
-    private String customerSize;
+    @Schema(description = "公司规模")
+    private String companySize;
 
     @Size(max = 50)
     @Schema(description = "工商注册号")

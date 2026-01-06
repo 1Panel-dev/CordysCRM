@@ -38,8 +38,8 @@ public class BusinessTitle extends BaseModel {
 	@Schema(description = "注册资本")
 	private BigDecimal registeredCapital;
 
-	@Schema(description = "客户规模")
-	private String customerSize;
+	@Schema(description = "公司规模")
+	private String companySize;
 
 	@Schema(description = "工商注册号")
 	private String registrationNumber;

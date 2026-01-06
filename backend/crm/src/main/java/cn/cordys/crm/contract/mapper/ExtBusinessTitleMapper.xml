@@ -89,10 +89,10 @@
                     <property name="column" value="bt.registered_capital"/>
                 </include>
             </when>
-            <when test="condition.name == 'customerSize'">
+            <when test="condition.name == 'companySize'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="bt.customer_size"/>
+                    <property name="column" value="bt.company_size"/>
                 </include>
             </when>
             <when test="condition.name == 'registrationNumber'">
@@ -166,7 +166,7 @@
                 <choose>
                     <when test="${sort}.name in
                         {'business_name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
-                         'phone_number', 'registered_capital', 'customer_size', 'registration_number', 'approval_status', 'unapproved_reason'
+                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason'
                         }">
                         bt.${sortName} ${sortType}, bt.id ASC
                     </when>
