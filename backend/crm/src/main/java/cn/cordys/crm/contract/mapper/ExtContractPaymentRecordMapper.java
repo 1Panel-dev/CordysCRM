@@ -3,7 +3,7 @@ package cn.cordys.crm.contract.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
