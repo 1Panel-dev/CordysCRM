@@ -270,7 +270,7 @@ public class CustomerContactService {
 
         // 添加联系人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
-        if (customer != null) {
+        if (customer != null && StringUtils.isNotEmpty(customer.getOwner())) {
             Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
             Map<String, Object> paramMap = new HashMap<>(4);
             paramMap.put("useTemplate", "true");
