@@ -52,6 +52,8 @@ public class NotificationService {
                 countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
                 countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
+            } else if (k.contains(NotificationConstants.Module.CONTRACT)) {
+                countMap.merge(NotificationConstants.Module.CONTRACT, v.size(), Integer::sum);
             } else {
                 countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
             }
@@ -59,6 +61,7 @@ public class NotificationService {
         countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
         countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
         countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.CONTRACT, 0);
         countMap.putIfAbsent(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
 
         countMap.forEach((k, v) -> {
