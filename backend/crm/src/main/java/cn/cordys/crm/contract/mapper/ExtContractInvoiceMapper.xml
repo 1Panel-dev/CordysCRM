@@ -54,6 +54,10 @@
             and ci.contract_id = #{request.contractId}
         </if>
 
+        <if test="request.customerId != null and request.customerId != ''">
+            and c.customer_id = #{request.customerId}
+        </if>
+
         <if test="dataPermission != null and dataPermission.self">
             and ci.owner = #{userId}
         </if>
