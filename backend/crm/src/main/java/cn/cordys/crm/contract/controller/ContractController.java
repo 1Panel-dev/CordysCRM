@@ -15,12 +15,15 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.*;
+import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.ContractResponse;
 import cn.cordys.crm.contract.service.ContractExportService;
+import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.customer.dto.request.CustomerContractInvoicePageRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -51,6 +54,8 @@ public class ContractController {
     private DataScopeService dataScopeService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
+    @Resource
+    private ContractInvoiceService contractInvoiceService;
 
 
     @GetMapping("/module/form")
@@ -199,5 +204,16 @@ public class ContractController {
                 .formKey(FormKey.CONTRACT.getKey())
                 .build();
         return contractExportService.exportAllWithMergeStrategy(exportDTO);
+    }
+
+    @PostMapping("/invoice/page")
+    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
+    @Operation(summary = "合同详情-发票列表")
+    public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(@Validated @RequestBody CustomerContractInvoicePageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
+        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }
