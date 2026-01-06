@@ -566,6 +566,30 @@
         ]
       },
       {
+        "id": "CONTRACT_PAYMENT_RECORD",
+        "name": "permission.contract_payment_record.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:READ"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:ADD"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:UPDATE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:DELETE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:IMPORT"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:EXPORT"
+          }
+        ]
+      },
+      {
         "id": "BUSINESS_TITLE",
         "name": "permission.business_title.name",
         "permissions": [

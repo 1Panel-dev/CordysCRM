@@ -225,11 +225,13 @@ public class PermissionConstants {
     /*------ end: BUSINESS_TITLE ------*/
 
 	/**
-	 * contract payment record permission
+	 * Contract payment record permission
 	 */
 	public static final String CONTRACT_PAYMENT_RECORD_READ = "CONTRACT_PAYMENT_RECORD:READ";
 	public static final String CONTRACT_PAYMENT_RECORD_ADD = "CONTRACT_PAYMENT_RECORD:ADD";
 	public static final String CONTRACT_PAYMENT_RECORD_UPDATE = "CONTRACT_PAYMENT_RECORD:UPDATE";
 	public static final String CONTRACT_PAYMENT_RECORD_DELETE = "CONTRACT_PAYMENT_RECORD:DELETE";
+	public static final String CONTRACT_PAYMENT_RECORD_IMPORT = "CONTRACT_PAYMENT_RECORD:IMPORT";
+	public static final String CONTRACT_PAYMENT_RECORD_EXPORT = "CONTRACT_PAYMENT_RECORD:EXPORT";
 }
 
