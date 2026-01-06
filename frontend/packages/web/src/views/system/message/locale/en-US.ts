@@ -44,7 +44,7 @@ export default {
   'system.message.confirmCloseWeChatNotice': 'Are you sure to close the WeCom notification?',
   'system.message.weComSwitchTip':
     '{type} unable to get user receives the message, please complete the WeCom structure synchronization, make sure the system consistent with the {type} personnel data!',
-  'system.message.expirationTitle': '{type} expiration configuration',
+  'system.message.expirationTitle': '{type} configuration',
   'system.message.endOfType': 'before {type} ends',
   'system.message.timeNumberRepeatMsg': 'Duplicate number',
   'system.message.expirationReminder': 'Expiration reminder',

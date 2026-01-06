@@ -7,6 +7,7 @@ import {
   GetAnnouncementDetailUrl,
   GetAnnouncementListUrl,
   GetHomeMessageUrl,
+  getMessageTaskConfigDetailUrl,
   GetMessageTaskUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
@@ -24,6 +25,7 @@ import type {
   MessageCenterItem,
   MessageCenterQueryParams,
   MessageConfigItem,
+  MessageSettingsConfig,
   SaveMessageConfigParams,
 } from '@lib/shared/models/system/message';
 
@@ -105,6 +107,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<MessageCenterItem[]>({ url: GetUnReadAnnouncement });
   }
 
+  // 获取消息任务配置详情
+  function getMessageTaskConfigDetail(data: { module: string ,event:string}) {
+    return CDR.post<MessageSettingsConfig>({ url: getMessageTaskConfigDetailUrl, data });
+  }
+
   return {
     addAnnouncement,
     updateAnnouncement,
@@ -121,5 +128,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getHomeMessageList,
     closeMessageSubscribe,
     getUnReadAnnouncement,
+    getMessageTaskConfigDetail,
   };
 }

@@ -60,12 +60,30 @@ export interface MessageConfigItem extends MessageTaskDetailDTOItem {
   messageTaskDetailDTOList: MessageTaskDetailDTOItem[];
 }
 
+export interface MessageSettingsConfig {
+  timeList: {
+    timeValue: number;
+    timeUnit: string;
+  }[];
+  userIds: string[];
+  roleIds: string[];
+  ownerEnable: boolean;
+  ownerLevel: number;
+  roleEnable: boolean;
+  userIdNames: { id: string; name: string }[];
+  roleIdNames: { id: string; name: string }[];
+}
+
+
 export interface SaveMessageConfigParams {
   module: string;
   event: string;
   emailEnable?: boolean;
   sysEnable?: boolean;
   weComEnable?: boolean;
+  dingTalkEnable?: boolean;
+  larkEnable?: boolean;
+  config?:MessageSettingsConfig;
 }
 
 export interface MessageCenterItem {

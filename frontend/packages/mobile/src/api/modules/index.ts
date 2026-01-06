@@ -306,6 +306,7 @@ export const {
   getHomeMessageList,
   closeMessageSubscribe,
   getUnReadAnnouncement,
+  getMessageTaskConfigDetail,
 } = messageApi;
 
 export const {
