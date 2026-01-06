@@ -26,11 +26,11 @@ CREATE TABLE business_title
     `type`                  VARCHAR(50) COMMENT '来源类型',
     `identification_number` VARCHAR(255) COMMENT '纳税人识别号',
     `opening_bank`          VARCHAR(255) COMMENT '开户银行',
-    `bank_account`          VARCHAR(50) COMMENT '银行账号',
+    `bank_account`          VARCHAR(255) COMMENT '银行账号',
     `registration_address`  VARCHAR(255) COMMENT '注册地址',
-    `phone_number`          VARCHAR(50) COMMENT '注册电话',
-    `registered_capital`    DECIMAL(20) COMMENT '注册资本',
-    `customer_size`         VARCHAR(50) COMMENT '客户规模',
+    `phone_number`          VARCHAR(255) COMMENT '注册电话',
+    `registered_capital`    VARCHAR(255) COMMENT '注册资本',
+    `company_size`          VARCHAR(255) COMMENT '公司规模',
     `registration_number`   VARCHAR(255) COMMENT '工商注册号',
     `approval_status`       VARCHAR(50) COMMENT '审核状态',
     `unapproved_reason`     VARCHAR(255) COMMENT '不通过原因',
@@ -52,9 +52,10 @@ CREATE INDEX idx_business_name ON business_title (business_name ASC);
 
 CREATE TABLE business_title_config
 (
-    `id`       VARCHAR(32)  NOT NULL COMMENT 'id',
-    `field`    VARCHAR(255) NOT NULL COMMENT '字段',
-    `required` BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否必填',
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `field`           VARCHAR(255) NOT NULL COMMENT '字段',
+    `required`        BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否必填',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     PRIMARY KEY (id)
 ) COMMENT = '工商抬头配置表'
 ENGINE = InnoDB
@@ -128,60 +129,63 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_invoice_id ON contract_invoice_snapshot (invoice_id ASC);
 
 -- init contract_payment_record field
-CREATE TABLE contract_payment_record(
-    `id`                VARCHAR(32)     NOT NULL    COMMENT 'id' ,
-    `name`              VARCHAR(255)    NOT NULL    COMMENT '回款名称' ,
-    `no`                VARCHAR(50)                 COMMENT '回款编号' ,
-    `owner`             VARCHAR(32)     NOT NULL    COMMENT '负责人' ,
-    `contract_id`       VARCHAR(32)     NOT NULL    COMMENT '合同ID' ,
-    `payment_plan_id`   VARCHAR(32)                 COMMENT '回款计划ID' ,
-    `record_amount`     DECIMAL(20,10)              COMMENT '回款金额' ,
-    `record_end_time`   BIGINT                      COMMENT '回款时间' ,
-    `record_bank`       VARCHAR(32)                 COMMENT '收款银行' ,
-    `record_bank_no`    VARCHAR(32)                 COMMENT '收款账号' ,
-    `organization_id`   VARCHAR(32)     NOT NULL    COMMENT '组织id' ,
-    `create_time`       BIGINT          NOT NULL    COMMENT '创建时间' ,
-    `update_time`       BIGINT          NOT NULL    COMMENT '更新时间' ,
-    `create_user`       VARCHAR(32)     NOT NULL    COMMENT '创建人' ,
-    `update_user`       VARCHAR(32)     NOT NULL    COMMENT '更新人' ,
+CREATE TABLE contract_payment_record
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '回款名称',
+    `no`              VARCHAR(50) COMMENT '回款编号',
+    `owner`           VARCHAR(32)  NOT NULL COMMENT '负责人',
+    `contract_id`     VARCHAR(32)  NOT NULL COMMENT '合同ID',
+    `payment_plan_id` VARCHAR(32) COMMENT '回款计划ID',
+    `record_amount`   DECIMAL(20, 10) COMMENT '回款金额',
+    `record_end_time` BIGINT COMMENT '回款时间',
+    `record_bank`     VARCHAR(32) COMMENT '收款银行',
+    `record_bank_no`  VARCHAR(32) COMMENT '收款账号',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '合同回款记录'
+) COMMENT = '合同回款记录'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_contract_id ON contract_payment_record(contract_id ASC);
-CREATE INDEX idx_plan_id ON contract_payment_record(payment_plan_id ASC);
-CREATE INDEX idx_owner ON contract_payment_record(owner ASC);
+CREATE INDEX idx_contract_id ON contract_payment_record (contract_id ASC);
+CREATE INDEX idx_plan_id ON contract_payment_record (payment_plan_id ASC);
+CREATE INDEX idx_owner ON contract_payment_record (owner ASC);
 
-CREATE TABLE contract_payment_record_field(
-    `id`                VARCHAR(32)     NOT NULL   COMMENT 'id' ,
-    `resource_id`       VARCHAR(32)     NOT NULL   COMMENT '回款记录id' ,
-    `field_id`          VARCHAR(32)     NOT NULL   COMMENT '自定义属性id' ,
-    `field_value`       VARCHAR(255)    NOT NULL   COMMENT '自定义属性值' ,
+CREATE TABLE contract_payment_record_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '回款记录id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
-)  COMMENT = '合同回款记录自定义属性'
+) COMMENT = '合同回款记录自定义属性'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON contract_payment_record_field(resource_id ASC);
+CREATE INDEX idx_resource_id ON contract_payment_record_field (resource_id ASC);
 
-CREATE TABLE contract_payment_record_field_blob(
-    `id`                VARCHAR(32)     NOT NULL   COMMENT 'id' ,
-    `resource_id`       VARCHAR(32)     NOT NULL   COMMENT '回款记录id' ,
-    `field_id`          VARCHAR(32)     NOT NULL   COMMENT '自定义属性id' ,
-    `field_value`       TEXT            NOT NULL   COMMENT '自定义属性值' ,
+CREATE TABLE contract_payment_record_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '回款记录id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
-)  COMMENT = '合同回款记录自定义属性大文本'
+) COMMENT = '合同回款记录自定义属性大文本'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON contract_payment_record_field_blob(resource_id ASC);
+CREATE INDEX idx_resource_id ON contract_payment_record_field_blob (resource_id ASC);
 
 -- modify form_key length to 50
-ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR(50);
+ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR (50);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

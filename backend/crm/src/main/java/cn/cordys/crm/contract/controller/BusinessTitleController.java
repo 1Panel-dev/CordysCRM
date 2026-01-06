@@ -17,6 +17,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -131,5 +132,13 @@ public class BusinessTitleController {
                 .pageRequest(request)
                 .build();
         return businessTitleExportService.export(exportDTO);
+    }
+
+
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        businessTitleService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
     }
 }
