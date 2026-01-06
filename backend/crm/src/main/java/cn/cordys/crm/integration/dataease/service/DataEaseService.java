@@ -1,13 +1,12 @@
 package cn.cordys.crm.integration.dataease.service;
 
 import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
-import cn.cordys.crm.system.domain.OrganizationConfig;
-import cn.cordys.crm.system.domain.OrganizationConfigDetail;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import com.auth0.jwt.JWT;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DataEaseService {
@@ -50,19 +50,37 @@ public class DataEaseService {
     }
 
     public DeThirdConfigRequest getDeConfig(String organizationId) {
-        OrganizationConfig config =
-                extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.THIRD.name());
-
-        // 获取DE配置详情
-        List<OrganizationConfigDetail> configDetails =
-                extOrganizationConfigDetailMapper.getOrgConfigDetailByType(config.getId(), null,
-                        List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString()));
-
-        ThirdConfigBaseDTO configBaseDTO = JSON.parseObject(
-                new String(configDetails.getFirst().getContent()), ThirdConfigBaseDTO.class
+        var config = Optional.ofNullable(
+                extOrganizationConfigMapper.getOrganizationConfig(
+                        organizationId,
+                        OrganizationConfigConstants.ConfigType.THIRD.name()
+                )
+        ).orElseThrow(() ->
+                new GenericException("未找到 DataEase 相关配置")
         );
 
-        return JSON.MAPPER.convertValue(configBaseDTO.getConfig(), DeThirdConfigRequest.class);
+        var detail = extOrganizationConfigDetailMapper
+                .getOrgConfigDetailByType(
+                        config.getId(),
+                        null,
+                        List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString())
+                )
+                .stream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new GenericException("未找到 DataEase 配置详情")
+                );
+
+        var baseDTO = Optional.ofNullable(
+                JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class)
+        ).orElseThrow(() ->
+                new GenericException("DataEase 配置内容解析失败")
+        );
+
+        return JSON.MAPPER.convertValue(
+                baseDTO.getConfig(),
+                DeThirdConfigRequest.class
+        );
     }
 
     /**
