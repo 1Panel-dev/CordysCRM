@@ -2,6 +2,7 @@ package cn.cordys.crm.integration.dataease.service;
 
 import cn.cordys.common.constants.ThirdConstants;
 import cn.cordys.common.util.JSON;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.DeAuthDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
@@ -57,12 +58,11 @@ public class DataEaseService {
                 extOrganizationConfigDetailMapper.getOrgConfigDetailByType(config.getId(), null,
                         List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString()));
 
-        OrganizationConfigDetail configDetail = configDetails.getFirst();
-
-        // 解析配置
-        return JSON.parseObject(
-                new String(configDetail.getContent()), DeThirdConfigRequest.class
+        ThirdConfigBaseDTO configBaseDTO = JSON.parseObject(
+                new String(configDetails.getFirst().getContent()), ThirdConfigBaseDTO.class
         );
+
+        return JSON.MAPPER.convertValue(configBaseDTO.getConfig(), DeThirdConfigRequest.class);
     }
 
     /**
