@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
@@ -167,10 +166,6 @@ public class NoticeExpireJob {
                 return;
             }
             MessageTaskConfigDTO expiredConfigDTO = JSON.parseObject(expiredConfig.getValue(), MessageTaskConfigDTO.class);
-            if (CollectionUtils.isEmpty(expiredConfigDTO.getTimeList())) {
-                log.info("组织{}商机报价单到期提醒时间配置不存在", organizationId);
-                return;
-            }
             long timestamp = LocalDate.now()
                     .atStartOfDay(ZoneId.systemDefault())
                     .toEpochSecond() * 1000;
@@ -304,10 +299,6 @@ public class NoticeExpireJob {
                 return;
             }
             MessageTaskConfigDTO expiredConfigDTO = JSON.parseObject(expiredConfig.getValue(), MessageTaskConfigDTO.class);
-            if (CollectionUtils.isEmpty(expiredConfigDTO.getTimeList())) {
-                log.info("组织{}回款计划到期提醒时间配置不存在", organizationId);
-                return;
-            }
             long timestamp = LocalDate.now()
                     .atStartOfDay(ZoneId.systemDefault())
                     .toEpochSecond() * 1000;
