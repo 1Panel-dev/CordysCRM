@@ -16,20 +16,27 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
+import cn.cordys.crm.contract.domain.BusinessTitleConfig;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.BusinessTitleAddRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitleApprovalRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitlePageRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitleUpdateRequest;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
+import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelDataFactory;
+import cn.cordys.crm.contract.excel.handler.BusinessTitleTemplateWriteHandler;
 import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -38,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -53,6 +61,8 @@ public class BusinessTitleService {
     private LogService logService;
     @Resource
     private BaseService baseService;
+    @Resource
+    private BaseMapper<BusinessTitleConfig> businessTitleConfigMapper;
 
 
     /**
@@ -262,5 +272,28 @@ public class BusinessTitleService {
         logService.add(logDTO);
 
         return businessTitle.getApprovalStatus();
+    }
+
+    public void downloadImportTpl(HttpServletResponse response,String orgId) {
+        //获取表头字段
+        List<List<String>> heads = getTemplateHead();
+
+        new EasyExcelExporter()
+                .exportMultiSheetTplWithSharedHandler(response, heads,
+                        Translator.get("business_title_import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                        new BusinessTitleTemplateWriteHandler(heads,getBusinessTitleConfig(orgId)), new CustomHeadColWidthStyleStrategy());
+    }
+
+
+    private Map<String, Boolean>  getBusinessTitleConfig(String orgId) {
+        LambdaQueryWrapper<BusinessTitleConfig> configWrapper = new LambdaQueryWrapper<>();
+        configWrapper.eq(BusinessTitleConfig::getOrganizationId, orgId);
+        List<BusinessTitleConfig> businessTitleConfigs = businessTitleConfigMapper.selectListByLambda(configWrapper);
+        Map<String, Boolean> map = businessTitleConfigs.stream().collect(Collectors.toMap(BusinessTitleConfig::getField, BusinessTitleConfig::getRequired));
+        return map;
+    }
+
+    private List<List<String>> getTemplateHead() {
+        return new BusinessTitleExcelDataFactory().getExcelDataLocal().getHead();
     }
 }
