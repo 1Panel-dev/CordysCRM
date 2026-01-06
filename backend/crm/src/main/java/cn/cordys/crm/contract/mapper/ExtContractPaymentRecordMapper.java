@@ -7,6 +7,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * @author song-cc-rock
+ */
 public interface ExtContractPaymentRecordMapper {
 
 	/**

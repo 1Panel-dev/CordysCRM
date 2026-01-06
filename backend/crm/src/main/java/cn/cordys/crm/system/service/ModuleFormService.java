@@ -1797,4 +1797,28 @@ public class ModuleFormService {
 				.map(BaseField::getId)
 				.toList();
 	}
+
+	/**
+	 * 获取流水号字段规则
+	 * @param formKey 表单Key
+	 * @param currentOrg 当前组织
+	 * @param internalKey 字段Key
+	 * @return 字段规则集合
+	 */
+	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey) {
+		ModuleForm example = new ModuleForm();
+		example.setFormKey(formKey);
+		example.setOrganizationId(currentOrg);
+		ModuleForm moduleForm = moduleFormMapper.selectOne(example);
+		ModuleField fieldExample = new ModuleField();
+		fieldExample.setFormId(moduleForm.getId());
+		fieldExample.setInternalKey(internalKey);
+		ModuleField moduleField = moduleFieldMapper.selectOne(fieldExample);
+		if (moduleField == null) {
+			return List.of();
+		}
+		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(moduleField.getId());
+		SerialNumberField serialNumberField = JSON.parseObject(fieldBlob.getProp(), SerialNumberField.class);
+		return serialNumberField.getSerialNumberRules();
+	}
 }

@@ -28,9 +28,6 @@ public class ContractPaymentRecordResponse extends ContractPaymentRecord {
 	@Schema(description = "负责人名称")
 	private String ownerName;
 
-	@Schema(description = "回款计划名称")
-	private String planName;
-
 	@Schema(description = "归属部门")
 	private String departmentId;
 
