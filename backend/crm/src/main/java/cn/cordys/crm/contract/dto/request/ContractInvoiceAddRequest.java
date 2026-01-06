@@ -18,8 +18,8 @@ import java.util.List;
 public class ContractInvoiceAddRequest {
     @Size(max = 50)
     @NotBlank
-    @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String number;
+    @Schema(description = "发票名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String name;
 
     @Size(max = 32)
     @NotBlank

@@ -1792,25 +1792,19 @@
       ]
     },
     {
-      "name": "发票编号",
-      "internalKey": "invoiceNo",
-      "type": "SERIAL_NUMBER",
-      "placeholder": "无需录入, 自动生成",
+      "name": "发票名称",
+      "internalKey": "invoiceName",
+      "type": "INPUT",
       "showLabel": true,
-      "serialNumberRules": [
-        "Inv",
-        "-",
-        "yyyyMM",
-        "-",
-        "6"
-      ],
       "readable": true,
-      "editable": false,
+      "editable": true,
       "fieldWidth": 1,
-      "mobile": true,
-      "disableProps": [
-        "serialNumberRules"
-      ]
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
     },
     {
       "name": "开票类型",

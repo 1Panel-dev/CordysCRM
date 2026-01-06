@@ -75,7 +75,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
         systemFiledMap.put("contractId", data.getContractName());
         systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("number", data.getNumber());
+        systemFiledMap.put("name", data.getName());
         systemFiledMap.put("departmentId", data.getDepartmentName());
         systemFiledMap.put("amount", data.getAmount());
         systemFiledMap.put("taxRate", data.getTaxRate());

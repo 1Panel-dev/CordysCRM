@@ -18,7 +18,6 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -35,8 +34,6 @@ import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
-import cn.cordys.crm.system.dto.field.SerialNumberField;
-import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -79,8 +76,6 @@ public class ContractInvoiceService {
     private PermissionCache permissionCache;
     @Resource
     private BaseMapper<Contract> contractMapper;
-    @Resource
-    private SerialNumGenerator serialNumGenerator;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -139,7 +134,6 @@ public class ContractInvoiceService {
         ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
         String id = IDGenerator.nextStr();
         invoice.setId(id);
-        invoice.setNumber(createContractInvoiceNumber(moduleFormConfigDTO, orgId));
         invoice.setOrganizationId(orgId);
         invoice.setCreateTime(System.currentTimeMillis());
         invoice.setCreateUser(operatorId);
@@ -167,20 +161,6 @@ public class ContractInvoiceService {
 
         return invoice;
     }
-
-
-    private String createContractInvoiceNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId) {
-        BaseField numberField = moduleFormConfigDTO.getFields().stream()
-                .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
-
-        if (numberField != null) {
-            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-            fieldValue.setFieldId(numberField.getId());
-            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.INVOICE.getKey());
-        }
-        return null;
-    }
-
 
     /**
      * 保存合同快照
@@ -258,7 +238,6 @@ public class ContractInvoiceService {
             invoice.setUpdateTime(System.currentTimeMillis());
             invoice.setUpdateUser(userId);
             // 保留不可更改的字段
-            invoice.setNumber(originContractInvoice.getNumber());
             invoice.setCreateUser(originContractInvoice.getCreateUser());
             invoice.setCreateTime(originContractInvoice.getCreateTime());
             invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
@@ -274,7 +253,9 @@ public class ContractInvoiceService {
                 if (first != null) {
                     ContractInvoiceGetResponse response = JSON.parseObject(first.getInvoiceValue(), ContractInvoiceGetResponse.class);
                     List<BaseModuleFieldValue> originModuleFields = response.getModuleFields();
-                    originFields.addAll(originModuleFields);
+                    if (CollectionUtils.isNotEmpty(originModuleFields)) {
+                        originFields.addAll(originModuleFields);
+                    }
                 }
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);

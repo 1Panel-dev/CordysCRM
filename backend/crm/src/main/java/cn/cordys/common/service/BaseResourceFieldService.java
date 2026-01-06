@@ -479,7 +479,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return resourceMap;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return null;
+            return Map.of();
         } finally {
             SourceDetailResolveContext.end();
         }
@@ -499,7 +499,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<BaseField> sourceBusinessFields = fields.stream().filter(field -> field instanceof DatasourceField sourceField &&
                 CollectionUtils.isNotEmpty(sourceField.getShowFields()) && StringUtils.isNotEmpty(sourceField.getBusinessKey())).toList();
         if (CollectionUtils.isEmpty(sourceBusinessFields) || MapUtils.isEmpty(resourceFieldMap)) {
-            return resourceFieldMap;
+            return Map.of();
         }
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
         details.forEach(detail -> {

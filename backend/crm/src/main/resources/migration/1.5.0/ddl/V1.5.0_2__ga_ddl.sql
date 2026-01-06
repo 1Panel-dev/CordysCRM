@@ -65,13 +65,13 @@ COLLATE = utf8mb4_general_ci;
 CREATE TABLE contract_invoice
 (
     `id`                VARCHAR(32) NOT NULL COMMENT 'id',
-    `number`            VARCHAR(50) NOT NULL COMMENT '编号',
+    `name`              VARCHAR(255) NOT NULL   COMMENT '发票名称',
     `contract_id`       VARCHAR(32) NOT NULL COMMENT '合同id',
     `owner`             VARCHAR(32) NOT NULL COMMENT '负责人',
     `amount`            DECIMAL(20, 10) COMMENT '开票金额',
     `invoice_type`      VARCHAR(50) COMMENT '发票类型',
     `tax_rate`          DECIMAL(20, 10) COMMENT '税率',
-    `review_status`     VARCHAR(50) COMMENT '审核状态',
+    `approval_status`     VARCHAR(50) COMMENT '审核状态',
     `business_title_id` VARCHAR(50) COMMENT '工商抬头ID',
     `organization_id`   VARCHAR(32) NOT NULL COMMENT '组织id',
     `create_time`       BIGINT      NOT NULL COMMENT '创建时间',

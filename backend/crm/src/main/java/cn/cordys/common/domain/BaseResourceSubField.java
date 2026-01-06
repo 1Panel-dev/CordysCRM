@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BaseResourceSubField extends BaseResourceField{
+public class BaseResourceSubField extends BaseResourceField {
 
 	@Schema(description = "关联子表格ID")
 	private String refSubId;
