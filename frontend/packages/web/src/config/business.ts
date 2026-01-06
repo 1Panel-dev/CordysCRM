@@ -8,6 +8,7 @@ import {
   ThirdPartyDingTalkLoginConfig,
   ThirdPartyLarkLoginConfig,
   ThirdPartyMKConfig,
+  ThirdPartyQccConfig,
   ThirdPartySQLBotConfig,
   ThirdPartyTenderConfig,
 } from '@lib/shared/models/system/business';
@@ -488,6 +489,13 @@ export const defaultThirdPartTenderConfig: ThirdPartyTenderConfig = {
   tenderEnable: false,
 };
 
+export const defaultThirdPartQichachaConfig: ThirdPartyQccConfig = {
+  qccAddress: 'https://api.qichacha.com',
+  qccAccessKey: '',
+  qccSecretKey: '',
+  qccEnable: false,
+};
+
 export const defaultThirdPartyConfigMap = {
   [CompanyTypeEnum.WECOM]: defaultThirdPartyBaseLoginConfig,
   [CompanyTypeEnum.DINGTALK]: defaultThirdPartDingTalkLoginConfig,
@@ -496,6 +504,7 @@ export const defaultThirdPartyConfigMap = {
   [CompanyTypeEnum.SQLBot]: defaultThirdPartSQLBotConfig,
   [CompanyTypeEnum.MAXKB]: defaultThirdPartMaxKBConfig,
   [CompanyTypeEnum.TENDER]: defaultThirdPartTenderConfig,
+  [CompanyTypeEnum.QCC]: defaultThirdPartQichachaConfig,
   [CompanyTypeEnum.INTERNAL]: {},
   [CompanyTypeEnum.WE_COM_OAUTH2]: {},
   [CompanyTypeEnum.DINGTALK_OAUTH2]: {},

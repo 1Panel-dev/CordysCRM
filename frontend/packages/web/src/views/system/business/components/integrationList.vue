@@ -416,6 +416,83 @@
       </div>
     </div>
   </CrmCard>
+
+  <CrmCard hide-footer auto-height class="mt-[16px]">
+    <div class="content-title mb-[16px]">{{ t('system.business.thirdPartyPlatform') }}</div>
+    <div v-if="thirdPartyIntegrationList.length" class="grid gap-[16px] xl:grid-cols-2 2xl:grid-cols-3">
+      <div
+        v-for="item of thirdPartyIntegrationList"
+        :key="item.type"
+        class="flex h-[140px] flex-col justify-between rounded-[6px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] p-[24px]"
+      >
+        <div class="flex">
+          <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
+            <CrmSvgIcon :name="item.logo" width="24px" height="24px" />
+          </div>
+          <div class="flex-1">
+            <div class="flex justify-between gap-[8px]">
+              <div>
+                <span class="mr-[8px] font-medium">{{ item.title }}</span>
+                <CrmTag
+                  v-if="item.hasConfig && item.verify === false"
+                  theme="light"
+                  type="error"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.fail') }}
+                </CrmTag>
+                <CrmTag
+                  v-else-if="item.hasConfig && item.verify === null"
+                  theme="light"
+                  type="warning"
+                  size="small"
+                  custom-class="px-[4px]"
+                >
+                  {{ t('common.unVerify') }}
+                </CrmTag>
+                <CrmTag v-else theme="light" type="success" size="small" custom-class="px-[4px]">
+                  {{ t('common.success') }}
+                </CrmTag>
+              </div>
+              <div>
+                <n-button
+                  v-permission="['SYSTEM_SETTING:UPDATE']"
+                  size="small"
+                  type="default"
+                  class="outline--secondary mr-[8px] px-[8px]"
+                  @click="handleEdit(item)"
+                >
+                  {{ t('common.config') }}
+                </n-button>
+                <n-button size="small" type="default" class="outline--secondary px-[8px]" @click="testLink(item)">
+                  {{ t('system.business.mailSettings.testLink') }}
+                </n-button>
+              </div>
+            </div>
+            <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
+          </div>
+        </div>
+        <div class="flex justify-between gap-[8px]">
+          <div class="flex items-center gap-[8px]">
+            <n-tooltip :disabled="item.verify">
+              <template #trigger>
+                <n-switch
+                  size="small"
+                  :rubber-band="false"
+                  :value="item.config.qccEnable"
+                  :disabled="!item.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'qccEnable')"
+                />
+              </template>
+              {{ t('system.business.notConfiguredTip') }}
+            </n-tooltip>
+            <div class="text-[12px]">{{ t('system.business.qichacha') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </CrmCard>
   <EditIntegrationModal
     v-model:show="showEditIntegrationModal"
     :title="currentTitle"
@@ -502,9 +579,15 @@
     },
     {
       type: CompanyTypeEnum.TENDER,
-      title: '大单网',
-      description: '上大单中大单',
+      title: t('system.business.tenderTitle'),
+      description: t('system.business.tenderDescription'),
       logo: 'dadan',
+    },
+    {
+      type: CompanyTypeEnum.QCC,
+      title: t('system.business.qichacha'),
+      description: t('system.business.thirdQueryQccDescription'),
+      logo: 'qichacha',
     },
   ];
 
@@ -523,6 +606,10 @@
     originIntegrationList.value.filter((e) => e.type === CompanyTypeEnum.TENDER)
   );
 
+  const thirdPartyIntegrationList = computed<IntegrationItem[]>(() =>
+    originIntegrationList.value.filter((e) => e.type === CompanyTypeEnum.QCC)
+  );
+
   const loading = ref(false);
   async function initSyncList() {
     try {
@@ -537,6 +624,7 @@
             CompanyTypeEnum.SQLBot,
             CompanyTypeEnum.MAXKB,
             CompanyTypeEnum.TENDER,
+            CompanyTypeEnum.QCC,
           ].includes(item.type)
         )
         .map((item) => {
@@ -555,7 +643,10 @@
         });
 
       integrationList.value = originIntegrationList.value.filter(
-        (e) => ![...platformType, CompanyTypeEnum.MAXKB, CompanyTypeEnum.TENDER].includes(e.type as CompanyTypeEnum)
+        (e) =>
+          ![...platformType, CompanyTypeEnum.MAXKB, CompanyTypeEnum.TENDER, CompanyTypeEnum.QCC].includes(
+            e.type as CompanyTypeEnum
+          )
       );
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -613,7 +704,14 @@
 
   async function handleChangeEnable(
     item: IntegrationItem,
-    key: 'deBoardEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable' | 'startEnable' | 'mkEnable' | 'tenderEnable'
+    key:
+      | 'deBoardEnable'
+      | 'sqlBotBoardEnable'
+      | 'sqlBotChatEnable'
+      | 'startEnable'
+      | 'mkEnable'
+      | 'tenderEnable'
+      | 'qccEnable'
   ) {
     try {
       loading.value = true;
