@@ -7,7 +7,11 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.contract.domain.ContractPaymentRecord;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -46,11 +50,39 @@ public class ContractPaymentRecordController {
 
 	@PostMapping("/page")
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
-	@Operation(summary = "合同回款记录表")
+	@Operation(summary = "回款记录列表")
 	public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
 		ConditionFilterUtils.parseCondition(request);
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
+
+	@PostMapping("/add")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD)
+	@Operation(summary = "添加回款记录")
+	public ContractPaymentRecord add(@Validated @RequestBody ContractPaymentRecordAddRequest request) {
+		return contractPaymentRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/update")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE)
+	@Operation(summary = "修改回款记录")
+	public ContractPaymentRecord update(@Validated @RequestBody ContractPaymentRecordUpdateRequest request) {
+		return contractPaymentRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@GetMapping("/delete/{id}")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE)
+	@Operation(summary = "删除回款记录")
+	public void delete(@PathVariable String id) {
+		contractPaymentRecordService.delete(id);
+	}
+
+	@GetMapping("/get/{id}")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@Operation(summary = "回款记录详情")
+	public ContractPaymentRecordGetResponse get(@PathVariable String id) {
+		return contractPaymentRecordService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 }
