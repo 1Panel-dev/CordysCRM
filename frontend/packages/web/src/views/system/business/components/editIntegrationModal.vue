@@ -66,8 +66,29 @@
         </n-form-item>
       </template>
 
+      <template v-if="[CompanyTypeEnum.QCC].includes(form?.type)">
+        <n-form-item path="qccAddress" :label="t('system.business.qichachaAddress')">
+          <n-input v-model:value="form.config.qccAddress" :placeholder="t('common.pleaseInput')" />
+        </n-form-item>
+        <n-form-item path="qccAccessKey" label="Access Key">
+          <n-input v-model:value="form.config.qccAccessKey" :placeholder="t('common.pleaseInput')" />
+        </n-form-item>
+        <n-form-item path="qccSecretKey" label="Secret Key">
+          <n-input
+            v-model:value="form.config.qccSecretKey"
+            type="password"
+            show-password-on="click"
+            :placeholder="t('common.pleaseInput')"
+          />
+        </n-form-item>
+      </template>
+
       <!-- 应用密钥 -->
-      <n-form-item v-if="form.type !== CompanyTypeEnum.SQLBot" path="appSecret" :label="getAppSecretText">
+      <n-form-item
+        v-if="![CompanyTypeEnum.SQLBot, CompanyTypeEnum.QCC].includes(form.type)"
+        path="appSecret"
+        :label="getAppSecretText"
+      >
         <n-input
           v-model:value="form.config.appSecret"
           type="password"
@@ -81,7 +102,11 @@
         />
       </n-form-item>
 
-      <n-form-item v-else path="appSecret" :label="t('system.business.SQLBot.embeddedScript')">
+      <n-form-item
+        v-if="[CompanyTypeEnum.SQLBot].includes(form.type)"
+        path="appSecret"
+        :label="t('system.business.SQLBot.embeddedScript')"
+      >
         <n-input
           v-model:value="form.config.appSecret"
           type="textarea"
@@ -469,8 +494,9 @@
   }
 
   const getLabelWidth = computed(() => {
-    if (form.value.type === CompanyTypeEnum.DATA_EASE) return 120;
+    if ([CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.QCC].includes(form.value.type)) return 120;
     if ([...platformType, CompanyTypeEnum.MAXKB].includes(form.value.type)) return 100;
+
     return 80;
   });
 

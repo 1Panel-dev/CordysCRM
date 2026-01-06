@@ -180,4 +180,10 @@ export default {
   'system.business.agent.agentMaxKBDescription': '强大易用的企业级智能体平台',
   'system.business.agent.agentMaxKBUrl': 'MaxKB地址',
   'system.business.tender': '标讯平台',
+  'system.business.tenderTitle': '大单网',
+  'system.business.tenderDescription': '上大单中大单',
+  'system.business.thirdPartyPlatform': '第三方查询平台',
+  'system.business.thirdQueryQccDescription': '专业的企业信息查询平台',
+  'system.business.qichacha': '企查查',
+  'system.business.qichachaAddress': '企查查地址',
 };

@@ -59,6 +59,13 @@ export interface ThirdPartyTenderConfig {
   tenderAddress:string;
   tenderEnable:boolean;
 }
+// 企查查配置类型
+export interface ThirdPartyQccConfig{
+  qccAddress:string;
+  qccAccessKey:string;
+  qccSecretKey:string;
+  qccEnable:boolean;
+}
 
 export interface ThirdPartyResourceConfig{
   type: CompanyTypeEnum;
