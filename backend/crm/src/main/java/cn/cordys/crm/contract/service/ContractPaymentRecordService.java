@@ -4,10 +4,12 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
@@ -22,31 +24,45 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
+import cn.cordys.crm.contract.domain.ContractPaymentRecordField;
+import cn.cordys.crm.contract.domain.ContractPaymentRecordFieldBlob;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
+import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,6 +77,8 @@ public class ContractPaymentRecordService {
 	@Resource
 	private BaseService baseService;
 	@Resource
+	private LogService logService;
+	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
 	private ModuleFormService moduleFormService;
@@ -72,6 +90,10 @@ public class ContractPaymentRecordService {
 	private SerialNumGenerator serialNumGenerator;
 	@Resource
 	private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
+	@Resource
+	private BaseMapper<ContractPaymentRecordField> contractPaymentRecordFieldMapper;
+	@Resource
+	private BaseMapper<ContractPaymentRecordFieldBlob> contractPaymentRecordFieldBlobMapper;
 	@Resource
 	private ExtContractPaymentRecordMapper extContractPaymentRecordMapper;
 	@Resource
@@ -97,7 +119,7 @@ public class ContractPaymentRecordService {
 
 	@OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
 	public ContractPaymentRecord add(ContractPaymentRecordAddRequest request, String currentUser, String currentOrg) {
-		checkContractPaymentAmount(request.getContractId(), request.getRecordAmount());
+		checkContractPaymentAmount(request.getContractId(), request.getRecordAmount(), null);
 		ContractPaymentRecord paymentRecord = BeanUtils.copyBean(new ContractPaymentRecord(), request);
 		paymentRecord.setId(IDGenerator.nextStr());
 		if (StringUtils.isEmpty(paymentRecord.getOwner())) {
@@ -126,6 +148,7 @@ public class ContractPaymentRecordService {
 		if (oldRecord == null) {
 			throw new GenericException(Translator.get("record.not.exist"));
 		}
+		checkContractPaymentAmount(request.getContractId(), request.getRecordAmount(), oldRecord.getId());
 		ContractPaymentRecord contractPaymentRecord = BeanUtils.copyBean(new ContractPaymentRecord(), request);
 		contractPaymentRecord.setNo(oldRecord.getNo());
 		contractPaymentRecord.setUpdateTime(System.currentTimeMillis());
@@ -187,6 +210,94 @@ public class ContractPaymentRecordService {
 			}
 		}
 		return recordDetail;
+	}
+
+	/**
+	 * 下载导入的模板
+	 *
+	 * @param response 响应
+	 */
+	public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+		new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
+				moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg),
+				Translator.get("payment.record.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+				new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
+				new CustomHeadColWidthStyleStrategy());
+	}
+
+	/**
+	 * 导入检查
+	 *
+	 * @param file       导入文件
+	 * @param currentOrg 当前组织
+	 *
+	 * @return 导入检查信息
+	 */
+	public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+		if (file == null) {
+			throw new GenericException(Translator.get("file_cannot_be_null"));
+		}
+		return checkImportExcel(file, currentOrg);
+	}
+
+	/**
+	 * 检查导入的文件
+	 *
+	 * @param file       文件
+	 * @param currentOrg 当前组织
+	 *
+	 * @return 检查信息
+	 */
+	private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+		try {
+			List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+			CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_payment_record", "contract_payment_record_field", currentOrg);
+			FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+			return ImportResponse.builder().errorMessages(eventListener.getErrList())
+					.successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+		} catch (Exception e) {
+			log.error("Payment record import pre-check error: {}", e.getMessage());
+			throw new GenericException(e.getMessage());
+		}
+	}
+
+	/**
+	 * 回款记录导入
+	 *
+	 * @param file        导入文件
+	 * @param currentOrg  当前组织
+	 * @param currentUser 当前用户
+	 *
+	 * @return 导入返回信息
+	 */
+	public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+		try {
+			List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+			Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey())).findAny();
+			CustomImportAfterDoConsumer<ContractPaymentRecord, BaseResourceSubField> afterDo = (records, recordFields, recordFieldBlobs) -> {
+				List<LogDTO> logs = new ArrayList<>();
+				records.forEach(record -> {
+					if (serialOptional.isPresent()) {
+						List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
+						record.setNo(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.CONTRACT_PAYMENT_RECORD.getKey()));
+					}
+					logs.add(new LogDTO(currentOrg, record.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_PAYMENT_RECORD, record.getName()));
+				});
+				contractPaymentRecordMapper.batchInsert(records);
+				contractPaymentRecordFieldMapper.batchInsert(recordFields.stream().map(field -> BeanUtils.copyBean(new ContractPaymentRecordField(), field)).toList());
+				contractPaymentRecordFieldBlobMapper.batchInsert(recordFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractPaymentRecordFieldBlob(), field)).toList());
+				// record logs
+				logService.batchAdd(logs);
+			};
+			CustomFieldImportEventListener<ContractPaymentRecord> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentRecord.class, currentOrg, currentUser,
+					"contract_payment_record_field", afterDo, 2000, null, null);
+			FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+			return ImportResponse.builder().errorMessages(eventListener.getErrList())
+					.successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+		} catch (Exception e) {
+			log.error("Payment record import error: ", e);
+			throw new GenericException(e.getMessage());
+		}
 	}
 
 	/**
@@ -268,14 +379,17 @@ public class ContractPaymentRecordService {
 	 * @param contractId 	合同ID
 	 * @param payAmount 	回款金额
 	 */
-	private void checkContractPaymentAmount(String contractId, BigDecimal payAmount) {
+	private void checkContractPaymentAmount(String contractId, BigDecimal payAmount, String excludeRecordId) {
 		if (payAmount == null || payAmount.compareTo(BigDecimal.ZERO) <= 0) {
 			return;
 		}
 		LambdaQueryWrapper<ContractPaymentRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		recordLambdaQueryWrapper.eq(ContractPaymentRecord::getContractId, contractId);
+		if (StringUtils.isNotEmpty(excludeRecordId)) {
+			recordLambdaQueryWrapper.nq(ContractPaymentRecord::getId, excludeRecordId);
+		}
 		List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
-		BigDecimal alreadyPay = contractPaymentRecords.stream().map(ContractPaymentRecord::getRecordAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal alreadyPay = contractPaymentRecords.stream().map(ContractPaymentRecord::getRecordAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Contract contract = contractMapper.selectByPrimaryKey(contractId);
 		if ((alreadyPay.add(payAmount)).compareTo(contract.getAmount()) > 0) {
 			throw new GenericException(Translator.getWithArgs("record.amount.exceed", contract.getAmount().subtract(alreadyPay)));
