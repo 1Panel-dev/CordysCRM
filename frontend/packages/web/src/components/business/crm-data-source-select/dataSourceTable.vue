@@ -12,6 +12,7 @@
       :fullscreen-target-ref="props.fullscreenTargetRef"
       :childrenKey="subFieldKey"
       :columns="columns"
+      :class="subFieldKey ? 'crm-datasource-table--hasSubField' : ''"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -315,6 +316,13 @@
       }
       &:not(.n-input--disabled) .n-input__input-el {
         caret-color: var(--primary-8) !important;
+      }
+    }
+  }
+  .crm-datasource-table--hasSubField {
+    .n-data-table-thead {
+      .n-checkbox {
+        @apply hidden;
       }
     }
   }

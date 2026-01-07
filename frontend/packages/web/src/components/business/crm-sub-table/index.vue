@@ -215,7 +215,6 @@
         let fieldVal: string | string[] = '';
         if (targetSource) {
           const sourceFieldVal = targetSource[sf.id]; // 数据源的显示字段都使用id 读取
-          fieldVal = sourceFieldVal;
           if (sf.subTableFieldId) {
             // 如果数据源显示字段是数据源的子表格字段，则需要 rowId 定位数据源子表格的行
             const subTableData = targetSource[sf.subTableFieldId];
@@ -225,6 +224,8 @@
                 fieldVal = subTableRow[sf.id];
               }
             }
+          } else {
+            fieldVal = sourceFieldVal;
           }
         }
         if (Array.isArray(fieldVal)) {
@@ -254,6 +255,75 @@
       return prev;
     }, {} as Record<string, number>);
   });
+
+  const isProcessingDataSourceChange = ref(false);
+  function handleDataSourceChange(
+    val: any[],
+    source: Record<string, any>[],
+    field: FormCreateField,
+    row: Record<string, any>,
+    rowIndex: number,
+    isPriceSubTableShowSubField?: boolean
+  ) {
+    if (isProcessingDataSourceChange.value) {
+      // 子表格添加多行会触发 change，避免重复处理
+      return;
+    }
+    isProcessingDataSourceChange.value = true;
+    const key = field.businessKey || field.id;
+    if (isPriceSubTableShowSubField) {
+      // 价格表子表格特殊处理，需要填充多行
+      const children = source.filter(
+        (s) => s.parentId && data.value.every((r) => r.price_sub !== s.id) // 过滤已存在的行
+      );
+      if (children.length === 0 || !source.some((s) => s.parentId)) {
+        // 没有选中子项或没有选中父项，都表示当前为清空
+        row[key] = [];
+        row.price_sub = '';
+        applyDataSourceShowFields(field, [], row, source, row.price_sub);
+        emit('change', data.value);
+        nextTick(() => {
+          isProcessingDataSourceChange.value = false;
+        });
+        return;
+      }
+      if (children.length > 1) {
+        // 多选行时，新增多行且选中值为子项的父项信息
+        row.price_sub = children[0]?.id;
+        row[key] = [children[0].parentId, row.price_sub];
+        applyDataSourceShowFields(field, row[key], row, source, row.price_sub); // 数据源显示字段读取值并显示
+        for (let i = 1; i < children.length; i++) {
+          // 补充新增行
+          addLine();
+        }
+        nextTick(() => {
+          // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
+          for (let i = data.value.length - 1; i > rowIndex; i--) {
+            const newRow = data.value[i];
+            newRow.price_sub = children[i - rowIndex]?.id;
+            newRow[key] = [children[i - rowIndex]?.parentId, newRow.price_sub]; // 选中值为父项以及当前行
+            applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
+          }
+        });
+      } else {
+        // 单选行只有一个父级
+        row.price_sub = children[0]?.id;
+        row[key] = val;
+        applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
+      }
+    } else {
+      row[key] = val;
+      applyDataSourceShowFields(field, val, row, source, row.price_sub);
+    }
+    sumInitialOptions.value = sumInitialOptions.value.concat(
+      ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
+    );
+    nextTick(() => {
+      isProcessingDataSourceChange.value = false;
+    });
+    emit('change', data.value);
+  }
+
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
     if (props.readonly) {
       return props.subFields
@@ -366,44 +436,9 @@
                 formDetail: props.formDetail,
                 disabled: props.disabled,
                 class: 'w-[240px]',
+                hideChildTag: isPriceSubTableShowSubField,
                 onChange: (val, source) => {
-                  if (isPriceSubTableShowSubField && val.length) {
-                    // 价格表子表格特殊处理，需要填充多行
-                    const children = source.filter((s) => s.parentId);
-                    if (children.length > 1) {
-                      // 多选行时，新增多行且选中值为子项的父项信息
-                      row.price_sub = children[0]?.id;
-                      row[key] = [children[0].parentId];
-                      applyDataSourceShowFields(field, row[key], row, source, row.price_sub); // 数据源显示字段读取值并显示
-                      for (let i = 1; i < children.length; i++) {
-                        // 补充新增行
-                        if (data.value.every((r) => r.price_sub !== children[i].id)) {
-                          addLine();
-                        }
-                      }
-                      nextTick(() => {
-                        // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
-                        for (let i = data.value.length - 1; i > rowIndex; i--) {
-                          const newRow = data.value[i];
-                          newRow.price_sub = children[i - rowIndex]?.id;
-                          newRow[key] = [children[i - rowIndex].parentId];
-                          applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
-                        }
-                      });
-                    } else {
-                      // 单选行只有一个父级
-                      row.price_sub = children[0]?.id;
-                      row[key] = source.filter((s) => !s.parentId).map((s) => s.id);
-                      applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
-                    }
-                  } else {
-                    row[key] = val;
-                    applyDataSourceShowFields(field, val, row, source, row.price_sub);
-                  }
-                  sumInitialOptions.value = sumInitialOptions.value.concat(
-                    ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
-                  );
-                  emit('change', data.value);
+                  handleDataSourceChange(val, source, field, row, rowIndex, isPriceSubTableShowSubField);
                 },
               });
             },
