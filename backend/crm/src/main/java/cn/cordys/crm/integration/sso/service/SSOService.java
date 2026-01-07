@@ -1,7 +1,7 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
-import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.request.LoginRequest;
@@ -30,7 +30,6 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUser;
 import cn.cordys.security.UserDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -110,7 +109,7 @@ public class SSOService {
     public SessionUser exchangeWeComOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdDetailType.WECOM_SYNC.toString());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigBaseDTO<?> config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 
@@ -391,7 +390,7 @@ public class SSOService {
     public SessionUser exchangeDingTalkOauth2(String code) {
         validateCode(code);
 
-        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString());
+        OrganizationConfigDetail configDetail = getAuthConfigDetail(ThirdDetailType.DINGTALK_SYNC.name());
         String content = new String(configDetail.getContent(), StandardCharsets.UTF_8);
         ThirdConfigBaseDTO<?> config = JSON.parseObject(content, ThirdConfigBaseDTO.class);
 

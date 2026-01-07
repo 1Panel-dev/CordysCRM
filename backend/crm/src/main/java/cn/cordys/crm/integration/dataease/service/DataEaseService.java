@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.dataease.service;
 
-import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
@@ -63,7 +63,7 @@ public class DataEaseService {
                 .getOrgConfigDetailByType(
                         config.getId(),
                         null,
-                        List.of(ThirdConstants.ThirdDetailType.DE_BOARD.toString())
+                        List.of(ThirdDetailType.DE_BOARD.name())
                 )
                 .stream()
                 .findFirst()

@@ -6,7 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
-import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
@@ -171,11 +171,11 @@ public class OrganizationConfigService {
             return false;
         }
         if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.WECOM.name())) {
-            type = ThirdConstants.ThirdDetailType.WECOM_SYNC.toString();
+            type = ThirdDetailType.WECOM_SYNC.name();
         } else if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.DINGTALK.name())) {
-            type = ThirdConstants.ThirdDetailType.DINGTALK_SYNC.toString();
+            type = ThirdDetailType.DINGTALK_SYNC.name();
         } else if (organizationConfig.getSyncResource().equals(ThirdConfigTypeConstants.LARK.name())) {
-            type = ThirdConstants.ThirdDetailType.LARK_SYNC.toString();
+            type = ThirdDetailType.LARK_SYNC.name();
         } else {
             return false;
         }
