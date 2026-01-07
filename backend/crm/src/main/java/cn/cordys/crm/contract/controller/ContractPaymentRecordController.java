@@ -6,6 +6,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -96,6 +97,13 @@ public class ContractPaymentRecordController {
 	@Operation(summary = "回款记录详情")
 	public ContractPaymentRecordGetResponse get(@PathVariable String id) {
 		return contractPaymentRecordService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@GetMapping("/tab")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@Operation(summary = "视图TAB显示配置")
+	public ResourceTabEnableDTO getTabEnableConfig() {
+		return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/template/download")
