@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ModuleFormSaveRequest {
 
-    @Size(max = 20)
+    @Size(max = 50)
     @NotBlank
     @Schema(description = "表单KEY", requiredMode = Schema.RequiredMode.REQUIRED)
     private String formKey;
