@@ -156,6 +156,8 @@
     exportOpportunitySelected,
     exportPaymentPlanAll,
     exportPaymentPlanSelected,
+    exportPaymentRecordAll,
+    exportPaymentRecordSelected,
     exportProductPriceAll,
     exportProductPriceSelected,
   } from '@/api/modules';
@@ -300,7 +302,7 @@
     openSea: exportCustomerOpenSeaAll,
     contract: exportContractAll,
     contractPaymentPlan: exportPaymentPlanAll,
-    contractPaymentRecord: exportPaymentPlanAll,
+    contractPaymentRecord: exportPaymentRecordAll,
     price: exportProductPriceAll,
     businessTitle: exportBusinessTitleAll,
   };
@@ -314,7 +316,7 @@
     openSea: exportCustomerOpenSeaSelected,
     contract: exportContractSelected,
     contractPaymentPlan: exportPaymentPlanSelected,
-    contractPaymentRecord: exportPaymentPlanAll,
+    contractPaymentRecord: exportPaymentRecordSelected,
     price: exportProductPriceSelected,
     businessTitle: exportBusinessTitleSelected,
   };

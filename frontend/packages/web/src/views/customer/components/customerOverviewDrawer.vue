@@ -269,7 +269,7 @@
         name: 'contractPaymentRecord',
         tab: t('module.paymentRecord'),
         enable: true,
-        permission: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
+        permission: ['CONTRACT_PAYMENT_RECORD:READ'],
       },
     ];
     if (collaborationType.value) {

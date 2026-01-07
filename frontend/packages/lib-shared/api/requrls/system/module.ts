@@ -53,6 +53,7 @@ export const GetFieldCustomerListUrl = '/field/source/account'; // 获取客户�
 export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
 export const GetFieldClueListUrl = '/field/source/lead'; // 获取线索列表
 export const GetFieldContractListUrl = '/field/source/contract'; // 获取合同列表
+export const GetFieldContractPaymentPlanListUrl = '/field/source/contract/payment-plan'; // 获取回款计划列表
 export const CheckRepeatUrl = '/field/check/repeat'; // 查重
 export const GetFieldPriceListUrl = '/field/source/price'; // 获取价格列表
 export const GetFieldQuotationListUrl = '/field/source/quotation'; // 获取报价单列表

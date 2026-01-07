@@ -1447,6 +1447,11 @@
         value: FieldDataSourceTypeEnum.CONTRACT,
         formKey: FormDesignKeyEnum.CONTRACT,
       },
+      {
+        label: t('module.paymentPlan'),
+        value: FieldDataSourceTypeEnum.CONTRACT_PAYMENT,
+        formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
+      },
     ];
     if (isSubTableField.value) {
       return fullList.filter(

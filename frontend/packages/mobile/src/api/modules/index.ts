@@ -344,6 +344,7 @@ export const {
   deleteAttachment,
   getFieldPriceList,
   getFieldQuotationList,
+  getFieldContractPaymentPlanList,
 } = moduleApi;
 
 export const {

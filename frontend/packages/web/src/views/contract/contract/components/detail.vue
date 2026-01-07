@@ -132,7 +132,7 @@
       {
         name: 'paymentRecord',
         tab: t('module.paymentRecord'),
-        permission: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
+        permission: ['CONTRACT_PAYMENT_RECORD:READ'],
       },
     ].filter((item) => hasAnyPermission(item.permission))
   );

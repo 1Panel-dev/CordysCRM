@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false">
+  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :title="title" :footer="false">
     <template v-if="!props.readonly" #titleRight>
       <n-button
         v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
@@ -55,6 +55,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -82,9 +83,11 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const detailInfo = ref();
+  const title = ref('');
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     detailInfo.value = detail;
+    title.value = name || '';
   }
 
   const refreshKey = ref(0);
@@ -96,7 +99,7 @@
   function handleDelete(row: any) {
     openModal({
       type: 'error',
-      title: t('system.personal.confirmDelete'),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('contract.paymentRecord.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
