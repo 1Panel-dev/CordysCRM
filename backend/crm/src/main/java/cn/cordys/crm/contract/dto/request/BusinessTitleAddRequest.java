@@ -35,7 +35,7 @@ public class BusinessTitleAddRequest {
     private String phoneNumber;
 
     @Schema(description = "注册资本")
-    private BigDecimal registeredCapital;
+    private String registeredCapital;
 
     @Size(max = 50)
     @Schema(description = "公司规模")

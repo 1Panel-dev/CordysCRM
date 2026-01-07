@@ -13,6 +13,7 @@ import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
 import cn.cordys.crm.contract.service.BusinessTitleExportService;
 import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,12 +23,13 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Tag(name = "工商抬头")
 @RestController
-@RequestMapping("/business-title")
+@RequestMapping("/contract/business-title")
 public class BusinessTitleController {
 
     @Resource
@@ -140,5 +142,21 @@ public class BusinessTitleController {
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         businessTitleService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "excel导入检查")
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file) {
+        return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping(value = "/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file) {
+        return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

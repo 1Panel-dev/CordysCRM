@@ -25,30 +25,40 @@ import cn.cordys.crm.contract.dto.request.BusinessTitleUpdateRequest;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
 import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelDataFactory;
 import cn.cordys.crm.contract.excel.handler.BusinessTitleTemplateWriteHandler;
+import cn.cordys.crm.contract.excel.listener.BusinessTitleCheckEventListener;
+import cn.cordys.crm.contract.excel.listener.BusinessTitleImportEventListener;
 import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.dto.response.ImportResponse;
+import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class BusinessTitleService {
 
     @Resource
@@ -104,11 +114,12 @@ public class BusinessTitleService {
 
     /**
      * 校验名称
+     *
      * @param businessName
      * @param orgId
      * @param id
      */
-    private void checkName(String businessName, String orgId,String id) {
+    private void checkName(String businessName, String orgId, String id) {
         if (extBusinessTitleMapper.countByName(businessName, orgId, id) > 0) {
             throw new GenericException(Translator.get("business_title.exist"));
         }
@@ -274,18 +285,24 @@ public class BusinessTitleService {
         return businessTitle.getApprovalStatus();
     }
 
-    public void downloadImportTpl(HttpServletResponse response,String orgId) {
+    /**
+     * 下载模板
+     *
+     * @param response
+     * @param orgId
+     */
+    public void downloadImportTpl(HttpServletResponse response, String orgId) {
         //获取表头字段
         List<List<String>> heads = getTemplateHead();
 
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, heads,
                         Translator.get("business_title_import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new BusinessTitleTemplateWriteHandler(heads,getBusinessTitleConfig(orgId)), new CustomHeadColWidthStyleStrategy());
+                        new BusinessTitleTemplateWriteHandler(heads, getBusinessTitleConfig(orgId)), new CustomHeadColWidthStyleStrategy());
     }
 
 
-    private Map<String, Boolean>  getBusinessTitleConfig(String orgId) {
+    private Map<String, Boolean> getBusinessTitleConfig(String orgId) {
         LambdaQueryWrapper<BusinessTitleConfig> configWrapper = new LambdaQueryWrapper<>();
         configWrapper.eq(BusinessTitleConfig::getOrganizationId, orgId);
         List<BusinessTitleConfig> businessTitleConfigs = businessTitleConfigMapper.selectListByLambda(configWrapper);
@@ -295,5 +312,75 @@ public class BusinessTitleService {
 
     private List<List<String>> getTemplateHead() {
         return new BusinessTitleExcelDataFactory().getExcelDataLocal().getHead();
+    }
+
+
+    /**
+     * 导入检查
+     *
+     * @param file
+     * @param orgId
+     * @return
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String orgId) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, orgId);
+    }
+
+
+    /**
+     * 检查导入文件
+     *
+     * @param file
+     * @param orgId
+     * @return
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String orgId) {
+        try {
+            Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz, getBusinessTitleConfig(orgId), orgId);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 导入
+     *
+     * @param file
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public ImportResponse realImport(MultipartFile file, String userId, String orgId) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        try {
+            Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            Consumer<List<BusinessTitle>> afterDto = (businessTitles) -> {
+                List<LogDTO> logs = new ArrayList<>();
+                businessTitles.forEach(title -> {
+                    title.setType(BusinessTitleType.CUSTOM.name());
+                    logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CUSTOMER_INDEX, title.getBusinessName()));
+                });
+                businessTitleMapper.batchInsert(businessTitles);
+                logService.batchAdd(logs);
+            };
+            BusinessTitleImportEventListener eventListener = new BusinessTitleImportEventListener(clazz, BusinessTitle.class, getBusinessTitleConfig(orgId), orgId, userId, afterDto);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("importExcel error", e);
+            throw new GenericException(e.getMessage());
+        }
     }
 }
