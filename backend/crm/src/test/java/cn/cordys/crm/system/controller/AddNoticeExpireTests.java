@@ -90,6 +90,7 @@ public class AddNoticeExpireTests {
 
         ContractPaymentPlan contractPaymentPlan = new ContractPaymentPlan();
         contractPaymentPlan.setId("SDDFDJJND");
+		contractPaymentPlan.setName("test");
         contractPaymentPlan.setOrganizationId("100001");
         contractPaymentPlan.setContractId("SDDFDJJND");
         contractPaymentPlan.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
@@ -104,6 +105,7 @@ public class AddNoticeExpireTests {
 
         contractPaymentPlan = new ContractPaymentPlan();
         contractPaymentPlan.setId("SgDFDJJND");
+		contractPaymentPlan.setName("test");
         contractPaymentPlan.setOrganizationId("100001");
         contractPaymentPlan.setContractId("SDDFDJJND");
         contractPaymentPlan.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());

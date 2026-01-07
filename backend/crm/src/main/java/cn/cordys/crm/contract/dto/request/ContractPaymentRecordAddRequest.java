@@ -17,7 +17,7 @@ public class ContractPaymentRecordAddRequest {
 
 	@NotBlank
 	@Size(max = 255)
-	@Schema(description = "回款名称", requiredMode = Schema.RequiredMode.REQUIRED)
+	@Schema(description = "回款记录名称", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String name;
 
 	@NotBlank

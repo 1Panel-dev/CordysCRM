@@ -235,6 +235,10 @@ public enum BusinessModuleField {
      * 计划回款时间
      */
     CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+	/**
+	 * 回款计划名称
+	 */
+	CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 

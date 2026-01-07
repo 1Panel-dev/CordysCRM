@@ -3,7 +3,7 @@
 
 <mapper namespace="cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper">
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
-        select cpp.id, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
+        select cpp.id, cpp.name, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
         cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
         c.name as contract_name
         from contract_payment_plan cpp

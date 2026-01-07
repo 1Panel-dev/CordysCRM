@@ -23,6 +23,10 @@
         </foreach>
     </update>
 
+    <select id="getMaxFieldPosByFormId" resultType="java.lang.Long">
+        select pos from sys_module_field where form_id = #{formId} order by pos desc limit 1
+    </select>
+
     <select id="getSourceOptionsByIds" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">

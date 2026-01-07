@@ -210,7 +210,7 @@ public class ContractPaymentPlanService {
         return contractPaymentPlanGetResponse;
     }
 
-    @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.ADD)
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
     public ContractPaymentPlan add(ContractPaymentPlanAddRequest request, String userId, String orgId) {
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
         if (StringUtils.isBlank(request.getOwner())) {
@@ -225,19 +225,11 @@ public class ContractPaymentPlanService {
         contractPaymentPlan.setCreateUser(userId);
         contractPaymentPlan.setOrganizationId(orgId);
         contractPaymentPlan.setId(IDGenerator.nextStr());
-
-        //保存自定义字段
+        // 保存自定义字段
         contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, request.getModuleFields(), false);
-
         contractPaymentPlanMapper.insert(contractPaymentPlan);
-
-        Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlan.getContractId());
-
-        String resourceName = contract == null ? contractPaymentPlan.getContractId() : contract.getName();
-
+		// 日志
         baseService.handleAddLog(contractPaymentPlan, request.getModuleFields());
-        OperationLogContext.getContext().setResourceName(resourceName);
-        OperationLogContext.getContext().setResourceId(contractPaymentPlan.getId());
         return contractPaymentPlan;
     }
 
@@ -266,11 +258,8 @@ public class ContractPaymentPlanService {
         contractPaymentPlanMapper.update(contractPaymentPlan);
 
         contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
-        Contract contract = contractMapper.selectByPrimaryKey(contractPaymentPlan.getContractId());
 
-        String resourceName = contract == null ? originContractPaymentPlan.getContractId() : contract.getName();
-
-        baseService.handleUpdateLog(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), originContractPaymentPlan.getId(), resourceName);
+        baseService.handleUpdateLog(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), originContractPaymentPlan.getId(), originContractPaymentPlan.getName());
         return contractPaymentPlan;
     }
 

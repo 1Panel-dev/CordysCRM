@@ -1542,6 +1542,22 @@
   ],
   "contractPaymentPlan": [
     {
+      "name": "回款计划名称",
+      "internalKey": "contractPaymentPlanName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
+    },
+    {
       "name": "合同",
       "internalKey": "contractPaymentPlanContract",
       "type": "DATA_SOURCE",
@@ -2000,7 +2016,7 @@
       "titleColor": "#323535"
     },
     {
-      "name": "回款名称",
+      "name": "回款记录名称",
       "internalKey": "contractPaymentRecordName",
       "type": "INPUT",
       "showLabel": true,

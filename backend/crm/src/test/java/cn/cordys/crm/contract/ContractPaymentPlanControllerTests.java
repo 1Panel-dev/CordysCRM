@@ -69,6 +69,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         ContractPaymentPlanAddRequest request = new ContractPaymentPlanAddRequest();
+		request.setName("test");
         request.setPlanAmount(BigDecimal.valueOf(111));
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
@@ -91,6 +92,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // 请求成功
         ContractPaymentPlanUpdateRequest request = new ContractPaymentPlanUpdateRequest();
         request.setId(addContractPaymentPlan.getId());
+		request.setName("test");
         request.setPlanAmount(BigDecimal.valueOf(222));
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
@@ -100,6 +102,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // 不修改信息
         ContractPaymentPlanUpdateRequest emptyRequest = new ContractPaymentPlanUpdateRequest();
         emptyRequest.setId(addContractPaymentPlan.getId());
+		emptyRequest.setName("test");
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限
