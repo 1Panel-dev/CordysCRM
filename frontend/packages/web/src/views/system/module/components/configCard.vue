@@ -90,6 +90,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import businessTitleValidate from './businessTitleValidate.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
@@ -141,6 +142,7 @@
   const renderAccountReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   const renderLeadReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   const renderOptReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
+  const renderValidateConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   // 是否已配置原因
   const isHasConfigAccountReason = ref<boolean>(false);
   const isHasConfigLeadReason = ref<boolean>(false);
@@ -283,6 +285,18 @@
     },
   ]);
 
+  const contractMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      label: t('module.contract.businessNameValidateConfig'),
+      key: 'businessNameValidateConfig',
+      render: renderValidateConfig.value,
+    },
+    {
+      label: t('module.contract.invoiceFormSetting'),
+      key: 'invoiceFormSetting',
+    },
+  ]);
+
   function getMoreList(key: ModuleConfigEnum) {
     switch (key) {
       case ModuleConfigEnum.CUSTOMER_MANAGEMENT:
@@ -291,6 +305,8 @@
         return leadMoreOptions.value;
       case ModuleConfigEnum.BUSINESS_MANAGEMENT:
         return opportunityMoreOptions.value;
+      case ModuleConfigEnum.CONTRACT:
+        return contractMoreOptions.value;
       default:
         return [];
     }
@@ -369,6 +385,10 @@
         {
           label: t('module.paymentRecordFormSetting'),
           key: 'newContractPaymentRecordForm',
+        },
+        {
+          label: t('common.more'),
+          slotName: 'more',
         },
       ],
     },
@@ -566,6 +586,9 @@
       case 'businessParamsSet':
         businessManagementBusinessParamsSetVisible.value = true;
         break;
+      case 'invoiceFormSetting':
+        // todo Mr bai
+        break;
       default:
         break;
     }
@@ -593,6 +616,11 @@
       toggleReason,
       handleConfigReason
     );
+  }
+
+  // 工商抬头表单必填配置
+  function initRenderBusinessNameConfig() {
+    renderValidateConfig.value = hasAnyPermission(['MODULE_SETTING:UPDATE']) ? h(businessTitleValidate) : null;
   }
 
   async function getGlobalReasonConfig() {
@@ -642,6 +670,7 @@
 
   onMounted(() => {
     initRenderReasonSwitch();
+    initRenderBusinessNameConfig();
     if (route.query.openCluePoolDrawer === 'Y') {
       clueManagementCluePoolVisible.value = true;
     } else if (route.query.openOpenSeaDrawer === 'Y') {

@@ -1,11 +1,10 @@
 import {
-  ContractBusinessNameStatusEnum,
+  ContractBusinessTitleStatusEnum,
   ContractPaymentPlanEnum,
   ContractStatusEnum,
 } from '@lib/shared/enums/contractEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-
-import { hasAllPermission } from '@/utils/permission';
+import { SaveBusinessTitleParams } from '@lib/shared/models/contract';
 
 const { t } = useI18n();
 
@@ -60,30 +59,81 @@ export const contractPaymentPlanStatusOptions = Object.entries(contractPaymentPl
   value: key,
 }));
 
-export const contractBusinessNameStatusMap = {
-  [ContractBusinessNameStatusEnum.APPROVED]: {
+export const contractBusinessTitleStatusMap = {
+  [ContractBusinessTitleStatusEnum.APPROVED]: {
     label: t('common.pass'),
     icon: 'iconicon_succeed_filled',
     color: 'var(--success-green)',
   },
-  [ContractBusinessNameStatusEnum.UNAPPROVED]: {
+  [ContractBusinessTitleStatusEnum.UNAPPROVED]: {
     label: t('common.unPass'),
     icon: 'iconicon_close_circle_filled',
     color: 'var(--error-red)',
   },
-  [ContractBusinessNameStatusEnum.APPROVING]: {
+  [ContractBusinessTitleStatusEnum.APPROVING]: {
     label: t('common.review'),
     icon: 'iconicon_wait',
     color: 'var(--info-blue)',
   },
-  [ContractBusinessNameStatusEnum.REVOKED]: {
+  [ContractBusinessTitleStatusEnum.REVOKED]: {
     label: t('common.revoke'),
     icon: 'iconicon_skip_planarity',
     color: 'var(--text-n4)',
   },
 };
 
-export const contractBusinessNameStatusOptions = Object.entries(contractBusinessNameStatusMap).map(([key, value]) => ({
-  label: value.label,
-  value: key,
-}));
+export const contractBusinessTitleStatusOptions = Object.entries(contractBusinessTitleStatusMap).map(
+  ([key, value]) => ({
+    label: value.label,
+    value: key,
+  })
+);
+
+export const businessTitleFormConfigList: {
+  label: string;
+  value: keyof SaveBusinessTitleParams;
+}[] = [
+  {
+    label: t('contract.businessTitle.taxpayerNumber'),
+    value: 'identificationNumber',
+  },
+  {
+    label: t('contract.businessTitle.address'),
+    value: 'registrationAddress',
+  },
+  {
+    label: t('contract.businessTitle.bank'),
+    value: 'openingBank',
+  },
+  {
+    label: t('contract.businessTitle.bankAccount'),
+    value: 'bankAccount',
+  },
+  {
+    label: t('contract.businessTitle.phone'),
+    value: 'phoneNumber',
+  },
+  {
+    label: t('contract.businessTitle.capital'),
+    value: 'registeredCapital',
+  },
+  {
+    label: t('contract.businessTitle.companyScale'),
+    value: 'companySize',
+  },
+  {
+    label: t('contract.businessTitle.registrationAccount'),
+    value: 'registrationNumber',
+  },
+];
+
+export const allBusinessTitleFormConfigList: {
+  label: string;
+  value: keyof SaveBusinessTitleParams;
+}[] = [
+  {
+    label: t('contract.businessTitle.companyName'),
+    value: 'businessName',
+  },
+  ...businessTitleFormConfigList,
+];

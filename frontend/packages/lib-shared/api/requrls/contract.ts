@@ -84,14 +84,18 @@ export const DownloadPaymentRecordTemplateUrl = '/contract/payment-record/templa
 export const ImportPaymentRecordUrl = '/contract/payment-record/import';
 
 // 合同-工商抬头导入
-export const PreCheckBusinessNameImportUrl = '/contract/business-name/import/pre-check';
-export const DownloadBusinessNameTemplateUrl = '/contract/business-name/template/download';
-export const ImportBusinessNameUrl = '/contract/business-name/import';
+export const PreCheckBusinessTitleImportUrl = '/contract/business-title/import/pre-check';
+export const DownloadBusinessTitleTemplateUrl = '/contract/business-title/template/download';
+export const ImportBusinessTitleUrl = '/contract/business-title/import';
+// 合同-工商抬头导出
+export const ExportBusinessTitleAllUrl = '/contract/business-title/export-all';
+export const ExportBusinessTitleSelectedUrl = '/contract/business-title/export-select';
 
 // 合同-工商抬头列表
-export const BusinessNamePageUrl = '/contract/business-name/page';
-export const BusinessNameAddUrl = '/contract/business-name/add';
-export const BusinessNameUpdateUrl = '/contract/business-name/update';
-export const BusinessNameDeleteUrl = '/contract/business-name/delete';
-export const BusinessNameRevokeUrl = '/contract/business-name/revoke';
-export const GetBusinessNameDetailUrl = '/contract/business-name/get';
+export const BusinessTitlePageUrl = '/contract/business-title/page';
+export const BusinessTitleAddUrl = '/contract/business-title/add';
+export const BusinessTitleUpdateUrl = '/contract/business-title/update';
+export const BusinessTitleDeleteUrl = '/contract/business-title/delete';
+export const BusinessTitleRevokeUrl = '/contract/business-title/revoke';
+export const GetBusinessTitleDetailUrl = '/contract/business-title/get';
+export const GetBusinessTitleInvoiceCheckUrl = '/contract/business-title/invoice/check';

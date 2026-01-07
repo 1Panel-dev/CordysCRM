@@ -2,45 +2,53 @@
   <CrmDrawer
     v-model:show="visible"
     width="1000"
-    show-continue
-    :title="form.id ? t('contract.businessName.update') : t('contract.businessName.add')"
+    :show-continue="!form.id"
+    :title="form.id ? t('contract.businessTitle.update') : t('contract.businessTitle.add')"
+    :ok-text="form.id ? t('common.update') : t('common.add')"
+    :loading="loading"
     @confirm="handleConfirm(false)"
     @continue="handleConfirm(true)"
     @cancel="cancelHandler"
   >
     <n-scrollbar>
+      <!-- todo xinixnwu 表单校验没有加 -->
       <n-form ref="formRef" :model="form">
-        <n-form-item path="method" :label="t('contract.businessName.addMethod')">
+        <n-form-item path="type" :label="t('contract.businessTitle.addMethod')">
           <CrmTab
-            v-model:active-tab="form.method"
+            v-model:active-tab="form.type"
             no-content
             :tab-list="tabList"
             type="segment"
             @change="handleChangeTab"
           />
         </n-form-item>
-        <n-form-item path="name" :label="t('contract.businessName.companyName')">
+        <n-form-item path="businessName" :label="t('contract.businessTitle.companyName')">
           <n-input
-            v-if="form.method === 'custom'"
-            v-model:value="form.name"
+            v-if="form.type === 'custom'"
+            v-model:value="form.businessName"
             allow-clear
             :maxlength="255"
             :placeholder="t('common.pleaseInput')"
           />
           <CrmAutoSearchSelect
             v-else
-            v-model:value="form.name"
+            v-model:value="form.businessName"
             :fetch="getOpportunityList"
-            :placeholder="t('contract.businessName.selectCompanyPlaceholder')"
+            :placeholder="t('contract.businessTitle.selectCompanyPlaceholder')"
             @select="handleAutoFillInfo"
           />
         </n-form-item>
         <div class="grid grid-cols-2 gap-x-[16px]">
-          <n-form-item v-for="item of formConfigList" :key="item.field" :path="item.field" :label="item.label">
+          <n-form-item
+            v-for="item of businessTitleFormConfigList"
+            :key="item.value"
+            :path="item.value"
+            :label="item.label"
+          >
             <n-input
-              v-model:value="form[item.field]"
+              v-model:value="form[item.value] as string | null"
               allow-clear
-              :disabled="form.method === 'thirdParty'"
+              :disabled="form.type === 'thirdParty'"
               :maxlength="255"
               :placeholder="t('common.pleaseInput')"
             />
@@ -52,18 +60,19 @@
 </template>
 
 <script setup lang="ts">
-  // todo 表单校验配置没有加
   import { ref } from 'vue';
   import { FormInst, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { SaveBusinessTitleParams } from '@lib/shared/models/contract';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmAutoSearchSelect from '@/components/business/crm-auto-search-select/index.vue';
 
-  import { addBusinessName, getOpportunityList, updateBusinessName } from '@/api/modules';
+  import { addBusinessTitle, getBusinessTitleDetail, getOpportunityList, updateBusinessTitle } from '@/api/modules';
+  import { businessTitleFormConfigList } from '@/config/contract';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -74,92 +83,55 @@
 
   const emit = defineEmits<{
     (e: 'load'): void;
+    (e: 'cancel'): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const initForm = {
+  const initForm: SaveBusinessTitleParams = {
     id: '',
-    method: 'thirdParty',
-    name: null,
-    taxpayerNumber: '',
-    address: '',
-    bank: '',
+    type: 'thirdParty',
+    businessName: null,
+    identificationNumber: '',
+    openingBank: '',
     bankAccount: '',
-    phone: '',
-    capital: '',
-    customerScale: '',
-    registrationAccount: '',
+    phoneNumber: '',
+    registeredCapital: '',
+    companySize: '',
+    registrationNumber: '',
+    registrationAddress: '',
   };
 
-  const form = ref<Record<string, any>>({
-    id: '',
-    method: 'thirdParty',
+  const form = ref<SaveBusinessTitleParams>({
+    ...initForm,
   });
 
   const tabList = [
     {
       name: 'thirdParty',
-      tab: t('contract.businessName.addMethodThird'),
+      tab: t('contract.businessTitle.addMethodThird'),
     },
     {
       name: 'custom',
-      tab: t('contract.businessName.addMethodCustom'),
+      tab: t('contract.businessTitle.addMethodCustom'),
     },
   ];
 
   const formRef = ref<FormInst | null>(null);
 
-  const formConfigList = [
-    {
-      label: t('contract.businessName.taxpayerNumber'),
-      field: 'taxpayerNumber',
-    },
-    {
-      label: t('contract.businessName.address'),
-      field: 'bank',
-    },
-    {
-      label: t('contract.businessName.bank'),
-      field: 'bank',
-    },
-    {
-      label: t('contract.businessName.bankAccount'),
-      field: 'bankAccount',
-    },
-    {
-      label: t('contract.businessName.phone'),
-      field: 'phone',
-    },
-    {
-      label: t('contract.businessName.capital'),
-      field: 'capital',
-    },
-    {
-      label: t('contract.businessName.customerScale'),
-      field: 'customerScale',
-    },
-    {
-      label: t('contract.businessName.registrationAccount'),
-      field: 'registrationAccount',
-    },
-  ];
-
   function handleAutoFillInfo(raw: any) {
-    //  todo 带入信息
+    //  todo xinixnwu 带入信息
   }
 
   function handleChangeTab() {
-    form.value = cloneDeep({
-      ...initForm,
-      method: form.value.method,
-    });
+    form.value = { ...initForm, type: form.value.type };
   }
 
   function cancelHandler() {
-    form.value = cloneDeep(initForm);
+    form.value = { ...initForm };
+    emit('cancel');
     visible.value = false;
   }
 
@@ -167,12 +139,11 @@
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
-      // todo 保存接口
       if (form.value.id) {
-        // await updateBusinessName(form.value);
+        await updateBusinessTitle(form.value);
         Message.success(t('common.updateSuccess'));
       } else {
-        // await addBusinessName(form.value);
+        await addBusinessTitle(form.value);
         Message.success(t('common.addSuccess'));
       }
       if (isContinue) {
@@ -196,6 +167,26 @@
       }
     });
   }
+
+  async function initDetail() {
+    if (!props.sourceId) return;
+    try {
+      const result = await getBusinessTitleDetail(props.sourceId);
+      form.value = { ...result };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => visible.value,
+    (newVal) => {
+      if (newVal) {
+        initDetail();
+      }
+    }
+  );
 </script>
 
 <style scoped></style>
