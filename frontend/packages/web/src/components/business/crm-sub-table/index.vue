@@ -368,23 +368,26 @@
                 class: 'w-[240px]',
                 onChange: (val, source) => {
                   if (isPriceSubTableShowSubField && val.length) {
+                    // 价格表子表格特殊处理，需要填充多行
                     const children = source.filter((s) => s.parentId);
                     if (children.length > 1) {
                       // 多选行时，新增多行且选中值为子项的父项信息
                       row.price_sub = children[0]?.id;
                       row[key] = [children[0].parentId];
-                      applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
+                      applyDataSourceShowFields(field, row[key], row, source, row.price_sub); // 数据源显示字段读取值并显示
                       for (let i = 1; i < children.length; i++) {
+                        // 补充新增行
                         if (data.value.every((r) => r.price_sub !== children[i].id)) {
                           addLine();
                         }
                       }
                       nextTick(() => {
+                        // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
                         for (let i = data.value.length - 1; i > rowIndex; i--) {
                           const newRow = data.value[i];
                           newRow.price_sub = children[i - rowIndex]?.id;
                           newRow[key] = [children[i - rowIndex].parentId];
-                          applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub);
+                          applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
                         }
                       });
                     } else {

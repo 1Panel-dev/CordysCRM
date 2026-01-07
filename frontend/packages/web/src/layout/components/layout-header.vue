@@ -168,7 +168,6 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { useClipboard } from '@vueuse/core';
   import { NBadge, NButton, NDivider, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
@@ -191,6 +190,7 @@
 
   import { addApiKey, changeLocaleBackEnd } from '@/api/modules';
   import { defaultPlatformLogo } from '@/config/business';
+  import useLegacyCopy from '@/hooks/useLegacyCopy';
   import useModal from '@/hooks/useModal';
   import useAppStore from '@/store/modules/app';
   import useLicenseStore from '@/store/modules/setting/license';
@@ -289,14 +289,9 @@
 
   const showFollowDrawer = ref(false);
 
-  const { copy, isSupported } = useClipboard({ legacy: true });
+  const { legacyCopy } = useLegacyCopy();
   function copyVersion(version: string) {
-    if (isSupported) {
-      copy(version);
-      success(t('common.copySuccess'));
-    } else {
-      warning(t('common.copyNotSupport'));
-    }
+    legacyCopy(version);
   }
 
   const moreActions = computed<ActionsItem[]>(() => {
