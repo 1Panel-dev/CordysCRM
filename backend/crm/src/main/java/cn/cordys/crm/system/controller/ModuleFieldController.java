@@ -13,7 +13,10 @@ import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -79,6 +82,8 @@ public class ModuleFieldController {
     private ProductService productService;
     @Resource
     private ProductPriceService productPriceService;
+	@Resource
+	private ContractPaymentPlanService contractPaymentPlanService;
     @Resource
     private DataScopeService dataScopeService;
 
@@ -163,6 +168,15 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         return productPriceService.list(request, OrganizationContext.getOrganizationId());
     }
+
+	@PostMapping("/source/contract/payment-plan")
+	@Operation(summary = "分页获取合同回款计划")
+	public Pager<List<ContractPaymentPlanListResponse>> sourcePlanPage(@Valid @RequestBody ContractPaymentPlanPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+				PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+		return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
 
     @PostMapping("/check/repeat")
     @Operation(summary = "校验重复值")
