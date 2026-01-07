@@ -1,19 +1,25 @@
 package cn.cordys.crm.contract.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
+import cn.cordys.crm.contract.dto.request.ContractPaymentPlanExportRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
+import cn.cordys.crm.contract.service.ContractPaymentRecordExportService;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -23,6 +29,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +50,8 @@ public class ContractPaymentRecordController {
 	private DataScopeService dataScopeService;
 	@Resource
 	private ContractPaymentRecordService contractPaymentRecordService;
+	@Resource
+	private ContractPaymentRecordExportService contractPaymentRecordExportService;
 
 	@GetMapping("/module/form")
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
@@ -108,5 +117,47 @@ public class ContractPaymentRecordController {
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
 		return contractPaymentRecordService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+	}
+
+	@PostMapping("/export-select")
+	@Operation(summary = "导出选中回款记录")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		ExportDTO exportDTO = ExportDTO.builder()
+				.exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+				.fileName(request.getFileName())
+				.headList(request.getHeadList())
+				.logModule(LogModule.CONTRACT_PAYMENT_RECORD)
+				.locale(LocaleContextHolder.getLocale())
+				.orgId(OrganizationContext.getOrganizationId())
+				.userId(SessionUtils.getUserId())
+				.deptDataPermission(deptDataPermission)
+				.selectIds(request.getIds())
+				.selectRequest(request)
+				.build();
+		return contractPaymentRecordExportService.exportSelect(exportDTO);
+	}
+
+	@PostMapping("/export-all")
+	@Operation(summary = "导出全部回款记录")
+	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	public String exportAll(@Validated @RequestBody ContractPaymentPlanExportRequest request) {
+		ConditionFilterUtils.parseCondition(request);
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		ExportDTO exportDTO = ExportDTO.builder()
+				.exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+				.fileName(request.getFileName())
+				.headList(request.getHeadList())
+				.logModule(LogModule.CONTRACT_PAYMENT_RECORD)
+				.locale(LocaleContextHolder.getLocale())
+				.orgId(OrganizationContext.getOrganizationId())
+				.userId(SessionUtils.getUserId())
+				.deptDataPermission(deptDataPermission)
+				.pageRequest(request)
+				.build();
+		return contractPaymentRecordExportService.export(exportDTO);
 	}
 }

@@ -22,4 +22,15 @@ public interface ExtContractPaymentRecordMapper {
 	 */
 	List<ContractPaymentRecordResponse> list(@Param("request")ContractPaymentRecordPageRequest request, @Param("currentUser") String currentUser,
 											 @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
+	/**
+	 * 通过ID集合获取回款记录
+	 * @param ids ID集合
+	 * @param currentUser 当前用户
+	 * @param currentOrg 当前组织
+	 * @param deptDataPermission 数据权限
+ 	 * @return 回款记录列表
+	 */
+	List<ContractPaymentRecordResponse> getListByIds(@Param("ids") List<String> ids, @Param("currentUser") String currentUser,
+											 @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 }
