@@ -54,7 +54,11 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             notification.setOrganizationId(messageDetailDTO.getOrganizationId());
             notification.setOperator(noticeModel.getOperator());
             notification.setOperation(noticeModel.getEvent());
-            notification.setResourceId(messageDetailDTO.getId());
+            if (paramMap.get("resourceId") != null) {
+                notification.setResourceId((String) paramMap.get("resourceId"));
+            } else {
+                notification.setResourceId(messageDetailDTO.getId());
+            }
             notification.setResourceType(messageDetailDTO.getTaskType());
             if (paramMap.get("name") != null) {
                 notification.setResourceName((String) paramMap.get("name"));

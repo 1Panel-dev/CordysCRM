@@ -134,7 +134,7 @@ public class NoticeExpireJob {
                             log.info("组织{}商机报价单{}关联的客户不存在", organizationId, opportunityQuotation.getId());
                             continue;
                         }
-                        sendNotice(expiringConfigDTO, NotificationConstants.Module.OPPORTUNITY, opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId(), NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRING, customer.getName(), opportunityQuotation.getCreateUser(), opportunityQuotation.getCreateUser(), timeDTO.getTimeValue());
+                        sendNotice(expiringConfigDTO, NotificationConstants.Module.OPPORTUNITY, opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId(), NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRING, customer.getName(), opportunityQuotation.getCreateUser(), opportunityQuotation.getCreateUser(), timeDTO.getTimeValue(), opportunityQuotation.getId());
                     }
                 }
             }
@@ -190,7 +190,7 @@ public class NoticeExpireJob {
                     log.info("组织{}商机报价单{}关联的客户不存在", organizationId, opportunityQuotation.getId());
                     continue;
                 }
-                sendNotice(expiredConfigDTO, NotificationConstants.Module.OPPORTUNITY, opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId(), NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, customer.getName(), opportunityQuotation.getCreateUser(), opportunityQuotation.getCreateUser(), null);
+                sendNotice(expiredConfigDTO, NotificationConstants.Module.OPPORTUNITY, opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId(), NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, customer.getName(), opportunityQuotation.getCreateUser(), opportunityQuotation.getCreateUser(), null, opportunityQuotation.getId());
             }
             log.info("组织{}商机报价单到期提醒发送通知成功", organizationId);
         }
@@ -270,7 +270,7 @@ public class NoticeExpireJob {
                             log.info("组织{}回款计划{}关联的客户不存在", organizationId, paymentPlan.getId());
                             continue;
                         }
-                        sendNotice(expiringConfigDTO, NotificationConstants.Module.CONTRACT, paymentPlan.getCreateUser(), paymentPlan.getOrganizationId(), NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, customer.getName(), paymentPlan.getCreateUser(), paymentPlan.getOwner(), timeDTO.getTimeValue());
+                        sendNotice(expiringConfigDTO, NotificationConstants.Module.CONTRACT, paymentPlan.getCreateUser(), paymentPlan.getOrganizationId(), NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, customer.getName(), paymentPlan.getCreateUser(), paymentPlan.getOwner(), timeDTO.getTimeValue(), paymentPlan.getId());
                     }
                 }
             }
@@ -323,7 +323,7 @@ public class NoticeExpireJob {
                     log.info("组织{}回款计划{}关联的客户不存在", organizationId, paymentPlan.getId());
                     continue;
                 }
-                sendNotice(expiredConfigDTO, NotificationConstants.Module.CONTRACT, paymentPlan.getCreateUser(), paymentPlan.getOrganizationId(), NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, customer.getName(), paymentPlan.getCreateUser(), paymentPlan.getOwner(), null);
+                sendNotice(expiredConfigDTO, NotificationConstants.Module.CONTRACT, paymentPlan.getCreateUser(), paymentPlan.getOrganizationId(), NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, customer.getName(), paymentPlan.getCreateUser(), paymentPlan.getOwner(), null, paymentPlan.getId());
             }
         }
     }
@@ -337,7 +337,7 @@ public class NoticeExpireJob {
      * @param orgId                组织ID
      * @param event                事件类型
      */
-    private void sendNotice(MessageTaskConfigDTO messageTaskConfigDTO, String model, String userId, String orgId, String event, String customerName, String createUser, String owner, Integer days) {
+    private void sendNotice(MessageTaskConfigDTO messageTaskConfigDTO, String model, String userId, String orgId, String event, String customerName, String createUser, String owner, Integer days, String resourceId) {
         //查询通知配置的接收范围
         List<String> receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(messageTaskConfigDTO, createUser, owner, orgId);
         Map<String, Object> paramMap = new HashMap<>();
@@ -345,6 +345,9 @@ public class NoticeExpireJob {
         paramMap.put("name", customerName);
         if (days != null) {
             paramMap.put("expireDays", days);
+        }
+        if (resourceId != null) {
+            paramMap.put("resourceId", resourceId);
         }
         commonNoticeSendService.sendNotice(model, event,
                 paramMap, userId, orgId, receiveUserIds, false);
