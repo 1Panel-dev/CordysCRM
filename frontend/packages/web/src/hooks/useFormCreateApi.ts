@@ -766,6 +766,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           item.subFields.forEach((subField) => {
             makeSubFieldInitialOptions(subField, item.id, res);
             formDetail.value[item.id]?.forEach((subItem: Record<string, any>) => {
+              const isPriceField = subField.dataSourceType === FieldDataSourceTypeEnum.PRICE && subItem.price_sub;
+              if (isPriceField) {
+                // 处理子表格里的价格表字段，填充行号到数据源字段选中值中以供回显
+                subItem[subField.businessKey || subField.id] = [
+                  subItem[subField.businessKey || subField.id],
+                  subItem.price_sub,
+                ];
+                // 同时在initialOptions里填充行号子项以区分父子
+                subField.initialOptions?.push({
+                  id: subItem.price_sub,
+                  parentId: subItem[subField.businessKey || subField.id],
+                });
+              }
               if (subField.resourceFieldId) {
                 subItem[subField.id] = parseModuleFieldValue(
                   subField,
