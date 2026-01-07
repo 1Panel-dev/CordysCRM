@@ -27,7 +27,7 @@ export default {
   'contract.expectedPaymentAmount': '预计回款金额',
   'contract.isPlanCompleted': '是否完成计划',
   'contract.approvalStatus': '审批状态',
-  'contract.paymentRecord.new': '新建回款',
+  'contract.paymentRecord.new': '新建记录',
   'contract.paymentTime': '回款时间',
   'contract.paymentAmount': '回款金额',
   'contract.paymentRecord.deleteConfirmContent': '删除后，将扣除已回款金额，请谨慎操作！',

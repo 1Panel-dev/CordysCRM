@@ -12,6 +12,7 @@ export default {
   'crmFormCreate.drawer.product': 'Product',
   'crmFormCreate.drawer.contract': 'Contract',
   'crmFormCreate.drawer.contractPaymentPlan': 'Payment plan',
+  'crmFormCreate.drawer.contractPaymentRecord': 'payment record',
   'crmFormCreate.drawer.quotation': 'Quotation',
   'crmFormCreate.drawer.price': 'Price Table',
 };

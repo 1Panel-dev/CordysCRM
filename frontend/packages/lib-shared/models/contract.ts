@@ -92,7 +92,6 @@ export interface UpdatePaymentPlanParams extends SavePaymentPlanParams {
 }
 
 // 回款记录列表项
-// TODO lmy 联调
 export interface PaymentRecordItem {
   id: string;
   createUser: string;
@@ -100,6 +99,8 @@ export interface PaymentRecordItem {
   createTime: number;
   updateTime: number;
   contractId: string;
+  name: string;
+  no: string;
   owner: string;
   organizationId: string;
   createUserName: string;
@@ -108,7 +109,14 @@ export interface PaymentRecordItem {
   departmentId: string;
   departmentName: string;
   contractName: string;
+  paymentPlanId: string;
+  recordBank: string;
+  recordBankNo: string;
+  paymentPlanName: string;
+  planName: string;
   moduleFields: ModuleField[]; // 自定义字段
+  recordAmount: number;
+  recordEndTime: number;
 }
 
 // 回款记录详情
@@ -118,8 +126,14 @@ export interface PaymentRecordDetail extends PaymentRecordItem {
 
 // 添加回款记录参数
 export interface SavePaymentRecordParams {
-  contractId?: string;
-  owner?: string;
+  contractId: string;
+  owner: string;
+  name: string;
+  paymentPlanId?: string;
+  recordAmount: number;
+  recordEndTime: number;
+  recordBank: string;
+  recordBankNo: string;
 }
 
 // 更新回款记录参数

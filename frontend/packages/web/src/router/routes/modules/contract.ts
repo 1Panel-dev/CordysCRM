@@ -43,7 +43,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.paymentRecord',
         isTopMenu: true,
-        permissions: ['CONTRACT_PAYMENT_PLAN:READ'], // TODO lmy permission
+        permissions: ['CONTRACT_PAYMENT_RECORD:READ'],
       },
     },
     {

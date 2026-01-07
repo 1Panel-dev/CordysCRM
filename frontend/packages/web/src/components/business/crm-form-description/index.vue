@@ -104,6 +104,30 @@
           </n-tooltip>
         </div>
       </template>
+      <template #[FieldDataSourceTypeEnum.CONTRACT_PAYMENT]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmTableButton
+            v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])"
+            @click="openContractPaymentPlanDetail(formDetail[item.fieldInfo.id])"
+          >
+            <template #trigger>
+              {{ item.value }}
+            </template>
+            {{ item.value }}
+          </CrmTableButton>
+          <n-tooltip v-else :delay="300">
+            <template #trigger>
+              <div class="one-line-text">
+                {{ item.value }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
+        </div>
+      </template>
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
         <div class="field-line flex w-full items-center">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
@@ -232,6 +256,7 @@
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
     (e: 'openContractDetail', params: { id: string }): void;
+    (e: 'openContractPaymentPlanDetail', params: { id: string }): void;
   }>();
 
   const { t } = useI18n();
@@ -308,6 +333,12 @@
 
   function openContractDetail(id: string | string[]) {
     emit('openContractDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  function openContractPaymentPlanDetail(id: string | string[]) {
+    emit('openContractPaymentPlanDetail', {
       id: Array.isArray(id) ? id[0] : id,
     });
   }

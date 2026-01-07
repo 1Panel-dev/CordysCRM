@@ -304,6 +304,12 @@
     }
     if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
+        // TODO lmy 回款
+        {
+          label: t('common.delete'),
+          key: 'paymentRecord',
+          permission: ['CONTRACT:DELETE'],
+        },
         {
           label: t('common.delete'),
           key: 'delete',
@@ -378,6 +384,7 @@
         activeSourceId.value = row.id;
         showDetailDrawer.value = true;
         break;
+      // TODO lmy 回款
       case 'revoke':
         handleRevoke(row);
         break;

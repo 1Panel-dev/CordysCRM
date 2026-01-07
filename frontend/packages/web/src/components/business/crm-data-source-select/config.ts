@@ -6,6 +6,7 @@ import {
   getFieldClueList,
   getFieldContactList,
   getFieldContractList,
+  getFieldContractPaymentPlanList,
   getFieldCustomerList,
   getFieldOpportunityList,
   getFieldPriceList,
@@ -23,6 +24,7 @@ export const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<C
   [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
   [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
   [FieldDataSourceTypeEnum.CONTRACT]: getFieldContractList,
+  [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: getFieldContractPaymentPlanList,
   [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
   [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
 };
@@ -33,6 +35,7 @@ export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEn
   [FieldDataSourceTypeEnum.CUSTOMER]: FormDesignKeyEnum.CUSTOMER,
   [FieldDataSourceTypeEnum.PRODUCT]: FormDesignKeyEnum.PRODUCT,
   [FieldDataSourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT,
+  [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: FormDesignKeyEnum.CONTRACT_PAYMENT,
   [FieldDataSourceTypeEnum.PRICE]: FormDesignKeyEnum.PRICE,
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
 };

@@ -81,6 +81,7 @@
     [FieldDataSourceTypeEnum.PRICE]: 'crmFormCreate.drawer.price',
     [FieldDataSourceTypeEnum.CONTRACT]: 'crmFormCreate.drawer.contract',
     [FieldDataSourceTypeEnum.QUOTATION]: 'crmFormCreate.drawer.quotation',
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: 'crmFormCreate.drawer.contractPaymentPlan',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {

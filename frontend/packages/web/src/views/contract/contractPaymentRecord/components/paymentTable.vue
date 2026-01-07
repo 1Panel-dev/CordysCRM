@@ -18,7 +18,7 @@
       <div class="flex items-center gap-[12px]">
         <n-button
           v-if="!props.readonly"
-          v-permission="['CONTRACT_PAYMENT_PLAN:ADD']"
+          v-permission="['CONTRACT_PAYMENT_RECORD:ADD']"
           :loading="createLoading"
           type="primary"
           @click="handleNewClick"
@@ -26,13 +26,13 @@
           {{ t('contract.paymentRecord.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !isContractTab"
+          v-if="hasAnyPermission(['CONTRACT_PAYMENT_RECORD:IMPORT']) && !isContractTab"
           :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
           :title="t('module.paymentRecord')"
           @import-success="() => searchData()"
         />
         <n-button
-          v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
+          v-permission="['CONTRACT_PAYMENT_RECORD:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -101,6 +101,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { PaymentRecordItem } from '@lib/shared/models/contract';
 
@@ -203,7 +204,7 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'], // TODO lmy permission
+        permission: ['CONTRACT_PAYMENT_RECORD:EXPORT'],
       },
     ],
   };
@@ -241,21 +242,17 @@
 
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
-      {
-        label: t('common.detail'),
-        key: 'detail',
-      },
       ...(!props.readonly
         ? [
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: ['CONTRACT_PAYMENT_PLAN:UPDATE'], // TODO lmy permission
+              permission: ['CONTRACT_PAYMENT_RECORD:UPDATE'],
             },
             {
               label: t('common.delete'),
               key: 'delete',
-              permission: ['CONTRACT_PAYMENT_PLAN:DELETE'], // TODO lmy permission
+              permission: ['CONTRACT_PAYMENT_RECORD:DELETE'],
             },
           ]
         : []),
@@ -268,7 +265,7 @@
   function handleDelete(row: PaymentRecordItem) {
     openModal({
       type: 'error',
-      title: t('system.personal.confirmDelete'),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('contract.paymentRecord.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -299,9 +296,6 @@
 
   async function handleActionSelect(row: PaymentRecordItem, actionKey: string) {
     switch (actionKey) {
-      case 'detail':
-        showDetail(row.id);
-        break;
       case 'edit':
         handleEdit(row.id);
         break;
@@ -328,7 +322,7 @@
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 180 : 150,
+      width: currentLocale.value === 'en-US' ? 150 : 120,
       fixed: 'right',
       render: (row: PaymentRecordItem) =>
         h(CrmOperationButton, {
@@ -337,6 +331,17 @@
         }),
     },
     specialRender: {
+      name: (row: PaymentRecordItem) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              showDetail(row.id);
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
       contractId: (row: PaymentRecordItem) => {
         return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
@@ -357,7 +362,7 @@
             );
       },
     },
-    permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'], // TODO lmy permission
+    permission: ['CONTRACT_PAYMENT_RECORD:EXPORT'],
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
