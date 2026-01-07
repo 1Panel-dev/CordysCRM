@@ -39,7 +39,7 @@ public class BusinessTitleController {
 
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_READ)
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
     @Operation(summary = "创建")
     public BusinessTitle add(@Validated @RequestBody BusinessTitleAddRequest request) {
         return businessTitleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -158,5 +158,13 @@ public class BusinessTitleController {
     @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file) {
         return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/third-query")
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
+    @Operation(summary = "第三方接口查询工商抬头信息")
+    public BusinessTitle thirdQuery(@RequestParam String keyword) {
+        return businessTitleService.thirdQuery(keyword, OrganizationContext.getOrganizationId());
     }
 }
