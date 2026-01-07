@@ -801,6 +801,45 @@ public class ModuleFormService {
         initFormAndFields(allKeys);
     }
 
+	@SuppressWarnings("unchecked")
+	public void initExtFieldsByVer(String version) {
+		try {
+			List<ModuleField> fields = new ArrayList<>();
+			List<ModuleFieldBlob> fieldBlobs = new ArrayList<>();
+			Map<String, List<Map<String, Object>>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
+			fieldMap.forEach((formKey, formFields) -> {
+				boolean existExtVerField = formFields.stream().anyMatch(f -> f.containsKey("ext_ver") && Strings.CS.equals(version, f.get("ext_ver").toString()));
+				if (!existExtVerField) {
+					return;
+				}
+				ModuleForm example = new ModuleForm();
+				example.setFormKey(formKey);
+				ModuleForm form = moduleFormMapper.selectOne(example);
+				if (form == null) {
+					log.error("未找到表单 {}, 无法初始化扩展字段", formKey);
+					return;
+				}
+				Long maxPos = extModuleFieldMapper.getMaxFieldPosByFormId(form.getId());
+				List<Map<String, Object>> extFields = formFields.stream().filter(f -> f.containsKey("ext_ver") && Strings.CS.equals(version, f.get("ext_ver").toString())).toList();
+				AtomicLong pos = new AtomicLong(maxPos + 1);
+				extFields.forEach(initField -> {
+					ModuleField field = supplyFieldInfo(initField, form.getId(), pos.getAndIncrement(), new HashMap<>(2));
+					initField.put("id", field.getId());
+					fields.add(field);
+					ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
+					fieldBlob.setId(field.getId());
+					fieldBlob.setProp(JSON.toJSONString(initField));
+					fieldBlobs.add(fieldBlob);
+				});
+				moduleFieldMapper.batchInsert(fields);
+				moduleFieldBlobMapper.batchInsert(fieldBlobs);
+			});
+		} catch (Exception e) {
+			log.error("表单扩展字段初始化失败: {}", e.getMessage());
+			throw new GenericException("表单扩展字段初始化失败", e);
+		}
+	}
+
     /**
      * 表单及字段初始化 (升级)
      *
@@ -855,18 +894,7 @@ public class ModuleFormService {
                 // 显隐规则Key-ID映射
                 Map<String, String> controlKeyPreMap = new HashMap<>(2);
                 initFields.forEach(initField -> {
-                    ModuleField field = new ModuleField();
-                    field.setFormId(formId);
-                    field.setInternalKey(initField.get("internalKey").toString());
-                    field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
-                    field.setType(initField.get("type").toString());
-                    field.setName(initField.get("name").toString());
-                    field.setMobile((Boolean) initField.getOrDefault("mobile", false));
-                    field.setPos(pos.getAndIncrement());
-                    field.setCreateTime(System.currentTimeMillis());
-                    field.setCreateUser(InternalUser.ADMIN.getValue());
-                    field.setUpdateTime(System.currentTimeMillis());
-                    field.setUpdateUser(InternalUser.ADMIN.getValue());
+					ModuleField field = supplyFieldInfo(initField, formId, pos.getAndIncrement(), controlKeyPreMap);
                     initField.put("id", field.getId());
                     fields.add(field);
                     if (initField.containsKey(CONTROL_RULES_KEY)) {
@@ -901,6 +929,30 @@ public class ModuleFormService {
             throw new GenericException("表单字段初始化失败", e);
         }
     }
+
+	/**
+	 * 组装字段基础信息
+	 * @param fieldMap 字段集合
+	 * @param formId 表单ID
+	 * @param pos 字段位置
+	 * @param controlKeyPreMap 显隐规则Key-ID映射
+	 * @return 字段
+	 */
+	private ModuleField supplyFieldInfo(Map<String, Object> fieldMap, String formId, Long pos, Map<String, String> controlKeyPreMap) {
+		ModuleField field = new ModuleField();
+		field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
+		field.setFormId(formId);
+		field.setInternalKey(fieldMap.get("internalKey").toString());
+		field.setType(fieldMap.get("type").toString());
+		field.setName(fieldMap.get("name").toString());
+		field.setMobile((Boolean) fieldMap.getOrDefault("mobile", false));
+		field.setPos(pos);
+		field.setCreateTime(System.currentTimeMillis());
+		field.setCreateUser(InternalUser.ADMIN.getValue());
+		field.setUpdateTime(System.currentTimeMillis());
+		field.setUpdateUser(InternalUser.ADMIN.getValue());
+		return field;
+	}
 
     /**
      * 初始化数据类型-数据源映射

@@ -2,6 +2,7 @@ package cn.cordys.common.service;
 
 
 import cn.cordys.common.util.OnceInterface;
+import cn.cordys.common.util.OnceInterfaceAction;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.system.domain.Parameter;
 import cn.cordys.crm.system.service.ModuleFieldService;
@@ -17,6 +18,7 @@ import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jianxing
@@ -54,6 +56,7 @@ public class DataInitService {
             initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
+            initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
         } finally {
             lock.unlock();
         }
@@ -72,6 +75,27 @@ public class DataInitService {
             log.error(e.getMessage(), e);
         }
     }
+
+	/**
+	 * 执行单次接口 (带参数)
+	 * @param onceFunc 执行函数
+	 * @param param 参数
+	 * @param key 执行Key
+	 * @param <P> 参数类型
+	 */
+	private <P> void initOneTime(OnceInterfaceAction<P> onceFunc, P param, final String key) {
+		try {
+			LambdaQueryWrapper<Parameter> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(Parameter::getParamKey, key);
+			List<Parameter> parameters = parameterMapper.selectListByLambda(queryWrapper);
+			if (CollectionUtils.isEmpty(parameters)) {
+				onceFunc.execute(param);
+				insertParameterOnceKey(key);
+			}
+		} catch (Throwable e) {
+			log.error(e.getMessage(), e);
+		}
+	}
 
     private void insertParameterOnceKey(String key) {
         Parameter parameter = new Parameter();

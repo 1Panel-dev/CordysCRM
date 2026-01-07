@@ -37,4 +37,11 @@ public interface ExtModuleFieldMapper {
      * @param mobile 移动端显示
      */
     void batchUpdateMobile(@Param("ids") List<String> ids, @Param("mobile") Boolean mobile);
+
+	/**
+	 * 获取表单字段最大位次
+	 * @param formId 表单ID
+	 * @return 位置下标
+	 */
+	Long getMaxFieldPosByFormId(String formId);
 }

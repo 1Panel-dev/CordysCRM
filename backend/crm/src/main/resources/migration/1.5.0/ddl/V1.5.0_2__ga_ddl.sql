@@ -132,7 +132,7 @@ CREATE INDEX idx_invoice_id ON contract_invoice_snapshot (invoice_id ASC);
 CREATE TABLE contract_payment_record
 (
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`            VARCHAR(255) NOT NULL COMMENT '回款名称',
+    `name`            VARCHAR(255) NOT NULL COMMENT '回款记录名称',
     `no`              VARCHAR(50) COMMENT '回款编号',
     `owner`           VARCHAR(32)  NOT NULL COMMENT '负责人',
     `contract_id`     VARCHAR(32)  NOT NULL COMMENT '合同ID',
@@ -186,6 +186,8 @@ CREATE INDEX idx_resource_id ON contract_payment_record_field_blob (resource_id 
 
 -- modify form_key length to 50
 ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR (50);
+-- add payment plan name field
+ALTER TABLE contract_payment_plan ADD COLUMN name VARCHAR(255) NOT NULL  COMMENT '回款计划名称' AFTER id;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

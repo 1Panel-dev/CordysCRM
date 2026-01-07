@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Table(name = "contract_payment_record")
 public class ContractPaymentRecord extends BaseModel {
 
-	@Schema(description = "回款名称")
+	@Schema(description = "回款记录名称")
 	private String name;
 
 	@Schema(description = "回款编号")
