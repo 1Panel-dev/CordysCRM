@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -396,7 +397,7 @@ public class IntegrationConfigService {
      */
     private <T> ThirdConfigBaseDTO<?> buildDto(String content, Class<T> configClass, Consumer<T> enableSetter, String type) {
 
-        ThirdConfigBaseDTO dto = JSON.parseObject(content, ThirdConfigBaseDTO.class);
+        var dto = JSON.parseObject(content, ThirdConfigBaseDTO.class);
         T config = buildConfig(dto, content, configClass);
 
         enableSetter.accept(config);
@@ -659,24 +660,33 @@ public class IntegrationConfigService {
             List<OrganizationConfigDetail> existingDetails,
             Map<String, Boolean> typeEnableMap) {
 
-        // 已存在类型的映射
         Map<String, OrganizationConfigDetail> existDetailTypeMap = existingDetails.stream()
-                .collect(Collectors.toMap(OrganizationConfigDetail::getType, t -> t));
-        //ThirdConfigTypeConstants type = ThirdConfigTypeConstants.fromString(configDTO.getType());
+                .collect(Collectors.toMap(
+                        OrganizationConfigDetail::getType,
+                        Function.identity(),
+                        (left, right) -> left));
+
         for (String type : types) {
-            if (!existDetailTypeMap.containsKey(type)) {
-                // 不存在的类型，需要新建
+            OrganizationConfigDetail detail = existDetailTypeMap.get(type);
+            if (detail == null) {
                 addIntegrationDetail(configDTO, userId, token, List.of(type), organizationConfig, typeEnableMap);
-            } else {
-                // 存在的类型，需要更新
-                OrganizationConfigDetail detail = existDetailTypeMap.get(type);
-                //如果更改的企业id和之前不一致，则如果之前的同步状态未true，则改为false
-                if (BooleanUtils.isTrue(organizationConfig.isSync()) && organizationConfig.getSyncResource() != null && Strings.CI.equals(organizationConfig.getSyncResource(), configDTO.getType())
-                        && syncCorpId(existingDetails.getFirst().getContent(), configDTO)) {
-                    extOrganizationConfigMapper.updateSyncFlag(organizationConfig.getOrganizationId(), organizationConfig.getSyncResource(), organizationConfig.getType(), false);
-                }
-                updateExistingDetail(configDTO, userId, token, detail, typeEnableMap.get(type), organizationConfig.getId());
+                continue;
             }
+
+            boolean needResetSync = BooleanUtils.isTrue(organizationConfig.isSync())
+                    && StringUtils.isNotBlank(organizationConfig.getSyncResource())
+                    && Strings.CI.equals(organizationConfig.getSyncResource(), configDTO.getType())
+                    && syncCorpId(detail.getContent(), configDTO);
+
+            if (needResetSync) {
+                extOrganizationConfigMapper.updateSyncFlag(
+                        organizationConfig.getOrganizationId(),
+                        organizationConfig.getSyncResource(),
+                        organizationConfig.getType(),
+                        false);
+            }
+
+            updateExistingDetail(configDTO, userId, token, detail, typeEnableMap.get(type), organizationConfig.getId());
         }
     }
 
