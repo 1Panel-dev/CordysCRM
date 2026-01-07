@@ -72,6 +72,33 @@
         </include>
     </select>
 
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse">
+        select cpr.id, cpr.owner, cpr.no, cpr.name, cpr.contract_id, cpr.payment_plan_id,
+            cpr.record_amount, cpr.record_end_time, cpr.record_bank, cpr.record_bank_no,
+            cpr.create_time, cpr.update_time, cpr.create_user, cpr.update_user, cpr.organization_id, c.name as contractName
+        from contract_payment_record cpr
+        join contract c on c.id = cpr.contract_id
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cpr.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            )
+        </if>
+
+        where cpr.organization_id = #{currentOrg} and cpr.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cpr.owner = #{userId}
+        </if>
+    </select>
+
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">

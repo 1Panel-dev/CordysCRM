@@ -322,7 +322,7 @@ public class ContractPaymentRecordService {
 	 * @param currentOrg 	当前组织
 	 * @return 列表扩展数据
 	 */
-	private List<ContractPaymentRecordResponse> buildListExtra(List<ContractPaymentRecordResponse> list, String currentOrg) {
+	public List<ContractPaymentRecordResponse> buildListExtra(List<ContractPaymentRecordResponse> list, String currentOrg) {
 		if (CollectionUtils.isEmpty(list)) {
 			return list;
 		}
