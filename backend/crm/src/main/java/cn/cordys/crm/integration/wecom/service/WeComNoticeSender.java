@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.wecom.service;
 
-import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.WecomThirdConfigRequest;
@@ -73,7 +73,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取企业微信通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.WECOM_SYNC.toString());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.WECOM_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             log.warn("没有配置企业微信通知信息，无法发送消息");
             return;

@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.lark.service;
 
-import cn.cordys.common.constants.ThirdConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
@@ -73,7 +73,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdConstants.ThirdDetailType.LARK_SYNC.toString());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.LARK_SYNC.name());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             log.warn("没有配置飞书通知信息，无法发送消息");
             return;
