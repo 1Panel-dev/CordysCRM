@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     resizable
-    :default-width="800"
+    :width="1000"
     :title="t('common.export')"
     :footer="false"
     class="min-w-[800px]"
@@ -14,7 +14,7 @@
       </template>
       {{ t('system.personal.exportTip') }}
     </n-alert>
-    <div class="mb-[16px] flex items-center justify-between">
+    <div class="mb-[16px] flex flex-wrap items-center justify-between gap-[16px]">
       <div class="flex items-center gap-[12px]">
         <div>
           <CrmTab v-model:active-tab="activeTab" class="inline-block" type="segment" no-content :tab-list="tabList" />
@@ -136,6 +136,7 @@
     { name: SystemResourceMessageTypeEnum.OPPORTUNITY, tab: t('menu.opportunity') },
     { name: SystemResourceMessageTypeEnum.CONTRACT, tab: t('module.contract') },
     { name: SystemResourceMessageTypeEnum.PRODUCT_PRICE, tab: t('module.productManagementPrice') },
+    { name: SystemResourceMessageTypeEnum.BUSINESS_TITLE, tab: t('module.businessTitle') },
   ]);
 
   const exportStatus = ref('');
@@ -202,6 +203,8 @@
         return t('module.paymentRecord');
       case SystemResourceMessageTypeEnum.PRODUCT_PRICE:
         return t('module.productManagementPrice');
+      case SystemResourceMessageTypeEnum.BUSINESS_TITLE:
+        return t('module.businessTitle');
       default:
         return t('menu.opportunity');
     }

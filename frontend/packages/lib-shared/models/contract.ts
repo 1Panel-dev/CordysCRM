@@ -1,7 +1,7 @@
 import { ModuleField } from '@lib/shared/models/customer';
 import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
-import { ContractBusinessNameStatusEnum } from '@lib/shared/enums/contractEnum';
+import { ContractBusinessTitleStatusEnum } from '@lib/shared/enums/contractEnum';
 
 // 合同列表项
 export interface ContractItem {
@@ -127,24 +127,40 @@ export interface UpdatePaymentRecordParams extends SavePaymentRecordParams {
   id: string;
 }
 
-// todo xxw 工商合同列表项
-export interface BusinessNameItem {
-  id: string;
-  name: string;
-  address: string;
-  status: ContractBusinessNameStatusEnum;
+export interface BusinessTitleItem {
+  id: string; 
+ 
+  businessName: string;
+  type: string;
+  identificationNumber: string;
+  openingBank: string;
+  bankAccount: string;
+  registrationAddress: string;
+  phoneNumber: string;
+  registeredCapital: string;
+  companySize: string;
+  registrationNumber: string;
+  approvalStatus: ContractBusinessTitleStatusEnum;
+  unapprovedReason: string;
+  organizationId: string;
+  createUserName: string;
+  updateUserName: string;
   createUser: string;
   updateUser: string;
   createTime: number;
   updateTime: number;
-  createUserName: string;
-  updateUserName: string;
 }
 
-export interface SaveBusinessNameParams {
-  // todo xxw 工商合同添加参数
-}
-
-export interface UpdateBusinessNameParams extends SaveBusinessNameParams {
-  id: string;
+export interface SaveBusinessTitleParams {
+  id?: string;
+  businessName: string | null;// 公司名称
+  identificationNumber: string; // 纳税人识别号
+  openingBank: string; // 开户银行
+  bankAccount: string;// 银行账号
+  registrationAddress: string; // 注册地址
+  phoneNumber: string;// 注册电话
+  registeredCapital: string; // 注册资本
+  companySize: string; // 公司规模
+  registrationNumber: string; //工商注册号
+  type: string; // 来源类型
 }

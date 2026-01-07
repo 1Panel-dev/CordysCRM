@@ -106,7 +106,9 @@ export default {
   'module.paymentPlan': '回款计划',
   'module.paymentRecord': '回款记录',
   'module.paymentRecordFormSetting': '回款记录表单设置',
-  'module.businessName': '工商抬头',
+  'module.businessTitle': '工商抬头',
   'module.priceTableFormSetting': '价格表表单设置',
   'module.tender': '标讯',
+  'module.contract.businessNameValidateConfig': '抬头表单必填设置',
+  'module.contract.invoiceFormSetting': '发票表单设置',
 };

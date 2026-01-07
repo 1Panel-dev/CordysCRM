@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    class="crm-business-name-table"
+    class="crm-business-title-table"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     @page-change="propsEvent.pageChange"
@@ -19,8 +19,8 @@
           {{ t('common.newCreate') }}
         </n-button>
         <CrmImportButton
-          :api-type="ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_NAME_IMPORT"
-          :title="t('module.businessName')"
+          :api-type="ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT"
+          :title="t('module.businessTitle')"
           @import-success="() => searchData()"
         />
         <n-button
@@ -44,13 +44,21 @@
       />
     </template>
   </CrmTable>
-  <businessNameDrawer
+  <businessTitleDrawer
     v-model:visible="businessNameDrawerVisible"
     :source-id="activeSourceId"
     @load="() => searchData()"
-    @edit="handleEdit"
+    @cancel="handleCancel"
   />
-  <detail v-model:visible="showDetailDrawer" :source-id="activeSourceId" />
+  <detail v-model:visible="showDetailDrawer" :source-id="activeSourceId" @edit="handleEdit" @cancel="handleCancel" />
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-columns="exportColumns"
+    :is-export-all="isExportAll"
+    type="businessTitle"
+    @create-success="() => (checkedRowKeys = [])"
+  />
 </template>
 
 <script setup lang="ts">
@@ -58,18 +66,17 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { ImportTypeExcludeFormDesignEnum } from '@lib/shared/enums/commonEnum';
-  import { ContractBusinessNameStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
-  import type { BusinessNameItem, ContractItem } from '@lib/shared/models/contract';
+  import type { BusinessTitleItem } from '@lib/shared/models/contract';
 
   import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -79,17 +86,18 @@
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
-  import businessNameDrawer from './businessNameDrawer.vue';
-  import businessNameStatus from './businessNameStatus.vue';
+  import businessTitleDrawer from './businessTitleDrawer.vue';
   import detail from './detail.vue';
 
-  import { deleteBusinessName, getBusinessNameList, revokeBusinessName } from '@/api/modules';
+  import {
+    deleteBusinessTitle,
+    getBusinessTitleInvoiceCheck,
+    getBusinessTitleList,
+    revokeBusinessTitle,
+  } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { contractBusinessNameStatusOptions } from '@/config/contract';
   import useModal from '@/hooks/useModal';
-  import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId?: string;
@@ -98,7 +106,6 @@
 
   const { t } = useI18n();
   const Message = useMessage();
-  const useStore = useUserStore();
 
   const keyword = ref('');
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
@@ -116,29 +123,41 @@
     businessNameDrawerVisible.value = true;
   }
 
-  function deleteHandler(row: BusinessNameItem) {
-    openModal({
-      type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('contract.businessName.deleteContent'),
-      positiveText: t('common.confirmDelete'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await deleteBusinessName(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
+  async function deleteHandler(row: BusinessTitleItem) {
+    try {
+      const isInvoiceChecked = await getBusinessTitleInvoiceCheck(row.id);
+      const content = isInvoiceChecked
+        ? t('contract.businessTitle.deleteInvoiceContent')
+        : t('contract.businessTitle.deleteContent');
+      const positiveText = isInvoiceChecked ? t('common.gotIt') : t('common.confirmDelete');
+      const type = isInvoiceChecked ? 'default' : 'error';
+      openModal({
+        type,
+        title: t('common.deleteConfirmTitle', { name: characterLimit(row.businessName) }),
+        content,
+        positiveText,
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            if (isInvoiceChecked) return;
+            await deleteBusinessTitle(row.id);
+            Message.success(t('common.deleteSuccess'));
+            tableRefreshId.value += 1;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
+        },
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   }
 
-  async function handleRevoke(row: BusinessNameItem) {
+  async function handleRevoke(row: BusinessTitleItem) {
     try {
-      await revokeBusinessName(row.id);
+      await revokeBusinessTitle(row.id);
       Message.success(t('common.revokeSuccess'));
       tableRefreshId.value += 1;
     } catch (error) {
@@ -148,12 +167,16 @@
   }
 
   const showDetailDrawer = ref(false);
-  function showDetail(row: BusinessNameItem) {
+  function showDetail(row: BusinessTitleItem) {
     activeSourceId.value = row.id;
     showDetailDrawer.value = true;
   }
 
-  function handleActionSelect(row: BusinessNameItem, actionKey: string) {
+  function handleCancel() {
+    activeSourceId.value = '';
+  }
+
+  function handleActionSelect(row: BusinessTitleItem, actionKey: string) {
     switch (actionKey) {
       case 'approval':
         showDetail(row);
@@ -172,26 +195,6 @@
     }
   }
 
-  function getOperationGroupList(row: BusinessNameItem) {
-    switch (row.status) {
-      case ContractBusinessNameStatusEnum.APPROVING:
-        return [
-          { label: t('common.approval'), key: 'approval', permission: [] },
-          ...(useStore.userInfo.id === row.createUser
-            ? [{ label: t('common.revoke'), key: 'revoke', permission: [] }]
-            : []),
-          { label: t('common.delete'), key: 'delete', permission: [] },
-        ];
-      case ContractBusinessNameStatusEnum.APPROVED:
-        return [{ label: t('common.delete'), key: 'delete', permission: [] }];
-      default:
-        return [
-          { label: t('common.edit'), key: 'edit', permission: [] },
-          { label: t('common.delete'), key: 'delete', permission: [] },
-        ];
-    }
-  }
-
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
@@ -205,68 +208,43 @@
       key: SpecialColumnEnum.ORDER,
       resizable: false,
       columnSelectorDisabled: true,
-      render: (row: BusinessNameItem, rowIndex: number) => rowIndex + 1,
+      render: (row: BusinessTitleItem, rowIndex: number) => rowIndex + 1,
     },
     {
-      title: t('contract.businessName.id'),
-      key: 'id',
-      width: 200,
+      title: t('contract.businessTitle.companyName'),
+      key: 'businessName',
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },
-      fixed: 'left',
+      width: 200,
       columnSelectorDisabled: true,
-      render: (row: BusinessNameItem) => {
-        const createNameButton = () =>
+      render: (row: BusinessTitleItem) => {
+        const createNameButton = () => [
+          // todo xinxinwu
+          row.type === 'thirdParty'
+            ? h(CrmIcon, {
+                type: 'iconicon_enterprise',
+                size: 16,
+                class: 'mr-[8px] text-[var(--primary-8)]',
+              })
+            : null,
           h(
             CrmTableButton,
             {
               onClick: () => showDetail(row),
             },
-            { default: () => row.id, trigger: () => row.id }
-          );
-        return props.readonly ? h(CrmNameTooltip, { text: row.id }) : createNameButton();
-      },
-    },
-    {
-      title: t('contract.businessName.companyName'),
-      key: 'companyName',
-      sortOrder: false,
-      sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 200,
-    },
-    {
-      title: t('contract.businessName.status'),
-      key: 'status',
-      sortOrder: false,
-      sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
-      filter: true,
-      filterOptions: contractBusinessNameStatusOptions,
-      width: 200,
-      render: (row: BusinessNameItem) => {
-        return row.status ? h(businessNameStatus, { status: row.status }) : '-';
-      },
-    },
-    {
-      title: t('contract.businessName.bank'),
-      key: 'bank',
-      sortOrder: false,
-      sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 200,
-    },
+            { default: () => row.businessName, trigger: () => row.businessName }
+          ),
+        ];
 
+        return props.readonly ? h(CrmNameTooltip, { text: row.businessName }) : createNameButton();
+      },
+    },
     {
-      title: t('contract.businessName.dataSource'),
-      key: 'dataSource',
+      title: t('contract.businessTitle.bank'),
+      key: 'openingBank',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -275,7 +253,32 @@
       width: 200,
     },
     {
-      title: t('contract.businessName.bankAccount'),
+      title: t('contract.businessTitle.dataSource'),
+      key: 'type',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+      render: (row: BusinessTitleItem) => {
+        return row.type === 'thirdParty'
+          ? t('contract.businessTitle.addMethodThird')
+          : t('contract.businessTitle.addMethodCustom');
+      },
+    },
+    {
+      title: t('contract.businessTitle.taxpayerNumber'),
+      key: 'identificationNumber',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.bankAccount'),
       key: 'bankAccount',
       sortOrder: false,
       sorter: true,
@@ -285,8 +288,8 @@
       width: 200,
     },
     {
-      title: t('contract.businessName.address'),
-      key: 'address',
+      title: t('contract.businessTitle.phone'),
+      key: 'phoneNumber',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -295,8 +298,38 @@
       width: 200,
     },
     {
-      title: t('contract.businessName.customerScale'),
-      key: 'customerScale',
+      title: t('contract.businessTitle.capital'),
+      key: 'registeredCapital',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.address'),
+      key: 'registrationAddress',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.companyScale'),
+      key: 'companySize',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.registrationAccount'),
+      key: 'registrationNumber',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -320,7 +353,7 @@
       sortOrder: false,
       sorter: true,
       width: 200,
-      render: (row: BusinessNameItem) => {
+      render: (row: BusinessTitleItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
     },
@@ -340,21 +373,22 @@
       width: 200,
       sortOrder: false,
       sorter: true,
-      render: (row: BusinessNameItem) => {
+      render: (row: BusinessTitleItem) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
     },
     {
       key: 'operation',
-      width: 140,
+      width: 100,
       fixed: 'right',
-      render: (row: BusinessNameItem) =>
-        getOperationGroupList(row).length
-          ? h(CrmOperationButton, {
-              groupList: getOperationGroupList(row),
-              onSelect: (key: string) => handleActionSelect(row, key),
-            })
-          : '-',
+      render: (row: BusinessTitleItem) =>
+        h(CrmOperationButton, {
+          groupList: [
+            { label: t('common.edit'), key: 'edit', permission: [] },
+            { label: t('common.delete'), key: 'delete', permission: [] },
+          ],
+          onSelect: (key: string) => handleActionSelect(row, key),
+        }),
     },
   ];
 
@@ -381,11 +415,22 @@
     }
   }
 
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTable(getBusinessNameList, {
-    tableKey: TableKeyEnum.CONTRACT_BUSINESS_NAME,
-    showSetting: true,
-    columns,
-    containerClass: '.crm-business-name-list-table',
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTable(
+    getBusinessTitleList,
+    {
+      tableKey: TableKeyEnum.CONTRACT_BUSINESS_NAME,
+      showSetting: true,
+      columns,
+      containerClass: '.crm-business-title-list-table',
+    }
+  );
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => getExportColumns(propsRes.value.columns));
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
@@ -412,54 +457,60 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
-      title: t('contract.businessName.id'),
-      dataIndex: 'id',
-      type: FieldTypeEnum.INPUT,
-    },
-    {
-      title: t('contract.businessName.companyName'),
+      title: t('contract.businessTitle.companyName'),
       dataIndex: 'companyName',
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('contract.businessName.status'),
-      dataIndex: 'status',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: contractBusinessNameStatusOptions,
-      },
-    },
-    {
-      title: t('contract.businessName.bank'),
-      dataIndex: 'bank',
+      title: t('contract.businessTitle.bank'),
+      dataIndex: 'openingBank',
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('contract.businessName.dataSource'),
-      dataIndex: 'dataSource',
+      title: t('contract.businessTitle.dataSource'),
+      dataIndex: 'type',
       type: FieldTypeEnum.SELECT_MULTIPLE,
       operatorOption: COMMON_SELECTION_OPERATORS,
       selectProps: {
         options: [
-          { label: t('contract.businessName.addMethodThird'), value: 'third' },
-          { label: t('contract.businessName.addMethodCustom'), value: 'custom' },
+          { label: t('contract.businessTitle.addMethodThird'), value: 'thirdParty' },
+          { label: t('contract.businessTitle.addMethodCustom'), value: 'custom' },
         ],
       },
     },
     {
-      title: t('contract.businessName.bankAccount'),
+      title: t('contract.businessTitle.bankAccount'),
+      dataIndex: 'identificationNumber',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.bankAccount'),
       dataIndex: 'bankAccount',
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('contract.businessName.address'),
-      dataIndex: 'address',
+      title: t('contract.businessTitle.phone'),
+      dataIndex: 'phoneNumber',
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('contract.businessName.customerScale'),
-      dataIndex: 'customerScale',
+      title: t('contract.businessTitle.capital'),
+      dataIndex: 'registeredCapital',
+      type: FieldTypeEnum.INPUT_NUMBER,
+    },
+    {
+      title: t('contract.businessTitle.address'),
+      dataIndex: 'registrationAddress',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.companyScale'),
+      dataIndex: 'companySize',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.registrationAccount'),
+      dataIndex: 'registrationNumber',
       type: FieldTypeEnum.INPUT,
     },
     ...baseFilterConfigList,

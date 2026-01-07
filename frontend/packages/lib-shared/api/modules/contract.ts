@@ -66,15 +66,18 @@ import {
   PreCheckPaymentRecordImportUrl,
   DownloadPaymentRecordTemplateUrl,
   ImportPaymentRecordUrl,
-  DownloadBusinessNameTemplateUrl,
-  ImportBusinessNameUrl,
-  PreCheckBusinessNameImportUrl,
-  BusinessNamePageUrl,
-  BusinessNameAddUrl,
-  BusinessNameUpdateUrl,
-  BusinessNameDeleteUrl,
-  GetBusinessNameDetailUrl,
-  BusinessNameRevokeUrl,
+  DownloadBusinessTitleTemplateUrl,
+  ImportBusinessTitleUrl,
+  PreCheckBusinessTitleImportUrl,
+  BusinessTitlePageUrl,
+  BusinessTitleAddUrl,
+  BusinessTitleUpdateUrl,
+  BusinessTitleDeleteUrl,
+  GetBusinessTitleDetailUrl,
+  BusinessTitleRevokeUrl,
+  GetBusinessTitleInvoiceCheckUrl,
+  ExportBusinessTitleSelectedUrl,
+  ExportBusinessTitleAllUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -100,9 +103,8 @@ import type {
   PaymentRecordDetail,
   SavePaymentRecordParams,
   UpdatePaymentRecordParams,
-  BusinessNameItem,
-  SaveBusinessNameParams,
-  UpdateBusinessNameParams,
+  BusinessTitleItem,
+  SaveBusinessTitleParams,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
@@ -425,52 +427,68 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 合同-工商抬头导入
-  function preCheckImportBusinessName(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckBusinessNameImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportBusinessTitle(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckBusinessTitleImportUrl }, { fileList: [file] }, 'file');
   }
 
-  function downloadBusinessNameTemplate() {
+  function downloadBusinessTitleTemplate() {
     return CDR.get(
       {
-        url: DownloadBusinessNameTemplateUrl,
+        url: DownloadBusinessTitleTemplateUrl,
         responseType: 'blob',
       },
       { isTransformResponse: false, isReturnNativeResponse: true }
     );
   }
 
-  function importBusinessName(file: File) {
-    return CDR.uploadFile({ url: ImportBusinessNameUrl }, { fileList: [file] }, 'file');
+  function importBusinessTitle(file: File) {
+    return CDR.uploadFile({ url: ImportBusinessTitleUrl }, { fileList: [file] }, 'file');
   }
 
   // 工商抬头列表
-  function getBusinessNameList(data: TableQueryParams) {
-    return CDR.post<CommonList<BusinessNameItem>>({ url: BusinessNamePageUrl, data }, { ignoreCancelToken: true });
+  function getBusinessTitleList(data: TableQueryParams) {
+    return CDR.post<CommonList<BusinessTitleItem>>({ url: BusinessTitlePageUrl, data }, { ignoreCancelToken: true });
   }
 
   // 添加工商抬头
-  function addBusinessName(data: SaveBusinessNameParams) {
-    return CDR.post({ url: BusinessNameAddUrl, data });
+  function addBusinessTitle(data: SaveBusinessTitleParams) {
+    return CDR.post({ url: BusinessTitleAddUrl, data });
   }
 
   // 更新工商抬头
-  function updateBusinessName(data: UpdateBusinessNameParams) {
-    return CDR.post({ url: BusinessNameUpdateUrl, data });
+  function updateBusinessTitle(data: SaveBusinessTitleParams) {
+    return CDR.post({ url: BusinessTitleUpdateUrl, data });
   }
 
   // 删除工商抬头
-  function deleteBusinessName(id: string) {
-    return CDR.get({ url: `${BusinessNameDeleteUrl}/${id}` });
+  function deleteBusinessTitle(id: string) {
+    return CDR.get({ url: `${BusinessTitleDeleteUrl}/${id}` });
   }
 
   //撤销工商抬头
-  function revokeBusinessName(id: string) {
-    return CDR.get({ url: `${BusinessNameRevokeUrl}/${id}` });
+  function revokeBusinessTitle(id: string) {
+    return CDR.get({ url: `${BusinessTitleRevokeUrl}/${id}` });
   }
 
-  // 工商抬头详情 todo xinxinwu
-  function getBusinessNameDetail(id: string) {
-    return CDR.get<BusinessNameItem>({ url: `${GetBusinessNameDetailUrl}/${id}` });
+  // 工商抬头详情
+  function getBusinessTitleDetail(id: string) {
+    return CDR.get<BusinessTitleItem>({ url: `${GetBusinessTitleDetailUrl}/${id}` });
+  }
+
+  // 工商抬头发票核验
+  function getBusinessTitleInvoiceCheck(id: string) {
+    return CDR.get({ url: `${GetBusinessTitleInvoiceCheckUrl}/${id}` });
+  }
+
+
+  // 导出全量工商抬头
+  function exportBusinessTitleAll(data: TableExportParams) {
+    return CDR.post({ url: ExportBusinessTitleAllUrl, data });
+  }
+
+  // 导出选中的工商抬头
+  function exportBusinessTitleSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportBusinessTitleSelectedUrl, data });
   }
 
   return {
@@ -539,14 +557,17 @@ export default function useContractApi(CDR: CordysAxios) {
     importContractPaymentRecord,
     downloadContractPaymentRecordTemplate,
     // 合同工商抬头
-    preCheckImportBusinessName,
-    downloadBusinessNameTemplate,
-    importBusinessName,
-    getBusinessNameList,
-    addBusinessName,
-    updateBusinessName,
-    deleteBusinessName,
-    revokeBusinessName,
-    getBusinessNameDetail,
+    preCheckImportBusinessTitle,
+    downloadBusinessTitleTemplate,
+    importBusinessTitle,
+    getBusinessTitleList,
+    addBusinessTitle,
+    updateBusinessTitle,
+    deleteBusinessTitle,
+    revokeBusinessTitle,
+    getBusinessTitleDetail,
+    getBusinessTitleInvoiceCheck,
+    exportBusinessTitleAll,
+    exportBusinessTitleSelected,
   };
 }

@@ -43,5 +43,5 @@ export enum ColumnTypeEnum {
 }
 
 export enum ImportTypeExcludeFormDesignEnum {
-  CONTRACT_BUSINESS_NAME_IMPORT = 'contractBusinessNameImport',
+  CONTRACT_BUSINESS_TITLE_IMPORT = 'contractBusinessTitleImport',
 }

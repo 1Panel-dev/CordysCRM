@@ -13,7 +13,7 @@ export enum ContractPaymentPlanEnum {
   COMPLETED = 'COMPLETED', // 已完成
 }
 
-export enum ContractBusinessNameStatusEnum {
+export enum ContractBusinessTitleStatusEnum {
   APPROVED = 'APPROVED', // 通过
   UNAPPROVED = 'UNAPPROVED', // 未通过
   APPROVING = 'APPROVING', // 提审中

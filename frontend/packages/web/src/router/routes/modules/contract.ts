@@ -49,9 +49,9 @@ const contract: AppRouteRecordRaw = {
     {
       path: 'contractBusinessName',
       name: ContractRouteEnum.CONTRACT_BUSINESS_NAME,
-      component: () => import('@/views/contract/businessName/index.vue'),
+      component: () => import('@/views/contract/businessTitle/index.vue'),
       meta: {
-        locale: 'module.businessName',
+        locale: 'module.businessTitle',
         isTopMenu: true,
         permissions: [],
       },
