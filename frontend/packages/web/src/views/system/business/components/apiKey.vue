@@ -181,7 +181,6 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { useClipboard } from '@vueuse/core';
   import {
     FormInst,
     NButton,
@@ -206,12 +205,13 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { addApiKey, deleteApiKey, disableApiKey, enableApiKey, updateApiKey } from '@/api/modules';
+  import useLegacyCopy from '@/hooks/useLegacyCopy';
   import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
-  const { copy, isSupported } = useClipboard({ legacy: true });
+  const { legacyCopy } = useLegacyCopy('.crm-drawer-content');
   const Message = useMessage();
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -234,12 +234,7 @@
   }
 
   function handleCopy(val: string) {
-    if (isSupported) {
-      copy(val);
-      Message.success(t('common.copySuccess'));
-    } else {
-      Message.warning(t('common.copyNotSupport'));
-    }
+    legacyCopy(val);
   }
 
   function desensitization(item: ApiKeyItem) {
