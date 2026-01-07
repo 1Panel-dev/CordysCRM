@@ -1989,6 +1989,32 @@
   ],
   "contractPaymentRecord": [
     {
+      "name": "基本信息",
+      "internalKey": "contractPaymentRecordBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "回款名称",
+      "internalKey": "contractPaymentRecordName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
       "name": "回款编码",
       "internalKey": "contractPaymentRecordNo",
       "type": "SERIAL_NUMBER",
@@ -2009,37 +2035,6 @@
       "readable": true,
       "editable": false,
       "fieldWidth": 1
-    },
-    {
-      "name": "回款名称",
-      "internalKey": "contractPaymentRecordName",
-      "type": "INPUT",
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 1,
-      "rules": [
-        {
-          "key": "required"
-        }
-      ],
-      "mobile": true
-    },
-    {
-      "name": "负责人",
-      "internalKey": "contractPaymentRecordOwner",
-      "type": "MEMBER",
-      "hasCurrentUser": true,
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 1,
-      "rules": [
-        {
-          "key": "required"
-        }
-      ],
-      "mobile": true
     },
     {
       "name": "合同名称",
@@ -2067,6 +2062,33 @@
       "editable": true,
       "fieldWidth": 1,
       "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractPaymentRecordOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款信息",
+      "internalKey": "contractPaymentRecordInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
     },
     {
       "name": "回款时间",
