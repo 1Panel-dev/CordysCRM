@@ -196,7 +196,7 @@ public class TokenService {
                 socket.connect(new java.net.InetSocketAddress(host, port), 3000);
             }
         } catch (Exception e) {
-            log.error("de embedded url connect error: " + e.getMessage());
+            log.error("de embedded url connect error: {}", e.getMessage());
             return false;
         }
 

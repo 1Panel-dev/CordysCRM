@@ -599,7 +599,7 @@ public class CustomerContactService {
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            log.error("contact import error: ", e.getMessage());
+            log.error("contact import error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }
