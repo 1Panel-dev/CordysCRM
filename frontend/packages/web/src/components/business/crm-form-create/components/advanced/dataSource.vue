@@ -29,6 +29,7 @@
       :filter-params="getParams()"
       :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
+      :hide-child-tag="props.hideChildTag"
       @change="($event, source) => emit('change', $event, source)"
     />
   </n-form-item>
@@ -60,6 +61,7 @@
     formDetail?: Record<string, any>;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    hideChildTag?: boolean;
     disabledSelection?: (row: Record<string, any>) => boolean;
   }>();
   const emit = defineEmits<{
