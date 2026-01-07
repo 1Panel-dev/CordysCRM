@@ -2,6 +2,7 @@
 AKE = "AKE"
 [default.extend-identifiers]
 maintain_column_froms = "maintain_column_froms"
+RegistCapi="RegistCapi"
 [files]
 extend-exclude = [
   "frontend/public", 

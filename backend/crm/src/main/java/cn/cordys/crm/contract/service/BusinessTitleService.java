@@ -6,12 +6,15 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.EncryptUtils;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
@@ -28,11 +31,19 @@ import cn.cordys.crm.contract.excel.handler.BusinessTitleTemplateWriteHandler;
 import cn.cordys.crm.contract.excel.listener.BusinessTitleCheckEventListener;
 import cn.cordys.crm.contract.excel.listener.BusinessTitleImportEventListener;
 import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
+import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
+import cn.cordys.crm.integration.common.request.QccThirdConfigRequest;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
+import cn.cordys.crm.integration.qcc.dto.EnterpriseInfo;
+import cn.cordys.crm.integration.qcc.dto.InfoData;
+import cn.cordys.crm.integration.qcc.dto.QccEnterpriseInfo;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
@@ -73,6 +84,8 @@ public class BusinessTitleService {
     private BaseService baseService;
     @Resource
     private BaseMapper<BusinessTitleConfig> businessTitleConfigMapper;
+    @Resource
+    private IntegrationConfigService integrationConfigService;
 
 
     /**
@@ -382,5 +395,63 @@ public class BusinessTitleService {
             log.error("importExcel error", e);
             throw new GenericException(e.getMessage());
         }
+    }
+
+
+    /**
+     * 三方查询
+     *
+     * @param keyword
+     * @param orgId
+     */
+    public BusinessTitle thirdQuery(String keyword, String orgId) {
+        BusinessTitle businessTitle = new BusinessTitle();
+        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService.getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
+        if (thirdConfig.getVerify()) {
+            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), QccThirdConfigRequest.class);
+            if (qccConfig != null && qccConfig.getQccEnable()) {
+                businessTitle = getTitleInfo(keyword, qccConfig);
+            }
+        }
+
+        return businessTitle;
+    }
+
+    private BusinessTitle getTitleInfo(String keyword, QccThirdConfigRequest qccConfig) {
+        long time = System.currentTimeMillis() / 1000;
+        String token = EncryptUtils.md5(qccConfig.getQccAccessKey() + time + qccConfig.getQccSecretKey()).toUpperCase();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Token", token);
+        headers.put("Timespan", String.valueOf(time));
+        try {
+            String url = HttpRequestUtil.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API), qccConfig.getQccAccessKey(), keyword);
+            String json = HttpRequestUtil.sendGetRequest(url, headers);
+            QccEnterpriseInfo qccEnterpriseInfo = JSON.parseObject(json, QccEnterpriseInfo.class);
+            if (!Strings.CI.equals("200", qccEnterpriseInfo.getStatus())) {
+                throw new GenericException(qccEnterpriseInfo.getMessage());
+            }
+            return buildBusinessTitle(qccEnterpriseInfo.getResult());
+        } catch (Exception e) {
+            log.error("查询企业信息异常", e);
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    private BusinessTitle buildBusinessTitle(EnterpriseInfo enterpriseInfo) {
+        BusinessTitle businessTitle = new BusinessTitle();
+        if (enterpriseInfo != null) {
+            InfoData data = enterpriseInfo.getData();
+            businessTitle.setBusinessName(data.getName());
+            businessTitle.setIdentificationNumber(data.getTaxNo());
+            businessTitle.setOpeningBank(data.getBankInfo().getBank());
+            businessTitle.setBankAccount(data.getBankInfo().getBankAccount());
+            businessTitle.setRegistrationAddress(data.getAddress());
+            businessTitle.setPhoneNumber(data.getContactInfo().getTel());
+            businessTitle.setRegisteredCapital(data.getRegisterCapi());
+            businessTitle.setCompanySize(data.getPersonScope());
+            businessTitle.setRegistrationNumber(data.getNo());
+        }
+        return businessTitle;
     }
 }

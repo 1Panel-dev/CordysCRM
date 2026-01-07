@@ -1,5 +1,6 @@
 package cn.cordys.crm.integration.sso.service;
 
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -18,6 +19,7 @@ import cn.cordys.crm.integration.lark.dto.LarkSendMessageDTO;
 import cn.cordys.crm.integration.lark.dto.LarkToken;
 import cn.cordys.crm.integration.lark.dto.LarkTokenParamDTO;
 import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
+import cn.cordys.crm.integration.qcc.response.QccBaseResponse;
 import cn.cordys.crm.integration.tender.constant.TenderApiPaths;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
 import cn.cordys.crm.integration.wecom.dto.WeComDetail;
@@ -28,6 +30,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -58,7 +61,6 @@ public class TokenService {
      *
      * @param corpId     企业ID
      * @param corpSecret 企业应用 密钥
-     *
      * @return String token
      */
     public String getAssessToken(String corpId, String corpSecret) {
@@ -90,7 +92,6 @@ public class TokenService {
      *
      * @param appKey    企业应用 ID ClientId
      * @param appSecret 企业应用 密钥
-     *
      * @return String token
      */
     public String getDingTalkToken(String appKey, String appSecret) {
@@ -118,7 +119,6 @@ public class TokenService {
      * @param appKey    企业应用 ID ClientId 应用id。可使用扫码登录应用或者第三方个人小程序的appId。
      * @param appSecret 企业应用 密钥
      * @param code      授权码OAuth 2.0 临时授权码
-     *
      * @return String token
      */
     public String getDingTalkUserToken(String appKey, String appSecret, String code) {
@@ -145,7 +145,6 @@ public class TokenService {
      *
      * @param agentId   appId 飞书自建应用凭证
      * @param appSecret appSecret
-     *
      * @return tenantAccessToken
      */
     public String getLarkToken(String agentId, String appSecret) {
@@ -177,7 +176,6 @@ public class TokenService {
      * IP + 端口 是否连通
      *
      * @param fullUrl 完整的URL地址
-     *
      * @return bool
      */
     public boolean pingDeUrl(String fullUrl) {
@@ -234,7 +232,6 @@ public class TokenService {
     /**
      * @param code   code
      * @param config 认证配置的map
-     *
      * @return access_token
      */
     public String getGitHubOAuth2Token(String code, Map<String, String> config) {
@@ -326,7 +323,6 @@ public class TokenService {
      *
      * @param mkAddress
      * @param apiKey
-     *
      * @return
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
@@ -367,15 +363,19 @@ public class TokenService {
         headers.put("Token", token);
         headers.put("Timespan", String.valueOf(time));
 
+        String url = HttpRequestUtil.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
+        String body = "";
         try {
-
-            String url = HttpRequestUtil.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
-            HttpRequestUtil.sendGetRequest(url, headers);
-            return true;
+            body = HttpRequestUtil.sendGetRequest(url, headers);
         } catch (Exception e) {
             log.error("测试连接失败", e);
             return false;
         }
+        QccBaseResponse qccBaseResponse = JSON.parseObject(body, QccBaseResponse.class);
+        if (Strings.CI.equals("201", qccBaseResponse.getStatus())) {
+            return true;
+        }
+        throw new GenericException("测试连接失败：" + qccBaseResponse.getMessage());
     }
 
     public boolean checkWeComAgentAvailable(String accessToken, String agentId) {
