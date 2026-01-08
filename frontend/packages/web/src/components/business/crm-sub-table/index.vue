@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableCreateSummary, NButton, NDataTable, NImage, NImageGroup, NTooltip } from 'naive-ui';
+  import { DataTableCreateSummary, NButton, NDataTable, NImage, NImageGroup, NTooltip, useMessage } from 'naive-ui';
   import { isEqual } from 'lodash-es';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
@@ -54,6 +54,7 @@
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const data = defineModel<Record<string, any>[]>('value', {
     required: true,
@@ -277,6 +278,9 @@
       const children = source.filter(
         (s) => s.parentId && data.value.every((r) => r.price_sub !== s.id) // 过滤已存在的行
       );
+      if (children.length === 0 && val.length > 0) {
+        Message.warning(t('crm.subTable.repeatAdd'));
+      }
       if (children.length === 0 || !source.some((s) => s.parentId)) {
         // 没有选中子项或没有选中父项，都表示当前为清空
         row[key] = [];
@@ -291,7 +295,7 @@
       if (children.length > 1) {
         // 多选行时，新增多行且选中值为子项的父项信息
         row.price_sub = children[0]?.id;
-        row[key] = [children[0].parentId, row.price_sub];
+        row[key] = [children[0].parentId, row.price_sub]; // 价格表 id 在第一位，因为当前是单选数据源，提交表单时只会保存第一个值
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub); // 数据源显示字段读取值并显示
         for (let i = 1; i < children.length; i++) {
           // 补充新增行
@@ -309,7 +313,16 @@
       } else {
         // 单选行只有一个父级
         row.price_sub = children[0]?.id;
-        row[key] = val;
+        row[key] = val.sort((a, b) => {
+          // 保证父项在前，子项在后
+          if (a === children[0].parentId) {
+            return -1;
+          }
+          if (b === children[0].parentId) {
+            return 1;
+          }
+          return 0;
+        });
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
       }
     } else {
