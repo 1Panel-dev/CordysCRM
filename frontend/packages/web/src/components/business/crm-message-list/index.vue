@@ -55,7 +55,7 @@
               </n-button>
             </div>
             <div class="flex flex-col pl-[48px]">
-              <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
+              <div :class="getMessageContentClass(item)" @click="goDetail(item)">
                 {{
                   item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
                     ? item.contentText
@@ -98,11 +98,21 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { getNotificationList, setNotificationRead } from '@/api/modules';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
+
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   const appStore = useAppStore();
+  const { openNewPage } = useOpenNewPage();
 
   const { t } = useI18n();
+
+  interface MessageDetailAction {
+    permission: string[];
+    action: (id: string) => void;
+  }
 
   const props = defineProps<{
     keyField: string;
@@ -115,6 +125,65 @@
   const emit = defineEmits<{
     (e: 'refreshCount'): void;
   }>();
+
+  function openNewPageQuotation(id: string) {
+    openNewPage(AppRouteEnum.OPPORTUNITY_QUOTATION, {
+      id,
+    });
+  }
+
+  function openNewPageContract(id: string) {
+    openNewPage(AppRouteEnum.CONTRACT_INDEX, {
+      id,
+    });
+  }
+
+  function openNewPageContractPaymentPlan(id: string) {
+    openNewPage(AppRouteEnum.CONTRACT_PAYMENT, {
+      id,
+    });
+  }
+
+  const permissionConfig = {
+    OPPORTUNITY_QUOTATION_READ: ['OPPORTUNITY_QUOTATION:READ'],
+    CONTRACT_READ: ['CONTRACT:READ'],
+    CONTRACT_PAYMENT_RECORD_READ: ['CONTRACT_PAYMENT_RECORD:READ'],
+  };
+
+  const messageDetailConfig: Record<string, MessageDetailAction> = {
+    BUSINESS_QUOTATION_EXPIRED: {
+      permission: permissionConfig.OPPORTUNITY_QUOTATION_READ,
+      action: openNewPageQuotation,
+    },
+    BUSINESS_QUOTATION_EXPIRING: {
+      permission: permissionConfig.OPPORTUNITY_QUOTATION_READ,
+      action: openNewPageQuotation,
+    },
+    CONTRACT_EXPIRED: {
+      permission: permissionConfig.CONTRACT_READ,
+      action: openNewPageContract,
+    },
+    CONTRACT_EXPIRING: {
+      permission: permissionConfig.CONTRACT_READ,
+      action: openNewPageContract,
+    },
+    CONTRACT_PAYMENT_EXPIRING: {
+      permission: permissionConfig.CONTRACT_PAYMENT_RECORD_READ,
+      action: openNewPageContractPaymentPlan,
+    },
+    CONTRACT_PAYMENT_EXPIRED: {
+      permission: permissionConfig.CONTRACT_PAYMENT_RECORD_READ,
+      action: openNewPageContractPaymentPlan,
+    },
+  };
+
+  function getMessageContentClass(item: MessageCenterItem) {
+    if (messageDetailConfig[item.operation] && hasAnyPermission(messageDetailConfig[item.operation].permission)) {
+      return 'cursor-pointer text-[var(--primary-8)]';
+    }
+
+    return `message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`;
+  }
 
   const innerKeyword = defineModel<string>('keyword', {
     required: false,
@@ -190,6 +259,11 @@
     if (url) {
       window.open(url, '_blank');
     }
+  }
+
+  function goDetail(item: MessageCenterItem) {
+    if (!hasAnyPermission(messageDetailConfig[item.operation]?.permission ?? [])) return;
+    messageDetailConfig[item.operation]?.action?.(item.resourceId);
   }
 
   onBeforeMount(() => {
