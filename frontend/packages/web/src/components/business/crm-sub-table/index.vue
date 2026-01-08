@@ -271,7 +271,8 @@
     }
     isProcessingDataSourceChange.value = true;
     const key = field.businessKey || field.id;
-    if (isPriceSubTableShowSubField) {
+    const parents = source.filter((s) => !s.parentId);
+    if (isPriceSubTableShowSubField && val.filter((e) => parents.some((p) => p.id === e)).length > 0) {
       // 价格表子表格特殊处理，需要填充多行
       const children = source.filter(
         (s) => s.parentId && data.value.every((r) => r.price_sub !== s.id) // 过滤已存在的行
@@ -312,7 +313,7 @@
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
       }
     } else {
-      row[key] = val;
+      row[key] = val.filter((e) => parents.some((p) => p.id === e)).length > 0 ? val : [];
       applyDataSourceShowFields(field, val, row, source, row.price_sub);
     }
     sumInitialOptions.value = sumInitialOptions.value.concat(
