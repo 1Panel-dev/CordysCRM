@@ -304,7 +304,7 @@ public class CustomerController {
 	@GetMapping("/contract/payment-record/statistic/{accountId}")
 	@RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
 	@Operation(summary = "客户详情-合同回款记录列表统计")
-	public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentRecordStatistic(@PathVariable String accountId) {
+	public CustomerPaymentRecordStatisticResponse calculateCustomerPaymentRecordStatistic(@PathVariable String accountId) {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.sumCustomerPaymentAmount(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

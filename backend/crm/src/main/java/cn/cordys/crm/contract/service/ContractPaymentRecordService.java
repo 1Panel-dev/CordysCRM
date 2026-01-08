@@ -29,6 +29,7 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -315,7 +316,7 @@ public class ContractPaymentRecordService {
 	 * @param deptDataPermission 数据权限
 	 * @return 汇总结果
 	 */
-	public CustomerPaymentPlanStatisticResponse sumCustomerPaymentAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+	public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
 		return extContractPaymentRecordMapper.sumCustomerRecordAmount(customerId, userId, organizationId, deptDataPermission);
 	}
 

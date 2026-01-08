@@ -4,6 +4,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,5 +44,5 @@ public interface ExtContractPaymentRecordMapper {
 	 * @param deptDataPermission 数据权限
 	 * @return 汇总结果
 	 */
-	CustomerPaymentPlanStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+	CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 }
