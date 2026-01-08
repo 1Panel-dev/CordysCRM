@@ -6,6 +6,7 @@ import cn.cordys.common.util.OnceInterfaceAction;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.system.domain.Parameter;
 import cn.cordys.crm.system.service.ModuleFieldService;
+import cn.cordys.crm.system.service.ModuleFormExtService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.mybatis.BaseMapper;
@@ -31,6 +32,8 @@ public class DataInitService {
     private ModuleService moduleService;
     @Resource
     private ModuleFormService moduleFormService;
+	@Resource
+	private ModuleFormExtService moduleFormExtService;
     @Resource
     private BaseMapper<Parameter> parameterMapper;
     @Resource
@@ -57,6 +60,8 @@ public class DataInitService {
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
             initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
+            initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
+			initOneTime(moduleFormExtService::setOptionDefaultSourceForSelect, "set.select.option.source");
         } finally {
             lock.unlock();
         }
