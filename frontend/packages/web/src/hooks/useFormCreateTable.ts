@@ -992,17 +992,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               filedType: field.type,
             };
           }
-          // TODO lmy 回款的合同名称不固定
           if (
-            (field.businessKey === 'name' &&
-              ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey) &&
-              !field.resourceFieldId) ||
-            ([
-              FormDesignKeyEnum.CONTRACT_PAYMENT,
-              FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT,
-              FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
-            ].includes(props.formKey) &&
-              field.businessKey === 'contractId')
+            field.businessKey === 'name' &&
+            ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey) &&
+            !field.resourceFieldId
           ) {
             return {
               title: field.name,
@@ -1017,8 +1010,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: props.specialRender?.[field.businessKey],
             };
           }
-
-          if (field.businessKey === 'customerId') {
+          if (
+            !field.resourceFieldId &&
+            (field.businessKey === 'customerId' ||
+              ([
+                FormDesignKeyEnum.CONTRACT_PAYMENT,
+                FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT,
+                FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+              ].includes(props.formKey) &&
+                field.businessKey === 'contractId') ||
+              field.businessKey === 'paymentPlanId')
+          ) {
             return {
               title: field.name,
               width: 200,

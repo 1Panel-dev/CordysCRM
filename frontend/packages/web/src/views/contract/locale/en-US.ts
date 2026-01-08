@@ -28,6 +28,11 @@ export default {
   'contract.isPlanCompleted': 'Plan completed',
   'contract.approvalStatus': 'Approval Status',
   'contract.paymentRecord.new': 'Create payment record',
+  'contract.payment': 'Payment',
+  'contract.paymentName': 'Payment name',
+  'contract.paymentRecord.accountsPayable': 'Amount due',
+  'contract.paymentRecord.paymentReceived': 'Amount received',
+  'contract.paymentRecord.pendingPayment': 'Pending payment',
   'contract.paymentTime': 'Payment time',
   'contract.paymentAmount': 'Payment amount',
   'contract.paymentRecord.deleteConfirmContent':

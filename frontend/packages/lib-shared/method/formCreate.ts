@@ -29,6 +29,7 @@ export const specialBusinessKeyMap: Record<string, string> = {
   contractId: 'contractName',
   owner: 'ownerName',
   opportunityId: 'opportunityName',
+  paymentPlanId: 'paymentPlanName',
 };
 
 export function getRuleType(item: FormCreateField) {
