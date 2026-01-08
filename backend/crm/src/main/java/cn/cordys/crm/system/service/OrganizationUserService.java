@@ -122,6 +122,7 @@ public class OrganizationUserService {
      */
     public List<UserPageResponse> list(UserPageRequest request) {
         String orderByClause = buildOrderByFieldClause(request.getDepartmentIds());
+        request.setDepartmentIds(request.getDepartmentIds().stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList());
         List<UserPageResponse> list = extOrganizationUserMapper.list(request, orderByClause);
         handleData(list, request.getDepartmentIds().getFirst());
         return list;
@@ -131,6 +132,7 @@ public class OrganizationUserService {
         if (departmentIds == null || departmentIds.isEmpty()) {
             return "1"; // 默认排序，如果无部门ID传入
         }
+        departmentIds = departmentIds.stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList();
         StringJoiner sj = new StringJoiner(",", "FIELD(department_id, ", ")");
         for (String deptId : departmentIds) {
             sj.add("'" + deptId + "'");
