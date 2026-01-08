@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
   import { DataTableCreateSummary, NButton, NDataTable, NImage, NImageGroup, NTooltip } from 'naive-ui';
-  import { cloneDeep, isEqual } from 'lodash-es';
+  import { isEqual } from 'lodash-es';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -210,7 +210,7 @@
     if (field.showFields?.length) {
       // 数据源显示字段联动
       const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
-      const targetSource = source.find((s) => s.id === val[0]); // 子表格数据源是单选，所以目标数据源只有一个
+      const targetSource = source.filter((e) => !e.parentId).find((e) => val.includes(e.id)); // 子表格数据源是单选，所以目标数据源只有一个
       showFields.forEach((sf) => {
         let fieldVal: string | string[] = '';
         if (targetSource) {
