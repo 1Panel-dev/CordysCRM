@@ -643,7 +643,10 @@ public class ModuleFormService {
             // 设置特殊的业务字段 key
             field.setBusinessKey(businessEnum.getBusinessKey());
             field.setDisabledProps(businessEnum.getDisabledProps());
-        }
+        } else {
+			field.setBusinessKey(null);
+			field.setDisabledProps(null);
+		}
     }
 
     /**
