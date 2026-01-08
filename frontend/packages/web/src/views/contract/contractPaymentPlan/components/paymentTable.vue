@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
@@ -126,6 +127,8 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
+
+  const route = useRoute();
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -470,6 +473,13 @@
       }
     }
   );
+
+  onMounted(async () => {
+    if (route.query.id && !props.isContractTab) {
+      activeSourceId.value = route.query.id as string;
+      showDetailDrawer.value = true;
+    }
+  });
 
   // onBeforeUnmount(() => {
   //   sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);

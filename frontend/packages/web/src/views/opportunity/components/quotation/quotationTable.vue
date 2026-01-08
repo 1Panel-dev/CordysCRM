@@ -89,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
@@ -148,6 +149,7 @@
     refreshKey?: number;
   }>();
 
+  const route = useRoute();
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const resultVisible = ref(false);
   const batchResult = ref<BatchOperationResult>({
@@ -657,6 +659,13 @@
   watch([() => tableRefreshId.value, () => props.refreshKey], () => {
     checkedRowKeys.value = [];
     searchData();
+  });
+
+  onMounted(() => {
+    if (route.query.id && !props.sourceId) {
+      activeSourceId.value = route.query.id as string;
+      showDetailDrawer.value = true;
+    }
   });
 </script>
 
