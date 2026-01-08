@@ -99,27 +99,33 @@
         </if>
     </select>
 
-    <select id="sumCustomerRecordAmount" resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse">
-        select sum(cpr.record_amount) as totalPlanAmount
-        from contract_payment_record cpr
-        join contract c on c.id = cpr.contract_id
-
-        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            join sys_organization_user sou on cpr.owner = sou.user_id
-            and (
-            sou.department_id in
-            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
-            )
-        </if>
+    <select id="sumCustomerRecordAmount" resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse">
+        select
+            sum(c.amount) as totalAmount,
+            sum(cpr_sum.receivedAmount) as receivedAmount,
+            sum(c.amount) - sum(cpr_sum.receivedAmount) as pendingAmount
+        from contract c
+        left join (
+            select cpr.contract_id, sum(cpr.record_amount) as receivedAmount
+            from contract_payment_record cpr
+            <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+                join sys_organization_user sou on cpr.owner = sou.user_id
+                and (
+                sou.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                )
+            </if>
+            where cpr.organization_id = #{orgId}
+            <if test="dataPermission != null and dataPermission.self">
+                and cpr.owner = #{userId}
+            </if>
+            group by contract_id
+        ) cpr_sum on c.id = cpr_sum.contract_id
 
         where cpr.organization_id = #{orgId}
         and c.customer_id = #{customerId}
-
-        <if test="dataPermission != null and dataPermission.self">
-            and cpr.owner = #{userId}
-        </if>
     </select>
 
     <sql id="sort">
