@@ -2,6 +2,7 @@ package cn.cordys.crm.contract.controller;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.Pager;
@@ -158,6 +159,14 @@ public class BusinessTitleController {
     @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file) {
         return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/third-query/option")
+    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
+    @Operation(summary = "第三方接口分页模糊查询工商名称")
+    public Pager<List<String>> thirdQueryOptions(@Validated @RequestBody BasePageRequest request) {
+        return businessTitleService.thirdQueryOption(request.getKeyword(), request.getCurrent(), OrganizationContext.getOrganizationId());
     }
 
 
