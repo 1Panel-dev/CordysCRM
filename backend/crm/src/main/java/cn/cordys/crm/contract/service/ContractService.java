@@ -134,6 +134,8 @@ public class ContractService {
         contract.setStage(ContractStage.PENDING_SIGNING.name());
         contract.setOrganizationId(orgId);
         contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+        contract.setStartTime(request.getStartTime());
+        contract.setEndTime(request.getEndTime());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setCreateUser(operatorId);
         contract.setUpdateTime(System.currentTimeMillis());
@@ -266,6 +268,8 @@ public class ContractService {
 
             List<BaseModuleFieldValue> originFields = contractFieldService.getModuleFieldValuesByResourceId(request.getId());
             Contract contract = BeanUtils.copyBean(new Contract(), request);
+            contract.setStartTime(request.getStartTime());
+            contract.setEndTime(request.getEndTime());
             contract.setUpdateTime(System.currentTimeMillis());
             contract.setUpdateUser(userId);
             // 保留不可更改的字段

@@ -1778,6 +1778,40 @@
           "key": "required"
         }
       ]
+    },
+    {
+      "name": "合同开始时间",
+      "internalKey": "contractStartTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
+    },
+    {
+      "name": "合同结束时间",
+      "internalKey": "contractEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
     }
   ],
   "invoice": [
