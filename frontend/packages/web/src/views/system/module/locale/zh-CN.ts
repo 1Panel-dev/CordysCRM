@@ -90,7 +90,7 @@ export default {
   'module.customerFormSetting': '客户表单设置',
   'module.clueFormSetting': '线索表单设置',
   'module.opportunityFormSetting': '商机表单设置',
-  'module.opportunityQuotationFormSetting': '报价单表单设置',
+  'module.opportunityQuotationFormSetting': '报价表单设置',
   'module.productFormSetting': '产品表单设置',
   'module.followRecordFormSetting': '跟进记录表单设置',
   'module.followPlanFormSetting': '跟进计划表单设置',
@@ -111,4 +111,5 @@ export default {
   'module.tender': '标讯',
   'module.contract.businessNameValidateConfig': '抬头表单必填设置',
   'module.contract.invoiceFormSetting': '发票表单设置',
+  'module.invoice': '发票记录',
 };
