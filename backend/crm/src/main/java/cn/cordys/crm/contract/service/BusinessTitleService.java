@@ -35,9 +35,7 @@ import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.QccThirdConfigRequest;
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
-import cn.cordys.crm.integration.qcc.dto.EnterpriseInfo;
-import cn.cordys.crm.integration.qcc.dto.InfoData;
-import cn.cordys.crm.integration.qcc.dto.QccEnterpriseInfo;
+import cn.cordys.crm.integration.qcc.dto.*;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -418,12 +416,7 @@ public class BusinessTitleService {
     }
 
     private BusinessTitle getTitleInfo(String keyword, QccThirdConfigRequest qccConfig) {
-        long time = System.currentTimeMillis() / 1000;
-        String token = EncryptUtils.md5(qccConfig.getQccAccessKey() + time + qccConfig.getQccSecretKey()).toUpperCase();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Token", token);
-        headers.put("Timespan", String.valueOf(time));
+        Map<String, String> headers = buildHeaders(qccConfig);
         try {
             String url = HttpRequestUtil.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API), qccConfig.getQccAccessKey(), keyword);
             String json = HttpRequestUtil.sendGetRequest(url, headers);
@@ -454,4 +447,65 @@ public class BusinessTitleService {
         }
         return businessTitle;
     }
+
+
+    /**
+     * 分页查询
+     *
+     * @param keyword
+     * @param pageIndex
+     * @param orgId
+     * @return
+     */
+    public Pager<List<String>> thirdQueryOption(String keyword, Integer pageIndex, String orgId) {
+        Pager<List<String>> page = new Pager<>();
+        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService.getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
+        if (thirdConfig.getVerify()) {
+            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), QccThirdConfigRequest.class);
+            if (qccConfig != null && qccConfig.getQccEnable()) {
+                getNameList(keyword, qccConfig, String.valueOf(pageIndex), page);
+            }
+        }
+        return page;
+    }
+
+    private void getNameList(String keyword, QccThirdConfigRequest qccConfig, String pageIndex, Pager<List<String>> page) {
+        Map<String, String> headers = buildHeaders(qccConfig);
+        try {
+            String url = HttpRequestUtil.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.FUZZY_SEARCH_LIST_API), qccConfig.getQccAccessKey(), keyword, pageIndex);
+            String json = HttpRequestUtil.sendGetRequest(url, headers);
+            QccFuzzyQueryInfo queryInfo = JSON.parseObject(json, QccFuzzyQueryInfo.class);
+            if (!Strings.CI.equals("200", queryInfo.getStatus())) {
+                throw new GenericException(queryInfo.getMessage());
+            }
+            buildPageInfo(queryInfo, page);
+        } catch (Exception e) {
+            log.error("查询企业信息异常", e);
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    private void buildPageInfo(QccFuzzyQueryInfo queryInfo, Pager<List<String>> page) {
+        if (queryInfo.getPaging() != null) {
+            Paging paging = queryInfo.getPaging();
+            page.setTotal(paging.getTotalRecords());
+            page.setPageSize(paging.getPageSize());
+            page.setCurrent(paging.getPageIndex());
+        }
+
+        if (queryInfo.getResult() != null) {
+            List<String> names = queryInfo.getResult().stream().map(NameInfo::getName).toList();
+            page.setList(names);
+        }
+    }
+
+    private Map<String, String> buildHeaders(QccThirdConfigRequest qccConfig) {
+        long time = System.currentTimeMillis() / 1000;
+        String token = EncryptUtils.md5(qccConfig.getQccAccessKey() + time + qccConfig.getQccSecretKey()).toUpperCase();
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Token", token);
+        headers.put("Timespan", String.valueOf(time));
+        return headers;
+    }
+
 }
