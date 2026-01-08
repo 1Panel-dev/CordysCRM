@@ -336,7 +336,7 @@ public class ContractPaymentRecordService {
 		List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).collect(Collectors.toList());
 		Map<String, List<BaseModuleFieldValue>> resourceFieldMap = contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
 		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentRecordFieldService.setBusinessRefFieldValue(list,
-				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg), resourceFieldMap);
+				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg), resourceFieldMap);
 
 		List<String> ownerIds = list.stream().map(ContractPaymentRecordResponse::getOwner).distinct().toList();
 		List<String> createUserIds = list.stream().map(ContractPaymentRecordResponse::getCreateUser).distinct().toList();
