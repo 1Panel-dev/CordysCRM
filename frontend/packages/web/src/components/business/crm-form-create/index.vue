@@ -270,7 +270,9 @@
     currentFieldValues.forEach((fieldValue, index) => {
       if ([FieldTypeEnum.DATA_SOURCE].includes(item.type) && Array.isArray(fieldValue)) {
         // 处理数据源字段，单选传单个值
-        result[index][item.businessKey || item.id] = fieldValue?.[0];
+        result[index][item.businessKey || item.id] = result[index].price_sub
+          ? fieldValue?.filter((e) => e !== result[index].price_sub)[0] // 价格表子表格特殊处理，price_sub是行号，这里不填充到fieldValue中
+          : fieldValue?.[0];
       }
       if (item.type === FieldTypeEnum.PHONE) {
         // 去空格
