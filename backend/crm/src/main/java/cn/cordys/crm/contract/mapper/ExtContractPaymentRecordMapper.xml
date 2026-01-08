@@ -33,7 +33,7 @@
                 #{deptId}
             </foreach>
             <if test="dataPermission.viewId == 'ALL'">
-                or sou.user_id = #{userId}
+                or sou.user_id = #{currentUser}
             </if>
             )
         </if>
@@ -41,7 +41,7 @@
         where cpr.organization_id = #{currentOrg}
 
         <if test="dataPermission != null and dataPermission.self">
-            and cpr.owner = #{userId}
+            and cpr.owner = #{currentUser}
         </if>
 
         <if test="request.contractId != null and request.contractId != ''">
@@ -93,6 +93,29 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cpr.owner = #{currentUser}
+        </if>
+    </select>
+
+    <select id="sumCustomerRecordAmount" resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse">
+        select sum(cpr.record_amount) as totalPlanAmount
+        from contract_payment_record cpr
+        join contract c on c.id = cpr.contract_id
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on cpr.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            )
+        </if>
+
+        where cpr.organization_id = #{orgId}
+        and c.customer_id = #{customerId}
 
         <if test="dataPermission != null and dataPermission.self">
             and cpr.owner = #{userId}

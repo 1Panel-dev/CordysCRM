@@ -16,10 +16,7 @@ import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.*;
-import cn.cordys.crm.contract.service.ContractExportService;
-import cn.cordys.crm.contract.service.ContractInvoiceService;
-import cn.cordys.crm.contract.service.ContractPaymentPlanService;
-import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.dto.request.CustomerContractInvoicePageRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
@@ -52,6 +49,8 @@ public class ContractController {
     private DataScopeService dataScopeService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
+	@Resource
+	private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
 
@@ -152,6 +151,17 @@ public class ContractController {
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
+
+	@PostMapping("/contract-payment-record/page")
+	@RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+	@Operation(summary = "合同详情-回款记录")
+	public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+		ConditionFilterUtils.parseCondition(request);
+		request.setViewId(InternalUserView.ALL.name());
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
 
     @GetMapping("/tab")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)

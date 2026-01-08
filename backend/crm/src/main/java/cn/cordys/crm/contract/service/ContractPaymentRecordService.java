@@ -31,6 +31,7 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -305,6 +306,18 @@ public class ContractPaymentRecordService {
 			log.error("Payment record import error: ", e);
 			throw new GenericException(e.getMessage());
 		}
+	}
+
+	/**
+	 * 汇总客户回款记录列表金额
+	 * @param customerId 客户ID
+	 * @param userId 用户ID
+	 * @param organizationId 组织ID
+	 * @param deptDataPermission 数据权限
+	 * @return 汇总结果
+	 */
+	public CustomerPaymentPlanStatisticResponse sumCustomerPaymentAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+		return extContractPaymentRecordMapper.sumCustomerRecordAmount(customerId, userId, organizationId, deptDataPermission);
 	}
 
 	/**
