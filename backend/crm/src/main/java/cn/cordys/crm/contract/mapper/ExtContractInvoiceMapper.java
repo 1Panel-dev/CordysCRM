@@ -6,6 +6,7 @@ import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ExtContractInvoiceMapper {
@@ -19,9 +20,14 @@ public interface ExtContractInvoiceMapper {
 
     List<ContractInvoiceListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-//    CustomerInvoiceStatisticResponse calculateContractInvoiceStatisticByCustomerId(@Param("customerId")  String customerId, @Param("userId")  String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
-
     List<String> selectByStatusAndIds(@Param("ids") List<String> ids, @Param("approvalStatus") String approvalStatus);
 
     void updateStatus(@Param("id") String id, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
+
+    BigDecimal calculateCustomerInvoiceAmount(@Param("customerId") String customerId, @Param("userId") String userId,
+                                              @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
+    BigDecimal calculateContractInvoiceAmount(@Param("contractId") String contractId, @Param("userId") String userId,
+                                              @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
 }

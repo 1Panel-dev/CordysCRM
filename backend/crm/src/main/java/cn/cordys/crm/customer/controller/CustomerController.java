@@ -46,6 +46,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -282,7 +283,7 @@ public class CustomerController {
     public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@PathVariable String accountId) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.calculateCustomerPaymentPlanStatisticByCustomerId(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractPaymentPlanService.calculateCustomerPaymentPlanStatistic(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/invoice/page")
@@ -294,5 +295,21 @@ public class CustomerController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
         return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @GetMapping("/invoice/statistic/{accountId}")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
+    @Operation(summary = "客户详情-发票列表统计")
+    public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String accountId) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
+        BigDecimal invoiceAmount = contractInvoiceService.calculateCustomerInvoiceAmount(accountId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
+
+        CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
+        response.setContractAmount(calculateCustomerContractStatistic(accountId).getTotalAmount());
+        response.setInvoicedAmount(invoiceAmount);
+        response.setUninvoicedAmount(response.getContractAmount().subtract(invoiceAmount));
+        return response;
     }
 }

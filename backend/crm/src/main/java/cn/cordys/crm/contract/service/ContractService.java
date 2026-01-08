@@ -680,4 +680,8 @@ public class ContractService {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(contract).map(Contract::getName).orElse(null);
     }
+
+    public Contract selectByPrimaryKey(String id) {
+        return contractMapper.selectByPrimaryKey(id);
+    }
 }
