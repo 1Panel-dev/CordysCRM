@@ -70,7 +70,7 @@
             )
         </if>
         <if test="source and request.keyword != null and request.keyword != ''">
-            and ct.name  like concat('%', #{request.keyword},'%')
+            and ct.name like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">
@@ -317,47 +317,47 @@
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
-                <bind name="sortType" value="${sort}.type" />
+                <bind name="sortType" value="${sort}.type"/>
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        ct.`name` ${sortType},  ct.id ASC
+                        ct.`name` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'customer_id'">
-                        c.`name` ${sortType},  ct.id ASC
+                        c.`name` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'owner'">
-                        ct.`owner` ${sortType},  ct.id ASC
+                        ct.`owner` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'amount'">
-                        ct.`amount` ${sortType},  ct.id ASC
+                        ct.`amount` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'stage'">
-                        ct.`stage` ${sortType},  ct.id ASC
+                        ct.`stage` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
-                        ct.`create_time` ${sortType},  ct.id ASC
+                        ct.`create_time` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'update_time'">
-                        ct.`update_time` ${sortType},  ct.id ASC
+                        ct.`update_time` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
-                        ct.`create_user` ${sortType},  ct.id ASC
+                        ct.`create_user` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'update_user'">
-                        ct.`update_user` ${sortType},  ct.id ASC
+                        ct.`update_user` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        souc_sort.`id` ${sortType},  ct.id ASC
+                        souc_sort.`id` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        ct.`approval_status` ${sortType},  ct.id ASC
+                        ct.`approval_status` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'start_time'">
-                        ct.`start_time` ${sortType},  ct.id ASC
+                        ct.`start_time` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'end_time'">
-                        ct.`end_time` ${sortType},  ct.id ASC
+                        ct.`end_time` ${sortType}, ct.id ASC
                     </when>
 
 
@@ -378,25 +378,23 @@
     </sql>
 
     <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractResponse">
-        SELECT
-            ct.id,
-            ct.NAME,
-            ct.customer_id,
-            c.`name` AS customerName,
-            c.in_shared_pool AS inCustomerPool,
-            c.pool_id,
-            ct.amount,
-            ct.approval_status,
-            ct.stage,
-            ct.`owner`,
-            ct.void_reason,
-            ct.create_user,
-            ct.create_time,
-            ct.update_user,
-            ct.update_time
-        FROM
-            contract ct
-                LEFT JOIN customer c ON ct.customer_id = c.id
+        SELECT ct.id,
+               ct.NAME,
+               ct.customer_id,
+               c.`name`         AS customerName,
+               c.in_shared_pool AS inCustomerPool,
+               c.pool_id,
+               ct.amount,
+               ct.approval_status,
+               ct.stage,
+               ct.`owner`,
+               ct.void_reason,
+               ct.create_user,
+               ct.create_time,
+               ct.update_user,
+               ct.update_time
+        FROM contract ct
+                 LEFT JOIN customer c ON ct.customer_id = c.id
         where ct.id = #{id}
     </select>
     <select id="calculateContractStatisticByCustomerId"
@@ -409,10 +407,10 @@
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user on ct.owner = sys_organization_user.user_id
             and (
-                sys_organization_user.department_id in
-                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                    #{deptId}
-                </foreach>
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
             )
         </if>
         where ct.organization_id = #{orgId} and ct.customer_id = #{customerId}
@@ -429,12 +427,20 @@
         </foreach>
         and approval_status = #{approvalStatus}
     </select>
+    <select id="selectByTimestamp" resultType="cn.cordys.crm.contract.domain.Contract">
+        select *
+        from contract
+        where organization_id = #{organizationId}
+          and end_time <![CDATA[>=]]> #{timestampOld}
+          and end_time <![CDATA[<]]> #{timestamp}
+          and stage!='VOID' and stage!='COMPLETED_PERFORMANCE'
+    </select>
 
     <update id="updateStatus">
         update contract
         set approval_status = #{approvalStatus},
-            update_user = #{userId},
-            update_time = #{updateTime}
+            update_user     = #{userId},
+            update_time     = #{updateTime}
         where id = #{id}
     </update>
 </mapper>
