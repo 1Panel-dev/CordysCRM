@@ -90,7 +90,7 @@ public class AddNoticeExpireTests {
 
         ContractPaymentPlan contractPaymentPlan = new ContractPaymentPlan();
         contractPaymentPlan.setId("SDDFDJJND");
-		contractPaymentPlan.setName("test");
+        contractPaymentPlan.setName("test");
         contractPaymentPlan.setOrganizationId("100001");
         contractPaymentPlan.setContractId("SDDFDJJND");
         contractPaymentPlan.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
@@ -105,7 +105,7 @@ public class AddNoticeExpireTests {
 
         contractPaymentPlan = new ContractPaymentPlan();
         contractPaymentPlan.setId("SgDFDJJND");
-		contractPaymentPlan.setName("test");
+        contractPaymentPlan.setName("test");
         contractPaymentPlan.setOrganizationId("100001");
         contractPaymentPlan.setContractId("SDDFDJJND");
         contractPaymentPlan.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
@@ -131,6 +131,42 @@ public class AddNoticeExpireTests {
         contract.setOwner("aaa");
         contract.setStartTime(System.currentTimeMillis());
         contract.setEndTime(System.currentTimeMillis());
+        contract.setCreateTime(System.currentTimeMillis());
+        contract.setUpdateUser("admin");
+        contract.setUpdateTime(System.currentTimeMillis());
+        contractBaseMapper.insert(contract);
+
+        contract = new Contract();
+        contract.setId("34554546565656667");
+        contract.setOrganizationId("100001");
+        contract.setNumber("SDDFDJJND");
+        contract.setName("测试合同2");
+        contract.setCustomerId("100001");
+        contract.setAmount(BigDecimal.valueOf(10000));
+        contract.setApprovalStatus(ContractApprovalStatus.APPROVED.name());
+        contract.setStage(ContractStage.PENDING_SIGNING.name());
+        contract.setCreateUser("admin");
+        contract.setOwner("aaa");
+        contract.setStartTime(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
+        contract.setEndTime(System.currentTimeMillis() - 1000 * 60 * 60 * 24);
+        contract.setCreateTime(System.currentTimeMillis());
+        contract.setUpdateUser("admin");
+        contract.setUpdateTime(System.currentTimeMillis());
+        contractBaseMapper.insert(contract);
+
+        contract = new Contract();
+        contract.setId("3455454656565667888");
+        contract.setOrganizationId("100001");
+        contract.setNumber("SDDFDJJND");
+        contract.setName("测试合同1");
+        contract.setCustomerId("100001");
+        contract.setAmount(BigDecimal.valueOf(10000));
+        contract.setApprovalStatus(ContractApprovalStatus.APPROVED.name());
+        contract.setStage(ContractStage.PENDING_SIGNING.name());
+        contract.setCreateUser("admin");
+        contract.setOwner("aaa");
+        contract.setStartTime(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 5);
+        contract.setEndTime(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 4);
         contract.setCreateTime(System.currentTimeMillis());
         contract.setUpdateUser("admin");
         contract.setUpdateTime(System.currentTimeMillis());
@@ -219,5 +255,6 @@ public class AddNoticeExpireTests {
         notification.setResourceType("CONTRACT");
         notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
+
     }
 }

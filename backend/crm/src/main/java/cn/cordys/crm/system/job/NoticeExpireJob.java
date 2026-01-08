@@ -3,6 +3,7 @@ package cn.cordys.crm.system.job;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
+import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -59,6 +60,8 @@ public class NoticeExpireJob {
     private ExtOrganizationMapper extOrganizationMapper;
     @Resource
     private ExtContractPaymentPlanMapper extContractPaymentPlanMapper;
+    @Resource
+    private ExtContractMapper extContractMapper;
 
 
     /**
@@ -75,8 +78,120 @@ public class NoticeExpireJob {
             this.quotationExpiredRemind();
             this.contractPaymentPlanExpiringRemind();
             this.contractPaymentPlanExpiredRemind();
+            this.contractExpiringRemind();
+            this.contractExpiredRemind();
         } catch (Exception e) {
             log.error("消息通知提醒异常: ", e.getMessage());
+        }
+    }
+
+    /**
+     * 合同到期自动通知
+     * <p>
+     * 查询已到期的合同，并向相关负责人发送通知提醒。
+     * </p>
+     */
+    private void contractExpiredRemind() {
+        log.info("合同到期提醒");
+        //查询所有组织
+        Set<String> organizationIds = extOrganizationMapper.selectAllOrganizationIds();
+        for (String organizationId : organizationIds) {
+            //查询合同到期的消息通知是否开启
+            MessageTask expiredEvent = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_EXPIRED, organizationId);
+            //判断是否开启
+            if (expiredEvent == null || (!expiredEvent.getDingTalkEnable() && !expiredEvent.getEmailEnable() && !expiredEvent.getSysEnable() && !expiredEvent.getWeComEnable() && !expiredEvent.getLarkEnable())) {
+                log.info("组织{}合同到期提醒未开启", organizationId);
+                continue;
+            }
+            //查询合同到期的消息通知配置
+            MessageTaskConfig expiredConfig = extMessageTaskConfigMapper.getConfigByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_EXPIRED, organizationId);
+            if (expiredConfig == null || expiredConfig.getValue() == null) {
+                log.info("组织{}合同到期提醒配置不存在", organizationId);
+                continue;
+            }
+            MessageTaskConfigDTO expiredConfigDTO = JSON.parseObject(expiredConfig.getValue(), MessageTaskConfigDTO.class);
+            long timestamp = LocalDate.now()
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toEpochSecond() * 1000;
+
+            long timestampOld = LocalDate.now().minusDays(1)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toEpochSecond() * 1000;
+            List<Contract> contractList = getContractList(organizationId, timestamp, timestampOld);
+            if (CollectionUtils.isEmpty(contractList)) {
+                log.info("组织{}无到期合同", organizationId);
+                continue;
+            }
+            for (Contract contract : contractList) {
+                //发送通知
+                Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
+                if (customer == null) {
+                    log.info("组织{}合同{}关联的客户不存在", organizationId, contract.getId());
+                    continue;
+                }
+                sendNotice(expiredConfigDTO, NotificationConstants.Module.CONTRACT, contract.getCreateUser(), contract.getOrganizationId(), NotificationConstants.Event.CONTRACT_EXPIRED, customer.getName(), contract.getCreateUser(), contract.getOwner(), null, contract.getId());
+            }
+            log.info("组织{}合同到期提醒发送通知成功", organizationId);
+        }
+
+    }
+
+    /**
+     * 合同即将到期自动通知
+     * <p>
+     * 查询即将到期的合同，并向相关负责人发送通知提醒。
+     * </p>
+     */
+    private void contractExpiringRemind() {
+        log.info("合同即将到期提醒");
+        //查询所有组织
+        Set<String> organizationIds = extOrganizationMapper.selectAllOrganizationIds();
+        for (String organizationId : organizationIds) {
+            //查询合同即将到期和到期的消息通知是否开启
+            MessageTask expiringEvent = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_EXPIRING, organizationId);
+            //判断是否开启
+            if (expiringEvent == null || (!expiringEvent.getDingTalkEnable() && !expiringEvent.getEmailEnable() && !expiringEvent.getSysEnable() && !expiringEvent.getWeComEnable() && !expiringEvent.getLarkEnable())) {
+                log.info("组织{}合同即将到期提醒未开启", organizationId);
+                continue;
+            }
+            //查询合同即将到期的消息通知配置
+            MessageTaskConfig expiringConfig = extMessageTaskConfigMapper.getConfigByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_EXPIRING, organizationId);
+            if (expiringConfig == null || expiringConfig.getValue() == null) {
+                log.info("组织{}合同即将到期提醒配置不存在", organizationId);
+                continue;
+            }
+            MessageTaskConfigDTO expiringConfigDTO = JSON.parseObject(expiringConfig.getValue(), MessageTaskConfigDTO.class);
+            if (CollectionUtils.isEmpty(expiringConfigDTO.getTimeList())) {
+                log.info("组织{}合同即将到期提醒时间配置不存在", organizationId);
+                continue;
+            }
+            //查询合同即将到期的时间
+            List<TimeDTO> expiringTimeList = expiringConfigDTO.getTimeList();
+            for (TimeDTO timeDTO : expiringTimeList) {
+                if (timeDTO.getTimeUnit().equals("DAY")) {
+                    long startTime = LocalDate.now().minusDays(timeDTO.getTimeValue())
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toEpochSecond() * 1000;
+                    long endTime = LocalDate.now().minusDays(timeDTO.getTimeValue() + 1)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toEpochSecond() * 1000;
+                    List<Contract> contractList = getContractList(organizationId, startTime, endTime);
+                    if (CollectionUtils.isEmpty(contractList)) {
+                        log.info("组织{}无即将到期合同", organizationId);
+                        continue;
+                    }
+                    for (Contract contract : contractList) {
+                        //发送通知
+                        Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
+                        if (customer == null) {
+                            log.info("组织{}合同{}关联的客户不存在", organizationId, contract.getId());
+                            continue;
+                        }
+                        sendNotice(expiringConfigDTO, NotificationConstants.Module.CONTRACT, contract.getCreateUser(), contract.getOrganizationId(), NotificationConstants.Event.CONTRACT_EXPIRING, customer.getName(), contract.getCreateUser(), contract.getOwner(), timeDTO.getTimeValue(), contract.getId());
+                    }
+                }
+            }
+            log.info("组织{}合同即将到期提醒发送通知成功", organizationId);
         }
     }
 
@@ -194,6 +309,18 @@ public class NoticeExpireJob {
             }
             log.info("组织{}商机报价单到期提醒发送通知成功", organizationId);
         }
+    }
+
+    /**
+     * 根据时间戳获取合同列表
+     *
+     * @param organizationId 组织ID
+     * @param timestamp      时间戳
+     * @param timestampOld   旧时间戳
+     * @return 合同列表
+     */
+    private List<Contract> getContractList(String organizationId, long timestamp, long timestampOld) {
+        return extContractMapper.selectByTimestamp(organizationId, timestampOld, timestamp);
     }
 
     /**
