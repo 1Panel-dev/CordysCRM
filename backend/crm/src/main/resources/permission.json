@@ -541,6 +541,9 @@
           {
             "id": "CONTRACT:APPROVAL",
             "license": false
+          },
+          {
+            "id": "CONTRACT:PAYMENT"
           }
         ]
       },

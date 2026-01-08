@@ -22,10 +22,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import cn.cordys.crm.contract.domain.ContractPaymentRecordField;
-import cn.cordys.crm.contract.domain.ContractPaymentRecordFieldBlob;
+import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
@@ -91,6 +88,8 @@ public class ContractPaymentRecordService {
 	private BaseMapper<Contract> contractMapper;
 	@Resource
 	private SerialNumGenerator serialNumGenerator;
+	@Resource
+	private BaseMapper<ContractPaymentPlan> contractPaymentPlanMapper;
 	@Resource
 	private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
 	@Resource
@@ -347,6 +346,9 @@ public class ContractPaymentRecordService {
 			return list;
 		}
 		List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).collect(Collectors.toList());
+		List<String> refPlanIds = list.stream().map(ContractPaymentRecordResponse::getPaymentPlanId).toList();
+		List<ContractPaymentPlan> contractPaymentPlans = contractPaymentPlanMapper.selectByIds(refPlanIds);
+		Map<String, String> paymentPlanMap = contractPaymentPlans.stream().collect(Collectors.toMap(ContractPaymentPlan::getId, ContractPaymentPlan::getName));
 		Map<String, List<BaseModuleFieldValue>> resourceFieldMap = contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
 		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentRecordFieldService.setBusinessRefFieldValue(list,
 				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg), resourceFieldMap);
@@ -363,6 +365,7 @@ public class ContractPaymentRecordService {
 			item.setCreateUserName(baseService.getAndCheckOptionName(userNameMap.get(item.getCreateUser())));
 			item.setUpdateUserName(baseService.getAndCheckOptionName(userNameMap.get(item.getUpdateUser())));
 			item.setOwnerName(baseService.getAndCheckOptionName(userNameMap.get(item.getOwner())));
+			item.setPaymentPlanName(paymentPlanMap.get(item.getPaymentPlanId()));
 			if (userDeptMap.containsKey(item.getOwner())) {
 				UserDeptDTO userDept = userDeptMap.get(item.getOwner());
 				item.setDepartmentId(userDept.getDeptId());
