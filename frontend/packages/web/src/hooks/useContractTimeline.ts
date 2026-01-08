@@ -36,11 +36,18 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
         label: t('contract.customerPaymentAmount'),
       },
     ],
-    // TODO lmy 应回款 已回款金额 带回款金额
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: [
       {
-        key: 'totalPlanAmount',
-        label: t('contract.customerPaymentAmount'),
+        key: 'totalAmount',
+        label: t('contract.paymentRecord.accountsPayable'),
+      },
+      {
+        key: 'receivedAmount',
+        label: t('contract.paymentRecord.paymentReceived'),
+      },
+      {
+        key: 'pendingAmount',
+        label: t('contract.paymentRecord.pendingPayment'),
       },
     ],
   };
@@ -81,9 +88,10 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
       { key: 'planStatus', label: t('contract.isPlanCompleted'), value: '' },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: [
+      { key: 'name', label: t('contract.paymentName'), value: '' },
       { key: 'contractName', label: t('contract.paymentContract'), value: '' },
-      { key: 'paymentTime', label: t('contract.paymentTime'), value: '' },
-      { key: 'paymentAmount', label: t('contract.paymentAmount'), value: '' },
+      { key: 'recordAmount', label: t('contract.paymentAmount'), value: '' },
+      { key: 'recordEndTime', label: t('contract.paymentTime'), value: '' },
     ],
   };
 

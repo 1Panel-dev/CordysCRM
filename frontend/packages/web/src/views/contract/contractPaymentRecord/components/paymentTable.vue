@@ -96,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -133,6 +134,7 @@
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
+  const route = useRoute();
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
@@ -144,6 +146,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
+    (e: 'openPaymentPlanDrawer', params: { id: string }): void;
   }>();
 
   const activeTab = ref();
@@ -317,9 +320,15 @@
     }
   }
 
+  function showPaymentPlanDrawer(params: { id: string }) {
+    emit('openPaymentPlanDrawer', {
+      id: params.id,
+    });
+  }
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
-    excludeFieldIds: ['contractId'],
+    excludeFieldIds: ['contractId', 'paymentPlanId'],
     operationColumn: {
       key: 'operation',
       width: currentLocale.value === 'en-US' ? 150 : 120,
@@ -359,6 +368,25 @@
                 },
               },
               { default: () => row.contractName, trigger: () => row.contractName }
+            );
+      },
+      paymentPlanId: (row: PaymentRecordItem) => {
+        return !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])
+          ? h(
+              CrmNameTooltip,
+              { text: row.paymentPlanName },
+              {
+                default: () => row.paymentPlanName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showPaymentPlanDrawer({ id: row.paymentPlanId });
+                },
+              },
+              { default: () => row.paymentPlanName, trigger: () => row.paymentPlanName }
             );
       },
     },
@@ -409,6 +437,10 @@
   onBeforeMount(() => {
     if (props.isContractTab) {
       searchData();
+    }
+    if (route.query.id) {
+      activeSourceId.value = route.query.id as string;
+      showDetailDrawer.value = true;
     }
   });
 

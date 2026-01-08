@@ -6,6 +6,7 @@
           :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
           :fullscreen-target-ref="contractPaymentRecordCardRef"
           @open-contract-drawer="handleOpenContractDrawer"
+          @openPaymentPlanDrawer="handleOpenPaymentPlanDrawer"
         />
       </div>
     </CrmCard>
@@ -13,6 +14,12 @@
       v-model:visible="showContractDetailDrawer"
       :sourceId="activeSourceId"
       @showCustomerDrawer="handleOpenCustomerDrawer"
+    />
+    <PaymentPlanDetailDrawer
+      v-model:visible="showPaymentPlanDetailDrawer"
+      :sourceId="activeSourceId"
+      :readonly="true"
+      @open-contract-drawer="handleOpenContractDrawer"
     />
     <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeCustomerSourceId" />
     <openSeaOverviewDrawer
@@ -26,11 +33,11 @@
 
 <script setup lang="ts">
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import type { ContractItem } from '@lib/shared/models/contract';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import ContractDetailDrawer from '../contract/components/detail.vue';
+  import PaymentPlanDetailDrawer from '../contractPaymentPlan/components/detail.vue';
   import PaymentTable from './components/paymentTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
@@ -45,6 +52,12 @@
   function handleOpenContractDrawer(params: { id: string }) {
     activeSourceId.value = params.id;
     showContractDetailDrawer.value = true;
+  }
+
+  const showPaymentPlanDetailDrawer = ref(false);
+  function handleOpenPaymentPlanDrawer(params: { id: string }) {
+    activeSourceId.value = params.id;
+    showPaymentPlanDetailDrawer.value = true;
   }
 
   const showCustomerOverviewDrawer = ref(false);

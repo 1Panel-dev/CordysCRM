@@ -31,7 +31,16 @@
             <div class="crm-follow-record-base-info">
               <CrmDetailCard :description="getDescription(item)">
                 <template #name>
-                  <CrmTableButton @click="goDetail(item.id)">
+                  <CrmTableButton
+                    @click="
+                      goDetail(
+                        item.id,
+                        props.formKey === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
+                          ? FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
+                          : FormDesignKeyEnum.CONTRACT
+                      )
+                    "
+                  >
                     {{ item.name }}
                     <template #trigger> {{ item.name }} </template>
                   </CrmTableButton>
@@ -58,6 +67,16 @@
                     {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
                   </div>
                 </template>
+                <template #recordEndTime="{ item: decItem }">
+                  <div class="flex items-center gap-[8px]">
+                    {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+                  </div>
+                </template>
+                <template #recordAmount="{ item: decItem }">
+                  <div class="flex items-center gap-[8px]">
+                    {{ decItem.value }}
+                  </div>
+                </template>
               </CrmDetailCard>
             </div>
           </div>
@@ -73,6 +92,7 @@
   import dayjs from 'dayjs';
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -99,10 +119,16 @@
   const { data, loading, statisticInfo, getDescription, loadList, getStatistic, handleReachBottom } =
     useContractTimeline(props.formKey, props.sourceId);
 
-  function goDetail(id: string) {
-    openNewPage(ContractRouteEnum.CONTRACT_INDEX, {
-      id,
-    });
+  function goDetail(id: string, type?: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD | FormDesignKeyEnum.CONTRACT) {
+    if (type === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
+      openNewPage(ContractRouteEnum.CONTRACT_PAYMENT_RECORD, {
+        id,
+      });
+    } else {
+      openNewPage(ContractRouteEnum.CONTRACT_INDEX, {
+        id,
+      });
+    }
   }
 
   onMounted(() => {

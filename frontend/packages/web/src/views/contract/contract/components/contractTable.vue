@@ -59,7 +59,9 @@
     :form-key="activeFormKey"
     :source-id="activeSourceId"
     :need-init-detail="needInitDetail"
+    :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
+    :link-form-info="linkFormInfo"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -128,6 +130,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
   import { quotationStatusOptions } from '@/config/opportunity';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
@@ -304,11 +307,10 @@
     }
     if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
-        // TODO lmy 回款
         {
-          label: t('common.delete'),
+          label: t('contract.payment'),
           key: 'paymentRecord',
-          permission: ['CONTRACT:DELETE'],
+          permission: ['CONTRACT:PAYMENT'],
         },
         {
           label: t('common.delete'),
@@ -378,13 +380,33 @@
     }
   }
 
+  // 回款
+  const initialSourceName = ref('');
+  const linkFormInfo = ref();
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CONTRACT),
+    sourceId: activeSourceId,
+  });
+  async function handlePaymentRecord(row: ContractItem) {
+    activeSourceId.value = row.id;
+    initialSourceName.value = row.name;
+    needInitDetail.value = false;
+    activeFormKey.value = FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
+    await initFormConfig();
+    await initFormDetail(false, true);
+    linkFormInfo.value = linkFormFieldMap.value;
+    formCreateDrawerVisible.value = true;
+  }
+
   async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
       case 'approval':
         activeSourceId.value = row.id;
         showDetailDrawer.value = true;
         break;
-      // TODO lmy 回款
+      case 'paymentRecord':
+        handlePaymentRecord(row);
+        break;
       case 'revoke':
         handleRevoke(row);
         break;
