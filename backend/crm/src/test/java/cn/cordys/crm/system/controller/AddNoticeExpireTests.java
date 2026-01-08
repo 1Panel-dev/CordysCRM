@@ -129,6 +129,8 @@ public class AddNoticeExpireTests {
         contract.setStage(ContractStage.PENDING_SIGNING.name());
         contract.setCreateUser("admin");
         contract.setOwner("aaa");
+        contract.setStartTime(System.currentTimeMillis());
+        contract.setEndTime(System.currentTimeMillis());
         contract.setCreateTime(System.currentTimeMillis());
         contract.setUpdateUser("admin");
         contract.setUpdateTime(System.currentTimeMillis());

@@ -15,6 +15,8 @@
         ct.approval_status,
         ct.stage,
         ct.`owner`,
+        ct.start_time,
+        ct.end_time,
         ct.void_reason,
         ct.create_user,
         ct.create_time,
@@ -134,7 +136,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
                 {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'createUser', 'updateUser',
-                 'departmentId', 'number', 'stage', 'amount', 'approvalStatus'}">
+                 'departmentId', 'number', 'stage', 'amount', 'approvalStatus', 'startTime', 'endTime'}">
                     <if test="condition.multipleValue">
                         left join contract_field_blob ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -155,7 +157,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
-                 'approval_status', 'update_time', 'create_user', 'department_id'}">
+                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
             on ct.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -221,6 +223,18 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="ct.approval_status"/>
+                </include>
+            </when>
+            <when test="condition.name == 'startTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="ct.start_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'endTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="ct.end_time"/>
                 </include>
             </when>
             <when test="condition.name == 'departmentId'">
@@ -337,8 +351,15 @@
                         souc_sort.`id` ${sortType},  ct.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        ct.`id` ${sortType},  ct.id ASC
+                        ct.`approval_status` ${sortType},  ct.id ASC
                     </when>
+                    <when test="${sort}.name == 'start_time'">
+                        ct.`start_time` ${sortType},  ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'end_time'">
+                        ct.`end_time` ${sortType},  ct.id ASC
+                    </when>
+
 
                     <otherwise>
                         CASE
