@@ -11,9 +11,11 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.*;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.*;
@@ -72,6 +74,8 @@ public class CustomerController {
     private ContractService contractService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
+	@Resource
+	private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
 
@@ -285,6 +289,26 @@ public class CustomerController {
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         return contractPaymentPlanService.calculateCustomerPaymentPlanStatistic(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
+
+	@PostMapping("/contract/payment-record/page")
+	@RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+	@Operation(summary = "客户详情-合同回款记录列表")
+	public PagerWithOption<List<ContractPaymentRecordResponse>> recordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+		ConditionFilterUtils.parseCondition(request);
+		request.setViewId(InternalUserView.ALL.name());
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
+
+	@GetMapping("/contract/payment-record/statistic/{accountId}")
+	@RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+	@Operation(summary = "客户详情-合同回款记录列表统计")
+	public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentRecordStatistic(@PathVariable String accountId) {
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		return contractPaymentRecordService.sumCustomerPaymentAmount(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
 
     @PostMapping("/invoice/page")
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_INVOICE_READ})

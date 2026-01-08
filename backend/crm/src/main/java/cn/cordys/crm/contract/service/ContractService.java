@@ -181,8 +181,10 @@ public class ContractService {
      */
     private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, ContractResponse response) {
         //移除response中moduleFields 集合里 的 BaseModuleFieldValue 的 fieldId="products"的数据，避免快照数据过大
-        response.setModuleFields(response.getModuleFields().stream()
-                .filter(field -> (field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
+		if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
+			response.setModuleFields(response.getModuleFields().stream()
+					.filter(field -> (field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
+		}
         ContractSnapshot snapshot = new ContractSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setContractId(contract.getId());
