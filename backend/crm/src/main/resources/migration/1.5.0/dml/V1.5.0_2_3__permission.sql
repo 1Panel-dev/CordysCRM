@@ -72,4 +72,12 @@ VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT_INVOICE:UPDATE');
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT_INVOICE:EXPORT');
 
+-- init contract payment operate permission
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'org_admin', 'CONTRACT:PAYMENT');
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'sales_manager', 'CONTRACT:PAYMENT');
+INSERT INTO sys_role_permission (id, role_id, permission_id)
+VALUES (UUID_SHORT(), 'sales_staff', 'CONTRACT:PAYMENT');
+
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

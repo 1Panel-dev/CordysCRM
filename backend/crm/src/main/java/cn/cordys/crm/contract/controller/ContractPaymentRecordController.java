@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -72,7 +73,7 @@ public class ContractPaymentRecordController {
 	}
 
 	@PostMapping("/add")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD)
+	@RequiresPermissions(value = {PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD, PermissionConstants.CONTRACT_PAYMENT}, logical = Logical.OR)
 	@Operation(summary = "添加回款记录")
 	public ContractPaymentRecord add(@Validated @RequestBody ContractPaymentRecordAddRequest request) {
 		return contractPaymentRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
