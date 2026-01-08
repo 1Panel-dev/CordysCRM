@@ -294,7 +294,7 @@ public class ContractPaymentPlanService {
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, rolePermissions);
     }
 
-    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatisticByCustomerId(String accountId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatisticByCustomerId(accountId, userId, organizationId, deptDataPermission);
+    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(String accountId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatistic(accountId, userId, organizationId, deptDataPermission);
     }
 }

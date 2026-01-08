@@ -380,28 +380,6 @@
         where ci.id = #{id}
     </select>
 
-<!--    <select id="calculateContractInvoiceStatisticByCustomerId"-->
-<!--            resultType="cn.cordys.crm.contract.dto.response.CustomerContractInvoiceStatisticResponse">-->
-<!--        SELECT-->
-<!--            sum(ci.amount) as totalAmount-->
-<!--        FROM-->
-<!--        contract_invoice ci-->
-<!--        LEFT JOIN contract c ON ci.contract_id = c.id-->
-<!--        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">-->
-<!--            join sys_organization_user on ci.owner = sys_organization_user.user_id-->
-<!--            and (-->
-<!--                sys_organization_user.department_id in-->
-<!--                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">-->
-<!--                    #{deptId}-->
-<!--                </foreach>-->
-<!--            )-->
-<!--        </if>-->
-<!--        where ci.organization_id = #{orgId} and ci.contract_id = #{contractId}-->
-<!--        <if test="dataPermission != null and dataPermission.self">-->
-<!--            and ci.owner = #{userId}-->
-<!--        </if>-->
-<!--    </select>-->
-
     <select id="selectByStatusAndIds" resultType="java.lang.String">
         select id from contract_invoice
         where id in
@@ -409,6 +387,29 @@
             #{id}
         </foreach>
         and approval_status = #{approvalStatus}
+    </select>
+
+    <select id="calculateCustomerInvoiceAmount" resultType="java.math.BigDecimal">
+        select
+            IFNULL(SUM(c.amount), 0) as totalAmount
+        from
+            contract_invoice ci
+        left join contract c on ci.contract_id = c.id
+        where
+            c.customer_id = #{customerId}
+            and ci.organization_id = #{orgId}
+            and ci.approval_status = 'APPROVED'
+    </select>
+
+    <select id="calculateContractInvoiceAmount" resultType="java.math.BigDecimal">
+        select
+            IFNULL(SUM(amount), 0) as totalAmount
+        from
+            contract_invoice
+        where
+            contract_id = #{contractId}
+            and organization_id = #{orgId}
+            and approval_status = 'APPROVED'
     </select>
 
     <update id="updateStatus">

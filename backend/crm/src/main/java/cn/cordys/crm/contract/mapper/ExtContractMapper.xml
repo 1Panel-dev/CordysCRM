@@ -381,7 +381,7 @@
     <select id="calculateContractStatisticByCustomerId"
             resultType="cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse">
         SELECT
-            sum(ct.amount) as totalAmount
+        IFNULL(SUM(ct.amount), 0) as totalAmount
         FROM
         contract ct
         LEFT JOIN customer c ON ct.customer_id = c.id

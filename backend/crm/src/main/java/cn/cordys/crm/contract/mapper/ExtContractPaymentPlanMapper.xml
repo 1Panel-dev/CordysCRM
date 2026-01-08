@@ -99,9 +99,9 @@
             and cpp.owner = #{userId}
         </if>
     </select>
-    <select id="calculateCustomerPaymentPlanStatisticByCustomerId"
+    <select id="calculateCustomerPaymentPlanStatistic"
             resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse">
-        select sum(cpp.plan_amount) as totalPlanAmount
+        select IFNULL(SUM(cpp.plan_amount), 0) as totalPlanAmount
         from contract_payment_plan cpp
         join contract c on c.id = cpp.contract_id
 

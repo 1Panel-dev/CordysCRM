@@ -49,6 +49,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -148,10 +149,8 @@ public class ContractInvoiceService {
         invoiceFieldService.saveModuleField(invoice, orgId, operatorId, moduleFields, false);
         invoiceMapper.insert(invoice);
 
-        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
         baseService.handleAddLog(invoice, request.getModuleFields());
-        OperationLogContext.getContext().setResourceName(resourceName);
+        OperationLogContext.getContext().setResourceName(invoice.getName());
         OperationLogContext.getContext().setResourceId(invoice.getId());
 
         // 保存表单配置快照
@@ -263,12 +262,9 @@ public class ContractInvoiceService {
             List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
             ContractInvoiceGetResponse response = getContractInvoiceResponse(invoice, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
-            Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-
-            String resourceName = contract == null ? invoice.getContractId() : contract.getName();
 
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields, request.getId(), resourceName, Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields, request.getId(), invoice.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("invoice.not.exist"));
         });
@@ -316,12 +312,8 @@ public class ContractInvoiceService {
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
 
-        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-
-        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
-
         // 添加日志上下文
-        OperationLogContext.setResourceName(resourceName);
+        OperationLogContext.setResourceName(invoice.getName());
     }
 
     public ContractInvoiceGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
@@ -463,11 +455,8 @@ public class ContractInvoiceService {
 
         updateStatusSnapshot(request.getId(), request.getApprovalStatus());
 
-        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
-
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, resourceName, state, request.getApprovalStatus());
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, invoice.getName(), state, request.getApprovalStatus());
         logService.add(logDTO);
     }
 
@@ -490,11 +479,8 @@ public class ContractInvoiceService {
         //更新快照
         updateStatusSnapshot(id, ApprovalState.REVOKED.toString());
 
-        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-        String resourceName = contract == null ? invoice.getContractId() : contract.getName();
-
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, resourceName, originApprovalStatus, ApprovalState.REVOKED.toString());
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, invoice.getName(), originApprovalStatus, ApprovalState.REVOKED.toString());
         logService.add(logDTO);
 
         return invoice.getApprovalStatus();
@@ -524,5 +510,13 @@ public class ContractInvoiceService {
             first.setInvoiceValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(first);
         }
+    }
+
+    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, organizationId, deptDataPermission);
+    }
+
+    public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, organizationId, deptDataPermission);
     }
 }

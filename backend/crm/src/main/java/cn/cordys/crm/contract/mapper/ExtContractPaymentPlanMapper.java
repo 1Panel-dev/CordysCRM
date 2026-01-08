@@ -20,7 +20,7 @@ public interface ExtContractPaymentPlanMapper {
 
     List<ContractPaymentPlanListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatisticByCustomerId(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp, @Param("timestampOld") long timestampOld, @Param("orgId") String organizationId);
 }

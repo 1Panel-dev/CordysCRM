@@ -15,10 +15,7 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.*;
-import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
-import cn.cordys.crm.contract.dto.response.ContractListResponse;
-import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
-import cn.cordys.crm.contract.dto.response.ContractResponse;
+import cn.cordys.crm.contract.dto.response.*;
 import cn.cordys.crm.contract.service.ContractExportService;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
@@ -37,6 +34,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -215,5 +213,22 @@ public class ContractController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
         return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @GetMapping("/invoice/statistic/{contractId}")
+    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
+    @Operation(summary = "合同详情-发票列表统计")
+    public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String contractId) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
+        BigDecimal invoiceAmount = contractInvoiceService.calculateContractInvoiceAmount(contractId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
+
+        CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
+        Contract contract = contractService.selectByPrimaryKey(contractId);
+        response.setContractAmount(contract == null ? BigDecimal.ZERO : contract.getAmount());
+        response.setInvoicedAmount(invoiceAmount);
+        response.setUninvoicedAmount(response.getContractAmount().subtract(invoiceAmount));
+        return response;
     }
 }
