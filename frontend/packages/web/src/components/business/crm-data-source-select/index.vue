@@ -31,6 +31,7 @@
       :filter-params="filterParams"
       :fullscreen-target-ref="fullscreenTargetRef"
       :fieldConfig="props.fieldConfig"
+      :isSubTableRender="props.hideChildTag"
       @toggle-full-screen="(val) => (fullScreenModal = val)"
     />
   </CrmModal>

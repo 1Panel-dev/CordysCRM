@@ -64,6 +64,7 @@
       filterParams?: FilterResult;
       fullscreenTargetRef?: HTMLElement | null;
       fieldConfig?: FormCreateField;
+      isSubTableRender?: boolean;
     }>(),
     {
       multiple: true,
@@ -132,7 +133,7 @@
   );
   // 计算子表格字段的key
   const subFieldKey = computed(() => {
-    if (formKeyMap[props.sourceType] === FormDesignKeyEnum.PRICE) {
+    if (formKeyMap[props.sourceType] === FormDesignKeyEnum.PRICE && props.isSubTableRender) {
       const field = fieldList.value.find((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
       return field?.businessKey || field?.id;
     }
