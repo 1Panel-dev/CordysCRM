@@ -137,7 +137,7 @@
     const fieldNameSet = new Set<string>();
     for (let i = 0; i < fieldList.value.length; i++) {
       const field = fieldList.value[i];
-      if (fieldNameSet.has(field.name) && !field.resourceFieldId) {
+      if (fieldNameSet.has(field.name)) {
         Message.error(t('crmFormDesign.repeatFieldName'));
         formDesignRef.value?.setActiveField(field);
         return false;
@@ -145,19 +145,15 @@
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && field.subFields) {
         for (let j = 0; j < field.subFields.length; j++) {
           const subField = field.subFields[j];
-          if (fieldNameSet.has(subField.name) && !subField.resourceFieldId) {
+          if (fieldNameSet.has(subField.name)) {
             Message.error(t('crmFormDesign.repeatFieldName'));
             formDesignRef.value?.setActiveField(field);
             return false;
           }
-          if (!subField.resourceFieldId) {
-            fieldNameSet.add(subField.name);
-          }
+          fieldNameSet.add(subField.name);
         }
       }
-      if (!field.resourceFieldId) {
-        fieldNameSet.add(field.name);
-      }
+      fieldNameSet.add(field.name);
     }
     const optionsFields = fieldList.value.filter((e) =>
       [FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(
