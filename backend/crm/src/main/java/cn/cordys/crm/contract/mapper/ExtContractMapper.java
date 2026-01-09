@@ -26,5 +26,7 @@ public interface ExtContractMapper {
 
     void updateStatus(@Param("id") String id, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
+    void updateStage(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId, @Param("updateTime") long updateTime);
+
     List<Contract> selectByTimestamp(@Param("organizationId") String organizationId, @Param("timestampOld") long timestampOld, @Param("timestamp") long timestamp);
 }

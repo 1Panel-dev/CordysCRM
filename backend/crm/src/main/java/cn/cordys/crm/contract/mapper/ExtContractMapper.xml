@@ -443,4 +443,12 @@
             update_time     = #{updateTime}
         where id = #{id}
     </update>
+
+    <update id="updateStage">
+        update contract
+        set stage       = #{stage},
+            update_user = #{userId},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
 </mapper>
