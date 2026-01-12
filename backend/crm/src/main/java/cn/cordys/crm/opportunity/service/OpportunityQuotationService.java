@@ -63,6 +63,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -517,7 +518,7 @@ public class OpportunityQuotationService {
     private List<OpportunityQuotationListResponse> buildList(List<OpportunityQuotationListResponse> listData, String organizationId) {
         // 查询列表数据的自定义字段
         Map<String, List<BaseModuleFieldValue>> dataFieldMap = opportunityQuotationFieldService.getResourceFieldMap(
-                listData.stream().map(OpportunityQuotationListResponse::getId).toList(), true);
+                listData.stream().map(OpportunityQuotationListResponse::getId).collect(Collectors.toList()), true);
         Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = opportunityQuotationFieldService.setBusinessRefFieldValue(listData,
                 moduleFormService.getFlattenFormFields(FormKey.QUOTATION.getKey(), organizationId), dataFieldMap);
 
