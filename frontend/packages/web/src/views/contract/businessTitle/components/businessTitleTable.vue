@@ -15,15 +15,17 @@
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <n-button type="primary" @click="handleNewClick">
+        <n-button v-permission="['CONTRACT_BUSINESS_TITLE:ADD']" type="primary" @click="handleNewClick">
           {{ t('common.newCreate') }}
         </n-button>
         <CrmImportButton
+          v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:IMPORT'])"
           :api-type="ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT"
           :title="t('module.businessTitle')"
           @import-success="() => searchData()"
         />
         <n-button
+          v-permission="['CONTRACT_BUSINESS_TITLE:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -50,7 +52,7 @@
     @load="() => searchData()"
     @cancel="handleCancel"
   />
-  <detail v-model:visible="showDetailDrawer" :source-id="activeSourceId" @edit="handleEdit" @cancel="handleCancel" />
+  <detail v-model:visible="showDetailDrawer" :source-id="activeSourceId" @cancel="handleCancel" />
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
@@ -98,6 +100,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId?: string;
@@ -216,6 +219,7 @@
       sortOrder: false,
       sorter: true,
       width: 200,
+      fixed: 'left',
       columnSelectorDisabled: true,
       render: (row: BusinessTitleItem) => {
         const createNamePrefix = () =>
@@ -413,8 +417,8 @@
       render: (row: BusinessTitleItem) =>
         h(CrmOperationButton, {
           groupList: [
-            { label: t('common.edit'), key: 'edit', permission: [] },
-            { label: t('common.delete'), key: 'delete', permission: [] },
+            { label: t('common.edit'), key: 'edit', permission: ['CONTRACT_BUSINESS_TITLE:UPDATE'] },
+            { label: t('common.delete'), key: 'delete', permission: ['CONTRACT_BUSINESS_TITLE:DELETE'] },
           ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
@@ -426,7 +430,7 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: [],
+        permission: ['CONTRACT_BUSINESS_TITLE:EXPORT'],
       },
     ],
   };
@@ -451,6 +455,7 @@
       showSetting: true,
       columns,
       containerClass: '.crm-business-title-list-table',
+      permission: ['CONTRACT_BUSINESS_TITLE:EXPORT'],
     }
   );
 
@@ -487,7 +492,7 @@
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('contract.businessTitle.companyName'),
-      dataIndex: 'companyName',
+      dataIndex: 'businessName',
       type: FieldTypeEnum.INPUT,
     },
     {

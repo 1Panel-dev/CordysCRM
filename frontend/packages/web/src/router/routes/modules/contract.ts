@@ -53,7 +53,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.businessTitle',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CONTRACT_BUSINESS_TITLE:READ'],
       },
     },
     {
