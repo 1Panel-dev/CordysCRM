@@ -140,6 +140,7 @@ public class ContractInvoiceService {
         invoice.setCreateUser(operatorId);
         invoice.setUpdateTime(System.currentTimeMillis());
         invoice.setUpdateUser(operatorId);
+        invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
 
         if (StringUtils.isBlank(request.getOwner())) {
             invoice.setOwner(operatorId);
