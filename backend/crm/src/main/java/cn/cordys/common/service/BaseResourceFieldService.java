@@ -104,7 +104,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取泛型类型
      *
      * @param index 泛型参数索引
-     *
      * @return 泛型类型
      */
     protected Type getGenericType(int index) {
@@ -149,7 +148,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源所有字段值
      *
      * @param resourceId 资源ID
-     *
      * @return 字段值集合
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
@@ -271,14 +269,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         for (Map<String, Object> subValue : subValues) {
             String bizId = IDGenerator.nextStr();
             for (Map.Entry<String, Object> kv : subValue.entrySet()) {
-				if (Strings.CS.equals(kv.getKey(), PRICE_SUB_ROW_KEY) && kv.getValue() != null) {
-					T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), kv.getValue().toString());
-					setResourceFieldValue(t, "rowId", String.valueOf(rowId));
-					setResourceFieldValue(t, "refSubId", subField.getId());
-					setResourceFieldValue(t, "bizId", bizId);
-					fields.add(t);
-					continue;
-				}
+                if (Strings.CS.equals(kv.getKey(), PRICE_SUB_ROW_KEY) && kv.getValue() != null) {
+                    T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), kv.getValue().toString());
+                    setResourceFieldValue(t, "rowId", String.valueOf(rowId));
+                    setResourceFieldValue(t, "refSubId", subField.getId());
+                    setResourceFieldValue(t, "bizId", bizId);
+                    fields.add(t);
+                    continue;
+                }
                 BaseField field = subFieldMap.get(kv.getKey());
                 if (field == null) {
                     continue;
@@ -398,13 +396,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param withBlob    是否包含大文本字段
-     *
      * @return 字段集合
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
-            return Map.of();
+            return new HashMap<>();
         }
         SourceDetailResolveContext.start();
         try {
@@ -490,7 +487,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param details 详情集合
      * @param fields  表单字段集合
-     *
      * @return 字段值集合
      */
     @SuppressWarnings("unchecked")
@@ -545,7 +541,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param field           字段信息
      * @param sourceDetailMap 来源详情
-     *
      * @return 字段值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -573,8 +568,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param targetId     显示的子字段
      * @param sourceDetail 来源详情
      * @param subKey       子表格业务Key
-     * @param rowKey 	   行Key
-     *
+     * @param rowKey       行Key
      * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -851,24 +845,24 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     .filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
                     .collect(Collectors.groupingBy(BaseResourceField::getResourceId));
             subResourceMap.forEach((resourceId, subResources) -> {
-				subResources.sort(Comparator.comparing(resource -> Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY) ? 0 : 1));
+                subResources.sort(Comparator.comparing(resource -> Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY) ? 0 : 1));
                 Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>(8);
                 subResources.forEach(resource -> {
                     if (resource.getFieldValue() != null) {
-						BaseResourceSubField subResource = (BaseResourceSubField) resource;
-						subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
-						int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
-						if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
-							Map<String, Object> initRowMap = new HashMap<>(8) {{
-								put(ROW_BIZ_ID, subResource.getBizId());
-							}};
-							subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
-						}
-						Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
-						if (Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY)) {
-							rowMap.put(subResource.getFieldId(), resource.getFieldValue());
-							return;
-						}
+                        BaseResourceSubField subResource = (BaseResourceSubField) resource;
+                        subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
+                        int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
+                        if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
+                            Map<String, Object> initRowMap = new HashMap<>(8) {{
+                                put(ROW_BIZ_ID, subResource.getBizId());
+                            }};
+                            subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
+                        }
+                        Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
+                        if (Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY)) {
+                            rowMap.put(subResource.getFieldId(), resource.getFieldValue());
+                            return;
+                        }
                         BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
                         if (fieldConfig == null) {
                             return;
@@ -892,7 +886,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 }
                                 if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(PRICE_SUB_ROW_KEY)) {
                                     Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
-											rowMap.get(PRICE_SUB_ROW_KEY).toString());
+                                            rowMap.get(PRICE_SUB_ROW_KEY).toString());
                                     if (matchVal != null) {
                                         rowMap.put(showFieldConfig.getId(), matchVal);
                                     }
@@ -976,7 +970,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldValueMap 字段值集合
      * @param update        是否更新操作
      * @param orgId         组织ID
-     *
      * @return 字段值
      */
     private BaseModuleFieldValue processSpecialFieldValue(BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
@@ -1009,7 +1002,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceId 资源ID
      * @param fieldId    字段ID
-     *
      * @return 字段值
      */
     public Object getResourceFieldValue(String resourceId, String fieldId) {
@@ -1027,7 +1019,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源字段值集合
      *
      * @param resourceIds 资源ID集合
-     *
      * @return 字段值集合
      */
     private List<T> getResourceField(List<String> resourceIds) {
@@ -1041,7 +1032,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param fieldId     字段ID
-     *
      * @return 指定字段值集合
      */
     private List<T> getResourceField(List<String> resourceIds, String fieldId) {
@@ -1055,7 +1045,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源大字段值集合
      *
      * @param resourceIds 资源ID集合
-     *
      * @return 大字段值集合
      */
     private List<V> getResourceFieldBlob(List<String> resourceIds) {
@@ -1069,7 +1058,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param fieldId     大字段ID
-     *
      * @return 指定大字段值集合
      */
     private List<V> getResourceFieldBlob(List<String> resourceIds, String fieldId) {
@@ -1087,7 +1075,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldId    字段ID
      * @param strValue   字段值
      * @param <R>        字段类型
-     *
      * @return 字段实例
      */
     private <R extends BaseResourceField> R supplyNewResource(Supplier<R> instance, String resourceId, String fieldId, String strValue) {
@@ -1147,7 +1134,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param fieldId        字段ID
      * @param organizationId 组织ID
-     *
      * @return 字段信息
      */
     public BaseField getAndCheckField(String fieldId, String organizationId) {
