@@ -16,6 +16,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
@@ -26,6 +27,7 @@ import cn.cordys.crm.contract.dto.request.BusinessTitleApprovalRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitlePageRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitleUpdateRequest;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
+import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
 import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelDataFactory;
 import cn.cordys.crm.contract.excel.handler.BusinessTitleTemplateWriteHandler;
 import cn.cordys.crm.contract.excel.listener.BusinessTitleCheckEventListener;
@@ -38,8 +40,12 @@ import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.qcc.dto.*;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
+import cn.cordys.crm.system.excel.domain.UserExcelDataUs;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
@@ -54,14 +60,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -508,4 +512,29 @@ public class BusinessTitleService {
         return headers;
     }
 
+    public ModuleFormConfigDTO getBusinessFormConfig() {
+        ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
+        List<BaseField> fields = initFields();
+        moduleFormConfigDTO.setFields(fields);
+        return moduleFormConfigDTO;
+    }
+
+    private List<BaseField> initFields() {
+        List<BaseField> fields = new ArrayList<>();
+        Locale locale = LocaleContextHolder.getLocale();
+        BusinessTitleConstants[] values = BusinessTitleConstants.values();
+        for (BusinessTitleConstants constant : values) {
+            InputField field = new InputField();
+            field.setId(constant.getKey());
+            field.setBusinessKey(constant.getKey());
+            if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
+                field.setName(constant.getUs());
+            } else {
+                field.setName(constant.getCh());
+            }
+            field.setInternalKey(constant.getKey());
+            fields.add(field);
+        }
+        return fields;
+    }
 }
