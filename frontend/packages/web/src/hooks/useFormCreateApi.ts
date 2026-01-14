@@ -279,7 +279,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     },
   ];
   // 用于快照保存表单配置
-  const needModuleFormConfigParamsType = [FormDesignKeyEnum.OPPORTUNITY_QUOTATION, FormDesignKeyEnum.CONTRACT];
+  const needModuleFormConfigParamsType = [
+    FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    FormDesignKeyEnum.CONTRACT,
+    FormDesignKeyEnum.INVOICE,
+  ];
 
   function initFormShowControl() {
     // 读取整个显隐控制映射

@@ -282,6 +282,7 @@
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: generatePaymentPlanChart,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => Promise.resolve([]),
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: () => Promise.resolve([]),
+    [FormDesignKeyEnum.INVOICE]: () => Promise.resolve([]),
   };
   const loading = ref<boolean>(false);
   const expandNames = ref<string[]>(['1']);

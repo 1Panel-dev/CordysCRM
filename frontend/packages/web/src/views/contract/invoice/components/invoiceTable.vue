@@ -18,7 +18,7 @@
       <div class="flex items-center gap-[12px]">
         <n-button
           v-if="!props.readonly"
-          v-permission="['CONTRACT_PAYMENT_PLAN:ADD']"
+          v-permission="['CONTRACT_INVOICE:ADD']"
           :loading="createLoading"
           type="primary"
           @click="handleNewClick"
@@ -26,7 +26,7 @@
           {{ t('invoice.new') }}
         </n-button>
         <n-button
-          v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
+          v-permission="['CONTRACT_INVOICE:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -51,11 +51,11 @@
       <CrmViewSelect
         v-if="!props.isContractTab"
         v-model:active-tab="activeTab"
-        :type="FormDesignKeyEnum.CONTRACT_PAYMENT"
+        :type="FormDesignKeyEnum.INVOICE"
         :custom-fields-config-list="customFieldsFilterConfig"
         :filter-config-list="filterConfigList"
         :advanced-original-form="advancedOriginalForm"
-        :route-name="ContractRouteEnum.CONTRACT_PAYMENT"
+        :route-name="ContractRouteEnum.CONTRACT_INVOICE"
         @refresh-table-data="searchData"
       />
     </template>
@@ -198,12 +198,12 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'],
+        permission: ['CONTRACT_INVOICE:EXPORT'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
-        permission: ['CONTRACT_PAYMENT_PLAN:DELETE'],
+        permission: ['CONTRACT_INVOICE:DELETE'],
       },
     ],
   };
@@ -279,17 +279,17 @@
             {
               label: t('common.approval'),
               key: 'approval',
-              permission: ['CONTRACT_PAYMENT_PLAN:UPDATE'],
+              permission: ['CONTRACT_INVOICE:APPROVAL'],
             },
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: ['CONTRACT_PAYMENT_PLAN:UPDATE'],
+              permission: ['CONTRACT_INVOICE:UPDATE'],
             },
             {
               label: t('common.delete'),
               key: 'delete',
-              permission: ['CONTRACT_PAYMENT_PLAN:DELETE'],
+              permission: ['CONTRACT_INVOICE:DELETE'],
             },
           ]
         : []),
@@ -400,7 +400,7 @@
           status: row.approvalStatus,
         }),
     },
-    permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'],
+    permission: ['CONTRACT_INVOICE:EXPORT'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

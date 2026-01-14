@@ -468,6 +468,15 @@ export const {
   revokeInvoiced,
   approvalInvoiced,
   batchDeleteInvoiced,
+  addContractInvoicedView,
+  updateContractInvoicedView,
+  getContractInvoicedViewList,
+  getContractInvoicedViewDetail,
+  fixedContractInvoicedView,
+  enableContractInvoicedView,
+  deleteContractInvoicedView,
+  dragContractInvoicedView,
+  getInvoicedTab,
 } = contractApi;
 
 export const {

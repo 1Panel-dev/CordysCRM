@@ -63,7 +63,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.invoice',
         isTopMenu: true,
-        permissions: ['CONTRACT_PAYMENT_PLAN:READ'],
+        permissions: ['CONTRACT_INVOICE:READ'],
       },
     },
   ],
