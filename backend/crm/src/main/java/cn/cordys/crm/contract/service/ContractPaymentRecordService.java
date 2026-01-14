@@ -187,6 +187,7 @@ public class ContractPaymentRecordService {
 		ContractPaymentRecordGetResponse recordDetail = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
 		recordDetail = baseService.setCreateUpdateOwnerUserName(recordDetail);
 		Contract contract = contractMapper.selectByPrimaryKey(recordDetail.getContractId());
+		ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(recordDetail.getPaymentPlanId());
 		// 自定义字段值 & 选项值
 		List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
 		fvs = contractPaymentRecordFieldService.setBusinessRefFieldValue(List.of(recordDetail),
@@ -199,6 +200,11 @@ public class ContractPaymentRecordService {
 			recordDetail.setContractName(contract.getName());
 			optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey(), moduleFormService.getBusinessFieldOption(List.of(recordDetail),
 					ContractPaymentRecordGetResponse::getContractId, ContractPaymentRecordGetResponse::getContractName));
+		}
+		if (contractPaymentPlan != null) {
+			recordDetail.setPaymentPlanName(contractPaymentPlan.getName());
+			optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey(), moduleFormService.getBusinessFieldOption(List.of(recordDetail),
+					ContractPaymentRecordGetResponse::getPaymentPlanId, ContractPaymentRecordGetResponse::getPaymentPlanName));
 		}
 		recordDetail.setModuleFields(fvs);
 		recordDetail.setOptionMap(optionMap);

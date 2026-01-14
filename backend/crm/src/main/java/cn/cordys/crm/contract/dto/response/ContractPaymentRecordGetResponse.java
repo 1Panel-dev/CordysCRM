@@ -12,7 +12,7 @@ import java.util.Map;
  * @author song-cc-rock
  */
 @Data
-public class ContractPaymentRecordGetResponse extends ContractPaymentRecordResponse{
+public class ContractPaymentRecordGetResponse extends ContractPaymentRecordResponse {
 
 	@Schema(description = "选项集合")
 	private Map<String, List<OptionDTO>> optionMap;
