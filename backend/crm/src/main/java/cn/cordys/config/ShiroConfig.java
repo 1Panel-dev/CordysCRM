@@ -21,13 +21,17 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.ServletContainerSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static jakarta.servlet.DispatcherType.ASYNC;
 
 /**
  * Shiro 配置类，用于配置 Shiro 的安全管理器、会话管理器、过滤器等。
@@ -199,4 +203,27 @@ public class ShiroConfig {
 
         return aasa;
     }
+
+    /**
+     * 配置 Shiro 的过滤器注册 Bean。
+     * <p>
+     * 使用 {@link DelegatingFilterProxy} 将 Shiro 过滤器集成到 Spring Boot 的过滤器链中。
+     * </p>
+     *
+     * @return
+     */
+    @Bean
+    public FilterRegistrationBean<DelegatingFilterProxy> filterRegistrationBean() {
+        // TODO 不知道会不会有问题，先验证一下
+        DelegatingFilterProxy proxy = new DelegatingFilterProxy();
+        proxy.setTargetBeanName("shiroFilterFactoryBean");
+        proxy.setTargetFilterLifecycle(true);
+
+        FilterRegistrationBean<DelegatingFilterProxy> registration = new FilterRegistrationBean<>();
+        registration.setFilter(proxy);
+        registration.setAsyncSupported(true);
+        registration.setDispatcherTypes(ASYNC);
+        return registration;
+    }
+
 }
