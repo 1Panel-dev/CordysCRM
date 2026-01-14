@@ -81,16 +81,19 @@ public class ModuleFormService {
 	private static final String OPTION_DEFAULT_SOURCE = "custom";
 
     static {
-        TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
-                FieldType.DEPARTMENT.name(), "sys_department",
-                FieldSourceType.CUSTOMER.name(), "customer",
-                FieldSourceType.CLUE.name(), "clue",
-                FieldSourceType.CONTACT.name(), "customer_contact",
-                FieldSourceType.OPPORTUNITY.name(), "opportunity",
-                FieldSourceType.PRODUCT.name(), "product",
-                FieldSourceType.QUOTATION.name(), "opportunity_quotation",
-                FieldSourceType.PRICE.name(), "product_price",
-                FieldSourceType.CONTRACT.name(), "contract");
+        TYPE_SOURCE_MAP = Map.ofEntries(
+				Map.entry(FieldType.MEMBER.name(), "sys_user"),
+				Map.entry(FieldType.DEPARTMENT.name(), "sys_department"),
+				Map.entry(FieldSourceType.CUSTOMER.name(), "customer"),
+				Map.entry(FieldSourceType.CLUE.name(), "clue"),
+				Map.entry(FieldSourceType.CONTACT.name(), "customer_contact"),
+				Map.entry(FieldSourceType.OPPORTUNITY.name(), "opportunity"),
+				Map.entry(FieldSourceType.PRODUCT.name(), "product"),
+				Map.entry(FieldSourceType.QUOTATION.name(), "opportunity_quotation"),
+				Map.entry(FieldSourceType.PRICE.name(), "product_price"),
+				Map.entry(FieldSourceType.CONTRACT.name(), "contract"),
+				Map.entry(FieldSourceType.PAYMENT_PLAN.name(), "contract_payment_plan")
+		);
     }
 
     @Value("classpath:form/form.json")
