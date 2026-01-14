@@ -55,6 +55,7 @@ export interface ApprovalContractParams {
 // 回款计划列表项
 export interface PaymentPlanItem {
   id: string;
+  name: string;
   createUser: string;
   updateUser: string;
   createTime: number;

@@ -252,10 +252,6 @@
 
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
-      {
-        label: t('common.detail'),
-        key: 'detail',
-      },
       ...(!props.readonly
         ? [
             {
@@ -310,9 +306,6 @@
 
   async function handleActionSelect(row: PaymentPlanItem, actionKey: string) {
     switch (actionKey) {
-      case 'detail':
-        showDetail(row.id);
-        break;
       case 'edit':
         handleEdit(row.id);
         break;
@@ -361,6 +354,17 @@
         }),
     },
     specialRender: {
+      name: (row: PaymentPlanItem) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              showDetail(row.id);
+            },
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
+      },
       contractId: (row: PaymentPlanItem) => {
         return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
