@@ -14,23 +14,23 @@
     </template>
     <n-scrollbar class="my-[4px] max-h-[416px] max-w-[250px] px-[4px]">
       <div class="min-w-[176px]">
-        <div v-for="element in formConfigList" :key="element.value" class="business-name-setting-item">
+        <div v-for="element in formConfigList" :key="element.id" class="business-name-setting-item">
           <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
             <n-tooltip trigger="hover" placement="top">
               <template #trigger>
                 <span class="one-line-text text-[12px]">
-                  {{ t(element.label) }}
+                  {{ t(element.title) }}
                 </span>
               </template>
-              {{ t(element.label) }}
+              {{ t(element.title) }}
             </n-tooltip>
           </div>
           <n-switch
-            v-model:value="element.enabled"
+            v-model:value="element.required"
             :disabled="element.disabled"
             size="small"
             :rubber-band="false"
-            @update:value="handleChange"
+            @update:value="(val:boolean)=>handleChange(val, element.id)"
           />
         </div>
       </div>
@@ -43,7 +43,9 @@
   import { NPopover, NScrollbar, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { BusinessTitleValidateConfig } from '@lib/shared/models/contract';
 
+  import { getBusinessTitleConfig, switchBusinessTitleFormConfig } from '@/api/modules';
   import { allBusinessTitleFormConfigList } from '@/config/contract';
 
   const { t } = useI18n();
@@ -52,24 +54,41 @@
   const defaultEnabledKey = ['businessName', 'identificationNumber', 'registrationAddress'];
   const defaultDisabledKey = ['businessName'];
 
-  const formConfigList = computed(() => {
-    return allBusinessTitleFormConfigList.map((item) => {
-      return {
-        ...item,
-        enabled: defaultEnabledKey.includes(item.value),
-        disabled: defaultDisabledKey.includes(item.value),
-      };
-    });
-  });
+  const formConfigList = ref<BusinessTitleValidateConfig[]>([]);
 
   const popoverVisible = ref(false);
 
-  function handleChange() {
-    // todo xinxinwu
+  async function initValidateConfig() {
+    try {
+      const result = await getBusinessTitleConfig();
+      formConfigList.value = result.map((e) => {
+        const item = allBusinessTitleFormConfigList.find((c) => c.value === e.field);
+        return {
+          ...e,
+          title: item?.label ?? '',
+          disabled: defaultDisabledKey.includes(e.field),
+        };
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
-  async function handleUpdateShow(show: boolean) {
-    // todo xinxinwu
+  async function handleChange(value: boolean, id: string) {
+    try {
+      await switchBusinessTitleFormConfig(id);
+      initValidateConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function handleUpdateShow(show: boolean) {
+    if (show) {
+      initValidateConfig();
+    }
   }
 </script>
 

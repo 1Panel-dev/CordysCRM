@@ -167,7 +167,7 @@ export interface BusinessTitleItem {
 
 export interface SaveBusinessTitleParams {
   id?: string;
-  businessName: string | null;// 公司名称
+  businessName: string;// 公司名称
   identificationNumber: string; // 纳税人识别号
   openingBank: string; // 开户银行
   bankAccount: string;// 银行账号
@@ -177,4 +177,14 @@ export interface SaveBusinessTitleParams {
   companySize: string; // 公司规模
   registrationNumber: string; //工商注册号
   type: string; // 来源类型
+}
+
+export interface BusinessTitleValidateConfig {
+  id: string;
+  field: keyof SaveBusinessTitleParams;
+  title: string;
+  required: boolean;
+  disabled?: boolean;
+  organizationId: string;
+  rule?:Record<string, any>[]
 }
