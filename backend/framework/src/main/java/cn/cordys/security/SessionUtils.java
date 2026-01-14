@@ -45,7 +45,7 @@ public class SessionUtils {
             Session session = subject.getSession();
             return (SessionUser) session.getAttribute(ATTR_USER);
         } catch (Exception e) {
-            log.warn("后台获取在线用户失败: " + e.getMessage());
+            log.warn("后台获取在线用户失败: {}", e.getMessage());
             return null;
         }
     }
