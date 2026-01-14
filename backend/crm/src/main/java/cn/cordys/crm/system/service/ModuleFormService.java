@@ -94,7 +94,8 @@ public class ModuleFormService {
 				Map.entry(FieldSourceType.QUOTATION.name(), "opportunity_quotation"),
 				Map.entry(FieldSourceType.PRICE.name(), "product_price"),
 				Map.entry(FieldSourceType.CONTRACT.name(), "contract"),
-				Map.entry(FieldSourceType.PAYMENT_PLAN.name(), "contract_payment_plan")
+				Map.entry(FieldSourceType.PAYMENT_PLAN.name(), "contract_payment_plan"),
+				Map.entry(FieldSourceType.BUSINESS_TITLE.name(), "business_title")
 		);
     }
 
