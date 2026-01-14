@@ -101,9 +101,9 @@
 
     <select id="sumCustomerRecordAmount" resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse">
         select
-            sum(c.amount) as totalAmount,
-            sum(cpr_sum.receivedAmount) as receivedAmount,
-            sum(c.amount) - sum(cpr_sum.receivedAmount) as pendingAmount
+            ifnull(sum(c.amount), 0) as totalAmount,
+            ifnull(sum(cpr_sum.receivedAmount), 0) as receivedAmount,
+            ifnull((sum(c.amount) - sum(cpr_sum.receivedAmount)), 0) as pendingAmount
         from contract c
         left join (
             select cpr.contract_id, sum(cpr.record_amount) as receivedAmount
@@ -124,7 +124,7 @@
             group by contract_id
         ) cpr_sum on c.id = cpr_sum.contract_id
 
-        where cpr.organization_id = #{orgId}
+        where c.organization_id = #{orgId}
         and c.customer_id = #{customerId}
     </select>
 

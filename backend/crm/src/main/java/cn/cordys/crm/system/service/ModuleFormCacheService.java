@@ -64,6 +64,7 @@ public class ModuleFormCacheService {
 		// 设置业务字段参数
 		List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields());
 		businessModuleFormConfig.setFields(flattenFields.stream()
+				.peek(moduleFormService::setFieldRefOption)
 				.peek(moduleFormService::setFieldBusinessParam)
 				.peek(moduleFormService::reloadPropOfSubRefFields)
 				.collect(Collectors.toList())
