@@ -36,5 +36,5 @@ jobs:
         if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUBTOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           labels: ${{ env.labels }}
