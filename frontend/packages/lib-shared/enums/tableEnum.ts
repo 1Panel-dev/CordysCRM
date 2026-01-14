@@ -29,6 +29,7 @@ export enum TableKeyEnum {
   CONTRACT_PAYMENT = 'contractPayment',
   CONTRACT_PAYMENT_RECORD = 'contractPaymentRecord',
   PRICE = 'price',
+  INVOICE = 'invoice',
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

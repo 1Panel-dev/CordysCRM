@@ -56,6 +56,16 @@ const contract: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'contractInvoice',
+      name: ContractRouteEnum.CONTRACT_INVOICE,
+      component: () => import('@/views/contract/invoice/index.vue'),
+      meta: {
+        locale: 'module.invoice',
+        isTopMenu: true,
+        permissions: ['CONTRACT_PAYMENT_PLAN:READ'],
+      },
+    },
   ],
 };
 

@@ -105,3 +105,17 @@ export const GetBusinessTitleThirdQueryOptionUrl = '/contract/business-title/thi
 // 工商抬头表单校验
 export const BusinessTitleConfigUrl = '/business-title/config/get'; // 获取表单配置校验
 export const BusinessTitleFormConfigSwitchUrl = '/business-title/config/switch'; // 表单配置切换
+// 发票
+export const ContractInvoicedUpdateUrl = '/invoice/update'; // 发票更新
+export const ContractInvoicedPageUrl = '/invoice/page'; // 发票列表
+export const ContractInvoicedExportSelectedUrl = '/invoice/export-select'; // 发票导出选中
+export const ContractInvoicedExportAllUrl = '/invoice/export-all'; // 发票导出全量
+export const ContractInvoicedBatchDeleteUrl = '/invoice/batch/delete'; // 发票批量删除
+export const ContractInvoicedApprovalUrl = '/invoice/approval'; // 发票审批
+export const ContractInvoicedAddUrl = '/invoice/add'; // 发票添加
+export const ContractInvoicedFormConfigUrl = '/invoice/module/form'; // 发票表单配置
+export const ContractInvoicedFormConfigSnapshotUrl = '/invoice/module/form/snapshot'; // 发票表单配置快照
+export const ContractInvoicedDetailUrl = '/invoice/get'; // 发票详情
+export const ContractInvoicedDeleteUrl = '/invoice/delete'; // 发票删除
+export const ContractInvoicedRevokeUrl = '/invoice/revoke'; // 发票撤回
+export const ContractInvoicedTabUrl = '/invoice/tab'; // 发票tab显隐

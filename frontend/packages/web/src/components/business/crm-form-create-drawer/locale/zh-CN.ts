@@ -15,4 +15,5 @@ export default {
   'crmFormCreate.drawer.contractPaymentRecord': '回款记录',
   'crmFormCreate.drawer.quotation': '报价',
   'crmFormCreate.drawer.price': '价格表',
+  'crmFormCreate.drawer.invoice': '发票',
 };

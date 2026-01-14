@@ -152,6 +152,8 @@
     exportCustomerOpenSeaAll,
     exportCustomerOpenSeaSelected,
     exportCustomerSelected,
+    exportInvoicedAll,
+    exportInvoicedSelected,
     exportOpportunityAll,
     exportOpportunitySelected,
     exportPaymentPlanAll,
@@ -175,7 +177,8 @@
       | 'contractPaymentPlan'
       | 'contractPaymentRecord'
       | 'price'
-      | 'businessTitle';
+      | 'businessTitle'
+      | 'invoice';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
   }>();
@@ -203,6 +206,7 @@
     contractPaymentRecord: t('module.paymentRecord'),
     price: t('module.productManagementPrice'),
     businessTitle: t('module.businessTitle'),
+    invoice: t('module.invoice'),
   };
 
   const loading = ref<boolean>(false);
@@ -305,6 +309,7 @@
     contractPaymentRecord: exportPaymentRecordAll,
     price: exportProductPriceAll,
     businessTitle: exportBusinessTitleAll,
+    invoice: exportInvoicedAll,
   };
 
   const exportSelectedApiMap = {
@@ -319,6 +324,7 @@
     contractPaymentRecord: exportPaymentRecordSelected,
     price: exportProductPriceSelected,
     businessTitle: exportBusinessTitleSelected,
+    invoice: exportInvoicedSelected,
   };
 
   function confirmHandler() {

@@ -116,4 +116,5 @@ export default {
   'module.tender': 'Tender',
   'module.contract.businessNameValidateConfig': 'Business Title Form Required Settings',
   'module.contract.invoiceFormSetting': 'Invoice Form Settings',
+  'module.invoice': 'Invoice Records',
 };
