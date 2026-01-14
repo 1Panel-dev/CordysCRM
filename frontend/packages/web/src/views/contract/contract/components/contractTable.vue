@@ -311,6 +311,7 @@
           label: t('contract.payment'),
           key: 'paymentRecord',
           permission: ['CONTRACT:PAYMENT'],
+          disabled: !row.amount,
         },
         {
           label: t('common.delete'),
