@@ -95,6 +95,14 @@ import {
   ContractInvoicedPageUrl,
   ContractInvoicedRevokeUrl,
   ContractInvoicedTabUrl,
+  DeleteContractInvoicedViewUrl,
+  DragContractInvoicedViewUrl,
+  EnableContractInvoicedViewUrl,
+  FixedContractInvoicedViewUrl,
+  GetContractInvoicedViewDetailUrl,
+  ListContractInvoicedViewUrl,
+  UpdateContractInvoicedViewUrl,
+  AddContractInvoicedViewUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -601,6 +609,51 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: ContractInvoicedExportSelectedUrl, data });
   }
 
+  // 获取发票 tab 显隐
+  function getInvoicedTab() {
+    return CDR.get<CustomerTabHidden>({ url: ContractInvoicedTabUrl });
+  }
+
+  // 添加发票视图
+  function addContractInvoicedView(data: ViewParams) {
+    return CDR.post({ url: AddContractInvoicedViewUrl, data });
+  }
+
+  // 更新发票视图
+  function updateContractInvoicedView(data: ViewParams) {
+    return CDR.post({ url: UpdateContractInvoicedViewUrl, data });
+  }
+
+  // 获取发票视图列表
+  function getContractInvoicedViewList() {
+    return CDR.get<ViewItem[]>({ url: ListContractInvoicedViewUrl });
+  }
+
+  // 获取发票视图详情
+  function getContractInvoicedViewDetail(id: string) {
+    return CDR.get({ url: `${GetContractInvoicedViewDetailUrl}/${id}` });
+  }
+
+  // 固定发票视图
+  function fixedContractInvoicedView(id: string) {
+    return CDR.get({ url: `${FixedContractInvoicedViewUrl}/${id}` });
+  }
+
+  // 启用/禁用发票视图
+  function enableContractInvoicedView(id: string) {
+    return CDR.get({ url: `${EnableContractInvoicedViewUrl}/${id}` });
+  }
+
+  // 删除发票视图
+  function deleteContractInvoicedView(id: string) {
+    return CDR.get({ url: `${DeleteContractInvoicedViewUrl}/${id}` });
+  }
+
+  // 拖拽发票视图排序
+  function dragContractInvoicedView(data: TableDraggedParams) {
+    return CDR.post({ url: DragContractInvoicedViewUrl, data });
+  }
+
   return {
     exportContractAll,
     exportContractSelected,
@@ -696,5 +749,14 @@ export default function useContractApi(CDR: CordysAxios) {
     batchDeleteInvoiced,
     exportInvoicedAll,
     exportInvoicedSelected,
+    addContractInvoicedView,
+    updateContractInvoicedView,
+    getContractInvoicedViewList,
+    getContractInvoicedViewDetail,
+    fixedContractInvoicedView,
+    enableContractInvoicedView,
+    deleteContractInvoicedView,
+    dragContractInvoicedView,
+    getInvoicedTab,
   };
 }

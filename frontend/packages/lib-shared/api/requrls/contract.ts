@@ -119,3 +119,13 @@ export const ContractInvoicedDetailUrl = '/invoice/get'; // 发票详情
 export const ContractInvoicedDeleteUrl = '/invoice/delete'; // 发票删除
 export const ContractInvoicedRevokeUrl = '/invoice/revoke'; // 发票撤回
 export const ContractInvoicedTabUrl = '/invoice/tab'; // 发票tab显隐
+
+// 发票视图
+export const UpdateContractInvoicedViewUrl = '/invoice/view/update'; // 更新发票视图
+export const DragContractInvoicedViewUrl = '/invoice/view/edit/pos'; // 拖拽发票视图排序
+export const AddContractInvoicedViewUrl = '/invoice/view/add'; // 添加发票视图
+export const ListContractInvoicedViewUrl = '/invoice/view/list'; // 发票视图列表
+export const FixedContractInvoicedViewUrl = '/invoice/view/fixed'; // 固定发票视图
+export const EnableContractInvoicedViewUrl = '/invoice/view/enable'; // 启用/禁用发票视图
+export const GetContractInvoicedViewDetailUrl = '/invoice/view/detail'; // 发票视图详情
+export const DeleteContractInvoicedViewUrl = '/invoice/view/delete'; // 发票视图删除

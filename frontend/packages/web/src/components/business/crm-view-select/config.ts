@@ -9,6 +9,7 @@ import {
   addBusinessView,
   addClueView,
   addContactView,
+  addContractInvoicedView,
   addContractView,
   addCustomerView,
   addFollowPlanView,
@@ -21,6 +22,7 @@ import {
   deleteBusinessView,
   deleteClueView,
   deleteContactView,
+  deleteContractInvoicedView,
   deleteContractView,
   deleteCustomerView,
   deleteFollowPlanView,
@@ -33,6 +35,7 @@ import {
   dragBusinessView,
   dragClueView,
   dragContactView,
+  dragContractInvoicedView,
   dragContractView,
   dragCustomerView,
   dragFollowPlanView,
@@ -45,6 +48,7 @@ import {
   enableBusinessView,
   enableClueView,
   enableContactView,
+  enableContractInvoicedView,
   enableContractView,
   enableCustomerView,
   enableFollowPlanView,
@@ -57,6 +61,7 @@ import {
   fixedBusinessView,
   fixedClueView,
   fixedContactView,
+  fixedContractInvoicedView,
   fixedContractView,
   fixedCustomerView,
   fixedFollowPlanView,
@@ -73,6 +78,7 @@ import {
   getClueViewList,
   getContactViewDetail,
   getContactViewList,
+  getContractInvoicedViewList,
   getContractViewDetail,
   getContractViewList,
   getCustomerViewDetail,
@@ -93,6 +99,7 @@ import {
   updateBusinessView,
   updateClueView,
   updateContactView,
+  updateContractInvoicedView,
   updateContractView,
   updateCustomerView,
   updateFollowPlanView,
@@ -123,6 +130,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanViewList,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationViewList,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordViewList,
+    [FormDesignKeyEnum.INVOICE]: getContractInvoicedViewList,
   },
   add: {
     [FormDesignKeyEnum.CLUE]: addClueView,
@@ -137,6 +145,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: addPaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: addQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: addPaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: addContractInvoicedView,
   },
   update: {
     [FormDesignKeyEnum.CLUE]: updateClueView,
@@ -151,6 +160,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: updatePaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: updateQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: updatePaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: updateContractInvoicedView,
   },
   delete: {
     [FormDesignKeyEnum.CLUE]: deleteClueView,
@@ -165,6 +175,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: deletePaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: deleteQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: deletePaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: deleteContractInvoicedView,
   },
   detail: {
     [FormDesignKeyEnum.CLUE]: getClueViewDetail,
@@ -179,6 +190,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanViewDetail,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationViewDetail,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordViewDetail,
+    [FormDesignKeyEnum.INVOICE]: getContractInvoicedViewList,
   },
   fixed: {
     [FormDesignKeyEnum.CLUE]: fixedClueView,
@@ -193,6 +205,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: fixedPaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: fixedQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: fixedPaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: fixedContractInvoicedView,
   },
   enable: {
     [FormDesignKeyEnum.CLUE]: enableClueView,
@@ -207,6 +220,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: enablePaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: enableQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: enablePaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: enableContractInvoicedView,
   },
   drag: {
     [FormDesignKeyEnum.CLUE]: dragClueView,
@@ -221,6 +235,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: dragPaymentPlanView,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: dragQuotationView,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: dragPaymentRecordView,
+    [FormDesignKeyEnum.INVOICE]: dragContractInvoicedView,
   },
 };
 
