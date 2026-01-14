@@ -99,3 +99,9 @@ export const BusinessTitleDeleteUrl = '/contract/business-title/delete';
 export const BusinessTitleRevokeUrl = '/contract/business-title/revoke';
 export const GetBusinessTitleDetailUrl = '/contract/business-title/get';
 export const GetBusinessTitleInvoiceCheckUrl = '/contract/business-title/invoice/check';
+export const GetBusinessTitleThirdQueryUrl = '/contract/business-title/third-query';
+export const GetBusinessTitleThirdQueryOptionUrl = '/contract/business-title/third-query/option';
+
+// 工商抬头表单校验
+export const BusinessTitleConfigUrl = '/business-title/config/get'; // 获取表单配置校验
+export const BusinessTitleFormConfigSwitchUrl = '/business-title/config/switch'; // 表单配置切换

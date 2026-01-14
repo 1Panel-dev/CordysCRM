@@ -78,6 +78,10 @@ import {
   GetBusinessTitleInvoiceCheckUrl,
   ExportBusinessTitleSelectedUrl,
   ExportBusinessTitleAllUrl,
+  GetBusinessTitleThirdQueryUrl,
+  GetBusinessTitleThirdQueryOptionUrl,
+  BusinessTitleConfigUrl,
+  BusinessTitleFormConfigSwitchUrl
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -105,6 +109,7 @@ import type {
   UpdatePaymentRecordParams,
   BusinessTitleItem,
   SaveBusinessTitleParams,
+  BusinessTitleValidateConfig,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
@@ -491,6 +496,26 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportBusinessTitleSelectedUrl, data });
   }
 
+  // 第三方接口分页模糊查询工商名称
+  function getBusinessTitleThirdQueryOption(data: TableQueryParams) {
+    return CDR.post<CommonList<string[]>>({ url: GetBusinessTitleThirdQueryOptionUrl, data });
+  }
+
+  // 第三方接口查询工商抬头信息
+  function getBusinessTitleThirdQuery(keyword: string ) {
+    return CDR.get({ url: GetBusinessTitleThirdQueryUrl, params: {keyword} });
+  }
+
+  // 获取工商抬头表单校验配置
+  function getBusinessTitleConfig() {
+    return CDR.get<BusinessTitleValidateConfig[]>({ url: BusinessTitleConfigUrl });
+  }
+
+  // 工商抬头表单配置开关
+  function switchBusinessTitleFormConfig(id: string) {
+    return CDR.get({ url: `${BusinessTitleFormConfigSwitchUrl}/${id}` });
+  }
+
   return {
     exportContractAll,
     exportContractSelected,
@@ -569,5 +594,9 @@ export default function useContractApi(CDR: CordysAxios) {
     getBusinessTitleInvoiceCheck,
     exportBusinessTitleAll,
     exportBusinessTitleSelected,
+    getBusinessTitleThirdQuery,
+    getBusinessTitleThirdQueryOption,
+    getBusinessTitleConfig,
+    switchBusinessTitleFormConfig,
   };
 }

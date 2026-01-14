@@ -11,9 +11,8 @@
     @cancel="cancelHandler"
   >
     <n-scrollbar>
-      <!-- todo xinixnwu 表单校验没有加 -->
       <n-form ref="formRef" :model="form">
-        <n-form-item path="type" :label="t('contract.businessTitle.addMethod')">
+        <n-form-item v-if="showType" path="type" :label="t('contract.businessTitle.addMethod')">
           <CrmTab
             v-model:active-tab="form.type"
             no-content
@@ -22,7 +21,17 @@
             @change="handleChangeTab"
           />
         </n-form-item>
-        <n-form-item path="businessName" :label="t('contract.businessTitle.companyName')">
+        <n-form-item
+          path="businessName"
+          :label="t('contract.businessTitle.companyName')"
+          :rule="[
+            {
+              required: true,
+              message: t('common.notNull', { value: t('contract.businessTitle.companyName') }),
+              trigger: ['input', 'blur'],
+            },
+          ]"
+        >
           <n-input
             v-if="form.type === 'custom'"
             v-model:value="form.businessName"
@@ -33,20 +42,23 @@
           <CrmAutoSearchSelect
             v-else
             v-model:value="form.businessName"
-            :fetch="getOpportunityList"
+            :fetch="getBusinessTitleThirdQueryOption"
             :placeholder="t('contract.businessTitle.selectCompanyPlaceholder')"
+            label-key="name"
+            value-key="id"
             @select="handleAutoFillInfo"
           />
         </n-form-item>
         <div class="grid grid-cols-2 gap-x-[16px]">
           <n-form-item
-            v-for="item of businessTitleFormConfigList"
-            :key="item.value"
-            :path="item.value"
-            :label="item.label"
+            v-for="item of formConfigList"
+            :key="item.id"
+            :path="item.field"
+            :label="item.title"
+            :rule="item.rule"
           >
             <n-input
-              v-model:value="form[item.value] as string | null"
+              v-model:value="form[item.field]"
               allow-clear
               :disabled="form.type === 'thirdParty'"
               :maxlength="255"
@@ -64,14 +76,23 @@
   import { FormInst, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { SaveBusinessTitleParams } from '@lib/shared/models/contract';
+  import { BusinessTitleValidateConfig, SaveBusinessTitleParams } from '@lib/shared/models/contract';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmAutoSearchSelect from '@/components/business/crm-auto-search-select/index.vue';
 
-  import { addBusinessTitle, getBusinessTitleDetail, getOpportunityList, updateBusinessTitle } from '@/api/modules';
+  import {
+    addBusinessTitle,
+    getBusinessTitleConfig,
+    getBusinessTitleDetail,
+    getBusinessTitleThirdQuery,
+    getBusinessTitleThirdQueryOption,
+    getThirdPartyConfig,
+    updateBusinessTitle,
+  } from '@/api/modules';
   import { businessTitleFormConfigList } from '@/config/contract';
 
   const { t } = useI18n();
@@ -93,7 +114,7 @@
   const initForm: SaveBusinessTitleParams = {
     id: '',
     type: 'thirdParty',
-    businessName: null,
+    businessName: '',
     identificationNumber: '',
     openingBank: '',
     bankAccount: '',
@@ -121,12 +142,29 @@
 
   const formRef = ref<FormInst | null>(null);
 
-  function handleAutoFillInfo(raw: any) {
-    //  todo xinixnwu 带入信息
+  async function handleQueryByBusinessName(businessName: string) {
+    try {
+      const result = await getBusinessTitleThirdQuery(businessName);
+      form.value = {
+        ...result,
+        type: 'thirdParty',
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error);
+    }
+  }
+
+  function handleAutoFillInfo(businessName: string) {
+    handleQueryByBusinessName(businessName);
   }
 
   function handleChangeTab() {
-    form.value = { ...initForm, type: form.value.type };
+    form.value = {
+      ...initForm,
+      id: form.value.id,
+      type: form.value.type,
+    };
   }
 
   function cancelHandler() {
@@ -136,6 +174,7 @@
   }
 
   const loading = ref<boolean>(false);
+  const originType = ref<string | null>(null);
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
@@ -173,6 +212,55 @@
     try {
       const result = await getBusinessTitleDetail(props.sourceId);
       form.value = { ...result };
+      originType.value = result.type;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const isEnableQccConfig = ref<boolean>(false);
+
+  const showType = computed(() => {
+    if (isEnableQccConfig.value) return true;
+    if (form.value.id) {
+      return originType.value === 'thirdParty';
+    }
+  });
+
+  async function initQccConfig() {
+    try {
+      const result = await getThirdPartyConfig(CompanyTypeEnum.QCC);
+      isEnableQccConfig.value = !!result && !!result.config && !!result.config?.qccEnable;
+      if (!isEnableQccConfig.value && !form.value.id) {
+        form.value.type = 'custom';
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const formConfigList = ref<BusinessTitleValidateConfig[]>([]);
+  async function initValidateConfig() {
+    try {
+      const result = await getBusinessTitleConfig();
+      formConfigList.value = businessTitleFormConfigList.map((item) => {
+        const e = result.find((c) => c.field === item.value);
+        return {
+          ...e,
+          title: item.label,
+          rule: e?.required
+            ? [
+                {
+                  required: true,
+                  message: t('common.notNull', { value: `${item.label}` }),
+                  trigger: ['input', 'blur'],
+                },
+              ]
+            : undefined,
+        } as BusinessTitleValidateConfig;
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -183,10 +271,15 @@
     () => visible.value,
     (newVal) => {
       if (newVal) {
+        initQccConfig();
         initDetail();
       }
     }
   );
+
+  onBeforeMount(() => {
+    initValidateConfig();
+  });
 </script>
 
 <style scoped></style>

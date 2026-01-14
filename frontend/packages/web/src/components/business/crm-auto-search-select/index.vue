@@ -1,44 +1,54 @@
 <template>
-  <n-select
+  <n-auto-complete
     v-model:value="value"
-    filterable
-    remote
-    clearable
+    :input-props="{ autocomplete: 'disabled' }"
+    :clear-after-select="false"
     :options="options"
     :loading="loading"
+    show-empty
+    clearable
     :placeholder="props.placeholder ?? t('common.pleaseSelect')"
-    @search="handleSearch"
     @scroll="handleScroll"
+    @select="handleSelect"
     @update:value="handleUpdateValue"
   />
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NSelect } from 'naive-ui';
+  import { NAutoComplete } from 'naive-ui';
+  import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 
-  import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
+  import { AutoCompleteOption } from 'naive-ui/es/auto-complete/src/interface';
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    fetch: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
-    placeholder?: string;
-    pageSize?: number;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      fetch: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
+      placeholder?: string;
+      pageSize?: number;
+      labelKey?: string;
+      valueKey?: string;
+    }>(),
+    {
+      labelKey: 'label',
+      valueKey: 'value',
+    }
+  );
 
   const emit = defineEmits<{
     (e: 'select', item: any): void;
   }>();
 
-  const value = defineModel<string | null>('value', {
-    default: null,
+  const value = defineModel<string | undefined>('value', {
+    default: undefined,
   });
 
-  const options = ref<SelectMixedOption[]>([]);
+  const options = ref<AutoCompleteOption[]>([]);
 
   const loading = ref(false);
   const keyword = ref('');
@@ -60,8 +70,8 @@
 
     options.value.push(
       ...list.map((item) => ({
-        label: item.name,
-        value: item.id,
+        label: typeof item === 'string' ? item : item[props.labelKey],
+        value: typeof item === 'string' ? item : item[props.valueKey],
         raw: item,
       }))
     );
@@ -75,7 +85,7 @@
     loading.value = false;
   }
 
-  async function handleSearch(val: string) {
+  const handleSearch = debounce(async (val: string) => {
     keyword.value = val.trim();
     options.value = [];
     current.value = 1;
@@ -85,7 +95,7 @@
       return;
     }
     await loadData();
-  }
+  }, 300);
 
   function handleScroll(e: Event) {
     if (loading.value || !hasMore.value) return;
@@ -98,14 +108,17 @@
     }
   }
 
-  function handleUpdateValue(val: string | null) {
+  function handleSelect(val: string) {
     value.value = val;
-    if (!val) return;
-
-    const item = options.value.find((opt) => opt.value === val);
-    if (item) {
-      emit('select', item.raw);
+    const selectedItem = options.value.find((option) => option.value === val);
+    if (selectedItem && selectedItem.raw) {
+      emit('select', selectedItem.raw);
     }
+  }
+
+  function handleUpdateValue(val?: string) {
+    value.value = val;
+    handleSearch(val ?? '');
   }
 </script>
 

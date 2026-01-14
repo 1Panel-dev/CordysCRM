@@ -215,31 +215,60 @@
       key: 'businessName',
       sortOrder: false,
       sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
       width: 200,
       columnSelectorDisabled: true,
       render: (row: BusinessTitleItem) => {
-        const createNameButton = () => [
-          // todo xinxinwu
+        const createNamePrefix = () =>
           row.type === 'thirdParty'
             ? h(CrmIcon, {
                 type: 'iconicon_enterprise',
                 size: 16,
-                class: 'mr-[8px] text-[var(--primary-8)]',
+                class: 'text-[var(--primary-8)]',
               })
-            : null,
+            : h(
+                'div',
+                {
+                  class: 'business-title-icon',
+                },
+                '自'
+              );
+        const createNameButton = () =>
           h(
-            CrmTableButton,
+            'div',
+            { class: 'flex items-center gap-[8px] one-line-text' },
             {
-              onClick: () => showDetail(row),
-            },
-            { default: () => row.businessName, trigger: () => row.businessName }
-          ),
-        ];
+              default: () => {
+                return [
+                  createNamePrefix(),
+                  h(
+                    CrmTableButton,
+                    {
+                      class: '!max-w-[calc(100%-24px)]',
+                      onClick: () => showDetail(row),
+                    },
+                    {
+                      default: () => row.businessName,
+                      trigger: () => row.businessName,
+                    }
+                  ),
+                ];
+              },
+            }
+          );
 
-        return props.readonly ? h(CrmNameTooltip, { text: row.businessName }) : createNameButton();
+        return props.readonly
+          ? [
+              h(
+                'div',
+                {
+                  class: 'flex items-center gap-[8px]',
+                },
+                {
+                  default: () => [createNamePrefix(), h(CrmNameTooltip, { text: row.businessName })],
+                }
+              ),
+            ]
+          : createNameButton();
       },
     },
     {
@@ -529,4 +558,16 @@
   });
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+  :deep(.business-title-icon) {
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    border: 1px solid var(--text-n7);
+    border-radius: 50%;
+    color: var(--text-n4);
+    background: var(--text-n9);
+    line-height: 16px;
+    @apply flex flex-shrink-0 items-center justify-center;
+  }
+</style>

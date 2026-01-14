@@ -452,6 +452,10 @@ export const {
   getBusinessTitleInvoiceCheck,
   exportBusinessTitleAll,
   exportBusinessTitleSelected,
+  getBusinessTitleThirdQuery,
+  getBusinessTitleThirdQueryOption,
+  getBusinessTitleConfig,
+  switchBusinessTitleFormConfig,
 } = contractApi;
 
 export const {
