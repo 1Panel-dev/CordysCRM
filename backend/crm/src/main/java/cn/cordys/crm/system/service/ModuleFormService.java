@@ -1598,6 +1598,9 @@ public class ModuleFormService {
         List<ModuleFormBlob> moduleFormBlobs = moduleFormBlobMapper.selectByIds(formIds);
         for (ModuleFormBlob formBlob : moduleFormBlobs) {
             Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+			if (propMap.containsKey("viewSize")) {
+				continue;
+			}
             propMap.put("viewSize", "large");
             formBlob.setProp(JSON.toJSONString(propMap));
             moduleFormBlobMapper.updateById(formBlob);
