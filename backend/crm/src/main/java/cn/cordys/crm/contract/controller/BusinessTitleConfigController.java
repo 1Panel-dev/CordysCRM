@@ -27,7 +27,6 @@ public class BusinessTitleConfigController {
 
     @GetMapping("/get")
     @Operation(summary = "获取工商抬头配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ})
     public List<BusinessTitleConfig> getStageConfigList() {
         return businessTitleConfigService.getConfigs(OrganizationContext.getOrganizationId());
     }

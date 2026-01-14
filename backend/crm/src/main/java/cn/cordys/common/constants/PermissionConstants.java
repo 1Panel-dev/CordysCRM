@@ -215,13 +215,13 @@ public class PermissionConstants {
     /*------ end: CONTRACT_INVOICE_ROLE ------*/
 
     /*------ start: BUSINESS_TITLE ------*/
-    public static final String BUSINESS_TITLE_READ = "BUSINESS_TITLE:READ";
-    public static final String BUSINESS_TITLE_ADD = "BUSINESS_TITLE:ADD";
-    public static final String BUSINESS_TITLE_UPDATE = "BUSINESS_TITLE:UPDATE";
-    public static final String BUSINESS_TITLE_DELETE = "BUSINESS_TITLE:DELETE";
-    public static final String BUSINESS_TITLE_EXPORT = "BUSINESS_TITLE:EXPORT";
-    public static final String BUSINESS_TITLE_APPROVAL = "BUSINESS_TITLE:APPROVAL";
-    public static final String BUSINESS_TITLE_IMPORT = "BUSINESS_TITLE:IMPORT";
+    public static final String CONTRACT_BUSINESS_TITLE_READ = "CONTRACT_BUSINESS_TITLE:READ";
+    public static final String CONTRACT_BUSINESS_TITLE_ADD = "CONTRACT_BUSINESS_TITLE:ADD";
+    public static final String CONTRACT_BUSINESS_TITLE_UPDATE = "CONTRACT_BUSINESS_TITLE:UPDATE";
+    public static final String CONTRACT_BUSINESS_TITLE_DELETE = "CONTRACT_BUSINESS_TITLE:DELETE";
+    public static final String CONTRACT_BUSINESS_TITLE_EXPORT = "CONTRACT_BUSINESS_TITLE:EXPORT";
+    public static final String CONTRACT_BUSINESS_TITLE_APPROVAL = "CONTRACT_BUSINESS_TITLE:APPROVAL";
+    public static final String CONTRACT_BUSINESS_TITLE_IMPORT = "CONTRACT_BUSINESS_TITLE:IMPORT";
 
     /*------ end: BUSINESS_TITLE ------*/
 

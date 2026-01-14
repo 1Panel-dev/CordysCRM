@@ -40,7 +40,7 @@ public class BusinessTitleController {
 
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)
     @Operation(summary = "创建")
     public BusinessTitle add(@Validated @RequestBody BusinessTitleAddRequest request) {
         return businessTitleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -48,14 +48,14 @@ public class BusinessTitleController {
 
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_UPDATE)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_UPDATE)
     @Operation(summary = "更新")
     public BusinessTitle update(@Validated @RequestBody BusinessTitleUpdateRequest request) {
         return businessTitleService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_DELETE)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_DELETE)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
         businessTitleService.delete(id);
@@ -63,7 +63,7 @@ public class BusinessTitleController {
 
 
     @GetMapping("/invoice/check/{id}")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_DELETE)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_DELETE)
     @Operation(summary = "检查工商抬头是否开过票")
     public boolean checkInvoice(@PathVariable String id) {
         return businessTitleService.checkHasInvoice(id);
@@ -71,7 +71,7 @@ public class BusinessTitleController {
 
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_READ)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)
     @Operation(summary = "列表")
     public Pager<List<BusinessTitleListResponse>> list(@Validated @RequestBody BusinessTitlePageRequest request) {
         ConditionFilterUtils.parseCondition(request);
@@ -80,7 +80,7 @@ public class BusinessTitleController {
 
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_READ)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)
     @Operation(summary = "详情")
     public BusinessTitleListResponse get(@PathVariable("id") String id) {
         return businessTitleService.get(id);
@@ -88,7 +88,7 @@ public class BusinessTitleController {
 
 
     @PostMapping("/approval")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_APPROVAL)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_APPROVAL)
     @Operation(summary = "审核通过/不通过")
     public void approval(@Validated @RequestBody BusinessTitleApprovalRequest request) {
         businessTitleService.approvalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -102,13 +102,13 @@ public class BusinessTitleController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中工商抬头")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_EXPORT)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_EXPORT)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.BUSINESS_TITLE.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
-                .logModule(LogModule.BUSINESS_TITLE)
+                .logModule(LogModule.CONTRACT_BUSINESS_TITLE)
                 .locale(LocaleContextHolder.getLocale())
                 .orgId(OrganizationContext.getOrganizationId())
                 .userId(SessionUtils.getUserId())
@@ -121,14 +121,14 @@ public class BusinessTitleController {
 
     @PostMapping("/export-all")
     @Operation(summary = "导出全部")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_EXPORT)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_EXPORT)
     public String exportAll(@Validated @RequestBody BusinessTitleExportRequest request) {
         ConditionFilterUtils.parseCondition(request);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.BUSINESS_TITLE.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
-                .logModule(LogModule.BUSINESS_TITLE)
+                .logModule(LogModule.CONTRACT_BUSINESS_TITLE)
                 .locale(LocaleContextHolder.getLocale())
                 .orgId(OrganizationContext.getOrganizationId())
                 .userId(SessionUtils.getUserId())
@@ -139,7 +139,7 @@ public class BusinessTitleController {
 
 
     @GetMapping("/template/download")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         businessTitleService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
@@ -148,7 +148,7 @@ public class BusinessTitleController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "excel导入检查")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
     public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file) {
         return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
@@ -156,14 +156,14 @@ public class BusinessTitleController {
 
     @PostMapping(value = "/import")
     @Operation(summary = "导入")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_IMPORT)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file) {
         return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @PostMapping("/third-query/option")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)
     @Operation(summary = "第三方接口分页模糊查询工商名称")
     public Pager<List<String>> thirdQueryOptions(@Validated @RequestBody BasePageRequest request) {
         return businessTitleService.thirdQueryOption(request.getKeyword(), request.getCurrent(), OrganizationContext.getOrganizationId());
@@ -171,7 +171,7 @@ public class BusinessTitleController {
 
 
     @GetMapping("/third-query")
-    @RequiresPermissions(PermissionConstants.BUSINESS_TITLE_ADD)
+    @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)
     @Operation(summary = "第三方接口查询工商抬头信息")
     public BusinessTitle thirdQuery(@RequestParam String keyword) {
         return businessTitleService.thirdQuery(keyword, OrganizationContext.getOrganizationId());

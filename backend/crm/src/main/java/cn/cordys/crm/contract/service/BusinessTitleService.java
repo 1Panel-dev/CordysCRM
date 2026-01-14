@@ -94,7 +94,7 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.businessName}")
+    @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.businessName}")
     public BusinessTitle add(BusinessTitleAddRequest request, String userId, String orgId) {
         checkName(request.getBusinessName(), orgId, null);
 
@@ -145,7 +145,7 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.BUSINESS_TITLE, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public BusinessTitle update(BusinessTitleUpdateRequest request, String userId, String orgId) {
         BusinessTitle oldTitle = checkTitle(request.getId());
 
@@ -259,7 +259,7 @@ public class BusinessTitleService {
 
 
     private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
-        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.BUSINESS_TITLE, response);
+        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_BUSINESS_TITLE, response);
         Map<String, String> oldMap = new HashMap<>();
         oldMap.put("approvalStatus", Translator.get("contract.approval_status." + state.toLowerCase()));
         logDTO.setOriginalValue(oldMap);
@@ -380,7 +380,7 @@ public class BusinessTitleService {
                 List<LogDTO> logs = new ArrayList<>();
                 businessTitles.forEach(title -> {
                     title.setType(BusinessTitleType.CUSTOM.name());
-                    logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CUSTOMER_INDEX, title.getBusinessName()));
+                    logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CONTRACT_BUSINESS_TITLE, title.getBusinessName()));
                 });
                 businessTitleMapper.batchInsert(businessTitles);
                 logService.batchAdd(logs);

@@ -597,31 +597,27 @@
         "name": "permission.business_title.name",
         "permissions": [
           {
-            "id": "BUSINESS_TITLE:READ",
+            "id": "CONTRACT_BUSINESS_TITLE:READ",
             "license": false
           },
           {
-            "id": "BUSINESS_TITLE:ADD",
+            "id": "CONTRACT_BUSINESS_TITLE:ADD",
             "license": false
           },
           {
-            "id": "BUSINESS_TITLE:UPDATE",
+            "id": "CONTRACT_BUSINESS_TITLE:UPDATE",
             "license": false
           },
           {
-            "id": "BUSINESS_TITLE:DELETE",
+            "id": "CONTRACT_BUSINESS_TITLE:DELETE",
             "license": false
           },
           {
-            "id": "BUSINESS_TITLE:EXPORT",
+            "id": "CONTRACT_BUSINESS_TITLE:EXPORT",
             "license": false
           },
           {
-            "id": "BUSINESS_TITLE:IMPORT",
-            "license": false
-          },
-          {
-            "id": "BUSINESS_TITLE:APPROVAL",
+            "id": "CONTRACT_BUSINESS_TITLE:IMPORT",
             "license": false
           }
         ]
