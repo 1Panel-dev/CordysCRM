@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.service;
 
+import cn.cordys.common.util.FieldConverter;
 import cn.cordys.crm.contract.domain.BusinessTitleConfig;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -29,7 +30,9 @@ public class BusinessTitleConfigService {
     public List<BusinessTitleConfig> getConfigs(String orgId) {
         LambdaQueryWrapper<BusinessTitleConfig> configWrapper = new LambdaQueryWrapper<>();
         configWrapper.eq(BusinessTitleConfig::getOrganizationId, orgId);
-        return businessTitleConfigMapper.selectListByLambda(configWrapper);
+        List<BusinessTitleConfig> businessTitleConfigs = businessTitleConfigMapper.selectListByLambda(configWrapper);
+        businessTitleConfigs.forEach(config -> config.setField(FieldConverter.toCamelCaseWithCommons(config.getField())));
+        return businessTitleConfigs;
     }
 
 
