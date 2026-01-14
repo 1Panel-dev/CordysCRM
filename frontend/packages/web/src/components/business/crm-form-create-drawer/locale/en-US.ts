@@ -15,4 +15,5 @@ export default {
   'crmFormCreate.drawer.contractPaymentRecord': 'payment record',
   'crmFormCreate.drawer.quotation': 'Quotation',
   'crmFormCreate.drawer.price': 'Price Table',
+  'crmFormCreate.drawer.invoice': 'Invoice',
 };

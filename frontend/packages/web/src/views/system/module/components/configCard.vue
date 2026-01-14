@@ -75,6 +75,7 @@
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
   <ContractPaymentRecordFormDrawer v-model:visible="contractPaymentRecordFormVisible" />
+  <contractInvoiceFormDrawer v-model:visible="contractInvoiceFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -96,6 +97,7 @@
   import clueFormDrawer from './clueManagement/formDrawer.vue';
   import MoveLeadReasonDrawer from './clueManagement/moveReasonDrawer.vue';
   import ContractFormFormDrawer from './contract/contractFormFormDrawer.vue';
+  import contractInvoiceFormDrawer from './contract/contractInvoiceFormDrawer.vue';
   import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
   import ContractPaymentRecordFormDrawer from './contract/contractPaymentRecordFormDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
@@ -523,6 +525,7 @@
   const contractFormVisible = ref(false);
   const contractPaymentPlanFormVisible = ref(false);
   const contractPaymentRecordFormVisible = ref(false);
+  const contractInvoiceFormVisible = ref(false);
 
   function handleSelect(key: string, item: ModuleConfigItem) {
     selectKey.value = item.key;
@@ -587,7 +590,7 @@
         businessManagementBusinessParamsSetVisible.value = true;
         break;
       case 'invoiceFormSetting':
-        // todo Mr bai
+        contractInvoiceFormVisible.value = true;
         break;
       default:
         break;

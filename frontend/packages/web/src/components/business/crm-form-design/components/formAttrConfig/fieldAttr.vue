@@ -53,7 +53,7 @@
         "
         class="crm-form-design-config-item"
       >
-        <div class="crm-form-design-config-item-title">
+        <div class="crm-form-design-config-item-title !justify-start">
           {{ t('crmFormDesign.placeholder') }}
           <n-tooltip trigger="hover">
             <template #trigger>
@@ -1236,7 +1236,8 @@
     () => fieldConfig.value?.rules,
     (arr) => {
       checkedRules.value = arr?.map((e) => e.key);
-    }
+    },
+    { immediate: true }
   );
 
   const isSubTableField = computed(() => {

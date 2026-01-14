@@ -295,6 +295,12 @@ export const {
   getBusinessTitleThirdQueryOption,
   getBusinessTitleConfig,
   switchBusinessTitleFormConfig,
+  getInvoicedDetail,
+  getInvoicedFormConfig,
+  getInvoicedFormSnapshotConfig,
+  addInvoiced,
+  updateInvoiced,
+  getInvoicedList,
 } = contractApi;
 
 export const {

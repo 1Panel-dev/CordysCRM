@@ -456,6 +456,18 @@ export const {
   getBusinessTitleThirdQueryOption,
   getBusinessTitleConfig,
   switchBusinessTitleFormConfig,
+  addInvoiced,
+  updateInvoiced,
+  deleteInvoiced,
+  getInvoicedList,
+  getInvoicedDetail,
+  getInvoicedFormConfig,
+  getInvoicedFormSnapshotConfig,
+  exportInvoicedAll,
+  exportInvoicedSelected,
+  revokeInvoiced,
+  approvalInvoiced,
+  batchDeleteInvoiced,
 } = contractApi;
 
 export const {

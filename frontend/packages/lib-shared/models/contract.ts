@@ -1,7 +1,9 @@
 import { ModuleField } from '@lib/shared/models/customer';
 import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
-import { ContractBusinessTitleStatusEnum } from '@lib/shared/enums/contractEnum';
+import { ContractBusinessTitleStatusEnum, type ContractInvoiceEnum } from '@lib/shared/enums/contractEnum';
+import type { TableQueryParams } from './common';
+import type { FormDesignConfigDetailParams } from './system/module';
 
 // 合同列表项
 export interface ContractItem {
@@ -90,7 +92,6 @@ export interface SavePaymentPlanParams {
 export interface UpdatePaymentPlanParams extends SavePaymentPlanParams {
   id: string;
 }
-
 // 回款记录列表项
 export interface PaymentRecordItem {
   id: string;
@@ -98,25 +99,24 @@ export interface PaymentRecordItem {
   updateUser: string;
   createTime: number;
   updateTime: number;
-  contractId: string;
   name: string;
-  no: string;
+  contractId: string;
   owner: string;
+  amount: number;
+  invoiceType: string;
+  taxRate: number;
+  businessTitleId: string;
+  approvalStatus: string;
   organizationId: string;
+  contractName: string;
+  ownerName: string;
   createUserName: string;
   updateUserName: string;
-  ownerName: string;
+  paymentPlanName: string;
+  paymentPlanId: string;
   departmentId: string;
   departmentName: string;
-  contractName: string;
-  paymentPlanId: string;
-  recordBank: string;
-  recordBankNo: string;
-  paymentPlanName: string;
-  planName: string;
-  moduleFields: ModuleField[]; // 自定义字段
-  recordAmount: number;
-  recordEndTime: number;
+  moduleFields: ModuleField[];
 }
 
 // 回款记录详情
@@ -142,8 +142,7 @@ export interface UpdatePaymentRecordParams extends SavePaymentRecordParams {
 }
 
 export interface BusinessTitleItem {
-  id: string; 
- 
+  id: string;
   businessName: string;
   type: string;
   identificationNumber: string;
@@ -167,12 +166,12 @@ export interface BusinessTitleItem {
 
 export interface SaveBusinessTitleParams {
   id?: string;
-  businessName: string;// 公司名称
+  businessName: string; // 公司名称
   identificationNumber: string; // 纳税人识别号
   openingBank: string; // 开户银行
-  bankAccount: string;// 银行账号
+  bankAccount: string; // 银行账号
   registrationAddress: string; // 注册地址
-  phoneNumber: string;// 注册电话
+  phoneNumber: string; // 注册电话
   registeredCapital: string; // 注册资本
   companySize: string; // 公司规模
   registrationNumber: string; //工商注册号
@@ -186,5 +185,52 @@ export interface BusinessTitleValidateConfig {
   required: boolean;
   disabled?: boolean;
   organizationId: string;
-  rule?:Record<string, any>[]
+  rule?: Record<string, any>[];
+}
+export interface ContractInvoiceTableQueryParam extends TableQueryParams {
+  contractId?: string;
+  customerId?: string;
+}
+
+export interface ContractInvoiceItem {
+  id: string;
+  contractId: string;
+  name: string;
+  no: string;
+  owner: string;
+  organizationId: string;
+  createUserName: string;
+  updateUserName: string;
+  ownerName: string;
+  departmentId: string;
+  departmentName: string;
+  contractName: string;
+  paymentPlanId: string;
+  recordBank: string;
+  recordBankNo: string;
+  paymentPlanName: string;
+  planName: string;
+  moduleFields: ModuleField[]; // 自定义字段
+  recordAmount: number;
+  recordEndTime: number;
+  approvalStatus: ContractInvoiceEnum;
+}
+export interface SaveContractInvoiceParams {
+  name: string;
+  contractId: string;
+  owner: string;
+  amount: number;
+  invoiceType: string;
+  taxRate: number;
+  businessTitleId: string;
+  moduleFormConfigDTO?: FormDesignConfigDetailParams;
+}
+
+export interface UpdateContractInvoiceParams extends SaveContractInvoiceParams {
+  id: string;
+}
+
+export interface ContractInvoiceDetail extends ContractInvoiceItem {
+  optionMap?: Record<string, any[]>;
+  attachmentMap?: Record<string, AttachmentInfo[]>; // 附件信息映射
 }

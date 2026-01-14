@@ -81,7 +81,20 @@ import {
   GetBusinessTitleThirdQueryUrl,
   GetBusinessTitleThirdQueryOptionUrl,
   BusinessTitleConfigUrl,
-  BusinessTitleFormConfigSwitchUrl
+  BusinessTitleFormConfigSwitchUrl,
+  ContractInvoicedAddUrl,
+  ContractInvoicedUpdateUrl,
+  ContractInvoicedApprovalUrl,
+  ContractInvoicedDeleteUrl,
+  ContractInvoicedBatchDeleteUrl,
+  ContractInvoicedDetailUrl,
+  ContractInvoicedExportAllUrl,
+  ContractInvoicedExportSelectedUrl,
+  ContractInvoicedFormConfigSnapshotUrl,
+  ContractInvoicedFormConfigUrl,
+  ContractInvoicedPageUrl,
+  ContractInvoicedRevokeUrl,
+  ContractInvoicedTabUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -110,6 +123,11 @@ import type {
   BusinessTitleItem,
   SaveBusinessTitleParams,
   BusinessTitleValidateConfig,
+  ContractInvoiceTableQueryParam,
+  ContractInvoiceItem,
+  SaveContractInvoiceParams,
+  UpdateContractInvoiceParams,
+  ContractInvoiceDetail,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
@@ -433,7 +451,11 @@ export default function useContractApi(CDR: CordysAxios) {
 
   // 合同-工商抬头导入
   function preCheckImportBusinessTitle(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckBusinessTitleImportUrl }, { fileList: [file] }, 'file');
+    return CDR.uploadFile<{ data: ValidateInfo }>(
+      { url: PreCheckBusinessTitleImportUrl },
+      { fileList: [file] },
+      'file'
+    );
   }
 
   function downloadBusinessTitleTemplate() {
@@ -485,7 +507,6 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${GetBusinessTitleInvoiceCheckUrl}/${id}` });
   }
 
-
   // 导出全量工商抬头
   function exportBusinessTitleAll(data: TableExportParams) {
     return CDR.post({ url: ExportBusinessTitleAllUrl, data });
@@ -502,8 +523,8 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 第三方接口查询工商抬头信息
-  function getBusinessTitleThirdQuery(keyword: string ) {
-    return CDR.get({ url: GetBusinessTitleThirdQueryUrl, params: {keyword} });
+  function getBusinessTitleThirdQuery(keyword: string) {
+    return CDR.get({ url: GetBusinessTitleThirdQueryUrl, params: { keyword } });
   }
 
   // 获取工商抬头表单校验配置
@@ -514,6 +535,70 @@ export default function useContractApi(CDR: CordysAxios) {
   // 工商抬头表单配置开关
   function switchBusinessTitleFormConfig(id: string) {
     return CDR.get({ url: `${BusinessTitleFormConfigSwitchUrl}/${id}` });
+  }
+
+  // 发票列表
+  function getInvoicedList(data: ContractInvoiceTableQueryParam) {
+    return CDR.post<CommonList<ContractInvoiceItem>>({ url: ContractInvoicedPageUrl, data });
+  }
+
+  // 添加发票
+  function addInvoiced(data: SaveContractInvoiceParams) {
+    return CDR.post({ url: ContractInvoicedAddUrl, data });
+  }
+
+  // 更新发票
+  function updateInvoiced(data: UpdateContractInvoiceParams) {
+    return CDR.post({ url: ContractInvoicedUpdateUrl, data });
+  }
+
+  // 发票详情
+  function getInvoicedDetail(id: string) {
+    return CDR.get<ContractInvoiceDetail>({ url: `${ContractInvoicedDetailUrl}/${id}` });
+  }
+
+  // 获取发票表单配置
+  function getInvoicedFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: ContractInvoicedFormConfigUrl,
+    });
+  }
+
+  // 获取发票表单配置快照
+  function getInvoicedFormSnapshotConfig(id?: string) {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: `${ContractInvoicedFormConfigSnapshotUrl}/${id}`,
+    });
+  }
+
+  // 发票审批
+  function approvalInvoiced(data: ApprovalContractParams) {
+    return CDR.post({ url: ContractInvoicedApprovalUrl, data });
+  }
+
+  // 发票撤回
+  function revokeInvoiced(id: string) {
+    return CDR.get({ url: `${ContractInvoicedRevokeUrl}/${id}` });
+  }
+
+  // 删除发票
+  function deleteInvoiced(id: string) {
+    return CDR.get({ url: `${ContractInvoicedDeleteUrl}/${id}` });
+  }
+
+  // 发票批量删除
+  function batchDeleteInvoiced(ids: string[]) {
+    return CDR.post({ url: ContractInvoicedBatchDeleteUrl, data: { ids } });
+  }
+
+  // 导出全量发票
+  function exportInvoicedAll(data: TableExportParams) {
+    return CDR.post({ url: ContractInvoicedExportAllUrl, data });
+  }
+
+  // 导出选中发票
+  function exportInvoicedSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ContractInvoicedExportSelectedUrl, data });
   }
 
   return {
@@ -598,5 +683,18 @@ export default function useContractApi(CDR: CordysAxios) {
     getBusinessTitleThirdQueryOption,
     getBusinessTitleConfig,
     switchBusinessTitleFormConfig,
+    // 发票
+    getInvoicedList,
+    addInvoiced,
+    updateInvoiced,
+    getInvoicedDetail,
+    getInvoicedFormConfig,
+    getInvoicedFormSnapshotConfig,
+    approvalInvoiced,
+    revokeInvoiced,
+    deleteInvoiced,
+    batchDeleteInvoiced,
+    exportInvoicedAll,
+    exportInvoicedSelected,
   };
 }

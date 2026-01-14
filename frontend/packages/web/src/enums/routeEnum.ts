@@ -34,6 +34,7 @@ export enum ContractRouteEnum {
   CONTRACT_PAYMENT = 'contractPaymentPlan',
   CONTRACT_PAYMENT_RECORD = 'contractPaymentRecord',
   CONTRACT_BUSINESS_NAME = 'contractBusinessName',
+  CONTRACT_INVOICE = 'contractInvoice',
 }
 
 export enum ProductRouteEnum {

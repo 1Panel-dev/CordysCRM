@@ -1,5 +1,6 @@
 import {
   ContractBusinessTitleStatusEnum,
+  ContractInvoiceEnum,
   ContractPaymentPlanEnum,
   ContractStatusEnum,
 } from '@lib/shared/enums/contractEnum';
@@ -24,6 +25,24 @@ export const contractPaymentPlanStatus = {
     label: t('common.completed'),
     icon: 'iconicon_check_circle_filled',
     color: 'var(--success-green)',
+  },
+};
+
+export const contractInvoiceStatus = {
+  [ContractInvoiceEnum.UNDER_REVIEW]: {
+    label: t('contract.underReview'),
+    icon: 'iconicon_testing',
+    color: 'var(--info-blue)',
+  },
+  [ContractInvoiceEnum.APPROVED]: {
+    label: t('contract.approved'),
+    icon: 'iconicon_check_circle_filled',
+    color: 'var(--success-green)',
+  },
+  [ContractInvoiceEnum.REJECTED]: {
+    label: t('contract.rejected'),
+    icon: 'iconicon_close_circle_filled',
+    color: 'var(--error-red)',
   },
 };
 
@@ -137,3 +156,13 @@ export const allBusinessTitleFormConfigList: {
   },
   ...businessTitleFormConfigList,
 ];
+export const contractInvoiceStatusOptions = Object.entries(contractInvoiceStatus).map(([key, value]) => ({
+  label: value.label,
+  value: key,
+}));
+
+export const deleteInvoiceContentMap = {
+  [ContractInvoiceEnum.UNDER_REVIEW]: t('contract.deleteInvoiceUnderReviewContent'),
+  [ContractInvoiceEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
+  [ContractInvoiceEnum.REJECTED]: t('contract.deleteInvoiceRejectedContent'),
+};

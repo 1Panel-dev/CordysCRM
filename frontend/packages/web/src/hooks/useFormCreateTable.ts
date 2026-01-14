@@ -18,7 +18,11 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
+import {
+  contractInvoiceStatusOptions,
+  contractPaymentPlanStatusOptions,
+  contractStatusOptions,
+} from '@/config/contract';
 import { quotationStatusOptions } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
@@ -48,7 +52,8 @@ export type FormKey =
   | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
-  | FormDesignKeyEnum.PRICE;
+  | FormDesignKeyEnum.PRICE
+  | FormDesignKeyEnum.INVOICE;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -102,6 +107,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: TableKeyEnum.CONTRACT_PAYMENT,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: TableKeyEnum.CONTRACT_PAYMENT_RECORD,
     [FormDesignKeyEnum.PRICE]: TableKeyEnum.PRICE,
+    [FormDesignKeyEnum.INVOICE]: TableKeyEnum.INVOICE,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -792,6 +798,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.PRICE]: [],
+    [FormDesignKeyEnum.INVOICE]: [
+      {
+        title: t('contract.businessTitle.status'),
+        width: 120,
+        key: 'approvalStatus',
+        filterOptions: contractInvoiceStatusOptions,
+        sortOrder: false,
+        sorter: true,
+        filter: true,
+        render: props.specialRender?.approvalStatus,
+      },
+    ],
   };
   const staticColumns: CrmDataTableColumn[] = [
     {
@@ -1017,6 +1035,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 FormDesignKeyEnum.CONTRACT_PAYMENT,
                 FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT,
                 FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+                FormDesignKeyEnum.INVOICE,
               ].includes(props.formKey) &&
                 field.businessKey === 'contractId') ||
               field.businessKey === 'paymentPlanId')
