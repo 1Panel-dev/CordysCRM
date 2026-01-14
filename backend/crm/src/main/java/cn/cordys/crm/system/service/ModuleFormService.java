@@ -74,6 +74,8 @@ public class ModuleFormService {
     public static final Map<String, String> TYPE_SOURCE_MAP;
     private static final String DEFAULT_ORGANIZATION_ID = "100001";
     private static final String CONTROL_RULES_KEY = "showControlRules";
+    private static final String SHOW_FIELD_KEY = "showFields";
+    private static final String DATA_SOURCE_TYPE_KEY = "dataSourceType";
     private static final String SUB_FIELDS = "subFields";
 	public static final String SUM_PREFIX = "sum_";
 	public static final String EXPORT_SYSTEM_TYPE = "system";
@@ -139,6 +141,7 @@ public class ModuleFormService {
             throw new GenericException(Translator.get("module.form.not_exist"));
         }
         ModuleForm form = forms.getFirst();
+
         ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
         formConfig.setFormProp(JSON.parseObject(formBlob.getProp(), FormProp.class));
         // set fields
@@ -731,7 +734,16 @@ public class ModuleFormService {
                 Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 				List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
 				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
-				sourceField.getRefFields().forEach(oldRefField -> {
+
+                // 获取最新的引用字段属性
+                sourceField.setRefFields(new ArrayList<>());
+                for (ModuleFieldBlob reloadFieldBlob : reloadFieldBlobs) {
+                    BaseField refField = JSON.parseObject(reloadFieldBlob.getProp(), BaseField.class);
+                    refField.setResourceFieldId(field.getId());
+                    sourceField.getRefFields().add(refField);
+                }
+
+                sourceField.getRefFields().forEach(oldRefField -> {
 					if (!reloadFieldMap.containsKey(oldRefField.getId()) && !subFieldMap.containsKey(oldRefField.getId())) {
 						return;
 					}
@@ -878,9 +890,9 @@ public class ModuleFormService {
             form.setId(IDGenerator.nextStr());
             form.setFormKey(formKey);
             form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-            form.setCreateUser("admin");
+            form.setCreateUser(InternalUser.ADMIN.getValue());
             form.setCreateTime(System.currentTimeMillis());
-            form.setUpdateUser("admin");
+            form.setUpdateUser(InternalUser.ADMIN.getValue());
             form.setUpdateTime(System.currentTimeMillis());
             forms.add(form);
             formKeyMap.put(formKey, form.getId());
@@ -935,6 +947,7 @@ public class ModuleFormService {
                         });
                         initField.put(CONTROL_RULES_KEY, controlRules);
                     }
+                    handleShowFieldsInit(initField);
                     if (initField.containsKey(SUB_FIELDS)) {
                         List<BaseField> subFields = JSON.parseArray(JSON.toJSONString(initField.get(SUB_FIELDS)), BaseField.class);
                         subFields.forEach(subField -> subField.setId(IDGenerator.nextStr()));
@@ -954,7 +967,22 @@ public class ModuleFormService {
         }
     }
 
-	/**
+    private void handleShowFieldsInit(Map<String, Object> initField) {
+        if (initField.containsKey(SHOW_FIELD_KEY)) {
+            String dataSourceType = (String) initField.get(DATA_SOURCE_TYPE_KEY);
+            List<String> showFieldKeys = (List<String>) initField.get(SHOW_FIELD_KEY);
+            List<ModuleField> showFields = moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
+                    .in(ModuleField::getInternalKey, showFieldKeys));
+            // 工商抬头不是表单，不用替换成 ID
+            if (!Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
+                if (CollectionUtils.isNotEmpty(showFields)) {
+                    initField.put(SHOW_FIELD_KEY, showFields.stream().map(ModuleField::getId).toList());
+                }
+            }
+        }
+    }
+
+    /**
 	 * 组装字段基础信息
 	 * @param fieldMap 字段集合
 	 * @param formId 表单ID
