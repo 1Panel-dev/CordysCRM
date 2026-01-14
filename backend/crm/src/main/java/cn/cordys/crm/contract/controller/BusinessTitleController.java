@@ -1,6 +1,7 @@
 package cn.cordys.crm.contract.controller;
 
 import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ExportDTO;
@@ -15,6 +16,7 @@ import cn.cordys.crm.contract.service.BusinessTitleExportService;
 import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ImportResponse;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +39,13 @@ public class BusinessTitleController {
     private BusinessTitleService businessTitleService;
     @Resource
     private BusinessTitleExportService businessTitleExportService;
+
+
+    @GetMapping("/module/form")
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig() {
+        return businessTitleService.getBusinessFormConfig();
+    }
 
 
     @PostMapping("/add")
