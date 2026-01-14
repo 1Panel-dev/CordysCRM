@@ -142,6 +142,6 @@ public class LogModule {
     /**
      * 工商抬头
      */
-    public static final String BUSINESS_TITLE = "BUSINESS_TITLE";
+    public static final String CONTRACT_BUSINESS_TITLE = "CONTRACT_BUSINESS_TITLE";
 
 }

@@ -38,7 +38,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final Map<String, Boolean> requiredFieldMap;
     private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
     protected Map<Integer, String> headMap;
-    private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
 
     public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId) {
         this.excelDataClass = clazz;
@@ -78,7 +78,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
             validateLenLimit(rowData.get(k), errText, v);
-            validateNameUniques(errText, v);
+            validateNameUniques(rowData.get(k), errText, v);
             validateRequired(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
@@ -99,17 +99,16 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         }
     }
 
-    private void validateNameUniques(StringBuilder errText, String v) {
+    private void validateNameUniques(String data, StringBuilder errText, String v) {
         if (BusinessTitleImportFiled.BUSINESS_NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
-            excelValueCache.putIfAbsent(v, ConcurrentHashMap.newKeySet());
-            Set<String> valueSet = excelValueCache.get(v);
-            if (!valueSet.add(v)) {
-                errText.append(v).append(Translator.get("business_title.exist")).append(";");
+            Boolean existed = excelValueCache.putIfAbsent(data, true);
+            if (existed != null) {
+                errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }
 
-            List<String> valList = commonMapper.getCheckValList("business_title", BusinessTitleImportFiled.BUSINESS_NAME.name().toLowerCase(), orgId);
-            if (CollectionUtils.isNotEmpty(valList)) {
-                errText.append(v).append(Translator.get("business_title.exist")).append(";");
+            boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.BUSINESS_NAME.name().toLowerCase(), data, orgId);
+            if (repeat) {
+                errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }
         }
     }
