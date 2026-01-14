@@ -5,9 +5,12 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.dto.field.SelectField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Max;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,16 +35,18 @@ public class ModuleFormExtService {
 	/**
 	 * 设置选项默认来源 (下拉单选)
 	 */
-	public void setOptionDefaultSourceForSelect() {
+	public void setOptionDefaultSource() {
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.eq(ModuleField::getType, FieldType.SELECT.name());
+		fieldWrapper.in(ModuleField::getType, List.of(FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name(), FieldType.RADIO.name(), FieldType.CHECKBOX.name()));
 		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
 		List<String> fIds = fields.stream().map(ModuleField::getId).toList();
 		List<ModuleFieldBlob> fieldBlobs = fieldBlobMapper.selectByIds(fIds);
 		fieldBlobs.forEach(fb -> {
-			SelectField selectField = JSON.parseObject(fb.getProp(), SelectField.class);
-			selectField.setOptionSource(DEFAULT_OPTION_SOURCE);
-			fb.setProp(JSON.toJSONString(selectField));
+			BaseField field = JSON.parseObject(fb.getProp(), BaseField.class);
+			if (field instanceof HasOption of) {
+				of.setOptionSource(DEFAULT_OPTION_SOURCE);
+			}
+			fb.setProp(JSON.toJSONString(field));
 			fieldBlobMapper.updateById(fb);
 		});
 	}

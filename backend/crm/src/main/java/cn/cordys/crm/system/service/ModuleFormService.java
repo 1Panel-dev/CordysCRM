@@ -78,6 +78,7 @@ public class ModuleFormService {
 	public static final String SUM_PREFIX = "sum_";
 	public static final String EXPORT_SYSTEM_TYPE = "system";
 	private static final String PRICE_SUB_ROW_KEY = "price_sub";
+	private static final String OPTION_DEFAULT_SOURCE = "custom";
 
     static {
         TYPE_SOURCE_MAP = Map.of(FieldType.MEMBER.name(), "sys_user",
@@ -624,6 +625,22 @@ public class ModuleFormService {
         }
         ReflectionUtils.setField(moduleFields, resource, fieldValues);
     }
+
+	/**
+	 * 替换字段引用选项
+	 * @param field 自定义字段
+	 */
+	public void setFieldRefOption(BaseField field) {
+		if (!(field instanceof HasOption) || StringUtils.isEmpty(((HasOption) field).getOptionSource()) || Strings.CS.equals(((HasOption) field).getOptionSource(), OPTION_DEFAULT_SOURCE)) {
+			return;
+		}
+		String refId = ((HasOption) field).getRefId();
+		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
+		BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
+		if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getOptions())) {
+			((HasOption) field).setOptions(refOption.getOptions());
+		}
+	}
 
     /**
      * 设置自定义字段业务参数
