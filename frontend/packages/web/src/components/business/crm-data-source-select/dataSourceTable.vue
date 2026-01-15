@@ -50,12 +50,10 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
-  import { getBusinessTitleModuleForm } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import type { FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
-  import { businessTitleFieldList } from '@/views/contract/businessTitle/config';
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
@@ -74,6 +72,7 @@
   );
 
   const emit = defineEmits<{
+    (e: 'initForm', fields: FormCreateField[]): void;
     (e: 'toggleFullScreen', value: boolean): void;
   }>();
 
@@ -266,6 +265,7 @@
 
   onBeforeMount(async () => {
     await initFormConfig();
+    emit('initForm', fieldList.value);
     searchData();
   });
 

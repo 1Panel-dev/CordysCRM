@@ -48,6 +48,13 @@ export interface FieldLinkProp {
   linkOptions: FieldLinkOption[]; // 联动选项
 }
 
+export interface DataSourceLinkField {
+  current: string; // 字段id
+  link: string; // 联动字段id
+  method: 'fill'; // 联动方式
+  enable: boolean; // 是否启用
+}
+
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -98,6 +105,7 @@ export interface FormCreateField {
   dataSourceType?: FieldDataSourceTypeEnum;
   combineSearch?: DataSourceFilterCombine; // 数据源过滤条件
   showFields?: string[]; // 数据源显示字段
+  linkFields?: DataSourceLinkField[]; // 数据源联动字段
   // 成员属性
   hasCurrentUser?: boolean;
   // 部门属性

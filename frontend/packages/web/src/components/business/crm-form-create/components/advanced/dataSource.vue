@@ -30,7 +30,7 @@
       :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
       :hide-child-tag="props.hideChildTag"
-      @change="($event, source) => emit('change', $event, source)"
+      @change="($event, source, fields) => emit('change', $event, source, fields)"
     />
   </n-form-item>
 </template>
@@ -65,7 +65,7 @@
     disabledSelection?: (row: Record<string, any>) => boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[], source: Record<string, any>[]): void;
+    (e: 'change', value: (string | number)[], source: Record<string, any>[], fields?: FormCreateField[]): void;
   }>();
 
   const value = defineModel<(string | number)[]>('value', {
@@ -112,18 +112,26 @@
     }
   );
 
-  onMounted(async () => {
-    if (!props.needInitDetail && props.fieldConfig.showFields?.length && props.fieldConfig.defaultValue?.length) {
-      await initFormConfig();
-      setLoadListParams({
-        keyword: props.fieldConfig.initialOptions?.[0]?.name || '',
-      });
-      await loadList();
-      const newRows = propsRes.value.data.filter((item) => props.fieldConfig.defaultValue?.includes(item.id));
-      value.value = newRows.map((e) => e.id) as (string | number)[];
-      emit('change', value.value, newRows);
+  watch(
+    () => props.fieldConfig.initialOptions,
+    async (val) => {
+      if (!props.needInitDetail) {
+        await initFormConfig();
+        setLoadListParams({
+          keyword: props.fieldConfig.initialOptions?.[0]?.name || '',
+        });
+        await loadList();
+        const newRows = propsRes.value.data.filter(
+          (item) => props.fieldConfig.defaultValue?.includes(item.id) || value.value.includes(item.id)
+        );
+        value.value = newRows.map((e) => e.id) as (string | number)[];
+        emit('change', value.value, newRows, fieldList.value);
+      }
+    },
+    {
+      immediate: true,
     }
-  });
+  );
 
   watch(
     () => props.fieldConfig.defaultValue,

@@ -80,6 +80,8 @@
             columnType: ColumnTypeEnum.CUSTOM,
             name: t(item.name),
             type: FieldTypeEnum.INPUT,
+            fieldWidth: 1,
+            showLabel: true,
           };
         });
       } else {
