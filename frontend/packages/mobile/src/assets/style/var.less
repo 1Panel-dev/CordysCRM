@@ -20,15 +20,18 @@
     width: 6px;
     height: 6px;
   }
+
   &::-webkit-scrollbar-thumb {
     @apply hidden;
 
     border-radius: var(--border-radius-medium);
     background-color: var(--color-text-input-border);
   }
+
   &::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
+
   &:hover {
     &::-webkit-scrollbar-thumb {
       @apply block;
@@ -39,6 +42,7 @@
 /** 0.5px边框 **/
 .half-px-border-top() {
   position: relative;
+
   &::before {
     position: absolute;
     top: -50%;
@@ -54,6 +58,7 @@
 }
 .half-px-border-bottom() {
   position: relative;
+
   &::after {
     position: absolute;
     top: -50%;
@@ -78,6 +83,4 @@
 // 溢出省略
 .one-line-text() {
   @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
-
-  line-height: 1.57;
 }

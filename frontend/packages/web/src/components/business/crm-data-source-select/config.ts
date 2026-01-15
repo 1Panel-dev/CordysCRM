@@ -2,6 +2,7 @@ import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/fo
 import { CommonList } from '@lib/shared/models/common';
 
 import {
+  getBusinessTitleList,
   getCustomerOptions,
   getFieldClueList,
   getFieldContactList,
@@ -27,6 +28,7 @@ export const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<C
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: getFieldContractPaymentPlanList,
   [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
   [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
+  [FieldDataSourceTypeEnum.BUSINESS_TITLE]: getBusinessTitleList,
 };
 export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
   [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
@@ -38,4 +40,5 @@ export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEn
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: FormDesignKeyEnum.CONTRACT_PAYMENT,
   [FieldDataSourceTypeEnum.PRICE]: FormDesignKeyEnum.PRICE,
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  [FieldDataSourceTypeEnum.BUSINESS_TITLE]: FormDesignKeyEnum.BUSINESS_TITLE,
 };

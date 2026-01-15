@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <contractInvoiceStatus :status="detailInfo?.planStatus ?? ContractInvoiceEnum.UNDER_REVIEW" />
+        <contractInvoiceStatus :status="detailInfo?.approvalStatus ?? ContractInvoiceEnum.UNDER_REVIEW" />
       </div>
     </template>
     <template v-if="!props.readonly" #titleRight>

@@ -105,6 +105,7 @@ export const GetBusinessTitleThirdQueryOptionUrl = '/contract/business-title/thi
 // 工商抬头表单校验
 export const BusinessTitleConfigUrl = '/business-title/config/get'; // 获取表单配置校验
 export const BusinessTitleFormConfigSwitchUrl = '/business-title/config/switch'; // 表单配置切换
+export const BusinessTitleModuleFormUrl = '/contract/business-title/module/form'; // 表单字段
 // 发票
 export const ContractInvoicedUpdateUrl = '/invoice/update'; // 发票更新
 export const ContractInvoicedPageUrl = '/invoice/page'; // 发票列表

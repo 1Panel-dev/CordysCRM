@@ -1,10 +1,12 @@
 @import url('./var.less');
+
 html,
 body {
   padding-bottom: env(safe-area-inset-bottom);
   /* stylelint-disable-next-line function-no-unknown */
   padding-bottom: constant(safe-area-inset-bottom);
   height: 100vh;
+
   #app {
     height: 100%;
   }
@@ -20,9 +22,8 @@ body {
 /* 单行文本缩略 */
 .one-line-text {
   @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
-
-  line-height: 1.57;
 }
+
 .top-bar {
   @apply flex items-center;
 
@@ -31,11 +32,14 @@ body {
   background-color: var(--text-n10);
   .half-px-border-bottom();
 }
+
 .crm-form {
   .van-cell-group {
     margin: 0;
+
     .van-cell {
       position: relative;
+
       &:last-child::before {
         position: absolute;
         box-sizing: border-box;
@@ -57,6 +61,7 @@ body {
       .one-line-text();
     }
   }
+
   .van-checkbox {
     .van-checkbox__label {
       .one-line-text();

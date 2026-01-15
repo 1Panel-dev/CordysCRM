@@ -33,7 +33,7 @@
   import { NScrollbar } from 'naive-ui';
 
   import { ColumnTypeEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
@@ -42,7 +42,7 @@
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import FieldSection from '@/components/business/crm-table-export-modal/components/fieldSection.vue';
 
-  import { getFieldDisplayList } from '@/api/modules';
+  import { getBusinessTitleModuleForm, getFieldDisplayList } from '@/api/modules';
 
   const { t } = useI18n();
 
@@ -70,15 +70,29 @@
 
   async function getDisplayList() {
     try {
-      const res = await getFieldDisplayList(formKey.value);
-      allColumns.value = res.fields.map((item) => {
-        return {
-          key: item.id,
-          title: item.name,
-          columnType: item.subTableFieldId ? ColumnTypeEnum.SUB_TABLE : ColumnTypeEnum.CUSTOM,
-          ...item,
-        };
-      });
+      if (props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
+        const res = await getBusinessTitleModuleForm();
+        allColumns.value = res.fields.map((item) => {
+          return {
+            ...item,
+            key: item.id,
+            title: t(item.name),
+            columnType: ColumnTypeEnum.CUSTOM,
+            name: t(item.name),
+            type: FieldTypeEnum.INPUT,
+          };
+        });
+      } else {
+        const res = await getFieldDisplayList(formKey.value);
+        allColumns.value = res.fields.map((item) => {
+          return {
+            key: item.id,
+            title: item.name,
+            columnType: item.subTableFieldId ? ColumnTypeEnum.SUB_TABLE : ColumnTypeEnum.CUSTOM,
+            ...item,
+          };
+        });
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

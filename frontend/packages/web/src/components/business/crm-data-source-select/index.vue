@@ -83,6 +83,7 @@
     [FieldDataSourceTypeEnum.CONTRACT]: 'crmFormCreate.drawer.contract',
     [FieldDataSourceTypeEnum.QUOTATION]: 'crmFormCreate.drawer.quotation',
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: 'crmFormCreate.drawer.contractPaymentPlan',
+    [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'crmFormCreate.drawer.businessTitle',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {
@@ -114,8 +115,8 @@
   }
 
   const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
-    const row = rows.value.find((item) => item.id === option.value);
-    return props.hideChildTag && row?.parentId
+    const _row = (rows.value || []).find((item) => item?.id === option.value);
+    return props.hideChildTag && _row?.parentId
       ? null
       : h(
           CrmTag,
@@ -134,7 +135,9 @@
           },
           {
             default: () => {
-              return (rows.value || []).find((item) => item?.id === option.value)?.name || t('common.optionNotExist');
+              return props.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
+                ? _row?.businessName
+                : _row?.name || t('common.optionNotExist');
             },
           }
         );
