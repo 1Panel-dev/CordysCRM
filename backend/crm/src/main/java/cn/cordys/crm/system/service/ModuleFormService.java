@@ -24,6 +24,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.*;
@@ -50,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -176,6 +178,7 @@ public class ModuleFormService {
         ModuleFormConfigDTO config = getConfig(formKey, organizationId);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
+
         List<BaseField> flattenFields = flattenFormAllFieldsWithSubId(config);
         // 设置业务字段参数
         businessModuleFormConfig.setFields(flattenFields.stream()
@@ -184,6 +187,10 @@ public class ModuleFormService {
                 .peek(this::setFieldBusinessParam)
                 .collect(Collectors.toList())
         );
+
+        if (Strings.CI.equals(formKey, FormKey.CONTRACT.getKey())) {
+            businessModuleFormConfig.getFields().add(getContractAmountField());
+        }
         return businessModuleFormConfig;
     }
 
@@ -645,10 +652,12 @@ public class ModuleFormService {
 		}
 		String refId = ((HasOption) field).getRefId();
 		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
-		BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
-		if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getOptions())) {
-			((HasOption) field).setOptions(refOption.getOptions());
-		}
+        if (fieldBlob != null) {
+            BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
+            if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getOptions())) {
+                ((HasOption) field).setOptions(refOption.getOptions());
+            }
+        }
 	}
 
     /**
@@ -734,16 +743,25 @@ public class ModuleFormService {
                 List<String> oldRefIds = sourceField.getShowFields();
                 List<String> newRefIds = new ArrayList<>();
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
-                Map<String, String> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
-				List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
+                Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream()
+                        .collect(Collectors.toMap(ModuleFieldBlob::getId,
+                                filedBlob -> filedBlob == null ? null : JSON.parseObject(filedBlob.getProp(), BaseField.class)));
+
+                List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
 				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
-                // 获取最新引用字段属性
+                // 补充扩展的系统字段
+                getSystemExtendFiles(sourceField.getDataSourceType())
+                        .forEach(extField -> reloadFieldMap.put(extField.getId(), extField));
+
                 sourceField.setRefFields(new ArrayList<>());
-                for (ModuleFieldBlob reloadFieldBlob : reloadFieldBlobs) {
-                    BaseField refField = JSON.parseObject(reloadFieldBlob.getProp(), BaseField.class);
-                    refField.setResourceFieldId(field.getId());
-                    sourceField.getRefFields().add(refField);
+                // 获取最新引用字段属性
+                for (String showFieldKey : sourceField.getShowFields()) {
+                    BaseField refField = reloadFieldMap.get(showFieldKey);
+                    if (refField != null) {
+                        refField.setResourceFieldId(field.getId());
+                        sourceField.getRefFields().add(refField);
+                    }
                 }
 
                 sourceField.getRefFields().forEach(oldRefField -> {
@@ -752,7 +770,7 @@ public class ModuleFormService {
 					}
 					BaseField refField;
 					if (reloadFieldMap.containsKey(oldRefField.getId())) {
-						refField = JSON.parseObject(reloadFieldMap.get(oldRefField.getId()), BaseField.class);
+						refField = reloadFieldMap.get(oldRefField.getId());
 					} else {
 						refField = subFieldMap.get(oldRefField.getId());
 					}
@@ -773,7 +791,50 @@ public class ModuleFormService {
         return flatFields;
     }
 
-	/**
+    private List<BaseField> getSystemExtendFiles(String dataSourceType) {
+        if (Strings.CI.equals(dataSourceType, FieldSourceType.CONTRACT.name())) {
+            return List.of(getContractAmountField());
+        } else if (Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
+            return initBusinessTitleFields();
+        }
+        return List.of();
+    }
+
+    public InputNumberField getContractAmountField() {
+        InputNumberField amountField = new InputNumberField();
+        amountField.setId(BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey());
+        amountField.setName("合同金额");
+        amountField.setBusinessKey(BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getBusinessKey());
+        amountField.setReadable(false);
+        amountField.setEditable(false);
+        amountField.setType(FieldType.INPUT_NUMBER.name());
+        amountField.setShowLabel(true);
+        return amountField;
+    }
+
+    public List<BaseField> initBusinessTitleFields() {
+        List<BaseField> fields = new ArrayList<>();
+        Locale locale = LocaleContextHolder.getLocale();
+        BusinessTitleConstants[] values = BusinessTitleConstants.values();
+        for (BusinessTitleConstants constant : values) {
+            InputField field = new InputField();
+            field.setId(constant.getKey());
+            field.setBusinessKey(constant.getKey());
+            if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
+                field.setName(constant.getUs());
+            } else {
+                field.setName(constant.getCh());
+            }
+            field.setInternalKey(constant.getKey());
+            field.setBusinessKey(constant.getKey());
+            field.setType(FieldType.INPUT.name());
+            field.setShowLabel(true);
+            fields.add(field);
+        }
+        return fields;
+    }
+
+    /**
 	 * 获取指定数据源的子表字段集合
 	 * @param sourceType 数据源类型
 	 * @return 子表字段集合
@@ -977,15 +1038,24 @@ public class ModuleFormService {
 	@SuppressWarnings("unchecked")
     private void handleShowFieldsInit(Map<String, Object> initField) {
         if (initField.containsKey(SHOW_FIELD_KEY)) {
-            String dataSourceType = (String) initField.get(DATA_SOURCE_TYPE_KEY);
             List<String> showFieldKeys = (List<String>) initField.get(SHOW_FIELD_KEY);
             List<ModuleField> showFields = moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
                     .in(ModuleField::getInternalKey, showFieldKeys));
-            // 工商抬头不是表单，不用替换成 ID
-            if (!Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
-                if (CollectionUtils.isNotEmpty(showFields)) {
-                    initField.put(SHOW_FIELD_KEY, showFields.stream().map(ModuleField::getId).toList());
-                }
+
+            if (CollectionUtils.isNotEmpty(showFieldKeys)) {
+                Set<String> internalKeys = showFields.stream()
+                        .map(ModuleField::getInternalKey)
+                        .collect(Collectors.toSet());
+
+                // 添加表单字段
+                List<String> showFieldResult = new ArrayList<>();
+                showFieldResult.addAll(showFields.stream().map(ModuleField::getId).toList());
+                // 添加表单中没有的系统字段
+                List<String> systemFieldKeys = showFieldKeys.stream()
+                        .filter(fieldKey -> !internalKeys.contains(fieldKey))
+                        .toList();
+                showFieldResult.addAll(systemFieldKeys);
+                initField.put(SHOW_FIELD_KEY, showFieldResult);
             }
         }
     }

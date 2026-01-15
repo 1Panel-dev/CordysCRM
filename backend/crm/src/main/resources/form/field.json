@@ -1863,6 +1863,17 @@
       ]
     },
     {
+      "name": "发票信息",
+      "internalKey": "invoiceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
       "name": "开票类型",
       "internalKey": "invoiceType",
       "type": "SELECT",
