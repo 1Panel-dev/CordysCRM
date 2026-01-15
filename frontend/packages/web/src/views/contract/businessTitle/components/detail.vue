@@ -4,7 +4,7 @@
     :width="1000"
     no-padding
     :footer="false"
-    :title="detailInfo?.businessName ?? ''"
+    :title="detailInfo?.name ?? ''"
     @cancel="handleCancel"
   >
     <template #titleRight>
@@ -157,7 +157,7 @@
       const type = isInvoiceChecked ? 'default' : 'error';
       openModal({
         type,
-        title: t('common.deleteConfirmTitle', { name: characterLimit(detailInfo.value?.businessName) }),
+        title: t('common.deleteConfirmTitle', { name: characterLimit(detailInfo.value?.name) }),
         content,
         positiveText,
         negativeText: t('common.cancel'),

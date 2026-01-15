@@ -152,7 +152,7 @@ export const allBusinessTitleFormConfigList: {
 }[] = [
   {
     label: t('contract.businessTitle.companyName'),
-    value: 'businessName',
+    value: 'name',
   },
   ...businessTitleFormConfigList,
 ];
