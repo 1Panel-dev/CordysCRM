@@ -164,6 +164,7 @@ public class ModuleFormService {
         // 设置业务字段参数
         List<BaseField> flattenFields = flattenSourceRefFields(config.getFields());
         businessModuleFormConfig.setFields(flattenFields.stream()
+				.peek(this::setFieldRefOption)
                 .peek(this::setFieldBusinessParam)
                 .peek(this::reloadPropOfSubRefFields)
                 .collect(Collectors.toList())
@@ -346,6 +347,7 @@ public class ModuleFormService {
         List<BaseField> allFields = getAllFields(moduleForm.getId());
         List<BaseField> flattenFields = flattenSourceRefFields(allFields);
         return flattenFields.stream()
+				.peek(this::setFieldRefOption)
                 .peek(this::setFieldBusinessParam)
                 .peek(this::reloadPropOfSubRefFields)
                 .collect(Collectors.toList());
