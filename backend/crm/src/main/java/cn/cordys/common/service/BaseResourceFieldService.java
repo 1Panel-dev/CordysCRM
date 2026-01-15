@@ -476,7 +476,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return resourceMap;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return Map.of();
+            return new HashMap<>();
         } finally {
             SourceDetailResolveContext.end();
         }
