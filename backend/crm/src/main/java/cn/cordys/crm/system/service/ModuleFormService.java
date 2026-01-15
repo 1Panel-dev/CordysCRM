@@ -878,7 +878,7 @@ public class ModuleFormService {
 				moduleFieldBlobMapper.batchInsert(fieldBlobs);
 			}
 		} catch (Exception e) {
-			log.error("表单扩展字段初始化失败: {}", e.getMessage());
+			log.error("表单扩展字段初始化失败", e);
 			throw new GenericException("表单扩展字段初始化失败", e);
 		}
 	}
@@ -969,7 +969,7 @@ public class ModuleFormService {
             moduleFieldMapper.batchInsert(fields);
             moduleFieldBlobMapper.batchInsert(fieldBlobs);
         } catch (Exception e) {
-            log.error("表单字段初始化失败: {}", e.getMessage());
+            log.error("表单字段初始化失败", e);
             throw new GenericException("表单字段初始化失败", e);
         }
     }
@@ -1346,7 +1346,7 @@ public class ModuleFormService {
                 sourceValue = applySourceValue(sourceField, sourceClass, source, sourceFieldVals);
             } catch (Exception e) {
                 sourceValue = null;
-                log.error("Apply source value error: {}", e.getMessage());
+                log.error("Apply source value error", e);
             }
 
             // 源对象中无值, 跳过取值
@@ -1594,7 +1594,7 @@ public class ModuleFormService {
 						try {
 							org.apache.commons.beanutils.BeanUtils.populate(linkField, field);
 						} catch (IllegalAccessException | InvocationTargetException e) {
-							log.error("Populate old link field error: {}", e.getMessage());
+							log.error("Populate old link field error", e);
 						}
 						return linkField;
                     }).toList();
@@ -1921,19 +1921,52 @@ public class ModuleFormService {
 	 * @return 字段规则集合
 	 */
 	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey) {
+		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
+		if (blob == null) {
+			return new ArrayList<>();
+		}
+		SerialNumberField serialNumberField = JSON.parseObject(blob.getProp(), SerialNumberField.class);
+		return serialNumberField.getSerialNumberRules();
+	}
+
+	/**
+	 * 获取字段选项
+	 * @param formKey 表单Key
+	 * @param currentOrg 组织ID
+	 * @param internalKey 字段内置Key
+	 * @return
+	 */
+	public List<OptionProp> getFieldOptions(String formKey, String currentOrg, String internalKey) {
+		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
+		if (blob == null) {
+			return new ArrayList<>();
+		}
+		BaseField field = JSON.parseObject(blob.getProp(), BaseField.class);
+		if (field instanceof HasOption of) {
+			return of.getOptions();
+		}
+		return new ArrayList<>();
+	}
+
+	/**
+	 * 根据字段Key获取额外信息
+	 * @param formKey 表单Key
+	 * @param orgId 组织ID
+	 * @param internalKey 字段内置Key
+	 * @return
+	 */
+	private ModuleFieldBlob getFieldBlobByKey(String formKey, String orgId, String internalKey) {
 		ModuleForm example = new ModuleForm();
 		example.setFormKey(formKey);
-		example.setOrganizationId(currentOrg);
+		example.setOrganizationId(orgId);
 		ModuleForm moduleForm = moduleFormMapper.selectOne(example);
 		ModuleField fieldExample = new ModuleField();
 		fieldExample.setFormId(moduleForm.getId());
 		fieldExample.setInternalKey(internalKey);
 		ModuleField moduleField = moduleFieldMapper.selectOne(fieldExample);
 		if (moduleField == null) {
-			return List.of();
+			return null;
 		}
-		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(moduleField.getId());
-		SerialNumberField serialNumberField = JSON.parseObject(fieldBlob.getProp(), SerialNumberField.class);
-		return serialNumberField.getSerialNumberRules();
+		return moduleFieldBlobMapper.selectByPrimaryKey(moduleField.getId());
 	}
 }

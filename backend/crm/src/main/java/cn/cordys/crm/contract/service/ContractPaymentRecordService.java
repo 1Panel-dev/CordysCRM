@@ -269,8 +269,8 @@ public class ContractPaymentRecordService {
 			return ImportResponse.builder().errorMessages(eventListener.getErrList())
 					.successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
 		} catch (Exception e) {
-			log.error("Payment record import pre-check error: {}", e.getMessage());
-			throw new GenericException(e.getMessage());
+			log.error("Payment record import pre-check error", e);
+			throw new GenericException(e);
 		}
 	}
 
@@ -308,7 +308,7 @@ public class ContractPaymentRecordService {
 			return ImportResponse.builder().errorMessages(eventListener.getErrList())
 					.successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
 		} catch (Exception e) {
-			log.error("Payment record import error: ", e);
+			log.error("Payment record import error", e);
 			throw new GenericException(e.getMessage());
 		}
 	}

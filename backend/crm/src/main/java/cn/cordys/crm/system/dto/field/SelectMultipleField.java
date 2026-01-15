@@ -28,6 +28,9 @@ public class SelectMultipleField extends BaseField implements HasOption {
 	@Schema(description = "选项引用ID (optionSource=ref 时生效)")
 	private String refId;
 
+	@Schema(description = "引用表单key (optionSource=ref 时生效)")
+	private String refFormKey;
+
     @Schema(description = "联动属性")
     private LinkProp linkProp;
 }

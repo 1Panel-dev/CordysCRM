@@ -12,8 +12,8 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import cn.cordys.crm.contract.dto.request.ContractPaymentPlanExportRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordExportRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
@@ -134,16 +134,11 @@ public class ContractPaymentRecordController {
 	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		ExportDTO exportDTO = ExportDTO.builder()
-				.exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
-				.fileName(request.getFileName())
-				.headList(request.getHeadList())
-				.logModule(LogModule.CONTRACT_PAYMENT_RECORD)
-				.locale(LocaleContextHolder.getLocale())
-				.orgId(OrganizationContext.getOrganizationId())
-				.userId(SessionUtils.getUserId())
-				.deptDataPermission(deptDataPermission)
-				.selectIds(request.getIds())
+		ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+				.fileName(request.getFileName()).headList(request.getHeadList())
+				.logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
+				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+				.deptDataPermission(deptDataPermission).selectIds(request.getIds())
 				.selectRequest(request)
 				.build();
 		return contractPaymentRecordExportService.exportSelect(exportDTO);
@@ -152,20 +147,15 @@ public class ContractPaymentRecordController {
 	@PostMapping("/export-all")
 	@Operation(summary = "导出全部回款记录")
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-	public String exportAll(@Validated @RequestBody ContractPaymentPlanExportRequest request) {
+	public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
 		ConditionFilterUtils.parseCondition(request);
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		ExportDTO exportDTO = ExportDTO.builder()
-				.exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
-				.fileName(request.getFileName())
-				.headList(request.getHeadList())
-				.logModule(LogModule.CONTRACT_PAYMENT_RECORD)
-				.locale(LocaleContextHolder.getLocale())
-				.orgId(OrganizationContext.getOrganizationId())
-				.userId(SessionUtils.getUserId())
-				.deptDataPermission(deptDataPermission)
-				.pageRequest(request)
+		ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+				.fileName(request.getFileName()).headList(request.getHeadList())
+				.logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
+				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+				.deptDataPermission(deptDataPermission).pageRequest(request)
 				.build();
 		return contractPaymentRecordExportService.export(exportDTO);
 	}
