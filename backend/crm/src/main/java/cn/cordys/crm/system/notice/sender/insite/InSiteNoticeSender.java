@@ -13,9 +13,9 @@ import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import cn.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import cn.cordys.crm.system.notice.sse.SseService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
+@Slf4j
 public class InSiteNoticeSender extends AbstractNoticeSender {
 
     private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
@@ -36,15 +37,16 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
-    private SseService sseService;
-    @Resource
     private MessagePublisher messagePublisher;
 
     public void sendAnnouncement(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel, String context, String subjectText) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
+            // 日志记录没有接收者
+            log.info("系统内没有接收者");
             return;
         }
+        log.info("系统内发送通知，接收者为：{}", JSON.toJSONString(receivers));
         receivers.forEach(receiver -> {
             String id = IDGenerator.nextStr();
             Map<String, Object> paramMap = noticeModel.getParamMap();

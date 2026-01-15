@@ -60,7 +60,11 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         // 去重复
         List<String> userIds = toUsers.stream().map(Receiver::getUserId).toList();
         List<User> users = getUsers(userIds, orgId);
-        List<String> realUserIds = users.stream().map(User::getId).distinct().toList();
+        List<String> realUserIds = new ArrayList<>(users.stream().map(User::getId).distinct().toList());
+        //如果是admin用户，为特殊用户，将admin加入
+        if (userIds.contains("admin")) {
+            realUserIds.add("admin");
+        }
         return toUsers.stream().filter(t -> realUserIds.contains(t.getUserId())).distinct().toList();
     }
 

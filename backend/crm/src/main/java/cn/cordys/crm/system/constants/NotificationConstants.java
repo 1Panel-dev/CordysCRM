@@ -33,6 +33,10 @@ public class NotificationConstants {
         //合同管理
         @Schema(description = "message.contract")
         String CONTRACT = "CONTRACT";
+        //系统
+        @Schema(description = "message.system")
+        String SYSTEM = "SYSTEM";
+
     }
 
     public interface Event {
@@ -133,6 +137,10 @@ public class NotificationConstants {
 
         @Schema(description = "message.contract_payment_expiring")
         String CONTRACT_PAYMENT_EXPIRING = "CONTRACT_PAYMENT_EXPIRING";
+
+        //同步组织架构
+        @Schema(description = "message.sync_organization_structure")
+        String SYNC_ORGANIZATION_STRUCTURE = "SYNC_ORGANIZATION_STRUCTURE";
 
 
     }
@@ -269,6 +277,10 @@ public class NotificationConstants {
         //您负责的${customerName}合同的回款计划已经到期；
         @Schema(description = "message.contract_payment_expired_text")
         String CONTRACT_PAYMENT_EXPIRED_TEXT = "CONTRACT_PAYMENT_EXPIRED_TEXT";
+
+        //同步组织架构完成
+        @Schema(description = "message.sync_organization_structure_text")
+        String SYNC_ORGANIZATION_STRUCTURE_TEXT = "SYNC_ORGANIZATION_STRUCTURE_TEXT";
     }
 
 
