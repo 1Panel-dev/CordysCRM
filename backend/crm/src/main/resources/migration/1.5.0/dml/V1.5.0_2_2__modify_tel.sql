@@ -16,7 +16,7 @@ CREATE INDEX idx_plan_end_time
 
 
 INSERT INTO business_title_config (id, field, required, organization_id)
-VALUES (UUID_SHORT(), 'business_name', true, '100001'),
+VALUES (UUID_SHORT(), 'name', true, '100001'),
        (UUID_SHORT(), 'identification_number', true, '100001'),
        (UUID_SHORT(), 'opening_bank', false, '100001'),
        (UUID_SHORT(), 'bank_account', false, '100001'),

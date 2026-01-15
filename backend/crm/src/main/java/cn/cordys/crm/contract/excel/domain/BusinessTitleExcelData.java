@@ -18,7 +18,7 @@ public class BusinessTitleExcelData {
      * 公司名称
      */
     @ExcelIgnore
-    private String businessName;
+    private String name;
     /**
      * 纳税人识别号
      */

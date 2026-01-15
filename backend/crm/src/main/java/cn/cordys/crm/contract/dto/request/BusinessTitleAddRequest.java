@@ -12,7 +12,7 @@ public class BusinessTitleAddRequest {
 
     @Size(max = 255)
     @Schema(description = "公司名称")
-    private String businessName;
+    private String name;
 
     @Size(max = 255)
     @Schema(description = "纳税人识别号")

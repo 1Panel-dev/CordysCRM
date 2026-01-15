@@ -100,13 +100,13 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     }
 
     private void validateNameUniques(String data, StringBuilder errText, String v) {
-        if (BusinessTitleImportFiled.BUSINESS_NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
+        if (BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
             Boolean existed = excelValueCache.putIfAbsent(data, true);
             if (existed != null) {
                 errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }
 
-            boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.BUSINESS_NAME.name().toLowerCase(), data, orgId);
+            boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId);
             if (repeat) {
                 errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }

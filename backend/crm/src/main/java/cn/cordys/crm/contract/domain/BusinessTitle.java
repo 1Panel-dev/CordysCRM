@@ -11,7 +11,7 @@ import lombok.Data;
 public class BusinessTitle extends BaseModel {
 
     @Schema(description = "公司名称")
-    private String businessName;
+    private String name;
 
     @Schema(description = "来源类型")
     private String type;
