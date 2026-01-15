@@ -19,9 +19,7 @@ import java.util.List;
 @Data
 public class ContractPaymentPlanUpdateRequest {
 
-	@NotBlank
 	@Size(max = 255)
-	@Schema(description = "回款计划名称", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String name;
 
     @NotBlank
