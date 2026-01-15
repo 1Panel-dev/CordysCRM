@@ -26,6 +26,9 @@ public class CheckBoxField extends BaseField implements HasOption {
 	@Schema(description = "选项引用ID (optionSource=ref 时生效)")
 	private String refId;
 
+	@Schema(description = "引用表单key (optionSource=ref 时生效)")
+	private String refFormKey;
+
     @Schema(description = "默认值")
     private List<String> defaultValue;
 

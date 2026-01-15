@@ -62,13 +62,12 @@ public class ContractInvoiceExportService extends BaseExportService {
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, ContractInvoiceListResponse data, Map<String, BaseField> fieldConfigMap) {
-        List<Object> dataList = new ArrayList<>();
         //固定字段map
         LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data);
         //自定义字段map
         Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
         //处理数据转换
-        return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, dataList, fieldConfigMap);
+        return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
     }
 
     public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data) {
