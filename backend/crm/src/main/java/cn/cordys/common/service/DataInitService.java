@@ -19,7 +19,6 @@ import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jianxing
@@ -60,7 +59,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
             initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
-			initOneTime(moduleFormExtService::setOptionDefaultSource, "set.select.option.source");
+			initOneTime(moduleFormExtService::setOptionDefaultSource, "set.default.option.source");
         } finally {
             lock.unlock();
         }
