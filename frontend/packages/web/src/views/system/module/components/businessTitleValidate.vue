@@ -51,8 +51,8 @@
   const { t } = useI18n();
   const Message = useMessage();
 
-  const defaultEnabledKey = ['businessName', 'identificationNumber', 'registrationAddress'];
-  const defaultDisabledKey = ['businessName'];
+  const defaultEnabledKey = ['name', 'identificationNumber', 'registrationAddress'];
+  const defaultDisabledKey = ['name'];
 
   const formConfigList = ref<BusinessTitleValidateConfig[]>([]);
 

@@ -144,7 +144,7 @@ export interface UpdatePaymentRecordParams extends SavePaymentRecordParams {
 
 export interface BusinessTitleItem {
   id: string;
-  businessName: string;
+  name: string;
   type: string;
   identificationNumber: string;
   openingBank: string;
@@ -167,7 +167,7 @@ export interface BusinessTitleItem {
 
 export interface SaveBusinessTitleParams {
   id?: string;
-  businessName: string; // 公司名称
+  name: string; // 公司名称
   identificationNumber: string; // 纳税人识别号
   openingBank: string; // 开户银行
   bankAccount: string; // 银行账号

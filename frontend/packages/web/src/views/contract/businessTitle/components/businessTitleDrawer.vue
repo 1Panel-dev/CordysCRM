@@ -22,7 +22,7 @@
           />
         </n-form-item>
         <n-form-item
-          path="businessName"
+          path="name"
           :label="t('contract.businessTitle.companyName')"
           :rule="[
             {
@@ -34,14 +34,14 @@
         >
           <n-input
             v-if="form.type === 'custom'"
-            v-model:value="form.businessName"
+            v-model:value="form.name"
             allow-clear
             :maxlength="255"
             :placeholder="t('common.pleaseInput')"
           />
           <CrmAutoSearchSelect
             v-else
-            v-model:value="form.businessName"
+            v-model:value="form.name"
             :fetch="getBusinessTitleThirdQueryOption"
             :placeholder="t('contract.businessTitle.selectCompanyPlaceholder')"
             label-key="name"
@@ -114,7 +114,7 @@
   const initForm: SaveBusinessTitleParams = {
     id: '',
     type: 'thirdParty',
-    businessName: '',
+    name: '',
     identificationNumber: '',
     openingBank: '',
     bankAccount: '',

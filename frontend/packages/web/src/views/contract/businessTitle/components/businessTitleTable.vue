@@ -136,7 +136,7 @@
       const type = isInvoiceChecked ? 'default' : 'error';
       openModal({
         type,
-        title: t('common.deleteConfirmTitle', { name: characterLimit(row.businessName) }),
+        title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
         content,
         positiveText,
         negativeText: t('common.cancel'),
@@ -215,7 +215,7 @@
     },
     {
       title: t('contract.businessTitle.companyName'),
-      key: 'businessName',
+      key: 'name',
       sortOrder: false,
       sorter: true,
       width: 200,
@@ -251,8 +251,8 @@
                       onClick: () => showDetail(row),
                     },
                     {
-                      default: () => row.businessName,
-                      trigger: () => row.businessName,
+                      default: () => row.name,
+                      trigger: () => row.name,
                     }
                   ),
                 ];
@@ -268,7 +268,7 @@
                   class: 'flex items-center gap-[8px]',
                 },
                 {
-                  default: () => [createNamePrefix(), h(CrmNameTooltip, { text: row.businessName })],
+                  default: () => [createNamePrefix(), h(CrmNameTooltip, { text: row.name })],
                 }
               ),
             ]
@@ -492,7 +492,7 @@
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('contract.businessTitle.companyName'),
-      dataIndex: 'businessName',
+      dataIndex: 'name',
       type: FieldTypeEnum.INPUT,
     },
     {
@@ -513,7 +513,7 @@
       },
     },
     {
-      title: t('contract.businessTitle.bankAccount'),
+      title: t('contract.businessTitle.taxpayerNumber'),
       dataIndex: 'identificationNumber',
       type: FieldTypeEnum.INPUT,
     },
