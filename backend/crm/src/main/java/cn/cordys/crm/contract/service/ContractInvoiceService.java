@@ -232,7 +232,7 @@ public class ContractInvoiceService {
 
         dataScopeService.checkDataPermission(userId, orgId, originContractInvoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_UPDATE);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
-        Optional.ofNullable(originContractInvoice).ifPresentOrElse(item -> {
+        Optional.of(originContractInvoice).ifPresentOrElse(item -> {
             List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(request.getId());
             ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
             invoice.setUpdateTime(System.currentTimeMillis());

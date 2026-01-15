@@ -81,7 +81,7 @@ public class LocalRealm extends AuthorizingRealm {
     private UserDTO getUserWithOutAuthenticate(String userId) {
         UserDTO user = userLoginService.authenticateUser(userId);
         if (user == null) {
-            log.warn("The user does not exist: " + userId);
+            log.info("The user does not exist: {}", userId);
             throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         return user;
@@ -90,7 +90,7 @@ public class LocalRealm extends AuthorizingRealm {
     private AuthenticationInfo loginLocalMode(String userId, String password) {
         UserDTO user = userLoginService.authenticateUser(userId);
         if (user == null) {
-            log.warn("The user does not exist: " + userId);
+            log.warn("The user does not exist: {}", userId);
             throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         // 密码验证

@@ -102,7 +102,7 @@ public class SessionUtils {
             try {
                 SessionUtils.kickOutUser(kickUserId);
             } catch (Exception e) {
-                log.error("踢出用户失败: " + e.getMessage());
+                log.error("踢出用户失败: {}", e.getMessage());
             }
         } else {
             // 管理员重置他人密码，踢出该用户
