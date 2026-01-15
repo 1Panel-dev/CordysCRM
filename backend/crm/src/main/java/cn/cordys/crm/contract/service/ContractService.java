@@ -690,4 +690,12 @@ public class ContractService {
     public Contract selectByPrimaryKey(String id) {
         return contractMapper.selectByPrimaryKey(id);
     }
+
+    public ModuleFormConfigDTO getBusinessFormConfig(String orgId) {
+        ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
+        // 添加合同金额字段
+        formConfig.getFields().add(moduleFormService.getContractAmountField());
+        return formConfig;
+    }
+
 }

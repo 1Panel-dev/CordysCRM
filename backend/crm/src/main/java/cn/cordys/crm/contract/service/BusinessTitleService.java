@@ -16,7 +16,6 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
@@ -39,7 +38,6 @@ import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.qcc.dto.*;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
-import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -47,6 +45,7 @@ import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -58,12 +57,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -86,6 +87,8 @@ public class BusinessTitleService {
     private BaseMapper<BusinessTitleConfig> businessTitleConfigMapper;
     @Resource
     private IntegrationConfigService integrationConfigService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
 
     /**
@@ -511,27 +514,8 @@ public class BusinessTitleService {
 
     public ModuleFormConfigDTO getBusinessFormConfig() {
         ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
-        List<BaseField> fields = initFields();
+        List<BaseField> fields = moduleFormService.initBusinessTitleFields();
         moduleFormConfigDTO.setFields(fields);
         return moduleFormConfigDTO;
-    }
-
-    private List<BaseField> initFields() {
-        List<BaseField> fields = new ArrayList<>();
-        Locale locale = LocaleContextHolder.getLocale();
-        BusinessTitleConstants[] values = BusinessTitleConstants.values();
-        for (BusinessTitleConstants constant : values) {
-            InputField field = new InputField();
-            field.setId(constant.getKey());
-            field.setBusinessKey(constant.getKey());
-            if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
-                field.setName(constant.getUs());
-            } else {
-                field.setName(constant.getCh());
-            }
-            field.setInternalKey(constant.getKey());
-            fields.add(field);
-        }
-        return fields;
     }
 }
