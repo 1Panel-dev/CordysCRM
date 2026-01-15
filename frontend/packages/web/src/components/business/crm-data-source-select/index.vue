@@ -32,6 +32,7 @@
       :fullscreen-target-ref="fullscreenTargetRef"
       :fieldConfig="props.fieldConfig"
       :isSubTableRender="props.hideChildTag"
+      @init-form="handleFormInit"
       @toggle-full-screen="(val) => (fullScreenModal = val)"
     />
   </CrmModal>
@@ -66,7 +67,12 @@
     multiple: true,
   });
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[], source: Record<string, any>[]): void;
+    (
+      e: 'change',
+      value: (string | number)[],
+      source: Record<string, any>[],
+      dataSourceFormFields: FormCreateField[]
+    ): void;
   }>();
 
   const { t } = useI18n();
@@ -98,13 +104,18 @@
   const selectedKeys = ref<DataTableRowKey[]>(value.value);
 
   const dataSourcesModalVisible = ref(false);
+  const dataSourceFormFields = ref<FormCreateField[]>([]);
+
+  function handleFormInit(fields: FormCreateField[]) {
+    dataSourceFormFields.value = fields;
+  }
 
   function handleDataSourceConfirm() {
     const newRows = selectedRows.value;
     rows.value = newRows;
     value.value = newRows.map((e) => e.id) as RowKey[];
     nextTick(() => {
-      emit('change', value.value, newRows);
+      emit('change', value.value, newRows, dataSourceFormFields.value);
     });
     dataSourcesModalVisible.value = false;
   }
@@ -129,15 +140,13 @@
               rows.value = rows.value.filter((item) => item.id !== option.value);
               value.value = value.value.filter((key) => key !== option.value);
               nextTick(() => {
-                emit('change', value.value, rows.value);
+                emit('change', value.value, rows.value, dataSourceFormFields.value);
               });
             },
           },
           {
             default: () => {
-              return props.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
-                ? _row?.businessName
-                : _row?.name || t('common.optionNotExist');
+              return _row?.name || t('common.optionNotExist');
             },
           }
         );

@@ -138,7 +138,7 @@
             v-model:value="fieldConfig.dataSourceType"
             :options="dataSourceOptions"
             :disabled="fieldConfig.disabledProps?.includes('dataSourceType') || !!fieldConfig.resourceFieldId"
-            @update-value="() => handleClearDataSourceDisplayField()"
+            @update-value="handleClearDataSourceTypeChange"
           />
         </div>
         <div
@@ -272,6 +272,45 @@
         </n-button>
       </div>
       <!-- 字段联动 End -->
+      <!-- 单选数据源字段联动 -->
+      <div
+        v-if="
+          fieldConfig.type === FieldTypeEnum.DATA_SOURCE &&
+          !isSubTableField &&
+          fieldConfig.dataSourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE
+        "
+        class="crm-form-design-config-item"
+      >
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.fieldLink') }}
+          <CrmPopConfirm
+            v-model:show="datasourceLinkClearPop"
+            :title="t('crmFormDesign.linkFieldSettingClearTip')"
+            icon-type="warning"
+            :content="t('crmFormDesign.linkFieldSettingClearTipContent')"
+            :positive-text="t('common.confirm')"
+            trigger="click"
+            :negative-text="t('common.cancel')"
+            placement="right-end"
+            @confirm="clearDatasourceLink"
+          >
+            <n-button type="primary" text :disabled="!fieldConfig.linkFields?.length || !!fieldConfig.resourceFieldId">
+              {{ t('common.clear') }}
+            </n-button>
+          </CrmPopConfirm>
+        </div>
+        <n-button
+          :disabled="fieldConfig.disabledProps?.includes('linkFields') || !!fieldConfig.resourceFieldId"
+          @click="showDatasourceLinkConfig"
+        >
+          {{
+            fieldConfig.linkFields?.length
+              ? t('crmFormDesign.linkSettingTip', { count: fieldConfig.linkFields.length })
+              : t('common.setting')
+          }}
+        </n-button>
+      </div>
+      <!-- 单选数据源字段联动 End -->
       <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.style') }}
@@ -1130,6 +1169,13 @@
     :form-fields="isSubTableField ? parentField?.subFields || [] : list"
     @save="handleLinkConfigSave"
   />
+  <datasourceLinkModal
+    v-if="fieldConfig"
+    v-model:visible="showDatasourceLinkConfigVisible"
+    :field-config="fieldConfig"
+    :form-fields="list"
+    @save="handleDatasourceLinkConfigSave"
+  />
   <formulaModal
     v-if="fieldConfig"
     v-model:visible="showCalculateFormulaModal"
@@ -1180,6 +1226,7 @@
   import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,
+    type DataSourceLinkField,
     FieldLinkProp,
     FormCreateField,
     FormCreateFieldRule,
@@ -1187,6 +1234,7 @@
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
+  import datasourceLinkModal from './datasourceLinkModal.vue';
   import fieldLinkDrawer from './fieldLinkDrawer.vue';
   import FilterModal from './filterModal.vue';
   import formulaModal from './formulaModal.vue';
@@ -1571,6 +1619,23 @@
     fieldConfig.value.linkProp = value;
   }
 
+  const showDatasourceLinkConfigVisible = ref(false);
+  const tempDataLinkFields = ref<DataSourceLinkField[]>([]);
+  const datasourceLinkClearPop = ref(false);
+
+  function clearDatasourceLink() {
+    fieldConfig.value.linkFields = [];
+    datasourceLinkClearPop.value = false;
+  }
+  function showDatasourceLinkConfig() {
+    tempDataLinkFields.value = fieldConfig.value.linkFields || [];
+    showDatasourceLinkConfigVisible.value = true;
+  }
+
+  function handleDatasourceLinkConfigSave(value: DataSourceLinkField[]) {
+    fieldConfig.value.linkFields = value;
+  }
+
   const showDataSourceFilterModal = ref(false);
 
   function handleDataSourceFilter() {
@@ -1624,6 +1689,13 @@
       );
     } else {
       list.value = list.value.filter((item) => item.resourceFieldId !== fieldConfig.value.id);
+    }
+  }
+
+  function handleClearDataSourceTypeChange(val: FieldDataSourceTypeEnum) {
+    handleClearDataSourceDisplayField();
+    if (val === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
+      fieldConfig.value.linkFields = [];
     }
   }
 

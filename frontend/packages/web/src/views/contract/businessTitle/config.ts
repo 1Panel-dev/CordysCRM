@@ -19,8 +19,8 @@ export const initBusinessTitleForm: SaveBusinessTitleParams = {
 
 export const businessTitleFieldList: FormCreateField[] = [
   {
-    id: 'businessName',
-    businessKey: 'businessName',
+    id: 'name',
+    businessKey: 'name',
     name: 'contract.businessTitle.companyName',
     type: FieldTypeEnum.INPUT,
     showLabel: true,

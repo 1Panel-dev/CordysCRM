@@ -25,7 +25,7 @@
               :path="item.id"
               :need-init-detail="needInitDetail"
               :form-config="formConfig"
-              @change="(value: any, source: Record<string, any>[]) => handleFieldChange(value, source, item)"
+              @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
             />
           </div>
         </template>
@@ -215,7 +215,54 @@
     }
   }
 
-  function handleFieldChange(value: any, source: Record<string, any>[], item: FormCreateField) {
+  function applyDatasourceFieldLink(
+    value: any,
+    item: FormCreateField,
+    currentSource?: Record<string, any>,
+    dataSourceFormFields?: FormCreateField[]
+  ) {
+    item.linkFields?.forEach((linkField) => {
+      const targetField = fieldList.value.find((f) => f.id === linkField.current);
+      // 获取目标数据源表单的目标字段，用来读取业务 key 值
+      const targetDatasourceFormField = dataSourceFormFields?.find((f) => f.id === linkField.link);
+      if (targetField && targetDatasourceFormField) {
+        if (linkField.method === 'fill') {
+          // 暂时只有这一种联动
+          const targetValue = targetDatasourceFormField.businessKey
+            ? currentSource?.[targetDatasourceFormField.businessKey]
+            : currentSource?.moduleFields?.find((e: any) => e.fieldId === targetDatasourceFormField.id)?.fieldValue;
+          // 如果有业务 key，则取业务 key 的值（specialBusinessKeyMap读取特殊业务字段值），否则取字段值
+          const targetName = targetDatasourceFormField.businessKey
+            ? currentSource?.[
+                specialBusinessKeyMap[targetDatasourceFormField.businessKey] || targetDatasourceFormField.businessKey
+              ]
+            : currentSource?.[linkField.link]?.[0];
+          // 如果联动字段是当前字段本身，则直接赋值；若是当前字段内的其他字段，则赋值对应的值
+          formDetail.value[targetField.id] = item.id === linkField.link ? [...value] : [targetValue];
+          if (!targetField.initialOptions) {
+            targetField.initialOptions = [
+              {
+                name: targetName,
+                id: targetValue,
+              },
+            ];
+          } else {
+            targetField.initialOptions.push({
+              name: targetName,
+              id: targetValue,
+            });
+          }
+        }
+      }
+    });
+  }
+
+  function handleFieldChange(
+    value: any,
+    source: Record<string, any>[],
+    item: FormCreateField,
+    dataSourceFormFields?: FormCreateField[]
+  ) {
     // 控制显示规则
     if (item.showControlRules?.length) {
       initFormShowControl();
@@ -233,6 +280,15 @@
     // 字段联动
     if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
       applyFieldLink(item);
+    }
+    // 单选数据源字段联动
+    if (item.linkFields?.length && value && value.length) {
+      applyDatasourceFieldLink(
+        value,
+        item,
+        source.find((s) => s.id === value[0]),
+        dataSourceFormFields
+      );
     }
     if (item.type === FieldTypeEnum.ATTACHMENT) {
       formRef.value?.validate();
