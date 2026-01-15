@@ -736,7 +736,7 @@ public class ModuleFormService {
 				List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
 				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
-                // 获取最新的引用字段属性
+                // 获取最新引用字段属性
                 sourceField.setRefFields(new ArrayList<>());
                 for (ModuleFieldBlob reloadFieldBlob : reloadFieldBlobs) {
                     BaseField refField = JSON.parseObject(reloadFieldBlob.getProp(), BaseField.class);
@@ -868,9 +868,13 @@ public class ModuleFormService {
 					fieldBlob.setProp(JSON.toJSONString(initField));
 					fieldBlobs.add(fieldBlob);
 				});
-				moduleFieldMapper.batchInsert(fields);
-				moduleFieldBlobMapper.batchInsert(fieldBlobs);
 			});
+			if (CollectionUtils.isNotEmpty(fields)) {
+				moduleFieldMapper.batchInsert(fields);
+			}
+			if (CollectionUtils.isNotEmpty(fieldBlobs)) {
+				moduleFieldBlobMapper.batchInsert(fieldBlobs);
+			}
 		} catch (Exception e) {
 			log.error("表单扩展字段初始化失败: {}", e.getMessage());
 			throw new GenericException("表单扩展字段初始化失败", e);
@@ -968,6 +972,7 @@ public class ModuleFormService {
         }
     }
 
+	@SuppressWarnings("unchecked")
     private void handleShowFieldsInit(Map<String, Object> initField) {
         if (initField.containsKey(SHOW_FIELD_KEY)) {
             String dataSourceType = (String) initField.get(DATA_SOURCE_TYPE_KEY);
