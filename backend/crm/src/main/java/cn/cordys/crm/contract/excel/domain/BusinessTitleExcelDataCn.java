@@ -1,11 +1,8 @@
 package cn.cordys.crm.contract.excel.domain;
 
-import cn.cordys.crm.system.excel.annotation.NotRequired;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ColumnWidth;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 import java.util.Locale;
@@ -15,47 +12,60 @@ import java.util.Locale;
 @ColumnWidth(15)
 public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
 
-    @ColumnWidth(50)
-    @ExcelProperty("工号")
-    @NotRequired
-    private String employeeId;
-
-    @NotBlank(message = "{cannot_be_null}")
-    @Length(max = 255)
-    @ExcelProperty("姓名")
+    /**
+     * 公司名称
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("公司名称")
     private String name;
-
-    @ColumnWidth(50)
-    @ExcelProperty("性别")
-    private String gender;
-
-    @ExcelProperty("部门")
-    @ColumnWidth(50)
-    private String department;
-
-
-    @ColumnWidth(50)
-    @ExcelProperty("职位")
-    private String position;
-
-    @NotBlank(message = "{cannot_be_null}")
-    @ColumnWidth(50)
-    @Length(max = 255)
-    @ExcelProperty("手机号")
-    private String phone;
-
-    @NotBlank(message = "{cannot_be_null}")
-    @ColumnWidth(50)
-    @ExcelProperty("邮箱")
-    private String email;
-
-    @ColumnWidth(50)
-    @ExcelProperty("直属上级")
-    private String supervisor;
-
-    @ColumnWidth(50)
-    @ExcelProperty("员工类型")
-    private String employeeType;
+    /**
+     * 纳税人识别号
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("纳税人识别号")
+    private String identificationNumber;
+    /**
+     * 开户银行
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("开户银行")
+    private String openingBank;
+    /**
+     * 银行账号
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("银行账号")
+    private String bankAccount;
+    /**
+     * 注册地址
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("注册地址")
+    private String registrationAddress;
+    /**
+     * 注册电话
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("注册电话")
+    private String phoneNumber;
+    /**
+     * 注册资本
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("注册资本")
+    private String registeredCapital;
+    /**
+     * 公司规模
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("公司规模")
+    private String companySize;
+    /**
+     * 工商注册号
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("工商注册号")
+    private String registrationNumber;
 
 
     @Override

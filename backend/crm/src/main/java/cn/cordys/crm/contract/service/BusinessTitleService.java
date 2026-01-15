@@ -98,9 +98,9 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.businessName}")
+    @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.name}")
     public BusinessTitle add(BusinessTitleAddRequest request, String userId, String orgId) {
-        checkName(request.getBusinessName(), orgId, null);
+        checkName(request.getName(), orgId, null);
 
         BusinessTitle businessTitle = BeanUtils.copyBean(new BusinessTitle(), request);
         if (Strings.CI.equals(BusinessTitleType.CUSTOM.name(), businessTitle.getType())) {
@@ -119,7 +119,7 @@ public class BusinessTitleService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(businessTitle.getId())
-                        .resourceName(businessTitle.getBusinessName())
+                        .resourceName(businessTitle.getName())
                         .modifiedValue(businessTitle)
                         .build()
         );
@@ -165,7 +165,7 @@ public class BusinessTitleService {
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .resourceName(request.getBusinessName())
+                        .resourceName(request.getName())
                         .originalValue(oldTitle)
                         .modifiedValue(newTitle)
                         .build()
@@ -192,7 +192,7 @@ public class BusinessTitleService {
         BusinessTitle businessTitle = checkTitle(id);
         if (!checkHasInvoice(id)) {
             businessTitleMapper.deleteByPrimaryKey(id);
-            OperationLogContext.setResourceName(businessTitle.getBusinessName());
+            OperationLogContext.setResourceName(businessTitle.getName());
         }
     }
 
@@ -257,7 +257,7 @@ public class BusinessTitleService {
         businessTitle.setUpdateUser(userId);
         businessTitleMapper.update(businessTitle);
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, businessTitle.getBusinessName(), state, request.getApprovalStatus());
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, businessTitle.getName(), state, request.getApprovalStatus());
         logService.add(logDTO);
     }
 
@@ -294,7 +294,7 @@ public class BusinessTitleService {
 
 
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, businessTitle.getBusinessName(), originApprovalStatus, ApprovalState.REVOKED.toString());
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, businessTitle.getName(), originApprovalStatus, ApprovalState.REVOKED.toString());
         logService.add(logDTO);
 
         return businessTitle.getApprovalStatus();
@@ -384,7 +384,7 @@ public class BusinessTitleService {
                 List<LogDTO> logs = new ArrayList<>();
                 businessTitles.forEach(title -> {
                     title.setType(BusinessTitleType.CUSTOM.name());
-                    logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CONTRACT_BUSINESS_TITLE, title.getBusinessName()));
+                    logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CONTRACT_BUSINESS_TITLE, title.getName()));
                 });
                 businessTitleMapper.batchInsert(businessTitles);
                 logService.batchAdd(logs);
@@ -439,7 +439,7 @@ public class BusinessTitleService {
         BusinessTitle businessTitle = new BusinessTitle();
         if (enterpriseInfo != null) {
             InfoData data = enterpriseInfo.getData();
-            businessTitle.setBusinessName(data.getName());
+            businessTitle.setName(data.getName());
             businessTitle.setIdentificationNumber(data.getTaxNo());
             businessTitle.setOpeningBank(data.getBankInfo().getBank());
             businessTitle.setBankAccount(data.getBankInfo().getBankAccount());

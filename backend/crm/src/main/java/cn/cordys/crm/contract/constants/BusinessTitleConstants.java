@@ -4,7 +4,7 @@ import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelData;
 
 public enum BusinessTitleConstants {
 
-    BUSINESS_NAME("businessName", "公司名称", "Business name"),
+    NAME("name", "公司名称", "Name"),
     IDENTIFICATION_NUMBER("identificationNumber", "纳税人识别号", "Identification number"),
     OPENING_BANK("openingBank", "开户银行", "Opening bank"),
     BANK_ACCOUNT("bankAccount", "银行账号", "Bank account"),

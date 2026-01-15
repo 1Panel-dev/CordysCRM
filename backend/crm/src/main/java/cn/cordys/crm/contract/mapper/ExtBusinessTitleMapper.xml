@@ -11,7 +11,7 @@
         WHERE
             bt.organization_id = #{orgId}
         <if test="request.keyword != null and request.keyword != ''">
-            and bt.business_name like concat('%', #{request.keyword},'%')
+            and bt.name like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">
@@ -41,10 +41,10 @@
 
     <sql id="condition">
         <choose>
-            <when test="condition.name == 'businessName'">
+            <when test="condition.name == 'name'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="bt.business_name"/>
+                    <property name="column" value="bt.name"/>
                 </include>
             </when>
             <when test="condition.name == 'type'">
@@ -165,7 +165,7 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'business_name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
+                        {'name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
                          'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason'
                         }">
                         bt.${sortName} ${sortType}, bt.id ASC
@@ -197,7 +197,7 @@
     <select id="countByName" resultType="java.lang.Integer">
         select count(id) from business_title bt
         where bt.organization_id = #{orgId}
-        and bt.business_name = #{businessName}
+        and bt.name = #{businessName}
         <if test="id != null and id != ''">
             AND bt.id != #{id}
         </if>

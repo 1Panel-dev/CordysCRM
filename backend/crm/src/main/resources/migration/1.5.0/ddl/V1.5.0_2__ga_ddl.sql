@@ -22,7 +22,7 @@ CREATE INDEX idx_event ON sys_message_task_config (event ASC);
 CREATE TABLE business_title
 (
     `id`                    VARCHAR(32)  NOT NULL COMMENT 'id',
-    `business_name`         VARCHAR(255) NOT NULL COMMENT '公司名称',
+    `name`                  VARCHAR(255) NOT NULL COMMENT '公司名称',
     `type`                  VARCHAR(50) COMMENT '来源类型',
     `identification_number` VARCHAR(255) COMMENT '纳税人识别号',
     `opening_bank`          VARCHAR(255) COMMENT '开户银行',
@@ -47,7 +47,7 @@ COLLATE = utf8mb4_general_ci;
 
 
 CREATE INDEX idx_organization_id ON business_title (organization_id ASC);
-CREATE INDEX idx_business_name ON business_title (business_name ASC);
+CREATE INDEX idx_name ON business_title (name ASC);
 
 
 CREATE TABLE business_title_config
@@ -64,20 +64,20 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE contract_invoice
 (
-    `id`                VARCHAR(32) NOT NULL COMMENT 'id',
-    `name`              VARCHAR(255) NOT NULL   COMMENT '发票名称',
-    `contract_id`       VARCHAR(32) NOT NULL COMMENT '合同id',
-    `owner`             VARCHAR(32) NOT NULL COMMENT '负责人',
+    `id`                VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`              VARCHAR(255) NOT NULL COMMENT '发票名称',
+    `contract_id`       VARCHAR(32)  NOT NULL COMMENT '合同id',
+    `owner`             VARCHAR(32)  NOT NULL COMMENT '负责人',
     `amount`            DECIMAL(20, 10) COMMENT '开票金额',
     `invoice_type`      VARCHAR(50) COMMENT '发票类型',
     `tax_rate`          DECIMAL(20, 10) COMMENT '税率',
-    `approval_status`     VARCHAR(50) COMMENT '审核状态',
+    `approval_status`   VARCHAR(50) COMMENT '审核状态',
     `business_title_id` VARCHAR(50) COMMENT '工商抬头ID',
-    `organization_id`   VARCHAR(32) NOT NULL COMMENT '组织id',
-    `create_time`       BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time`       BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user`       VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user`       VARCHAR(32) NOT NULL COMMENT '更新人',
+    `organization_id`   VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `create_time`       BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`       BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`       VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`       VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '发票'
 ENGINE = InnoDB
@@ -187,7 +187,8 @@ CREATE INDEX idx_resource_id ON contract_payment_record_field_blob (resource_id 
 -- modify form_key length to 50
 ALTER TABLE sys_module_form MODIFY COLUMN form_key VARCHAR (50);
 -- add payment plan name field
-ALTER TABLE contract_payment_plan ADD COLUMN name VARCHAR(255) NOT NULL  COMMENT '回款计划名称' AFTER id;
+ALTER TABLE contract_payment_plan
+    ADD COLUMN name VARCHAR(255) NOT NULL COMMENT '回款计划名称' AFTER id;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

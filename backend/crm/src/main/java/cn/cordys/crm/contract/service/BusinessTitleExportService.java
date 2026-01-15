@@ -67,7 +67,7 @@ public class BusinessTitleExportService extends BaseExportService {
 
     public LinkedHashMap<String, Object> getSystemFieldMap(BusinessTitleListResponse data) {
         LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("businessName", data.getBusinessName());
+        systemFiledMap.put("name", data.getName());
         systemFiledMap.put("identificationNumber", data.getIdentificationNumber());
         systemFiledMap.put("openingBank", data.getOpeningBank());
         systemFiledMap.put("bankAccount", data.getBankAccount());
