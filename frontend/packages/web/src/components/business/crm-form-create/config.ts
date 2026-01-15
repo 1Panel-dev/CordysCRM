@@ -32,6 +32,7 @@ import {
   getAdvancedCustomerContactList,
   getAdvancedOpenSeaCustomerList,
   getAdvancedSearchClueList,
+  getBusinessTitleModuleForm,
   getClue,
   getClueFollowPlan,
   getClueFollowRecord,
@@ -704,6 +705,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordFormConfig,
   [FormDesignKeyEnum.INVOICE]: getInvoicedFormConfig,
+  [FormDesignKeyEnum.BUSINESS_TITLE]: getBusinessTitleModuleForm,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -741,6 +743,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRICE]: addProductPrice,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: addPaymentRecord,
   [FormDesignKeyEnum.INVOICE]: addInvoiced,
+  [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -778,6 +781,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRICE]: updateProductPrice,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: updatePaymentRecord,
   [FormDesignKeyEnum.INVOICE]: updateInvoiced,
+  [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {

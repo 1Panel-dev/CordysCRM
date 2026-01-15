@@ -456,6 +456,7 @@ export const {
   getBusinessTitleThirdQueryOption,
   getBusinessTitleConfig,
   switchBusinessTitleFormConfig,
+  getBusinessTitleModuleForm,
   addInvoiced,
   updateInvoiced,
   deleteInvoiced,

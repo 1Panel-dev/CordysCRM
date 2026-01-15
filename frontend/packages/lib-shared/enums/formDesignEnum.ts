@@ -27,6 +27,7 @@ export enum FormDesignKeyEnum {
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
   OPPORTUNITY_QUOTATION_SNAPSHOT = 'quotationSnapshot', // 商机快照报价单
+  BUSINESS_TITLE = 'businessTitle', // 工商抬头(数据源，无表单配置入口)
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户
@@ -89,6 +90,7 @@ export enum FieldDataSourceTypeEnum {
   CONTRACT = 'CONTRACT',
   QUOTATION = 'QUOTATION', // 报价单
   CONTRACT_PAYMENT = 'PAYMENT_PLAN',
+  BUSINESS_TITLE = 'BUSINESS_TITLE', // 工商抬头
 }
 
 export enum FormLinkScenarioEnum {

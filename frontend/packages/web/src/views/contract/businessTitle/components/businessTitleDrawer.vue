@@ -95,6 +95,8 @@
   } from '@/api/modules';
   import { businessTitleFormConfigList } from '@/config/contract';
 
+  import { initBusinessTitleForm } from '../config';
+
   const { t } = useI18n();
   const Message = useMessage();
 
@@ -111,22 +113,8 @@
     required: true,
   });
 
-  const initForm: SaveBusinessTitleParams = {
-    id: '',
-    type: 'thirdParty',
-    name: '',
-    identificationNumber: '',
-    openingBank: '',
-    bankAccount: '',
-    phoneNumber: '',
-    registeredCapital: '',
-    companySize: '',
-    registrationNumber: '',
-    registrationAddress: '',
-  };
-
   const form = ref<SaveBusinessTitleParams>({
-    ...initForm,
+    ...initBusinessTitleForm,
   });
 
   const tabList = [
@@ -161,14 +149,14 @@
 
   function handleChangeTab() {
     form.value = {
-      ...initForm,
+      ...initBusinessTitleForm,
       id: form.value.id,
       type: form.value.type,
     };
   }
 
   function cancelHandler() {
-    form.value = { ...initForm };
+    form.value = { ...initBusinessTitleForm };
     emit('cancel');
     visible.value = false;
   }
@@ -186,7 +174,7 @@
         Message.success(t('common.addSuccess'));
       }
       if (isContinue) {
-        form.value = cloneDeep(initForm);
+        form.value = cloneDeep(initBusinessTitleForm);
       } else {
         cancelHandler();
       }

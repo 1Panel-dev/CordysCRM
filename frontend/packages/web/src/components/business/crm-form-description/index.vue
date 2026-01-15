@@ -55,7 +55,7 @@
       </template>
       <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
         <div class="field-line flex w-full items-center">
-          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+          <div class="mr-[16px] leading-[24px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
           <CrmTableButton
@@ -63,6 +63,8 @@
               (!detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
               (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
             "
+            class="text-[14px]"
+            size="small"
             @click="openCustomerDetail(formDetail[item.fieldInfo.id])"
           >
             <template #trigger>
