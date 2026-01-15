@@ -16,6 +16,7 @@
         ci.create_user,
         ci.create_time,
         ci.update_user,
+        ci.approval_status,
         ci.update_time
         FROM
         contract_invoice ci
