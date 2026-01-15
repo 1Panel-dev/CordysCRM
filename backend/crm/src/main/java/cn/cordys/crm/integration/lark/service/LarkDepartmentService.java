@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.lark.service;
 
-import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.client.QrCodeClient;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
@@ -38,7 +37,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      根部门ID
-     *
      * @return 子部门列表
      */
     public List<LarkDepartment> getAllSubDepartments(String tenantAccessToken, String departmentId) {
@@ -69,8 +67,8 @@ public class LarkDepartmentService {
                 hasMore = data != null && data.isHasMore();
                 pageToken = data != null ? data.getPageToken() : null;
             } else {
-                log.error("Failed to get sub-departments from Lark: {}", larkResponse.getCode() + ":" + larkResponse.getMsg());
-                throw new GenericException("Failed to get sub-departments from Lark: " + larkResponse.getMsg());
+                log.error("获取飞书子部门信息失败: {}", larkResponse.getCode() + ":" + larkResponse.getMsg());
+                hasMore = false;
             }
         } while (hasMore);
 
@@ -82,7 +80,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentId      部门ID
-     *
      * @return 部门直属用户列表
      */
     public List<LarkUser> getDepartmentUsers(String tenantAccessToken, String departmentId) {
@@ -116,8 +113,8 @@ public class LarkDepartmentService {
                 hasMore = data != null && data.isHasMore();
                 pageToken = data != null ? data.getPageToken() : null;
             } else {
-                log.error("Failed to get department users from Lark: {}", larkUserResponse.getCode() + ":" + larkUserResponse.getMsg());
-                throw new GenericException("Failed to get department users from Lark: " + larkUserResponse.getMsg());
+                log.error("获取飞书部门用户失败: {}", larkUserResponse.getCode() + ":" + larkUserResponse.getMsg());
+                hasMore = false;
             }
         } while (hasMore);
 
@@ -129,7 +126,6 @@ public class LarkDepartmentService {
      * 将飞书部门转化为CRM部门
      *
      * @param tenantAccessToken 租户访问令牌
-     *
      * @return CRM部门列表
      */
     public List<ThirdDepartment> getDepartmentList(String tenantAccessToken) {
@@ -170,7 +166,6 @@ public class LarkDepartmentService {
      *
      * @param tenantAccessToken 租户访问令牌
      * @param departmentIds     部门ID列表
-     *
      * @return 部门ID与用户列表的映射
      */
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
@@ -199,7 +194,6 @@ public class LarkDepartmentService {
      * 获取企业信息
      *
      * @param tenantAccessToken 租户访问令牌
-     *
      * @return 企业信息
      */
     public LarkTenant getTenantInfo(String tenantAccessToken) {
@@ -220,11 +214,11 @@ public class LarkDepartmentService {
                 }
                 return null;
             } else {
-                log.error("Failed to get tenant info from Lark: {}", larkTenantResponse.getCode() + ":" + larkTenantResponse.getMsg());
-                throw new GenericException("Failed to get tenant info from Lark: " + larkTenantResponse.getMsg());
+                log.error("获取企业信息失败: {}", larkTenantResponse.getCode() + ":" + larkTenantResponse.getMsg());
+                return null;
             }
         } catch (Exception e) {
-            log.error("Error while getting tenant info from Lark", e);
+            log.error("获取飞书企业信息失败", e);
             // 根据您的要求，捕获错误并可以返回 null 或抛出自定义异常
             // 这里我们返回 null
             return null;

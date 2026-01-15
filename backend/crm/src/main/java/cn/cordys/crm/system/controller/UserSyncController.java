@@ -27,4 +27,11 @@ public class UserSyncController {
     public void syncUser(@PathVariable String type) {
         thirdDepartmentService.syncUser(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), type);
     }
+
+    @GetMapping("/check")
+    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
+    @Operation(summary = "用户(员工)-检查是否还在同步组织架构")
+    public Boolean checkSyncUser() {
+        return thirdDepartmentService.getSyncStatus(OrganizationContext.getOrganizationId());
+    }
 }

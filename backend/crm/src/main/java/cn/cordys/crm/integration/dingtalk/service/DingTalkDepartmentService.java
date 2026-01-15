@@ -43,7 +43,9 @@ public class DingTalkDepartmentService {
                 ));
         thirdOrgDataDTO.setUsers(thirdUsersByDept);
 
-
+        if (thirdOrgDataDTO.getDepartments().isEmpty()) {
+            log.info("钉钉组织数据为空,请重新同步");
+        }
         return thirdOrgDataDTO;
     }
 
@@ -84,7 +86,6 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
-     *
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
@@ -125,7 +126,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 部门ID列表
      */
     private List<Long> getAllSubDepartmentIds(String accessToken, Long deptId) {
@@ -143,6 +143,12 @@ public class DingTalkDepartmentService {
                 for (Long subDeptId : response.getResult().getDeptIdList()) {
                     departmentIds.addAll(getAllSubDepartmentIds(accessToken, subDeptId));
                 }
+            } else {
+                if (response != null) {
+                    log.error("获取子部门ID失败，错误码：{}，错误信息：{}", response.getErrCode(), response.getErrMsg());
+                } else {
+                    log.info("获取子部门ID失败，响应为空");
+                }
             }
         } catch (IOException | InterruptedException e) {
             log.error("获取子部门ID失败", e);
@@ -158,7 +164,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
@@ -170,7 +175,14 @@ public class DingTalkDepartmentService {
 
             if (response != null && response.getErrCode() == 0 && response.getResult() != null) {
                 return Optional.of(response.getResult());
+            } else {
+                if (response == null) {
+                    log.info("获取部门详情失败，响应为空");
+                } else {
+                    log.error("获取部门详情失败，错误码：{}，错误信息：{}", response.getErrCode(), response.getErrMsg());
+                }
             }
+
         } catch (IOException | InterruptedException e) {
             log.error("获取部门详情失败", e);
             // 适当处理异常，例如记录日志
@@ -185,7 +197,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {
@@ -215,6 +226,11 @@ public class DingTalkDepartmentService {
                     }
                 } else {
                     hasMore = false;
+                    if (response == null) {
+                        log.info("获取部门用户失败，响应为空");
+                    } else {
+                        log.error("获取部门用户失败，错误码：{}，错误信息：{}", response.getErrcode(), response.getErrmsg());
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 log.error("获取部门用户失败", e);
