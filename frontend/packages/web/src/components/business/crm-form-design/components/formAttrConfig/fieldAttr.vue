@@ -141,7 +141,10 @@
             @update-value="() => handleClearDataSourceDisplayField()"
           />
         </div>
-        <div class="crm-form-design-config-item">
+        <div
+          v-if="fieldConfig.dataSourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE"
+          class="crm-form-design-config-item"
+        >
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.dataSourceFilter') }}
           </div>
@@ -1452,6 +1455,10 @@
         label: t('module.paymentPlan'),
         value: FieldDataSourceTypeEnum.CONTRACT_PAYMENT,
         formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
+      },
+      {
+        label: t('module.businessTitle'),
+        value: FieldDataSourceTypeEnum.BUSINESS_TITLE,
       },
     ];
     if (isSubTableField.value) {

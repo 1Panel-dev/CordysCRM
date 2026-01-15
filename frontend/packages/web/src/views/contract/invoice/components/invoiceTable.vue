@@ -337,6 +337,9 @@
       case 'delete':
         handleDelete(row);
         break;
+      case 'approval':
+        showDetail(row.id);
+        break;
       default:
         break;
     }

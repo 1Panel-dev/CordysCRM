@@ -103,6 +103,7 @@ import {
   ListContractInvoicedViewUrl,
   UpdateContractInvoicedViewUrl,
   AddContractInvoicedViewUrl,
+  BusinessTitleModuleFormUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -545,6 +546,11 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${BusinessTitleFormConfigSwitchUrl}/${id}` });
   }
 
+  // 获取工商抬头表单字段
+  function getBusinessTitleModuleForm() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: BusinessTitleModuleFormUrl });
+  }
+
   // 发票列表
   function getInvoicedList(data: ContractInvoiceTableQueryParam) {
     return CDR.post<CommonList<ContractInvoiceItem>>({ url: ContractInvoicedPageUrl, data });
@@ -736,6 +742,7 @@ export default function useContractApi(CDR: CordysAxios) {
     getBusinessTitleThirdQueryOption,
     getBusinessTitleConfig,
     switchBusinessTitleFormConfig,
+    getBusinessTitleModuleForm,
     // 发票
     getInvoicedList,
     addInvoiced,

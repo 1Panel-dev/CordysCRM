@@ -301,6 +301,7 @@ export const {
   addInvoiced,
   updateInvoiced,
   getInvoicedList,
+  getBusinessTitleModuleForm,
 } = contractApi;
 
 export const {

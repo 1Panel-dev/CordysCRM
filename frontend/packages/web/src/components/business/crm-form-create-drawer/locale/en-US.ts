@@ -16,4 +16,5 @@ export default {
   'crmFormCreate.drawer.quotation': 'Quotation',
   'crmFormCreate.drawer.price': 'Price Table',
   'crmFormCreate.drawer.invoice': 'Invoice',
+  'crmFormCreate.drawer.businessTitle': 'Business Title',
 };
