@@ -50,7 +50,7 @@ public class ContractInvoiceController {
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.INVOICE.getKey(), OrganizationContext.getOrganizationId());
+        return contractInvoiceService.getBusinessFormConfig(OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")

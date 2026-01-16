@@ -21,6 +21,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.Contract;
@@ -35,6 +36,7 @@ import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -542,5 +544,20 @@ public class ContractInvoiceService {
 
     public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
         return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, organizationId, deptDataPermission);
+    }
+
+    public ModuleFormConfigDTO getBusinessFormConfig(String organizationId) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.INVOICE.getKey(), organizationId);
+        Set<String> businessTitleKeySet = Arrays.stream(BusinessTitleConstants.values())
+                .map(BusinessTitleConstants::getKey)
+                .collect(Collectors.toSet());
+
+        for (BaseField field : businessFormConfig.getFields()) {
+            if (businessTitleKeySet.contains(field.getId()) || Strings.CS.equals(field.getId(), BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey())) {
+                // 特殊表单，设置可见
+                field.setReadable(true);
+            }
+        }
+        return businessFormConfig;
     }
 }
