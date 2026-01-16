@@ -109,7 +109,7 @@ export function initFieldValue(field: FormCreateField, value: string | number | 
 }
 
 export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
-  if (fieldValue === undefined || fieldValue === null) {
+  if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
     return '-';
   }
   const { t } = useI18n();
@@ -283,7 +283,9 @@ export function transformData({
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
       } else if (options && options.length > 0) {
         let name: string | string[] = '';
-        if (dataSourceFieldIds.includes(fieldId)) {
+        if (item[fieldId] === '') {
+          name = '-';
+        } else if (dataSourceFieldIds.includes(fieldId)) {
           // 处理数据源字段，需要赋值为数组
           if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
             // 单选
@@ -296,7 +298,7 @@ export function transformData({
           }
         } else if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
           // 若值是单个字符串/数字
-          name = options?.find((e) => e.id === item[fieldId])?.name;
+          name = options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist');
         } else {
           // 若值是数组
           name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [

@@ -224,32 +224,32 @@
     item.linkFields?.forEach((linkField) => {
       const targetField = fieldList.value.find((f) => f.id === linkField.current);
       // 获取目标数据源表单的目标字段，用来读取业务 key 值
-      const targetDatasourceFormField = dataSourceFormFields?.find((f) => f.id === linkField.link);
-      if (targetField && targetDatasourceFormField) {
+      const currentDatasourceFormField = dataSourceFormFields?.find((f) => f.id === linkField.link);
+      if (targetField && currentDatasourceFormField) {
         if (linkField.method === 'fill') {
           // 暂时只有这一种联动
-          const targetValue = targetDatasourceFormField.businessKey
-            ? currentSource?.[targetDatasourceFormField.businessKey]
-            : currentSource?.moduleFields?.find((e: any) => e.fieldId === targetDatasourceFormField.id)?.fieldValue;
+          const currentSourceValue = currentDatasourceFormField.businessKey
+            ? currentSource?.[currentDatasourceFormField.businessKey]
+            : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
           // 如果有业务 key，则取业务 key 的值（specialBusinessKeyMap读取特殊业务字段值），否则取字段值
-          const targetName = targetDatasourceFormField.businessKey
+          const currentSourceName = currentDatasourceFormField.businessKey
             ? currentSource?.[
-                specialBusinessKeyMap[targetDatasourceFormField.businessKey] || targetDatasourceFormField.businessKey
+                specialBusinessKeyMap[currentDatasourceFormField.businessKey] || currentDatasourceFormField.businessKey
               ]
             : currentSource?.[linkField.link]?.[0];
           // 如果联动字段是当前字段本身，则直接赋值；若是当前字段内的其他字段，则赋值对应的值
-          formDetail.value[targetField.id] = item.id === linkField.link ? [...value] : [targetValue];
+          formDetail.value[targetField.id] = item.id === linkField.link ? [...value] : [currentSourceValue];
           if (!targetField.initialOptions) {
             targetField.initialOptions = [
               {
-                name: targetName,
-                id: targetValue,
+                name: currentSourceName,
+                id: currentSourceValue,
               },
             ];
           } else {
             targetField.initialOptions.push({
-              name: targetName,
-              id: targetValue,
+              name: currentSourceName,
+              id: currentSourceValue,
             });
           }
         }

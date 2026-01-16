@@ -115,8 +115,10 @@
   watch(
     () => props.fieldConfig.initialOptions,
     async (val) => {
-      if (!props.needInitDetail) {
-        await initFormConfig();
+      if (!props.needInitDetail && !props.isSubTableField && !props.isSubTableRender) {
+        if (fieldList.value.length === 0) {
+          await initFormConfig();
+        }
         setLoadListParams({
           keyword: props.fieldConfig.initialOptions?.[0]?.name || '',
         });
