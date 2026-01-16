@@ -1,6 +1,6 @@
 import {
   ContractBusinessTitleStatusEnum,
-  ContractInvoiceEnum,
+  ContractInvoiceStatusEnum,
   ContractPaymentPlanEnum,
   ContractStatusEnum,
 } from '@lib/shared/enums/contractEnum';
@@ -29,20 +29,25 @@ export const contractPaymentPlanStatus = {
 };
 
 export const contractInvoiceStatus = {
-  [ContractInvoiceEnum.UNDER_REVIEW]: {
+  [ContractInvoiceStatusEnum.APPROVING]: {
     label: t('contract.underReview'),
     icon: 'iconicon_testing',
     color: 'var(--info-blue)',
   },
-  [ContractInvoiceEnum.APPROVED]: {
+  [ContractInvoiceStatusEnum.APPROVED]: {
     label: t('contract.approved'),
     icon: 'iconicon_check_circle_filled',
     color: 'var(--success-green)',
   },
-  [ContractInvoiceEnum.REJECTED]: {
+  [ContractInvoiceStatusEnum.UNAPPROVED]: {
     label: t('contract.rejected'),
     icon: 'iconicon_close_circle_filled',
     color: 'var(--error-red)',
+  },
+  [ContractBusinessTitleStatusEnum.REVOKED]: {
+    label: t('common.revoke'),
+    icon: 'iconicon_skip_planarity',
+    color: 'var(--text-n4)',
   },
 };
 
@@ -162,7 +167,8 @@ export const contractInvoiceStatusOptions = Object.entries(contractInvoiceStatus
 }));
 
 export const deleteInvoiceContentMap = {
-  [ContractInvoiceEnum.UNDER_REVIEW]: t('contract.deleteInvoiceUnderReviewContent'),
-  [ContractInvoiceEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
-  [ContractInvoiceEnum.REJECTED]: t('contract.deleteInvoiceRejectedContent'),
+  [ContractInvoiceStatusEnum.APPROVING]: t('contract.deleteInvoiceUnderReviewContent'),
+  [ContractInvoiceStatusEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
+  [ContractInvoiceStatusEnum.REVOKED]: t('contract.deleteInvoiceRevokedContent'),
+  [ContractInvoiceStatusEnum.UNAPPROVED]: t('contract.deleteInvoiceRejectedContent'),
 };

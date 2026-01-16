@@ -66,4 +66,6 @@ export default {
     'Invoice approved, deleting will reduce the invoiced amount of the contract by the amount of this application, please proceed with caution!',
   'contract.deleteInvoiceRejectedContent':
     'Invoice not approved, deleting does not affect the invoiced amount of the contract, please proceed with caution!',
+  'contract.deleteInvoiceRevokedContent':
+    'Invoice revoked, deleting does not affect the invoiced amount of the contract, please proceed with caution!',
 };

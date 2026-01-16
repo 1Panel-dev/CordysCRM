@@ -61,4 +61,5 @@ export default {
   'contract.deleteInvoiceUnderReviewContent': '发票审核中，删除不影响合同已开票金额，请谨慎操作！',
   'contract.deleteInvoiceApprovedContent': '发票审核已通过，删除后，合同已开票金额将减去本次申请开票金额，请谨慎操作！',
   'contract.deleteInvoiceRejectedContent': '发票审核未通过，删除不影响合同已开票金额，请谨慎操作！',
+  'contract.deleteInvoiceRevokedContent': '发票审核已撤销，删除不影响合同已开票金额，请谨慎操作！',
 };

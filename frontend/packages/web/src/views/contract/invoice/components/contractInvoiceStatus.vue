@@ -6,12 +6,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ContractInvoiceEnum } from '@lib/shared/enums/contractEnum';
+  import { ContractInvoiceStatusEnum } from '@lib/shared/enums/contractEnum';
 
   import { contractInvoiceStatus } from '@/config/contract';
 
   const props = defineProps<{
-    status: ContractInvoiceEnum;
+    status: ContractInvoiceStatusEnum;
   }>();
 
   const statusMap = {
