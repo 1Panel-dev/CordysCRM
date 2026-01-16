@@ -258,8 +258,8 @@ public enum BusinessModuleField {
     CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.CONTRACT.getKey()),
 
     /*------ end: CONTRACT ------*/
 
@@ -284,9 +284,9 @@ public enum BusinessModuleField {
     CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_BANK("contractPaymentRecordBank", "recordBank", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+    CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
     /*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
 
 
