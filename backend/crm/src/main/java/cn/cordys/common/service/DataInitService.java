@@ -59,7 +59,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
             initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
-			initOneTime(moduleFormExtService::moveCustomOptionsAndSetSource, "move.custom.options");
+			initOneTime(moduleFormExtService::setDefaultOptionSource, "set.default.option.source");
         } finally {
             lock.unlock();
         }

@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,14 +33,12 @@ public class ModuleFormExtService {
 	/**
 	 * 迁移选项字段自定义选项值 (options -> customOptions)
 	 */
-	public void moveCustomOptionsAndSetSource() {
+	public void setDefaultOptionSource() {
 		List<ModuleFieldBlob> fieldBlobs = getOptionFieldsBlob();
 		fieldBlobs.forEach(fb -> {
 			BaseField field = JSON.parseObject(fb.getProp(), BaseField.class);
 			if (field instanceof HasOption of) {
 				of.setOptionSource(DEFAULT_OPTION_SOURCE);
-				of.setCustomOptions(of.getOptions());
-				of.setOptions(new ArrayList<>());
 			}
 			fb.setProp(JSON.toJSONString(field));
 			fieldBlobMapper.updateById(fb);
