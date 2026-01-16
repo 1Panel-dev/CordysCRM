@@ -213,7 +213,7 @@ public enum BusinessModuleField {
     QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.QUOTATION.getKey()),
 
     /**
      * 合同回款计划
@@ -235,10 +235,10 @@ public enum BusinessModuleField {
      * 计划回款时间
      */
     CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-	/**
-	 * 回款计划名称
-	 */
-	CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    /**
+     * 回款计划名称
+     */
+    CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 
@@ -277,17 +277,17 @@ public enum BusinessModuleField {
     /*------ end: CONTRACT_INVOICE ------*/
 
 
-	/*------ start: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
-	CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_NAME("contractPaymentRecordName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_OWNER("contractPaymentRecordOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_BANK("contractPaymentRecordBank", "recordBank", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-	CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-	/*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
+    /*------ start: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
+    CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_NAME("contractPaymentRecordName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_OWNER("contractPaymentRecordOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_BANK("contractPaymentRecordBank", "recordBank", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+    /*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
 
 
     /**
