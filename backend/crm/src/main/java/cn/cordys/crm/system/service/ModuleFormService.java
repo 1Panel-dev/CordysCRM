@@ -652,6 +652,8 @@ public class ModuleFormService {
 		if (StringUtils.isEmpty(of.getOptionSource()) || Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
 			of.setOptions(of.getCustomOptions());
 		} else {
+			// 引用字段选项, 清空再替换
+			of.setOptions(new ArrayList<>());
 			String refId = of.getRefId();
 			ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
 			if (fieldBlob != null) {
