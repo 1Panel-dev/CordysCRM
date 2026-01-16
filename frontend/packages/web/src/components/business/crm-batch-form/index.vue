@@ -271,12 +271,14 @@
       move?: (evt: any) => boolean;
       disabledAddTooltip?: string;
       maxLimitLength?: number;
+      needInitFormRow?: boolean; // 是否需要初始化一行数据
     }>(),
     {
       maxHeight: '100%',
       disabledAdd: false,
       showAllOr: false,
       draggable: false,
+      needInitFormRow: true,
     }
   );
 
@@ -323,12 +325,13 @@
         formItem[e.path] = valueIsArray(e) ? [] : null;
       }
     });
+    const initFormRow = props.needInitFormRow ? [{ ...formItem, editing: true }] : [];
     form.value.list = props.defaultList?.length
       ? cloneDeep(props.defaultList).map((item) => ({
           editing: false,
           ...item,
         }))
-      : [{ ...formItem, editing: true }];
+      : initFormRow;
   }
 
   watchEffect(() => {
