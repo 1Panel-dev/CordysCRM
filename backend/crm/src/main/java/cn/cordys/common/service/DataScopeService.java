@@ -41,23 +41,29 @@ public class DataScopeService {
     private PermissionCache permissionCache;
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String viewId, String permission) {
-        DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-        deptDataPermission.setViewId(viewId);
         if (InternalUserView.isSelf(viewId)) {
             // 只查看自己的数据
-            deptDataPermission.setSelf(true);
-            return deptDataPermission;
-        } else if (InternalUserView.isVisible(viewId)) {
+            DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
+            dto.setViewId(viewId);
+            dto.setSelf(true);
+            return dto;
+        }
+
+        if (InternalUserView.isVisible(viewId)) {
             // 查看设置为可见的数据
-            deptDataPermission.setVisible(true);
-            return deptDataPermission;
-        } else {
-            deptDataPermission = getDeptDataPermission(userId, orgId, permission);
-            deptDataPermission.setViewId(viewId);
-            if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
-                // 数据权限是全部,但是查询条件是部门,则按照部门查询
-                return getDeptDataPermissionForAllPermission(userId, orgId);
-            }
+            DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
+            dto.setViewId(viewId);
+            dto.setVisible(true);
+            return dto;
+        }
+
+        // 获取常规数据权限
+        DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId, permission);
+        deptDataPermission.setViewId(viewId);
+
+        // 数据权限是全部,但是查询条件是部门,则按照部门查询
+        if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
+            return getDeptDataPermissionForAllPermission(userId, orgId);
         }
 
         return deptDataPermission;
@@ -68,6 +74,7 @@ public class DataScopeService {
      *
      * @param userId
      * @param orgId
+     *
      * @return
      */
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String permission) {
@@ -159,15 +166,6 @@ public class DataScopeService {
         return false;
     }
 
-    /**
-     * @param userId
-     * @param orgId
-     * @return
-     */
-    private DeptDataPermissionDTO getDeptDataPermissionForDeptSearchType(String userId, String orgId, String permission) {
-        return getDeptDataPermissionForDept(userId, orgId, getDataScopeRoleMap(userId, orgId), permission);
-    }
-
     public Map<String, List<RolePermissionDTO>> getDataScopeRoleMap(String userId, String orgId) {
         return permissionCache.getRolePermissions(userId, orgId)
                 .stream()
@@ -187,6 +185,7 @@ public class DataScopeService {
      *
      * @param tree
      * @param deptIds
+     *
      * @return
      */
     public List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
@@ -206,6 +205,7 @@ public class DataScopeService {
      * 获取树节点及其子节点的ID
      *
      * @param tree
+     *
      * @return
      */
     private List<String> getNodeIdsWithChild(List<BaseTreeNode> tree) {
