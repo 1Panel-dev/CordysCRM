@@ -74,7 +74,12 @@
               path="roleIds"
               class="flex-1"
             >
-              <CrmUserTagSelector v-model:selected-list="form.roleIds" class="flex-1" :member-types="memberTypes" />
+              <CrmUserTagSelector
+                v-model:selected-list="form.roleIds"
+                :disabledList="form.roleIds"
+                class="flex-1"
+                :member-types="memberTypes"
+              />
             </n-form-item>
           </div>
         </div>
