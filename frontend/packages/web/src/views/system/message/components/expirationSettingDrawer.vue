@@ -49,6 +49,16 @@
             </n-checkbox>
             <CrmInputNumber v-model:value="form.ownerLevel" max="10000" :precision="0" class="w-[80px]" :min="0" />
             {{ t('system.message.noticeOfDepartmentHead') }}
+            <n-tooltip placement="bottom">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_help_circle"
+                  :size="16"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
+              </template>
+              {{ t('system.message.departmentHeadTooltip') }}
+            </n-tooltip>
           </div>
           <div class="flex flex-nowrap items-start gap-[8px]">
             <n-checkbox v-model:checked="form.roleEnable" class="mt-[4px]">
@@ -75,7 +85,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, NCheckbox, NForm, NFormItem, NScrollbar, useMessage } from 'naive-ui';
+  import { FormInst, NCheckbox, NForm, NFormItem, NScrollbar, NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -198,8 +208,8 @@
                 };
               })
             : [],
-          userIds: form.value.userIds.map((e: any) => e.id),
-          roleIds: form.value.roleIds.map((e: any) => e.id),
+          userIds: form.value.userIds?.map((e: any) => e.id),
+          roleIds: form.value.roleIds?.map((e: any) => e.id),
         },
         ...props.detail?.messageTaskDetailDTOList.find((e) => e.event === props.detail?.event),
         module: props.detail?.module ?? '',
