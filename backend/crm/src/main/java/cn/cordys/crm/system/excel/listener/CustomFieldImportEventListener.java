@@ -6,13 +6,13 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
-import cn.cordys.common.util.CaseFormatUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.mybatis.EntityTableMapper;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.metadata.CellExtra;
 import lombok.Getter;
@@ -83,7 +83,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
                                           Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
-        super(fields, CaseFormatUtils.camelToUnderscore(clazz.getSimpleName()), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
+        super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);

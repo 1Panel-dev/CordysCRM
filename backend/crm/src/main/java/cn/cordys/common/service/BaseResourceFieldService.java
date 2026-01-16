@@ -12,7 +12,10 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.domain.ModuleField;
@@ -26,6 +29,7 @@ import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.EntityTableMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -104,6 +108,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取泛型类型
      *
      * @param index 泛型参数索引
+     *
      * @return 泛型类型
      */
     protected Type getGenericType(int index) {
@@ -148,6 +153,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源所有字段值
      *
      * @param resourceId 资源ID
+     *
      * @return 字段值集合
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
@@ -396,6 +402,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param withBlob    是否包含大文本字段
+     *
      * @return 字段集合
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -487,6 +494,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param details 详情集合
      * @param fields  表单字段集合
+     *
      * @return 字段值集合
      */
     @SuppressWarnings("unchecked")
@@ -541,6 +549,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param field           字段信息
      * @param sourceDetailMap 来源详情
+     *
      * @return 字段值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -569,6 +578,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param sourceDetail 来源详情
      * @param subKey       子表格业务Key
      * @param rowKey       行Key
+     *
      * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -919,26 +929,38 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings("unchecked")
     private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
-        Map<String, String> sourceIdType = flattenFields.stream().filter(sf -> sf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> ((DatasourceField) f).getDataSourceType(), (prev, next) -> next));
-        resourceFields.stream().filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null).forEach(rf -> {
-            if (SourceDetailResolveContext.contains(rf.getFieldValue().toString())) {
-                return;
-            }
-            SourceDetailResolveContext.putPlaceholder(rf.getFieldValue().toString());
-            try {
-                FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                Object detail = fieldSourceServiceProvider.safeGetById(sourceType, rf.getFieldValue().toString());
-                if (detail == null) {
-                    SourceDetailResolveContext.remove(rf.getFieldValue().toString());
-                } else {
-                    SourceDetailResolveContext.put(rf.getFieldValue().toString(), JSON.MAPPER.convertValue(detail, Map.class));
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                SourceDetailResolveContext.remove(rf.getFieldValue().toString());
-            }
-        });
+
+        var sourceIdType = flattenFields.stream()
+                .filter(f -> f instanceof DatasourceField ds && CollectionUtils.isNotEmpty(ds.getShowFields()))
+                .collect(Collectors.toMap(
+                        BaseField::idOrBusinessKey,
+                        f -> ((DatasourceField) f).getDataSourceType(),
+                        (prev, next) -> next
+                ));
+
+        resourceFields.stream()
+                .filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null)
+                .forEach(rf -> {
+                    var value = rf.getFieldValue().toString();
+                    if (SourceDetailResolveContext.contains(value)) {
+                        return;
+                    }
+
+                    SourceDetailResolveContext.putPlaceholder(value);
+                    try {
+                        var sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
+                        var detail = fieldSourceServiceProvider.safeGetById(sourceType, value);
+
+                        if (detail == null) {
+                            SourceDetailResolveContext.remove(value);
+                        } else {
+                            SourceDetailResolveContext.put(value, JSON.MAPPER.convertValue(detail, Map.class));
+                        }
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        SourceDetailResolveContext.remove(value);
+                    }
+                });
     }
 
     /**
@@ -970,6 +992,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldValueMap 字段值集合
      * @param update        是否更新操作
      * @param orgId         组织ID
+     *
      * @return 字段值
      */
     private BaseModuleFieldValue processSpecialFieldValue(BaseField field, Map<String, BaseModuleFieldValue> fieldValueMap, boolean update, String orgId) {
@@ -1002,6 +1025,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceId 资源ID
      * @param fieldId    字段ID
+     *
      * @return 字段值
      */
     public Object getResourceFieldValue(String resourceId, String fieldId) {
@@ -1019,6 +1043,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源字段值集合
      *
      * @param resourceIds 资源ID集合
+     *
      * @return 字段值集合
      */
     private List<T> getResourceField(List<String> resourceIds) {
@@ -1032,6 +1057,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param fieldId     字段ID
+     *
      * @return 指定字段值集合
      */
     private List<T> getResourceField(List<String> resourceIds, String fieldId) {
@@ -1045,6 +1071,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 获取资源大字段值集合
      *
      * @param resourceIds 资源ID集合
+     *
      * @return 大字段值集合
      */
     private List<V> getResourceFieldBlob(List<String> resourceIds) {
@@ -1058,6 +1085,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param resourceIds 资源ID集合
      * @param fieldId     大字段ID
+     *
      * @return 指定大字段值集合
      */
     private List<V> getResourceFieldBlob(List<String> resourceIds, String fieldId) {
@@ -1075,6 +1103,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldId    字段ID
      * @param strValue   字段值
      * @param <R>        字段类型
+     *
      * @return 字段实例
      */
     private <R extends BaseResourceField> R supplyNewResource(Supplier<R> instance, String resourceId, String fieldId, String strValue) {
@@ -1134,6 +1163,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param fieldId        字段ID
      * @param organizationId 组织ID
+     *
      * @return 字段信息
      */
     public BaseField getAndCheckField(String fieldId, String organizationId) {
@@ -1160,7 +1190,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return;
         }
         Class<?> clazz = resource.getClass();
-        String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
+        String tableName = EntityTableMapper.generateTableName(clazz);
         Object fieldValue = getResourceFieldValue(resource, fieldName);
         if (isNotBlank(fieldValue)) {
             boolean repeat;
