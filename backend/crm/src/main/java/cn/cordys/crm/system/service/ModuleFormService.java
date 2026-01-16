@@ -2004,7 +2004,7 @@ public class ModuleFormService {
 	 * @param formKey 表单Key
 	 * @param currentOrg 组织ID
 	 * @param internalKey 字段内置Key
-	 * @return
+	 * @return 字段选项
 	 */
 	public List<OptionProp> getFieldOptions(String formKey, String currentOrg, String internalKey) {
 		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
@@ -2023,7 +2023,7 @@ public class ModuleFormService {
 	 * @param formKey 表单Key
 	 * @param orgId 组织ID
 	 * @param internalKey 字段内置Key
-	 * @return
+	 * @return 字段大文本
 	 */
 	private ModuleFieldBlob getFieldBlobByKey(String formKey, String orgId, String internalKey) {
 		ModuleForm example = new ModuleForm();
