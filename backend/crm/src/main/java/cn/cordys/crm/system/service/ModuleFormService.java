@@ -671,6 +671,13 @@ public class ModuleFormService {
      * @param field 自定义字段
      */
     public void setFieldBusinessParam(BaseField field) {
+        Set<String> businessTitleKeySet = Arrays.stream(BusinessTitleConstants.values())
+                .map(BusinessTitleConstants::getKey)
+                .collect(Collectors.toSet());
+        if (businessTitleKeySet.contains(field.getId())) {
+            return;
+        }
+
         // 获取特殊的业务字段
         Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
@@ -808,12 +815,14 @@ public class ModuleFormService {
     public InputNumberField getContractAmountField() {
         InputNumberField amountField = new InputNumberField();
         amountField.setId(BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey());
+        amountField.setInternalKey(BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey());
         amountField.setName("合同金额");
         amountField.setBusinessKey(BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getBusinessKey());
         amountField.setReadable(false);
         amountField.setEditable(false);
         amountField.setType(FieldType.INPUT_NUMBER.name());
         amountField.setShowLabel(true);
+        amountField.setFieldWidth(1F);
         return amountField;
     }
 
@@ -1020,7 +1029,7 @@ public class ModuleFormService {
                         });
                         initField.put(CONTROL_RULES_KEY, controlRules);
                     }
-                    handleShowFieldsInit(initField);
+                    handleShowFieldsInit(initField, fields);
                     if (initField.containsKey(SUB_FIELDS)) {
                         List<BaseField> subFields = JSON.parseArray(JSON.toJSONString(initField.get(SUB_FIELDS)), BaseField.class);
                         subFields.forEach(subField -> subField.setId(IDGenerator.nextStr()));
@@ -1040,12 +1049,24 @@ public class ModuleFormService {
         }
     }
 
+    /**
+     * 处理显示字段初始化
+     * @param initField
+     * @param initFields 如果 initForm 初始化，数据库没有数据，需要从 initFields 中获取
+     */
 	@SuppressWarnings("unchecked")
-    private void handleShowFieldsInit(Map<String, Object> initField) {
+    private void handleShowFieldsInit(Map<String, Object> initField, List<ModuleField> initFields) {
         if (initField.containsKey(SHOW_FIELD_KEY)) {
             List<String> showFieldKeys = (List<String>) initField.get(SHOW_FIELD_KEY);
             List<ModuleField> showFields = moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
                     .in(ModuleField::getInternalKey, showFieldKeys));
+
+            if (CollectionUtils.isEmpty(showFields)) {
+                // initForm 初始化，数据库没有数据，需要从 initFields 中获取
+                showFields = initFields.stream()
+                        .filter(f -> showFieldKeys.contains(f.getInternalKey()))
+                        .collect(Collectors.toList());
+            }
 
             if (CollectionUtils.isNotEmpty(showFieldKeys)) {
                 Set<String> internalKeys = showFields.stream()
