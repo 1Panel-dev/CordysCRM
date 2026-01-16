@@ -257,7 +257,7 @@ export function transformData({
         }
       });
     }
-    if (field.businessKey) {
+    if (field.businessKey && !field.resourceFieldId) {
       const fieldId = field.businessKey;
       const options = originalData?.optionMap?.[fieldId]?.map((e: any) => ({
         ...e,
