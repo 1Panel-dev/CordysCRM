@@ -77,7 +77,6 @@ public class ModuleFormService {
     private static final String DEFAULT_ORGANIZATION_ID = "100001";
     private static final String CONTROL_RULES_KEY = "showControlRules";
     private static final String SHOW_FIELD_KEY = "showFields";
-    private static final String DATA_SOURCE_TYPE_KEY = "dataSourceType";
     private static final String SUB_FIELDS = "subFields";
 	public static final String SUM_PREFIX = "sum_";
 	public static final String EXPORT_SYSTEM_TYPE = "system";
@@ -647,17 +646,21 @@ public class ModuleFormService {
 	 * @param field 自定义字段
 	 */
 	public void setFieldRefOption(BaseField field) {
-		if (!(field instanceof HasOption) || StringUtils.isEmpty(((HasOption) field).getOptionSource()) || Strings.CS.equals(((HasOption) field).getOptionSource(), OPTION_DEFAULT_SOURCE)) {
+		if (!(field instanceof HasOption of)) {
 			return;
 		}
-		String refId = ((HasOption) field).getRefId();
-		ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
-        if (fieldBlob != null) {
-            BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
-            if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getOptions())) {
-                ((HasOption) field).setOptions(refOption.getOptions());
-            }
-        }
+		if (StringUtils.isEmpty(of.getOptionSource()) || Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
+			of.setOptions(of.getCustomOptions());
+		} else {
+			String refId = of.getRefId();
+			ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
+			if (fieldBlob != null) {
+			    BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
+			    if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getCustomOptions())) {
+					of.setOptions(refOption.getCustomOptions());
+			    }
+			}
+		}
 	}
 
     /**

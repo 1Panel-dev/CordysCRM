@@ -23,6 +23,9 @@ public class CheckBoxField extends BaseField implements HasOption {
 	@Schema(description = "选项来源", allowableValues = {"custom", "ref"})
 	private String optionSource;
 
+	@Schema(description = "自定义选项值")
+	private List<OptionProp> customOptions;
+
 	@Schema(description = "选项引用ID (optionSource=ref 时生效)")
 	private String refId;
 
