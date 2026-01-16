@@ -82,6 +82,7 @@ public class ModuleFormService {
 	public static final String EXPORT_SYSTEM_TYPE = "system";
 	private static final String PRICE_SUB_ROW_KEY = "price_sub";
 	private static final String OPTION_DEFAULT_SOURCE = "custom";
+	private static final String UPGRADE_EXT_FIELD = "ext_ver";
 
     static {
         TYPE_SOURCE_MAP = Map.ofEntries(
@@ -922,7 +923,7 @@ public class ModuleFormService {
 			List<ModuleFieldBlob> fieldBlobs = new ArrayList<>();
 			Map<String, List<Map<String, Object>>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
 			fieldMap.forEach((formKey, formFields) -> {
-				boolean existExtVerField = formFields.stream().anyMatch(f -> f.containsKey("ext_ver") && Strings.CS.equals(version, f.get("ext_ver").toString()));
+				boolean existExtVerField = formFields.stream().anyMatch(f -> f.containsKey(UPGRADE_EXT_FIELD) && Strings.CS.equals(version, f.get(UPGRADE_EXT_FIELD).toString()));
 				if (!existExtVerField) {
 					return;
 				}
@@ -934,7 +935,7 @@ public class ModuleFormService {
 					return;
 				}
 				Long maxPos = extModuleFieldMapper.getMaxFieldPosByFormId(form.getId());
-				List<Map<String, Object>> extFields = formFields.stream().filter(f -> f.containsKey("ext_ver") && Strings.CS.equals(version, f.get("ext_ver").toString())).toList();
+				List<Map<String, Object>> extFields = formFields.stream().filter(f -> f.containsKey(UPGRADE_EXT_FIELD) && Strings.CS.equals(version, f.get(UPGRADE_EXT_FIELD).toString())).toList();
 				AtomicLong pos = new AtomicLong(maxPos + 1);
 				extFields.forEach(initField -> {
 					ModuleField field = supplyFieldInfo(initField, form.getId(), pos.getAndIncrement(), new HashMap<>(2));
@@ -1012,6 +1013,9 @@ public class ModuleFormService {
                 // 显隐规则Key-ID映射
                 Map<String, String> controlKeyPreMap = new HashMap<>(2);
                 initFields.forEach(initField -> {
+					if (initField.containsKey(UPGRADE_EXT_FIELD)) {
+						return;
+					}
 					ModuleField field = supplyFieldInfo(initField, formId, pos.getAndIncrement(), controlKeyPreMap);
                     initField.put("id", field.getId());
                     fields.add(field);
