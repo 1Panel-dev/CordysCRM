@@ -8,7 +8,7 @@ import java.io.Serializable;
 @Data
 public class TimeDTO implements Serializable {
     @Schema(description = "时间值")
-    private int timeValue;
+    private Integer timeValue;
 
     @Schema(description = "时间单位: MINUTE/HOUR/DAY/WEEK/MONTH")
     private String timeUnit;

@@ -11,6 +11,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigWithNameDTO;
+import cn.cordys.crm.system.dto.TimeDTO;
 import cn.cordys.crm.system.dto.log.MessageTaskLogDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -157,6 +159,7 @@ public class MessageTaskService {
                     .eq(MessageTaskConfig::getEvent, messageTaskRequest.getEvent()));
             if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
                 MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
+                checkTimeList(messageTaskRequest);
                 messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
                 messageTaskConfigMapper.update(messageTaskConfig);
             } else {
@@ -181,8 +184,24 @@ public class MessageTaskService {
         messageTaskConfig.setOrganizationId(organizationId);
         messageTaskConfig.setTaskType(messageTaskRequest.getModule());
         messageTaskConfig.setEvent(messageTaskRequest.getEvent());
+        //判断config里的timeList的timeValue是否为null,如果为null则从timeList移除
+        checkTimeList(messageTaskRequest);
         messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
         messageTaskConfigMapper.insert(messageTaskConfig);
+    }
+
+    private void checkTimeList(MessageTaskRequest messageTaskRequest) {
+        if (messageTaskRequest.getConfig() != null) {
+            List<TimeDTO> timeList = messageTaskRequest.getConfig().getTimeList();
+            if (timeList != null) {
+                messageTaskRequest.getConfig()
+                        .setTimeList(
+                                timeList.stream()
+                                        .filter(t -> t != null && t.getTimeValue() != null)
+                                        .collect(Collectors.toList())
+                        );
+            }
+        }
     }
 
     /**
@@ -278,16 +297,17 @@ public class MessageTaskService {
                 }
             }
             if (CollectionUtils.isNotEmpty(messageTaskConfigWithNameDTO.getRoleIds())) {
-                messageTaskConfigWithNameDTO.setRoleIdNames(new ArrayList<>());
                 List<String> internalRoleIds = extRoleMapper.getInternalRoleIds();
                 //过滤出非内置角色
                 List<String> nonInternalRoleIds = messageTaskConfigWithNameDTO.getRoleIds().stream()
                         .filter(roleId -> !internalRoleIds.contains(roleId))
                         .toList();
+                // 构建角色ID到名称的映射
+                Map<String, String> roleIdToNameMap = new HashMap<>();
                 // 翻译非内置角色名称
                 if (CollectionUtils.isNotEmpty(nonInternalRoleIds)) {
                     List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(nonInternalRoleIds);
-                    messageTaskConfigWithNameDTO.setRoleIdNames(idNameByIds);
+                    idNameByIds.forEach(option -> roleIdToNameMap.put(option.getId(), option.getName()));
                 }
                 //过滤出内置角色
                 List<String> internalRoles = messageTaskConfigWithNameDTO.getRoleIds().stream()
@@ -296,9 +316,18 @@ public class MessageTaskService {
                 // 翻译内置角色名称
                 if (CollectionUtils.isNotEmpty(internalRoles)) {
                     for (String internalRole : internalRoles) {
-                        messageTaskConfigWithNameDTO.getRoleIdNames().add(new OptionDTO(internalRole, Translator.get("role." + internalRole, internalRole)));
+                        roleIdToNameMap.put(internalRole, Translator.get("role." + internalRole, internalRole));
                     }
                 }
+                // 按照原始getRoleIds()的顺序构建结果列表
+                List<OptionDTO> roleIdNames = new ArrayList<>();
+                for (String roleId : messageTaskConfigWithNameDTO.getRoleIds()) {
+                    String roleName = roleIdToNameMap.get(roleId);
+                    if (roleName != null) {
+                        roleIdNames.add(new OptionDTO(roleId, roleName));
+                    }
+                }
+                messageTaskConfigWithNameDTO.setRoleIdNames(roleIdNames);
             }
             return messageTaskConfigWithNameDTO;
         }

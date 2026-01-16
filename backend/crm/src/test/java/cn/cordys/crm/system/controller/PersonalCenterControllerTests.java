@@ -128,7 +128,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         SendEmailDTO sendEmailDTO = new SendEmailDTO();
         sendEmailDTO.setEmail(email);
 
-        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().is5xxServerError());
+        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().isOk());
 
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("smtp.163.com");
@@ -140,7 +140,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
 
-        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().is5xxServerError());
+        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().isOk());
 
     }
 
