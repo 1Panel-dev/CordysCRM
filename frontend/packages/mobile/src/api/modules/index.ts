@@ -356,6 +356,7 @@ export const {
   getFieldPriceList,
   getFieldQuotationList,
   getFieldContractPaymentPlanList,
+  getFieldContractPaymentRecordList,
 } = moduleApi;
 
 export const {

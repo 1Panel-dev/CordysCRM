@@ -4,6 +4,7 @@ import {
   FieldTypeEnum,
   FormDesignKeyEnum,
 } from '@lib/shared/enums/formDesignEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CommonList } from '@lib/shared/models/common';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
@@ -113,6 +114,8 @@ import {
 
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from './types';
 
+const { t } = useI18n();
+
 export const multipleValueTypeList = [
   FieldTypeEnum.MEMBER_MULTIPLE,
   FieldTypeEnum.DEPARTMENT_MULTIPLE,
@@ -122,6 +125,64 @@ export const multipleValueTypeList = [
   FieldTypeEnum.INPUT_MULTIPLE,
   FieldTypeEnum.ATTACHMENT,
   FieldTypeEnum.LINK,
+];
+
+// 所有数据源和表单
+export const fullFormSettingList = [
+  {
+    label: t('crmFormDesign.customer'),
+    dataSource: FieldDataSourceTypeEnum.CUSTOMER,
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  },
+  {
+    label: t('crmFormDesign.contract'),
+    dataSource: FieldDataSourceTypeEnum.CONTACT,
+    formKey: FormDesignKeyEnum.CONTACT,
+  },
+  {
+    label: t('crmFormDesign.opportunity'),
+    dataSource: FieldDataSourceTypeEnum.BUSINESS,
+    formKey: FormDesignKeyEnum.BUSINESS,
+  },
+  {
+    label: t('crmFormDesign.product'),
+    dataSource: FieldDataSourceTypeEnum.PRODUCT,
+    formKey: FormDesignKeyEnum.PRODUCT,
+  },
+  {
+    label: t('crmFormDesign.clue'),
+    dataSource: FieldDataSourceTypeEnum.CLUE,
+    formKey: FormDesignKeyEnum.CLUE,
+  },
+  {
+    label: t('crmFormCreate.drawer.price'),
+    dataSource: FieldDataSourceTypeEnum.PRICE,
+    formKey: FormDesignKeyEnum.PRICE,
+  },
+  {
+    label: t('crmFormCreate.drawer.quotation'),
+    dataSource: FieldDataSourceTypeEnum.QUOTATION,
+    formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  },
+  {
+    label: t('module.contract'),
+    dataSource: FieldDataSourceTypeEnum.CONTRACT,
+    formKey: FormDesignKeyEnum.CONTRACT,
+  },
+  {
+    label: t('module.paymentPlan'),
+    dataSource: FieldDataSourceTypeEnum.CONTRACT_PAYMENT,
+    formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
+  },
+  {
+    label: t('module.paymentRecord'),
+    dataSource: FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD,
+    formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+  },
+  {
+    label: t('module.businessTitle'),
+    dataSource: FieldDataSourceTypeEnum.BUSINESS_TITLE,
+  },
 ];
 
 export const inputDefaultFieldConfig: FormCreateField = {
@@ -199,6 +260,8 @@ export const radioDefaultFieldConfig: FormCreateField = {
   showLabel: true,
   defaultValue: '',
   description: '',
+  optionSource: 'custom',
+  refId: null,
   options: [],
   readable: true,
   editable: true,
@@ -216,6 +279,8 @@ export const checkboxDefaultFieldConfig: FormCreateField = {
   showLabel: true,
   defaultValue: [],
   description: '',
+  optionSource: 'custom',
+  refId: null,
   options: [],
   readable: true,
   editable: true,
@@ -231,6 +296,8 @@ export const selectDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.select',
   fieldWidth: 1,
   showLabel: true,
+  optionSource: 'custom',
+  refId: null,
   options: [],
   defaultValue: '',
   description: '',
@@ -248,6 +315,8 @@ export const selectMultipleDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.selectMultiple',
   fieldWidth: 1,
   showLabel: true,
+  optionSource: 'custom',
+  refId: null,
   options: [],
   defaultValue: [],
   description: '',
@@ -857,5 +926,6 @@ export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum,
   [FieldDataSourceTypeEnum.PRICE]: FormDesignKeyEnum.PRICE,
   [FieldDataSourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT,
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: FormDesignKeyEnum.CONTRACT_PAYMENT,
+  [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
 };

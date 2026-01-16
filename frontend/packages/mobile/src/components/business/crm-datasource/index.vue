@@ -107,6 +107,7 @@
     getFieldPriceList,
     getFieldQuotationList,
     getFieldContractPaymentPlanList,
+    getFieldContractPaymentRecordList,
     getBusinessTitleList,
   } from '@/api/modules';
 
@@ -155,6 +156,7 @@
     [FieldDataSourceTypeEnum.CONTRACT]: '',
     [FieldDataSourceTypeEnum.QUOTATION]: 'formCreate.quotation',
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: '',
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: '',
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'contract.businessTitle',
   };
 
@@ -170,6 +172,7 @@
     [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
     [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: getFieldContractPaymentPlanList,
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: getFieldContractPaymentRecordList,
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: getBusinessTitleList,
   };
 

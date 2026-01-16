@@ -98,6 +98,10 @@ export interface FormCreateField {
   // 地址属性
   locationType?: 'PCD' | 'PC' | 'detail' | 'C' | 'P'; // C:国家, P:国家-省,PC: 省市, PCD: 省市区, detail: 省市区+详细地址
   // 选择器属性
+  optionSource?: 'ref' | 'custom'; // 选项来源,自定义还是引用
+  refId?: string | null; // 引用的字段id
+  refFormKey?: string; // 引用字段第一层
+  customOptions?: FormCreateFieldOption[]; // 自定义字段的选项数据
   multiple?: boolean;
   options?: FormCreateFieldOption[];
   initialOptions?: any[]; // 用于回显(成员、部门、数据源选择)

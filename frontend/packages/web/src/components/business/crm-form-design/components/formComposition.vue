@@ -242,6 +242,7 @@
           value: getGenerateId(),
         },
       ];
+      res.customOptions = [...res.options];
     }
     list.value.push(res);
     activeItem.value = res;
@@ -278,6 +279,7 @@
           value: getGenerateId(),
         },
       ];
+      res.customOptions = [...res.options];
     }
 
     list.value.push(cloneDeep(res));

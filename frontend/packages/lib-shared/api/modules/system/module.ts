@@ -23,6 +23,7 @@ import {
   GetFieldClueListUrl,
   GetFieldContractListUrl,
   GetFieldContractPaymentPlanListUrl,
+  GetFieldContractPaymentRecordListUrl,
   GetFieldContactListUrl,
   GetFieldCustomerListUrl,
   GetFieldDeptTreeUrl,
@@ -100,7 +101,7 @@ import type {
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
+import type { ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块列表
@@ -245,7 +246,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getFormDesignConfig(id: string) {
-    return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFormDesignConfigUrl}/${id}` });
+    return CDR.get<FormDesignConfigDetailParams>(
+      { url: `${GetFormDesignConfigUrl}/${id}` },
+      { ignoreCancelToken: true }
+    );
   }
 
   function getFieldDeptUerTree() {
@@ -266,6 +270,10 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function getFieldContractPaymentPlanList(data: FormDesignDataSourceTableQueryParams) {
     return CDR.post<CommonList<PaymentPlanItem>>({ url: GetFieldContractPaymentPlanListUrl, data });
+  }
+
+  function getFieldContractPaymentRecordList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<PaymentRecordItem>>({ url: GetFieldContractPaymentRecordListUrl, data });
   }
 
   function getFieldContactList(data: FormDesignDataSourceTableQueryParams) {
@@ -412,6 +420,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldClueList,
     getFieldContractList,
     getFieldContractPaymentPlanList,
+    getFieldContractPaymentRecordList,
     getFieldContactList,
     getFieldCustomerList,
     getFieldOpportunityList,

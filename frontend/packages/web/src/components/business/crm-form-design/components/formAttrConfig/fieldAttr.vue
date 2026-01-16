@@ -1223,7 +1223,7 @@
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
-  import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
+  import { fullFormSettingList, rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,
     type DataSourceLinkField,
@@ -1458,57 +1458,9 @@
   });
 
   const dataSourceOptions = computed<SelectOption[]>(() => {
-    const fullList = [
-      {
-        label: t('crmFormDesign.customer'),
-        value: FieldDataSourceTypeEnum.CUSTOMER,
-        formKey: FormDesignKeyEnum.CUSTOMER,
-      },
-      {
-        label: t('crmFormDesign.contract'),
-        value: FieldDataSourceTypeEnum.CONTACT,
-        formKey: FormDesignKeyEnum.CONTACT,
-      },
-      {
-        label: t('crmFormDesign.opportunity'),
-        value: FieldDataSourceTypeEnum.BUSINESS,
-        formKey: FormDesignKeyEnum.BUSINESS,
-      },
-      {
-        label: t('crmFormDesign.product'),
-        value: FieldDataSourceTypeEnum.PRODUCT,
-        formKey: FormDesignKeyEnum.PRODUCT,
-      },
-      {
-        label: t('crmFormDesign.clue'),
-        value: FieldDataSourceTypeEnum.CLUE,
-        formKey: FormDesignKeyEnum.CLUE,
-      },
-      {
-        label: t('crmFormCreate.drawer.price'),
-        value: FieldDataSourceTypeEnum.PRICE,
-        formKey: FormDesignKeyEnum.PRICE,
-      },
-      {
-        label: t('crmFormCreate.drawer.quotation'),
-        value: FieldDataSourceTypeEnum.QUOTATION,
-        formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-      },
-      {
-        label: t('module.contract'),
-        value: FieldDataSourceTypeEnum.CONTRACT,
-        formKey: FormDesignKeyEnum.CONTRACT,
-      },
-      {
-        label: t('module.paymentPlan'),
-        value: FieldDataSourceTypeEnum.CONTRACT_PAYMENT,
-        formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
-      },
-      {
-        label: t('module.businessTitle'),
-        value: FieldDataSourceTypeEnum.BUSINESS_TITLE,
-      },
-    ];
+    const fullList = fullFormSettingList
+      .filter((i) => i.dataSource)
+      .map((item) => ({ ...item, value: item.dataSource }));
     if (isSubTableField.value) {
       return parentField.value?.subFields?.some(
         (e) => e.dataSourceType === FieldDataSourceTypeEnum.PRICE && e.id !== fieldConfig.value?.id
