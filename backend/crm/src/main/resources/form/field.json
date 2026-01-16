@@ -1890,10 +1890,11 @@
         {
           "label": "普票",
           "value": "2"
-        },
+        }
+      ],
+      "rules": [
         {
-          "label": "制造业",
-          "value": "3"
+          "key": "required"
         }
       ]
     },
@@ -1919,6 +1920,11 @@
           "label": "产品3",
           "value": "3"
         }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -1942,6 +1948,11 @@
         {
           "label": "sku3",
           "value": "3"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
         }
       ]
     },
@@ -1967,6 +1978,11 @@
           "label": "年",
           "value": "3"
         }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
       ]
     },
     {
@@ -1978,7 +1994,12 @@
       "editable": true,
       "fieldWidth": 1,
       "mobile": true,
-      "numberFormat": "number"
+      "numberFormat": "number",
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
     },
     {
       "name": "税率",
@@ -1989,7 +2010,12 @@
       "editable": true,
       "mobile": true,
       "fieldWidth": 1,
-      "numberFormat": "percent"
+      "numberFormat": "percent",
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
     },
     {
       "name": "工商抬头",

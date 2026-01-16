@@ -22,6 +22,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
+import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
@@ -81,6 +82,8 @@ public class ContractInvoiceService {
     private DataScopeService dataScopeService;
     @Resource
     private LogService logService;
+    @Resource
+    private BusinessTitleService businessTitleService;
 
     /**
      * 合同列表
@@ -110,6 +113,10 @@ public class ContractInvoiceService {
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 ContractInvoiceListResponse::getOwner, ContractInvoiceListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), ownerFieldOption);
+        // 补充工商抬头选项
+        List<OptionDTO> businessTitleFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                ContractInvoiceListResponse::getBusinessTitleId, ContractInvoiceListResponse::getBusinessTitleName);
+        optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(), businessTitleFieldOption);
         return optionMap;
     }
 
@@ -202,7 +209,13 @@ public class ContractInvoiceService {
             optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
             response.setContractName(contract.getName());
         }
-        optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), Collections.singletonList(new OptionDTO(response.getId(), response.getOwnerName())));
+        optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), Collections.singletonList(new OptionDTO(response.getOwner(), response.getOwnerName())));
+
+        BusinessTitle businessTitle = businessTitleService.selectById(response.getBusinessTitleId());
+        if (businessTitle != null) {
+            response.setBusinessTitleName(businessTitle.getName());
+            optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(businessTitle.getId(), businessTitle.getName())));
+        }
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
@@ -352,8 +365,14 @@ public class ContractInvoiceService {
 
         List<String> invoiceIds = list.stream().map(ContractInvoiceListResponse::getId)
                 .collect(Collectors.toList());
+
+        List<String> businessTitleIds = list.stream().map(ContractInvoiceListResponse::getBusinessTitleId)
+                .collect(Collectors.toList());
+
         Map<String, List<BaseModuleFieldValue>> invoiceFiledMap = invoiceFieldService.getResourceFieldMap(invoiceIds, true);
         Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = invoiceFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), orgId), invoiceFiledMap);
+        Map<String, String> businessTitleNameMap = businessTitleService.selectByIds(businessTitleIds).stream()
+                .collect(Collectors.toMap(BusinessTitle::getId, BusinessTitle::getName));
 
         List<String> ownerIds = list.stream()
                 .map(ContractInvoiceListResponse::getOwner)
@@ -367,6 +386,10 @@ public class ContractInvoiceService {
             if (userDeptDTO != null) {
                 item.setDepartmentId(userDeptDTO.getDeptId());
                 item.setDepartmentName(userDeptDTO.getDeptName());
+            }
+            String businessTitleName = businessTitleNameMap.get(item.getBusinessTitleId());
+            if (StringUtils.isNotBlank(businessTitleName)) {
+                item.setBusinessTitleName(businessTitleName);
             }
             // 获取自定义字段
             List<BaseModuleFieldValue> invoiceFields = resolvefieldValueMap.get(item.getId());

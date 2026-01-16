@@ -56,6 +56,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -517,5 +518,16 @@ public class BusinessTitleService {
         List<BaseField> fields = moduleFormService.initBusinessTitleFields();
         moduleFormConfigDTO.setFields(fields);
         return moduleFormConfigDTO;
+    }
+
+    public List<BusinessTitle> selectByIds(List<String> ids) {
+        return businessTitleMapper.selectByIds(ids);
+    }
+
+    public BusinessTitle selectById(String id) {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        return businessTitleMapper.selectByPrimaryKey(id);
     }
 }
