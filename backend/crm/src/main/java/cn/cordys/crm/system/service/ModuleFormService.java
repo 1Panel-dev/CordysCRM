@@ -651,7 +651,7 @@ public class ModuleFormService {
 			return;
 		}
 		if (StringUtils.isEmpty(of.getOptionSource()) || Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
-			of.setOptions(of.getCustomOptions());
+			of.setCustomOptions(of.getOptions());
 		} else {
 			// 引用字段选项, 清空再替换
 			of.setOptions(new ArrayList<>());
@@ -660,7 +660,7 @@ public class ModuleFormService {
 			if (fieldBlob != null) {
 			    BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
 			    if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getCustomOptions())) {
-					of.setOptions(refOption.getCustomOptions());
+					of.setOptions(refOption.getOptions());
 			    }
 			}
 		}
@@ -758,7 +758,7 @@ public class ModuleFormService {
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
                 Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream()
                         .collect(Collectors.toMap(ModuleFieldBlob::getId,
-                                filedBlob -> filedBlob == null ? null : JSON.parseObject(filedBlob.getProp(), BaseField.class)));
+								filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
 
                 List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
 				Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
