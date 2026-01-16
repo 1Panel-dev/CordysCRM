@@ -114,7 +114,7 @@
   import contractInvoiceStatus from './contractInvoiceStatus.vue';
   import DetailDrawer from './detail.vue';
 
-  import { batchDeleteInvoiced, deletePaymentPlan } from '@/api/modules';
+  import { batchDeleteInvoiced, deleteInvoiced } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractInvoiceStatusOptions, deleteInvoiceContentMap } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -307,7 +307,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await deletePaymentPlan(row.id);
+          await deleteInvoiced(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
