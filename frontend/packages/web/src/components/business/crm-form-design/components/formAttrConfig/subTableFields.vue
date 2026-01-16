@@ -171,6 +171,7 @@
           value: getGenerateId(),
         },
       ];
+      newField.customOptions = [...newField.options];
     }
     if (!fieldConfig.value.subFields) {
       fieldConfig.value.subFields = [];

@@ -204,4 +204,5 @@ export default {
   'crmFormDesign.fixedCols': '列',
   'crmFormDesign.subTableField': '表格字段',
   'crmFormDesign.addSubField': '添加子字段',
+  'crmFormDesign.quotingData': '引用其他表单',
 };

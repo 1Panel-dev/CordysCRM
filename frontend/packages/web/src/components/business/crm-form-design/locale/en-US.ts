@@ -213,4 +213,5 @@ export default {
   'crmFormDesign.fixedCols': 'Columns',
   'crmFormDesign.subTableField': 'Table Field',
   'crmFormDesign.addSubField': 'Add Subfield',
+  'crmFormDesign.quotingData': 'Reference other forms',
 };
