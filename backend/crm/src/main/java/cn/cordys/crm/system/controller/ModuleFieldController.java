@@ -15,11 +15,14 @@ import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.dto.request.BusinessTitlePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -87,6 +90,8 @@ public class ModuleFieldController {
     private ProductPriceService productPriceService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
+	@Resource
+	private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -182,6 +187,15 @@ public class ModuleFieldController {
                 PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
+
+	@PostMapping("/source/contract/payment-record")
+	@Operation(summary = "分页获取合同回款记录")
+	public Pager<List<ContractPaymentRecordResponse>> sourceRecordPage(@Valid @RequestBody ContractPaymentRecordPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+				PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
 
     @PostMapping("/check/repeat")
     @Operation(summary = "校验重复值")
