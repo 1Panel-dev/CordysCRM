@@ -53,6 +53,16 @@
             "
           />
         </template>
+        <InvoiceTable
+          v-if="activeTab === 'invoice'"
+          :sourceId="props.sourceId"
+          :sourceName="title"
+          is-contract-tab
+          :readonly="
+            detailInfo?.stage === ContractStatusEnum.VOID ||
+            detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
+          "
+        />
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
@@ -87,6 +97,7 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
   import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
+  import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
 
   import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
@@ -136,6 +147,11 @@
         name: 'paymentRecord',
         tab: t('module.paymentRecord'),
         permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      },
+      {
+        name: 'invoice',
+        tab: t('module.invoice'),
+        permission: ['CONTRACT_INVOICE:READ'],
       },
     ].filter((item) => hasAnyPermission(item.permission))
   );
