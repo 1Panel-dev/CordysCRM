@@ -34,6 +34,19 @@ public interface HasOption {
 	void setOptionSource(String optionSource);
 
 	/**
+	 * 设置自定义选项
+	 * @param customOptions 自定义选项
+	 */
+	void setCustomOptions(List<OptionProp> customOptions);
+
+	/**
+	 * 获取自定义选项集合
+	 *
+	 * @return 选项集合
+	 */
+	List<OptionProp> getCustomOptions();
+
+	/**
 	 * 获取选项引用ID
 	 * @return 选项引用ID
 	 */

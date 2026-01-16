@@ -20,6 +20,9 @@ public class RadioField extends BaseField implements HasOption {
     @Schema(description = "选项值")
     private List<OptionProp> options;
 
+	@Schema(description = "自定义选项值")
+	private List<OptionProp> customOptions;
+
 	@Schema(description = "选项来源", allowableValues = {"custom", "ref"})
 	private String optionSource;
 
