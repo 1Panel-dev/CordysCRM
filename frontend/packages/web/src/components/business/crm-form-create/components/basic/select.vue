@@ -64,7 +64,7 @@
     if (props.fieldConfig.linkRange) {
       return props.fieldConfig.options?.filter((option) => props.fieldConfig.linkRange?.includes(option.value)) || [];
     }
-    return props.fieldConfig.options;
+    return props.fieldConfig.options || [];
   });
 
   watch(
