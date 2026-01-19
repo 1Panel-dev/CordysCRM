@@ -41,5 +41,9 @@ public enum FieldSourceType {
 	/**
 	 * 工商抬头
 	 */
-	BUSINESS_TITLE
+	BUSINESS_TITLE,
+	/**
+	 * 回款记录
+	 */
+	CONTRACT_PAYMENT_RECORD
 }
