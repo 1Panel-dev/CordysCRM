@@ -93,9 +93,11 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     }
 
     private void validateRequired(String data, StringBuilder errText, String v) {
-        String key = BusinessTitleImportFiled.fromHeader(v).name().toLowerCase();
-        if (requiredFieldMap.containsKey(key) && requiredFieldMap.get(key) && StringUtils.isBlank(data)) {
-            errText.append(v).append(Translator.get("required")).append(";");
+        if (BusinessTitleImportFiled.fromHeader(v) != null) {
+            String key = BusinessTitleImportFiled.fromHeader(v).name().toLowerCase();
+            if (requiredFieldMap.containsKey(key) && requiredFieldMap.get(key) && StringUtils.isBlank(data)) {
+                errText.append(v).append(Translator.get("required")).append(";");
+            }
         }
     }
 
