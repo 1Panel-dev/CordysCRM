@@ -103,7 +103,7 @@ public class ContractInvoiceController {
     }
 
     @PostMapping("/export-select")
-    @Operation(summary = "导出选中合同")
+    @Operation(summary = "导出选中发票")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -119,9 +119,9 @@ public class ContractInvoiceController {
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)
-                .formKey(FormKey.CONTRACT.getKey())
+                .formKey(FormKey.INVOICE.getKey())
                 .build();
-        return contractInvoiceExportService.exportSelectWithMergeStrategy(exportDTO);
+        return contractInvoiceExportService.exportSelect(exportDTO);
     }
 
     @PostMapping("/export-all")
@@ -143,7 +143,7 @@ public class ContractInvoiceController {
                 .pageRequest(request)
                 .formKey(FormKey.INVOICE.getKey())
                 .build();
-        return contractInvoiceExportService.exportAllWithMergeStrategy(exportDTO);
+        return contractInvoiceExportService.export(exportDTO);
     }
 
     @PostMapping("/batch/delete")

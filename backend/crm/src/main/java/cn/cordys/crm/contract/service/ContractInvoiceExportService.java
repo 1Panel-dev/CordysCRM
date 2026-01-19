@@ -43,7 +43,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         String orgId = exportDTO.getOrgId();
         PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
         //获取数据
-        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, exportDTO.getUserId(), orgId, exportDTO.getDeptDataPermission());
+        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, orgId,  exportDTO.getUserId(), exportDTO.getDeptDataPermission());
         List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
 
@@ -79,7 +79,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         systemFiledMap.put("amount", data.getAmount());
         systemFiledMap.put("taxRate", data.getTaxRate());
         systemFiledMap.put("businessTitleId", data.getBusinessTitleId());
-        systemFiledMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        systemFiledMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
 
         systemFiledMap.put("createUser", data.getCreateUserName());
         systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
