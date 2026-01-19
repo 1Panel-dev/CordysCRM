@@ -432,16 +432,12 @@ public class ContractInvoiceService {
         List<String> owners = getOwners(invoices);
         dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CONTRACT_INVOICE_DELETE);
 
-        List<String> contractIds = invoices.stream().map(ContractInvoice::getContractId)
-                .distinct()
-                .toList();
-
-        Map<String, String> contractNameMap = contractMapper.selectByIds(contractIds)
-                .stream().collect(Collectors.toMap(Contract::getId, Contract::getName));
+        // 删除客户
+        contractInvoiceMapper.deleteByIds(ids);
 
         List<LogDTO> logs = invoices.stream()
                 .map(invoice ->
-                        new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_INDEX, contractNameMap.get(invoice.getContractId()))
+                        new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CONTRACT_INVOICE, invoice.getName())
                 )
                 .toList();
         logService.batchAdd(logs);
@@ -449,7 +445,7 @@ public class ContractInvoiceService {
         // 消息通知 todo
 //        invoices.forEach(invoice ->
 //                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-//                        NotificationConstants.Event.CUSTOMER_DELETED, contractNameMap.get(invoice.getContractId()), userId,
+//                        NotificationConstants.Event.CUSTOMER_DELETED, invoice.getName(), userId,
 //                        orgId, List.of(invoice.getOwner()), true)
 //        );
     }

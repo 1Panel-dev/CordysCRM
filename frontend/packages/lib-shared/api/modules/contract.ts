@@ -602,7 +602,7 @@ export default function useContractApi(CDR: CordysAxios) {
 
   // 发票批量删除
   function batchDeleteInvoiced(ids: string[]) {
-    return CDR.post({ url: ContractInvoicedBatchDeleteUrl, data: { ids } });
+    return CDR.post({ url: ContractInvoicedBatchDeleteUrl, data: ids });
   }
 
   // 导出全量发票
