@@ -375,6 +375,8 @@ export const {
   getAccountPaymentStatistic,
   getAccountPaymentRecord,
   getAccountPaymentRecordStatistic,
+  getCustomerInvoiceList,
+  getCustomerInvoiceStatistic,
 } = customerApi;
 
 export const {

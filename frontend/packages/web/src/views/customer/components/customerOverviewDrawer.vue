@@ -101,6 +101,11 @@
           :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
           :source-id="props.sourceId"
         />
+        <ContractTimeline
+          v-else-if="activeTab === 'invoice'"
+          :form-key="FormDesignKeyEnum.INVOICE"
+          :source-id="props.sourceId"
+        />
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -270,6 +275,12 @@
         tab: t('module.paymentRecord'),
         enable: true,
         permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      },
+      {
+        name: 'invoice',
+        tab: t('module.invoice'),
+        enable: true,
+        permission: ['INVOICE:READ'],
       },
     ];
     if (collaborationType.value) {

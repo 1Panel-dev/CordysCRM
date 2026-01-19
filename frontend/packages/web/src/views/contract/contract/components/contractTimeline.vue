@@ -1,6 +1,9 @@
 <template>
   <CrmCard no-content-bottom-padding hide-footer>
-    <div v-if="statisticInfo" class="mb-[16px] rounded-[var(--border-radius-mini)] bg-[var(--text-n9)] p-[12px]">
+    <div
+      v-if="statisticInfo"
+      class="mb-[16px] flex gap-[24px] rounded-[var(--border-radius-mini)] bg-[var(--text-n9)] p-[12px]"
+    >
       <div v-for="item in statisticInfo" :key="item" class="flex items-center">
         <span>{{ item.label }}</span>
         <span class="ml-[8px] font-semibold">
@@ -30,6 +33,9 @@
 
             <div class="crm-follow-record-base-info">
               <CrmDetailCard :description="getDescription(item)">
+                <template #createUserName="{ item: decItem }">
+                  {{ decItem.value }}
+                </template>
                 <template #name>
                   <CrmTableButton
                     @click="
@@ -77,6 +83,21 @@
                     {{ decItem.value }}
                   </div>
                 </template>
+                <template #amount="{ item: decItem }">
+                  <div class="flex items-center gap-[8px]">
+                    {{ decItem.value }}
+                  </div>
+                </template>
+                <template #approvalStatus="{ item: decItem }">
+                  <div class="flex items-center gap-[8px]">
+                    <ContractInvoiceStatus :status="decItem.value as ContractInvoiceStatusEnum" />
+                  </div>
+                </template>
+                <template #updateTime="{ item: decItem }">
+                  <div class="flex items-center gap-[8px]">
+                    {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
+                  </div>
+                </template>
               </CrmDetailCard>
             </div>
           </div>
@@ -91,7 +112,7 @@
   import { NEmpty } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { type ContractInvoiceStatusEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -100,6 +121,7 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
+  import ContractInvoiceStatus from '@/views/contract/invoice/components/contractInvoiceStatus.vue';
 
   import { contractStatusOptions } from '@/config/contract';
   import type { TimelineType } from '@/hooks/useContractTimeline';

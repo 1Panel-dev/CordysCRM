@@ -122,6 +122,8 @@ import {
   GetAccountPaymentStatisticUrl,
   GetAccountPaymentRecordStatisticUrl,
   GetAccountPaymentRecordListUrl,
+  GetAccountInvoiceListUrl,
+  GetAccountInvoiceStatisticUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   ChartResponseDataItem,
@@ -148,6 +150,9 @@ import type {
   CustomerFollowPlanTableParams,
   CustomerFollowRecordListItem,
   CustomerFollowRecordTableParams,
+  CustomerInvoiceItem,
+  CustomerInvoicePageQueryParams,
+  CustomerInvoiceStatistic,
   CustomerListItem,
   CustomerOpenSeaListItem,
   CustomerOpportunityTableParams,
@@ -344,6 +349,16 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户联系人详情
   function getCustomerContact(id: string) {
     return CDR.get<CustomerContractListItem>({ url: `${GetCustomerContactUrl}/${id}` });
+  }
+
+  // 获取客户的发票记录
+  function getCustomerInvoiceList(data: CustomerInvoicePageQueryParams) {
+    return CDR.post<CommonList<CustomerInvoiceItem>>({ url: GetAccountInvoiceListUrl, data });
+  }
+
+  // 获取客户发票统计
+  function getCustomerInvoiceStatistic(id: string) {
+    return CDR.get<CustomerInvoiceStatistic[]>({ url: `${GetAccountInvoiceStatisticUrl}/${id}` });
   }
 
   // 启用客户联系人
@@ -903,5 +918,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAccountPaymentStatistic,
     getAccountPaymentRecord,
     getAccountPaymentRecordStatistic,
+    getCustomerInvoiceList,
+    getCustomerInvoiceStatistic,
   };
 }

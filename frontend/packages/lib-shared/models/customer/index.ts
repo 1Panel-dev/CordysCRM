@@ -361,3 +361,38 @@ export interface MergeAccountParams {
   toMergeId: string | null; // 合并目标客户id
   ownerId: string | null;
 }
+
+export interface CustomerInvoiceStatistic {
+  contractAmount: number;
+  uninvoicedAmount: number;
+  invoicedAmount: number;
+}
+
+export interface CustomerInvoiceItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  name: string;
+  contractId: string;
+  owner: string;
+  amount: number;
+  invoiceType: string;
+  taxRate: number;
+  businessTitleId: string;
+  approvalStatus: string;
+  organizationId: string;
+  contractName: string;
+  ownerName: string;
+  createUserName: string;
+  updateUserName: string;
+  departmentId: string;
+  departmentName: string;
+  businessTitleName: string;
+  moduleFields: ModuleField[];
+}
+
+export interface CustomerInvoicePageQueryParams extends TableQueryParams {
+  customerId: string;
+}

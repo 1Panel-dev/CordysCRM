@@ -13,12 +13,15 @@ import {
   getAccountPaymentRecord,
   getAccountPaymentRecordStatistic,
   getAccountPaymentStatistic,
+  getCustomerInvoiceList,
+  getCustomerInvoiceStatistic,
 } from '@/api/modules';
 
 export type TimelineType =
   | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT
-  | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
+  | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
+  | FormDesignKeyEnum.INVOICE;
 
 export default function useContractTimeline(formKey: TimelineType, sourceId: string) {
   const { t } = useI18n();
@@ -48,6 +51,20 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
       {
         key: 'pendingAmount',
         label: t('contract.paymentRecord.pendingPayment'),
+      },
+    ],
+    [FormDesignKeyEnum.INVOICE]: [
+      {
+        key: 'contractAmount',
+        label: t('invoice.contractAmount'),
+      },
+      {
+        key: 'uninvoicedAmount',
+        label: t('invoice.uninvoicedAmount'),
+      },
+      {
+        key: 'invoicedAmount',
+        label: t('invoice.invoicedAmount'),
       },
     ],
   };
@@ -93,18 +110,28 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
       { key: 'recordAmount', label: t('contract.paymentAmount'), value: '' },
       { key: 'recordEndTime', label: t('contract.paymentTime'), value: '' },
     ],
+    [FormDesignKeyEnum.INVOICE]: [
+      { key: 'createUserName', label: t('invoice.applicant'), value: '' },
+      { key: 'contractName', label: t('invoice.contractName'), value: '' },
+      { key: 'contractProductSumAmount', label: t('invoice.contractAmount'), value: '' },
+      { key: 'amount', label: t('invoice.amount'), value: '' },
+      { key: 'approvalStatus', label: '', value: '' },
+      { key: 'updateTime', label: t('invoice.applicationTime'), value: '' },
+    ],
   };
 
   const getListApiMap: Record<TimelineType, any> = {
     [FormDesignKeyEnum.CONTRACT]: getAccountContract,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getAccountPayment,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getAccountPaymentRecord,
+    [FormDesignKeyEnum.INVOICE]: getCustomerInvoiceList,
   };
 
   const statisticApiMap: Record<TimelineType, any> = {
     [FormDesignKeyEnum.CONTRACT]: getAccountContractStatistic,
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getAccountPaymentStatistic,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getAccountPaymentRecordStatistic,
+    [FormDesignKeyEnum.INVOICE]: getCustomerInvoiceStatistic,
   };
 
   const data = ref<ContractItem[]>([]);
@@ -117,10 +144,16 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
   });
 
   function getDescription(item: ContractItem) {
-    return descriptionListMap[formKey].map((desc) => ({
-      ...desc,
-      value: item[desc.key as keyof ContractItem],
-    })) as Description[];
+    return descriptionListMap[formKey].map((desc) => {
+      let itemValue = item[desc.key as keyof ContractItem];
+      if (itemValue === undefined && item.moduleFields?.length) {
+        itemValue = item.moduleFields.find((field) => field.fieldId === desc.key)?.fieldValue as any;
+      }
+      return {
+        ...desc,
+        value: itemValue,
+      };
+    }) as Description[];
   }
 
   async function loadList(refresh = true) {
