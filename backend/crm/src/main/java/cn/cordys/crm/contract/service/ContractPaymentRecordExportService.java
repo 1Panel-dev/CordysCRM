@@ -64,8 +64,10 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 		systemFiledMap.put("departmentId", data.getDepartmentName());
 		systemFiledMap.put("recordAmount", data.getRecordAmount());
 		systemFiledMap.put("recordEndTime", TimeUtils.getDataTimeStr(data.getRecordEndTime()));
-		systemFiledMap.put("recordBank", getActualRecordBank(data.getRecordBank(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(), data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK.getKey()));
-		systemFiledMap.put("recordBankNo", data.getRecordBankNo());
+		systemFiledMap.put("recordBank", processInternalOptions(data.getRecordBank(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK.getKey()));
+		systemFiledMap.put("recordBankNo", processInternalOptions(data.getRecordBankNo(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK_NO.getKey()));
 
 		systemFiledMap.put("createUser", data.getCreateUserName());
 		systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
@@ -123,19 +125,19 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 
 	/**
 	 *
-	 * @param bank 银行选项值
+	 * @param value 选项值
 	 * @param formKey 表单Key
 	 * @param orgId 组织ID
 	 * @param internalKey 字段内部Key
-	 * @return 银行名称
+	 * @return 名称
 	 */
-	private String getActualRecordBank(String bank, String formKey, String orgId, String internalKey) {
+	private String processInternalOptions(String value, String formKey, String orgId, String internalKey) {
 		List<OptionProp> options = moduleFormService.getFieldOptions(formKey, orgId, internalKey);
 		for (OptionProp option : options) {
-			if (Strings.CS.equals(option.getValue(), bank)) {
+			if (Strings.CS.equals(option.getValue(), value)) {
 				return option.getLabel();
 			}
 		}
-		return bank;
+		return value;
 	}
 }
