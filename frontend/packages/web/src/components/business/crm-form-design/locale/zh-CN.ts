@@ -205,4 +205,5 @@ export default {
   'crmFormDesign.subTableField': '表格字段',
   'crmFormDesign.addSubField': '添加子字段',
   'crmFormDesign.quotingData': '引用其他表单',
+  'crmFormDesign.currentFormField': '当前表单字段',
 };

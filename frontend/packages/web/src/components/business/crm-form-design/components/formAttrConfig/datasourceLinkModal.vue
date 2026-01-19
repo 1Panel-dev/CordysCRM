@@ -16,9 +16,9 @@
     >
       <div class="flex flex-col gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
         <div class="flex items-center justify-between">
-          <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentFieldValue') }}</div>
+          <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentFormField') }}</div>
           <div class="mx-[12px] text-[var(--text-n1)]"></div>
-          <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkFieldValue') }}</div>
+          <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkField') }}</div>
           <div :class="formModel.length > 1 ? 'w-[110px]' : 'w-[64px] '"></div>
         </div>
         <n-scrollbar ref="linkFieldsScrollbar" class="max-h-[40vh] pr-[6px]" content-class="flex flex-col gap-[12px]">
@@ -120,7 +120,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
+  import { dataSourceFilterFormKeyMap, getFieldIcon } from '@/components/business/crm-form-create/config';
   import { type DataSourceLinkField, FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { getFieldDisplayList } from '@/api/modules';
@@ -169,7 +169,7 @@
       props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
     ] as FormDesignKeyEnum;
   });
-  const linkFieldOptions = ref<Option[]>([]);
+  const linkFieldOptions = ref<any[]>([]);
   async function getDisplayList() {
     try {
       const res = await getFieldDisplayList(formKey.value);
@@ -179,11 +179,13 @@
           return {
             label: item.name,
             value: item.id,
+            icon: getFieldIcon(item.type),
           };
         });
       linkFieldOptions.value.unshift({
         label: props.fieldConfig.name,
         value: props.fieldConfig.businessKey || props.fieldConfig.id,
+        icon: getFieldIcon(props.fieldConfig.type),
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -222,7 +224,7 @@
           f.id !== props.fieldConfig.id &&
           (f.id === currentFieldId || !alreadySelectedFields.includes(f.id))
       )
-      .map((f) => ({ label: f.name, value: f.id }));
+      .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
   }
 
   function renderLinkOptionLabel(option: Option) {
@@ -234,7 +236,7 @@
       { class: 'flex items-center gap-[4px]' },
       {
         default: () => [
-          h(CrmIcon, { type: 'iconicon_correlation', class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
+          h(CrmIcon, { type: (option as any).icon, class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
           option.label,
         ],
       }
@@ -253,7 +255,7 @@
       { class: 'flex items-center gap-[4px]' },
       {
         default: () => [
-          h(CrmIcon, { type: 'iconicon_correlation', class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
+          h(CrmIcon, { type: (option.option as any).icon, class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
           (option.option as Option).label,
         ],
       }
