@@ -52,7 +52,12 @@
     @load="() => searchData()"
     @cancel="handleCancel"
   />
-  <detail v-model:visible="showDetailDrawer" :source-id="activeSourceId" @cancel="handleCancel" />
+  <detail
+    v-model:visible="showDetailDrawer"
+    :source-id="activeSourceId"
+    @cancel="handleCancel"
+    @load="() => searchData()"
+  />
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
