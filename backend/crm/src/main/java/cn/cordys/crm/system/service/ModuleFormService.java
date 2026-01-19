@@ -321,6 +321,9 @@ public class ModuleFormService {
 				List<BaseField> sourceRefFields = refFields.stream().filter(f -> sourceField.getShowFields().contains(f.getId())).toList();
 				sourceField.setRefFields(sourceRefFields);
 			}
+			if (field instanceof HasOption of && Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
+				of.setOptions(of.getCustomOptions());
+			}
 			fieldBlob.setProp(JSON.toJSONString(field));
 			addFieldBlobs.add(fieldBlob);
 		});
@@ -652,7 +655,9 @@ public class ModuleFormService {
 			return;
 		}
 		if (StringUtils.isEmpty(of.getOptionSource()) || Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
-			of.setCustomOptions(of.getOptions());
+			if (CollectionUtils.isEmpty(of.getCustomOptions())) {
+				of.setCustomOptions(of.getOptions());
+			}
 		} else {
 			// 引用字段选项, 清空再替换
 			of.setOptions(new ArrayList<>());
