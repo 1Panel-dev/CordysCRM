@@ -371,7 +371,7 @@
             );
       },
       paymentPlanId: (row: PaymentRecordItem) => {
-        return !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])
+        return props.isContractTab || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.paymentPlanName },
