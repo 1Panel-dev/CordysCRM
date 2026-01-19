@@ -136,7 +136,7 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'name', 'no', 'owner', 'paymentPlanId', 'contractId', 'recordAmount', 'recordEndTime', 'recordBank', 'recordBankNo', 'create_time', 'update_time', 'create_user', 'update_user'}">
+                        {'name', 'no', 'owner', 'payment_plan_id', 'contract_id', 'record_amount', 'record_end_time', 'record_bank', 'record_bank_no', 'create_time', 'update_time', 'create_user', 'update_user'}">
                         cpr.${sortName} ${sortType}, cpr.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
