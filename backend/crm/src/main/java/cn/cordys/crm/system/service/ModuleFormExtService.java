@@ -31,7 +31,7 @@ public class ModuleFormExtService {
 	public static final String DEFAULT_OPTION_SOURCE = "custom";
 
 	/**
-	 * 迁移选项字段自定义选项值 (options -> customOptions)
+	 * 设置选项字段的默认选项来源
 	 */
 	public void setDefaultOptionSource() {
 		List<ModuleFieldBlob> fieldBlobs = getOptionFieldsBlob();

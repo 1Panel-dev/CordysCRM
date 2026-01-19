@@ -97,7 +97,8 @@ public class ModuleFormService {
 				Map.entry(FieldSourceType.PRICE.name(), "product_price"),
 				Map.entry(FieldSourceType.CONTRACT.name(), "contract"),
 				Map.entry(FieldSourceType.PAYMENT_PLAN.name(), "contract_payment_plan"),
-				Map.entry(FieldSourceType.BUSINESS_TITLE.name(), "business_title")
+				Map.entry(FieldSourceType.BUSINESS_TITLE.name(), "business_title"),
+				Map.entry(FieldSourceType.CONTRACT_PAYMENT_RECORD.name(), "contract_payment_record")
 		);
     }
 
@@ -1055,7 +1056,7 @@ public class ModuleFormService {
 
     /**
      * 处理显示字段初始化
-     * @param initField
+     * @param initField 初始化字段
      * @param initFields 如果 initForm 初始化，数据库没有数据，需要从 initFields 中获取
      */
 	@SuppressWarnings("unchecked")
@@ -1078,8 +1079,7 @@ public class ModuleFormService {
                         .collect(Collectors.toSet());
 
                 // 添加表单字段
-                List<String> showFieldResult = new ArrayList<>();
-                showFieldResult.addAll(showFields.stream().map(ModuleField::getId).toList());
+				List<String> showFieldResult = new ArrayList<>(showFields.stream().map(ModuleField::getId).toList());
                 // 添加表单中没有的系统字段
                 List<String> systemFieldKeys = showFieldKeys.stream()
                         .filter(fieldKey -> !internalKeys.contains(fieldKey))
