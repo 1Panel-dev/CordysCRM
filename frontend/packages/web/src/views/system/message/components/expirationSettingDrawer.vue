@@ -26,7 +26,6 @@
           :disabled-add-tooltip="t('system.message.maxLimit', { count: 10 })"
           @delete-row="handleDelete"
           @save-row="handleSave"
-          @cancel-row="handleCancelRow"
         />
       </div>
       <div class="my-[16px] font-medium text-[var(--text-n1)]">{{ t('system.message.scopedSettings') }}</div>
@@ -230,12 +229,6 @@
       // eslint-disable-next-line no-console
       console.log(e);
     }
-  }
-
-  function handleCancelRow() {
-    batchFormRef.value?.formValidate(() => {
-      // 取消时候刷新验证
-    });
   }
 
   function handleConfirm() {

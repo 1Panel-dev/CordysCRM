@@ -2,7 +2,7 @@
   <n-tooltip trigger="hover" :delay="300">
     <template #trigger>
       <n-button type="primary" text class="max-w-full" :size="props.size" :class="props.class" @click="emit('click')">
-        <div class="one-line-text flex w-[fit-content] items-center">
+        <div class="one-line-text w-[fit-content]">
           <slot name="trigger"></slot>
         </div>
       </n-button>
