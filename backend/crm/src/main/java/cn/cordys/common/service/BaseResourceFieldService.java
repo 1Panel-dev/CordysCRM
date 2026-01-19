@@ -518,7 +518,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
                     try {
                         Object sourceObj = fieldSourceServiceProvider.safeGetById(sourceType, val.toString());
-                        if (detail != null) {
+                        if (sourceObj != null) {
                             SourceDetailResolveContext.put(val.toString(), JSON.MAPPER.convertValue(sourceObj, Map.class));
                         }
                     } catch (Exception e) {

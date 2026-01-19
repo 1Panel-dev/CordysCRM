@@ -19,7 +19,6 @@ import cn.cordys.crm.contract.service.ContractInvoiceExportService;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,8 +36,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/invoice")
 public class ContractInvoiceController {
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
     @Resource
