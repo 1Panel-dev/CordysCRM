@@ -356,56 +356,72 @@ public class PoolCustomerService {
      */
     private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule,
                              String operateUserId, String logType, String currentOrgId, boolean isPoolAdmin) {
+
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
         if (customer == null) {
             throw new IllegalArgumentException(Translator.get("customer.not.exist"));
         }
-        if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
-            LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(customer.getUpdateTime()), ZoneId.systemDefault());
-            LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
-            if (releaseDate.isAfter(LocalDateTime.now())) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                throw new GenericException(Translator.getWithArgs("pool.data.release.date", releaseDate.format(formatter)));
+
+        if (!isPoolAdmin && pickRule != null) {
+            if (pickRule.getLimitNew()) {
+                LocalDateTime joinPoolTime = Instant.ofEpochMilli(customer.getUpdateTime())
+                        .atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
+                if (releaseDate.isAfter(LocalDateTime.now())) {
+                    throw new GenericException(Translator.getWithArgs(
+                            "pool.data.release.date",
+                            releaseDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    ));
+                }
             }
-        }
-        if (!isPoolAdmin && pickRule != null && pickRule.getLimitPreOwner()) {
-            LambdaQueryWrapper<CustomerOwner> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(CustomerOwner::getCustomerId, customerId);
-            List<CustomerOwner> customerOwners = ownerMapper.selectListByLambda(queryWrapper);
-            if (CollectionUtils.isNotEmpty(customerOwners)) {
-                customerOwners.sort(Comparator.comparingLong(CustomerOwner::getCollectionTime).reversed());
-                CustomerOwner lastOwner = customerOwners.getFirst();
-                if (Strings.CS.equals(lastOwner.getOwner(), ownerId) &&
-                        System.currentTimeMillis() < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()) {
-                    LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()),
-                            ZoneId.systemDefault());
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    throw new GenericException(Translator.getWithArgs("customer.pre_owner.pick.limit", nextPickTime.format(formatter)));
+
+            if (pickRule.getLimitPreOwner()) {
+                List<CustomerOwner> customerOwners = ownerMapper.selectListByLambda(
+                        new LambdaQueryWrapper<CustomerOwner>().eq(CustomerOwner::getCustomerId, customerId)
+                );
+                if (CollectionUtils.isNotEmpty(customerOwners)) {
+                    CustomerOwner lastOwner = customerOwners.stream()
+                            .max(Comparator.comparingLong(CustomerOwner::getCollectionTime))
+                            .orElse(null);
+                    if (lastOwner != null && Strings.CS.equals(lastOwner.getOwner(), ownerId)) {
+                        long nextPickMillis = lastOwner.getEndTime()
+                                + pickRule.getPickIntervalDays() * DAY_MILLIS;
+                        if (System.currentTimeMillis() < nextPickMillis) {
+                            LocalDateTime nextPickTime = Instant.ofEpochMilli(nextPickMillis)
+                                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
+                            throw new GenericException(Translator.getWithArgs(
+                                    "customer.pre_owner.pick.limit",
+                                    nextPickTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                            ));
+                        }
+                    }
                 }
             }
         }
+
+        long now = System.currentTimeMillis();
         customer.setPoolId(null);
         customer.setInSharedPool(false);
         customer.setOwner(ownerId);
-        customer.setCollectionTime(System.currentTimeMillis());
+        customer.setCollectionTime(now);
         customer.setUpdateUser(ownerId);
-        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateTime(now);
         extCustomerMapper.updateIncludeNullById(customer);
 
-        /*
-         * 只更新最近一次销售负责人的联系人(联系人为空的)
-         */
+        // 只更新最近一次销售负责人的联系人（联系人为空的）
         String recentOwner = extCustomerOwnerMapper.getRecentOwner(customerId);
         customerContactService.updatePoolContactOwner(customerId, ownerId, recentOwner, currentOrgId);
 
-        // 日志
-        LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());
-        logService.add(logDTO);
+        logService.add(new LogDTO(currentOrgId, customer.getId(), operateUserId, logType,
+                LogModule.CUSTOMER_POOL, customer.getName()));
 
-        // 分配通知
         if (Strings.CS.equals(logType, LogType.ASSIGN)) {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED,
-                    customer.getName(), operateUserId, currentOrgId, List.of(customer.getOwner()), true);
+            commonNoticeSendService.sendNotice(
+                    NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED,
+                    customer.getName(), operateUserId, currentOrgId,
+                    List.of(ownerId), true
+            );
         }
     }
 
