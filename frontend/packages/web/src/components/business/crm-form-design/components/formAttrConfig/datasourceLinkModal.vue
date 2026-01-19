@@ -44,6 +44,7 @@
                     : false
                 "
                 max-tag-count="responsive"
+                @update-value="() => (line.link = '')"
               />
             </n-form-item>
             <n-form-item class="mx-[12px]">
@@ -63,12 +64,13 @@
             >
               <n-select
                 v-model:value="line.link"
-                :options="linkFieldOptions"
+                :options="getLinkFieldOptions(line.current)"
                 :fallback-option="
                   line.link !== null && line.link !== undefined && line.link !== '' ? fallbackOption : false
                 "
                 :render-label="renderLinkOptionLabel"
                 :render-tag="renderLinkOptionTag"
+                class="crm-form-design-link-select"
               />
             </n-form-item>
             <div class="mx-[8px] flex h-[32px] w-[35px] items-center">
@@ -174,23 +176,34 @@
     try {
       const res = await getFieldDisplayList(formKey.value);
       linkFieldOptions.value = res.fields
-        .filter((e) => e.type === FieldTypeEnum.DATA_SOURCE)
+        .filter((e) => [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.type))
         .map((item) => {
           return {
             label: item.name,
             value: item.id,
             icon: getFieldIcon(item.type),
+            type: item.type,
           };
         });
       linkFieldOptions.value.unshift({
         label: props.fieldConfig.name,
         value: props.fieldConfig.businessKey || props.fieldConfig.id,
         icon: getFieldIcon(props.fieldConfig.type),
+        type: props.fieldConfig.type,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  function getLinkFieldOptions(currentFieldId: string) {
+    const currentField = props.formFields.find((f) => f.id === currentFieldId);
+    if (currentField?.type === FieldTypeEnum.DATA_SOURCE) {
+      // 单选数据源不能填充多选数据源
+      return linkFieldOptions.value.filter((f) => f.type !== FieldTypeEnum.DATA_SOURCE_MULTIPLE);
+    }
+    return linkFieldOptions.value;
   }
 
   watch(
