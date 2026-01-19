@@ -174,7 +174,10 @@
         Message.success(t('common.addSuccess'));
       }
       if (isContinue) {
-        form.value = cloneDeep(initBusinessTitleForm);
+        form.value = {
+          ...initBusinessTitleForm,
+          type: form.value.type,
+        };
       } else {
         cancelHandler();
       }
