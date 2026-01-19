@@ -442,10 +442,14 @@ public class BusinessTitleService {
             InfoData data = enterpriseInfo.getData();
             businessTitle.setName(data.getName());
             businessTitle.setIdentificationNumber(data.getTaxNo());
-            businessTitle.setOpeningBank(data.getBankInfo().getBank());
-            businessTitle.setBankAccount(data.getBankInfo().getBankAccount());
+            if (data.getBankInfo() != null) {
+                businessTitle.setOpeningBank(data.getBankInfo().getBank());
+                businessTitle.setBankAccount(data.getBankInfo().getBankAccount());
+            }
             businessTitle.setRegistrationAddress(data.getAddress());
-            businessTitle.setPhoneNumber(data.getContactInfo().getTel());
+            if (data.getContactInfo() != null) {
+                businessTitle.setPhoneNumber(data.getContactInfo().getTel());
+            }
             businessTitle.setRegisteredCapital(data.getRegisterCapi());
             businessTitle.setCompanySize(data.getPersonScope());
             businessTitle.setRegistrationNumber(data.getNo());
