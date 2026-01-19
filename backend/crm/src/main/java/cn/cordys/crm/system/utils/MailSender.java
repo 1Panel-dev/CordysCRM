@@ -76,6 +76,9 @@ public class MailSender {
                 mailSender.send(message);
             } else {
                 for (String user : users) {
+                    if (StringUtils.isBlank(user)) {
+                        continue;
+                    }
                     helper.setTo(user);
                     mailSender.send(message);
                 }
