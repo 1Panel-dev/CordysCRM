@@ -115,12 +115,12 @@
   watch(
     () => props.fieldConfig.initialOptions,
     async (val) => {
-      if (!props.needInitDetail && !props.isSubTableField && !props.isSubTableRender) {
+      if (!props.needInitDetail && !props.isSubTableField && !props.isSubTableRender && val?.length === 1) {
         if (fieldList.value.length === 0) {
           await initFormConfig();
         }
         setLoadListParams({
-          keyword: props.fieldConfig.initialOptions?.[0]?.name || '',
+          keyword: val?.[0]?.name || '',
         });
         await loadList();
         const newRows = propsRes.value.data.filter(

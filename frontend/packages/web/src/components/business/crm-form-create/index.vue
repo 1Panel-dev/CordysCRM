@@ -231,24 +231,47 @@
           const currentSourceValue = currentDatasourceFormField.businessKey
             ? currentSource?.[currentDatasourceFormField.businessKey]
             : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
+          if (currentSourceValue === undefined || currentSourceValue === null) {
+            return;
+          }
           // 如果有业务 key，则取业务 key 的值（specialBusinessKeyMap读取特殊业务字段值），否则取字段值
           const currentSourceName = currentDatasourceFormField.businessKey
             ? currentSource?.[
                 specialBusinessKeyMap[currentDatasourceFormField.businessKey] || currentDatasourceFormField.businessKey
               ]
-            : currentSource?.[linkField.link]?.[0];
+            : currentSource?.[linkField.link];
           // 如果联动字段是当前字段本身，则直接赋值；若是当前字段内的其他字段，则赋值对应的值
-          formDetail.value[targetField.id] = item.id === linkField.link ? [...value] : [currentSourceValue];
+          if (item.id === linkField.link) {
+            formDetail.value[targetField.id] = [...value];
+          } else {
+            // 多选数据源
+            formDetail.value[targetField.id] = Array.isArray(currentSourceValue)
+              ? currentSourceValue
+              : [currentSourceValue];
+          }
           if (!targetField.initialOptions) {
-            targetField.initialOptions = [
-              {
-                name: currentSourceName,
-                id: currentSourceValue,
-              },
-            ];
+            targetField.initialOptions = Array.isArray(currentSourceValue)
+              ? currentSourceValue.map((e, i) => ({
+                  name: currentSourceName[i],
+                  id: e,
+                }))
+              : [
+                  {
+                    name: currentSourceName[0],
+                    id: currentSourceValue,
+                  },
+                ];
+          } else if (Array.isArray(currentSourceValue)) {
+            // 多选数据源
+            targetField.initialOptions.push(
+              ...currentSourceValue.map((e, i) => ({
+                name: currentSourceName[i],
+                id: e,
+              }))
+            );
           } else {
             targetField.initialOptions.push({
-              name: currentSourceName,
+              name: currentSourceName[0],
               id: currentSourceValue,
             });
           }

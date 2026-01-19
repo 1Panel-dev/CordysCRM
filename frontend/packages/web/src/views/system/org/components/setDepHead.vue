@@ -108,9 +108,6 @@
 </script>
 
 <style lang="less">
-  .n-base-select-option__content {
-    width: 100%;
-  }
   .option-content {
     @apply flex w-full items-center justify-between;
     .option-label {
