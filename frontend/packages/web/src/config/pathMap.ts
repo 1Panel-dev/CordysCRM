@@ -100,6 +100,11 @@ export const pathMap: PathMapItem[] = [
         route: AppRouteEnum.CONTRACT_BUSINESS_NAME,
         locale: 'module.businessTitle',
       },
+      {
+        key: 'CONTRACT_INVOICE',
+        route: AppRouteEnum.CONTRACT_INVOICE,
+        locale: 'module.invoice',
+      },
     ],
   },
   {
