@@ -503,6 +503,7 @@
       form.value.list.splice(index, 1);
       emit('cancelRow', index);
     }
+    formValidate(() => {});
   }
 
   // 保存编辑
