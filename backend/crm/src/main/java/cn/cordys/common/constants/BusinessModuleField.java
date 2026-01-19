@@ -213,7 +213,7 @@ public enum BusinessModuleField {
     QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
     /**
      * 合同回款计划
@@ -234,7 +234,7 @@ public enum BusinessModuleField {
     /**
      * 计划回款时间
      */
-    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "dateType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
      * 回款计划名称
      */
@@ -258,8 +258,8 @@ public enum BusinessModuleField {
     CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("rules.required", "mobile", "dateType", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
     /*------ end: CONTRACT ------*/
 
