@@ -214,4 +214,5 @@ export default {
   'crmFormDesign.subTableField': 'Table Field',
   'crmFormDesign.addSubField': 'Add Subfield',
   'crmFormDesign.quotingData': 'Reference other forms',
+  'crmFormDesign.currentFormField': 'Current Form Field',
 };

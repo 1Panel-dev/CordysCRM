@@ -689,6 +689,12 @@ export const advancedFields: FormCreateField[] = [
   priceTableDefaultFieldConfig,
 ];
 
+export function getFieldIcon(type: FieldTypeEnum) {
+  const allFields = [...basicFields, ...advancedFields];
+  const field = allFields.find((f) => f.type === type);
+  return field?.icon;
+}
+
 export const rules: FormCreateFieldRule[] = [
   {
     key: FieldRuleEnum.REQUIRED,
