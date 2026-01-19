@@ -192,6 +192,16 @@
     default: null,
   });
 
+  const isMultiple = computed(() =>
+    [
+      FieldTypeEnum.CHECKBOX,
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+    ].includes(fieldConfig.value.type)
+  );
+
   const defaultRefOptions = fullFormSettingList
     .filter((item) => !!item.formKey)
     .map((i) => ({ ...i, value: i.formKey, isLeaf: false }));
@@ -270,6 +280,7 @@
     () => fieldConfig.value.optionSource,
     async (val) => {
       if (val === 'ref') {
+        fieldConfig.value.defaultValue = isMultiple.value ? [] : '';
         if (fieldConfig.value.refFormKey && fieldConfig.value.refId) {
           await initEchoByPath(fieldConfig.value.refFormKey);
           updateFormKeyFromCascader(fieldConfig.value.refId);
@@ -280,16 +291,6 @@
         fieldConfig.value.options = fieldConfig.value.customOptions || fieldConfig.value.options;
       }
     }
-  );
-
-  const isMultiple = computed(() =>
-    [
-      FieldTypeEnum.CHECKBOX,
-      FieldTypeEnum.SELECT_MULTIPLE,
-      FieldTypeEnum.MEMBER_MULTIPLE,
-      FieldTypeEnum.DEPARTMENT_MULTIPLE,
-      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-    ].includes(fieldConfig.value.type)
   );
 
   const getComponent = computed(() => {
