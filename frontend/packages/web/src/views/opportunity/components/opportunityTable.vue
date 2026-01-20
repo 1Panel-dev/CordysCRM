@@ -914,7 +914,7 @@
           viewId: getViewId(),
           customerId: props.sourceId,
         });
-        setHomePageParams();
+        await setHomePageParams();
         initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
         getStatistic();

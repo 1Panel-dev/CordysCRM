@@ -202,10 +202,9 @@
           </VueDraggable>
         </n-scrollbar>
       </n-form>
-      <n-tooltip trigger="hover" placement="bottom" :disabled="getAddDisabled ? !props.disabledAddTooltip : true">
+      <n-tooltip v-if="props.addText" placement="bottom" :disabled="getAddDisabled ? !props.disabledAddTooltip : true">
         <template #trigger>
           <n-button
-            v-if="props.addText"
             type="primary"
             :disabled="getAddDisabled"
             text
