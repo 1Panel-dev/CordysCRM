@@ -273,7 +273,7 @@ public class ContractPaymentRecordService {
 					.successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
 		} catch (Exception e) {
 			log.error("Payment record import pre-check error", e);
-			throw new GenericException(e);
+			throw new GenericException(e.getMessage());
 		}
 	}
 
