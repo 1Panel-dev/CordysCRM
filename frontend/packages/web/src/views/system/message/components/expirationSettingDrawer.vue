@@ -3,7 +3,7 @@
     v-model:show="visible"
     resizable
     no-padding
-    :default-width="600"
+    :width="600"
     :ok-text="t('common.save')"
     :title="t('system.message.expirationTitle', { type: detail?.eventName })"
     @confirm="handleConfirm"
@@ -13,7 +13,7 @@
       <div v-if="props.showTimeSetting" class="mb-[16px] font-medium text-[var(--text-n1)]">
         {{ t('system.message.timeSetting') }}
       </div>
-      <div v-if="props.showTimeSetting" class="bg-[var(--text-n9)] p-[16px]">
+      <div v-if="props.showTimeSetting" class="mb-[16px] bg-[var(--text-n9)] p-[16px]">
         <CrmBatchForm
           ref="batchFormRef"
           class="!p-0"
@@ -28,10 +28,9 @@
           @save-row="handleSave"
         />
       </div>
-      <div class="my-[16px] font-medium text-[var(--text-n1)]">{{ t('system.message.scopedSettings') }}</div>
+      <div class="mb-[16px] font-medium text-[var(--text-n1)]">{{ t('system.message.scopedSettings') }}</div>
       <n-form ref="formRef" :model="form" label-placement="left" label-width="auto">
         <n-form-item
-          :rule="[{ required: true, message: t('common.notNull', { value: `${t('system.message.noticePerson')}` }) }]"
           require-mark-placement="left"
           label-placement="left"
           path="userIds"
@@ -91,7 +90,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, NCheckbox, NForm, NFormItem, NScrollbar, NTooltip, useMessage } from 'naive-ui';
+  import { FormInst, NCheckbox, NForm, NFormItem, NScrollbar, NTooltip, selectProps, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -171,6 +170,9 @@
       formItemClass: 'w-full flex-initial',
       inputProps: {
         maxlength: 255,
+      },
+      selectProps: {
+        showArrow: false,
       },
       rule: [
         {

@@ -42,14 +42,14 @@
               <n-form-item
                 v-for="model of props.models"
                 :key="`${model.path}${index}`"
-                :ref="(el) => handleFormItemRef(el, model.path, index)"
+                :ref="(el) => handleFormItemRef(el, model.path, index as number)"
                 :label="index === 0 && model.label ? model.label : ''"
                 :path="`list[${index}].${model.path}`"
                 :rule="
                 model.rule?.map((e) => { 
                   if (e.notRepeat) {
                     return {
-                    validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value, index, model.path, e.message as string),
+                    validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value, index as number, model.path, e.message as string),
                     };
                   }
                   if (typeof e.validator === 'function') {
@@ -114,6 +114,7 @@
                     min: model.numberProps?.min,
                     max: model.numberProps?.max,
                     precision: model.numberProps?.precision,
+                    showArrow: model.selectProps?.showArrow,
                   }"
                 />
                 <n-tooltip
@@ -150,19 +151,19 @@
                 :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '30px' : '4px' }"
               >
                 <template v-if="element.editing">
-                  <n-button type="success" ghost class="px-[7px]" @click="handleSaveRow(element, index)">
+                  <n-button type="success" ghost class="px-[7px]" @click="handleSaveRow(element, index as number)">
                     <template #icon>
                       <CrmIcon type="iconicon_check" :size="16" />
                     </template>
                   </n-button>
-                  <n-button ghost type="error" class="px-[7px]" @click="handleCancelEdit(index)">
+                  <n-button ghost type="error" class="px-[7px]" @click="handleCancelEdit(index as number)">
                     <template #icon>
                       <CrmIcon type="iconicon_close" :size="16" />
                     </template>
                   </n-button>
                 </template>
                 <template v-else>
-                  <n-button ghost class="px-[7px]" @click="handleEditRow(index)">
+                  <n-button ghost class="px-[7px]" @click="handleEditRow(index as number)">
                     <template #icon>
                       <CrmIcon type="iconicon_edit" :size="16" />
                     </template>
@@ -173,15 +174,15 @@
                     :disabled="!props.popConfirmProps || !element.id"
                     placement="bottom-end"
                     class="w-[260px]"
-                    v-bind="getPopConfirmProps(element,index) as CrmPopConfirmProps"
-                    @confirm="handlePopDeleteListItem(index, element.id)"
+                    v-bind="getPopConfirmProps(element,index as number) as CrmPopConfirmProps"
+                    @confirm="handlePopDeleteListItem(index as number, element.id)"
                     @cancel="popShow[element.id] = false"
                   >
                     <n-button
-                      v-if="!getPopConfirmProps(element, index)?.disabled"
+                      v-if="!getPopConfirmProps(element, index as number)?.disabled"
                       ghost
                       class="px-[7px]"
-                      @click.stop="handleDeleteListItem(index, element.id)"
+                      @click.stop="handleDeleteListItem(index as number, element.id)"
                     >
                       <template #icon>
                         <CrmIcon type="iconicon_delete" :size="16" />
@@ -190,7 +191,7 @@
                     <span v-else></span>
                   </CrmPopConfirm>
                   <slot v-else-if="$slots.extra" name="extra" :element="element"></slot>
-                  <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                  <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index as number, element.id)">
                     <template #icon>
                       <CrmIcon type="iconicon_delete" :size="16" />
                     </template>

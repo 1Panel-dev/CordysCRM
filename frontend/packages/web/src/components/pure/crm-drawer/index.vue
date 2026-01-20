@@ -62,8 +62,7 @@
         <slot name="footer">
           <div class="flex w-full items-center justify-between">
             <slot name="footerLeft"></slot>
-
-            <div class="flex gap-[8px]">
+            <div class="ml-auto flex gap-[8px]">
               <n-button :disabled="props.loading" secondary @click="handleCancel">
                 {{ t(props.cancelText || 'common.cancel') }}
               </n-button>
@@ -76,8 +75,8 @@
                 :disabled="okDisabled"
                 @click="handleContinue"
               >
-                {{ t(props.saveContinueText || 'common.saveAndContinue') }}</n-button
-              >
+                {{ t(props.saveContinueText || 'common.saveAndContinue') }}
+              </n-button>
               <n-button type="primary" :disabled="okDisabled" :loading="props.loading" @click="handleOk">
                 {{ t(props.okText || 'common.add') }}
               </n-button>
