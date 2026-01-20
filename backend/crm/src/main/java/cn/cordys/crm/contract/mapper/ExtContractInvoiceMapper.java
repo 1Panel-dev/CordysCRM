@@ -25,9 +25,11 @@ public interface ExtContractInvoiceMapper {
     void updateStatus(@Param("id") String id, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     BigDecimal calculateCustomerInvoiceAmount(@Param("customerId") String customerId, @Param("userId") String userId,
-                                              @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                              @Param("orgId") String orgId);
 
     BigDecimal calculateContractInvoiceAmount(@Param("contractId") String contractId, @Param("userId") String userId,
-                                              @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+                                              @Param("orgId") String orgId);
 
+    BigDecimal calculateContractInvoiceValidAmount(@Param("contractId") String contractId, @Param("userId") String userId,
+                                              @Param("orgId") String orgId, @Param("excludeId") String excludeId);
 }

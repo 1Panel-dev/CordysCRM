@@ -325,10 +325,8 @@ public class CustomerController {
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
     @Operation(summary = "客户详情-发票列表统计")
     public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String accountId) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
         BigDecimal invoiceAmount = contractInvoiceService.calculateCustomerInvoiceAmount(accountId, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId());
 
         CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
         response.setContractAmount(calculateCustomerContractStatistic(accountId).getTotalAmount());

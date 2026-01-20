@@ -140,6 +140,14 @@ public class ContractInvoiceService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("invoice.form.config.required"));
         }
+
+        Contract contract = contractMapper.selectByPrimaryKey(request.getContractId());
+        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper.calculateContractInvoiceValidAmount(request.getContractId(), operatorId, orgId, null);
+        if (request.getAmount() != null && contract != null && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
+            // 校验发票金额
+            throw new GenericException(Translator.get("invoice.amount.exceed"));
+        }
+
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
         String id = IDGenerator.nextStr();
@@ -243,6 +251,14 @@ public class ContractInvoiceService {
         }
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("invoice.form.config.required"));
+        }
+
+        String contractId = request.getContractId() == null ? originContractInvoice.getContractId() : request.getContractId();
+        Contract contract = contractMapper.selectByPrimaryKey(contractId);
+        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper.calculateContractInvoiceValidAmount(request.getContractId(), userId, orgId, request.getId());
+        if (request.getAmount() != null && contract != null && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
+            // 校验发票金额
+            throw new GenericException(Translator.get("invoice.amount.exceed"));
         }
 
         dataScopeService.checkDataPermission(userId, orgId, originContractInvoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_UPDATE);
@@ -534,12 +550,12 @@ public class ContractInvoiceService {
         }
     }
 
-    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, organizationId, deptDataPermission);
+    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String organizationId) {
+        return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, organizationId);
     }
 
-    public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, organizationId, deptDataPermission);
+    public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String organizationId) {
+        return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, organizationId);
     }
 
     public ModuleFormConfigDTO getBusinessFormConfig(String organizationId) {
