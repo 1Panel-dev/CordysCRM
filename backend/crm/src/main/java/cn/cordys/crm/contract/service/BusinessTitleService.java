@@ -186,7 +186,7 @@ public class BusinessTitleService {
      *
      * @param id
      */
-    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         BusinessTitle businessTitle = checkTitle(id);
         if (!checkHasInvoice(id)) {
