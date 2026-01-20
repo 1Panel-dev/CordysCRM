@@ -252,6 +252,12 @@
 
     <sql id="condition">
         <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cpp.name"/>
+                </include>
+            </when>
             <when test="condition.name == 'owner'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
