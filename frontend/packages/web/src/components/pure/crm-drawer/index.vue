@@ -19,7 +19,7 @@
     >
       <template #header>
         <slot name="header">
-          <div class="flex w-full items-center justify-between gap-[8px] overflow-hidden">
+          <div class="flex w-full items-center justify-between gap-[24px] overflow-hidden">
             <n-button v-if="props.showBack" text class="mr-[4px] w-[32px]" @click="handleCancel">
               <n-icon size="16">
                 <ChevronBackOutline />

@@ -132,10 +132,12 @@
 <style lang="less" scoped>
   .crm-description {
     @apply flex flex-wrap;
-    .crm-description-item {
-      @apply flex;
 
-      width: calc(100% / v-bind(column));
+    column-gap: 32px;
+    .crm-description-item {
+      @apply flex items-center;
+
+      width: calc((100% - v-bind(column - 1) * 32px) / v-bind(column));
     }
     .crm-description-item-label {
       @apply font-normal;
