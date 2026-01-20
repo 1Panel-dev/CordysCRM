@@ -135,6 +135,7 @@
       const result = await getBusinessTitleThirdQuery(businessName);
       form.value = {
         ...result,
+        id: props.sourceId ?? '',
         type: 'thirdParty',
       };
     } catch (error) {
@@ -147,9 +148,16 @@
     handleQueryByBusinessName(businessName);
   }
 
+  const initFormCache = {
+    thirdParty: { ...initBusinessTitleForm, type: 'thirdParty' },
+    custom: { ...initBusinessTitleForm, type: 'custom' },
+  };
+
+  const formCache = ref<Record<string, SaveBusinessTitleParams>>(cloneDeep(initFormCache));
+
   function handleChangeTab() {
     form.value = {
-      ...initBusinessTitleForm,
+      ...formCache.value[form.value.type],
       id: form.value.id,
       type: form.value.type,
     };
@@ -157,6 +165,7 @@
 
   function cancelHandler() {
     form.value = { ...initBusinessTitleForm };
+    formCache.value = cloneDeep(initFormCache);
     emit('cancel');
     visible.value = false;
   }
@@ -204,6 +213,7 @@
       const result = await getBusinessTitleDetail(props.sourceId);
       form.value = { ...result };
       originType.value = result.type;
+      formCache.value[result.type] = cloneDeep(result);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -240,6 +250,7 @@
         const e = result.find((c) => c.field === item.value);
         return {
           ...e,
+          field: e?.field ?? item.value,
           title: item.label,
           rule: e?.required
             ? [
