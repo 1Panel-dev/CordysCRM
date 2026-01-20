@@ -1,11 +1,8 @@
 package cn.cordys.crm.contract.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 @Data
 public class BusinessTitleAddRequest {
@@ -22,7 +19,7 @@ public class BusinessTitleAddRequest {
     @Schema(description = "开户银行")
     private String openingBank;
 
-    @Size(max = 50)
+    @Size(max = 255)
     @Schema(description = "银行账号")
     private String bankAccount;
 
@@ -30,18 +27,18 @@ public class BusinessTitleAddRequest {
     @Schema(description = "注册地址")
     private String registrationAddress;
 
-    @Size(max = 50)
+    @Size(max = 255)
     @Schema(description = "注册电话")
     private String phoneNumber;
 
     @Schema(description = "注册资本")
     private String registeredCapital;
 
-    @Size(max = 50)
+    @Size(max = 255)
     @Schema(description = "公司规模")
     private String companySize;
 
-    @Size(max = 50)
+    @Size(max = 255)
     @Schema(description = "工商注册号")
     private String registrationNumber;
 
