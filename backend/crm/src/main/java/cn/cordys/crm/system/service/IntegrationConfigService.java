@@ -62,7 +62,6 @@ public class IntegrationConfigService {
      * 获取同步的组织配置
      *
      * @param organizationId 组织ID
-     *
      * @return 第三方配置列表
      */
     public List<ThirdConfigBaseDTO<?>> getThirdConfig(String organizationId) {
@@ -121,10 +120,9 @@ public class IntegrationConfigService {
      * 测试连接
      *
      * @param configDTO 配置DTO
-     *
      * @return 是否连接成功
      */
-    public boolean testConnection(ThirdConfigBaseDTO<?> configDTO) {
+    public boolean testConnection(ThirdConfigBaseDTO<?> configDTO, String orgId, String userId) {
         String token = getToken(configDTO);
         if (ThirdConfigTypeConstants.WECOM.name().equals(configDTO.getType()) && StringUtils.isNotBlank(token)) {
             WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
@@ -133,7 +131,10 @@ public class IntegrationConfigService {
                 token = null;
             }
         }
-        return StringUtils.isNotBlank(token);
+        boolean verify = StringUtils.isNotBlank(token);
+        editThirdConfig((ThirdConfigBaseDTO<Object>) configDTO, orgId, userId);
+
+        return verify;
     }
 
     /**
@@ -142,7 +143,6 @@ public class IntegrationConfigService {
      * @param orgId        组织ID
      * @param type         类型
      * @param syncResource 同步资源
-     *
      * @return 是否同步
      */
     public boolean getSyncStatus(String orgId, String type, String syncResource) {
@@ -155,7 +155,6 @@ public class IntegrationConfigService {
      *
      * @param type  类型
      * @param orgId 组织ID
-     *
      * @return 配置DTO
      */
     public ThirdConfigBaseDTO<?> getThirdConfigForPublic(String type, String orgId) {
@@ -186,7 +185,6 @@ public class IntegrationConfigService {
      * 获取第三方类型列表
      *
      * @param orgId 组织ID
-     *
      * @return 选项列表
      */
     public List<OptionDTO> getThirdTypeList(String orgId) {
@@ -260,7 +258,6 @@ public class IntegrationConfigService {
      * 获取最近同步资源
      *
      * @param organizationId 组织ID
-     *
      * @return 组织配置
      */
     public OrganizationConfig getLatestSyncResource(String organizationId) {
@@ -273,7 +270,6 @@ public class IntegrationConfigService {
      * @param organizationId 组织ID
      * @param userId         用户ID
      * @param type           类型
-     *
      * @return 配置DTO
      */
     public ThirdConfigBaseDTO<?> getApplicationConfig(String organizationId, String userId, String type) {
@@ -392,7 +388,6 @@ public class IntegrationConfigService {
      * @param enableSetter 启用设置器
      * @param type         类型
      * @param <T>          配置类型
-     *
      * @return 配置DTO
      */
     private <T> ThirdConfigBaseDTO<?> buildDto(String content, Class<T> configClass, Consumer<T> enableSetter, String type) {
@@ -413,7 +408,6 @@ public class IntegrationConfigService {
      * @param content     内容
      * @param configClass 配置类
      * @param <T>         配置类型
-     *
      * @return 配置对象
      */
     private <T> T buildConfig(ThirdConfigBaseDTO<?> dto, String content, Class<T> configClass) {
@@ -428,7 +422,6 @@ public class IntegrationConfigService {
      *
      * @param organizationId 组织ID
      * @param userId         用户ID
-     *
      * @return 配置详情列表
      */
     private List<OrganizationConfigDetail> initConfig(String organizationId, String userId) {
@@ -472,7 +465,6 @@ public class IntegrationConfigService {
      *
      * @param organizationConfigDetails 配置详情列表
      * @param type                      类型
-     *
      * @return 配置DTO
      */
     private ThirdConfigBaseDTO<?> getThirdConfigurationDTOByType(
@@ -501,7 +493,6 @@ public class IntegrationConfigService {
      *
      * @param organizationId 组织ID
      * @param userId         用户ID
-     *
      * @return 组织配置
      */
     private OrganizationConfig getOrCreateOrganizationConfig(String organizationId, String userId) {
@@ -888,7 +879,6 @@ public class IntegrationConfigService {
      * @param detail 配置详情
      * @param clazz  类
      * @param <T>    类型
-     *
      * @return 配置对象
      */
     private <T> T parseOldConfig(OrganizationConfigDetail detail, Class<T> clazz) {
@@ -985,7 +975,6 @@ public class IntegrationConfigService {
      * @param userId             用户ID
      * @param organizationConfig 组织配置
      * @param jsonString         JSON字符串
-     *
      * @return 配置详情
      */
     private OrganizationConfigDetail createConfigDetail(String userId, OrganizationConfig organizationConfig, String jsonString) {
@@ -1051,7 +1040,6 @@ public class IntegrationConfigService {
      * 根据配置类型获取详情类型列表
      *
      * @param type 类型
-     *
      * @return 类型列表
      */
     private List<String> getDetailTypes(String type) {
@@ -1079,7 +1067,6 @@ public class IntegrationConfigService {
      * 获取类型启用状态映射
      *
      * @param configDTO 配置DTO
-     *
      * @return 类型启用映射
      */
     private Map<String, Boolean> getTypeEnableMap(ThirdConfigBaseDTO<?> configDTO) {
@@ -1131,7 +1118,6 @@ public class IntegrationConfigService {
      * 获取Token
      *
      * @param configDTO 配置DTO
-     *
      * @return Token
      */
     private String getToken(ThirdConfigBaseDTO<?> configDTO) {
@@ -1183,7 +1169,6 @@ public class IntegrationConfigService {
      * 验证De配置
      *
      * @param configDTO 配置请求
-     *
      * @return 是否有效
      */
     private boolean validDeConfig(DeThirdConfigRequest configDTO) {
@@ -1204,7 +1189,6 @@ public class IntegrationConfigService {
      *
      * @param organizationId 组织ID
      * @param userId         用户ID
-     *
      * @return 组织配置
      */
     private OrganizationConfig createNewOrganizationConfig(String organizationId, String userId) {
@@ -1241,7 +1225,6 @@ public class IntegrationConfigService {
      *
      * @param type    类型
      * @param details 配置详情列表
-     *
      * @return 配置DTO
      */
     private ThirdConfigBaseDTO<?> getConfigurationByType(String type, List<OrganizationConfigDetail> details) {
@@ -1253,7 +1236,6 @@ public class IntegrationConfigService {
      *
      * @param type    类型
      * @param details 配置详情列表
-     *
      * @return 配置DTO
      */
     private ThirdConfigBaseDTO<?> getNormalConfiguration(String type, List<OrganizationConfigDetail> details) {
@@ -1269,7 +1251,6 @@ public class IntegrationConfigService {
      * 获取选项DTO
      *
      * @param detail 配置详情
-     *
      * @return 选项DTO
      */
     private OptionDTO getOptionDTO(OrganizationConfigDetail detail) {
@@ -1292,7 +1273,6 @@ public class IntegrationConfigService {
      * 获取启用状态
      *
      * @param configDTO 配置DTO
-     *
      * @return 是否启用
      */
     private boolean getEnable(ThirdConfigBaseDTO<?> configDTO) {
@@ -1323,7 +1303,6 @@ public class IntegrationConfigService {
      * 获取最近同步类型
      *
      * @param id ID
-     *
      * @return 同步类型
      */
     private String getLastSyncType(String id) {
@@ -1340,7 +1319,6 @@ public class IntegrationConfigService {
      *
      * @param content   内容
      * @param configDTO 配置DTO
-     *
      * @return 是否同步
      */
     private boolean syncCorpId(byte[] content, ThirdConfigBaseDTO<?> configDTO) {
