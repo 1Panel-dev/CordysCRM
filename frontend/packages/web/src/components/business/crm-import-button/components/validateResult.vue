@@ -105,25 +105,22 @@
         <span class="text-[var(--text-n4)]">（{{ validateResultInfo.failCount }}）</span>
       </div>
     </template>
-    <n-scrollbar>
-      <CrmList
-        v-model:data="validateResultInfo.errorMessages"
-        :bordered="false"
-        :item-border="false"
-        virtual-scroll-height="calc(100vh - 82px)"
-        key-field="num"
-        no-hover
-        item-class="my-[16px]"
-        :item-height="32"
-      >
-        <template #item="{ item }">
-          <div class="flex px-4">
-            <div class="circle"></div>
-            <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
-          </div>
-        </template>
-      </CrmList>
-    </n-scrollbar>
+    <CrmList
+      v-model:data="validateResultInfo.errorMessages"
+      :bordered="false"
+      :item-border="false"
+      virtual-scroll-height="calc(100vh - 82px)"
+      key-field="num"
+      no-hover
+      :item-height="30"
+    >
+      <template #item="{ item }">
+        <div class="flex p-[8px]">
+          <div class="circle"></div>
+          <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
+        </div>
+      </template>
+    </CrmList>
   </CrmDrawer>
 </template>
 
