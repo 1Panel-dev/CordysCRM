@@ -51,9 +51,7 @@ public class ContractLogService extends BaseModuleLogService {
             }
 
             if (Strings.CI.equals(differ.getColumn(), "approvalStatus") && Arrays.stream(ContractApprovalStatus.values()).anyMatch(status -> status.name().equals(differ.getOldValue()))) {
-                differ.setOldValueName(Translator.get("contract.approval_status." + differ.getOldValue().toString().toLowerCase()));
-                differ.setNewValueName(Translator.get("contract.approval_status." + differ.getNewValue().toString().toLowerCase()));
-
+                setApprovalName(differ);
             }
 
 

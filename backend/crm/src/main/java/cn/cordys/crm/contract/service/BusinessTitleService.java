@@ -62,10 +62,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -533,5 +530,10 @@ public class BusinessTitleService {
             return null;
         }
         return businessTitleMapper.selectByPrimaryKey(id);
+    }
+
+    public String getBusinessTitleName(String string) {
+        BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(string);
+        return Optional.ofNullable(businessTitle).map(BusinessTitle::getName).orElse(null);
     }
 }
