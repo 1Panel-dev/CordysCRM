@@ -171,7 +171,7 @@
         FROM sys_user su
         INNER JOIN sys_organization_user sou on su.id = sou.user_id
         LEFT JOIN
-        ( SELECT user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
+        ( SELECT distinct user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
         WHERE sou.organization_id = #{orgId}
         ORDER BY sou.enable DESC,
         <if test="defaultOrder != null and defaultOrder != ''">
