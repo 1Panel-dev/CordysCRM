@@ -3,7 +3,6 @@ package cn.cordys.crm.contract.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
-import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import org.apache.ibatis.annotations.Param;
 

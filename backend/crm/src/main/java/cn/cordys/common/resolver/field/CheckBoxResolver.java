@@ -42,12 +42,12 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List list = JSON.parseArray(value);
+        List<String> list = JSON.parseArray(value, String.class);
         List<String> result = new ArrayList<>();
         Map<String, String> optionValueMap = checkBoxField.getOptions().stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
         list.forEach(item -> {
-            if (optionValueMap.containsKey(item.toString())) {
-                result.add(optionValueMap.get(item.toString()));
+            if (optionValueMap.containsKey(item)) {
+                result.add(optionValueMap.get(item));
             }
         });
         return String.join(",", JSON.parseArray(JSON.toJSONString(result)));

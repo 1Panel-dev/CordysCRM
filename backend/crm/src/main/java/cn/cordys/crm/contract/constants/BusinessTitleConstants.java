@@ -1,7 +1,5 @@
 package cn.cordys.crm.contract.constants;
 
-import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelData;
-
 public enum BusinessTitleConstants {
 
     NAME("name", "公司名称", "Name"),

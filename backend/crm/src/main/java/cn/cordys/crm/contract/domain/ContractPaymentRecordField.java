@@ -1,8 +1,6 @@
 package cn.cordys.crm.contract.domain;
 
-import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.domain.BaseResourceField;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
