@@ -31,6 +31,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -297,4 +298,16 @@ public class ContractPaymentPlanService {
     public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(String accountId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
         return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatistic(accountId, userId, organizationId, deptDataPermission);
     }
+
+	/**
+	 * 通过名称获取回款计划集合
+	 *
+	 * @param names 名称集合
+	 * @return 回款计划集合
+	 */
+	public List<ContractPaymentPlan> getPlanListByNames(List<String> names) {
+		LambdaQueryWrapper<ContractPaymentPlan> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.in(ContractPaymentPlan::getName, names);
+		return contractPaymentPlanMapper.selectListByLambda(lambdaQueryWrapper);
+	}
 }

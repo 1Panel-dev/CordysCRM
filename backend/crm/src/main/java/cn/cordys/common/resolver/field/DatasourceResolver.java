@@ -3,6 +3,10 @@ package cn.cordys.common.resolver.field;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.service.ClueService;
+import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractPaymentPlan;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactService;
@@ -33,6 +37,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
     private static final ProductService productService;
     private static final ProductPriceService productPriceService;
     private static final OpportunityQuotationService opportunityQuotationService;
+	private static final ContractService contractService;
+	private static final ContractPaymentPlanService contractPaymentPlanService;
 
     static {
         customerService = CommonBeanFactory.getBean(CustomerService.class);
@@ -42,6 +48,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         productService = CommonBeanFactory.getBean(ProductService.class);
         productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
         opportunityQuotationService = CommonBeanFactory.getBean(OpportunityQuotationService.class);
+		contractService = CommonBeanFactory.getBean(ContractService.class);
+		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
     }
 
     @Override
@@ -119,6 +127,14 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
 			List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(List.of(text));
 			return CollectionUtils.isEmpty(quotations) ? text : quotations.getFirst().getId();
+		}
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
+			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
+			return CollectionUtils.isEmpty(contracts) ? text : contracts.getFirst().getId();
+		}
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
+			List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(List.of(text));
+			return CollectionUtils.isEmpty(plans) ? text : plans.getFirst().getId();
 		}
         return text;
     }

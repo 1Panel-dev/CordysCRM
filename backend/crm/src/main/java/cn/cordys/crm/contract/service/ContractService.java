@@ -698,4 +698,16 @@ public class ContractService {
         return formConfig;
     }
 
+	/**
+	 * 通过名称获取合同集合
+	 *
+	 * @param names 名称集合
+	 * @return 合同集合
+	 */
+	public List<Contract> getContractListByNames(List<String> names) {
+		LambdaQueryWrapper<Contract> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.in(Contract::getName, names);
+		return contractMapper.selectListByLambda(lambdaQueryWrapper);
+	}
+
 }
