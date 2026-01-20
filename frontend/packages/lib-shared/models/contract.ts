@@ -145,7 +145,7 @@ export interface UpdatePaymentRecordParams extends SavePaymentRecordParams {
 export interface BusinessTitleItem {
   id: string;
   name: string;
-  type: string;
+  type: 'THIRD_PARTY' | 'CUSTOM';
   identificationNumber: string;
   openingBank: string;
   bankAccount: string;

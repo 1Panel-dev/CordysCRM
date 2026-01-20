@@ -1,7 +1,8 @@
 <template>
   <NTooltip v-if="text" :delay="300" flip :disabled="!text">
     <template #trigger>
-      <div class="overflow-hidden">
+      <div class="flex items-center gap-[8px] overflow-hidden">
+        <slot name="prefix"></slot>
         <div class="one-line-text h-full min-w-0 max-w-full items-center">
           {{ text }}
         </div>

@@ -107,7 +107,10 @@
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     if (node.option.internal) {
-      return h(roleTreeNodePrefix);
+      return h(roleTreeNodePrefix, {
+        text: t('role.sys'),
+        tooltip: t('role.systemInit'),
+      });
     }
   }
 

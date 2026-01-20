@@ -54,6 +54,7 @@ export default {
   'contract.businessTitle.selectCompanyPlaceholder': 'Select a company to auto-fill other fields',
   'contract.businessTitle.status': 'Review status',
   'contract.businessTitle.dataSource': 'Data source',
+  'contract.businessTitle.dataSourceSelf': 'Self',
   'contract.businessTitle.deleteContent': 'Deleted data cannot be recovered. Proceed with caution.',
   'contract.businessTitle.deleteInvoiceContent':
     'The company name has an invoice record and is prohibited from being deleted!',
