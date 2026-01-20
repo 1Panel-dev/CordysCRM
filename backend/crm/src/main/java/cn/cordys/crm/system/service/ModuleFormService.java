@@ -60,8 +60,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -2002,94 +2000,5 @@ public class ModuleFormService {
 			return Map.of();
 		}
 		return allFields.stream().collect(Collectors.toMap(BaseField::getName, Function.identity(), (p, n) -> p));
-	}
-
-	/**
-	 * 获取表单附件字段ID集合
-	 * @param formKey 表单Key
-	 * @param orgId 组织ID
-	 * @return 字段ID集合
-	 */
-	public List<String> getFieldIdsOfForm(String formKey, String orgId) {
-		List<BaseField> allFields = getAllFields(formKey, orgId);
-		if (CollectionUtils.isEmpty(allFields)) {
-			return List.of();
-		}
-		return allFields.stream().filter(BaseField::isAttachment)
-				.map(BaseField::getId)
-				.toList();
-	}
-
-	/**
-	 * 获取流水号字段规则
-	 * @param formKey 表单Key
-	 * @param currentOrg 当前组织
-	 * @param internalKey 字段Key
-	 * @return 字段规则集合
-	 */
-	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey) {
-		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
-		if (blob == null) {
-			return new ArrayList<>();
-		}
-		SerialNumberField serialNumberField = JSON.parseObject(blob.getProp(), SerialNumberField.class);
-		return serialNumberField.getSerialNumberRules();
-	}
-
-	/**
-	 * 获取字段选项
-	 * @param formKey 表单Key
-	 * @param currentOrg 组织ID
-	 * @param internalKey 字段内置Key
-	 * @return 字段选项
-	 */
-	public List<OptionProp> getFieldOptions(String formKey, String currentOrg, String internalKey) {
-		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
-		if (blob == null) {
-			return new ArrayList<>();
-		}
-		BaseField field = JSON.parseObject(blob.getProp(), BaseField.class);
-		if (field instanceof HasOption of) {
-			return of.getOptions();
-		}
-		return new ArrayList<>();
-	}
-
-	/**
-	 * 获取日期字段类型
-	 * @param formKey 表单Key
-	 * @param currentOrg 组织ID
-	 * @param internalKey 内部Key
-	 * @return 日期字段类型
-	 */
-	public String getDateFieldType(String formKey, String currentOrg, String internalKey) {
-		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
-		if (blob == null) {
-			return "datetime";
-		}
-		DateTimeField dateField = JSON.parseObject(blob.getProp(), DateTimeField.class);
-		return dateField.getDateType();
-	}
-
-	/**
-	 * 根据字段Key获取额外信息
-	 * @param formKey 表单Key
-	 * @param orgId 组织ID
-	 * @param internalKey 字段内置Key
-	 * @return 字段大文本
-	 */
-	private ModuleFieldBlob getFieldBlobByKey(String formKey, String orgId, String internalKey) {
-		ModuleForm example = new ModuleForm();
-		example.setFormKey(formKey);
-		example.setOrganizationId(orgId);
-		ModuleForm moduleForm = moduleFormMapper.selectOne(example);
-		ModuleField fieldExample = new ModuleField();
-		fieldExample.setFormId(moduleForm.getId());
-		fieldExample.setInternalKey(internalKey);
-		ModuleField moduleField = moduleFieldMapper.selectOne(fieldExample);
-		if (moduleField == null) {
-			return null;
-		}
-		return moduleFieldBlobMapper.selectByPrimaryKey(moduleField.getId());
 	}
 }

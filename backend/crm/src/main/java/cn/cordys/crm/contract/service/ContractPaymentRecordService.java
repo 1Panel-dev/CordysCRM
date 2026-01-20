@@ -41,6 +41,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.excel.utils.EasyExcelExporter;
@@ -82,6 +83,8 @@ public class ContractPaymentRecordService {
 	private DataScopeService dataScopeService;
 	@Resource
 	private ModuleFormService moduleFormService;
+	@Resource
+	private ModuleFieldExtService moduleFieldExtService;
 	@Resource
 	private ModuleFormCacheService moduleFormCacheService;
 	@Resource
@@ -127,7 +130,7 @@ public class ContractPaymentRecordService {
 		if (StringUtils.isEmpty(paymentRecord.getOwner())) {
 			paymentRecord.setOwner(currentUser);
 		}
-		List<String> rules = moduleFormService.getSerialFieldRulesByKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg, BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey());
+		List<String> rules = moduleFieldExtService.getSerialFieldRulesByKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg, BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey());
 		if (CollectionUtils.isNotEmpty(rules)) {
 			paymentRecord.setNo(serialNumGenerator.generateByRules(rules, currentOrg, FormKey.CONTRACT_PAYMENT_RECORD.getKey()));
 		}

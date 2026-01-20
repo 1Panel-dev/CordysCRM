@@ -11,7 +11,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
-import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.registry.ExportThreadRegistry;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class ContractPaymentRecordExportService extends BaseExportService {
 
 	@Resource
-	private ModuleFormService moduleFormService;
+	private ModuleFieldExtService moduleFieldExtService;
 	@Resource
 	private ContractPaymentRecordService contractPaymentRecordService;
 	@Resource
@@ -133,7 +133,7 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	 * @return 名称
 	 */
 	private String processInternalOptions(String value, String formKey, String orgId, String internalKey) {
-		List<OptionProp> options = moduleFormService.getFieldOptions(formKey, orgId, internalKey);
+		List<OptionProp> options = moduleFieldExtService.getFieldOptions(formKey, orgId, internalKey);
 		for (OptionProp option : options) {
 			if (Strings.CS.equals(option.getValue(), value)) {
 				return option.getLabel();
@@ -151,7 +151,7 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	 * @return 日期字符串
 	 */
 	private String getInternalDateStr(Long timestamp, String formKey, String orgId, String internalKey) {
-		String dateType = moduleFormService.getDateFieldType(formKey, orgId, internalKey);
+		String dateType = moduleFieldExtService.getDateFieldType(formKey, orgId, internalKey);
 		return switch (dateType) {
 			case "date" -> TimeUtils.getDataStr(timestamp);
 			case "month" -> TimeUtils.getMonthStr(timestamp);

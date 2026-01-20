@@ -38,10 +38,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
-import cn.cordys.crm.system.service.AttachmentService;
-import cn.cordys.crm.system.service.LogService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -75,6 +72,8 @@ public class ProductPriceService {
     private BaseService baseService;
     @Resource
     private ModuleFormService moduleFormService;
+	@Resource
+	private ModuleFieldExtService moduleFieldExtService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -655,7 +654,7 @@ public class ProductPriceService {
         List<ProductPriceFieldBlob> sourceBlobs = productPriceFieldBlobMapper.selectListByLambda(blobQuery);
 
         Map<String, String> attachmentIdMap = new HashMap<>(8);
-        List<String> attachmentFieldIds = moduleFormService.getFieldIdsOfForm(FormKey.PRICE.getKey(), currentOrg);
+        List<String> attachmentFieldIds = moduleFieldExtService.getFieldIdsOfForm(FormKey.PRICE.getKey(), currentOrg);
 
         if (CollectionUtils.isNotEmpty(sourceBlobs)) {
             List<ProductPriceFieldBlob> targetBlobs = sourceBlobs.stream()
