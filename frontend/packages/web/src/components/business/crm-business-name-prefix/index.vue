@@ -1,6 +1,8 @@
 <template>
-  <roleTreeNodePrefix v-if="props.type === 'CUSTOM'" :text="t('contract.businessTitle.dataSourceSelf')" />
-  <CrmIcon v-else class="text-[var(--primary-8)]" type="iconicon_enterprise" :size="16" />
+  <div class="flex flex-shrink-0 items-center">
+    <roleTreeNodePrefix v-if="props.type === 'CUSTOM'" :text="t('contract.businessTitle.dataSourceSelf')" />
+    <CrmIcon v-else class="text-[var(--primary-8)]" type="iconicon_enterprise" :size="16" />
+  </div>
 </template>
 
 <script setup lang="ts">
