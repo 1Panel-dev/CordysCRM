@@ -34,6 +34,12 @@ export const quickAccessList = [
     label: t('contract.new'),
     permission: ['CONTRACT:ADD'],
   },
+  {
+    key: FormDesignKeyEnum.INVOICE,
+    icon: 'newInvoice',
+    label: t('invoice.new'),
+    permission: ['INVOICE:ADD'],
+  },
   // 这版本先不上
   // {
   //   key: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
