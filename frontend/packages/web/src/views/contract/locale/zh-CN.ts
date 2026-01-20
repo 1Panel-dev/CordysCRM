@@ -53,6 +53,7 @@ export default {
   'contract.businessTitle.selectCompanyPlaceholder': '输入选择公司，其他字段自动填入且不可更改',
   'contract.businessTitle.status': '审核状态',
   'contract.businessTitle.dataSource': '数据来源',
+  'contract.businessTitle.dataSourceSelf': '自',
   'contract.businessTitle.deleteContent': '删除后，数据无法恢复，请谨慎操作！',
   'contract.businessTitle.deleteInvoiceContent': '公司名称存在开票记录，禁止删除！',
   'contract.underReview': '审核中',

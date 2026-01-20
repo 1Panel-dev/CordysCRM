@@ -45,10 +45,12 @@
   import { transformData } from '@lib/shared/method/formCreate';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
@@ -104,6 +106,18 @@
       },
       resizable: false,
       fixed: 'left',
+      ...(props.sourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
+        ? {
+            render: (row: RowData) =>
+              h(
+                CrmNameTooltip,
+                { text: row.name },
+                {
+                  prefix: () => h(CrmBusinessNamePrefix, { type: row.type }),
+                }
+              ),
+          }
+        : {}),
     },
   ]);
 

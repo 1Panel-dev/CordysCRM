@@ -33,7 +33,7 @@
           ]"
         >
           <n-input
-            v-if="form.type === 'custom'"
+            v-if="form.type === 'CUSTOM'"
             v-model:value="form.name"
             allow-clear
             :maxlength="255"
@@ -60,7 +60,7 @@
             <n-input
               v-model:value="form[item.field]"
               allow-clear
-              :disabled="form.type === 'thirdParty'"
+              :disabled="form.type === 'THIRD_PARTY'"
               :maxlength="255"
               :placeholder="t('common.pleaseInput')"
             />
@@ -119,11 +119,11 @@
 
   const tabList = [
     {
-      name: 'thirdParty',
+      name: 'THIRD_PARTY',
       tab: t('contract.businessTitle.addMethodThird'),
     },
     {
-      name: 'custom',
+      name: 'CUSTOM',
       tab: t('contract.businessTitle.addMethodCustom'),
     },
   ];
@@ -136,7 +136,7 @@
       form.value = {
         ...result,
         id: props.sourceId ?? '',
-        type: 'thirdParty',
+        type: 'THIRD_PARTY',
       };
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -149,8 +149,8 @@
   }
 
   const initFormCache = {
-    thirdParty: { ...initBusinessTitleForm, type: 'thirdParty' },
-    custom: { ...initBusinessTitleForm, type: 'custom' },
+    THIRD_PARTY: { ...initBusinessTitleForm, type: 'THIRD_PARTY' },
+    CUSTOM: { ...initBusinessTitleForm, type: 'CUSTOM' },
   };
 
   const formCache = ref<Record<string, SaveBusinessTitleParams>>(cloneDeep(initFormCache));
@@ -225,7 +225,7 @@
   const showType = computed(() => {
     if (isEnableQccConfig.value) return true;
     if (form.value.id) {
-      return originType.value === 'thirdParty';
+      return originType.value === 'THIRD_PARTY';
     }
   });
 
@@ -234,7 +234,7 @@
       const result = await getThirdPartyConfig(CompanyTypeEnum.QCC);
       isEnableQccConfig.value = !!result && !!result.config && !!result.config?.qccEnable;
       if (!isEnableQccConfig.value && !form.value.id) {
-        form.value.type = 'custom';
+        form.value.type = 'CUSTOM';
       }
     } catch (error) {
       // eslint-disable-next-line no-console

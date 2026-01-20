@@ -80,16 +80,15 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { BusinessTitleItem } from '@lib/shared/models/contract';
 
-  import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -227,20 +226,6 @@
       fixed: 'left',
       columnSelectorDisabled: true,
       render: (row: BusinessTitleItem) => {
-        const createNamePrefix = () =>
-          row.type === 'thirdParty'
-            ? h(CrmIcon, {
-                type: 'iconicon_enterprise',
-                size: 16,
-                class: 'text-[var(--primary-8)]',
-              })
-            : h(
-                'div',
-                {
-                  class: 'business-title-icon',
-                },
-                '自'
-              );
         const createNameButton = () =>
           h(
             'div',
@@ -248,7 +233,7 @@
             {
               default: () => {
                 return [
-                  createNamePrefix(),
+                  h(CrmBusinessNamePrefix, { type: row.type }),
                   h(
                     CrmTableButton,
                     {
@@ -266,17 +251,15 @@
           );
 
         return props.readonly
-          ? [
-              h(
-                'div',
-                {
-                  class: 'flex items-center gap-[8px]',
-                },
-                {
-                  default: () => [createNamePrefix(), h(CrmNameTooltip, { text: row.name })],
-                }
-              ),
-            ]
+          ? h(
+              CrmNameTooltip,
+              {
+                text: row.name,
+              },
+              {
+                prefix: () => h(CrmBusinessNamePrefix, { type: row.type }),
+              }
+            )
           : createNameButton();
       },
     },
@@ -289,21 +272,6 @@
         tooltip: true,
       },
       width: 200,
-    },
-    {
-      title: t('contract.businessTitle.dataSource'),
-      key: 'type',
-      sortOrder: false,
-      sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 200,
-      render: (row: BusinessTitleItem) => {
-        return row.type === 'thirdParty'
-          ? t('contract.businessTitle.addMethodThird')
-          : t('contract.businessTitle.addMethodCustom');
-      },
     },
     {
       title: t('contract.businessTitle.taxpayerNumber'),
@@ -504,18 +472,6 @@
       title: t('contract.businessTitle.bank'),
       dataIndex: 'openingBank',
       type: FieldTypeEnum.INPUT,
-    },
-    {
-      title: t('contract.businessTitle.dataSource'),
-      dataIndex: 'type',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: [
-          { label: t('contract.businessTitle.addMethodThird'), value: 'thirdParty' },
-          { label: t('contract.businessTitle.addMethodCustom'), value: 'custom' },
-        ],
-      },
     },
     {
       title: t('contract.businessTitle.taxpayerNumber'),

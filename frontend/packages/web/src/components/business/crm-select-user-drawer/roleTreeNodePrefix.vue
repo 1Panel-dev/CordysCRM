@@ -4,11 +4,11 @@
     round
     class="mr-[4px] box-content h-[16px] w-[16px] border border-solid border-[var(--text-n8)] bg-[var(--text-n9)] text-[12px] leading-[20px] text-[var(--text-n4)]"
   >
-    <n-tooltip trigger="hover" :delay="300">
+    <n-tooltip trigger="hover" :delay="300" :disabled="!props.tooltip">
       <template #trigger>
-        {{ t('role.sys') }}
+        {{ props.text }}
       </template>
-      {{ t('role.systemInit') }}
+      {{ props.tooltip }}
     </n-tooltip>
   </n-avatar>
 </template>
@@ -16,9 +16,10 @@
 <script setup lang="ts">
   import { NAvatar, NTooltip } from 'naive-ui';
 
-  import { useI18n } from '@lib/shared/hooks/useI18n';
-
-  const { t } = useI18n();
+  const props = defineProps<{
+    text: string;
+    tooltip?: string;
+  }>();
 </script>
 
 <style lang="less" scoped></style>
