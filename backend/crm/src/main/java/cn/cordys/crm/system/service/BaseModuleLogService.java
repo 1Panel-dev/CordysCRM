@@ -10,6 +10,7 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.service.ClueService;
+import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
@@ -382,6 +383,27 @@ public abstract class BaseModuleLogService {
         }
     }
 
+    protected void setApprovalName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            differ.setOldValueName(Translator.get("contract.approval_status." + differ.getOldValue().toString().toLowerCase()));
+        }
+        if (differ.getNewValue() != null) {
+            differ.setNewValueName(Translator.get("contract.approval_status." + differ.getNewValue().toString().toLowerCase()));
+        }
+    }
+
+    protected void setBusinessTitleName(JsonDifferenceDTO differ) {
+        BusinessTitleService businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
+        assert businessTitleService != null;
+        if (differ.getOldValue() != null) {
+            String customerName = businessTitleService.getBusinessTitleName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = businessTitleService.getBusinessTitleName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
 
     /**
      * 产品
