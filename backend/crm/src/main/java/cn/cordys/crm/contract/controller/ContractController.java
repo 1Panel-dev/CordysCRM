@@ -226,10 +226,8 @@ public class ContractController {
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
     @Operation(summary = "合同详情-发票列表统计")
     public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String contractId) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
         BigDecimal invoiceAmount = contractInvoiceService.calculateContractInvoiceAmount(contractId, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId());
 
         CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
         Contract contract = contractService.selectByPrimaryKey(contractId);

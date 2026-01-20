@@ -413,6 +413,20 @@
             and approval_status = 'APPROVED'
     </select>
 
+    <select id="calculateContractInvoiceValidAmount" resultType="java.math.BigDecimal">
+        select
+            IFNULL(SUM(amount), 0) as totalAmount
+        from
+            contract_invoice
+        where
+            contract_id = #{contractId}
+        and organization_id = #{orgId}
+        and (approval_status = 'APPROVED' or approval_status = 'APPROVING')
+        <if test="excludeId != null and excludeId != ''">
+            and id != #{excludeId}
+        </if>
+    </select>
+
     <update id="updateStatus">
         update contract_invoice
         set approval_status = #{approvalStatus},
