@@ -71,9 +71,9 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK_NO.getKey()));
 
 		systemFiledMap.put("createUser", data.getCreateUserName());
-		systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+		systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
 		systemFiledMap.put("updateUser", data.getUpdateUserName());
-		systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+		systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
 		return systemFiledMap;
 	}
 
@@ -153,9 +153,9 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	private String getInternalDateStr(Long timestamp, String formKey, String orgId, String internalKey) {
 		String dateType = moduleFieldExtService.getDateFieldType(formKey, orgId, internalKey);
 		return switch (dateType) {
-			case "date" -> TimeUtils.getDataStr(timestamp);
+			case "date" -> TimeUtils.getDateStr(timestamp);
 			case "month" -> TimeUtils.getMonthStr(timestamp);
-			default -> TimeUtils.getDataTimeStr(timestamp);
+			default -> TimeUtils.getDateTimeStr(timestamp);
 		};
 	}
 }

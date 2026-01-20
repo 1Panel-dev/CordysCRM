@@ -75,13 +75,13 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         systemFiledMap.put("owner", data.getOwnerName());
         systemFiledMap.put("departmentId", data.getDepartmentName());
         systemFiledMap.put("planAmount", data.getPlanAmount());
-        systemFiledMap.put("planEndTime", TimeUtils.getDataTimeStr(data.getPlanEndTime()));
+        systemFiledMap.put("planEndTime", TimeUtils.getDateTimeStr(data.getPlanEndTime()));
         systemFiledMap.put("planStatus", Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase()));
 
         systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         return systemFiledMap;
     }
 

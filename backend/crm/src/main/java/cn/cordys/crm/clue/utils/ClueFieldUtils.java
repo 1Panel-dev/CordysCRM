@@ -22,13 +22,13 @@ public class ClueFieldUtils {
         systemFiledMap.put("contact", data.getContact());
         systemFiledMap.put("phone", data.getPhone());
         systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
-        systemFiledMap.put("collectionTime", TimeUtils.getDataTimeStr(data.getCollectionTime()));
+        systemFiledMap.put("collectionTime", TimeUtils.getDateTimeStr(data.getCollectionTime()));
         systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         systemFiledMap.put("follower", data.getFollowerName());
-        systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
+        systemFiledMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFiledMap.put("departmentId", data.getDepartmentName());

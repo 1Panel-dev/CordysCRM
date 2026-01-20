@@ -21,8 +21,8 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("customerId", data.getCustomerName());
         systemFiledMap.put("amount", data.getAmount());
-        systemFiledMap.put("expectedEndTime", TimeUtils.getDataStr(data.getExpectedEndTime()));
-        systemFiledMap.put("actualEndTime", TimeUtils.getDataStr(data.getActualEndTime()));
+        systemFiledMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));
+        systemFiledMap.put("actualEndTime", TimeUtils.getDateStr(data.getActualEndTime()));
         systemFiledMap.put("failureReason", data.getFailureReason());
         systemFiledMap.put("possible", data.getPossible());
         systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
@@ -31,14 +31,14 @@ public class OpportunityFieldUtils {
 
         systemFiledMap.put("stage", stageConfigMap.get(data.getStage()));
         systemFiledMap.put("followerName", data.getFollowerName());
-        systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
+        systemFiledMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("departmentId", data.getDepartmentName());
 
         systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
 
 
         return systemFiledMap;
