@@ -68,7 +68,7 @@
 
   const getIsValidValue = (item: ConditionsItem) => {
     if (typeof item.value === 'boolean') return String(item.value).length;
-    if (typeof item.value === 'number') return item.value;
+    if (typeof item.value === 'number') return true;
     return item.value?.length;
   };
 
