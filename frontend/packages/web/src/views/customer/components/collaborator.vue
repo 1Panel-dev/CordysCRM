@@ -63,7 +63,10 @@
             <template #trigger>
               <div class="flex items-center gap-[4px]">
                 {{ t('role.permission') }}
-                <CrmIcon type="iconicon_help_circle" class="cursor-pointer hover:text-[var(--primary-1)]" />
+                <CrmIcon
+                  type="iconicon_help_circle"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
               </div>
             </template>
             {{ t('customer.cooperationTip') }}
