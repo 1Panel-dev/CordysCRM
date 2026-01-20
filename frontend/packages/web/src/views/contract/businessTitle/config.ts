@@ -5,7 +5,7 @@ import type { FormCreateField } from '@/components/business/crm-form-create/type
 
 export const initBusinessTitleForm: SaveBusinessTitleParams = {
   id: '',
-  type: 'thirdParty',
+  type: 'THIRD_PARTY',
   name: '',
   identificationNumber: '',
   openingBank: '',
