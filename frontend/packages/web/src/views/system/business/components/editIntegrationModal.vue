@@ -375,6 +375,27 @@
         message: t('common.notNull', { value: t('system.business.agent.agentMaxKBUrl') }),
       },
     ],
+    qccAddress: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: t('system.business.qichachaAddress') }),
+      },
+    ],
+    qccAccessKey: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: 'Access Key' }),
+      },
+    ],
+    qccSecretKey: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('common.notNull', { value: 'Secret Key' }),
+      },
+    ],
   }));
 
   const formRef = ref<FormInst | null>(null);

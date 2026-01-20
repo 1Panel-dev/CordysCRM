@@ -105,7 +105,9 @@
                 :class="getPriorPeriodClass(item.priorPeriodCompareRate)"
               />
               <div :class="`${getPriorPeriodClass(item.priorPeriodCompareRate)} flex min-w-0`">
-                <div class="one-line-text">{{ periodCompareRateAbs(item.priorPeriodCompareRate) }}</div>
+                <div class="one-line-text !leading-[18px]">
+                  {{ periodCompareRateAbs(item.priorPeriodCompareRate) }}
+                </div>
                 <span v-if="typeof item.priorPeriodCompareRate === 'number'">％</span>
               </div>
             </div>

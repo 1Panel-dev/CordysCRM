@@ -16,7 +16,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button v-permission="['CONTRACT_BUSINESS_TITLE:ADD']" type="primary" @click="handleNewClick">
-          {{ t('common.newCreate') }}
+          {{ t('contract.businessTitle.add') }}
         </n-button>
         <CrmImportButton
           v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:IMPORT'])"

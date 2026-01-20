@@ -433,8 +433,11 @@
             <div class="flex justify-between gap-[8px]">
               <div>
                 <span class="mr-[8px] font-medium">{{ item.title }}</span>
+                <CrmTag v-if="!item.hasConfig" theme="light" size="small" custom-class="px-[4px]">
+                  {{ t('system.business.notConfigured') }}
+                </CrmTag>
                 <CrmTag
-                  v-if="item.hasConfig && item.verify === false"
+                  v-else-if="item.hasConfig && item.verify === false"
                   theme="light"
                   type="error"
                   size="small"
@@ -634,7 +637,7 @@
             ...item,
             ...result,
             verify: result?.verify ?? false,
-            hasConfig: Boolean(config?.appSecret),
+            hasConfig: !!config,
             config: {
               ...defaultThirdPartyConfigMap[item.type as CompanyTypeEnum],
               ...config,
