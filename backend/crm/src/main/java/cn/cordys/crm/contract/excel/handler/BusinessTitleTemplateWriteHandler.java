@@ -24,9 +24,8 @@ public class BusinessTitleTemplateWriteHandler implements RowWriteHandler, Sheet
     private final Map<String, Integer> fieldMap = new HashMap<>();
     private Sheet sheet;
     private Drawing<?> drawingPatriarch;
-    private int totalColumns; // 记录总列数
 
-    private Map<String, Boolean> requiredMap;
+    private final Map<String, Boolean> requiredMap;
 
     public BusinessTitleTemplateWriteHandler(List<List<String>> headList, Map<String, Boolean> requiredMap) {
         initIndex(headList);
@@ -48,7 +47,6 @@ public class BusinessTitleTemplateWriteHandler implements RowWriteHandler, Sheet
                 index++;
             }
         }
-        this.totalColumns = index; // 初始化总列数
     }
 
     @Override

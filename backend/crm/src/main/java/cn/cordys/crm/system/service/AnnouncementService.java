@@ -30,7 +30,6 @@ import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
-import cn.cordys.crm.system.notice.sse.SseService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -60,8 +59,6 @@ public class AnnouncementService {
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
     private ExtDepartmentMapper extDepartmentMapper;
-    @Resource
-    private SseService sseService;
     @Resource
     private ExtNotificationMapper notificationMapper;
     @Resource

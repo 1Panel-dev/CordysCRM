@@ -64,7 +64,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         if (StringUtils.isBlank(value) || Strings.CS.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List list = JSON.parseArray(value, String.class);
+        var list = JSON.parseArray(value, String.class);
 
         if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), "CUSTOMER")) {
             return Objects.requireNonNull(customerService).getCustomerNameByIds(list);

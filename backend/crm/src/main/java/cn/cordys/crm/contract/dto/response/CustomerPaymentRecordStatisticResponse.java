@@ -1,7 +1,6 @@
 package cn.cordys.crm.contract.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;

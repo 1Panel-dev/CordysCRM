@@ -140,7 +140,6 @@ public class SSOService {
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
         DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
-        ;
         validateQrCodeEnabled(dingTalkConfig.getStartEnable());
 
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.QR_CODE.toString());

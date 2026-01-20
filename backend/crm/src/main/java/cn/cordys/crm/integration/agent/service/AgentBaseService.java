@@ -49,7 +49,6 @@ import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -469,7 +468,7 @@ public class AgentBaseService extends DashboardSortService {
      * @return
      */
     public Boolean checkConfig(String orgId) {
-        ThirdConfigBaseDTO configurationDTO = getConfig(orgId);
+        var configurationDTO = getConfig(orgId);
         if (configurationDTO == null) {
             return false;
         }
@@ -497,8 +496,8 @@ public class AgentBaseService extends DashboardSortService {
         }
 
 
-        ThirdConfigBaseDTO<MaxKBThirdConfigRequest> thirdConfigBaseDTO = JSON.parseObject(new String(details.getFirst().getContent()), ThirdConfigBaseDTO.class);
-        MaxKBThirdConfigRequest maxKBThirdConfigRequest = new MaxKBThirdConfigRequest();
+        var thirdConfigBaseDTO = JSON.parseObject(new String(details.getFirst().getContent()), ThirdConfigBaseDTO.class);
+        MaxKBThirdConfigRequest maxKBThirdConfigRequest;
         if (thirdConfigBaseDTO.getConfig() == null) {
             maxKBThirdConfigRequest = JSON.parseObject(new String(details.getFirst().getContent()), MaxKBThirdConfigRequest.class);
         } else {
@@ -659,12 +658,12 @@ public class AgentBaseService extends DashboardSortService {
                 MediaType.APPLICATION_JSON,
                 MediaType.APPLICATION_JSON
         );
-        Map map = JSON.parseObject(body, Map.class);
+        var map = JSON.parseObject(body, Map.class);
         if ((Integer) map.get("code") != 200) {
             throw new GenericException("获取版本异常，错误信息：" + map.get("message"));
         }
 
-        Map dataMap = (Map) map.get("data");
+        var dataMap = (Map) map.get("data");
         return (String) dataMap.get("edition");
     }
 }
