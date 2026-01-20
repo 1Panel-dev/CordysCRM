@@ -40,10 +40,10 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
     @Override
     public Object transformToValue(DateTimeField dateTimeField, String value) {
         if (Strings.CI.equals(dateTimeField.getDateType(), DATE)) {
-            return TimeUtils.getDataStr(Long.valueOf(value));
+            return TimeUtils.getDateStr(Long.valueOf(value));
         }
         if (Strings.CI.equals(dateTimeField.getDateType(), DATETIME)) {
-            return TimeUtils.getDataTimeStr(Long.valueOf(value));
+            return TimeUtils.getDateTimeStr(Long.valueOf(value));
         }
         if (Strings.CI.equals(dateTimeField.getDateType(), MONTH)) {
             return TimeUtils.getMonthStr(Long.valueOf(value));

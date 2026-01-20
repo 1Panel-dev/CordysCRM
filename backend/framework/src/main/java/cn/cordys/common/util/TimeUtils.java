@@ -56,7 +56,7 @@ public abstract class TimeUtils extends DateUtils {
         return dateFormat.format(timeStamp);
     }
 
-    public static String getDataStr(Long timeStamp) {
+    public static String getDateStr(Long timeStamp) {
         if (timeStamp == null) {
             return StringUtils.EMPTY;
         }
@@ -64,7 +64,7 @@ public abstract class TimeUtils extends DateUtils {
         return dateFormat.format(timeStamp);
     }
 
-    public static String getDataTimeStr(Long timeStamp) {
+    public static String getDateTimeStr(Long timeStamp) {
         if (timeStamp == null) {
             return null;
         }

@@ -52,7 +52,7 @@ public class DefaultUidGenerator implements DisposableBean {
         this.setTimeBits(29);
         this.setWorkerBits(21);
         this.setSeqBits(13);
-        this.setEpochStr(TimeUtils.getDataStr(System.currentTimeMillis()));
+        this.setEpochStr(TimeUtils.getDateStr(System.currentTimeMillis()));
 
         // initialize bits allocator
         bitsAllocator = new BitsAllocator(timeBits, workerBits, seqBits);

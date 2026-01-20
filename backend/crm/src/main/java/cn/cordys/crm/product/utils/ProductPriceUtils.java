@@ -19,9 +19,9 @@ public class ProductPriceUtils {
 		systemFiledMap.put("name", data.getName());
 		systemFiledMap.put("status", getStatusName(data.getStatus(), optionMap));
 		systemFiledMap.put("createUser", data.getCreateUserName());
-		systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+		systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
 		systemFiledMap.put("updateUser", data.getUpdateUserName());
-		systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+		systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
 		return systemFiledMap;
 	}
 

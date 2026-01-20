@@ -19,9 +19,9 @@ public class CustomerContactFieldUtils {
         systemFieldMap.put("departmentId", data.getDepartmentName());
 
         systemFieldMap.put("createUser", data.getCreateUserName());
-        systemFieldMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
-        systemFieldMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         return systemFieldMap;
     }
 }
