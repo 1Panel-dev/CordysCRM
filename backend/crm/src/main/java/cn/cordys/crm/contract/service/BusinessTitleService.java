@@ -151,6 +151,7 @@ public class BusinessTitleService {
     @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public BusinessTitle update(BusinessTitleUpdateRequest request, String userId, String orgId) {
         BusinessTitle oldTitle = checkTitle(request.getId());
+        checkName(request.getName(), orgId, request.getId());
 
         BusinessTitle newTitle = BeanUtils.copyBean(new BusinessTitle(), request);
         if (Strings.CI.equals(BusinessTitleType.CUSTOM.name(), newTitle.getType())) {
