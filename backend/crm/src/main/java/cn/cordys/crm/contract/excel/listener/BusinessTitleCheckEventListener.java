@@ -106,6 +106,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
             Boolean existed = excelValueCache.putIfAbsent(data, true);
             if (existed != null) {
                 errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
+                return;
             }
 
             boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId);
