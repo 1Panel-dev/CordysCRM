@@ -70,6 +70,7 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("identificationNumber", data.getIdentificationNumber());
         systemFiledMap.put("openingBank", data.getOpeningBank());
+        systemFiledMap.put("type", Translator.get(data.getType()));
         systemFiledMap.put("bankAccount", data.getBankAccount());
         systemFiledMap.put("registrationAddress", data.getRegistrationAddress());
         systemFiledMap.put("phoneNumber", data.getPhoneNumber());
@@ -77,7 +78,6 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFiledMap.put("companySize", data.getCompanySize());
         systemFiledMap.put("registrationNumber", data.getRegistrationNumber());
         systemFiledMap.put("unapprovedReason", data.getUnapprovedReason());
-        systemFiledMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
 
         systemFiledMap.put("createUser", data.getCreateUserName());
         systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
