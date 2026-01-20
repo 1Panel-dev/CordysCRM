@@ -8,7 +8,7 @@
       class="message-table"
       :pagination="false"
       :loading="loading"
-      :max-height="licenseStore.expiredDuring ? 'calc(100vh - 306px)' : 'calc(100vh - 242px)'"
+      :max-height="licenseStore.expiredDuring ? 'calc(100vh - 318px)' : 'calc(100vh - 254px)'"
     />
     <expirationSettingDrawer
       v-model:visible="showExpirationSetting"
@@ -196,7 +196,7 @@
         return h(
           'div',
           {
-            class: 'one-line-text flex items-center gap-[8px]',
+            class: 'one-line-text flex items-center justify-between gap-[8px] w-[196px]',
           },
           [
             h('span', row.eventName as string),

@@ -5,7 +5,7 @@
       max="10000"
       :disabled="props.disabled"
       :precision="0"
-      class="flex-1"
+      class="crm-input-number-with-unit flex-1"
       :min="1"
     />
     <n-select
@@ -15,6 +15,7 @@
       :disabled="props.disabled"
       :options="unitOptions"
       :show="false"
+      :show-arrow="props.showArrow"
     />
     <div class="ml-[8px] text-[var(--text-n2)]">
       {{ t('system.message.expirationReminder') }}
@@ -32,6 +33,7 @@
 
   const props = defineProps<{
     disabled?: boolean;
+    showArrow?: boolean;
   }>();
 
   const { t } = useI18n();
@@ -66,6 +68,11 @@
 </script>
 
 <style lang="less">
+  .crm-input-number-with-unit {
+    .n-input {
+      border-radius: 4px 0 0 4px !important;
+    }
+  }
   .n-select {
     &.end-time-unit-select {
       margin-left: -1px;
