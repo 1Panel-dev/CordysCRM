@@ -63,7 +63,8 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 		systemFiledMap.put("owner", data.getOwnerName());
 		systemFiledMap.put("departmentId", data.getDepartmentName());
 		systemFiledMap.put("recordAmount", data.getRecordAmount());
-		systemFiledMap.put("recordEndTime", TimeUtils.getDataTimeStr(data.getRecordEndTime()));
+		systemFiledMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
 		systemFiledMap.put("recordBank", processInternalOptions(data.getRecordBank(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
 				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK.getKey()));
 		systemFiledMap.put("recordBankNo", processInternalOptions(data.getRecordBankNo(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
@@ -124,7 +125,7 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	}
 
 	/**
-	 *
+	 * 处理内部选项值
 	 * @param value 选项值
 	 * @param formKey 表单Key
 	 * @param orgId 组织ID
@@ -139,5 +140,22 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 			}
 		}
 		return value;
+	}
+
+	/**
+	 * 获取内部日期字符串
+	 * @param timestamp 毫秒
+	 * @param formKey 表单Key
+	 * @param orgId 组织ID
+	 * @param internalKey 内部Key
+	 * @return 日期字符串
+	 */
+	private String getInternalDateStr(Long timestamp, String formKey, String orgId, String internalKey) {
+		String dateType = moduleFormService.getDateFieldType(formKey, orgId, internalKey);
+		return switch (dateType) {
+			case "date" -> TimeUtils.getDataStr(timestamp);
+			case "month" -> TimeUtils.getMonthStr(timestamp);
+			default -> TimeUtils.getDataTimeStr(timestamp);
+		};
 	}
 }

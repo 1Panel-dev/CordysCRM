@@ -60,6 +60,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -2051,6 +2053,22 @@ public class ModuleFormService {
 			return of.getOptions();
 		}
 		return new ArrayList<>();
+	}
+
+	/**
+	 * 获取日期字段类型
+	 * @param formKey 表单Key
+	 * @param currentOrg 组织ID
+	 * @param internalKey 内部Key
+	 * @return 日期字段类型
+	 */
+	public String getDateFieldType(String formKey, String currentOrg, String internalKey) {
+		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
+		if (blob == null) {
+			return "datetime";
+		}
+		DateTimeField dateField = JSON.parseObject(blob.getProp(), DateTimeField.class);
+		return dateField.getDateType();
 	}
 
 	/**
