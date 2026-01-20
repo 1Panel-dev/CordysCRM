@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :title="title" :footer="false">
     <template v-if="!props.readonly" #titleRight>
       <n-button
-        v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
+        v-permission="['CONTRACT_PAYMENT_RECORD:UPDATE']"
         type="primary"
         ghost
         class="n-btn-outline-primary"
@@ -11,7 +11,7 @@
         {{ t('common.edit') }}
       </n-button>
       <n-button
-        v-permission="['CONTRACT_PAYMENT_PLAN:DELETE']"
+        v-permission="['CONTRACT_PAYMENT_RECORD:DELETE']"
         type="primary"
         danger
         ghost
