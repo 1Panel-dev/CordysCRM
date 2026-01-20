@@ -39,8 +39,8 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
      */
     private final Class<T> entityClass;
 
-    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap, String orgId, String userId, Consumer<List<T>> consumer) {
-        super(clazz, requiredFieldMap, orgId);
+    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap, String orgId, String userId, Consumer<List<T>> consumer, List<List<String>> heads) {
+        super(clazz, requiredFieldMap, orgId, heads);
         this.entityClass = entityClass;
         this.userId = userId;
         this.consumer = consumer;

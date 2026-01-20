@@ -354,7 +354,7 @@ public class BusinessTitleService {
     private ImportResponse checkImportExcel(MultipartFile file, String orgId) {
         try {
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
-            BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz, getBusinessTitleConfig(orgId), orgId);
+            BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz, getBusinessTitleConfig(orgId), orgId, getTemplateHead());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -389,7 +389,7 @@ public class BusinessTitleService {
                 businessTitleMapper.batchInsert(businessTitles);
                 logService.batchAdd(logs);
             };
-            var eventListener = new BusinessTitleImportEventListener(clazz, BusinessTitle.class, getBusinessTitleConfig(orgId), orgId, userId, afterDto);
+            var eventListener = new BusinessTitleImportEventListener(clazz, BusinessTitle.class, getBusinessTitleConfig(orgId), orgId, userId, afterDto, getTemplateHead());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

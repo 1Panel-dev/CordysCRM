@@ -37,13 +37,15 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final Map<String, Boolean> requiredFieldMap;
     private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
     protected Map<Integer, String> headMap;
+    private List<List<String>> heads;
     private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
 
-    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId) {
+    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads) {
         this.excelDataClass = clazz;
         this.requiredFieldMap = requiredFieldMap;
         this.orgId = orgId;
         this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
+        this.heads = heads;
     }
 
     @Override
@@ -51,6 +53,16 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         if (headMap == null) {
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
+
+        List<String> headList = heads.stream().flatMap(List::stream).toList();
+
+        headList.forEach(head -> {
+            if (!headMap.containsValue(head)) {
+                throw new GenericException(Translator.getWithArgs("illegal_header", head));
+            }
+        });
+
+
         this.headMap = headMap;
         try {
             genExcelHeadToFieldNameDicAndGetNotRequiredFields();
