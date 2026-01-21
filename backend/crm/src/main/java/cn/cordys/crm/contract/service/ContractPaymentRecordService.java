@@ -139,9 +139,9 @@ public class ContractPaymentRecordService {
 		paymentRecord.setUpdateUser(currentUser);
 		paymentRecord.setUpdateTime(System.currentTimeMillis());
 		paymentRecord.setOrganizationId(currentOrg);
-		contractPaymentRecordMapper.insert(paymentRecord);
-		// 保存自定义字段值
+		// 保存自定义字段值&回款记录
 		contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
+		contractPaymentRecordMapper.insert(paymentRecord);
 		// 日志
 		baseService.handleAddLog(paymentRecord, request.getModuleFields());
 		return paymentRecord;
@@ -407,13 +407,13 @@ public class ContractPaymentRecordService {
 	}
 
 	/**
-	 * 校验回款金额是否超出
+	 * 校验回款金额是否超出 && 大于0
 	 * @param contractId 	合同ID
 	 * @param payAmount 	回款金额
 	 */
 	private void checkContractPaymentAmount(String contractId, BigDecimal payAmount, String excludeRecordId) {
 		if (payAmount == null || payAmount.compareTo(BigDecimal.ZERO) <= 0) {
-			return;
+			throw new GenericException(Translator.getWithArgs("record.amount.illegal"));
 		}
 		LambdaQueryWrapper<ContractPaymentRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		recordLambdaQueryWrapper.eq(ContractPaymentRecord::getContractId, contractId);
