@@ -17,7 +17,7 @@ import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.*;
 import cn.cordys.crm.contract.service.*;
-import cn.cordys.crm.customer.dto.request.CustomerContractInvoicePageRequest;
+import cn.cordys.crm.customer.dto.request.ContractDetailInvoicePageRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -214,7 +214,7 @@ public class ContractController {
     @PostMapping("/invoice/page")
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
     @Operation(summary = "合同详情-发票列表")
-    public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(@Validated @RequestBody CustomerContractInvoicePageRequest request) {
+    public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(@Validated @RequestBody ContractDetailInvoicePageRequest request) {
         ConditionFilterUtils.parseCondition(request);
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
