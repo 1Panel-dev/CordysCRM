@@ -76,7 +76,10 @@ public class MailSender {
                 mailSender.send(message);
             } else {
                 for (String user : users) {
-                    if (StringUtils.isBlank(user)) {
+                    log.info("正在发送邮件给: {}", user);
+                    //检查user 是否符合邮箱格式
+                    if (StringUtils.isBlank(user) || !user.contains("@")) {
+                        log.warn("用户 {} 不符合邮箱格式，或者用户为空，将跳过", user);
                         continue;
                     }
                     helper.setTo(user);

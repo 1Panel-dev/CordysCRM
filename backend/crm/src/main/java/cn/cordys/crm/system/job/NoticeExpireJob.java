@@ -186,10 +186,10 @@ public class NoticeExpireJob {
             List<TimeDTO> expiringTimeList = expiringConfigDTO.getTimeList();
             for (TimeDTO timeDTO : expiringTimeList) {
                 if (timeDTO.getTimeUnit().equals("DAY")) {
-                    long startTime = LocalDate.now().minusDays(timeDTO.getTimeValue())
+                    long startTime = LocalDate.now().plusDays(timeDTO.getTimeValue())
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
-                    long endTime = LocalDate.now().minusDays(timeDTO.getTimeValue() + 1)
+                    long endTime = LocalDate.now().plusDays(timeDTO.getTimeValue() + 1)
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
                     List<Contract> contractList = getContractList(organizationId, startTime, endTime);
@@ -243,10 +243,10 @@ public class NoticeExpireJob {
             }
             for (TimeDTO timeDTO : expiringConfigDTO.getTimeList()) {
                 if (timeDTO.getTimeUnit().equals("DAY")) {
-                    long startTime = LocalDate.now().minusDays(timeDTO.getTimeValue())
+                    long startTime = LocalDate.now().plusDays(timeDTO.getTimeValue())
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
-                    long endTime = LocalDate.now().minusDays(timeDTO.getTimeValue() + 1)
+                    long endTime = LocalDate.now().plusDays(timeDTO.getTimeValue() + 1)
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
                     List<OpportunityQuotation> quotationList = getOpportunityQuotationList(organizationId, startTime, endTime);
@@ -391,10 +391,10 @@ public class NoticeExpireJob {
             }
             for (TimeDTO timeDTO : expiringConfigDTO.getTimeList()) {
                 if (timeDTO.getTimeUnit().equals("DAY")) {
-                    long startTime = LocalDate.now().minusDays(timeDTO.getTimeValue())
+                    long startTime = LocalDate.now().plusDays(timeDTO.getTimeValue())
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
-                    long endTime = LocalDate.now().minusDays(timeDTO.getTimeValue() + 1)
+                    long endTime = LocalDate.now().plusDays(timeDTO.getTimeValue() + 1)
                             .atStartOfDay(ZoneId.systemDefault())
                             .toEpochSecond() * 1000;
                     List<ContractPaymentPlan> paymentPlanList = getContractPaymentPlanList(organizationId, startTime, endTime);
