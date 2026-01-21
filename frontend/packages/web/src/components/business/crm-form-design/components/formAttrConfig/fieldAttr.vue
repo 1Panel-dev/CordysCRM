@@ -794,6 +794,7 @@
           :show-button="false"
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
+          :precision="fieldConfig.precision"
         />
         <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
           <n-select

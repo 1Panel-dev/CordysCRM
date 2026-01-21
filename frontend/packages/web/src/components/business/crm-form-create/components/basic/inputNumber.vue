@@ -88,7 +88,7 @@
   );
 
   function parse(val: string) {
-    const nums = val.replace(/,/g, '').trim();
+    const nums = val.toString().replace(/,/g, '').trim();
     if ((!props.fieldConfig.showThousandsSeparator || /^\d+(\.(\d+)?)?$/.test(nums)) && nums !== '') {
       return Number(nums);
     }
@@ -102,9 +102,11 @@
       // TODO 下个版本再调整
       (props.fieldConfig.type === FieldTypeEnum.FORMULA && props.fieldConfig.showThousandsSeparator)
     ) {
-      return val.toLocaleString('en-US');
+      return props.fieldConfig.precision && props.fieldConfig.precision > 0
+        ? `${val.toLocaleString('en-US')}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`
+        : val.toLocaleString('en-US');
     }
-    return val.toString();
+    return val.toFixed(props.fieldConfig.precision || 0);
   }
 </script>
 
