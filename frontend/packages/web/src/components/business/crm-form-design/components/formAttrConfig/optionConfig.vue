@@ -335,6 +335,7 @@
         value: getGenerateId(),
       });
     }
+    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
   }
 
   function handleAddOtherOption() {
@@ -345,6 +346,7 @@
       label: t('crmFormDesign.optionOther'),
       value: 'other',
     });
+    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
   }
 
   function setDefaultValue() {
@@ -359,6 +361,7 @@
 
   function handleOptionDelete(i: number) {
     fieldConfig.value.customOptions?.splice(i, 1);
+    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
     setDefaultValue();
   }
 
@@ -400,6 +403,7 @@
         }));
       fieldConfig.value.customOptions = newOptions;
     }
+    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
     setDefaultValue();
     showModal.value = false;
   }
