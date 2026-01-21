@@ -20,7 +20,7 @@ public class BusinessTitleAddRequest {
     private String openingBank;
 
     @Size(max = 255)
-    @Schema(description = "银行账号")
+    @Schema(description = "银行账户")
     private String bankAccount;
 
     @Size(max = 255)
@@ -39,7 +39,7 @@ public class BusinessTitleAddRequest {
     private String companySize;
 
     @Size(max = 255)
-    @Schema(description = "工商注册号")
+    @Schema(description = "工商注册账号")
     private String registrationNumber;
 
     @Size(max = 50)

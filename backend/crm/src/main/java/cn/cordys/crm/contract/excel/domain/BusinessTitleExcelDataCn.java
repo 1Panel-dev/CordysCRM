@@ -31,10 +31,10 @@ public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
     @ExcelProperty("开户银行")
     private String openingBank;
     /**
-     * 银行账号
+     * 银行账户
      */
     @ColumnWidth(255)
-    @ExcelProperty("银行账号")
+    @ExcelProperty("银行账户")
     private String bankAccount;
     /**
      * 注册地址
@@ -61,10 +61,10 @@ public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
     @ExcelProperty("公司规模")
     private String companySize;
     /**
-     * 工商注册号
+     * 工商注册账号
      */
     @ColumnWidth(255)
-    @ExcelProperty("工商注册号")
+    @ExcelProperty("工商注册账号")
     private String registrationNumber;
 
 

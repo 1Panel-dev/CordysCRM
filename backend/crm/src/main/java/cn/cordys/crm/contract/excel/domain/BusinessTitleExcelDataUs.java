@@ -31,7 +31,7 @@ public class BusinessTitleExcelDataUs extends BusinessTitleExcelData {
     @ExcelProperty("Opening bank")
     private String openingBank;
     /**
-     * 银行账号
+     * 银行账户
      */
     @ColumnWidth(255)
     @ExcelProperty("Bank account")
