@@ -2038,7 +2038,7 @@
       ]
     },
     {
-      "name": "金额",
+      "name": "发票金额",
       "internalKey": "invoiceAmount",
       "type": "INPUT_NUMBER",
       "showLabel": true,
