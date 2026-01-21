@@ -370,9 +370,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } else if (
       item.type === FieldTypeEnum.DATA_SOURCE &&
       item.dataSourceType === FieldDataSourceTypeEnum.CUSTOMER &&
-      [FormDesignKeyEnum.CLUE, FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT_SNAPSHOT].includes(
-        props.formKey.value
-      )
+      [
+        FormDesignKeyEnum.CLUE,
+        FormDesignKeyEnum.BUSINESS,
+        FormDesignKeyEnum.CONTRACT_SNAPSHOT,
+        FormDesignKeyEnum.INVOICE,
+      ].includes(props.formKey.value)
     ) {
       // 客户字段
       descriptions.value.push({
