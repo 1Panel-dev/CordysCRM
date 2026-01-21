@@ -491,7 +491,7 @@
     {
       title: t('contract.businessTitle.capital'),
       dataIndex: 'registeredCapital',
-      type: FieldTypeEnum.INPUT_NUMBER,
+      type: FieldTypeEnum.INPUT,
     },
     {
       title: t('contract.businessTitle.address'),
