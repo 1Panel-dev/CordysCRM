@@ -152,7 +152,11 @@
             :disabled="fieldConfig.disabledProps?.includes('dataSource') || !!fieldConfig.resourceFieldId"
             @click="handleDataSourceFilter"
           >
-            {{ t('common.setting') }}
+            {{
+              fieldConfig.combineSearch?.conditions.length
+                ? t('crmFormDesign.dataSourceFilterSetTip', { count: fieldConfig.combineSearch?.conditions.length })
+                : t('common.setting')
+            }}
           </n-button>
         </div>
         <!-- 显示字段 -->
@@ -1152,7 +1156,7 @@
     v-if="fieldConfig"
     v-model:visible="showDataSourceFilterModal"
     :field-config="fieldConfig"
-    :form-fields="list"
+    :form-fields="list.filter((field) => !field.resourceFieldId)"
     @save="handleDataSourceFilterSave"
   />
   <DataSourceDisplayFieldModal

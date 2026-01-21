@@ -1,5 +1,11 @@
 <template>
-  <n-form-item :label="props.fieldConfig.name" :show-label="props.fieldConfig.showLabel">
+  <n-form-item :label="props.fieldConfig.name">
+    <template #label>
+      <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
+        <div class="one-line-text">{{ props.fieldConfig.name }}</div>
+      </div>
+      <div v-else class="h-[22px]"></div>
+    </template>
     <div
       v-if="props.fieldConfig.description"
       class="crm-form-create-item-desc"

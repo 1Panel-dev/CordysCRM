@@ -375,7 +375,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FormDesignKeyEnum.BUSINESS,
         FormDesignKeyEnum.CONTRACT_SNAPSHOT,
         FormDesignKeyEnum.INVOICE,
-      ].includes(props.formKey.value)
+      ].includes(props.formKey.value) &&
+      !item.resourceFieldId
     ) {
       // 客户字段
       descriptions.value.push({
@@ -388,7 +389,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } else if (
       item.type === FieldTypeEnum.DATA_SOURCE &&
       item.dataSourceType === FieldDataSourceTypeEnum.CONTRACT &&
-      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD].includes(props.formKey.value)
+      [
+        FormDesignKeyEnum.CONTRACT_PAYMENT,
+        FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+        FormDesignKeyEnum.INVOICE,
+      ].includes(props.formKey.value) &&
+      !item.resourceFieldId
     ) {
       descriptions.value.push({
         label: item.name,
