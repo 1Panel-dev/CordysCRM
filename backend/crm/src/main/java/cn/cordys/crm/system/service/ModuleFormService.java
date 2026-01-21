@@ -64,6 +64,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author song-cc-rock
@@ -773,11 +774,11 @@ public class ModuleFormService {
                 getSystemExtendFiles(sourceField.getDataSourceType())
                         .forEach(extField -> reloadFieldMap.put(extField.getId(), extField));
 
-                sourceField.setRefFields(new ArrayList<>());
-                // 获取最新引用字段属性
+				List<String> refFieldIds = sourceField.getRefFields().stream().map(BaseField::getId).toList();
+				// 获取最新引用字段属性
                 for (String showFieldKey : sourceField.getShowFields()) {
                     BaseField refField = reloadFieldMap.get(showFieldKey);
-                    if (refField != null) {
+                    if (refField != null && !refFieldIds.contains(refField.getId())) {
                         refField.setResourceFieldId(field.getId());
                         sourceField.getRefFields().add(refField);
                     }
