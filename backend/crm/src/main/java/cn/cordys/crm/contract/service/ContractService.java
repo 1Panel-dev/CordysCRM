@@ -10,7 +10,6 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
-import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -35,7 +34,6 @@ import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
-import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
@@ -717,29 +715,25 @@ public class ContractService {
 	 * 设置默认的数据源搜索条件
 	 * @return 搜索条件
 	 */
-	public CombineSearch setDefaultSourceCombine() {
+	public List<FilterCondition> getDefaultSourceFilters() {
 		// 只展示状态为通过且非作废/归档阶段的合同
-		CombineSearch combineSearch = new CombineSearch();
-		combineSearch.setSearchMode("AND");
 		List<FilterCondition> conditions = new ArrayList<>();
 
 		FilterCondition statusCondition = new FilterCondition();
-		statusCondition.setMultipleValue(true);
+		statusCondition.setMultipleValue(false);
 		statusCondition.setName("approvalStatus");
 		statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
 		statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
-		statusCondition.setType(FieldType.SELECT_MULTIPLE.name());
 		conditions.add(statusCondition);
 
 		FilterCondition stageCondition = new FilterCondition();
-		stageCondition.setMultipleValue(true);
+		stageCondition.setMultipleValue(false);
 		stageCondition.setName("stage");
-		stageCondition.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
-		stageCondition.setValue(List.of(ContractStage.ARCHIVED.name(), ContractStage.VOID.name()));
-		statusCondition.setType(FieldType.SELECT_MULTIPLE.name());
+		stageCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+		stageCondition.setValue(List.of(ContractStage.PENDING_SIGNING.name(), ContractStage.SIGNED.name(),
+				ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name()));
 		conditions.add(stageCondition);
 
-		combineSearch.setConditions(conditions);
-		return combineSearch;
+		return conditions;
 	}
 }
