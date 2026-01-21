@@ -2118,7 +2118,8 @@
       ],
       "readable": true,
       "editable": false,
-      "fieldWidth": 1
+      "fieldWidth": 1,
+      "mobile": true
     },
     {
       "name": "合同名称",
@@ -2239,7 +2240,8 @@
         {
           "key": "required"
         }
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "收款银行账号",
@@ -2254,7 +2256,8 @@
         {
           "key": "required"
         }
-      ]
+      ],
+      "mobile": true
     }
   ]
 }
