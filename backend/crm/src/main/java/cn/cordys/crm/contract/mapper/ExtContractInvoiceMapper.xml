@@ -254,6 +254,12 @@
                     <property name="column" value="ci.create_user"/>
                 </include>
             </when>
+            <when test="condition.name == 'approvalStatus'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="ci.approval_status"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>
@@ -320,7 +326,7 @@
                         ci.`amount` ${sortType},  ci.id ASC
                     </when>
                     <when test="${sort}.name == 'invoice_type'">
-                        ci.`stage` ${sortType},  ci.id ASC
+                        ci.`invoice_type` ${sortType},  ci.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
                         ci.`create_time` ${sortType},  ci.id ASC
@@ -338,10 +344,13 @@
                         souc_sort.`id` ${sortType},  ci.id ASC
                     </when>
                     <when test="${sort}.name == 'tax_rate'">
-                        ci.`id` ${sortType},  ci.id ASC
+                        ci.`tax_rate` ${sortType},  ci.id ASC
                     </when>
                     <when test="${sort}.name == 'business_title_id'">
                         ci.`business_title_id` ${sortType},  ci.id ASC
+                    </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        ci.`approval_status` ${sortType},  ci.id ASC
                     </when>
 
                     <otherwise>
