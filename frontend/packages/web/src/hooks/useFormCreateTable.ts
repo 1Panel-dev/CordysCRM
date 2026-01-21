@@ -53,7 +53,8 @@ export type FormKey =
   | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.PRICE
-  | FormDesignKeyEnum.INVOICE;
+  | FormDesignKeyEnum.INVOICE
+  | FormDesignKeyEnum.CONTRACT_INVOICE;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -108,6 +109,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: TableKeyEnum.CONTRACT_PAYMENT_RECORD,
     [FormDesignKeyEnum.PRICE]: TableKeyEnum.PRICE,
     [FormDesignKeyEnum.INVOICE]: TableKeyEnum.INVOICE,
+    [FormDesignKeyEnum.CONTRACT_INVOICE]: TableKeyEnum.CONTRACT_INVOICE,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -412,6 +414,30 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       sorter: true,
       filter: true,
       render: props.specialRender?.status,
+    },
+  ];
+
+  const invoiceInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('contract.businessTitle.status'),
+      width: 120,
+      key: 'approvalStatus',
+      filterOptions: contractInvoiceStatusOptions,
+      sortOrder: false,
+      sorter: true,
+      filter: true,
+      render: props.specialRender?.approvalStatus,
+    },
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: 'default',
+      render: (row: any) => row.departmentName || '-',
     },
   ];
 
@@ -798,29 +824,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.PRICE]: [],
-    [FormDesignKeyEnum.INVOICE]: [
-      {
-        title: t('contract.businessTitle.status'),
-        width: 120,
-        key: 'approvalStatus',
-        filterOptions: contractInvoiceStatusOptions,
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: props.specialRender?.approvalStatus,
-      },
-      {
-        title: t('org.department'),
-        width: 120,
-        key: 'departmentId',
-        ellipsis: {
-          tooltip: true,
-        },
-        sortOrder: false,
-        sorter: 'default',
-        render: (row: any) => row.departmentName || '-',
-      },
-    ],
+    [FormDesignKeyEnum.INVOICE]: invoiceInternalColumns,
+    [FormDesignKeyEnum.CONTRACT_INVOICE]: invoiceInternalColumns,
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

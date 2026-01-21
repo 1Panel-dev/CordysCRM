@@ -109,6 +109,7 @@ export const BusinessTitleModuleFormUrl = '/contract/business-title/module/form'
 // 发票
 export const ContractInvoicedUpdateUrl = '/invoice/update'; // 发票更新
 export const ContractInvoicedPageUrl = '/invoice/page'; // 发票列表
+export const ContractInvoicedInContractPageUrl = '/contract/invoice/page'; // 合同下的发票列表
 export const ContractInvoicedExportSelectedUrl = '/invoice/export-select'; // 发票导出选中
 export const ContractInvoicedExportAllUrl = '/invoice/export-all'; // 发票导出全量
 export const ContractInvoicedBatchDeleteUrl = '/invoice/batch/delete'; // 发票批量删除

@@ -302,6 +302,7 @@ export const {
   updateInvoiced,
   getInvoicedList,
   getBusinessTitleModuleForm,
+  getInvoicedInContractList,
 } = contractApi;
 
 export const {
