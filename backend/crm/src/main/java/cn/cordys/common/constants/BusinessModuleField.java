@@ -269,7 +269,7 @@ public enum BusinessModuleField {
     /*------ start: CONTRACT_INVOICE ------*/
     INVOICE_NAME("invoiceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
     INVOICE_OWNER("invoiceOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
-    INVOICE_AMOUNT("invoiceAmount", "amount", Set.of("rules.required", "mobile"), FormKey.INVOICE.getKey()),
+    INVOICE_AMOUNT("invoiceAmount", "amount", Set.of("rules.required", "readable", "mobile"), FormKey.INVOICE.getKey()),
     INVOICE_CONTRACT_ID("invoiceContract", "contractId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
     INVOICE_INVOICE_TYPE("invoiceType", "invoiceType", Set.of("rules.required", "mobile"), FormKey.INVOICE.getKey()),
     INVOICE_TAX_RATE("invoiceTaxRate", "taxRate", Set.of("rules.required", "mobile"), FormKey.INVOICE.getKey()),
