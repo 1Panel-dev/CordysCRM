@@ -57,12 +57,12 @@ public class CustomerExportService extends BaseExportService {
 
         // 启动虚拟线程执行导出任务
         runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
-                () -> exportCustomerData(exportTask, userId, request, orgId, deptDataPermission, locale));
+                () -> exportCustomerData(exportTask, userId, request, orgId, deptDataPermission));
 
         return exportTask.getId();
     }
 
-    public void exportCustomerData(ExportTask exportTask, String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) throws Exception {
+    public void exportCustomerData(ExportTask exportTask, String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) throws Exception {
         //表头信息
         List<List<String>> headList = request.getHeadList().stream()
                 .map(head -> Collections.singletonList(head.getTitle()))
@@ -82,9 +82,9 @@ public class CustomerExportService extends BaseExportService {
         LinkedHashMap<String, Object> systemFiledMap = PoolCustomerFieldUtils.getSystemFieldMap(data);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
-        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
-            moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)));
-        });
+
+        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields ->
+                moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
         //处理数据转换
         transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
         return dataList;
@@ -166,8 +166,7 @@ public class CustomerExportService extends BaseExportService {
     ) throws InterruptedException {
 
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerListResponse> rawList =
-                extCustomerMapper.list(request, orgId, userId, deptDataPermission);
+        List<CustomerListResponse> rawList = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         return buildCustomerExportData(headList, rawList, orgId, taskId);
     }
 
