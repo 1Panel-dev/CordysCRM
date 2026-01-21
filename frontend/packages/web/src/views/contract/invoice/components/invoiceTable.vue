@@ -404,7 +404,7 @@
   }
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.INVOICE,
+    formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
       width: currentLocale.value === 'en-US' ? 180 : 150,

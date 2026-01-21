@@ -280,7 +280,7 @@
         name: 'invoice',
         tab: t('module.invoice'),
         enable: true,
-        permission: ['INVOICE:READ'],
+        permission: ['CONTRACT_INVOICE:READ'],
       },
     ];
     if (collaborationType.value) {

@@ -480,6 +480,7 @@ export const {
   deleteContractInvoicedView,
   dragContractInvoicedView,
   getInvoicedTab,
+  getInvoicedInContractList,
 } = contractApi;
 
 export const {
