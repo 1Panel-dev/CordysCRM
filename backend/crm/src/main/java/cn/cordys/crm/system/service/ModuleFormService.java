@@ -665,8 +665,8 @@ public class ModuleFormService {
 			ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(refId);
 			if (fieldBlob != null) {
 			    BaseField refField = JSON.parseObject(fieldBlob.getProp(), BaseField.class);
-			    if (refField instanceof HasOption refOption && CollectionUtils.isNotEmpty(refOption.getCustomOptions())) {
-					of.setOptions(refOption.getOptions());
+			    if (refField instanceof HasOption refOption) {
+					of.setOptions(CollectionUtils.isNotEmpty(refOption.getOptions()) ? refOption.getOptions() : refOption.getCustomOptions());
 			    }
 			}
 		}
