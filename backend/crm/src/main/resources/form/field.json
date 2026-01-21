@@ -1843,6 +1843,17 @@
       "mobile": true
     },
     {
+      "name": "合同信息",
+      "internalKey": "invoiceContractBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
       "name": "合同名称",
       "internalKey": "invoiceContract",
       "type": "DATA_SOURCE",
