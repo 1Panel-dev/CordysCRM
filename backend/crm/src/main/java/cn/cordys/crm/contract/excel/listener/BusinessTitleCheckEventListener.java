@@ -14,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -95,9 +98,9 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
+            validateRequired(rowData.get(k), errText, v);
             validateLenLimit(rowData.get(k), errText, v);
             validateNameUniques(rowData.get(k), errText, v);
-            validateRequired(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,
@@ -120,7 +123,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     }
 
     private void validateNameUniques(String data, StringBuilder errText, String v) {
-        if (BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
+        if (data != null && BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
             Boolean existed = excelValueCache.putIfAbsent(data, true);
             if (existed != null) {
                 errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
