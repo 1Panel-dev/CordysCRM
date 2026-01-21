@@ -38,6 +38,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
     protected Map<Integer, String> headMap;
     private List<List<String>> heads;
+    protected boolean atLeastOne = false;
     private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
 
     public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads) {
@@ -75,13 +76,19 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
+        if (data == null) {
+            return;
+        }
+        atLeastOne = true;
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
         validateRowData(rowIndex, data);
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-
+        if (!atLeastOne) {
+            throw new GenericException(Translator.get("import.data.cannot_be_null"));
+        }
     }
 
 
