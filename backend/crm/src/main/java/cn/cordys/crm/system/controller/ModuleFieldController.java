@@ -54,6 +54,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -157,7 +158,7 @@ public class ModuleFieldController {
     @PostMapping("/source/contract")
     @Operation(summary = "分页获取合同")
     public Pager<List<ContractListResponse>> sourceContractPage(@Valid @RequestBody ContractPageRequest request) {
-		request.setCombineSearch(contractService.setDefaultSourceCombine());
+		request.setFilters(ListUtils.union(contractService.getDefaultSourceFilters(), request.getFilters()));
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_READ);
