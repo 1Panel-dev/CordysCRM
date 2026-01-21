@@ -93,6 +93,7 @@ export default {
   'crmFormDesign.dataSourceFilterTip':
     'After adding filter conditions, only data that meets the conditions will be displayed',
   'crmFormDesign.dataSourceDisplayField': 'Display Field',
+  'crmFormDesign.dataSourceFilterSetTip': '{count} filters set',
   'crmFormDesign.showFieldCount': '{count} display fields set',
   'crmFormDesign.serialNumber': 'Serial Number',
   'crmFormDesign.selectDataSource': 'Select {type}',

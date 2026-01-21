@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false">
+  <CrmDrawer v-model:show="visible" :title="detailInfo?.name" resizable no-padding :width="800" :footer="false">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <contractInvoiceStatus :status="detailInfo?.approvalStatus ?? ContractInvoiceStatusEnum.APPROVING" />

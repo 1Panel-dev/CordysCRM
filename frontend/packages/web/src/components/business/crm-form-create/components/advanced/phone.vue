@@ -3,7 +3,6 @@
     :label="props.fieldConfig.name"
     :path="props.path"
     :rule="mergedRules"
-    :show-label="(props.fieldConfig.showLabel && !props.isSubTableRender) || props.isSubTableField"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
   >
@@ -12,7 +11,7 @@
         <div class="one-line-text">{{ props.fieldConfig.name }}</div>
         <CrmIcon v-if="props.fieldConfig.resourceFieldId" type="iconicon_correlation" />
       </div>
-      <div v-else-if="props.isSubTableField || props.isSubTableRender" class="h-[22px]"></div>
+      <div v-else class="h-[22px]"></div>
     </template>
     <div
       v-if="props.fieldConfig.description"

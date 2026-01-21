@@ -30,7 +30,7 @@
               <slot name="title">
                 <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
                   <template #trigger>
-                    <span class="one-line-text">{{ props.title }}</span>
+                    <div class="one-line-text !leading-[20px]">{{ props.title }}</div>
                   </template>
                   {{ props.title }}
                 </n-tooltip>
