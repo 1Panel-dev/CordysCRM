@@ -809,6 +809,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filter: true,
         render: props.specialRender?.approvalStatus,
       },
+      {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: 'default',
+        render: (row: any) => row.departmentName || '-',
+      },
     ],
   };
   const staticColumns: CrmDataTableColumn[] = [
