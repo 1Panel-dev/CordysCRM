@@ -30,6 +30,7 @@ export const specialBusinessKeyMap: Record<string, string> = {
   owner: 'ownerName',
   opportunityId: 'opportunityName',
   paymentPlanId: 'paymentPlanName',
+  businessTitleId: 'businessTitleName',
 };
 
 export function getRuleType(item: FormCreateField) {
@@ -309,7 +310,12 @@ export function transformData({
           }
         }
         if (!excludeFieldIds?.includes(field.businessKey)) {
-          businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+          if (specialBusinessKeyMap[fieldId]) {
+            // 处理特殊业务 key 映射关系
+            businessFieldAttr[specialBusinessKeyMap[fieldId]] = name;
+          } else {
+            businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+          }
         }
         if (fieldId === 'owner') {
           businessFieldAttr.ownerId = item.owner;
