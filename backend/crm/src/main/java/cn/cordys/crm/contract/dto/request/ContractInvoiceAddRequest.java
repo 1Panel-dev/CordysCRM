@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Data
 public class ContractInvoiceAddRequest {
-    @Size(max = 50)
+    @Size(max = 255)
     @NotBlank
     @Schema(description = "发票名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;

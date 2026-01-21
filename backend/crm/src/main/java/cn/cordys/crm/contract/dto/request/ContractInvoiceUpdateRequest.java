@@ -22,6 +22,7 @@ public class ContractInvoiceUpdateRequest {
     @Size(max = 32)
     private String id;
 
+    @Size(max = 255)
     @Schema(description = "发票名称")
     private String name;
 
