@@ -134,6 +134,7 @@
     readonly?: boolean;
   }>();
   const emit = defineEmits<{
+    (e: 'openBusinessTitleDrawer', params: { id: string }): void;
     (e: 'openContractDrawer', params: { id: string }): void;
   }>();
 
@@ -396,6 +397,12 @@
     }
   }
 
+  function showBusinessTitleDetail(businessTitleId: string) {
+    emit('openBusinessTitleDrawer', {
+      id: businessTitleId,
+    });
+  }
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.INVOICE,
     operationColumn: {
@@ -443,6 +450,16 @@
         h(contractInvoiceStatus, {
           status: row.approvalStatus,
         }),
+      businessTitleId: (row: ContractInvoiceItem) =>
+        h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              showBusinessTitleDetail(row.businessTitleId);
+            },
+          },
+          { default: () => row.businessTitleName, trigger: () => row.businessTitleName }
+        ),
     },
     permission: ['CONTRACT_INVOICE:EXPORT'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,

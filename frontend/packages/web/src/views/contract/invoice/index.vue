@@ -2,7 +2,11 @@
   <div ref="invoiceCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
       <div class="h-full px-[16px] pt-[16px]">
-        <InvoiceTable :fullscreen-target-ref="invoiceCardRef" @open-contract-drawer="handleOpenContractDrawer" />
+        <InvoiceTable
+          :fullscreen-target-ref="invoiceCardRef"
+          @open-contract-drawer="handleOpenContractDrawer"
+          @open-business-title-drawer="handleOpenBusinessTitleDrawer"
+        />
       </div>
     </CrmCard>
     <ContractDetailDrawer
@@ -17,6 +21,7 @@
       :pool-id="poolId"
       :hidden-columns="hiddenColumns"
     />
+    <businessTitleDrawer v-model:visible="showBusinessTitleDetailDrawer" :source-id="activeBusinessTitleSourceId" />
   </div>
 </template>
 
@@ -24,6 +29,7 @@
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import businessTitleDrawer from '../businessTitle/components/detail.vue';
   import ContractDetailDrawer from '../contract/components/detail.vue';
   import InvoiceTable from './components/invoiceTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
@@ -53,6 +59,13 @@
     } else {
       showCustomerOverviewDrawer.value = true;
     }
+  }
+
+  const showBusinessTitleDetailDrawer = ref(false);
+  const activeBusinessTitleSourceId = ref<string>('');
+  function handleOpenBusinessTitleDrawer(params: { id: string }) {
+    activeBusinessTitleSourceId.value = params.id;
+    showBusinessTitleDetailDrawer.value = true;
   }
 
   const openSeaOptions = ref<CluePoolItem[]>([]);

@@ -1028,6 +1028,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: props.specialRender?.[field.businessKey],
             };
           }
+          if (field.businessKey === 'businessTitleId' && !field.resourceFieldId) {
+            return {
+              title: field.name,
+              width: 200,
+              key,
+              fieldId: field.id,
+              sortOrder: false,
+              sorter,
+              filedType: field.type,
+              render: props.specialRender?.[field.businessKey],
+            };
+          }
           if (
             !field.resourceFieldId &&
             (field.businessKey === 'customerId' ||

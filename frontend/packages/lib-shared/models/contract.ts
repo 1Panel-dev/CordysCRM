@@ -199,6 +199,8 @@ export interface ContractInvoiceItem {
   name: string;
   no: string;
   owner: string;
+  businessTitleId: string;
+  businessTitleName: string;
   organizationId: string;
   createUser: string;
   createUserName: string;
