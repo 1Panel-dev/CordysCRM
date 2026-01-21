@@ -43,7 +43,7 @@ public class CustomerPoolExportService extends CustomerExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_POOL.toString(), request.getFileName());
 
         runExport(orgId, userId, LogModule.CUSTOMER_POOL, locale, exportTask, request.getFileName(),
-                () -> customerExportService.exportCustomerData(exportTask, userId, request, orgId, deptDataPermission, locale));
+                () -> customerExportService.exportCustomerData(exportTask, userId, request, orgId, deptDataPermission));
 
         return exportTask.getId();
     }
