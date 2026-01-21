@@ -1,12 +1,13 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JsonDifferenceUtils;
-
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.OperationLog;
 import cn.cordys.crm.system.domain.OperationLogBlob;
@@ -94,7 +95,6 @@ public class SysOperationLogService {
      * 获取日志详情
      *
      * @param id 日志ID
-     *
      * @return 日志详情
      */
     public OperationLogDetailResponse getLogDetail(String id, String orgId) {
@@ -129,6 +129,13 @@ public class SysOperationLogService {
                 if (moduleLogService != null) {
                     differences = moduleLogService.handleLogField(differences, orgId);
                 } else {
+                    if (Strings.CI.equals(operationLog.getModule(), LogModule.CONTRACT_BUSINESS_TITLE) && Strings.CI.equals(operationLog.getType(), LogType.UPDATE)) {
+                        differences.stream().forEach(diff -> {
+                            if (Strings.CI.equals(diff.getColumn(), "name")) {
+                                diff.setColumn("companyName");
+                            }
+                        });
+                    }
                     differences.forEach(BaseModuleLogService::translatorDifferInfo);
                 }
 
@@ -147,7 +154,6 @@ public class SysOperationLogService {
      * 例如：organizationId
      *
      * @param differences
-     *
      * @return
      */
     private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differences) {
