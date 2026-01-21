@@ -32,31 +32,33 @@ export default function useFormCreateFilter() {
       // TODO: 其他类型
       return {};
     };
-    return (res.fields || []).reduce((acc: FilterFormItem[], field: FormCreateField) => {
-      if (
-        ![
-          FieldTypeEnum.TEXTAREA,
-          FieldTypeEnum.PICTURE,
-          FieldTypeEnum.DIVIDER,
-          FieldTypeEnum.SUB_PRICE,
-          FieldTypeEnum.SUB_PRODUCT,
-        ].includes(field.type)
-      ) {
-        let key = field.businessKey || field.id;
-        if (field.resourceFieldId) {
-          // 数据源引用字段用 id作为 key
-          key = field.id;
+    return (res.fields || [])
+      .filter((e) => !e.resourceFieldId)
+      .reduce((acc: FilterFormItem[], field: FormCreateField) => {
+        if (
+          ![
+            FieldTypeEnum.TEXTAREA,
+            FieldTypeEnum.PICTURE,
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
+          ].includes(field.type)
+        ) {
+          let key = field.businessKey || field.id;
+          if (field.resourceFieldId) {
+            // 数据源引用字段用 id作为 key
+            key = field.id;
+          }
+          acc.push({
+            title: field.name,
+            dataIndex: key,
+            type: field.type,
+            ...(addDefaultKeyAsId ? { id: field.id } : {}),
+            ...getConfigProps(field),
+          } as FilterFormItem);
         }
-        acc.push({
-          title: field.name,
-          dataIndex: key,
-          type: field.type,
-          ...(addDefaultKeyAsId ? { id: field.id } : {}),
-          ...getConfigProps(field),
-        } as FilterFormItem);
-      }
-      return acc;
-    }, []);
+        return acc;
+      }, []);
   }
 
   return {
