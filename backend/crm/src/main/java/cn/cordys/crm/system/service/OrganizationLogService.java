@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -20,83 +21,79 @@ public class OrganizationLogService extends BaseModuleLogService {
     @Resource
     private OrganizationUserService organizationUserService;
 
-    private static void handRoleValueName(JsonDifferenceDTO differ) {
-        List<String> oldValueNames = new ArrayList<>();
-        if (differ.getOldValue() instanceof List) {
-            for (Object item : (List<?>) differ.getOldValue()) {
-                if (item instanceof Map) {
-                    Object nameValue = ((Map<?, ?>) item).get("name");
-                    if (nameValue != null) {
-                        switch (nameValue.toString()) {
-                            case "org_admin" -> oldValueNames.add(Translator.get("role.org_admin"));
-                            case "sales_manager" -> oldValueNames.add(Translator.get("role.sales_staff"));
-                            case "role.sales_manager" -> oldValueNames.add(Translator.get("role.sales_manager"));
-                            default -> oldValueNames.add(nameValue.toString());
-                        }
-                    }
-                }
-            }
-        }
-        differ.setOldValueName(oldValueNames);
+    private void handRoleValueName(JsonDifferenceDTO differ) {
+        differ.setOldValueName(resolveRoleNames(differ.getOldValue()));
+        differ.setNewValueName(resolveRoleNames(differ.getNewValue()));
+    }
 
-        List<String> newValueNames = new ArrayList<>();
-        if (differ.getNewValue() instanceof List) {
-            for (Object item : (List<?>) differ.getNewValue()) {
-                if (item instanceof Map) {
-                    Object nameValue = ((Map<?, ?>) item).get("name");
-                    if (nameValue != null) {
-                        switch (nameValue.toString()) {
-                            case "org_admin" -> newValueNames.add(Translator.get("role.org_admin"));
-                            case "sales_manager" -> newValueNames.add(Translator.get("role.sales_staff"));
-                            case "role.sales_manager" -> newValueNames.add(Translator.get("role.sales_manager"));
-                            default -> newValueNames.add(nameValue.toString());
-                        }
-                    }
-                }
-            }
+    private static List<String> resolveRoleNames(Object value) {
+        if (!(value instanceof List<?> list)) {
+            return new ArrayList<>();
         }
-        differ.setNewValueName(newValueNames);
 
+        List<String> result = new ArrayList<>();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> map)) {
+                continue;
+            }
+
+            Object nameValue = map.get("name");
+            if (nameValue == null) {
+                continue;
+            }
+
+            result.add(resolveRoleName(nameValue.toString()));
+        }
+        return result;
+    }
+
+    private static String resolveRoleName(String roleKey) {
+        return switch (roleKey) {
+            case "org_admin" -> Translator.get("role.org_admin");
+            case "sales_manager" -> Translator.get("role.sales_staff");
+            case "role.sales_manager" -> Translator.get("role.sales_manager");
+            default -> roleKey;
+        };
     }
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.OPPORTUNITY.getKey());
 
-        differences.forEach(differ -> {
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.roles"))) {
-                handRoleValueName(differ);
-            }
+        // 构建列名 -> 处理函数映射
+        Map<String, Consumer<JsonDifferenceDTO>> handlers = Map.of(
+                Translator.get("log.roles"), this::handRoleValueName,
+                Translator.get("log.commander"), this::setUserFieldName,
+                Translator.get("log.departmentId"), this::setDepartmentName,
+                Translator.get("log.supervisorId"), this::setSupervisorName,
+                Translator.get("log.enable"), differ -> {
+                    differ.setOldValueName(toText(differ.getOldValueName(), "log.enable.true", "log.enable.false"));
+                    differ.setNewValueName(toText(differ.getNewValueName(), "log.enable.true", "log.enable.false"));
+                },
+                Translator.get("log.gender"), differ -> {
+                    differ.setOldValueName(toText(differ.getOldValueName(), "woman", "man"));
+                    differ.setNewValueName(toText(differ.getNewValueName(), "woman", "man"));
+                },
+                Translator.get("log.employeeType"), differ -> {
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                    differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                }
+        );
 
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.commander"))) {
-                setUserFieldName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
-                setDepartmentName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
-                setSupervisorName(differ);
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.enable"))) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.gender"))) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
-            }
-
-            if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
-                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
-                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
-            }
-        });
+        // 流式处理
+        differences.forEach(differ ->
+                handlers.entrySet().stream()
+                        .filter(e -> Strings.CS.equals(differ.getColumnName(), e.getKey()))
+                        .findFirst()
+                        .ifPresent(e -> e.getValue().accept(differ))
+        );
 
         return differences;
+    }
+
+    // 通用 Boolean / Object 转译方法
+    private String toText(Object value, String trueKey, String falseKey) {
+        return Translator.get(Boolean.parseBoolean(value.toString()) ? trueKey : falseKey);
     }
 
     protected void setDepartmentName(JsonDifferenceDTO differ) {
