@@ -962,6 +962,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key,
               fieldId: field.id,
               filedType: FieldTypeEnum.PICTURE,
+              resourceFieldId: field.resourceFieldId,
               render: (row: any) =>
                 h(
                   'div',
@@ -1024,6 +1025,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sorter: !noSorterType.includes(field.type) && !field.resourceFieldId,
               filterMultipleValue: multipleValueTypeList.includes(field.type),
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if (
@@ -1042,6 +1044,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               columnSelectorDisabled: true,
               filedType: field.type,
               render: props.specialRender?.[field.businessKey],
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if (field.businessKey === 'businessTitleId' && !field.resourceFieldId) {
@@ -1054,6 +1057,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sorter,
               filedType: field.type,
               render: props.specialRender?.[field.businessKey],
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if (
@@ -1078,6 +1082,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sorter,
               filedType: field.type,
               render: props.specialRender?.[field.businessKey],
+              resourceFieldId: field.resourceFieldId,
             };
           }
 
@@ -1094,6 +1099,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 tooltip: true,
               },
               render: (row: any) => row.opportunityName ?? '-',
+              resourceFieldId: field.resourceFieldId,
             };
           }
 
@@ -1113,6 +1119,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 tooltip: true,
               },
               render: props.specialRender?.[field.businessKey],
+              resourceFieldId: field.resourceFieldId,
             };
           }
 
@@ -1129,6 +1136,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               },
               filedType: field.type,
               render: (row: any) => row.ownerName || '-',
+              resourceFieldId: field.resourceFieldId,
             };
           }
 
@@ -1147,6 +1155,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               filterOptions: [],
               remoteFilterApiKey: field.businessKey,
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
 
@@ -1165,6 +1174,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               fieldId: field.id,
               isTag: true,
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if (field.type === FieldTypeEnum.DATE_TIME) {
@@ -1180,6 +1190,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter,
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -1192,6 +1203,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter,
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
           if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type)) {
@@ -1206,6 +1218,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter: !noSorterType.includes(field.type) && !field.resourceFieldId,
               filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
             };
           }
           return {
@@ -1219,6 +1232,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sortOrder: false,
             sorter: !noSorterType.includes(field.type) && !field.resourceFieldId ? sorter : false,
             filedType: field.type,
+            resourceFieldId: field.resourceFieldId,
           };
         });
 

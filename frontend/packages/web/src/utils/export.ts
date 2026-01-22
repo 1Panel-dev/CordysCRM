@@ -18,7 +18,8 @@ export function getExportColumns(
         item.key !== 'operation' &&
         item.type !== 'selection' &&
         item.key !== 'crmTableOrder' &&
-        item.filedType !== FieldTypeEnum.PICTURE
+        item.filedType !== FieldTypeEnum.PICTURE &&
+        !item.resourceFieldId
     )
     .map((e) => {
       return {
