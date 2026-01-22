@@ -402,7 +402,7 @@
 
     <select id="calculateCustomerInvoiceAmount" resultType="java.math.BigDecimal">
         select
-            IFNULL(SUM(c.amount), 0) as totalAmount
+            IFNULL(SUM(ci.amount), 0) as totalAmount
         from
             contract_invoice ci
         left join contract c on ci.contract_id = c.id
