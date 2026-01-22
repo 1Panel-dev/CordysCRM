@@ -49,6 +49,7 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan");
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record");
+        FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
     }
 
     @Resource
