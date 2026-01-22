@@ -290,7 +290,7 @@ export function transformData({
           // 处理数据源字段，需要赋值为数组
           if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
             // 单选
-            name = [options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist')];
+            name = options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist');
           } else {
             // 多选
             name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
@@ -312,7 +312,7 @@ export function transformData({
         if (!excludeFieldIds?.includes(field.businessKey)) {
           if (specialBusinessKeyMap[fieldId]) {
             // 处理特殊业务 key 映射关系
-            businessFieldAttr[specialBusinessKeyMap[fieldId]] = name;
+            businessFieldAttr[specialBusinessKeyMap[fieldId]] = name || t('common.optionNotExist');
           } else {
             businessFieldAttr[fieldId] = name || t('common.optionNotExist');
           }
