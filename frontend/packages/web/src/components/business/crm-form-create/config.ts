@@ -64,6 +64,7 @@ import {
   getFollowRecordPage,
   getInvoicedDetail,
   getInvoicedFormConfig,
+  getInvoicedFormSnapshotConfig,
   getInvoicedInContractList,
   getInvoicedList,
   getOpenSeaCustomer,
@@ -781,6 +782,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.PRICE]: getProductPriceFormConfig,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordFormConfig,
   [FormDesignKeyEnum.INVOICE]: getInvoicedFormConfig,
+  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: (id) => getInvoicedFormSnapshotConfig(id),
   [FormDesignKeyEnum.CONTRACT_INVOICE]: getInvoicedFormConfig,
   [FormDesignKeyEnum.BUSINESS_TITLE]: getBusinessTitleModuleForm,
 };
@@ -820,6 +822,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRICE]: addProductPrice,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: addPaymentRecord,
   [FormDesignKeyEnum.INVOICE]: addInvoiced,
+  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: addInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
 };
@@ -859,6 +862,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.PRICE]: updateProductPrice,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: updatePaymentRecord,
   [FormDesignKeyEnum.INVOICE]: updateInvoiced,
+  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: updateInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
 };
@@ -896,6 +900,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT]: getQuotationSnapshotDetail,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordDetail,
   [FormDesignKeyEnum.INVOICE]: getInvoicedDetail,
+  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: getInvoicedDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
