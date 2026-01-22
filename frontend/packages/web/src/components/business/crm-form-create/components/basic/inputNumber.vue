@@ -104,7 +104,7 @@
       (props.fieldConfig.type === FieldTypeEnum.FORMULA && props.fieldConfig.showThousandsSeparator)
     ) {
       return props.fieldConfig.precision && props.fieldConfig.precision > 0
-        ? `${val.toLocaleString('en-US')}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`
+        ? `${val.toLocaleString('en-US').split('.')[0]}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`
         : val.toLocaleString('en-US');
     }
     return val.toFixed(props.fieldConfig.precision || 0);

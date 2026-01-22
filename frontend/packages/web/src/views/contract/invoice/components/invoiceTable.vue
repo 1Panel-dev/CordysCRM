@@ -86,6 +86,7 @@
     :readonly="props.readonly"
     @refresh="searchData"
     @open-contract-drawer="showContractDrawer"
+    @open-customer-drawer="showCustomerDrawer"
   />
 </template>
 
@@ -136,6 +137,7 @@
   const emit = defineEmits<{
     (e: 'openBusinessTitleDrawer', params: { id: string }): void;
     (e: 'openContractDrawer', params: { id: string }): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const { t } = useI18n();
@@ -395,6 +397,14 @@
         id: params.id,
       });
     }
+  }
+
+  function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    emit('openCustomerDrawer', {
+      customerId: params.customerId,
+      inCustomerPool: params.inCustomerPool,
+      poolId: params.poolId,
+    });
   }
 
   function showBusinessTitleDetail(businessTitleId: string) {

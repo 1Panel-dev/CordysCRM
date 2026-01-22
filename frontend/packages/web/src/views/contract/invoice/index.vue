@@ -6,6 +6,7 @@
           :fullscreen-target-ref="invoiceCardRef"
           @open-contract-drawer="handleOpenContractDrawer"
           @open-business-title-drawer="handleOpenBusinessTitleDrawer"
+          @open-customer-drawer="handleOpenCustomerDrawer"
         />
       </div>
     </CrmCard>
