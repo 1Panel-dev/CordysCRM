@@ -541,7 +541,7 @@
     <select id="filterOwnerCount" resultType="java.lang.Long">
         select count(distinct c.id) from customer c
         <if test="filters != null and filters.size > 0">
-            join opportunity o on c.id = o.customer_id and o.owner = #{ownerId} and
+            join opportunity o on c.id = o.customer_id and
             <foreach collection="filters" item="filter" open="(" separator=" and " close=")">
                 <if test="filter.column == 'stage'">
                     <include refid="cn.cordys.common.mapper.CommonMapper.condition">
