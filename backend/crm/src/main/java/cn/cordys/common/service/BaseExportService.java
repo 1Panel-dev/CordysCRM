@@ -20,6 +20,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.domain.MergeResult;
@@ -680,5 +681,14 @@ public abstract class BaseExportService {
                 t -> getExportData(exportTask.getId(), exportDTO));
         //更新状态
         exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+    }
+
+    protected String getOptionLabel(String value, List<OptionProp> options) {
+        for (OptionProp option : options) {
+            if (Strings.CS.equals(option.getValue(), value)) {
+                return option.getLabel();
+            }
+        }
+        return null;
     }
 }
