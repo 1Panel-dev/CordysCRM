@@ -68,16 +68,6 @@
                     {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
                   </div>
                 </template>
-                <template #planEndTime="{ item: decItem }">
-                  <div class="flex items-center gap-[8px]">
-                    {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
-                  </div>
-                </template>
-                <template #recordEndTime="{ item: decItem }">
-                  <div class="flex items-center gap-[8px]">
-                    {{ dayjs(decItem.value).format('YYYY-MM-DD HH:mm:ss') }}
-                  </div>
-                </template>
                 <template #recordAmount="{ item: decItem }">
                   <div class="flex items-center gap-[8px]">
                     {{ decItem.value }}
@@ -138,7 +128,7 @@
   const { t } = useI18n();
   const { openNewPage } = useOpenNewPage();
 
-  const { data, loading, statisticInfo, getDescription, loadList, getStatistic, handleReachBottom } =
+  const { data, loading, statisticInfo, getDescription, getFormConfig, loadList, getStatistic, handleReachBottom } =
     useContractTimeline(props.formKey, props.sourceId);
 
   function goDetail(id: string, type?: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD | FormDesignKeyEnum.CONTRACT) {
@@ -153,7 +143,8 @@
     }
   }
 
-  onMounted(() => {
+  onMounted(async () => {
+    await getFormConfig();
     loadList();
     getStatistic();
   });

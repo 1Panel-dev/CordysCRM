@@ -1,10 +1,13 @@
 import { ref } from 'vue';
+import dayjs from 'dayjs';
 
-import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { ContractItem } from '@lib/shared/models/contract';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-detail-card/index.vue';
+import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
 
 import {
   getAccountContract,
@@ -143,11 +146,33 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
     current: 1,
   });
 
+  const formConfig = ref<FormDesignConfigDetailParams>();
+  async function getFormConfig() {
+    if (![FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD, FormDesignKeyEnum.CONTRACT_PAYMENT].includes(formKey)) return;
+    try {
+      formConfig.value = await getFormConfigApiMap[formKey]();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function getDescription(item: ContractItem) {
     return descriptionListMap[formKey].map((desc) => {
       let itemValue = item[desc.key as keyof ContractItem];
       if (itemValue === undefined && item.moduleFields?.length) {
         itemValue = item.moduleFields.find((field) => field.fieldId === desc.key)?.fieldValue as any;
+      }
+      const formConfigField = formConfig.value?.fields.find((field) => field.businessKey === desc.key);
+      // 处理时间格式
+      if (formConfigField && formConfigField.type === FieldTypeEnum.DATE_TIME) {
+        if (formConfigField.dateType === 'month') {
+          itemValue = dayjs(itemValue as number).format('YYYY-MM');
+        } else if (formConfigField.dateType === 'date') {
+          itemValue = dayjs(itemValue as number).format('YYYY-MM-DD');
+        } else {
+          itemValue = dayjs(itemValue as number).format('YYYY-MM-DD HH:mm:ss');
+        }
       }
       return {
         ...desc,
@@ -214,5 +239,6 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
     loadList,
     getStatistic,
     handleReachBottom,
+    getFormConfig,
   };
 }
