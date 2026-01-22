@@ -60,7 +60,9 @@
           </div>
           <CrmTableButton
             v-if="
-              (!detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+              (item.value !== t('common.optionNotExist') &&
+                !detail.inCustomerPool &&
+                hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
               (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
             "
             class="text-[14px]"
