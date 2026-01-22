@@ -62,4 +62,7 @@ INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  val
     VALUE (@customer_addID, '100001', 'CONTRACT_PAYMENT_EXPIRED', 'CONTRACT','{"timeList":[{"timeValue":3,"timeUnit":"DAY"}],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
 
 
+DELETE FROM sys_module_field
+WHERE internal_key = 'quotationUntilTime';
+
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

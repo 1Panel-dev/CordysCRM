@@ -213,7 +213,7 @@ public enum BusinessModuleField {
     QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_UNTIL_TIME("quotationTimeUntil", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
     /**
      * 合同回款计划

@@ -1427,7 +1427,7 @@
     },
     {
       "name": "有效期至",
-      "internalKey": "quotationUntilTime",
+      "internalKey": "quotationTimeUntil",
       "type": "DATE_TIME",
       "dateType": "date",
       "showLabel": true,
