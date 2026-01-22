@@ -55,6 +55,7 @@ export type CrmDataTableColumn<T = any> = (
   filedType?: FieldTypeEnum; // 字段类型
   fieldId?: string; // 字段ID
   fieldConfig?: FormCreateField; // 字段配置
+  resourceFieldId?: string; // 数据源显示字段所属数据源ID
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
