@@ -81,7 +81,7 @@ public class ContractPaymentPlanUserViewController {
     @Operation(summary = "回款计划视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CONTRACT_PAYMENT_PLAN.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CONTRACT_PAYMENT_PLAN.name());
     }
 
 

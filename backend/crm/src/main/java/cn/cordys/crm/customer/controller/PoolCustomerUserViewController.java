@@ -82,7 +82,7 @@ public class PoolCustomerUserViewController {
     @Operation(summary = "公海视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CUSTOMER_POOL.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CUSTOMER_POOL.name());
     }
 
 

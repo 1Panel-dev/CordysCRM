@@ -81,7 +81,7 @@ public class CustomerUserViewController {
     @Operation(summary = "客户视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CUSTOMER.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CUSTOMER.name());
     }
 
 

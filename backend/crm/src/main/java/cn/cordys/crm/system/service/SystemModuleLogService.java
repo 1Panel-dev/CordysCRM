@@ -68,38 +68,35 @@ public class SystemModuleLogService extends BaseModuleLogService {
     }
 
     private void handleModuleMainNav(JsonDifferenceDTO differ) {
-        List<?> oldFields = parseFieldList(differ.getOldValue());
-        List<?> newFields = parseFieldList(differ.getNewValue());
-        List<String> oldNames = oldFields.stream().map(field -> {
-            return Translator.get((String) field);
-        }).toList();
-        List<String> newNames = newFields.stream().map(field -> {
-            return Translator.get((String) field);
-        }).toList();
-        differ.setOldValueName(oldNames);
-        differ.setNewValueName(newNames);
+        // 将 oldValue 和 newValue 转为列表并映射为名称
+        differ.setOldValueName(parseFieldList(differ.getOldValue())
+                .stream()
+                .map(String::valueOf)
+                .map(Translator::get)
+                .toList());
+
+        differ.setNewValueName(parseFieldList(differ.getNewValue())
+                .stream()
+                .map(String::valueOf)
+                .map(Translator::get)
+                .toList());
     }
+
 
     /**
      * 待定: 目前就只粗略展示字段的变更
      *
      * @param differ json-difference dto
      */
-    @SuppressWarnings("unchecked")
     private void handleFieldsLogDetail(JsonDifferenceDTO differ) {
-        List<?> oldFields = parseFieldList(differ.getOldValue());
-        List<?> newFields = parseFieldList(differ.getNewValue());
-        List<String> oldNames = oldFields.stream().map(field -> {
-            Map<String, Object> fieldMap = (Map<String, Object>) field;
-            return fieldMap.get("name").toString();
-        }).toList();
-        List<String> newNames = newFields.stream().map(field -> {
-            Map<String, Object> fieldMap = (Map<String, Object>) field;
-            return fieldMap.get("name").toString();
-        }).toList();
-        differ.setOldValueName(oldNames);
-        differ.setNewValueName(newNames);
+        differ.setOldValueName(parseFieldList(differ.getOldValue()).stream()
+                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+                .toList());
+        differ.setNewValueName(parseFieldList(differ.getNewValue()).stream()
+                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+                .toList());
     }
+
 
     private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
         Map<String, String> oldPairs = parseLinkFieldMap(differ.getOldValue());

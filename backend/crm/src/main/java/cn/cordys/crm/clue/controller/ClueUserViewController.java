@@ -81,7 +81,7 @@ public class ClueUserViewController {
     @Operation(summary = "线索视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CLUE.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CLUE.name());
     }
 
 

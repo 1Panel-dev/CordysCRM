@@ -36,7 +36,6 @@ import cn.cordys.crm.system.excel.listener.UserImportEventListener;
 import cn.cordys.crm.system.mapper.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import jakarta.annotation.Resource;
@@ -909,35 +908,6 @@ public class OrganizationUserService {
 
     public List<OrganizationUser> getUserByOrgId(String orgId) {
         return extOrganizationUserMapper.getUserByOrgId(orgId);
-    }
-
-    public void deleteUsers(List<OrganizationUser> userList) {
-        if (CollectionUtils.isNotEmpty(userList)) {
-            List<String> userIds = userList.stream()
-                    .map(OrganizationUser::getUserId)
-                    .toList();
-            List<String> ids = userList.stream()
-                    .map(OrganizationUser::getId)
-                    .toList();
-            LambdaQueryWrapper<OrganizationUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.in(OrganizationUser::getUserId, userIds);
-            List<OrganizationUser> organizationUserList = organizationUserMapper.selectListByLambda(wrapper);
-            Map<String, Long> userCountMap = organizationUserList.stream()
-                    .collect(Collectors.groupingBy(OrganizationUser::getUserId, Collectors.counting()));
-
-            List<String> singleUserIds = userCountMap.entrySet().stream()
-                    .filter(entry -> entry.getValue() == 1)
-                    .map(Map.Entry::getKey)
-                    .toList();
-
-            extOrganizationUserMapper.deleteUserByIds(ids);
-
-            if (CollectionUtils.isNotEmpty(singleUserIds)) {
-                this.extUserMapper.deleteByIds(userIds);
-                this.extUserExtendMapper.deleteUser(userIds);
-            }
-
-        }
     }
 
     public String getSupervisorName(String id) {

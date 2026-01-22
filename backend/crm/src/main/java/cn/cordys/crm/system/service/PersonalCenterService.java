@@ -122,26 +122,6 @@ public class PersonalCenterService {
     }
 
     /**
-     * 验证码校验成功后删除
-     *
-     * @param email email
-     * @param code  code
-     *
-     * @return message
-     */
-    public boolean verifyCode(String email, String code) {
-        boolean isVerify = false;
-        String key = PREFIX + email;
-        String correctCode = stringRedisTemplate.opsForValue().get(key);
-        if (code != null && code.equals(correctCode)) {
-            stringRedisTemplate.delete(key); // 验证通过后删除验证码
-            isVerify = true;
-        }
-        return isVerify;
-
-    }
-
-    /**
      * 重置用户密码
      *
      * @param personalPasswordRequest 包含邮箱、验证码和新密码的请求对象
