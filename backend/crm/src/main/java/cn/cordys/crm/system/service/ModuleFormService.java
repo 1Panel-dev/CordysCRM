@@ -1859,11 +1859,14 @@ public class ModuleFormService {
 		List<BaseModuleFieldValue> resolveRefFvs = resolveRefFields(resolveFvs, flattenFields, baseResourceFieldService);
 
 		// 3. 补充流水号字段
-		Optional<BaseField> serialField = flattenFields.stream().filter(BaseField::isSerialNumber).findAny();
-		if (serialField.isPresent() && StringUtils.isEmpty(serialField.get().getBusinessKey())) {
-			Object serialVal = baseResourceFieldService.getResourceFieldValue(resourceId, serialField.get().getId());
-			if (serialVal != null) {
-				resolveRefFvs.add(new BaseModuleFieldValue(serialField.get().getId(), serialVal));
+		List<BaseField> fs = flattenFields.stream().filter(BaseField::isSerialNumber).toList();
+		for (BaseField bf : fs) {
+			if (StringUtils.isEmpty(bf.getBusinessKey())) {
+				Object serialVal = baseResourceFieldService.getResourceFieldValue(resourceId, bf.getId());
+				if (serialVal != null) {
+					resolveRefFvs.removeIf(rvs -> Strings.CS.equals(rvs.getFieldId(), bf.getId()));
+					resolveRefFvs.add(new BaseModuleFieldValue(bf.getId(), serialVal));
+				}
 			}
 		}
 
