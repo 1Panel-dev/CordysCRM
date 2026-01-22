@@ -21,6 +21,7 @@
             tooltip-position="top-start"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
+            @open-customer-detail="emit('openCustomerDrawer', $event)"
           />
         </div>
       </CrmCard>
@@ -64,6 +65,7 @@
   const emit = defineEmits<{
     (e: 'refresh'): void;
     (e: 'openContractDrawer', params: { id: string }): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
