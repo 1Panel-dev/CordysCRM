@@ -228,6 +228,10 @@
         // 暂时只有这一种联动
         if (linkField.method === 'fill') {
           // 处理多选/单选数据源
+          if (targetField.dataSourceType !== item.dataSourceType) {
+            // 不同数据源类型不填充
+            return;
+          }
           formDetail.value[targetField.id] = value;
           if (!targetField.initialOptions) {
             targetField.initialOptions = [
@@ -249,6 +253,10 @@
         if (targetField && currentDatasourceFormField) {
           if (linkField.method === 'fill') {
             // 暂时只有这一种联动
+            if (targetField.dataSourceType !== currentDatasourceFormField.dataSourceType) {
+              // 不同数据源类型不填充
+              return;
+            }
             const currentSourceValue = currentDatasourceFormField.businessKey
               ? currentSource?.[currentDatasourceFormField.businessKey]
               : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
