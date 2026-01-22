@@ -12,7 +12,7 @@
       <CrmCard hide-footer>
         <div class="flex-1">
           <CrmFormDescription
-            :form-key="FormDesignKeyEnum.INVOICE"
+            :form-key="FormDesignKeyEnum.INVOICE_SNAPSHOT"
             :source-id="props.sourceId"
             :column="2"
             :refresh-key="refreshKey"

@@ -24,6 +24,7 @@ export enum FormDesignKeyEnum {
   CONTRACT_CONTRACT_PAYMENT = 'contractContractPayment', // 合同下的回款计划
   CONTRACT_PAYMENT_RECORD = 'contractPaymentRecord', // 回款记录
   INVOICE = 'invoice', // 发票
+  INVOICE_SNAPSHOT = 'invoiceSnapshot', // 发票快照
   CONTRACT_INVOICE = 'contractInvoice', // 合同下的发票
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
