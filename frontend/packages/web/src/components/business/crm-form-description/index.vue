@@ -65,7 +65,7 @@
                 hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
               (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
             "
-            class="text-[14px]"
+            class="crm-form-description-link-button"
             size="small"
             @click="openCustomerDetail(formDetail[item.fieldInfo.id])"
           >
@@ -91,6 +91,7 @@
           </div>
           <CrmTableButton
             v-if="hasAnyPermission(['CONTRACT:READ'])"
+            class="crm-form-description-link-button"
             @click="openContractDetail(formDetail[item.fieldInfo.id])"
           >
             <template #trigger>
@@ -115,6 +116,7 @@
           </div>
           <CrmTableButton
             v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])"
+            class="crm-form-description-link-button"
             @click="openContractPaymentPlanDetail(formDetail[item.fieldInfo.id])"
           >
             <template #trigger>
@@ -398,6 +400,15 @@
     moduleFormConfig,
   });
 </script>
+
+<style lang="less">
+  .crm-description {
+    .crm-form-description-link-button {
+      height: 20px !important;
+      font-size: 14px !important;
+    }
+  }
+</style>
 
 <style lang="less" scoped>
   :deep(.n-form-item-feedback-wrapper) {
