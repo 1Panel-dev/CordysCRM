@@ -1064,6 +1064,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT,
                 FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
                 FormDesignKeyEnum.INVOICE,
+                FormDesignKeyEnum.CONTRACT_INVOICE,
               ].includes(props.formKey) &&
                 field.businessKey === 'contractId') ||
               field.businessKey === 'paymentPlanId')
@@ -1127,7 +1128,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 tooltip: true,
               },
               filedType: field.type,
-              render: props.specialRender?.[field.businessKey],
+              render: (row: any) => row.ownerName || '-',
             };
           }
 
