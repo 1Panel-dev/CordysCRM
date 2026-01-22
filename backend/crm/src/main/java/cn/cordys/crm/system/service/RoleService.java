@@ -181,7 +181,7 @@ public class RoleService {
         }
 
         // 配置权限
-        insertRolePermission(request.getPermissions(), role.getId(), userId);
+        insertRolePermission(request.getPermissions(), role.getId());
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
@@ -253,7 +253,7 @@ public class RoleService {
         }
 
         // 更新权限设置
-        updatePermissionSetting(request.getPermissions(), role.getId(), userId);
+        updatePermissionSetting(request.getPermissions(), role.getId());
 
         clearPermissionCacheByRoleId(role.getId(), orgId);
 
@@ -524,7 +524,7 @@ public class RoleService {
      *
      * @param permissions
      */
-    public void updatePermissionSetting(List<PermissionUpdateRequest> permissions, String roleId, String userId) {
+    public void updatePermissionSetting(List<PermissionUpdateRequest> permissions, String roleId) {
         if (permissions == null) {
             return;
         }
@@ -533,10 +533,10 @@ public class RoleService {
         deletePermissionByRoleId(roleId);
 
         // 再新增
-        insertRolePermission(permissions, roleId, userId);
+        insertRolePermission(permissions, roleId);
     }
 
-    private void insertRolePermission(List<PermissionUpdateRequest> permissions, String roleId, String userId) {
+    private void insertRolePermission(List<PermissionUpdateRequest> permissions, String roleId) {
         if (CollectionUtils.isEmpty(permissions)) {
             return;
         }

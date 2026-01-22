@@ -268,7 +268,7 @@ public class UserViewService {
             Object value = getConditionValueByType(condition.getValueType(), condition.getValue());
             filterCondition.setValue(value);
             if (StringUtils.isNotBlank(condition.getChildrenValue())) {
-                filterCondition.setContainChildIds(JSON.parseArray(condition.getChildrenValue()));
+                filterCondition.setContainChildIds(JSON.parseArray(condition.getChildrenValue(), String.class));
             }
             return filterCondition;
         }).toList();
@@ -320,7 +320,7 @@ public class UserViewService {
         userViewMapper.update(updateView);
     }
 
-    public void editPos(PosRequest request, String userId, String orgId, String resourceType) {
+    public void editPos(PosRequest request, String userId, String resourceType) {
         ServiceUtils.updatePosFieldByDesc(request,
                 UserView.class,
                 userId,

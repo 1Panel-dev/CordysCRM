@@ -81,7 +81,7 @@ public class OpportunityQuotationUserViewController {
     @Operation(summary = "报价单视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY_QUOTATION.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.OPPORTUNITY_QUOTATION.name());
     }
 
 

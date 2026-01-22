@@ -81,7 +81,7 @@ public class FollowUpPlanUserViewController {
     @Operation(summary = "计划视图-拖拽排序")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.FOLLOW_PLAN.name());
+        userViewService.editPos(request, SessionUtils.getUserId(),  UserViewResourceType.FOLLOW_PLAN.name());
     }
 
 

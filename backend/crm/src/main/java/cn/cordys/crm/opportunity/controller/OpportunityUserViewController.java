@@ -81,7 +81,7 @@ public class OpportunityUserViewController {
     @Operation(summary = "商机视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY.name());
+        userViewService.editPos(request, SessionUtils.getUserId(),  UserViewResourceType.OPPORTUNITY.name());
     }
 
 

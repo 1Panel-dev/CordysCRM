@@ -80,7 +80,7 @@ public class ContractUserViewController {
     @Operation(summary = "视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CONTRACT.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CONTRACT.name());
     }
 
 

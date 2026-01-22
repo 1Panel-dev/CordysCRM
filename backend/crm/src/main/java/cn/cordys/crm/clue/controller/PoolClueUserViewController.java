@@ -81,7 +81,7 @@ public class PoolClueUserViewController {
     @Operation(summary = "线索池视图-拖拽排序")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
-        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CLUE_POOL.name());
+        userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CLUE_POOL.name());
     }
 
 
