@@ -73,6 +73,9 @@
   const detail = ref('');
 
   function handleCityAndDetailChange() {
+    if (props.fieldConfig.locationType !== 'detail') {
+      detail.value = '';
+    }
     value.value = city.value || detail.value ? `${city.value || ''}-${detail.value || ''}` : '';
     emit('change', value.value);
   }
