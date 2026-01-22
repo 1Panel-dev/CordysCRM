@@ -94,6 +94,7 @@
         ci.tax_rate,
         ci.`owner`,
         ci.business_title_id,
+        ci.approval_status,
         ci.create_user,
         ci.create_time,
         ci.update_user,
