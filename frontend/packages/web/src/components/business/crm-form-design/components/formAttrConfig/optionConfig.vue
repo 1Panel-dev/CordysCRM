@@ -27,6 +27,27 @@
   />
   <component
     :is="getComponent"
+    v-if="fieldConfig.optionSource === 'ref' && fieldConfig.options"
+    :value="fieldConfig.defaultValue"
+    :disabled="props.disabled"
+  >
+    <div class="flex flex-col gap-[8px]">
+      <div v-for="(item, i) in fieldConfig.options" :key="item.value" class="flex items-center gap-[8px]">
+        <n-checkbox v-if="isMultiple" :value="item.value" @click="handleCheckBoxOptionClick(item.value)" />
+        <n-radio
+          v-else
+          :value="item.value"
+          :default-checked="fieldConfig.defaultValue === item.value"
+          class="flex items-center"
+          :disabled="props.disabled"
+          @click="handleRadioOptionClick(item.value)"
+        />
+        <n-input v-model:value="item.label" disabled class="flex-1" />
+      </div>
+    </div>
+  </component>
+  <component
+    :is="getComponent"
     v-else-if="fieldConfig.optionSource === 'custom' && fieldConfig.customOptions"
     :value="fieldConfig.defaultValue"
     :disabled="props.disabled"
@@ -279,8 +300,8 @@
   watch(
     () => fieldConfig.value.optionSource,
     async (val) => {
+      fieldConfig.value.defaultValue = isMultiple.value ? [] : '';
       if (val === 'ref') {
-        fieldConfig.value.defaultValue = isMultiple.value ? [] : '';
         if (fieldConfig.value.refFormKey && fieldConfig.value.refId) {
           await initEchoByPath(fieldConfig.value.refFormKey);
           updateFormKeyFromCascader(fieldConfig.value.refId);
