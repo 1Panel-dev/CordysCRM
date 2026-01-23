@@ -20,6 +20,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
+import cn.cordys.crm.contract.domain.ContractPaymentRecord;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanUpdateRequest;
@@ -309,5 +310,27 @@ public class ContractPaymentPlanService {
 		LambdaQueryWrapper<ContractPaymentPlan> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 		lambdaQueryWrapper.in(ContractPaymentPlan::getName, names);
 		return contractPaymentPlanMapper.selectListByLambda(lambdaQueryWrapper);
+	}
+
+	public String getPlanName(String id) {
+		ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
+		if (contractPaymentPlan != null) {
+			return contractPaymentPlan.getName();
+		}
+		return StringUtils.EMPTY;
+	}
+
+	/**
+	 * 通过ID集合获取回款计划名称
+	 * @param ids id集合
+	 * @return 回款计划名称
+	 */
+	public String getPlanNameByIds(List<String> ids) {
+		List<ContractPaymentPlan> plans = contractPaymentPlanMapper.selectByIds(ids);
+		if (CollectionUtils.isNotEmpty(plans)) {
+			List<String> names = plans.stream().map(ContractPaymentPlan::getName).toList();
+			return String.join(",", names);
+		}
+		return StringUtils.EMPTY;
 	}
 }
