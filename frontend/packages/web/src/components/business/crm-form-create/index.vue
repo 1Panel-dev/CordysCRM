@@ -319,7 +319,7 @@
   ) {
     // 控制显示规则
     if (item.showControlRules?.length) {
-      initFormShowControl();
+      initFormShowControl(value);
       nextTick(() => {
         const labelNodes = Array.from(document.querySelectorAll('.n-form-item-label'));
         const noWidthLabelNodes = labelNodes.filter((e) => (e as HTMLElement).style.width === '');
