@@ -46,6 +46,7 @@
             :placeholder="t('contract.businessTitle.selectCompanyPlaceholder')"
             label-key="name"
             value-key="id"
+            :disabled="!isEnableQccConfig && form.id && originType === 'THIRD_PARTY'"
             @select="handleAutoFillInfo"
           />
         </n-form-item>
