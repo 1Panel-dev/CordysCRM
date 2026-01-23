@@ -1326,11 +1326,19 @@ public class IntegrationConfigService {
         if (typeConstants == null) {
             throw new GenericException("unsupported.third.type");
         }
+        WecomThirdConfigRequest oldConfig = JSON.parseObject(new String(content), WecomThirdConfigRequest.class);
         switch (typeConstants) {
-            case WECOM, DINGTALK, LARK -> {
-                WecomThirdConfigRequest oldConfig = JSON.parseObject(new String(content), WecomThirdConfigRequest.class);
-                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
-                return !Strings.CI.equals(oldConfig.getCorpId(), config.getCorpId());
+            case WECOM -> {
+                WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
+                return !Strings.CI.equals(oldConfig.getCorpId(), weComConfig.getCorpId());
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
+                return !Strings.CI.equals(oldConfig.getCorpId(), dingTalkConfig.getCorpId());
+            }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
+                return !Strings.CI.equals(oldConfig.getCorpId(), larkConfig.getCorpId());
             }
             default -> {
                 return false;
