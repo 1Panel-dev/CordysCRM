@@ -265,7 +265,9 @@ public class BaseService {
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
 
         if (moduleFields != null) {
-            moduleFields.forEach(field ->
+            moduleFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .forEach(field ->
                     resourceLog.put(field.getFieldId(), field.getFieldValue())
             );
         }
@@ -283,8 +285,11 @@ public class BaseService {
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
         if (moduleFields != null) {
             Map<String, String> fieldNameMap = getFieldNameMap(moduleFields, moduleFormConfigDTO);
+            List<BaseModuleFieldValue> validFields = moduleFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(resourceLog, moduleFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
+            fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -321,8 +326,10 @@ public class BaseService {
 
         // 添加原始字段值
         if (originResourceFields != null) {
-            originResourceFields.forEach(field ->
-                    originResourceLog.put(field.getFieldId(), field.getFieldValue())
+            originResourceFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .forEach(field ->
+                        originResourceLog.put(field.getFieldId(), field.getFieldValue())
             );
         }
 
@@ -365,8 +372,11 @@ public class BaseService {
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
         if (originResourceFields != null) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, moduleFormConfigDTO);
+            List<BaseModuleFieldValue> validFields = originResourceFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(originResourceLog, originResourceFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
+            fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
         }
 
         if (modifiedResourceFields != null) {
