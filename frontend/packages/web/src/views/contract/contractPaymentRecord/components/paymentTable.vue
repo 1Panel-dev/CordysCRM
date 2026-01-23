@@ -438,8 +438,8 @@
     if (props.isContractTab) {
       searchData();
     }
-    if (route.query.id) {
-      activeSourceId.value = route.query.id as string;
+    if (route.query.recordId) {
+      activeSourceId.value = route.query.recordId as string;
       showDetailDrawer.value = true;
     }
   });

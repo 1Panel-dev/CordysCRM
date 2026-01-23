@@ -134,7 +134,7 @@
   function goDetail(id: string, type?: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD | FormDesignKeyEnum.CONTRACT) {
     if (type === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
       openNewPage(ContractRouteEnum.CONTRACT_PAYMENT_RECORD, {
-        id,
+        recordId: id,
       });
     } else {
       openNewPage(ContractRouteEnum.CONTRACT_INDEX, {
