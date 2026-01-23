@@ -86,98 +86,89 @@ public class SendNoticeAspect {
     @AfterReturning(value = "pointcut()", returning = "retValue")
     public void sendNotice(JoinPoint joinPoint, Object retValue) {
         try {
-            //从切面织入点处通过反射机制获取织入点处的方法
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-            //获取切入点所在的方法
             Method method = signature.getMethod();
-            //获取参数对象数组
             Object[] args = joinPoint.getArgs();
-            //获取方法参数名
             String[] params = discoverer.getParameterNames(method);
-            //获取操作
+
             SendNotice sendNotice = method.getAnnotation(SendNotice.class);
             EvaluationContext context = new StandardEvaluationContext();
-            for (int len = 0; len < Objects.requireNonNull(params).length; len++) {
-                context.setVariable(params[len], args[len]);
-            }
-            // 再次从数据库查询一次内容，方便获取最新参数
-            if (StringUtils.isNotEmpty(sendNotice.target())) {
-                //将参数纳入Spring管理
-                context.setVariable("targetClass", CommonBeanFactory.getBean(sendNotice.targetClass()));
-                String target = sendNotice.target();
-                Expression titleExp = parser.parseExpression(target);
-                Object v = titleExp.getValue(context, Object.class);
-                // 查询结果如果是null或者是{}，不使用这个值
-                String jsonObject = JSON.toJSONString(v);
-                if (v != null && !Strings.CS.equals("{}", jsonObject) && !Strings.CS.equals("[]", jsonObject)) {
-                    source.set(JSON.toJSONString(v));
+
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    context.setVariable(params[i], args[i]);
                 }
             }
 
-            List<Map> resources = new ArrayList<>();
-            String v = source.get();
-            if (StringUtils.isNotBlank(v)) {
-                // array
-                if (Strings.CS.startsWith(v, "[")) {
-                    resources.addAll(JSON.parseArray(v, Map.class));
+            // 获取目标对象最新数据
+            if (StringUtils.isNotEmpty(sendNotice.target())) {
+                Object targetBean = CommonBeanFactory.getBean(sendNotice.targetClass());
+                context.setVariable("targetClass", targetBean);
+
+                Object targetValue = parser.parseExpression(sendNotice.target())
+                        .getValue(context, Object.class);
+
+                String jsonValue = JSON.toJSONString(targetValue);
+                if (targetValue != null && !Strings.CS.equals("{}", jsonValue) && !Strings.CS.equals("[]", jsonValue)) {
+                    source.set(jsonValue);
                 }
-                // map
-                else {
-                    Map<?, ?> value = JSON.parseObject(v, Map.class);
-                    resources.add(value);
+            }
+
+            // 组装资源列表
+            var resources = new ArrayList<Map>();
+            String src = source.get();
+            if (StringUtils.isNotBlank(src)) {
+                if (Strings.CS.startsWith(src, "[")) {
+                    resources.addAll(JSON.parseArray(src, Map.class));
+                } else {
+                    resources.add(JSON.parseObject(src, Map.class));
                 }
             } else {
                 resources.add(new BeanMap(retValue));
             }
+
+            // 解析模块名
             String module = sendNotice.module();
-            // module
-            if (StringUtils.isNotEmpty(sendNotice.module())) {
+            if (StringUtils.isNotEmpty(module)) {
                 try {
-                    Expression titleExp = parser.parseExpression(module);
-                    module = titleExp.getValue(resources, String.class);
-
+                    module = parser.parseExpression(module).getValue(resources, String.class);
                 } catch (Exception e) {
-                    log.info("使用原值");
+                    log.info("使用原值 module:{}", module);
                 }
             }
+
+            // 解析事件名
             String event = sendNotice.event();
-            // event
-            if (StringUtils.isNotEmpty(sendNotice.event())) {
+            if (StringUtils.isNotEmpty(event)) {
                 try {
-                    Expression titleExp = parser.parseExpression(event);
-                    event = titleExp.getValue(context, String.class);
+                    event = parser.parseExpression(event).getValue(context, String.class);
                 } catch (Exception e) {
-                    log.info("使用原值");
+                    log.info("使用原值 event:{}", event);
                 }
             }
 
-            log.info("event:" + event);
-            String resultStr = JSON.toJSONString(retValue);
-            Map object = JSON.parseMap(resultStr);
+            log.info("event:{}", event);
+
+            // 补全基础字段
+            var object = JSON.parseMap(JSON.toJSONString(retValue));
             if (MapUtils.isNotEmpty(object)) {
-                for (Map resource : resources) {
-                    if (object.containsKey(ID) && resource.get(ID) == null) {
-                        resource.put(ID, object.get(ID));
-                    }
-                    if (object.containsKey(CREATE_USER) && resource.get(CREATE_USER) == null) {
-                        resource.put(CREATE_USER, object.get(CREATE_USER));
-                    }
-                    if (object.containsKey(CREATE_TIME) && resource.get(CREATE_TIME) == null) {
-                        resource.put(CREATE_TIME, object.get(CREATE_TIME));
-                    }
-                    if (object.containsKey(UPDATE_TIME) && resource.get(UPDATE_TIME) == null) {
-                        resource.put(UPDATE_TIME, object.get(UPDATE_TIME));
-                    }
-                    if (object.containsKey(UPDATE_USER) && resource.get(UPDATE_USER) == null) {
-                        resource.put(UPDATE_USER, object.get(UPDATE_USER));
-                    }
-                }
+                List.of(ID, CREATE_USER, CREATE_TIME, UPDATE_TIME, UPDATE_USER)
+                        .forEach(key ->
+                                resources.forEach(resource -> {
+                                    if (object.containsKey(key) && resource.get(key) == null) {
+                                        resource.put(key, object.get(key));
+                                    }
+                                })
+                        );
             }
+
             commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
             source.remove();
         }
     }
+
 }

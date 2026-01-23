@@ -225,7 +225,7 @@ public class OpportunityStageService {
         List<String> oldNames = oldStageConfigList.stream().map(StageConfigResponse::getName).toList();
 
         for (int i = 0; i < ids.size(); i++) {
-            extOpportunityStageConfigMapper.updatePos(ids.get(i), Long.valueOf(i + 1));
+            extOpportunityStageConfigMapper.updatePos(ids.get(i), (long) (i + 1));
         }
 
         List<StageConfigResponse> newStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);

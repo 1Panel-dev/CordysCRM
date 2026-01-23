@@ -94,7 +94,7 @@ public class ClueExportService extends BaseExportService {
         return exportTask.getId();
     }
 
-    private void exportData(ExportTask exportTask, String userId, ExportSelectRequest request, String orgId, String fileId) throws InterruptedException {
+    private void exportData(ExportTask exportTask, String userId, ExportSelectRequest request, String orgId, String fileId) {
         //表头信息
         List<List<String>> headList = request.getHeadList().stream()
                 .map(head -> Collections.singletonList(head.getTitle()))

@@ -42,7 +42,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             sendWeCom(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
             log.debug("发送企业微信结束");
         } catch (Exception e) {
-            log.error("企业微信消息通知失败：" + e);
+            log.error("企业微信消息通知失败：{}", String.valueOf(e));
         }
     }
 

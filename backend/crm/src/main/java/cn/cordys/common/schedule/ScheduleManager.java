@@ -77,7 +77,7 @@ public class ScheduleManager {
      */
     public void addCronJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> jobClass, String cron, JobDataMap jobDataMap) {
         try {
-            log.info("addCronJob: " + triggerKey.getName() + "," + triggerKey.getGroup());
+            log.info("addCronJob: {},{}", triggerKey.getName(), triggerKey.getGroup());
             JobBuilder jobBuilder = JobBuilder.newJob(jobClass).withIdentity(jobKey);
             if (jobDataMap != null) {
                 jobBuilder.usingJobData(jobDataMap);
@@ -113,12 +113,10 @@ public class ScheduleManager {
      *
      * @param triggerKey 触发器标识
      * @param cron       新的 Cron 表达式
-     *
-     * @throws SchedulerException 如果修改失败
      */
-    public void modifyCronJobTime(TriggerKey triggerKey, String cron) throws SchedulerException {
+    public void modifyCronJobTime(TriggerKey triggerKey, String cron) {
 
-        log.info("modifyCronJobTime: " + triggerKey.getName() + "," + triggerKey.getGroup());
+        log.info("modifyCronJobTime: {}", triggerKey.getName() + "," + triggerKey.getGroup());
         try {
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             if (trigger == null) {
@@ -148,7 +146,7 @@ public class ScheduleManager {
      */
     public void removeJob(JobKey jobKey, TriggerKey triggerKey) {
         try {
-            log.info("RemoveJob: " + jobKey.getName() + "," + jobKey.getGroup());
+            log.info("RemoveJob: {},{}", jobKey.getName(), jobKey.getGroup());
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
             scheduler.deleteJob(jobKey);
@@ -188,7 +186,7 @@ public class ScheduleManager {
      */
     public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron, JobDataMap jobDataMap)
             throws SchedulerException {
-        log.info("AddOrUpdateCronJob: " + jobKey.getName() + "," + triggerKey.getGroup());
+        log.info("AddOrUpdateCronJob: {}", jobKey.getName() + "," + triggerKey.getGroup());
 
         if (scheduler.checkExists(triggerKey)) {
             modifyCronJobTime(triggerKey, cron);

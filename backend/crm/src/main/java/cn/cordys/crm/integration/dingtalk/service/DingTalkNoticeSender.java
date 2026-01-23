@@ -42,7 +42,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
             sendDingTalk(context, noticeModel, messageDetailDTO.getOrganizationId());
             log.debug("发送钉钉消息结束");
         } catch (Exception e) {
-            log.error("钉钉消息通知失败：" + e);
+            log.error("钉钉消息通知失败：{}", String.valueOf(e));
         }
     }
 

@@ -47,7 +47,7 @@ public class ExtScheduleService {
                     if (RESOURCE_TYPES.contains(schedule.getResourceType())) {
                         removeJob(schedule); // 删除关闭的job
                     }
-                    log.info("初始化任务：" + JSON.toJSONString(schedule));
+                    log.info("初始化任务：{}", JSON.toJSONString(schedule));
                     scheduleManager.addOrUpdateCronJob(
                             new JobKey(schedule.getKey(), schedule.getJob()),
                             new TriggerKey(schedule.getKey(), schedule.getJob()),
@@ -59,7 +59,7 @@ public class ExtScheduleService {
                     removeJob(schedule); // 删除关闭的job
                 }
             } catch (ClassNotFoundException e) {
-                log.error("任务类未找到：" + schedule.getJob(), e);
+                log.error("任务类未找到：{}", schedule.getJob(), e);
             } catch (Exception e) {
                 log.error("初始化任务失败", e);
             }

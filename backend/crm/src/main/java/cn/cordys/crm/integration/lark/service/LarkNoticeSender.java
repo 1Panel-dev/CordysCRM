@@ -42,7 +42,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             sendLark(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
             log.debug("发送飞书消息结束");
         } catch (Exception e) {
-            log.error("飞书消息通知失败：" + e);
+            log.error("飞书消息通知失败：{}", String.valueOf(e));
         }
     }
 
