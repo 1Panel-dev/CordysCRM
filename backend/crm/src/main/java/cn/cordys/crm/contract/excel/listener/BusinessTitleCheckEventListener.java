@@ -40,7 +40,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final Map<String, Boolean> requiredFieldMap;
     private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
     protected Map<Integer, String> headMap;
-    private List<List<String>> heads;
+    private final List<List<String>> heads;
     protected boolean atLeastOne = false;
     private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
 

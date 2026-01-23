@@ -80,7 +80,7 @@ public class TokenService {
         }
 
         if (weComToken.getErrCode() != 0) {
-            log.error(Translator.get("auth.get.token.res.error") + ":" + weComToken.getErrMsg());
+            log.error("{}:{}", Translator.get("auth.get.token.res.error"), weComToken.getErrMsg());
             return null;
         }
         return weComToken.getAccessToken();
@@ -166,7 +166,7 @@ public class TokenService {
         }
 
         if (larkToken.getCode() != 0) {
-            log.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
+            log.error("{}:{}", Translator.get("auth.get.token.res.error"), larkToken.getMsg());
         }
 
         return larkToken.getTenantAccessToken();
@@ -311,7 +311,7 @@ public class TokenService {
         }
 
         if (larkToken.getCode() != 0) {
-            log.error(Translator.get("auth.get.token.res.error") + ":" + larkToken.getMsg());
+            log.error("{}:{}", Translator.get("auth.get.token.res.error"), larkToken.getMsg());
         }
 
         return larkToken.getAccessToken();

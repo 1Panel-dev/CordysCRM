@@ -215,9 +215,6 @@ public enum BusinessModuleField {
     QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
-    /**
-     * 合同回款计划
-     */
     /*------ start: CONTRACT_PAYMENT_PLAN ------*/
     /**
      * 负责人
@@ -242,9 +239,6 @@ public enum BusinessModuleField {
     /*------ end: CONTRACT_PAYMENT_PLAN ------*/
 
 
-    /**
-     * 合同
-     */
     /*------ start: CONTRACT ------*/
     /**
      * 合同名稱

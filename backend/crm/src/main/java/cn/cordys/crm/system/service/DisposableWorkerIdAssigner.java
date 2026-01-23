@@ -36,7 +36,7 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
 
             // add worker node for new (ignore the same IP + PORT)
             extWorkerNodeMapper.insert(workerNode);
-            log.info("Add worker node:" + workerNode);
+            log.info("Add worker node:{}", workerNode);
 
             return workerNode.getId();
         } catch (Exception e) {

@@ -256,7 +256,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
             return customFieldResolver.textToValue(field, text);
         } catch (Exception e) {
-            log.error(String.format("解析字段[%s]错误, [%s]不能被转换; 原因: %s", field.getName(), text, e.getMessage()));
+            log.error("解析字段[{}]错误, [{}]不能被转换; 原因: {}", field.getName(), text, e.getMessage(), e);
         }
         return null;
     }

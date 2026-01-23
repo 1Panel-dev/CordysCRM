@@ -22,7 +22,7 @@ public class MailNoticeSender extends AbstractNoticeSender {
     @Resource
     private MailSender mailSender;
 
-    public void sendMail(String context, NoticeModel noticeModel, String organizationId, String subjectText) throws Exception {
+    public void sendMail(String context, NoticeModel noticeModel, String organizationId, String subjectText) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;

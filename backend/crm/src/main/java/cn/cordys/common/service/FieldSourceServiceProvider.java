@@ -87,7 +87,7 @@ public class FieldSourceServiceProvider {
         try {
             return service.getClass().getMethod("get", String.class).invoke(service, id.toString());
         } catch (Exception e) {
-            log.error("获取数据源详情异常：" + id, e);
+            log.error("获取数据源详情异常：{}", id, e);
             return null;
         }
     }

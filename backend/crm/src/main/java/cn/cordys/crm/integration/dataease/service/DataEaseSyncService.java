@@ -61,7 +61,7 @@ public class DataEaseSyncService {
         Set<String> orgIds = extOrganizationMapper.selectAllOrganizationIds();
         // 同步角色
         for (String orgId : orgIds) {
-            log.info("定时同步DataEase数据，组织ID: " + orgId);
+            log.info("定时同步DataEase数据，组织ID: {}", orgId);
             syncDataEase(orgId);
         }
     }
@@ -72,7 +72,7 @@ public class DataEaseSyncService {
         try {
             thirdConfig = dataEaseService.getDeConfig(orgId);
         } catch (Exception e) {
-            log.error("获取DataEase配置失败，组织ID: " + orgId, e);
+            log.error("获取DataEase配置失败，组织ID: {}", orgId, e);
             return;
         }
         if (thirdConfig == null || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {

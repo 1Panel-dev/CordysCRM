@@ -162,7 +162,7 @@ public class CustomerContactExportService extends BaseExportService {
         return exportTask.getId();
     }
 
-    private void exportData(String fileId, ExportTask exportTask, String userId, ExportSelectRequest request, String orgId) throws InterruptedException {
+    private void exportData(String fileId, ExportTask exportTask, String userId, ExportSelectRequest request, String orgId) {
         //表头信息
         List<List<String>> headList = request.getHeadList().stream()
                 .map(head -> Collections.singletonList(head.getTitle()))
