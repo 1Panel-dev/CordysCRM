@@ -377,7 +377,7 @@
         </choose>
     </sql>
 
-    <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractResponse">
+    <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractGetResponse">
         SELECT ct.id,
                ct.NAME,
                ct.customer_id,

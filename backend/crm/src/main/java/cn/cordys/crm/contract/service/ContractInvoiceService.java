@@ -35,7 +35,6 @@ import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
-import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
@@ -173,7 +172,7 @@ public class ContractInvoiceService {
 
         // 保存表单配置快照
         List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
-        ContractInvoiceGetResponse response = getContractInvoiceResponse(invoice, resolveFieldValues, moduleFormConfigDTO);
+        ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
         return invoice;
@@ -187,51 +186,13 @@ public class ContractInvoiceService {
      * @param response
      */
     private void saveSnapshot(ContractInvoice invoice, ModuleFormConfigDTO moduleFormConfigDTO, ContractInvoiceGetResponse response) {
-       ContractInvoiceSnapshot snapshot = new ContractInvoiceSnapshot();
+        ContractInvoiceSnapshot snapshot = new ContractInvoiceSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setInvoiceId(invoice.getId());
         snapshot.setInvoiceProp(JSON.toJSONString(moduleFormConfigDTO));
         snapshot.setInvoiceValue(JSON.toJSONString(response));
         snapshotBaseMapper.insert(snapshot);
     }
-
-
-    /**
-     * 获取合同详情
-     *
-     * @param invoice
-     * @param moduleFields
-     * @param moduleFormConfigDTO
-     * @return
-     */
-    private ContractInvoiceGetResponse getContractInvoiceResponse(ContractInvoice invoice, List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
-        ContractInvoiceGetResponse response = BeanUtils.copyBean(new ContractInvoiceGetResponse(), invoice);
-        moduleFormService.processBusinessFieldValues(response, moduleFields, moduleFormConfigDTO);
-        List<BaseModuleFieldValue> fvs = invoiceFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), invoice.getOrganizationId()),
-                new HashMap<>(Map.of(response.getId(), moduleFields))).get(response.getId());
-        response.setModuleFields(fvs);
-
-        response = baseService.setCreateAndUpdateOwnerUserName(response);
-
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
-        Contract contract = contractMapper.selectByPrimaryKey(invoice.getContractId());
-        if (contract != null) {
-            optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
-            response.setContractName(contract.getName());
-        }
-        optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), Collections.singletonList(new OptionDTO(response.getOwner(), response.getOwnerName())));
-
-        BusinessTitle businessTitle = businessTitleService.selectById(response.getBusinessTitleId());
-        if (businessTitle != null) {
-            response.setBusinessTitleName(businessTitle.getName());
-            optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(businessTitle.getId(), businessTitle.getName())));
-        }
-        response.setOptionMap(optionMap);
-        Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
-        response.setAttachmentMap(attachmentMap);
-        return response;
-    }
-
 
     /**
      * 编辑合同
@@ -292,7 +253,7 @@ public class ContractInvoiceService {
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
             List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
-            ContractInvoiceGetResponse response = getContractInvoiceResponse(invoice, resolveFieldValues, moduleFormConfigDTO);
+            ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
             // 处理日志上下文
@@ -357,12 +318,81 @@ public class ContractInvoiceService {
         return getResponse;
     }
 
+    public ContractInvoiceGetResponse getSnapshotWithDataPermissionCheck(String id, String userId, String orgId) {
+        ContractInvoiceGetResponse getResponse = getSnapshot(id);
+        if (getResponse == null) {
+            throw new GenericException(Translator.get("resource.not.exist"));
+        }
+        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_INVOICE_READ);
+        return getResponse;
+    }
+
+    private ContractInvoiceGetResponse get(ContractInvoice contractInvoice, List<BaseModuleFieldValue> contractInvoiceFields, ModuleFormConfigDTO contractInvoiceFormConfig) {
+        ContractInvoiceGetResponse contractInvoiceGetResponse = BeanUtils.copyBean(new ContractInvoiceGetResponse(), contractInvoice);
+        contractInvoiceGetResponse = baseService.setCreateUpdateOwnerUserName(contractInvoiceGetResponse);
+
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(contractInvoiceGetResponse, contractInvoiceFields, contractInvoiceFormConfig);
+        contractInvoiceFields = invoiceFieldService.setBusinessRefFieldValue(List.of(contractInvoiceGetResponse),
+                moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), contractInvoice.getOrganizationId()),
+                new HashMap<>(Map.of(contractInvoice.getId(), contractInvoiceFields))).get(contractInvoice.getId());
+
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractInvoiceFormConfig, contractInvoiceFields);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(contractInvoiceGetResponse,
+                ContractInvoiceGetResponse::getOwner, ContractInvoiceGetResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.INVOICE_OWNER.getBusinessKey(), ownerFieldOption);
+
+        Contract contract = contractMapper.selectByPrimaryKey(contractInvoice.getContractId());
+        if (contract != null) {
+            contractInvoiceGetResponse.setContractName(contract.getName());
+            optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+        }
+
+        BusinessTitle businessTitle = businessTitleService.selectById(contractInvoiceGetResponse.getBusinessTitleId());
+        if (businessTitle != null) {
+            contractInvoiceGetResponse.setBusinessTitleName(businessTitle.getName());
+            optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(businessTitle.getId(), businessTitle.getName())));
+        }
+
+        contractInvoiceGetResponse.setOptionMap(optionMap);
+        contractInvoiceGetResponse.setModuleFields(contractInvoiceFields);
+
+        if (contractInvoiceGetResponse.getOwner() != null) {
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractInvoiceGetResponse.getOwner(), contractInvoice.getOrganizationId());
+            if (userDeptDTO != null) {
+                contractInvoiceGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+                contractInvoiceGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+        }
+
+        // 附件信息
+        contractInvoiceGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(contractInvoiceFormConfig, contractInvoiceFields));
+
+        return contractInvoiceGetResponse;
+    }
+
+    /**
+     * 获取合同详情
+     *
+     * @param id
+     * @return
+     */
+    public ContractInvoiceGetResponse get(String id) {
+        ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(id);
+        // 获取模块字段
+        ModuleFormConfigDTO contractInvoiceFormConfig = getFormConfig(contractInvoice.getOrganizationId());
+        List<BaseModuleFieldValue> contractInvoiceFields = invoiceFieldService.getModuleFieldValuesByResourceId(id);
+        return get(contractInvoice, contractInvoiceFields, contractInvoiceFormConfig);
+    }
+
     /**
      * 从快照中获取合同详情
      * @param id 合同ID
      * @return 合同详情
      */
-    public ContractInvoiceGetResponse get(String id) {
+    public ContractInvoiceGetResponse getSnapshot(String id) {
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
         ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
