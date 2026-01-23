@@ -468,7 +468,13 @@
                 >
                   {{ t('common.config') }}
                 </n-button>
-                <n-button size="small" type="default" class="outline--secondary px-[8px]" @click="testLink(item)">
+                <n-button
+                  :disabled="!item.hasConfig"
+                  size="small"
+                  type="default"
+                  class="outline--secondary px-[8px]"
+                  @click="testLink(item)"
+                >
                   {{ t('system.business.mailSettings.testLink') }}
                 </n-button>
               </div>
