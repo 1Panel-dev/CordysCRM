@@ -267,14 +267,25 @@ public class OpportunityQuotationService {
             response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
         }
         response.setApprovalStatus(opportunityQuotation.getApprovalStatus());
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
+        List<BaseModuleFieldValue> moduleFieldValuesByResourceId = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(opportunityQuotation.getId());
+        // 保存表单配置快照
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFieldValuesByResourceId, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, resolveFieldValues);
+        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
+        if (opportunity != null) {
+            optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
+            response.setOpportunityName(opportunity.getName());
+        }
+        response.setOptionMap(optionMap);
+        Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, response.getModuleFields());
+        response.setAttachmentMap(attachmentMap);
+        moduleFormService.processBusinessFieldValues(response, response.getModuleFields(), moduleFormConfigDTO);
+        baseService.setCreateAndUpdateUserName(response);
         UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId());
         if (userDeptDTO != null) {
             response.setDepartmentId(userDeptDTO.getDeptId());
             response.setDepartmentName(userDeptDTO.getDeptName());
-        }
-        Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(opportunityQuotation.getOpportunityId());
-        if (opportunity != null) {
-            response.setOpportunityName(opportunity.getName());
         }
         return response;
     }
