@@ -43,6 +43,7 @@ import {
   getClueTransitionCustomerList,
   getContactListUnderCustomer,
   getContractDetail,
+  getContractDetailSnapshot,
   getContractFormConfig,
   getContractFormSnapshotConfig,
   getContractList,
@@ -63,6 +64,7 @@ import {
   getFollowRecordDetail,
   getFollowRecordPage,
   getInvoicedDetail,
+  getInvoicedDetailSnapshot,
   getInvoicedFormConfig,
   getInvoicedFormSnapshotConfig,
   getInvoicedInContractList,
@@ -892,7 +894,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getPoolClue,
   [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: getOpportunityDetail,
   [FormDesignKeyEnum.CONTRACT]: getContractDetail,
-  [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: getContractDetail,
+  [FormDesignKeyEnum.CONTRACT_SNAPSHOT]: getContractDetailSnapshot,
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanDetail,
   [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: getPaymentPlanDetail,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationDetail,
@@ -900,7 +902,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.PRICE]: getProductPrice,
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordDetail,
   [FormDesignKeyEnum.INVOICE]: getInvoicedDetail,
-  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: getInvoicedDetail,
+  [FormDesignKeyEnum.INVOICE_SNAPSHOT]: getInvoicedDetailSnapshot,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
