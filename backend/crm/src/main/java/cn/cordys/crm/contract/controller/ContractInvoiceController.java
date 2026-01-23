@@ -60,6 +60,13 @@ public class ContractInvoiceController {
         return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
+    @GetMapping("/get/snapshot/{id}")
+    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @Operation(summary = "获取详情快照")
+    public ContractInvoiceGetResponse getSnapshot(@PathVariable("id") String id) {
+        return contractInvoiceService.getSnapshotWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "详情")

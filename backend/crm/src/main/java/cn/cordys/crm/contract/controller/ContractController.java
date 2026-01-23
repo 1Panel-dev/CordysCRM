@@ -89,14 +89,19 @@ public class ContractController {
         contractService.delete(id);
     }
 
+    @GetMapping("/get/snapshot/{id}")
+    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @Operation(summary = "获取详情快照")
+    public ContractGetResponse getSnapshot(@PathVariable("id") String id) {
+        return contractService.getSnapshotWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "详情")
-    public ContractResponse get(@PathVariable("id") String id) {
-        return contractService.get(id);
+    public ContractGetResponse get(@PathVariable("id") String id) {
+        return contractService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/module/form/snapshot/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)

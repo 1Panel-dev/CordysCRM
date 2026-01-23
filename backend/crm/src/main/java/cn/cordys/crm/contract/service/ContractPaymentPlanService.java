@@ -163,12 +163,12 @@ public class ContractPaymentPlanService {
     }
 
     public ContractPaymentPlanGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractPaymentPlanGetResponse getResponse = get(id, orgId);
+        ContractPaymentPlanGetResponse getResponse = get(id);
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         return getResponse;
     }
 
-    public ContractPaymentPlanGetResponse get(String id, String orgId) {
+    public ContractPaymentPlanGetResponse get(String id) {
         ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
         ContractPaymentPlanGetResponse contractPaymentPlanGetResponse = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
         contractPaymentPlanGetResponse = baseService.setCreateUpdateOwnerUserName(contractPaymentPlanGetResponse);
@@ -176,8 +176,8 @@ public class ContractPaymentPlanService {
         // 获取模块字段
         List<BaseModuleFieldValue> contractPaymentPlanFields = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
         contractPaymentPlanFields = contractPaymentPlanFieldService.setBusinessRefFieldValue(List.of(contractPaymentPlanGetResponse),
-                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), orgId), new HashMap<>(Map.of(id, contractPaymentPlanFields))).get(id);
-        ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(orgId);
+                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), contractPaymentPlan.getOrganizationId()), new HashMap<>(Map.of(id, contractPaymentPlanFields))).get(id);
+        ModuleFormConfigDTO contractPaymentPlanFormConfig = getFormConfig(contractPaymentPlan.getOrganizationId());
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractPaymentPlanFormConfig, contractPaymentPlanFields);
 
@@ -198,7 +198,7 @@ public class ContractPaymentPlanService {
         contractPaymentPlanGetResponse.setModuleFields(contractPaymentPlanFields);
 
         if (contractPaymentPlanGetResponse.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractPaymentPlanGetResponse.getOwner(), orgId);
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractPaymentPlanGetResponse.getOwner(), contractPaymentPlan.getOrganizationId());
             if (userDeptDTO != null) {
                 contractPaymentPlanGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 contractPaymentPlanGetResponse.setDepartmentName(userDeptDTO.getDeptName());

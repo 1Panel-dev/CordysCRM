@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class ContractResponse extends ContractListResponse {
+public class ContractGetResponse extends ContractListResponse {
 
     @Schema(description = "选项集合")
     private Map<String, List<OptionDTO>> optionMap;
