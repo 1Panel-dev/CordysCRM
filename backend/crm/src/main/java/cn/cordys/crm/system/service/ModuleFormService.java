@@ -321,9 +321,6 @@ public class ModuleFormService {
 				List<BaseField> sourceRefFields = refFields.stream().filter(f -> sourceField.getShowFields().contains(f.getId())).toList();
 				sourceField.setRefFields(sourceRefFields);
 			}
-			if (field instanceof HasOption of && Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
-				of.setOptions(of.getCustomOptions());
-			}
 			fieldBlob.setProp(JSON.toJSONString(field));
 			addFieldBlobs.add(fieldBlob);
 		});
