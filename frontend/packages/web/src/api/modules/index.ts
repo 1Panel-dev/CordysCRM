@@ -481,6 +481,8 @@ export const {
   dragContractInvoicedView,
   getInvoicedTab,
   getInvoicedInContractList,
+  getContractDetailSnapshot,
+  getInvoicedDetailSnapshot,
 } = contractApi;
 
 export const {
