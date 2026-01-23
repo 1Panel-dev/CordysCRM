@@ -30,6 +30,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -426,5 +427,44 @@ public class ContractPaymentRecordService {
 		if ((alreadyPay.add(payAmount)).compareTo(contract.getAmount()) > 0) {
 			throw new GenericException(Translator.getWithArgs("record.amount.exceed", contract.getAmount().subtract(alreadyPay)));
 		}
+	}
+
+	/**
+	 * 获取回款记录名称
+	 * @param id 	回款记录ID
+	 * @return 回款记录名称
+	 */
+	public String getRecordNameById(String id) {
+		ContractPaymentRecord record = contractPaymentRecordMapper.selectByPrimaryKey(id);
+		if (record != null) {
+			return record.getName();
+		}
+		return null;
+	}
+
+	/**
+	 * 通过名称获取回款记录集合
+	 *
+	 * @param names 名称集合
+	 * @return 回款记录集合
+	 */
+	public List<ContractPaymentRecord> getRecordListByNames(List<String> names) {
+		LambdaQueryWrapper<ContractPaymentRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.in(ContractPaymentRecord::getName, names);
+		return contractPaymentRecordMapper.selectListByLambda(lambdaQueryWrapper);
+	}
+
+	/**
+	 * 通过ID集合获取回款记录名称
+	 * @param ids id集合
+	 * @return 回款记录名称
+	 */
+	public String getRecordNameByIds(List<String> ids) {
+		List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
+		if (CollectionUtils.isNotEmpty(records)) {
+			List<String> names = records.stream().map(ContractPaymentRecord::getName).toList();
+			return String.join(",", names);
+		}
+		return StringUtils.EMPTY;
 	}
 }

@@ -18,9 +18,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
-import cn.cordys.crm.contract.domain.BusinessTitle;
-import cn.cordys.crm.contract.domain.BusinessTitleConfig;
-import cn.cordys.crm.contract.domain.ContractInvoice;
+import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.BusinessTitleAddRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitleApprovalRequest;
 import cn.cordys.crm.contract.dto.request.BusinessTitlePageRequest;
@@ -37,6 +35,7 @@ import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.qcc.dto.*;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -538,4 +537,30 @@ public class BusinessTitleService {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(string);
         return Optional.ofNullable(businessTitle).map(BusinessTitle::getName).orElse(null);
     }
+
+	/**
+	 * 通过名称获取工商表头集合
+	 *
+	 * @param names 名称
+	 * @return 工商表头集合
+	 */
+	public List<BusinessTitle> getBusinessTitleListByNames(List<String> names) {
+		LambdaQueryWrapper<BusinessTitle> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.in(BusinessTitle::getName, names);
+		return businessTitleMapper.selectListByLambda(lambdaQueryWrapper);
+	}
+
+	/**
+	 * 通过ID集合获取工商表头名称
+	 * @param ids id集合
+	 * @return 工商表头名称
+	 */
+	public String getTitleNameByIds(List<String> ids) {
+		List<BusinessTitle> titles = businessTitleMapper.selectByIds(ids);
+		if (CollectionUtils.isNotEmpty(titles)) {
+			List<String> names = titles.stream().map(BusinessTitle::getName).toList();
+			return String.join(",", names);
+		}
+		return StringUtils.EMPTY;
+	}
 }

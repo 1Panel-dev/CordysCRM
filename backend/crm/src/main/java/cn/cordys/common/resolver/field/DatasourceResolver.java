@@ -3,9 +3,13 @@ package cn.cordys.common.resolver.field;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.service.ClueService;
+import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
+import cn.cordys.crm.contract.domain.ContractPaymentRecord;
+import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerContact;
@@ -39,6 +43,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
     private static final OpportunityQuotationService opportunityQuotationService;
 	private static final ContractService contractService;
 	private static final ContractPaymentPlanService contractPaymentPlanService;
+	private static final ContractPaymentRecordService contractPaymentRecordService;
+	private static final BusinessTitleService businessTitleService;
 
     static {
         customerService = CommonBeanFactory.getBean(CustomerService.class);
@@ -49,7 +55,9 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
         opportunityQuotationService = CommonBeanFactory.getBean(OpportunityQuotationService.class);
 		contractService = CommonBeanFactory.getBean(ContractService.class);
+		contractPaymentRecordService = CommonBeanFactory.getBean(ContractPaymentRecordService.class);
 		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
+		businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
     }
 
     @Override
@@ -91,6 +99,18 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
             return Objects.requireNonNull(opportunityQuotationService).getQuotationName(value);
         }
+
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
+			return Objects.requireNonNull(contractPaymentPlanService).getPlanName(value);
+		}
+
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
+			return Objects.requireNonNull(contractPaymentRecordService).getRecordNameById(value);
+		}
+
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+			return Objects.requireNonNull(businessTitleService).getBusinessTitleName(value);
+		}
 
         return StringUtils.EMPTY;
     }
@@ -135,6 +155,14 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
 			List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(List.of(text));
 			return CollectionUtils.isEmpty(plans) ? text : plans.getFirst().getId();
+		}
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
+			List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService).getRecordListByNames(List.of(text));
+			return CollectionUtils.isEmpty(records) ? text : records.getFirst().getId();
+		}
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+			List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(List.of(text));
+			return CollectionUtils.isEmpty(businessTitles) ? text : businessTitles.getFirst().getId();
 		}
         return text;
     }
