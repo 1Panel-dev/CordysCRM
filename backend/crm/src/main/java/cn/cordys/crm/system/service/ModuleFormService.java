@@ -773,7 +773,13 @@ public class ModuleFormService {
                 getSystemExtendFiles(sourceField.getDataSourceType())
                         .forEach(extField -> reloadFieldMap.put(extField.getId(), extField));
 
-				List<String> refFieldIds = sourceField.getRefFields().stream().map(BaseField::getId).toList();
+                Set<String> refFieldIds = Set.of();
+                if (sourceField.getRefFields() == null) {
+                    sourceField.setRefFields(new ArrayList<>());
+                } else {
+                    refFieldIds = sourceField.getRefFields().stream().map(BaseField::getId).collect(Collectors.toSet());
+                }
+
 				// 获取最新引用字段属性
                 for (String showFieldKey : sourceField.getShowFields()) {
                     BaseField refField = reloadFieldMap.get(showFieldKey);
