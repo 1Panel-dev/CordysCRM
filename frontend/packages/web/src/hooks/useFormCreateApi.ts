@@ -374,7 +374,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FormDesignKeyEnum.CLUE,
         FormDesignKeyEnum.BUSINESS,
         FormDesignKeyEnum.CONTRACT_SNAPSHOT,
-        FormDesignKeyEnum.INVOICE,
+        FormDesignKeyEnum.INVOICE_SNAPSHOT,
       ].includes(props.formKey.value) &&
       !item.resourceFieldId
     ) {
@@ -388,11 +388,24 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       });
     } else if (
       item.type === FieldTypeEnum.DATA_SOURCE &&
+      item.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE &&
+      !item.resourceFieldId
+    ) {
+      // 工商抬头字段
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: FieldDataSourceTypeEnum.BUSINESS_TITLE,
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
+    } else if (
+      item.type === FieldTypeEnum.DATA_SOURCE &&
       item.dataSourceType === FieldDataSourceTypeEnum.CONTRACT &&
       [
         FormDesignKeyEnum.CONTRACT_PAYMENT,
         FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
-        FormDesignKeyEnum.INVOICE,
+        FormDesignKeyEnum.INVOICE_SNAPSHOT,
       ].includes(props.formKey.value) &&
       !item.resourceFieldId
     ) {

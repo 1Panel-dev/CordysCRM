@@ -222,6 +222,9 @@
     dataSourceFormFields?: FormCreateField[]
   ) {
     item.linkFields?.forEach((linkField) => {
+      if (linkField.enable === false) {
+        return;
+      }
       const targetField = fieldList.value.find((f) => f.id === linkField.current);
       // 如果联动字段是当前字段本身，则直接赋值；若是当前字段内的其他字段，则赋值对应的值
       if (targetField && (item.id === linkField.link || item.businessKey === linkField.link)) {
@@ -295,10 +298,12 @@
                 }))
               );
             } else {
-              targetField.initialOptions.push({
-                name: Array.isArray(currentSourceName) ? currentSourceName[0] : currentSourceName,
-                id: currentSourceValue,
-              });
+              targetField.initialOptions = [
+                {
+                  name: Array.isArray(currentSourceName) ? currentSourceName[0] : currentSourceName,
+                  id: currentSourceValue,
+                },
+              ];
             }
           }
         }

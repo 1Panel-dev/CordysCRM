@@ -19,6 +19,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            readonly
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
             @open-customer-detail="emit('openCustomerDrawer', $event)"

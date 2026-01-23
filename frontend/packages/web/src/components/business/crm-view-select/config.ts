@@ -78,6 +78,7 @@ import {
   getClueViewList,
   getContactViewDetail,
   getContactViewList,
+  getContractInvoicedViewDetail,
   getContractInvoicedViewList,
   getContractViewDetail,
   getContractViewList,
@@ -190,7 +191,7 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: getPaymentPlanViewDetail,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationViewDetail,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordViewDetail,
-    [FormDesignKeyEnum.INVOICE]: getContractInvoicedViewList,
+    [FormDesignKeyEnum.INVOICE]: getContractInvoicedViewDetail,
   },
   fixed: {
     [FormDesignKeyEnum.CLUE]: fixedClueView,
