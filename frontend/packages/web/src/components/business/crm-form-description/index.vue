@@ -134,6 +134,31 @@
           </n-tooltip>
         </div>
       </template>
+      <template #[FieldDataSourceTypeEnum.BUSINESS_TITLE]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmTableButton
+            v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ'])"
+            class="crm-form-description-link-button"
+            @click="openContractBusinessTitleDetail(formDetail[item.fieldInfo.id])"
+          >
+            <template #trigger>
+              {{ item.value }}
+            </template>
+            {{ item.value }}
+          </CrmTableButton>
+          <n-tooltip v-else :delay="300">
+            <template #trigger>
+              <div class="one-line-text">
+                {{ item.value }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
+        </div>
+      </template>
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
         <div class="field-line flex w-full items-center">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
@@ -202,6 +227,11 @@
     :files="activeFileList"
     @delete-file="handleDeleteFile"
   />
+  <businessTitleDrawer
+    v-if="isInitBusinessTitleDetail"
+    v-model:visible="showBusinessTitleDetail"
+    :source-id="activeBusinessTitleId"
+  />
 </template>
 
 <script setup lang="ts">
@@ -223,6 +253,10 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   import { AttachmentInfo } from '../crm-form-create/types';
+
+  const businessTitleDrawer = defineAsyncComponent(
+    () => import('@/views/contract/businessTitle/components/detail.vue')
+  );
 
   const props = withDefaults(
     defineProps<{
@@ -347,6 +381,15 @@
     emit('openContractPaymentPlanDetail', {
       id: Array.isArray(id) ? id[0] : id,
     });
+  }
+
+  const isInitBusinessTitleDetail = ref(false);
+  const showBusinessTitleDetail = ref(false);
+  const activeBusinessTitleId = ref<string>('');
+  function openContractBusinessTitleDetail(id: string | string[]) {
+    activeBusinessTitleId.value = Array.isArray(id) ? id[0] : id;
+    isInitBusinessTitleDetail.value = true;
+    showBusinessTitleDetail.value = true;
   }
 
   // 打开链接

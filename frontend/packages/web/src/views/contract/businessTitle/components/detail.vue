@@ -242,7 +242,8 @@
       if (newVal) {
         initDetail();
       }
-    }
+    },
+    { immediate: true }
   );
 </script>
 
