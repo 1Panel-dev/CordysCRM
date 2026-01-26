@@ -3,7 +3,6 @@ package cn.cordys.crm.contract.service;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
-import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
@@ -55,7 +54,7 @@ public class ContractLogService extends BaseModuleLogService {
             }
 
 
-            if (differ.getColumn().contains(Translator.get("products_info"))) {
+            if (differ.getColumn().contains("-")) {
                 differ.setColumnName(differ.getColumn());
             }
 
