@@ -520,7 +520,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           if (item.show === false || !item.readable) return;
           descriptions.value.push({
             label: item.name,
-            value: form[item.businessKey || item.id],
+            value: item.businessKey
+              ? form[item.businessKey]
+              : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue,
             slotName: item.type,
             fieldInfo: item,
             optionMap: form.optionMap,
