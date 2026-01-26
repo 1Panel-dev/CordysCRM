@@ -34,5 +34,9 @@ public enum LinkScenarioKey {
     /**
      * 计划转记录
      */
-    PLAN_TO_RECORD
+    PLAN_TO_RECORD,
+	/**
+	 * 合同转发票
+	 */
+	CONTRACT_TO_INVOICE
 }
