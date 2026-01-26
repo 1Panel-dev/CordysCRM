@@ -21,10 +21,17 @@
         ct.create_user,
         ct.create_time,
         ct.update_user,
-        ct.update_time
+        ct.update_time,
+        ifnull(cpr_sum.alreadyPayAmount, 0) as alreadyPayAmount
         FROM
         contract ct
         LEFT JOIN customer c ON ct.customer_id = c.id
+        LEFT JOIN (
+            SELECT contract_id, SUM(record_amount) AS alreadyPayAmount
+            FROM contract_payment_record
+            GROUP BY contract_id
+        ) cpr_sum
+        ON ct.id = cpr_sum.contract_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
