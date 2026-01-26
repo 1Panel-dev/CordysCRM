@@ -95,6 +95,10 @@
     if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SERIAL_NUMBER && !e.resourceFieldId);
     }
+    if (item.type === FieldTypeEnum.SUB_PRODUCT && props.formKey !== FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
+      // 报价单支持多个子表格
+      return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
+    }
     return false;
   }
 
