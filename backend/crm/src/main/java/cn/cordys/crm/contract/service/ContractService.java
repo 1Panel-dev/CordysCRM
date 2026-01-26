@@ -26,6 +26,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractPaymentRecord;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
@@ -105,6 +106,8 @@ public class ContractService {
     private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
     @Resource
     private DataScopeService dataScopeService;
+	@Resource
+	private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
 
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
@@ -297,6 +300,7 @@ public class ContractService {
 
         // 附件信息
         contractGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(contractFormConfig, contractFields));
+		contractGetResponse.setAlreadyPayAmount(sumContractRecordAmount(id));
 
         return contractGetResponse;
     }
@@ -450,8 +454,8 @@ public class ContractService {
                 response.setInCustomerPool(customer.getInSharedPool());
                 response.setPoolId(customer.getPoolId());
             }
-
-        }
+			response.setAlreadyPayAmount(sumContractRecordAmount(id));
+		}
         return response;
     }
 
@@ -809,5 +813,23 @@ public class ContractService {
 		conditions.add(stageCondition);
 
 		return conditions;
+	}
+
+	/**
+	 * 计算合同已回款金额
+	 * @param contractId 合同ID
+	 * @return 已回款金额
+	 */
+	private BigDecimal sumContractRecordAmount(String contractId) {
+		LambdaQueryWrapper<ContractPaymentRecord> paymentRecordWrapper = new LambdaQueryWrapper<>();
+		paymentRecordWrapper.eq(ContractPaymentRecord::getContractId, contractId);
+		List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(paymentRecordWrapper);
+		if (CollectionUtils.isNotEmpty(contractPaymentRecords)) {
+			return contractPaymentRecords.stream()
+					.map(ContractPaymentRecord::getRecordAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+		} else {
+			return BigDecimal.ZERO;
+		}
 	}
 }
