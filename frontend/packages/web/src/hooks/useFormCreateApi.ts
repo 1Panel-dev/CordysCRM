@@ -246,6 +246,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         title: t('opportunity.quotation.amount'),
         key: 'amount',
       },
+      {
+        title: t('contract.alreadyPayAmount'),
+        key: 'alreadyPayAmount',
+      },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
       {

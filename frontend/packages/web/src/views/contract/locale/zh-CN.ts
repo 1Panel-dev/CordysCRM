@@ -30,6 +30,8 @@ export default {
   'contract.paymentRecord.new': '新建记录',
   'contract.payment': '回款',
   'contract.paymentName': '回款名称',
+  'contract.alreadyPayAmount': '已回款金额',
+  'contract.noPaymentRequired': '已回款完毕，无需回款',
   'contract.paymentRecord.accountsPayable': '应回款',
   'contract.paymentRecord.paymentReceived': '已回款',
   'contract.paymentRecord.pendingPayment': '待回款',
