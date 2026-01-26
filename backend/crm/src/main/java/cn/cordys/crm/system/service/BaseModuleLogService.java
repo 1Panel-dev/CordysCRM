@@ -41,7 +41,7 @@ public abstract class BaseModuleLogService {
      */
     public static void translatorDifferInfo(JsonDifferenceDTO differ) {
         //主表字段
-        differ.setColumnName(Translator.get("log." + differ.getColumn()));
+        differ.setColumnName(Translator.get("log." + differ.getColumn(), differ.getColumn()));
         differ.setOldValueName(differ.getOldValue());
         differ.setNewValueName(differ.getNewValue());
     }
@@ -166,7 +166,7 @@ public abstract class BaseModuleLogService {
                 setColumnValueName(optionMap.get(differ.getColumn()), differ, moduleField);
             } else {
                 if (optionMap.containsKey(differ.getColumn())) {
-                    differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                    differ.setColumnName(Translator.get("log." + differ.getColumn(), differ.getColumn()));
                     // 设置字段值名称
                     setColumnValueName(optionMap.get(differColumn), differ, moduleField);
                 } else if (subFieldIds.contains(differColumn)) {
@@ -191,7 +191,7 @@ public abstract class BaseModuleLogService {
                     } else {
                         //如果prefix = differ.column，则说明没有-符号，设置为Translator.get("log."+differ.getColumn()),否则设置为prefix
                         if (Strings.CS.equals(prefix, differ.getColumn())) {
-                            differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                            differ.setColumnName(Translator.get("log." + differ.getColumn(), differ.getColumn()));
                         } else {
                             differ.setColumn(prefix);
                         }
@@ -262,10 +262,10 @@ public abstract class BaseModuleLogService {
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
         if (moduleField != null) {
             if (differ.getOldValue() != null) {
-                differ.setOldValueName(transformFieldValue(moduleField, differ.getOldValue().toString()));
+                differ.setOldValueName(transformFieldValue(moduleField, differ.getOldValue()));
             }
             if (differ.getNewValue() != null) {
-                differ.setNewValueName(transformFieldValue(moduleField, differ.getNewValue().toString()));
+                differ.setNewValueName(transformFieldValue(moduleField, differ.getNewValue()));
             }
         } else {
             differ.setOldValueName(differ.getOldValue());
