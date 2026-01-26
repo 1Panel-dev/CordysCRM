@@ -36,7 +36,7 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
                 differ.setColumnName(Translator.get("log.amount"));
             }
 
-            if (differ.getColumn().contains(Translator.get("products_info"))) {
+            if (differ.getColumn().contains("-")) {
                 differ.setColumnName(differ.getColumn());
 
             }

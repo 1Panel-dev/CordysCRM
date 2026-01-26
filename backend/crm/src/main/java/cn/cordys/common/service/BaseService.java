@@ -25,11 +25,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -268,8 +270,8 @@ public class BaseService {
             moduleFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .forEach(field ->
-                    resourceLog.put(field.getFieldId(), field.getFieldValue())
-            );
+                            resourceLog.put(field.getFieldId(), field.getFieldValue())
+                    );
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -289,7 +291,7 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
+            fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -329,8 +331,8 @@ public class BaseService {
             originResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
                     .forEach(field ->
-                        originResourceLog.put(field.getFieldId(), field.getFieldValue())
-            );
+                            originResourceLog.put(field.getFieldId(), field.getFieldValue())
+                    );
         }
 
         // 添加修改后的字段值（过滤无效字段）
@@ -376,7 +378,7 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
+            fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
 
         if (modifiedResourceFields != null) {
@@ -385,7 +387,7 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey);
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
 
         try {
@@ -411,7 +413,8 @@ public class BaseService {
             Map<String, String> fieldNameMap,
             Map<String, String> subTableKeyMap,
             String subTableKeyName,
-            Set<String> subRefKey) {
+            Set<String> subRefKey,
+            ModuleFormConfigDTO moduleFormConfigDTO) {
         fields.forEach(field -> {
             String fieldId = field.getFieldId();
             // 普通字段
@@ -427,23 +430,34 @@ public class BaseService {
             if (CollectionUtils.isEmpty(subTableList)) {
                 return;
             }
+            AtomicReference<String> subTableName = new AtomicReference<>(moduleFormConfigDTO.getFields().stream().filter(BaseField::isSubField).filter(subField -> subField.getId().equals(fieldId)).findFirst().map(BaseField::getName).orElse(subTableKeyName));
+            if (Strings.CI.equals(fieldId, "products")) {
+                subTableKeyMap.forEach((key, value) -> {
+                    if (StringUtils.isNotBlank(value) && Strings.CI.equals(value, fieldId))
+                        subTableName.set(moduleFormConfigDTO.getFields().stream().filter(BaseField::isSubField).filter(subField -> subField.getId().equals(key)).findFirst().map(BaseField::getName).orElse(subTableKeyName));
+                });
+            }
+
+
             int size = subTableList.size();
             for (int i = 0; i < size; i++) {
                 Map<String, Object> row = subTableList.get(i);
                 if (size > 1) {
                     int finalI = i;
+                    String finalSubTableName1 = subTableName.get();
                     row.forEach((key, value) -> {
                         if (!fieldNameMap.containsKey(key) || subRefKey.contains(key)) {
                             return;
                         }
-                        resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
+                        resourceLog.put(finalSubTableName1 + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
                     });
                 } else {
+                    String finalSubTableName = subTableName.get();
                     row.forEach((key, value) -> {
                         if (!fieldNameMap.containsKey(key) || subRefKey.contains(key)) {
                             return;
                         }
-                        resourceLog.put(subTableKeyName + "-" + fieldNameMap.get(key) + "-" + key, value);
+                        resourceLog.put(finalSubTableName + "-" + fieldNameMap.get(key) + "-" + key, value);
                     });
                 }
             }
