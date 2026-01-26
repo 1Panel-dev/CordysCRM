@@ -360,6 +360,7 @@ export const {
   getFieldQuotationList,
   getFieldContractPaymentPlanList,
   getFieldContractPaymentRecordList,
+  getFieldBusinessTitleList,
 } = moduleApi;
 
 export const {

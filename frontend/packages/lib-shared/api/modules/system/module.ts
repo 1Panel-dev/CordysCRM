@@ -69,6 +69,7 @@ import {
   UploadTempFileUrl,
   GetFieldPriceListUrl,
   GetFieldQuotationListUrl,
+  GetFieldBusinessTitleListUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -101,7 +102,7 @@ import type {
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import type { ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
+import type { BusinessTitleItem, ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块列表
@@ -385,6 +386,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFieldDisplayListUrl}/${formKey}` });
   }
 
+  function getFieldBusinessTitleList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<BusinessTitleItem>>({ url: GetFieldBusinessTitleListUrl, data });
+  }
+
   return {
     getFieldDisplayList,
     getModuleNavConfigList,
@@ -449,5 +454,6 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadAttachment,
     getFieldPriceList,
     getFieldQuotationList,
+    getFieldBusinessTitleList,
   };
 }
