@@ -788,13 +788,14 @@
           />
           {{ t('crmFormDesign.loginUserDept') }}
         </div>
-        <CrmInputNumber
+        <CrmFormCreateInputNumber
           v-if="fieldConfig.type === FieldTypeEnum.INPUT_NUMBER"
           v-model:value="fieldConfig.defaultValue"
           :show-button="false"
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
-          :precision="fieldConfig.precision"
+          :fieldConfig="fieldConfig"
+          path=""
         />
         <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
           <n-select
@@ -1228,6 +1229,7 @@
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
+  import CrmFormCreateInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
   import { fullFormSettingList, rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,

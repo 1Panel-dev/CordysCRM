@@ -61,6 +61,7 @@
           <CrmTableButton
             v-if="
               (item.value !== t('common.optionNotExist') &&
+                item.value !== '-' &&
                 !detail.inCustomerPool &&
                 hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
               (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
