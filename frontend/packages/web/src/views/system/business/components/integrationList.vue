@@ -786,7 +786,7 @@
   async function initThirdPartyResource() {
     try {
       await appStore.initThirdPartyResource();
-      activePlatformTab.value = appStore.activePlatformResource.syncResource;
+      activePlatformTab.value = appStore.activePlatformResource.syncResource ?? CompanyTypeEnum.WECOM;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -827,8 +827,8 @@
   }
 
   onBeforeMount(() => {
-    initThirdPartyResource();
     initSyncList();
+    initThirdPartyResource();
   });
 </script>
 
