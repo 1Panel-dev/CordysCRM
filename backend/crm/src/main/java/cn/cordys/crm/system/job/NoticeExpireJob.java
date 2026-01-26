@@ -194,7 +194,7 @@ public class NoticeExpireJob {
                             .toEpochSecond() * 1000;
                     List<Contract> contractList = getContractList(organizationId, startTime, endTime);
                     if (CollectionUtils.isEmpty(contractList)) {
-                        log.info("组织{}无即将到期合同", organizationId);
+                        log.info("组织{}无即将到期合同，时间范围{}-{}", organizationId, startTime, endTime);
                         continue;
                     }
                     for (Contract contract : contractList) {
@@ -251,8 +251,8 @@ public class NoticeExpireJob {
                             .toEpochSecond() * 1000;
                     List<OpportunityQuotation> quotationList = getOpportunityQuotationList(organizationId, startTime, endTime);
                     if (CollectionUtils.isEmpty(quotationList)) {
-                        log.info("组织{}无即将到期商机报价单", organizationId);
-                        return;
+                        log.info("组织{}无即将到期商机报价单，时间范围{}-{}", organizationId, startTime, endTime);
+                        continue;
                     }
                     for (OpportunityQuotation opportunityQuotation : quotationList) {
                         //发送通知
@@ -290,12 +290,12 @@ public class NoticeExpireJob {
             MessageTask expiredEvent = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.OPPORTUNITY, NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, organizationId);
             if (expiredEvent == null || (!expiredEvent.getDingTalkEnable() && !expiredEvent.getEmailEnable() && !expiredEvent.getSysEnable() && !expiredEvent.getWeComEnable() && !expiredEvent.getLarkEnable())) {
                 log.info("商机报价单到期提醒未开启");
-                return;
+                continue;
             }
             MessageTaskConfig expiredConfig = extMessageTaskConfigMapper.getConfigByModuleAndEvent(NotificationConstants.Module.OPPORTUNITY, NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, organizationId);
             if (expiredConfig == null || expiredConfig.getValue() == null) {
                 log.info("组织{}商机报价单到期提醒配置不存在", organizationId);
-                return;
+                continue;
             }
             MessageTaskConfigDTO expiredConfigDTO = JSON.parseObject(expiredConfig.getValue(), MessageTaskConfigDTO.class);
             long timestamp = LocalDate.now()
@@ -308,7 +308,7 @@ public class NoticeExpireJob {
             List<OpportunityQuotation> quotationList = getOpportunityQuotationList(organizationId, timestamp, timestampOld);
             if (CollectionUtils.isEmpty(quotationList)) {
                 log.info("组织{}无到期商机报价单", organizationId);
-                return;
+                continue;
             }
             for (OpportunityQuotation opportunityQuotation : quotationList) {
                 //发送通知
@@ -377,17 +377,17 @@ public class NoticeExpireJob {
             MessageTask expiringEvent = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, organizationId);
             if (expiringEvent == null || (!expiringEvent.getDingTalkEnable() && !expiringEvent.getEmailEnable() && !expiringEvent.getSysEnable() && !expiringEvent.getWeComEnable() && !expiringEvent.getLarkEnable())) {
                 log.info("组织{}回款计划即将到期提醒未开启", organizationId);
-                return;
+                continue;
             }
             MessageTaskConfig expiringConfig = extMessageTaskConfigMapper.getConfigByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, organizationId);
             if (expiringConfig == null || expiringConfig.getValue() == null) {
                 log.info("组织{}回款计划即将到期提醒配置不存在", organizationId);
-                return;
+                continue;
             }
             MessageTaskConfigDTO expiringConfigDTO = JSON.parseObject(expiringConfig.getValue(), MessageTaskConfigDTO.class);
             if (CollectionUtils.isEmpty(expiringConfigDTO.getTimeList())) {
                 log.info("组织{}回款计划到期提醒时间配置不存在", organizationId);
-                return;
+                continue;
             }
             for (TimeDTO timeDTO : expiringConfigDTO.getTimeList()) {
                 if (timeDTO.getTimeUnit().equals("DAY")) {
@@ -399,8 +399,8 @@ public class NoticeExpireJob {
                             .toEpochSecond() * 1000;
                     List<ContractPaymentPlan> paymentPlanList = getContractPaymentPlanList(organizationId, startTime, endTime);
                     if (CollectionUtils.isEmpty(paymentPlanList)) {
-                        log.info("组织{}无到期回款计划", organizationId);
-                        return;
+                        log.info("组织{}无即将到期回款计划,时间范围{}-{}", organizationId, startTime, endTime);
+                        continue;
                     }
                     for (ContractPaymentPlan paymentPlan : paymentPlanList) {
                         //发送通知
@@ -418,7 +418,7 @@ public class NoticeExpireJob {
                     }
                 }
             }
-            log.info("组织{}到期回款计划提醒完成", organizationId);
+            log.info("组织{}即将到期回款计划提醒完成", organizationId);
         }
     }
 
@@ -435,12 +435,12 @@ public class NoticeExpireJob {
             MessageTask expiredEvent = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, organizationId);
             if (expiredEvent == null || (!expiredEvent.getDingTalkEnable() && !expiredEvent.getEmailEnable() && !expiredEvent.getSysEnable() && !expiredEvent.getWeComEnable() && !expiredEvent.getLarkEnable())) {
                 log.info("组织{}回款计划到期提醒未开启", organizationId);
-                return;
+                continue;
             }
             MessageTaskConfig expiredConfig = extMessageTaskConfigMapper.getConfigByModuleAndEvent(NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, organizationId);
             if (expiredConfig == null || expiredConfig.getValue() == null) {
                 log.info("组织{}回款计划到期提醒配置不存在", organizationId);
-                return;
+                continue;
             }
             MessageTaskConfigDTO expiredConfigDTO = JSON.parseObject(expiredConfig.getValue(), MessageTaskConfigDTO.class);
             long timestamp = LocalDate.now()
@@ -453,7 +453,7 @@ public class NoticeExpireJob {
             List<ContractPaymentPlan> paymentPlanList = getContractPaymentPlanList(organizationId, timestamp, timestampOld);
             if (CollectionUtils.isEmpty(paymentPlanList)) {
                 log.info("组织{}无到期回款计划", organizationId);
-                return;
+                continue;
             }
             for (ContractPaymentPlan paymentPlan : paymentPlanList) {
                 //发送通知

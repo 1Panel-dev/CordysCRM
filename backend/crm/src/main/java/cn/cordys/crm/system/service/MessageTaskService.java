@@ -98,8 +98,16 @@ public class MessageTaskService {
             newDTO.setOwnerEnable(nameDTO.isOwnerEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
             newDTO.setOwnerLevel(nameDTO.getOwnerLevel());
             newDTO.setRoleEnable(nameDTO.isRoleEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-            newDTO.setUserIdNames(nameDTO.getUserIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
-            newDTO.setRoleIdNames(nameDTO.getRoleIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
+            if (CollectionUtils.isNotEmpty(nameDTO.getUserIdNames())) {
+                newDTO.setUserIdNames(nameDTO.getUserIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
+            } else {
+                newDTO.setUserIdNames(new ArrayList<>());
+            }
+            if (CollectionUtils.isNotEmpty(nameDTO.getRoleIdNames())) {
+                newDTO.setRoleIdNames(nameDTO.getRoleIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
+            } else {
+                newDTO.setRoleIdNames(new ArrayList<>());
+            }
             if (CollectionUtils.isNotEmpty(nameDTO.getTimeList())) {
                 List<String> times = new ArrayList<>();
                 nameDTO.getTimeList().forEach(timeDTO -> {
