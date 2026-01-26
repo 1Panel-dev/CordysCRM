@@ -388,14 +388,14 @@ export function transformData({
           name = [options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist')];
         } else {
           // 多选
-          name = field.fieldValue.map((e) => options.find((o) => o.id === e)?.name || t('common.optionNotExist'));
+          name = field.fieldValue?.map((e) => options.find((o) => o.id === e)?.name || t('common.optionNotExist'));
         }
       } else if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
         // 若值是单个字符串/数字
         name = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
       } else {
         // 若值是数组
-        name = field.fieldValue.map((fv) => options.find((e) => e.id === fv)?.name || t('common.optionNotExist'));
+        name = field.fieldValue?.map((fv) => options.find((e) => e.id === fv)?.name || t('common.optionNotExist'));
         if (Array.isArray(name) && name.length === 0) {
           name = [t('common.optionNotExist')];
         }
@@ -411,7 +411,7 @@ export function transformData({
         customFieldAttr[field.fieldId] = [t('common.optionNotExist')];
       } else {
         // 多选
-        customFieldAttr[field.fieldId] = field.fieldValue.map((e) => t('common.optionNotExist'));
+        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => t('common.optionNotExist'));
       }
     } else {
       // 其他类型字段，直接赋值
