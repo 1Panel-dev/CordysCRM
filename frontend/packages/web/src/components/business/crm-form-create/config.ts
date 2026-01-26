@@ -553,17 +553,7 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
   combineSearch: {
     searchMode: 'OR', // 默认搜索模式
-    conditions: [
-      {
-        leftFieldId: undefined,
-        leftFieldType: FieldTypeEnum.INPUT,
-        operator: undefined,
-        rightFieldId: undefined,
-        rightFieldCustom: false,
-        rightFieldCustomValue: '',
-        rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
-      },
-    ],
+    conditions: [],
   },
 };
 
@@ -585,17 +575,7 @@ export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
   combineSearch: {
     searchMode: 'OR', // 默认搜索模式
-    conditions: [
-      {
-        leftFieldId: undefined,
-        leftFieldType: FieldTypeEnum.INPUT,
-        operator: undefined,
-        rightFieldId: undefined,
-        rightFieldCustom: false,
-        rightFieldCustomValue: '',
-        rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
-      },
-    ],
+    conditions: [],
   },
 };
 
