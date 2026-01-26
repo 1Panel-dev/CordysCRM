@@ -537,7 +537,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                     String resourceId = detailMap.get(SOURCE_DETAIL_ID).toString();
                     resourceFieldMap.putIfAbsent(resourceId, new ArrayList<>());
-                    resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, sourceDetail)));
+                    Object showFieldValue = getFieldValueOfDetailMap(showFieldConfig, sourceDetail);
+                    if (showFieldValue != null) {
+                        resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(id, showFieldValue));
+                    }
                 });
             });
         });
