@@ -81,7 +81,7 @@ public class FieldSourceServiceProvider {
     public Object getById(FieldSourceType type, Object id) {
         Object service = getService(type);
         if (service == null || !(id instanceof String) || ((String) id).isEmpty()) {
-            log.error("数据源类型{}有误, 或参数值{}传递有误", new Object[]{type.name(), id});
+            log.error("数据源类型{}有误, 或参数值{}传递有误", type.name(), id);
             return null;
         }
         try {

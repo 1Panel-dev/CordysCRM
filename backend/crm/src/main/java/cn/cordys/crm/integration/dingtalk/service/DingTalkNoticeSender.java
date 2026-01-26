@@ -23,6 +23,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -78,15 +79,17 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
             log.warn("没有配置钉钉通知信息，无法发送消息");
             return;
         }
-        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+        var thirdConfigurationDTO = JSON.parseObject(
                 new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
-        DingTalkThirdConfigRequest dingTalkThirdConfigRequest = new DingTalkThirdConfigRequest();
-        if (thirdConfigurationDTO.getConfig() == null) {
-            dingTalkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), DingTalkThirdConfigRequest.class);
-        } else {
-            dingTalkThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), DingTalkThirdConfigRequest.class);
-        }
+
+        DingTalkThirdConfigRequest dingTalkThirdConfigRequest =
+                Optional.ofNullable(thirdConfigurationDTO.getConfig())
+                        .map(config -> JSON.MAPPER.convertValue(config, DingTalkThirdConfigRequest.class))
+                        .orElseGet(() -> JSON.parseObject(
+                                new String(orgConfigDetailByIdAndType.getContent()),
+                                DingTalkThirdConfigRequest.class
+                        ));
 
         //构建钉钉消息
         DingTalkSendDTO dingTalkSendDTO = new DingTalkSendDTO();
@@ -97,7 +100,6 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         dingTalkSendDTO.setMsg(new DingTalkMsgDTO());
         dingTalkSendDTO.getMsg().setText(new DingTalkTextDTO(context));
         dingTalkSendDTO.getMsg().setMsgtype("text");
-
 
         tokenService.sendDingNoticeByToken(dingTalkSendDTO, dingTalkThirdConfigRequest.getAgentId(), dingTalkThirdConfigRequest.getAppSecret());
     }
