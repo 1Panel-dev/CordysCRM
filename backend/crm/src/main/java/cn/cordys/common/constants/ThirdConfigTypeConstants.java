@@ -45,7 +45,7 @@ public enum ThirdConfigTypeConstants {
     public static ThirdConfigTypeConstants fromString(String type) {
         try {
             return ThirdConfigTypeConstants.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return null;
         }
     }
