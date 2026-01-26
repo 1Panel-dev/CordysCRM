@@ -217,14 +217,18 @@ public class ContractService {
         response.setModuleFields(fvs);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
-        optionMap.put("customerId", Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
+        if (customer != null) {
+            optionMap.put("customerId", Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
+            response.setCustomerName(customer.getName());
+            response.setInCustomerPool(customer.getInSharedPool());
+            response.setPoolId(customer.getPoolId());
+        }
         User owner = userBaseMapper.selectByPrimaryKey(contract.getOwner());
-        optionMap.put("owner", Collections.singletonList(new OptionDTO(owner.getId(), owner.getName())));
+        if (owner != null) {
+            optionMap.put("owner", Collections.singletonList(new OptionDTO(owner.getId(), owner.getName())));
+            response.setOwnerName(owner.getName());
+        }
         response.setOptionMap(optionMap);
-        response.setCustomerName(customer.getName());
-        response.setOwnerName(owner.getName());
-        response.setInCustomerPool(customer.getInSharedPool());
-        response.setPoolId(customer.getPoolId());
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, moduleFields);
         response.setAttachmentMap(attachmentMap);
         return baseService.setCreateAndUpdateUserName(response);
