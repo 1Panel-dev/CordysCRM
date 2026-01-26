@@ -62,6 +62,7 @@
             detailInfo?.stage === ContractStatusEnum.VOID ||
             detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
           "
+          @open-business-title-drawer="showBusinessTitleDetail"
         />
       </CrmCard>
     </div>
@@ -112,6 +113,7 @@
   const emit = defineEmits<{
     (e: 'refresh'): void;
     (e: 'showCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
+    (e: 'openBusinessTitleDrawer', params: { id: string }): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -353,5 +355,9 @@
       default:
         break;
     }
+  }
+
+  function showBusinessTitleDetail(params: { id: string }) {
+    emit('openBusinessTitleDrawer', params);
   }
 </script>

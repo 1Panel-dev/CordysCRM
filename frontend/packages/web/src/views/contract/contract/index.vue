@@ -2,7 +2,11 @@
   <div ref="contractCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
       <div class="h-full px-[16px] pt-[16px]">
-        <CrmContractTable :fullscreen-target-ref="contractCardRef" @open-customer-drawer="handleOpenCustomerDrawer" />
+        <CrmContractTable
+          :fullscreen-target-ref="contractCardRef"
+          @open-customer-drawer="handleOpenCustomerDrawer"
+          @open-business-title-drawer="handleOpenBusinessTitleDrawer"
+        />
       </div>
     </CrmCard>
   </div>
@@ -18,12 +22,14 @@
     :pool-id="poolId"
     :hidden-columns="hiddenColumns"
   />
+  <businessTitleDrawer v-model:visible="showBusinessTitleDetailDrawer" :source-id="activeBusinessTitleSourceId" />
 </template>
 
 <script setup lang="ts">
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import businessTitleDrawer from '../businessTitle/components/detail.vue';
   import CrmContractTable from './components/contractTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
@@ -59,6 +65,13 @@
       const res = await getOpenSeaOptions();
       openSeaOptions.value = res;
     }
+  }
+
+  const showBusinessTitleDetailDrawer = ref(false);
+  const activeBusinessTitleSourceId = ref<string>('');
+  function handleOpenBusinessTitleDrawer(params: { id: string }) {
+    activeBusinessTitleSourceId.value = params.id;
+    showBusinessTitleDetailDrawer.value = true;
   }
 
   const hiddenColumns = computed<string[]>(() => {
