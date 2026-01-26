@@ -1196,6 +1196,7 @@ public class IntegrationConfigService {
         config.setId(IDGenerator.nextStr());
         config.setOrganizationId(organizationId);
         config.setType(OrganizationConfigConstants.ConfigType.THIRD.name());
+        config.setSyncResource(ThirdConfigTypeConstants.WECOM.name());
         config.setCreateTime(System.currentTimeMillis());
         config.setUpdateTime(System.currentTimeMillis());
         config.setCreateUser(userId);
