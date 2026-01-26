@@ -22,16 +22,14 @@
         ct.create_time,
         ct.update_user,
         ct.update_time,
-        ifnull(cpr_sum.alreadyPayAmount, 0) as alreadyPayAmount
-        FROM
-        contract ct
+        ct.alreadyPayAmount
+        FROM (
+            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) as alreadyPayAmount
+            FROM contract ctt
+            LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
+            GROUP BY ctt.id
+        ) ct
         LEFT JOIN customer c ON ct.customer_id = c.id
-        LEFT JOIN (
-            SELECT contract_id, SUM(record_amount) AS alreadyPayAmount
-            FROM contract_payment_record
-            GROUP BY contract_id
-        ) cpr_sum
-        ON ct.id = cpr_sum.contract_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -143,7 +141,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
                 {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'createUser', 'updateUser',
-                 'departmentId', 'number', 'stage', 'amount', 'approvalStatus', 'startTime', 'endTime'}">
+                 'departmentId', 'number', 'stage', 'amount', 'approvalStatus', 'startTime', 'endTime', 'alreadyPayAmount'}">
                     <if test="condition.multipleValue">
                         left join contract_field_blob ${tablePrefix}_${i}
                         on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -164,7 +162,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
-                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime'}">
+                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime', 'alreadyPayAmount'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
             on ct.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -206,6 +204,12 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="ct.amount"/>
+                </include>
+            </when>
+            <when test="condition.name == 'alreadyPayAmount'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="ct.alreadyPayAmount"/>
                 </include>
             </when>
             <when test="condition.name == 'owner'">
@@ -338,6 +342,9 @@
                     </when>
                     <when test="${sort}.name == 'amount'">
                         ct.`amount` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'alreadyPayAmount'">
+                        ct.`alreadyPayAmount` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'stage'">
                         ct.`stage` ${sortType}, ct.id ASC
