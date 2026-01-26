@@ -91,7 +91,7 @@
     current.value = 1;
     hasMore.value = true;
 
-    if (keyword.value.length < 2) {
+    if (keyword.value.length <= 2) {
       return;
     }
     await loadData();
