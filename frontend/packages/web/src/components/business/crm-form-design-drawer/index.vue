@@ -143,14 +143,15 @@
         return false;
       }
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && field.subFields) {
+        const subFieldNameSet = new Set<string>();
         for (let j = 0; j < field.subFields.length; j++) {
           const subField = field.subFields[j];
-          if (fieldNameSet.has(subField.name)) {
+          if (subFieldNameSet.has(subField.name)) {
             Message.error(t('crmFormDesign.repeatFieldName'));
             formDesignRef.value?.setActiveField(field);
             return false;
           }
-          fieldNameSet.add(subField.name);
+          subFieldNameSet.add(subField.name);
         }
       }
       fieldNameSet.add(field.name);

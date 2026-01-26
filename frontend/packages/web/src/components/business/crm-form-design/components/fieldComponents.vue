@@ -95,12 +95,6 @@
     if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SERIAL_NUMBER && !e.resourceFieldId);
     }
-    if (item.type === FieldTypeEnum.SUB_PRICE) {
-      return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRICE);
-    }
-    if (item.type === FieldTypeEnum.SUB_PRODUCT) {
-      return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
-    }
     return false;
   }
 
