@@ -1140,6 +1140,23 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
+          if (field.businessKey === 'contactId') {
+            return {
+              title: field.name,
+              width: 200,
+              key,
+              fieldId: field.id,
+              sortOrder: false,
+              sorter,
+              ellipsis: {
+                tooltip: true,
+              },
+              filedType: field.type,
+              render: (row: any) => row.contactName || '-',
+              resourceFieldId: field.resourceFieldId,
+            };
+          }
+
           if (
             field.businessKey &&
             remoteFilterBusinessKey.includes(field.businessKey) &&
