@@ -69,6 +69,9 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
             setInternal(t, rowKey);
             headMap.forEach((k, v) -> {
                 try {
+                    if (BusinessTitleImportFiled.fromHeader(v) == null) {
+                        return;
+                    }
                     setPropertyValue(t, data.get(k), BusinessTitleImportFiled.fromHeader(v).getValue());
                 } catch (Exception e) {
                     log.error("导入错误, 无法设置字段值. {}", e.getMessage());
