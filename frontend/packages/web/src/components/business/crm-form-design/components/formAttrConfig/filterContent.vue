@@ -137,7 +137,9 @@
         const condition =
           ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
             e.type
-          ) && props.selfId !== e.id;
+          ) &&
+          props.selfId !== e.id &&
+          !e.resourceFieldId;
         if (leftFieldType) {
           if (multipleValueTypeList.includes(leftFieldType)) {
             return multipleValueTypeList.includes(e.type) && condition;
