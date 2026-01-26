@@ -6,7 +6,7 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatNumberValue, transformData } from '@lib/shared/method/formCreate';
+import { formatNumberValue, formatNumberValueToString, transformData } from '@lib/shared/method/formCreate';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -1216,7 +1216,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 150,
               key,
               fieldId: field.id,
-              render: (row: any) => formatNumberValue(row[key], field),
+              render: (row: any) => formatNumberValueToString(row[key], field),
               sortOrder: false,
               sorter,
               filedType: field.type,

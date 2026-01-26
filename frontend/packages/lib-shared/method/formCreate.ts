@@ -99,6 +99,26 @@ export function formatNumberValue(value: string | number, item: FormCreateField)
   return '-';
 }
 
+/**
+ * 格式化数字显示为字符串
+ * @param value 数字
+ * @param item
+ */
+export function formatNumberValueToString(value: number, item: FormCreateField) {
+  if (value !== undefined && value !== null) {
+    if (item.numberFormat === 'percent') {
+      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
+    }
+    if (item.showThousandsSeparator) {
+      return item.precision
+        ? `${value.toLocaleString('en-US').split('.')[0]}.${value.toFixed(item.precision).split('.')[1]}`
+        : value.toLocaleString('en-US');
+    }
+    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
+  }
+  return '-';
+}
+
 export function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
   if (
     [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
@@ -156,7 +176,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
   } else if (item.type === FieldTypeEnum.INDUSTRY) {
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-    value = formatNumberValue(fieldValue as string, item);
+    value = formatNumberValueToString(fieldValue as unknown as number, item);
   } else if (item.type === FieldTypeEnum.DATE_TIME) {
     value = formatTimeValue(fieldValue as string, item.dateType);
   }
@@ -192,7 +212,7 @@ export function parseFormDetailValue(item: FormCreateField, form: FormDetail, so
       return formatTimeValue(name || form[item.businessKey], item.dateType);
     }
     if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-      return formatNumberValue(name || form[item.businessKey], item);
+      return formatNumberValueToString(name || form[item.businessKey], item);
     }
     if (item.type === FieldTypeEnum.ATTACHMENT) {
       return form.attachmentMap?.[item.businessKey] || [];
