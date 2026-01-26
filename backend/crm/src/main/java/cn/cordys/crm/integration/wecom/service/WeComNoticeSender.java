@@ -36,10 +36,9 @@ public class WeComNoticeSender extends AbstractNoticeSender {
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
-        String context = super.getContext(messageDetailDTO, noticeModel);
-        String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
-            sendWeCom(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
+            String context = super.getContext(messageDetailDTO, noticeModel);
+            sendWeCom(context, noticeModel, messageDetailDTO.getOrganizationId());
             log.debug("发送企业微信结束");
         } catch (Exception e) {
             log.error("企业微信消息通知失败：{}", String.valueOf(e));
@@ -50,7 +49,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
         this.send(clonedMessageDetail, clonedNoticeModel);
     }
 
-    private void sendWeCom(String context, NoticeModel noticeModel, String organizationId, String subjectText) {
+    private void sendWeCom(String context, NoticeModel noticeModel, String organizationId) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
@@ -78,7 +77,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             log.warn("没有配置企业微信通知信息，无法发送消息");
             return;
         }
-        ThirdConfigBaseDTO thirdConfigurationDTO = JSON.parseObject(
+        var thirdConfigurationDTO = JSON.parseObject(
                 new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
         WecomThirdConfigRequest wecomThirdConfigRequest = new WecomThirdConfigRequest();
