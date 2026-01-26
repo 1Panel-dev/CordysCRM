@@ -26,15 +26,20 @@
         </template>
         <template v-else>
           <slot>
-            <n-button
-              text
-              v-bind="item"
-              :class="item.text === false ? '' : '!p-0'"
-              :type="item.danger ? 'error' : 'primary'"
-              @click="() => emit('select', item.key as string)"
-            >
-              {{ item.label }}
-            </n-button>
+            <n-tooltip :delay="300" :disabled="!item.tooltipContent">
+              <template #trigger>
+                <n-button
+                  text
+                  v-bind="item"
+                  :class="item.text === false ? '' : '!p-0'"
+                  :type="item.danger ? 'error' : 'primary'"
+                  @click="() => emit('select', item.key as string)"
+                >
+                  {{ item.label }}
+                </n-button>
+              </template>
+              {{ item.tooltipContent }}
+            </n-tooltip>
           </slot>
         </template>
       </slot>
@@ -45,7 +50,7 @@
 
 <script setup lang="ts">
   import { ref, watch } from 'vue';
-  import { NButton, NDivider } from 'naive-ui';
+  import { NButton, NDivider, NTooltip } from 'naive-ui';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';

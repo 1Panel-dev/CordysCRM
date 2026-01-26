@@ -75,7 +75,7 @@
     :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     :link-form-info="linkFormInfo"
-    @saved="() => searchData()"
+    @saved="() => handleSaved()"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -147,6 +147,7 @@
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
     (e: 'openPaymentPlanDrawer', params: { id: string }): void;
+    (e: 'refresh'): void;
   }>();
 
   const activeTab = ref();
@@ -277,6 +278,7 @@
           await deletePaymentRecord(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -424,6 +426,11 @@
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value, contractId: props.sourceId });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handleSaved() {
+    searchData();
+    emit('refresh');
   }
 
   watch(

@@ -51,6 +51,7 @@
               detailInfo?.stage === ContractStatusEnum.VOID ||
               detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
             "
+            @refresh="handleSaved()"
           />
         </template>
         <InvoiceTable
@@ -202,15 +203,21 @@
     }
     if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
-        {
-          label: t('contract.payment'),
-          key: 'paymentRecord',
-          permission: ['CONTRACT:PAYMENT'],
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          disabled: !detailInfo.value.amount,
-        },
+        ...(detailInfo.value?.stage !== ContractStatusEnum.VOID
+          ? [
+              {
+                label: t('contract.payment'),
+                key: 'paymentRecord',
+                permission: ['CONTRACT:PAYMENT'],
+                text: false,
+                ghost: true,
+                class: 'n-btn-outline-primary',
+                disabled: !detailInfo.value?.amount || detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount,
+                tooltipContent:
+                  detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount ? t('contract.noPaymentRequired') : '',
+              },
+            ]
+          : []),
         {
           label: t('common.delete'),
           key: 'delete',

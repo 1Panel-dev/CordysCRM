@@ -269,6 +269,11 @@
       type: FieldTypeEnum.INPUT,
     },
     {
+      title: t('contract.alreadyPayAmount'),
+      dataIndex: 'alreadyPayAmount',
+      type: FieldTypeEnum.INPUT_NUMBER,
+    },
+    {
       title: t('opportunity.quotation.amount'),
       dataIndex: 'amount',
       type: FieldTypeEnum.INPUT_NUMBER,
@@ -310,12 +315,17 @@
     }
     if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
       return [
-        {
-          label: t('contract.payment'),
-          key: 'paymentRecord',
-          permission: ['CONTRACT:PAYMENT'],
-          disabled: !row.amount,
-        },
+        ...(row.stage !== ContractStatusEnum.VOID
+          ? [
+              {
+                label: t('contract.payment'),
+                key: 'paymentRecord',
+                permission: ['CONTRACT:PAYMENT'],
+                disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+                tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+              },
+            ]
+          : []),
         {
           label: t('common.delete'),
           key: 'delete',

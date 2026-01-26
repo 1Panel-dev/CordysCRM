@@ -12,6 +12,7 @@ export interface ContractItem {
   customerId: string;
   customerName: string;
   amount: number;
+  alreadyPayAmount: number;
   approvalStatus: QuotationStatusEnum;
   stage: string;
   owner: string;
