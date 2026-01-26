@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -36,10 +37,9 @@ public class LarkNoticeSender extends AbstractNoticeSender {
 
     @Override
     public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
-        String context = super.getContext(messageDetailDTO, noticeModel);
-        String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
-            sendLark(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
+            String context = super.getContext(messageDetailDTO, noticeModel);
+            sendLark(context, noticeModel, messageDetailDTO.getOrganizationId());
             log.debug("发送飞书消息结束");
         } catch (Exception e) {
             log.error("飞书消息通知失败：{}", String.valueOf(e));
@@ -50,7 +50,7 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         this.send(clonedMessageDetail, clonedNoticeModel);
     }
 
-    private void sendLark(String context, NoticeModel noticeModel, String organizationId, String subjectText) {
+    private void sendLark(String context, NoticeModel noticeModel, String organizationId) {
         List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
@@ -81,13 +81,14 @@ public class LarkNoticeSender extends AbstractNoticeSender {
         ThirdConfigBaseDTO<?> thirdConfigurationDTO = JSON.parseObject(
                 new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
         );
-        LarkThirdConfigRequest larkThirdConfigRequest = new LarkThirdConfigRequest();
-        if (thirdConfigurationDTO.getConfig() == null) {
-            larkThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), LarkThirdConfigRequest.class);
-        } else {
-            larkThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), LarkThirdConfigRequest.class);
-        }
 
+        LarkThirdConfigRequest larkThirdConfigRequest =
+                Optional.ofNullable(thirdConfigurationDTO.getConfig())
+                        .map(cfg -> JSON.MAPPER.convertValue(cfg, LarkThirdConfigRequest.class))
+                        .orElseGet(() -> JSON.parseObject(
+                                new String(orgConfigDetailByIdAndType.getContent()),
+                                LarkThirdConfigRequest.class
+                        ));
 
         for (String resourceUserId : resourceUserIds) {
             log.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
