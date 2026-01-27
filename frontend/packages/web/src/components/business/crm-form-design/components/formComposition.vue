@@ -219,7 +219,7 @@
 
   function addItem(item: FormCreateField) {
     const res: FormCreateField = {
-      ...item,
+      ...cloneDeep(item),
       id: getGenerateId(),
       name: t(item.name),
     };
@@ -300,6 +300,12 @@
       if (relatedField && relatedField.showFields) {
         relatedField.showFields = relatedField.showFields.filter((id) => id !== item.id);
       }
+    }
+    if (
+      [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) &&
+      item.subFields?.some((e) => e.id === activeItem.value?.id)
+    ) {
+      activeItem.value = null;
     }
   }
 

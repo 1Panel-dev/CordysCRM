@@ -23,7 +23,7 @@
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
-  import { formatNumberValue, normalizeNumber } from '@lib/shared/method/formCreate';
+  import { formatNumberValue, formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -127,7 +127,7 @@
     }
     switch (field.type) {
       case FieldTypeEnum.INPUT_NUMBER:
-        return formatNumberValue(value, field);
+        return formatNumberValueToString(value, field);
       case FieldTypeEnum.DATE_TIME:
         return formatTimeValue(value, field.dateType);
       case FieldTypeEnum.LOCATION:
@@ -232,7 +232,7 @@
         if (Array.isArray(fieldVal)) {
           row[sf.id] = fieldVal.join(',');
         } else if (sf.type === FieldTypeEnum.INPUT_NUMBER && typeof fieldVal === 'number') {
-          row[sf.id] = formatNumberValue(fieldVal, sf) ?? null;
+          row[sf.id] = formatNumberValueToString(fieldVal, sf) ?? null;
         } else {
           row[sf.id] = fieldVal;
         }
@@ -352,7 +352,7 @@
             title: field.showLabel ? field.name : '',
             width:
               maxPictureCountMap.value[field.id] > 0 && field.type === FieldTypeEnum.PICTURE
-                ? maxPictureCountMap.value[field.id] * 110
+                ? maxPictureCountMap.value[field.id] * 112
                 : 120,
             key,
             fieldId: key,
@@ -546,14 +546,14 @@
           let finalPictureColWidth = 0;
           if (maxPictureCountMap.value[field.id]) {
             if (field.uploadLimit && maxPictureCountMap.value[field.id] >= field.uploadLimit) {
-              finalPictureColWidth = field.uploadLimit * 110;
+              finalPictureColWidth = field.uploadLimit * 112;
             } else {
-              finalPictureColWidth = maxPictureCountMap.value[field.id] * 110 + 32;
+              finalPictureColWidth = maxPictureCountMap.value[field.id] * 112 + 32;
             }
           }
           return {
             title,
-            width: finalPictureColWidth || 150, // 每个卡片 100px + 8px间距 + 2px 冗余 + 上传按钮宽度 32px
+            width: finalPictureColWidth || 150, // 每个卡片 100px + 10px间距 + 2px 冗余 + 上传按钮宽度 32px
             key,
             fieldId: key,
             render: (row: any, rowIndex: number) =>
@@ -668,7 +668,7 @@
                   [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(col.filedType as FieldTypeEnum) &&
                   col.fieldConfig
                 ) {
-                  return formatNumberValue(sum, col.fieldConfig);
+                  return formatNumberValueToString(sum, col.fieldConfig);
                 }
                 return sum;
               },

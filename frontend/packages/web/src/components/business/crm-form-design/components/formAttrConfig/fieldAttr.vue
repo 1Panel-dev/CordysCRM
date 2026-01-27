@@ -1078,7 +1078,13 @@
           <n-checkbox v-model:checked="showSumColumn">
             {{ t('crmFormDesign.show') }}
           </n-checkbox>
-          <n-select v-if="showSumColumn" v-model:value="fieldConfig.sumColumns" multiple :options="sumOptions" />
+          <n-select
+            v-if="showSumColumn"
+            v-model:value="fieldConfig.sumColumns"
+            multiple
+            :options="sumOptions"
+            :fallback-option="fallbackOption"
+          />
         </div>
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
@@ -1606,6 +1612,7 @@
           0,
           ...selectedList.map((item) => ({
             ...item,
+            id: `${parentField.value?.id}_ref_${item.id}`,
             resourceFieldId: fieldConfig.value.id,
             description: '',
             editable: false,
@@ -1622,6 +1629,7 @@
             0,
             ...selectedList.map((item) => ({
               ...item,
+              id: `${fieldConfig.value.id}_ref_${item.id}`,
               resourceFieldId: fieldConfig.value.id,
               description: '',
               editable: false,
@@ -1736,6 +1744,13 @@
       }
     }
   );
+
+  function fallbackOption(val: string | number) {
+    return {
+      label: t('crmFormDesign.fieldNotExist'),
+      value: val,
+    };
+  }
 </script>
 
 <style lang="less" scoped>
