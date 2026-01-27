@@ -90,8 +90,7 @@ public abstract class BaseModuleLogService {
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> {
-            BaseField moduleField = moduleFieldMap.get(differ.getColumn());
-            return (moduleField != null && Strings.CI.equals(moduleField.getType(), FieldType.SERIAL_NUMBER.name())) || subFieldRemoveIds.contains(differ.getColumn());
+            return subFieldRemoveIds.contains(differ.getColumn());
         });
         differences = modifiable;
         // 记录选项字段的字段值

@@ -266,7 +266,7 @@ public class ContractInvoiceService {
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields, request.getId(), invoice.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLog(originContractInvoice, invoice, originFields, moduleFields, request.getId(), invoice.getName());
         }, () -> {
             throw new GenericException(Translator.get("invoice.not.exist"));
         });
