@@ -79,7 +79,7 @@ public class NoticeExpireJob {
      * </p>
      *
      */
-    @QuartzScheduled(cron = "0 0 8 * * ?")
+    @QuartzScheduled(cron = "0 0 14 * * ?")
     public void onEvent() {
         try {
             this.quotationExpiringRemind();
