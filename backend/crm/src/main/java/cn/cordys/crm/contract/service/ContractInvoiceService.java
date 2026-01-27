@@ -262,6 +262,8 @@ public class ContractInvoiceService {
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
             List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
+            // get 方法需要使用orgId
+            invoice.setOrganizationId(orgId);
             ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
