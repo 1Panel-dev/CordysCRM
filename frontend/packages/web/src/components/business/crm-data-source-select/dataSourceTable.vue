@@ -164,7 +164,7 @@
             if (col.type === 'selection') {
               col.multiple = true;
               col.disabled = (row: RowData) => {
-                return !row[val] || row[val]?.length === 0;
+                return (!row[val] || row[val]?.length === 0) && !row.parentId;
               };
               return col;
             }
