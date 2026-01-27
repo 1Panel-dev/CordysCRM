@@ -163,6 +163,9 @@
           ...columns.value.map((col) => {
             if (col.type === 'selection') {
               col.multiple = true;
+              col.disabled = (row: RowData) => {
+                return !row[val] || row[val]?.length === 0;
+              };
               return col;
             }
             if (col.key === 'name') {

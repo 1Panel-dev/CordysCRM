@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -149,7 +150,7 @@
         },
       ];
     }
-    return res;
+    return cloneDeep(res);
   }
 
   function handleFieldClick(field: FormCreateField) {

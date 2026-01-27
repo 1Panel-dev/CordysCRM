@@ -49,7 +49,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { safeFractionConvert } from '@lib/shared/method';
+  import { getGenerateId, safeFractionConvert } from '@lib/shared/method';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -188,15 +188,30 @@
       await saveFormDesignConfig({
         formKey: props.formKey,
         formProp: formConfig.value,
-        fields: fieldList.value.map((e) => ({
-          ...e,
-          defaultValue:
-            [FieldTypeEnum.SELECT, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(
-              e.type
-            ) && Array.isArray(e.defaultValue)
-              ? e.defaultValue[0] || ''
-              : e.defaultValue,
-        })),
+        fields: fieldList.value.map((e) => {
+          if (e.type === FieldTypeEnum.SUB_PRICE || e.type === FieldTypeEnum.SUB_PRODUCT) {
+            e.subFields = e.subFields?.map(
+              (subField) =>
+                ({
+                  ...subField,
+                  id: subField.resourceFieldId ? subField.id.split('_ref_')[1] : subField.id, // 处理数据源显示字段 id
+                } as FormCreateField)
+            );
+          }
+          return {
+            ...e,
+            id: e.resourceFieldId ? e.id.split('_ref_')[1] : e.id, // 处理数据源显示字段 id
+            defaultValue:
+              [
+                FieldTypeEnum.SELECT,
+                FieldTypeEnum.DEPARTMENT,
+                FieldTypeEnum.DATA_SOURCE,
+                FieldTypeEnum.MEMBER,
+              ].includes(e.type) && Array.isArray(e.defaultValue)
+                ? e.defaultValue[0] || ''
+                : e.defaultValue,
+          };
+        }),
       });
       Message.success(t('common.saveSuccess'));
       visible.value = false;
@@ -221,13 +236,17 @@
       const res = await getFormDesignConfig(key);
       fieldList.value = res.fields.map((item) => ({
         ...item,
-        id: item.id,
+        id: item.resourceFieldId ? `${getGenerateId()}_ref_${item.id}` : item.id, // 处理数据源显示字段 id
         internalKey: item.internalKey,
         type: item.type,
         name: t(item.name),
         placeholder: t(item.placeholder || ''),
         fieldWidth: safeFractionConvert(item.fieldWidth),
-        subFields: item.subFields?.map((e) => ({ ...e, description: '' })),
+        subFields: item.subFields?.map((e) => ({
+          ...e,
+          description: '',
+          id: e.resourceFieldId ? `${getGenerateId()}_ref_${e.id}` : e.id, // 处理数据源显示字段 id
+        })),
         defaultValue:
           [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
           typeof item.defaultValue === 'string'

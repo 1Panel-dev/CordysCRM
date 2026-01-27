@@ -520,13 +520,18 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       collaborationType.value = form.collaborationType;
       formDescriptionShowControlRulesSet(form);
       fieldList.value.forEach((item) => {
-        if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && item.subFields?.length) {
+        const value = item.businessKey
+          ? form[item.businessKey]
+          : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue;
+        if (
+          [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) &&
+          item.subFields?.length &&
+          value.length > 0
+        ) {
           if (item.show === false || !item.readable) return;
           descriptions.value.push({
             label: item.name,
-            value: item.businessKey
-              ? form[item.businessKey]
-              : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue,
+            value,
             slotName: item.type,
             fieldInfo: item,
             optionMap: form.optionMap,
