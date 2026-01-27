@@ -560,12 +560,13 @@
         h(quotationStatus, {
           status: row.approvalStatus,
         }),
-      amount: (row: QuotationItem) => {
-        return formatNumberValue(row.amount ?? 0, {
-          ...inputNumberDefaultFieldConfig,
-          showThousandsSeparator: true,
-        });
-      },
+      // TODO 这个版本先不展示
+      // amount: (row: QuotationItem) => {
+      //   return formatNumberValue(row.amount ?? 0, {
+      //     ...inputNumberDefaultFieldConfig,
+      //     showThousandsSeparator: true,
+      //   });
+      // },
     },
     permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
