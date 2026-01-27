@@ -858,7 +858,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     .filter(r -> refSubSet.contains(((BaseResourceSubField) r).getRefSubId()))
                     .collect(Collectors.groupingBy(BaseResourceField::getResourceId));
             subResourceMap.forEach((resourceId, subResources) -> {
-                subResources.sort(Comparator.comparing(resource -> Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY) ? 0 : 1));
+                subResources.sort(Comparator.comparingInt(resource -> Integer.parseInt(((BaseResourceSubField) resource).getRowId()))
+						.thenComparing(resource -> Strings.CS.equals(((BaseResourceSubField) resource).getFieldId(), PRICE_SUB_ROW_KEY) ? 0 : 1));
                 Map<String, List<Map<String, Object>>> subFieldValueMap = new HashMap<>(8);
                 subResources.forEach(resource -> {
                     if (resource.getFieldValue() != null) {
