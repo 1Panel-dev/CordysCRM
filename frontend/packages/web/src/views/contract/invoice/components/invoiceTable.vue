@@ -461,15 +461,23 @@
           status: row.approvalStatus,
         }),
       businessTitleId: (row: ContractInvoiceItem) =>
-        h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showBusinessTitleDetail(row.businessTitleId);
-            },
-          },
-          { default: () => row.businessTitleName, trigger: () => row.businessTitleName }
-        ),
+        hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ'])
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showBusinessTitleDetail(row.businessTitleId);
+                },
+              },
+              { default: () => row.businessTitleName, trigger: () => row.businessTitleName }
+            )
+          : h(
+              CrmNameTooltip,
+              { text: row.businessTitleName },
+              {
+                default: () => row.businessTitleName,
+              }
+            ),
     },
     permission: ['CONTRACT_INVOICE:EXPORT'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,
