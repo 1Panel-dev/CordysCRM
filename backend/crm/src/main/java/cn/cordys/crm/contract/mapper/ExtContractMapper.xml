@@ -24,7 +24,7 @@
         ct.update_time,
         ct.alreadyPayAmount
         FROM (
-            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) as alreadyPayAmount
+            SELECT ctt.*, CAST(IFNULL(SUM(cpr.record_amount), '0') AS CHAR) AS alreadyPayAmount
             FROM contract ctt
             LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
             GROUP BY ctt.id
@@ -162,7 +162,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
-                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime', 'alreadyPayAmount'}">
+                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime', 'already_pay_amount'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
             on ct.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -343,7 +343,7 @@
                     <when test="${sort}.name == 'amount'">
                         ct.`amount` ${sortType}, ct.id ASC
                     </when>
-                    <when test="${sort}.name == 'alreadyPayAmount'">
+                    <when test="${sort}.name == 'already_pay_amount'">
                         ct.`alreadyPayAmount` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'stage'">
