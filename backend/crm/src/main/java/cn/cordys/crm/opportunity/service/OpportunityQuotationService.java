@@ -33,6 +33,7 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
+import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
@@ -73,6 +74,8 @@ public class OpportunityQuotationService {
     private OpportunityQuotationFieldService opportunityQuotationFieldService;
     @Resource
     private BaseService baseService;
+    @Resource
+    private ExtProductMapper extProductMapper;
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
@@ -268,10 +271,12 @@ public class OpportunityQuotationService {
         }
         response.setApprovalStatus(opportunityQuotation.getApprovalStatus());
         ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
-        List<BaseModuleFieldValue> moduleFieldValuesByResourceId = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(opportunityQuotation.getId());
-        // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFieldValuesByResourceId, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, resolveFieldValues);
+        List<BaseModuleFieldValue> moduleFieldValues = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFieldValues, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
+        List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId()),
+                new HashMap<>(Map.of(response.getId(), resolveFieldValues))).get(response.getId());
+        response.setModuleFields(fvs);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, fvs);
         Opportunity opportunity = opportunityBaseMapper.selectByPrimaryKey(response.getOpportunityId());
         if (opportunity != null) {
             optionMap.put("opportunityId", List.of(new OptionDTO(opportunity.getId(), opportunity.getName())));
@@ -280,7 +285,6 @@ public class OpportunityQuotationService {
         response.setOptionMap(optionMap);
         Map<String, List<Attachment>> attachmentMap = moduleFormService.getAttachmentMap(moduleFormConfigDTO, response.getModuleFields());
         response.setAttachmentMap(attachmentMap);
-        moduleFormService.processBusinessFieldValues(response, response.getModuleFields(), moduleFormConfigDTO);
         baseService.setCreateAndUpdateUserName(response);
         UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId());
         if (userDeptDTO != null) {
