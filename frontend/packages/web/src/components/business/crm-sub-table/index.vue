@@ -698,6 +698,8 @@
     }
     .n-data-table-td {
       padding: 8px 4px;
+      line-height: normal;
+      vertical-align: middle;
     }
     .n-form-item-blank--error + .n-form-item-feedback-wrapper {
       @apply block;
