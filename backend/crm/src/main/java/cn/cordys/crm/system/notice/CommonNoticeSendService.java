@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.notice;
 
 
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.DepartmentCommander;
 import cn.cordys.crm.system.domain.User;
@@ -113,8 +114,14 @@ public class CommonNoticeSendService {
                            List<String> users, boolean excludeSelf) {
         Map<String, Object> paramMap = new HashMap<>();
         User operator = userBaseMapper.selectByPrimaryKey(operatorId);
-        paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
-        paramMap.put("Language", operator.getLanguage());
+        if (operator != null) {
+            paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
+            paramMap.put("Language", operator.getLanguage());
+        } else {
+            paramMap.put(NotificationConstants.RelatedUser.OPERATOR, Translator.get("setting"));
+            paramMap.put("Language", "zh-CN");
+        }
+
         paramMap.putAll(resource);
         paramMap.putIfAbsent("organizationId", currentOrgId);
 
