@@ -138,8 +138,14 @@
             closable: !props.disabled,
             onClose: () => {
               handleClose();
-              rows.value = rows.value.filter((item) => item.id !== option.value);
-              value.value = value.value.filter((key) => key !== option.value);
+              if (props.hideChildTag) {
+                // 价格表关闭标签需要清理子项和父项
+                rows.value = [];
+                value.value = [];
+              } else {
+                rows.value = rows.value.filter((item) => item.id !== option.value);
+                value.value = value.value.filter((key) => key !== option.value);
+              }
               nextTick(() => {
                 emit('change', value.value, rows.value, dataSourceFormFields.value);
               });

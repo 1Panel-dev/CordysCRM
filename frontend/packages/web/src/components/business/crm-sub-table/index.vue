@@ -313,21 +313,27 @@
       } else {
         // 单选行只有一个父级
         row.price_sub = children[0]?.id;
-        row[key] = val.sort((a, b) => {
-          // 保证父项在前，子项在后
-          if (a === children[0].parentId) {
-            return -1;
-          }
-          if (b === children[0].parentId) {
-            return 1;
-          }
-          return 0;
-        });
+        row[key] = val
+          .filter((e) => children.some((p) => p.parentId === e))
+          .sort((a, b) => {
+            // 保证父项在前，子项在后
+            if (a === children[0].parentId) {
+              return -1;
+            }
+            if (b === children[0].parentId) {
+              return 1;
+            }
+            return 0;
+          });
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
       }
     } else {
       row[key] = val.filter((e) => parents.some((p) => p.id === e)).length > 0 ? val : [];
       applyDataSourceShowFields(field, val, row, source, row.price_sub);
+      if (row[key].length === 0) {
+        // 清空时把行号也清理
+        row.price_sub = '';
+      }
     }
     sumInitialOptions.value = sumInitialOptions.value.concat(
       ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
