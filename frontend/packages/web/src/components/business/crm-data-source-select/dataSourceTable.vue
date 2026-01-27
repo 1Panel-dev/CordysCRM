@@ -197,7 +197,10 @@
                           {
                             default: () =>
                               row[field.businessKey || field.id]?.length
-                                ? (row[field.businessKey || field.id] || []).map((_key: string) =>
+                                ? (Array.isArray(row[field.businessKey || field.id])
+                                    ? row[field.businessKey || field.id]
+                                    : []
+                                  ).map((_key: string) =>
                                     h(NImage, {
                                       class: 'h-[40px] w-[40px] mr-[4px]',
                                       src: `${PreviewPictureUrl}/${_key}`,
