@@ -79,7 +79,7 @@ public class NoticeExpireJob {
      * </p>
      *
      */
-    @QuartzScheduled(cron = "0 0 14 * * ?")
+    @QuartzScheduled(cron = "0 0 16 * * ?")
     public void onEvent() {
         try {
             this.quotationExpiringRemind();
@@ -89,7 +89,7 @@ public class NoticeExpireJob {
             this.contractExpiringRemind();
             this.contractExpiredRemind();
         } catch (Exception e) {
-            log.error("消息通知提醒异常: ", e.getMessage());
+            log.error("消息通知提醒异常: ", e);
         }
     }
 
