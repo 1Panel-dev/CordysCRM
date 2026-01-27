@@ -35,7 +35,7 @@ public class JsonDifferenceUtils {
                 removed.setOldValue(getValue(oldValue));
                 removed.setType("removed");
                 JsonDifferenceDTOList.add(removed);
-            } else if (!oldValue.equals(newValue)) {
+            } else if (!isNodeEquals(oldValue, newValue)) {
                 if (oldValue.isObject() && newValue.isObject()) {
                     //递归比较子节点
                     List<JsonDifferenceDTO> children = new ArrayList<>();
@@ -65,6 +65,14 @@ public class JsonDifferenceUtils {
                 JsonDifferenceDTOList.add(add);
             }
         }
+    }
+
+    private static boolean isNodeEquals(JsonNode oldValue, JsonNode newValue) {
+        if (oldValue.isNumber() && newValue.isNumber()) {
+            // 避免小数点，科学计数法等格式导致的比较不一致
+            return oldValue.asDouble() == newValue.asDouble();
+        }
+        return oldValue.equals(newValue);
     }
 
     /**
