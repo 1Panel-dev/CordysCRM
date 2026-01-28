@@ -52,7 +52,7 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
             }
 
         }
-        return differences.stream().filter(differ -> !Strings.CI.equals("removed", differ.getType())).toList();
+        return differences;
     }
 
 
