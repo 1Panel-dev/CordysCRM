@@ -24,7 +24,7 @@
         ct.update_time,
         ct.alreadyPayAmount
         FROM (
-            SELECT ctt.*, CAST(IFNULL(SUM(cpr.record_amount), '0') AS CHAR) AS alreadyPayAmount
+            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) AS alreadyPayAmount
             FROM contract ctt
             LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
             GROUP BY ctt.id
@@ -113,7 +113,7 @@
         ct.start_time,
         ct.end_time,
         FROM (
-            SELECT ctt.*, CAST(IFNULL(SUM(cpr.record_amount), '0') AS CHAR) AS alreadyPayAmount
+            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) AS alreadyPayAmount
             FROM contract ctt
             LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
             GROUP BY ctt.id
