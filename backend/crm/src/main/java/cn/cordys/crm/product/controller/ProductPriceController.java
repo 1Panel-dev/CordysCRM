@@ -29,13 +29,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 /**
  * @author song-cc-rock
@@ -45,115 +44,136 @@ import java.util.List;
 @RequestMapping("/price")
 public class ProductPriceController {
 
-    @Resource
-    private ProductPriceService priceService;
-	@Resource
-	private ProductPriceExportService priceExportService;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
+  @Resource private ProductPriceService priceService;
+  @Resource private ProductPriceExportService priceExportService;
+  @Resource private ModuleFormCacheService moduleFormCacheService;
 
-    @GetMapping("/module/form")
-    @Operation(summary = "获取表单配置")
-    public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
-    }
+  @GetMapping("/module/form")
+  @Operation(summary = "获取表单配置")
+  public ModuleFormConfigDTO getModuleFormConfig() {
+    return moduleFormCacheService.getBusinessFormConfig(
+        FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.PRICE_READ)
-    @Operation(summary = "价格列表")
-    public PagerWithOption<List<ProductPriceResponse>> list(@Validated @RequestBody ProductPricePageRequest request) {
-		ConditionFilterUtils.parseCondition(request);
-        return priceService.list(request, OrganizationContext.getOrganizationId());
-    }
+  @PostMapping("/page")
+  @RequiresPermissions(PermissionConstants.PRICE_READ)
+  @Operation(summary = "价格列表")
+  public PagerWithOption<List<ProductPriceResponse>> list(
+      @Validated @RequestBody ProductPricePageRequest request) {
+    ConditionFilterUtils.parseCondition(request);
+    return priceService.list(request, OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.PRICE_ADD)
-    @Operation(summary = "添加价格表")
-    public ProductPrice add(@Validated @RequestBody ProductPriceAddRequest request) {
-        return priceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
+  @PostMapping("/add")
+  @RequiresPermissions(PermissionConstants.PRICE_ADD)
+  @Operation(summary = "添加价格表")
+  public ProductPrice add(@Validated @RequestBody ProductPriceAddRequest request) {
+    return priceService.add(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-	@GetMapping("/copy/{id}")
-	@RequiresPermissions(PermissionConstants.PRICE_ADD)
-	@Operation(summary = "复制价格表")
-	public ProductPrice copy(@PathVariable String id) {
-		return priceService.copy(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+  @GetMapping("/copy/{id}")
+  @RequiresPermissions(PermissionConstants.PRICE_ADD)
+  @Operation(summary = "复制价格表")
+  public ProductPrice copy(@PathVariable String id) {
+    return priceService.copy(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
-    @Operation(summary = "修改价格表")
-    public ProductPrice update(@Validated @RequestBody ProductPriceEditRequest request) {
-        return priceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
+  @PostMapping("/update")
+  @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+  @Operation(summary = "修改价格表")
+  public ProductPrice update(@Validated @RequestBody ProductPriceEditRequest request) {
+    return priceService.update(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.PRICE_READ)
-    @Operation(summary = "价格表详情")
-    public ProductPriceGetResponse get(@PathVariable String id) {
-        return priceService.get(id);
-    }
+  @GetMapping("/get/{id}")
+  @RequiresPermissions(PermissionConstants.PRICE_READ)
+  @Operation(summary = "价格表详情")
+  public ProductPriceGetResponse get(@PathVariable String id) {
+    return priceService.get(id);
+  }
 
-    @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.PRICE_DELETE)
-    @Operation(summary = "删除价格表")
-    public void delete(@PathVariable String id) {
-        priceService.delete(id);
-    }
+  @GetMapping("/delete/{id}")
+  @RequiresPermissions(PermissionConstants.PRICE_DELETE)
+  @Operation(summary = "删除价格表")
+  public void delete(@PathVariable String id) {
+    priceService.delete(id);
+  }
 
-	@PostMapping("/batch/update")
-	@RequiresPermissions(PermissionConstants.PRICE_UPDATE)
-	@Operation(summary = "批量更新价格表")
-	public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-		priceService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+  @PostMapping("/batch/update")
+  @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+  @Operation(summary = "批量更新价格表")
+  public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+    priceService.batchUpdate(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/edit/pos")
-    @Operation(summary = "拖拽排序")
-    @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
-    public void editPos(@Validated @RequestBody PosRequest request) {
-        priceService.editPos(request);
-    }
+  @PostMapping("/edit/pos")
+  @Operation(summary = "拖拽排序")
+  @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+  public void editPos(@Validated @RequestBody PosRequest request) {
+    priceService.editPos(request);
+  }
 
-	@GetMapping("/template/download")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	@Operation(summary = "下载导入模板")
-	public void downloadImportTpl(HttpServletResponse response) {
-		priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
-	}
+  @GetMapping("/template/download")
+  @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+  @Operation(summary = "下载导入模板")
+  public void downloadImportTpl(HttpServletResponse response) {
+    priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+  }
 
-	@PostMapping("/import/pre-check")
-	@Operation(summary = "导入检查")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	public ImportResponse preCheck(@RequestPart(value = "file") @NotNull MultipartFile file) {
-		return priceService.importPreCheck(file, OrganizationContext.getOrganizationId());
-	}
+  @PostMapping("/import/pre-check")
+  @Operation(summary = "导入检查")
+  @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+  public ImportResponse preCheck(@RequestPart(value = "file") @NotNull MultipartFile file) {
+    return priceService.importPreCheck(file, OrganizationContext.getOrganizationId());
+  }
 
-	@PostMapping("/import")
-	@Operation(summary = "导入")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-		return priceService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-	}
+  @PostMapping("/import")
+  @Operation(summary = "导入")
+  @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+  public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+    return priceService.realImport(
+        file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+  }
 
-	@PostMapping("/export")
-	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
-	@Operation(summary = "导出全部")
-	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
-		ConditionFilterUtils.parseCondition(request);
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-				.locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
-		return priceExportService.exportAllWithMergeStrategy(exportParam);
-	}
+  @PostMapping("/export")
+  @RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+  @Operation(summary = "导出全部")
+  public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
+    ConditionFilterUtils.parseCondition(request);
+    ExportDTO exportParam =
+        ExportDTO.builder()
+            .formKey(FormKey.PRICE.getKey())
+            .fileName(request.getFileName())
+            .headList(request.getHeadList())
+            .orgId(OrganizationContext.getOrganizationId())
+            .userId(SessionUtils.getUserId())
+            .exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+            .locale(LocaleContextHolder.getLocale())
+            .pageRequest(request)
+            .logModule(LogModule.PRODUCT_PRICE_MANAGEMENT)
+            .build();
+    return priceExportService.exportAllWithMergeStrategy(exportParam);
+  }
 
-	@PostMapping("/export-select")
-	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
-	@Operation(summary = "导出选中")
-	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-				.locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
-		return priceExportService.exportSelectWithMergeStrategy(exportParam);
-	}
+  @PostMapping("/export-select")
+  @RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+  @Operation(summary = "导出选中")
+  public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+    ExportDTO exportParam =
+        ExportDTO.builder()
+            .formKey(FormKey.PRICE.getKey())
+            .fileName(request.getFileName())
+            .headList(request.getHeadList())
+            .orgId(OrganizationContext.getOrganizationId())
+            .userId(SessionUtils.getUserId())
+            .exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+            .locale(LocaleContextHolder.getLocale())
+            .selectIds(request.getIds())
+            .logModule(LogModule.PRODUCT_PRICE_MANAGEMENT)
+            .build();
+    return priceExportService.exportSelectWithMergeStrategy(exportParam);
+  }
 }

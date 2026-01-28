@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class AdvancedOpportunityResponse extends OpportunityListResponse {
 
-    @Schema(description = "是否有当前数据的权限")
-    private boolean hasPermission;
+  @Schema(description = "是否有当前数据的权限")
+  private boolean hasPermission;
 }

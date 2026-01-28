@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SystemVersionController {
 
-    @Resource
-    private SystemService systemService;
+  @Resource private SystemService systemService;
 
-    @GetMapping("/system/version")
-    @Operation(summary = "获取当前系统版本")
-    public VersionInfoDTO getVersion() {
-        return systemService.getVersion();
-    }
+  @GetMapping("/system/version")
+  @Operation(summary = "获取当前系统版本")
+  public VersionInfoDTO getVersion() {
+    return systemService.getVersion();
+  }
 }

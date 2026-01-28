@@ -1,6 +1,5 @@
 package cn.cordys.crm.search.controller;
 
-
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.search.request.UserSearchConfigAddRequest;
 import cn.cordys.crm.search.response.SearchFieldResponse;
@@ -12,34 +11,31 @@ import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/search/config")
 @Tag(name = "用户全局搜索字段配置")
 public class UserSearchConfigController {
 
-    @Resource
-    private UserSearchConfigService userSearchConfigService;
+  @Resource private UserSearchConfigService userSearchConfigService;
 
+  @PostMapping("/save")
+  @Operation(summary = "保存配置")
+  public void save(@Validated @RequestBody UserSearchConfigAddRequest request) {
+    userSearchConfigService.save(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/save")
-    @Operation(summary = "保存配置")
-    public void save(@Validated @RequestBody UserSearchConfigAddRequest request) {
-        userSearchConfigService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
+  @GetMapping("/reset")
+  @Operation(summary = "重置")
+  public void reset() {
+    userSearchConfigService.reset(
+        SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @GetMapping("/reset")
-    @Operation(summary = "重置")
-    public void reset() {
-        userSearchConfigService.reset(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-
-    @GetMapping("/get")
-    @Operation(summary = "获取搜索字段配置")
-    public SearchFieldResponse get() {
-        return userSearchConfigService.get(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-
+  @GetMapping("/get")
+  @Operation(summary = "获取搜索字段配置")
+  public SearchFieldResponse get() {
+    return userSearchConfigService.get(
+        SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 }

@@ -7,15 +7,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-05  15:04
+ * @Author: jianxing @CreateTime: 2025-08-05 15:04
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableHandleParam {
-    private String userId;
-    private String orgId;
-    private SQLBotTable tableInfo;
-    private DeptDataPermissionDTO dataPermission;
+  private String userId;
+  private String orgId;
+  private SQLBotTable tableInfo;
+  private DeptDataPermissionDTO dataPermission;
 }

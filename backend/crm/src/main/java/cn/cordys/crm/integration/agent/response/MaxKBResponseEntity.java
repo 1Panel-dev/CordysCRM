@@ -6,16 +6,11 @@ import lombok.Data;
 @Data
 public class MaxKBResponseEntity {
 
-    /**
-     * 错误码
-     */
-    @JsonProperty("code")
-    private int code;
+  /** 错误码 */
+  @JsonProperty("code")
+  private int code;
 
-    /**
-     * 错误消息
-     */
-    @JsonProperty("message")
-    private String message;
-
+  /** 错误消息 */
+  @JsonProperty("message")
+  private String message;
 }

@@ -8,7 +8,4 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName(value = "INPUT_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class InputMultipleField extends BaseField {
-
-
-}
+public class InputMultipleField extends BaseField {}

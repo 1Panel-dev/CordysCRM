@@ -15,24 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ContractPaymentPlanFieldService extends BaseResourceFieldService<ContractPaymentPlanField, ContractPaymentPlanFieldBlob> {
-    @Resource
-    private BaseMapper<ContractPaymentPlanField> contractPaymentPlanFieldMapper;
-    @Resource
-    private BaseMapper<ContractPaymentPlanFieldBlob> contractPaymentPlanFieldBlobMapper;
+public class ContractPaymentPlanFieldService
+    extends BaseResourceFieldService<ContractPaymentPlanField, ContractPaymentPlanFieldBlob> {
+  @Resource private BaseMapper<ContractPaymentPlanField> contractPaymentPlanFieldMapper;
+  @Resource private BaseMapper<ContractPaymentPlanFieldBlob> contractPaymentPlanFieldBlobMapper;
 
-    @Override
-    protected String getFormKey() {
-        return FormKey.CONTRACT_PAYMENT_PLAN.getKey();
-    }
+  @Override
+  protected String getFormKey() {
+    return FormKey.CONTRACT_PAYMENT_PLAN.getKey();
+  }
 
-    @Override
-    protected BaseMapper<ContractPaymentPlanField> getResourceFieldMapper() {
-        return contractPaymentPlanFieldMapper;
-    }
+  @Override
+  protected BaseMapper<ContractPaymentPlanField> getResourceFieldMapper() {
+    return contractPaymentPlanFieldMapper;
+  }
 
-    @Override
-    protected BaseMapper<ContractPaymentPlanFieldBlob> getResourceFieldBlobMapper() {
-        return contractPaymentPlanFieldBlobMapper;
-    }
+  @Override
+  protected BaseMapper<ContractPaymentPlanFieldBlob> getResourceFieldBlobMapper() {
+    return contractPaymentPlanFieldBlobMapper;
+  }
 }

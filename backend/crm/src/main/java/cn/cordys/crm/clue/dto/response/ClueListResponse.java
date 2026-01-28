@@ -2,10 +2,8 @@ package cn.cordys.crm.clue.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-
 import java.util.List;
-
+import lombok.Data;
 
 /**
  * @author jianxing
@@ -13,93 +11,93 @@ import java.util.List;
  */
 @Data
 public class ClueListResponse {
-    @Schema(description = "ID")
-    private String id;
+  @Schema(description = "ID")
+  private String id;
 
-    @Schema(description = "线索名称")
-    private String name;
+  @Schema(description = "线索名称")
+  private String name;
 
-    @Schema(description = "负责人")
-    private String owner;
+  @Schema(description = "负责人")
+  private String owner;
 
-    @Schema(description = "阶段")
-    private String stage;
+  @Schema(description = "阶段")
+  private String stage;
 
-    @Schema(description = "上次修改前的线索阶段")
-    private String lastStage;
+  @Schema(description = "上次修改前的线索阶段")
+  private String lastStage;
 
-    @Schema(description = "负责人名称")
-    private String ownerName;
+  @Schema(description = "负责人名称")
+  private String ownerName;
 
-    @Schema(description = "联系人名称")
-    private String contact;
+  @Schema(description = "联系人名称")
+  private String contact;
 
-    @Schema(description = "联系人电话")
-    private String phone;
+  @Schema(description = "联系人电话")
+  private String phone;
 
-    @Schema(description = "意向产品")
-    private List<String> products;
+  @Schema(description = "意向产品")
+  private List<String> products;
 
-    @Schema(description = "是否在线索池")
-    private Boolean inSharedPool;
+  @Schema(description = "是否在线索池")
+  private Boolean inSharedPool;
 
-    @Schema(description = "创建人")
-    private String createUser;
+  @Schema(description = "创建人")
+  private String createUser;
 
-    @Schema(description = "修改人")
-    private String updateUser;
+  @Schema(description = "修改人")
+  private String updateUser;
 
-    @Schema(description = "创建时间")
-    private Long createTime;
+  @Schema(description = "创建时间")
+  private Long createTime;
 
-    @Schema(description = "更新时间")
-    private Long updateTime;
+  @Schema(description = "更新时间")
+  private Long updateTime;
 
-    @Schema(description = "创建人名称")
-    private String createUserName;
+  @Schema(description = "创建人名称")
+  private String createUserName;
 
-    @Schema(description = "更新人名称")
-    private String updateUserName;
+  @Schema(description = "更新人名称")
+  private String updateUserName;
 
-    @Schema(description = "归属部门")
-    private String departmentId;
+  @Schema(description = "归属部门")
+  private String departmentId;
 
-    @Schema(description = "归属部门名称")
-    private String departmentName;
+  @Schema(description = "归属部门名称")
+  private String departmentName;
 
-    @Schema(description = "最近跟进时间")
-    private Long latestFollowUpTime;
+  @Schema(description = "最近跟进时间")
+  private Long latestFollowUpTime;
 
-    @Schema(description = "创建时间")
-    private Long collectionTime;
+  @Schema(description = "创建时间")
+  private Long collectionTime;
 
-    @Schema(description = "剩余归属天数")
-    private Integer reservedDays;
+  @Schema(description = "剩余归属天数")
+  private Integer reservedDays;
 
-    @Schema(description = "最新跟进人")
-    private String follower;
+  @Schema(description = "最新跟进人")
+  private String follower;
 
-    @Schema(description = "最新跟进人名称")
-    private String followerName;
+  @Schema(description = "最新跟进人名称")
+  private String followerName;
 
-    @Schema(description = "最新跟进日期")
-    private Long followTime;
+  @Schema(description = "最新跟进日期")
+  private Long followTime;
 
-    @Schema(description = "线索池ID")
-    private String poolId;
+  @Schema(description = "线索池ID")
+  private String poolId;
 
-    @Schema(description = "默认回收公海名称")
-    private String recyclePoolName;
+  @Schema(description = "默认回收公海名称")
+  private String recyclePoolName;
 
-    @Schema(description = "转移类型")
-    private String transitionType;
+  @Schema(description = "转移类型")
+  private String transitionType;
 
-    @Schema(description = "失败原因ID")
-    private String reasonId;
+  @Schema(description = "失败原因ID")
+  private String reasonId;
 
-    @Schema(description = "失败原因ID")
-    private String reasonName;
+  @Schema(description = "失败原因ID")
+  private String reasonName;
 
-    @Schema(description = "自定义字段集合")
-    private List<BaseModuleFieldValue> moduleFields;
+  @Schema(description = "自定义字段集合")
+  private List<BaseModuleFieldValue> moduleFields;
 }

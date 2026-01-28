@@ -6,12 +6,12 @@ import lombok.Data;
 @Data
 public class Paging {
 
-    @JsonProperty("PageSize")
-    private int pageSize;
+  @JsonProperty("PageSize")
+  private int pageSize;
 
-    @JsonProperty("PageIndex")
-    private int pageIndex;
+  @JsonProperty("PageIndex")
+  private int pageIndex;
 
-    @JsonProperty("TotalRecords")
-    private int totalRecords;
+  @JsonProperty("TotalRecords")
+  private int totalRecords;
 }

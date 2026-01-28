@@ -1,16 +1,16 @@
 package cn.cordys.crm.system.mapper;
 
-
 import cn.cordys.crm.system.domain.DepartmentCommander;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 public interface ExtDepartmentCommanderMapper {
 
-    void deleteByDepartmentIds(@Param("departmentIds") List<String> departmentIds);
+  void deleteByDepartmentIds(@Param("departmentIds") List<String> departmentIds);
 
-    List<String> selectCommander(@Param("departmentId") String departmentId, @Param("orgId") String orgId);
+  List<String> selectCommander(
+      @Param("departmentId") String departmentId, @Param("orgId") String orgId);
 
-    List<DepartmentCommander> selectCommanderByUsers(@Param("departmentId") String departmentId, @Param("userIds") List<String> userIds);
+  List<DepartmentCommander> selectCommanderByUsers(
+      @Param("departmentId") String departmentId, @Param("userIds") List<String> userIds);
 }

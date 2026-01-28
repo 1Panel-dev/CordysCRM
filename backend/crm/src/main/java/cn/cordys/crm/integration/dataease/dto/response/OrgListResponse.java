@@ -4,9 +4,7 @@ import cn.cordys.crm.integration.dataease.dto.OrgListDTO;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  15:54
+ * @Author: jianxing @CreateTime: 2025-08-15 15:54
  */
 @Data
-public class OrgListResponse extends DataEaseResponse<OrgListDTO> {
-}
+public class OrgListResponse extends DataEaseResponse<OrgListDTO> {}

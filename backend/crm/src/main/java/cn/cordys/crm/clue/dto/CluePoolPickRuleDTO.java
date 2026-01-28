@@ -13,24 +13,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CluePoolPickRuleDTO {
 
-    @NotNull
-    @Schema(description = "是否限制领取数量")
-    private Boolean limitOnNumber;
+  @NotNull
+  @Schema(description = "是否限制领取数量")
+  private Boolean limitOnNumber;
 
-    @Schema(description = "领取数量")
-    private Integer pickNumber;
+  @Schema(description = "领取数量")
+  private Integer pickNumber;
 
-    @NotNull
-    @Schema(description = "是否限制前归属人领取")
-    private Boolean limitPreOwner;
+  @NotNull
+  @Schema(description = "是否限制前归属人领取")
+  private Boolean limitPreOwner;
 
-    @Schema(description = "领取间隔天数")
-    private Integer pickIntervalDays;
+  @Schema(description = "领取间隔天数")
+  private Integer pickIntervalDays;
 
-    @NotNull
-    @Schema(description = "是否限制新数据")
-    private Boolean limitNew;
+  @NotNull
+  @Schema(description = "是否限制新数据")
+  private Boolean limitNew;
 
-    @Schema(description = "新数据领取间隔")
-    private Integer newPickInterval;
+  @Schema(description = "新数据领取间隔")
+  private Integer newPickInterval;
 }

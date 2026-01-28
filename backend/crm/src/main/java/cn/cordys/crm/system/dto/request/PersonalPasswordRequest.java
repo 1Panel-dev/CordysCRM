@@ -6,12 +6,11 @@ import lombok.Data;
 
 @Data
 public class PersonalPasswordRequest {
-    @Schema(description = "新密码")
-    @NotBlank
-    private String password;
+  @Schema(description = "新密码")
+  @NotBlank
+  private String password;
 
-    @Schema(description = "原密码")
-    @NotBlank
-    private String originPassword;
-
+  @Schema(description = "原密码")
+  @NotBlank
+  private String originPassword;
 }

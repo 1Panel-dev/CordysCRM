@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class ApiInputFieldList {
 
-    @JsonProperty("default_value")
-    private String defaultValue;
+  @JsonProperty("default_value")
+  private String defaultValue;
 
-    @JsonProperty("variable")
-    private String variable;
+  @JsonProperty("variable")
+  private String variable;
 }

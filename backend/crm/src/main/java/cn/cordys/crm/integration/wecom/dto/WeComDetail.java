@@ -5,24 +5,15 @@ import lombok.Data;
 
 @Data
 public class WeComDetail extends WeComResponseEntity {
-    /**
-     * 应用id
-     */
-    private String agentId;
+  /** 应用id */
+  private String agentId;
 
-    /**
-     * 应用名称
-     */
-    private String name;
+  /** 应用名称 */
+  private String name;
 
-    /**
-     * 企业应用方形头像
-     */
-    private String square_logo_url;
+  /** 企业应用方形头像 */
+  private String square_logo_url;
 
-    /**
-     * 应用描述
-     */
-    private String description;
-
+  /** 应用描述 */
+  private String description;
 }

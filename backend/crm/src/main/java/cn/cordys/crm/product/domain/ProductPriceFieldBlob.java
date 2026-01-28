@@ -9,9 +9,6 @@ import lombok.Data;
  *
  * @author song-cc-rock
  */
-
 @Data
 @Table(name = "product_price_field_blob")
-public class ProductPriceFieldBlob extends BaseResourceSubField {
-
-}
+public class ProductPriceFieldBlob extends BaseResourceSubField {}

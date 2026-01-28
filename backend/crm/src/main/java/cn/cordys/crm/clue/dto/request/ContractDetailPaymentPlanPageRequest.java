@@ -11,12 +11,12 @@ import lombok.Data;
 @Data
 public class ContractDetailPaymentPlanPageRequest extends ContractPaymentPlanPageRequest {
 
-    @NotBlank
-    @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String contractId;
+  @NotBlank
+  @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String contractId;
 
-    @Override
-    public String getContractId() {
-        return contractId;
-    }
+  @Override
+  public String getContractId() {
+    return contractId;
+  }
 }

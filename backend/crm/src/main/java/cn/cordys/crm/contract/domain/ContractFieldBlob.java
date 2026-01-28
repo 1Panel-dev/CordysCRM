@@ -4,9 +4,6 @@ import cn.cordys.common.domain.BaseResourceSubField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 @Data
 @Table(name = "contract_field_blob")
-public class ContractFieldBlob extends BaseResourceSubField {
-
-}
+public class ContractFieldBlob extends BaseResourceSubField {}

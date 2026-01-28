@@ -1,6 +1,5 @@
 package cn.cordys.crm.search.service.advanced;
 
-
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.ModuleKey;
@@ -37,11 +36,6 @@ import cn.cordys.crm.system.service.ModuleFormService;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,167 +43,184 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
-public class AdvancedOpportunitySearchService extends BaseSearchService<OpportunityPageRequest, AdvancedOpportunityResponse> {
+public class AdvancedOpportunitySearchService
+    extends BaseSearchService<OpportunityPageRequest, AdvancedOpportunityResponse> {
 
-    @Resource
-    private ExtOpportunityMapper extOpportunityMapper;
-    @Resource
-    private DataScopeService dataScopeService;
-    @Resource
-    private OpportunityFieldService opportunityFieldService;
-    @Resource
-    private BaseService baseService;
-    @Autowired
-    private OpportunityRuleService opportunityRuleService;
-    @Resource
-    private DictService dictService;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
-    @Resource
-    private ModuleFormService moduleFormService;
-    @Resource
-    private ExtProductMapper extProductMapper;
-    @Resource
-    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
+  @Resource private ExtOpportunityMapper extOpportunityMapper;
+  @Resource private DataScopeService dataScopeService;
+  @Resource private OpportunityFieldService opportunityFieldService;
+  @Resource private BaseService baseService;
+  @Autowired private OpportunityRuleService opportunityRuleService;
+  @Resource private DictService dictService;
+  @Resource private ModuleFormCacheService moduleFormCacheService;
+  @Resource private ModuleFormService moduleFormService;
+  @Resource private ExtProductMapper extProductMapper;
+  @Resource private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
-    /**
-     * 全局搜索商机
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     *
-     * @return
-     */
-    @Override
-    public PagerWithOption<List<AdvancedOpportunityResponse>> startSearch(OpportunityPageRequest request, String orgId, String userId) {
-        // 查询当前组织下已启用的模块列表
-        List<String> enabledModules = getEnabledModules();
-        // 检查：如果有商机读取权限但商机模块未启用，抛出异常
-        if (!enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
-            throw new GenericException(SystemResultCode.MODULE_ENABLE);
-        }
-
-        ConditionFilterUtils.parseCondition(request);
-        // 查询重复商机列表
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<AdvancedOpportunityResponse> list = extOpportunityMapper.advancedSearchList(request, orgId);
-        if (CollectionUtils.isEmpty(list)) {
-            return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
-        }
-        List<AdvancedOpportunityResponse> buildList = buildListData(list, orgId, userId);
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+  /**
+   * 全局搜索商机
+   *
+   * @param request
+   * @param orgId
+   * @param userId
+   * @return
+   */
+  @Override
+  public PagerWithOption<List<AdvancedOpportunityResponse>> startSearch(
+      OpportunityPageRequest request, String orgId, String userId) {
+    // 查询当前组织下已启用的模块列表
+    List<String> enabledModules = getEnabledModules();
+    // 检查：如果有商机读取权限但商机模块未启用，抛出异常
+    if (!enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
+      throw new GenericException(SystemResultCode.MODULE_ENABLE);
     }
 
-    public List<AdvancedOpportunityResponse> buildListData(List<AdvancedOpportunityResponse> list, String orgId, String userId) {
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-        List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
-                .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
+    ConditionFilterUtils.parseCondition(request);
+    // 查询重复商机列表
+    Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+    List<AdvancedOpportunityResponse> list =
+        extOpportunityMapper.advancedSearchList(request, orgId);
+    if (CollectionUtils.isEmpty(list)) {
+      return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
+    }
+    List<AdvancedOpportunityResponse> buildList = buildListData(list, orgId, userId);
+    Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+    return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+  }
 
-        List<String> ownerIds = list.stream()
-                .map(OpportunityListResponse::getOwner)
-                .distinct()
-                .toList();
+  public List<AdvancedOpportunityResponse> buildListData(
+      List<AdvancedOpportunityResponse> list, String orgId, String userId) {
+    if (CollectionUtils.isEmpty(list)) {
+      return list;
+    }
+    List<String> opportunityIds =
+        list.stream().map(OpportunityListResponse::getId).collect(Collectors.toList());
+    Map<String, List<BaseModuleFieldValue>> opportunityFiledMap =
+        opportunityFieldService.getResourceFieldMap(opportunityIds, true);
 
-        List<String> followerIds = list.stream()
-                .map(OpportunityListResponse::getFollower)
-                .distinct()
-                .toList();
-        List<String> createUserIds = list.stream()
-                .map(OpportunityListResponse::getCreateUser)
-                .distinct()
-                .toList();
-        List<String> updateUserIds = list.stream()
-                .map(OpportunityListResponse::getUpdateUser)
-                .distinct()
-                .toList();
-        List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
-                .flatMap(Collection::stream)
-                .distinct()
-                .toList();
-        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+    List<String> ownerIds =
+        list.stream().map(OpportunityListResponse::getOwner).distinct().toList();
 
-        List<String> contactIds = list.stream()
-                .map(OpportunityListResponse::getContactId)
-                .distinct()
-                .toList();
-        Map<String, String> contactMap = baseService.getContactMap(contactIds);
+    List<String> followerIds =
+        list.stream().map(OpportunityListResponse::getFollower).distinct().toList();
+    List<String> createUserIds =
+        list.stream().map(OpportunityListResponse::getCreateUser).distinct().toList();
+    List<String> updateUserIds =
+        list.stream().map(OpportunityListResponse::getUpdateUser).distinct().toList();
+    List<String> userIds =
+        Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
+            .flatMap(Collection::stream)
+            .distinct()
+            .toList();
+    Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 
-        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+    List<String> contactIds =
+        list.stream().map(OpportunityListResponse::getContactId).distinct().toList();
+    Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        Map<String, StageConfigResponse> endConfigMaps = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
-        ).collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
+    Map<String, OpportunityRule> ownersDefaultRuleMap =
+        opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
+    Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        // 失败原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
-        List<Dict> dictList = dictConf.getDictList();
-        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+    List<StageConfigResponse> stageConfigList =
+        extOpportunityStageConfigMapper.getStageConfigList(orgId);
+    Map<String, StageConfigResponse> endConfigMaps =
+        stageConfigList.stream()
+            .filter(config -> Strings.CI.equals(config.getType(), OpportunityStageType.END.name()))
+            .collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
 
-        list.forEach(opportunityListResponse -> {
-            // 获取自定义字段
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-            List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
+    // 失败原因
+    DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
+    List<Dict> dictList = dictConf.getDictList();
+    Map<String, String> dictMap =
+        dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
-            opportunityListResponse.setReservedDays(endConfigMaps.containsKey(opportunityListResponse.getStage()) ?
-                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
-            if (!hasPermission) {
-                opportunityListResponse.setModuleFields(new ArrayList<>());
-                opportunityListResponse.setFailureReason(dictMap.get(null));
-                opportunityListResponse.setAmount(null);
-                opportunityListResponse.setContactName(null);
-            } else {
-                opportunityListResponse.setModuleFields(opportunityFields);
-                opportunityListResponse.setFailureReason(dictMap.get(opportunityListResponse.getFailureReason()));
-                opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
-            }
-            opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
-            opportunityListResponse.setCreateUserName(userNameMap.get(opportunityListResponse.getCreateUser()));
-            opportunityListResponse.setUpdateUserName(userNameMap.get(opportunityListResponse.getUpdateUser()));
-            opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
+    list.forEach(
+        opportunityListResponse -> {
+          // 获取自定义字段
+          boolean hasPermission =
+              dataScopeService.hasDataPermission(
+                  userId,
+                  orgId,
+                  opportunityListResponse.getOwner(),
+                  PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+          List<BaseModuleFieldValue> opportunityFields =
+              opportunityFiledMap.get(opportunityListResponse.getId());
 
-            UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
-            if (userDeptDTO != null) {
-                opportunityListResponse.setDepartmentId(userDeptDTO.getDeptId());
-                opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
-            }
+          opportunityListResponse.setReservedDays(
+              endConfigMaps.containsKey(opportunityListResponse.getStage())
+                  ? null
+                  : opportunityRuleService.calcReservedDay(
+                      ownersDefaultRuleMap.get(opportunityListResponse.getOwner()),
+                      opportunityListResponse.getCreateTime()));
+          if (!hasPermission) {
+            opportunityListResponse.setModuleFields(new ArrayList<>());
+            opportunityListResponse.setFailureReason(dictMap.get(null));
+            opportunityListResponse.setAmount(null);
+            opportunityListResponse.setContactName(null);
+          } else {
+            opportunityListResponse.setModuleFields(opportunityFields);
+            opportunityListResponse.setFailureReason(
+                dictMap.get(opportunityListResponse.getFailureReason()));
+            opportunityListResponse.setContactName(
+                contactMap.get(opportunityListResponse.getContactId()));
+          }
+          opportunityListResponse.setFollowerName(
+              userNameMap.get(opportunityListResponse.getFollower()));
+          opportunityListResponse.setCreateUserName(
+              userNameMap.get(opportunityListResponse.getCreateUser()));
+          opportunityListResponse.setUpdateUserName(
+              userNameMap.get(opportunityListResponse.getUpdateUser()));
+          opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
 
-            opportunityListResponse.setHasPermission(hasPermission);
+          UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
+          if (userDeptDTO != null) {
+            opportunityListResponse.setDepartmentId(userDeptDTO.getDeptId());
+            opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
+          }
+
+          opportunityListResponse.setHasPermission(hasPermission);
         });
-        return baseService.setCreateAndUpdateUserName(list);
-    }
+    return baseService.setCreateAndUpdateUserName(list);
+  }
 
+  public Map<String, List<OptionDTO>> buildOptionMap(
+      String orgId,
+      List<AdvancedOpportunityResponse> list,
+      List<AdvancedOpportunityResponse> buildList) {
+    // 处理自定义字段选项数据
+    ModuleFormConfigDTO customerFormConfig =
+        moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+    // 获取所有模块字段的值
+    List<BaseModuleFieldValue> moduleFieldValues =
+        moduleFormService.getBaseModuleFieldValues(list, OpportunityListResponse::getModuleFields);
+    // 获取选项值对应的 option
+    Map<String, List<OptionDTO>> optionMap =
+        moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedOpportunityResponse> list, List<AdvancedOpportunityResponse> buildList) {
-        // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
-        // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, OpportunityListResponse::getModuleFields);
-        // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+    // 补充负责人选项
+    List<OptionDTO> ownerFieldOption =
+        moduleFormService.getBusinessFieldOption(
+            buildList, OpportunityListResponse::getOwner, OpportunityListResponse::getOwnerName);
+    optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
 
-        // 补充负责人选项
-        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
-                OpportunityListResponse::getOwner, OpportunityListResponse::getOwnerName);
-        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+    // 联系人
+    List<OptionDTO> contactFieldOption =
+        moduleFormService.getBusinessFieldOption(
+            buildList,
+            OpportunityListResponse::getContactId,
+            OpportunityListResponse::getContactName);
+    optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
 
-        // 联系人
-        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
-                OpportunityListResponse::getContactId, OpportunityListResponse::getContactName);
-        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+    List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+    optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
-        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
-        optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
-
-        return optionMap;
-
-    }
+    return optionMap;
+  }
 }

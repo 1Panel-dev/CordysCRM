@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class DropNode {
-    private String id;
-    private long pos;
+  private String id;
+  private long pos;
 }

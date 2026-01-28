@@ -10,13 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class ExportTaskStopService {
 
-    @Resource
-    private ExtExportTaskMapper extExportTaskMapper;
+  @Resource private ExtExportTaskMapper extExportTaskMapper;
 
-    /**
-     * 重启时将所有导出中的任务停止,并且需要设置为失败
-     */
-    public void stopPreparedAll() {
-        extExportTaskMapper.updateExportTaskStatus(ExportConstants.ExportStatus.ERROR.name(), ExportConstants.ExportStatus.PREPARED.name());
-    }
+  /** 重启时将所有导出中的任务停止,并且需要设置为失败 */
+  public void stopPreparedAll() {
+    extExportTaskMapper.updateExportTaskStatus(
+        ExportConstants.ExportStatus.ERROR.name(), ExportConstants.ExportStatus.PREPARED.name());
+  }
 }

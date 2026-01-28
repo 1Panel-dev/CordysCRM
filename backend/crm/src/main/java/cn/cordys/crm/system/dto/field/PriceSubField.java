@@ -8,6 +8,4 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("SUB_PRICE")
 @EqualsAndHashCode(callSuper = true)
-public class PriceSubField extends SubField {
-
-}
+public class PriceSubField extends SubField {}

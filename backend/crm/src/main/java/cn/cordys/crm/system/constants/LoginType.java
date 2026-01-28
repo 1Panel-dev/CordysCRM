@@ -4,19 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum LoginType {
-    /**
-     * 电脑端
-     */
-    WEB("WEB"),
-    /**
-     * 手机端
-     */
-    MOBILE("MOBILE");
+  /** 电脑端 */
+  WEB("WEB"),
+  /** 手机端 */
+  MOBILE("MOBILE");
 
-    private final String name;
+  private final String name;
 
-    LoginType(String name) {
-        this.name = name;
-    }
-
+  LoginType(String name) {
+    this.name = name;
+  }
 }

@@ -1,86 +1,94 @@
 package cn.cordys.crm.integration.sqlbot.dto;
 
-import lombok.Data;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import lombok.Data;
 
 /**
  * 数据源数据传输对象
- * <p>
- * 用于在系统中传递数据库连接配置及结构信息，包括数据库类型、连接参数、认证信息以及数据库表结构。
- * 主要用于数据源服务中表示一个完整的数据库连接及其包含的表结构。
- * </p>
+ *
+ * <p>用于在系统中传递数据库连接配置及结构信息，包括数据库类型、连接参数、认证信息以及数据库表结构。 主要用于数据源服务中表示一个完整的数据库连接及其包含的表结构。
  */
 @Data
 public class DataSourceDTO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-    /**
-     * 数据源名称
-     * <p>标识数据源的唯一名称</p>
-     */
-    private String name;
+  @Serial private static final long serialVersionUID = 1L;
 
-    /**
-     * 数据源类型
-     * <p>数据库类型，如MySQL、Oracle等</p>
-     */
-    private String type;
+  /**
+   * 数据源名称
+   *
+   * <p>标识数据源的唯一名称
+   */
+  private String name;
 
-    /**
-     * 主机地址
-     * <p>数据库服务器的主机名或IP地址</p>
-     */
-    private String host;
+  /**
+   * 数据源类型
+   *
+   * <p>数据库类型，如MySQL、Oracle等
+   */
+  private String type;
 
-    /**
-     * 端口号
-     * <p>数据库服务端口，如MySQL默认3306</p>
-     */
-    private int port;
+  /**
+   * 主机地址
+   *
+   * <p>数据库服务器的主机名或IP地址
+   */
+  private String host;
 
-    /**
-     * 数据库名称
-     * <p>要连接的具体数据库实例名称</p>
-     */
-    private String dataBase;
+  /**
+   * 端口号
+   *
+   * <p>数据库服务端口，如MySQL默认3306
+   */
+  private int port;
 
-    /**
-     * 额外参数
-     * <p>JDBC URL中的额外连接参数</p>
-     */
-    private String extraParams;
+  /**
+   * 数据库名称
+   *
+   * <p>要连接的具体数据库实例名称
+   */
+  private String dataBase;
 
-    /**
-     * 用户名
-     * <p>数据库连接用户名</p>
-     */
-    private String user;
+  /**
+   * 额外参数
+   *
+   * <p>JDBC URL中的额外连接参数
+   */
+  private String extraParams;
 
-    /**
-     * 密码
-     * <p>数据库连接密码</p>
-     */
-    private String password;
+  /**
+   * 用户名
+   *
+   * <p>数据库连接用户名
+   */
+  private String user;
 
-    /**
-     * 架构名称
-     * <p>数据库架构名称，用于特定数据库系统</p>
-     */
-    private String schema;
+  /**
+   * 密码
+   *
+   * <p>数据库连接密码
+   */
+  private String password;
 
-    /**
-     * 注释说明
-     * <p>数据源的描述信息</p>
-     */
-    private String comment;
+  /**
+   * 架构名称
+   *
+   * <p>数据库架构名称，用于特定数据库系统
+   */
+  private String schema;
 
-    /**
-     * 数据库表列表
-     * <p>数据源中包含的所有表结构信息</p>
-     */
-    private List<TableDTO> tables;
+  /**
+   * 注释说明
+   *
+   * <p>数据源的描述信息
+   */
+  private String comment;
+
+  /**
+   * 数据库表列表
+   *
+   * <p>数据源中包含的所有表结构信息
+   */
+  private List<TableDTO> tables;
 }

@@ -7,53 +7,49 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import java.util.List;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CustomerContactLogService extends BaseModuleLogService {
 
-    @Resource
-    private BaseMapper<Customer> customerMapper;
+  @Resource private BaseMapper<Customer> customerMapper;
 
-    @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-        List<JsonDifferenceDTO> result = super.handleModuleLogField(
-                differences, orgId, FormKey.CONTACT.getKey()
-        );
+  @Override
+  public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+    List<JsonDifferenceDTO> result =
+        super.handleModuleLogField(differences, orgId, FormKey.CONTACT.getKey());
 
-        for (JsonDifferenceDTO differ : result) {
-            String column = differ.getColumn();
+    for (JsonDifferenceDTO differ : result) {
+      String column = differ.getColumn();
 
-            // 负责人字段处理
-            if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
-                setUserFieldName(differ);
-                continue;
-            }
+      // 负责人字段处理
+      if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
+        setUserFieldName(differ);
+        continue;
+      }
 
-            // 客户字段处理
-            if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
-                differ.setOldValueName(getCustomerName(differ.getOldValue()));
-                differ.setNewValueName(getCustomerName(differ.getNewValue()));
-            }
-        }
-
-        return result;
+      // 客户字段处理
+      if (Strings.CS.equals(
+          column, BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
+        differ.setOldValueName(getCustomerName(differ.getOldValue()));
+        differ.setNewValueName(getCustomerName(differ.getNewValue()));
+      }
     }
 
-    /**
-     * 根据客户ID获取客户名称
-     */
-    private String getCustomerName(Object customerId) {
-        if (customerId == null) {
-            return null;
-        }
+    return result;
+  }
 
-        Customer customer = customerMapper.selectByPrimaryKey(customerId.toString());
-        return customer != null ? customer.getName() : null;
+  /** 根据客户ID获取客户名称 */
+  private String getCustomerName(Object customerId) {
+    if (customerId == null) {
+      return null;
     }
+
+    Customer customer = customerMapper.selectByPrimaryKey(customerId.toString());
+    return customer != null ? customer.getName() : null;
+  }
 }

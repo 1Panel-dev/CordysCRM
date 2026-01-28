@@ -7,10 +7,9 @@ import lombok.Data;
 @Data
 public class AdvancedCustomerPoolResponse extends CustomerListResponse {
 
-    @Schema(description = "公海名称")
-    private String poolName;
+  @Schema(description = "公海名称")
+  private String poolName;
 
-
-    @Schema(description = "是否有当前数据的权限")
-    private boolean hasPermission;
+  @Schema(description = "是否有当前数据的权限")
+  private boolean hasPermission;
 }

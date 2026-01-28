@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class FollowUpRecordPageRequest extends BasePageRequest {
 
-    @Schema(description = "资源id: 客户id/商机id/线索id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String sourceId;
+  @Schema(description = "资源id: 客户id/商机id/线索id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String sourceId;
 }

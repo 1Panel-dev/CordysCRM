@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class LarkTextDTO {
-    private String text;
+  private String text;
 }

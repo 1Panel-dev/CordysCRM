@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 /**
  * @author jianxing
  * @date 2025-02-08 16:24:22
@@ -17,11 +16,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerRelationSaveRequest {
-    @Size(max = 32)
-    @Schema(description = "客户ID")
-    private String customerId;
+  @Size(max = 32)
+  @Schema(description = "客户ID")
+  private String customerId;
 
-    @Schema(description = "关系类型")
-    @EnumValue(enumClass = CustomerRelationType.class)
-    private String relationType;
+  @Schema(description = "关系类型")
+  @EnumValue(enumClass = CustomerRelationType.class)
+  private String relationType;
 }

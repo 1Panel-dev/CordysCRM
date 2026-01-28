@@ -4,7 +4,4 @@ import cn.cordys.common.dto.BasePageRequest;
 import lombok.Data;
 
 @Data
-public class RecordHomePageRequest extends BasePageRequest {
-
-
-}
+public class RecordHomePageRequest extends BasePageRequest {}

@@ -32,190 +32,208 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.Strings;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.stereotype.Service;
 
 @Service
-public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> {
+public class AdvancedCustomerPoolSearchService
+    extends BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> {
 
-    @Resource
-    private ExtCustomerMapper extCustomerMapper;
+  @Resource private ExtCustomerMapper extCustomerMapper;
 
-    @Resource
-    private DataScopeService dataScopeService;
-    @Resource
-    private CustomerFieldService customerFieldService;
-    @Resource
-    private BaseService baseService;
-    @Resource
-    private CustomerPoolService customerPoolService;
-    @Resource
-    private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
-    @Resource
-    private DictService dictService;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
-    @Resource
-    private ModuleFormService moduleFormService;
+  @Resource private DataScopeService dataScopeService;
+  @Resource private CustomerFieldService customerFieldService;
+  @Resource private BaseService baseService;
+  @Resource private CustomerPoolService customerPoolService;
+  @Resource private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
+  @Resource private DictService dictService;
+  @Resource private ModuleFormCacheService moduleFormCacheService;
+  @Resource private ModuleFormService moduleFormService;
 
+  @Override
+  public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(
+      BasePageRequest request, String orgId, String userId) {
 
-    @Override
-    public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
+    // 查询当前组织下已启用的模块列表
+    List<String> enabledModules = getEnabledModules();
 
-        // 查询当前组织下已启用的模块列表
-        List<String> enabledModules = getEnabledModules();
-
-        // 检查：如果客户模块未启用，抛出异常
-        if (!enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
-            throw new GenericException(SystemResultCode.MODULE_ENABLE);
-        }
-
-        ConditionFilterUtils.parseCondition(request);
-        // 查询重复公海客户列表
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<AdvancedCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);
-        if (CollectionUtils.isEmpty(list)) {
-            return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
-        }
-        List<AdvancedCustomerPoolResponse> buildList = buildListData(list, orgId, userId);
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    // 检查：如果客户模块未启用，抛出异常
+    if (!enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
+      throw new GenericException(SystemResultCode.MODULE_ENABLE);
     }
 
-    public List<AdvancedCustomerPoolResponse> buildListData(List<AdvancedCustomerPoolResponse> list, String orgId, String userId) {
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-        List<String> customerIds = list.stream().map(CustomerListResponse::getId)
-                .collect(Collectors.toList());
+    ConditionFilterUtils.parseCondition(request);
+    // 查询重复公海客户列表
+    Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+    List<AdvancedCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);
+    if (CollectionUtils.isEmpty(list)) {
+      return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
+    }
+    List<AdvancedCustomerPoolResponse> buildList = buildListData(list, orgId, userId);
+    Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+    return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+  }
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
+  public List<AdvancedCustomerPoolResponse> buildListData(
+      List<AdvancedCustomerPoolResponse> list, String orgId, String userId) {
+    if (CollectionUtils.isEmpty(list)) {
+      return list;
+    }
+    List<String> customerIds =
+        list.stream().map(CustomerListResponse::getId).collect(Collectors.toList());
 
-        List<String> ownerIds = list.stream()
-                .map(CustomerListResponse::getOwner)
-                .distinct()
-                .toList();
+    Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap =
+        customerFieldService.getResourceFieldMap(customerIds, true);
 
-        List<String> followerIds = list.stream()
-                .map(CustomerListResponse::getFollower)
-                .distinct()
-                .toList();
-        List<String> createUserIds = list.stream()
-                .map(CustomerListResponse::getCreateUser)
-                .distinct()
-                .toList();
-        List<String> updateUserIds = list.stream()
-                .map(CustomerListResponse::getUpdateUser)
-                .distinct()
-                .toList();
-        List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
-                .flatMap(Collection::stream)
-                .distinct()
-                .toList();
-        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+    List<String> ownerIds = list.stream().map(CustomerListResponse::getOwner).distinct().toList();
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+    List<String> followerIds =
+        list.stream().map(CustomerListResponse::getFollower).distinct().toList();
+    List<String> createUserIds =
+        list.stream().map(CustomerListResponse::getCreateUser).distinct().toList();
+    List<String> updateUserIds =
+        list.stream().map(CustomerListResponse::getUpdateUser).distinct().toList();
+    List<String> userIds =
+        Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
+            .flatMap(Collection::stream)
+            .distinct()
+            .toList();
+    Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 
-        // 获取负责人默认公海信息
-        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
-        List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
-        Map<String, CustomerPoolRecycleRule> recycleRuleMap;
-        if (CollectionUtils.isEmpty(poolIds)) {
-            recycleRuleMap = Map.of();
-        } else {
-            LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
-            recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
-            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
-        }
+    Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        // 公海原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), orgId);
-        List<Dict> dictList = dictConf.getDictList();
-        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+    // 获取负责人默认公海信息
+    Map<String, CustomerPool> ownersDefaultPoolMap =
+        customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+    List<String> poolIds =
+        ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
+    Map<String, CustomerPoolRecycleRule> recycleRuleMap;
+    if (CollectionUtils.isEmpty(poolIds)) {
+      recycleRuleMap = Map.of();
+    } else {
+      LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+      recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
+      List<CustomerPoolRecycleRule> recycleRules =
+          customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+      recycleRuleMap =
+          recycleRules.stream()
+              .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+    }
 
-        //获取用户公海
-        Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
+    // 公海原因
+    DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), orgId);
+    List<Dict> dictList = dictConf.getDictList();
+    Map<String, String> dictMap =
+        dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
-        list.forEach(customerListResponse -> {
-            boolean hasPermission = getHasPermission(userId, orgId, customerListResponse, userPoolMap);
-            // 获取自定义字段
-            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
-            customerListResponse.setModuleFields(customerFields);
-            // 设置回收公海
-            CustomerPool reservePool = ownersDefaultPoolMap.get(customerListResponse.getOwner());
-            customerListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
-            // 计算剩余归属天数
-            customerListResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
-                    reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
-                    customerListResponse.getCollectionTime(), customerListResponse.getCreateTime()));
+    // 获取用户公海
+    Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
 
-            UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
-            if (userDeptDTO != null) {
-                customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
-                customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
-            }
+    list.forEach(
+        customerListResponse -> {
+          boolean hasPermission =
+              getHasPermission(userId, orgId, customerListResponse, userPoolMap);
+          // 获取自定义字段
+          List<BaseModuleFieldValue> customerFields =
+              caseCustomFiledMap.get(customerListResponse.getId());
+          customerListResponse.setModuleFields(customerFields);
+          // 设置回收公海
+          CustomerPool reservePool = ownersDefaultPoolMap.get(customerListResponse.getOwner());
+          customerListResponse.setRecyclePoolName(
+              reservePool != null ? reservePool.getName() : null);
+          // 计算剩余归属天数
+          customerListResponse.setReservedDays(
+              customerPoolService.calcReservedDay(
+                  reservePool,
+                  reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
+                  customerListResponse.getCollectionTime(),
+                  customerListResponse.getCreateTime()));
 
-            String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
-            customerListResponse.setFollowerName(followerName);
-            String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
-            customerListResponse.setCreateUserName(createUserName);
-            String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
-            customerListResponse.setUpdateUserName(updateUserName);
-            customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
-            String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
-            customerListResponse.setReasonName(reasonName);
+          UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
+          if (userDeptDTO != null) {
+            customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
+            customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
+          }
 
-            customerListResponse.setHasPermission(hasPermission);
-            if (!hasPermission) {
-                customerListResponse.setModuleFields(new ArrayList<>());
-                customerListResponse.setReasonName(null);
-                customerListResponse.setRecyclePoolName(null);
-            }
-            customerListResponse.setPoolName(userPoolMap.get(customerListResponse.getPoolId()));
+          String followerName =
+              baseService.getAndCheckOptionName(
+                  userNameMap.get(customerListResponse.getFollower()));
+          customerListResponse.setFollowerName(followerName);
+          String createUserName =
+              baseService.getAndCheckOptionName(
+                  userNameMap.get(customerListResponse.getCreateUser()));
+          customerListResponse.setCreateUserName(createUserName);
+          String updateUserName =
+              baseService.getAndCheckOptionName(
+                  userNameMap.get(customerListResponse.getUpdateUser()));
+          customerListResponse.setUpdateUserName(updateUserName);
+          customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
+          String reasonName =
+              baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
+          customerListResponse.setReasonName(reasonName);
+
+          customerListResponse.setHasPermission(hasPermission);
+          if (!hasPermission) {
+            customerListResponse.setModuleFields(new ArrayList<>());
+            customerListResponse.setReasonName(null);
+            customerListResponse.setRecyclePoolName(null);
+          }
+          customerListResponse.setPoolName(userPoolMap.get(customerListResponse.getPoolId()));
         });
 
-        return list;
+    return list;
+  }
+
+  public Map<String, List<OptionDTO>> buildOptionMap(
+      String orgId,
+      List<AdvancedCustomerPoolResponse> list,
+      List<AdvancedCustomerPoolResponse> buildList) {
+    // 处理自定义字段选项数据
+    ModuleFormConfigDTO customerFormConfig =
+        moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+    // 获取所有模块字段的值
+    List<BaseModuleFieldValue> moduleFieldValues =
+        moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
+    // 获取选项值对应的 option
+    Map<String, List<OptionDTO>> optionMap =
+        moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+    // 补充负责人选项
+    List<OptionDTO> ownerFieldOption =
+        moduleFormService.getBusinessFieldOption(
+            buildList, CustomerListResponse::getOwner, CustomerListResponse::getOwnerName);
+    optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+    return optionMap;
+  }
+
+  private boolean getHasPermission(
+      String userId,
+      String orgId,
+      AdvancedCustomerPoolResponse customerPoolResponse,
+      Map<String, String> userPoolMap) {
+
+    if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+      return true;
     }
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCustomerPoolResponse> list, List<AdvancedCustomerPoolResponse> buildList) {
-        // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
-        // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
-
-        // 补充负责人选项
-        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
-                CustomerListResponse::getOwner, CustomerListResponse::getOwnerName);
-        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
-
-        return optionMap;
+    if (MapUtils.isEmpty(userPoolMap)) {
+      return false;
     }
 
-    private boolean getHasPermission(String userId, String orgId, AdvancedCustomerPoolResponse customerPoolResponse, Map<String, String> userPoolMap) {
+    boolean hasPool = userPoolMap.containsKey(customerPoolResponse.getPoolId());
+    boolean hasPermission =
+        dataScopeService.hasDataPermission(
+            userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
 
-        if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
-            return true;
-        }
-
-        if (MapUtils.isEmpty(userPoolMap)) {
-            return false;
-        }
-
-        boolean hasPool = userPoolMap.containsKey(customerPoolResponse.getPoolId());
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
-
-        return hasPool && hasPermission;
-    }
+    return hasPool && hasPermission;
+  }
 }

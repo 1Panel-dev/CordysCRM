@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class AgentUpdateRequest extends AgentAddRequest {
 
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank
-    private String id;
+  @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotBlank
+  private String id;
 }

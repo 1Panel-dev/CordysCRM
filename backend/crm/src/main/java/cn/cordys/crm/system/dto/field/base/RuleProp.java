@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RuleProp {
 
-    private String key;
+  private String key;
 }

@@ -10,9 +10,8 @@ import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.search.response.advanced.AdvancedCustomerContactResponse;
 import cn.cordys.crm.search.response.global.GlobalCustomerContactResponse;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author jianxing
@@ -20,76 +19,102 @@ import java.util.List;
  */
 public interface ExtCustomerContactMapper {
 
-    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                                           @Param("dataPermission") DeptDataPermissionDTO dataPermission, @Param("source") boolean source);
+  List<CustomerContactListResponse> list(
+      @Param("request") CustomerContactPageRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String orgId,
+      @Param("dataPermission") DeptDataPermissionDTO dataPermission,
+      @Param("source") boolean source);
 
-    List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
+  List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 
-    List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
+  List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
 
-    List<CustomerContactListResponse> getById(@Param("id") String id);
+  List<CustomerContactListResponse> getById(@Param("id") String id);
 
-    List<OptionDTO> selectContactPhoneOptionByIds(@Param("contactIds") List<String> contactIds);
+  List<OptionDTO> selectContactPhoneOptionByIds(@Param("contactIds") List<String> contactIds);
 
-    List<AdvancedCustomerContactResponse> getSimilarContactList(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String organizationId);
+  List<AdvancedCustomerContactResponse> getSimilarContactList(
+      @Param("request") CustomerContactPageRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String organizationId);
 
-    /**
-     * 获取联系人数量(唯一性校验)
-     *
-     * @param uniqueRequest 请求参数
-     * @param customerId    客户ID
-     * @param orgId         组织ID
-     *
-     * @return 联系人数量
-     */
-    long getUniqueContactCount(@Param("request") ContactUniqueRequest uniqueRequest, @Param("customerId") String customerId, @Param("orgId") String orgId);
+  /**
+   * 获取联系人数量(唯一性校验)
+   *
+   * @param uniqueRequest 请求参数
+   * @param customerId 客户ID
+   * @param orgId 组织ID
+   * @return 联系人数量
+   */
+  long getUniqueContactCount(
+      @Param("request") ContactUniqueRequest uniqueRequest,
+      @Param("customerId") String customerId,
+      @Param("orgId") String orgId);
 
-    Long getNewContactCount(@Param("request") HomeStatisticSearchWrapperRequest request);
+  Long getNewContactCount(@Param("request") HomeStatisticSearchWrapperRequest request);
 
-    void updateContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
+  void updateContactOwner(
+      @Param("customerId") String customerId,
+      @Param("newOwner") String newOwner,
+      @Param("oldOwner") String oldOwner,
+      @Param("orgId") String orgId);
 
-    /**
-     * 更新公海联系人负责人
-     *
-     * @param customerId 客户ID
-     * @param newOwner   新负责人
-     * @param oldOwner   旧负责人
-     * @param orgId      组织ID
-     */
-    void updatePoolContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
+  /**
+   * 更新公海联系人负责人
+   *
+   * @param customerId 客户ID
+   * @param newOwner 新负责人
+   * @param oldOwner 旧负责人
+   * @param orgId 组织ID
+   */
+  void updatePoolContactOwner(
+      @Param("customerId") String customerId,
+      @Param("newOwner") String newOwner,
+      @Param("oldOwner") String oldOwner,
+      @Param("orgId") String orgId);
 
-    void updateContactById(@Param("id") String id, @Param("owner") String owner);
+  void updateContactById(@Param("id") String id, @Param("owner") String owner);
 
-    List<CustomerContactListResponse> getListByIds(@Param("ids") List<String> ids);
+  List<CustomerContactListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    List<OptionDTO> getContactOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+  List<OptionDTO> getContactOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
-    List<GlobalCustomerContactResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+  List<GlobalCustomerContactResponse> globalSearchList(
+      @Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-    long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+  long globalSearchListCount(
+      @Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-    void batchUpdate(@Param("request") BatchUpdateDbParam request);
+  void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
-    /**
-     * 批量合并客户联系人
-     *
-     * @param request 请求参数
-     * @param userId  用户ID
-     * @param orgId   组织ID
-     */
-    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                    @Param("names") List<String> names, @Param("phones") List<String> phones);
+  /**
+   * 批量合并客户联系人
+   *
+   * @param request 请求参数
+   * @param userId 用户ID
+   * @param orgId 组织ID
+   */
+  void batchMerge(
+      @Param("request") CustomerMergeRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String orgId,
+      @Param("names") List<String> names,
+      @Param("phones") List<String> phones);
 
-    /**
-     * 获取待合并的客户联系人列表
-     *
-     * @param request 请求参数
-     * @param orgId   组织ID
-     *
-     * @return 客户联系人列表
-     */
-    List<CustomerContact> getMergeContactList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
+  /**
+   * 获取待合并的客户联系人列表
+   *
+   * @param request 请求参数
+   * @param orgId 组织ID
+   * @return 客户联系人列表
+   */
+  List<CustomerContact> getMergeContactList(
+      @Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
 
-    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+  List<ChartResult> chart(
+      @Param("request") ChartAnalysisDbRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String orgId,
+      @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }

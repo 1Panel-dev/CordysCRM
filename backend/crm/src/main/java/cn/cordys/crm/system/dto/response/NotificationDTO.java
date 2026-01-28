@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public class NotificationDTO extends Notification {
-    private String contentText;
+  private String contentText;
 }

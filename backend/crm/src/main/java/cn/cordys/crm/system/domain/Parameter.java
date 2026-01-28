@@ -8,12 +8,12 @@ import lombok.Data;
 @Table(name = "sys_parameter")
 public class Parameter {
 
-    @Schema(description = "key")
-    private String paramKey;
+  @Schema(description = "key")
+  private String paramKey;
 
-    @Schema(description = "value")
-    private String paramValue;
+  @Schema(description = "value")
+  private String paramValue;
 
-    @Schema(description = "type")
-    private String type;
+  @Schema(description = "type")
+  private String type;
 }

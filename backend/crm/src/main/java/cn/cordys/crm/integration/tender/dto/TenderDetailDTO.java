@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class TenderDetailDTO {
 
-    @Schema(description = "地址", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String tenderAddress;
+  @Schema(description = "地址", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String tenderAddress;
 
-    @Schema(description = "是否验证通过")
-    private Boolean verify;
+  @Schema(description = "是否验证通过")
+  private Boolean verify;
 }

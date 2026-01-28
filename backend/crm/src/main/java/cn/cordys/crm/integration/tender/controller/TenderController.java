@@ -1,7 +1,7 @@
 package cn.cordys.crm.integration.tender.controller;
 
-import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.system.service.IntegrationConfigService;
@@ -19,14 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tender")
 public class TenderController {
 
+  @Resource private IntegrationConfigService integrationConfigService;
 
-    @Resource
-    private IntegrationConfigService integrationConfigService;
-
-    @GetMapping("/application/config")
-    @Operation(summary = "获取标讯设置")
-    @RequiresPermissions(PermissionConstants.TENDER_READ)
-    public ThirdConfigBaseDTO getApplicationConfig() {
-        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), ThirdConfigTypeConstants.TENDER.name());
-    }
+  @GetMapping("/application/config")
+  @Operation(summary = "获取标讯设置")
+  @RequiresPermissions(PermissionConstants.TENDER_READ)
+  public ThirdConfigBaseDTO getApplicationConfig() {
+    return integrationConfigService.getApplicationConfig(
+        OrganizationContext.getOrganizationId(),
+        SessionUtils.getUserId(),
+        ThirdConfigTypeConstants.TENDER.name());
+  }
 }

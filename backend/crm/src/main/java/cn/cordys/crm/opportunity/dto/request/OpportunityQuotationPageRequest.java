@@ -10,11 +10,7 @@ import lombok.Data;
 @Data
 public class OpportunityQuotationPageRequest extends BasePageRequest {
 
-    /**
-     * 商机id
-     */
-    @Schema(description = "商机id")
-    private String opportunityId;
-
-
+  /** 商机id */
+  @Schema(description = "商机id")
+  private String opportunityId;
 }

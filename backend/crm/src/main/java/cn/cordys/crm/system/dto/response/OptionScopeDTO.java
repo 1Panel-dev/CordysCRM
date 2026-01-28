@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class OptionScopeDTO extends OptionDTO {
 
-    @Schema(description = "类型")
-    private String scope;
-
+  @Schema(description = "类型")
+  private String scope;
 }

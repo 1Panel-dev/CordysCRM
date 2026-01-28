@@ -16,19 +16,18 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "系统设置-授权管理")
 public class LicenseController {
 
-    @Resource
-    private LicenseService licenseService;
+  @Resource private LicenseService licenseService;
 
-    @GetMapping("/validate")
-    @Operation(summary = "License 校验")
-    public LicenseDTO validate() {
-        return licenseService.validate();
-    }
+  @GetMapping("/validate")
+  @Operation(summary = "License 校验")
+  public LicenseDTO validate() {
+    return licenseService.validate();
+  }
 
-    @PostMapping("/add")
-    @Operation(summary = "添加License")
-    @RequiresPermissions(PermissionConstants.LICENSE_EDIT)
-    public LicenseDTO addLicense(@RequestBody TextNode licenseCode) {
-        return licenseService.add(licenseCode.asText(), SessionUtils.getUserId());
-    }
+  @PostMapping("/add")
+  @Operation(summary = "添加License")
+  @RequiresPermissions(PermissionConstants.LICENSE_EDIT)
+  public LicenseDTO addLicense(@RequestBody TextNode licenseCode) {
+    return licenseService.add(licenseCode.asText(), SessionUtils.getUserId());
+  }
 }

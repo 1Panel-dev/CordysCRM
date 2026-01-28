@@ -8,8 +8,7 @@ import lombok.Data;
 @Data
 public class OpportunitySortRequest extends NodeMoveRequest {
 
-    @NotBlank
-    @Schema(description = "商机阶段", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String stage;
-
+  @NotBlank
+  @Schema(description = "商机阶段", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String stage;
 }

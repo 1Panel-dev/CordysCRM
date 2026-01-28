@@ -10,6 +10,6 @@ import lombok.EqualsAndHashCode;
 @JsonTypeName(value = "TEXTAREA")
 @EqualsAndHashCode(callSuper = true)
 public class TextAreaField extends BaseField {
-    @Schema(description = "默认值")
-    private String defaultValue;
+  @Schema(description = "默认值")
+  private String defaultValue;
 }

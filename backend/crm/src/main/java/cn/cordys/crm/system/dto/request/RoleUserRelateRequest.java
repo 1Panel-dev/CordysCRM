@@ -2,10 +2,8 @@ package cn.cordys.crm.system.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
 import java.util.List;
-
+import lombok.Data;
 
 /**
  * @author jianxing
@@ -13,16 +11,16 @@ import java.util.List;
  */
 @Data
 public class RoleUserRelateRequest {
-    @NotBlank
-    @Schema(description = "角色ID")
-    private String roleId;
+  @NotBlank
+  @Schema(description = "角色ID")
+  private String roleId;
 
-    @Schema(description = "部门ID")
-    private List<String> deptIds;
+  @Schema(description = "部门ID")
+  private List<String> deptIds;
 
-    @Schema(description = "角色ID")
-    private List<String> roleIds;
+  @Schema(description = "角色ID")
+  private List<String> roleIds;
 
-    @Schema(description = "用户ID")
-    private List<String> userIds;
+  @Schema(description = "用户ID")
+  private List<String> userIds;
 }

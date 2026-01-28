@@ -7,31 +7,20 @@ import java.lang.annotation.*;
 @Documented
 public @interface SendNotice {
 
-    String module();
+  String module();
 
-    /**
-     * Event
-     */
-    String event() default "";
+  /** Event */
+  String event() default "";
 
-    /**
-     * 消息主题
-     */
-    String subject() default "";
+  /** 消息主题 */
+  String subject() default "";
 
-    /**
-     * 获取实际值
-     */
-    String target() default "";
+  /** 获取实际值 */
+  String target() default "";
 
-    /**
-     * 资源目标
-     */
-    Class<?> targetClass() default Object.class;
+  /** 资源目标 */
+  Class<?> targetClass() default Object.class;
 
-    /**
-     * 消息内容
-     */
-    String context() default "";
-
+  /** 消息内容 */
+  String context() default "";
 }

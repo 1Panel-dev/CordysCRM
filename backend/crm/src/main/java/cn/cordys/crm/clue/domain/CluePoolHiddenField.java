@@ -8,9 +8,9 @@ import lombok.Data;
 @Table(name = "clue_pool_hidden_field")
 public class CluePoolHiddenField {
 
-    @Schema(description = "线索池ID")
-    private String poolId;
+  @Schema(description = "线索池ID")
+  private String poolId;
 
-    @Schema(description = "字段ID")
-    private String fieldId;
+  @Schema(description = "字段ID")
+  private String fieldId;
 }

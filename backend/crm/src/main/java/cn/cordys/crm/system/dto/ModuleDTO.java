@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class ModuleDTO extends Module {
 
-    @Schema(description = "是否禁用模块")
-    private Boolean disabled;
+  @Schema(description = "是否禁用模块")
+  private Boolean disabled;
 }

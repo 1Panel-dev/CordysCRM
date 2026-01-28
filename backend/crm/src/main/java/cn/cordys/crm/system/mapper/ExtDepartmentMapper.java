@@ -3,56 +3,57 @@ package cn.cordys.crm.system.mapper;
 import cn.cordys.common.dto.*;
 import cn.cordys.crm.system.domain.Department;
 import cn.cordys.crm.system.domain.DepartmentCommander;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
-
+import org.apache.ibatis.annotations.Param;
 
 public interface ExtDepartmentMapper {
 
-    List<BaseTreeNode> selectTreeNode(@Param("orgId") String orgId);
+  List<BaseTreeNode> selectTreeNode(@Param("orgId") String orgId);
 
-    List<DeptUserTreeNode> selectDeptUserTreeNode(@Param("orgId") String orgId);
+  List<DeptUserTreeNode> selectDeptUserTreeNode(@Param("orgId") String orgId);
 
-    Long getNextPosByOrgId(@Param("orgId") String orgId);
+  Long getNextPosByOrgId(@Param("orgId") String orgId);
 
-    List<String> getUserIdsByDeptIds(@Param("deptIds") List<String> deptIds);
+  List<String> getUserIdsByDeptIds(@Param("deptIds") List<String> deptIds);
 
-    List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
+  List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
 
-    List<String> getNameByIds(@Param("ids") List<String> ids);
+  List<String> getNameByIds(@Param("ids") List<String> ids);
 
-    List<String> getIdsByNames(@Param("names") List<String> names);
+  List<String> getIdsByNames(@Param("names") List<String> names);
 
-    void deleteByOrgId(@Param("orgId") String orgId);
+  void deleteByOrgId(@Param("orgId") String orgId);
 
-    List<String> selectAllDepartmentIds(@Param("orgId") String orgId);
+  List<String> selectAllDepartmentIds(@Param("orgId") String orgId);
 
-    BaseTreeNode selectDepartment(@Param("name") String name, @Param("orgId") String orgId);
+  BaseTreeNode selectDepartment(@Param("name") String name, @Param("orgId") String orgId);
 
-    int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId);
+  int countByName(
+      @Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId);
 
-    BaseTree selectBaseTreeById(@Param("dragNodeId") String dragNodeId);
+  BaseTree selectBaseTreeById(@Param("dragNodeId") String dragNodeId);
 
-    BaseTree selectTreeByParentIdAndPosOperator(@Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
+  BaseTree selectTreeByParentIdAndPosOperator(
+      @Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
 
-    List<String> selectChildrenIds(@Param("parentId") String parentId);
+  List<String> selectChildrenIds(@Param("parentId") String parentId);
 
-    List<String> selectChildrenByIds(@Param("deptIds") List<String> deptIds);
+  List<String> selectChildrenByIds(@Param("deptIds") List<String> deptIds);
 
-    void batchUpdate(@Param("departmentList") List<Department> departmentList);
+  void batchUpdate(@Param("departmentList") List<Department> departmentList);
 
-    Department getInternalDepartment(@Param("orgId") String orgId, @Param("resource") String resource);
+  Department getInternalDepartment(
+      @Param("orgId") String orgId, @Param("resource") String resource);
 
-    void updateDepartment(@Param("department") Department department);
+  void updateDepartment(@Param("department") Department department);
 
-    List<Department> getDepartmentByOrgId(@Param("orgId") String orgId);
+  List<Department> getDepartmentByOrgId(@Param("orgId") String orgId);
 
-    List<DepartmentCommander> getDepartmentCommander(@Param("userIds") List<String> userIds);
+  List<DepartmentCommander> getDepartmentCommander(@Param("userIds") List<String> userIds);
 
-    void deleteDepartmentByIds(@Param("ids") List<String> ids);
+  void deleteDepartmentByIds(@Param("ids") List<String> ids);
 
-    List<DepartmentCommander> selectByOrgId(@Param("orgId") String orgId);
+  List<DepartmentCommander> selectByOrgId(@Param("orgId") String orgId);
 
-    String getParentIdById(@Param("id") String id);
+  String getParentIdById(@Param("id") String id);
 }

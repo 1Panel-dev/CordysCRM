@@ -9,7 +9,13 @@ import lombok.Data;
 
 @Data
 public class AnnouncementPageRequest extends BasePageRequest {
-    @Size(min = 1, max = 32, message = "{announcement.organizationId.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{announcement.organizationId.not_blank}", groups = {Created.class, Updated.class})
-    private String organizationId;
+  @Size(
+      min = 1,
+      max = 32,
+      message = "{announcement.organizationId.length_range}",
+      groups = {Created.class, Updated.class})
+  @NotBlank(
+      message = "{announcement.organizationId.not_blank}",
+      groups = {Created.class, Updated.class})
+  private String organizationId;
 }

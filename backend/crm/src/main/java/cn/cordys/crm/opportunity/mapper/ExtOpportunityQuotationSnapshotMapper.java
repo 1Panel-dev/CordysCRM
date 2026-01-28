@@ -5,5 +5,5 @@ import org.apache.ibatis.annotations.Param;
 
 public interface ExtOpportunityQuotationSnapshotMapper {
 
-    void update(@Param("snapshot") OpportunityQuotationSnapshot snapshot);
+  void update(@Param("snapshot") OpportunityQuotationSnapshot snapshot);
 }

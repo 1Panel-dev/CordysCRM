@@ -10,6 +10,4 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName(value = "DATA_SOURCE_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class DatasourceMultipleField extends DatasourceField {
-
-}
+public class DatasourceMultipleField extends DatasourceField {}

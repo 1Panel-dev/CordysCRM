@@ -11,6 +11,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class PhoneField extends BaseField {
 
-    @Schema(description = "格式")
-    private String format;
+  @Schema(description = "格式")
+  private String format;
 }

@@ -10,16 +10,26 @@ import lombok.Data;
 @Data
 public class DashboardRenameRequest {
 
-    @NotBlank(message = "{dashboard.id.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+  @NotBlank(
+      message = "{dashboard.id.not_blank}",
+      groups = {Created.class, Updated.class})
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String id;
 
-    @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{dashboard.name.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
+  @Size(
+      min = 1,
+      max = 255,
+      message = "{department.name.length_range}",
+      groups = {Created.class, Updated.class})
+  @NotBlank(
+      message = "{dashboard.name.not_blank}",
+      groups = {Created.class, Updated.class})
+  @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String name;
 
-    @NotBlank(message = "{dashboardModule.id.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "当前文件夹id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String dashboardModuleId;
+  @NotBlank(
+      message = "{dashboardModule.id.not_blank}",
+      groups = {Created.class, Updated.class})
+  @Schema(description = "当前文件夹id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String dashboardModuleId;
 }

@@ -4,7 +4,6 @@ import cn.cordys.common.domain.BaseResourceField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 线索自定义属性大文本
  *
@@ -13,5 +12,4 @@ import lombok.Data;
  */
 @Data
 @Table(name = "clue_field_blob")
-public class ClueFieldBlob extends BaseResourceField {
-}
+public class ClueFieldBlob extends BaseResourceField {}

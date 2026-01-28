@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 public class OpportunitySearchStatisticRequest extends BaseCondition {
-    @Schema(description = "客户ID")
-    private String customerId;
+  @Schema(description = "客户ID")
+  private String customerId;
 }

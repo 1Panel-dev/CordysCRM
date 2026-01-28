@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class AdvancedCustomerContactResponse extends CustomerContactListResponse {
 
-    @Schema(description = "是否有当前数据的权限")
-    private boolean hasPermission;
-
+  @Schema(description = "是否有当前数据的权限")
+  private boolean hasPermission;
 }

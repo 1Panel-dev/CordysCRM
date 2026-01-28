@@ -5,16 +5,11 @@ import lombok.Data;
 
 @Data
 public class DingTalkToken {
-    /**
-     * 生成的accessToken。
-     */
-    @JsonProperty("accessToken")
-    private String accessToken;
+  /** 生成的accessToken。 */
+  @JsonProperty("accessToken")
+  private String accessToken;
 
-    /**
-     * accessToken的过期时间，单位秒。
-     */
-    @JsonProperty("expireIn")
-    private String expireIn;
-
+  /** accessToken的过期时间，单位秒。 */
+  @JsonProperty("expireIn")
+  private String expireIn;
 }

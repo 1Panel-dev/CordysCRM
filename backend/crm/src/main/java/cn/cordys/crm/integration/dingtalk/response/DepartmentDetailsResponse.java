@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public class DepartmentDetailsResponse extends DingTalkResponseEntity {
-    private DingTalkDepartment result;
+  private DingTalkDepartment result;
 }

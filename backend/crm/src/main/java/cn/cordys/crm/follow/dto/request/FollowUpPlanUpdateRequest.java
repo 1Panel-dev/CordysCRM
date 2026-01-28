@@ -8,11 +8,11 @@ import lombok.Data;
 @Data
 public class FollowUpPlanUpdateRequest extends FollowUpPlanAddRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Size(max = 32)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Size(max = 32)
+  private String id;
 
-    @Schema(description = "是否转为跟进记录")
-    private Boolean converted;
+  @Schema(description = "是否转为跟进记录")
+  private Boolean converted;
 }

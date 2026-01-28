@@ -3,10 +3,9 @@ package cn.cordys.crm.contract.dto.request;
 import cn.cordys.common.dto.BasePageRequest;
 import lombok.Data;
 
-
 @Data
 public class ContractPageRequest extends BasePageRequest {
-    public String getCustomerId() {
-        return null;
-    }
+  public String getCustomerId() {
+    return null;
+  }
 }

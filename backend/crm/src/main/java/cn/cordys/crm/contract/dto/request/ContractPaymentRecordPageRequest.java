@@ -10,9 +10,9 @@ import lombok.Data;
 @Data
 public class ContractPaymentRecordPageRequest extends BasePageRequest {
 
-	@Schema(description = "合同ID")
-	private String contractId;
+  @Schema(description = "合同ID")
+  private String contractId;
 
-	@Schema(description = "客户ID")
-	private String customerId;
+  @Schema(description = "客户ID")
+  private String customerId;
 }

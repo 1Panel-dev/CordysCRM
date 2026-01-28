@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class LarkDepartmentResponse extends LarkResponseEntity {
 
-    @JsonProperty("data")
-    private LarkDepartmentData data;
+  @JsonProperty("data")
+  private LarkDepartmentData data;
 }

@@ -4,46 +4,44 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.List;
+import lombok.Data;
 
 /**
- *
  * @author jianxing
  * @date 2025-12-29 18:22:59
  */
 @Data
 public class ContractInvoiceAddRequest {
-    @Size(max = 255)
-    @NotBlank
-    @Schema(description = "发票名称", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
+  @Size(max = 255)
+  @NotBlank
+  @Schema(description = "发票名称", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String name;
 
-    @Size(max = 32)
-    @NotBlank
-    @Schema(description = "合同id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String contractId;
+  @Size(max = 32)
+  @NotBlank
+  @Schema(description = "合同id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String contractId;
 
-    @Size(max = 32)
-    @NotBlank
-    @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String owner;
+  @Size(max = 32)
+  @NotBlank
+  @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String owner;
 
-    private BigDecimal amount;
+  private BigDecimal amount;
 
-    @Size(max = 50)
-    private String invoiceType;
+  @Size(max = 50)
+  private String invoiceType;
 
-    private BigDecimal taxRate;
+  private BigDecimal taxRate;
 
-    @Size(max = 50)
-    private String businessTitleId;
+  @Size(max = 50)
+  private String businessTitleId;
 
-    @Schema(description = "自定义字段")
-    private List<BaseModuleFieldValue> moduleFields;
+  @Schema(description = "自定义字段")
+  private List<BaseModuleFieldValue> moduleFields;
 
-    @Schema(description = "表单配置")
-    private ModuleFormConfigDTO moduleFormConfigDTO;
+  @Schema(description = "表单配置")
+  private ModuleFormConfigDTO moduleFormConfigDTO;
 }

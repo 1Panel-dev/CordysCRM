@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class PoolReasonRequest {
 
-    @NotEmpty
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+  @NotEmpty
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String id;
 
-    @Schema(description = "原因")
-    private String reasonId;
+  @Schema(description = "原因")
+  private String reasonId;
 }

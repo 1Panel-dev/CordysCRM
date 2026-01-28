@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class AgentOptionDTO extends OptionDTO {
 
-    @Schema(description = "脚本")
-    private String script;
+  @Schema(description = "脚本")
+  private String script;
 }

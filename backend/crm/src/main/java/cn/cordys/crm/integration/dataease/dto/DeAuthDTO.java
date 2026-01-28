@@ -8,8 +8,9 @@ import lombok.Data;
 @Builder
 public class DeAuthDTO {
 
-    @Schema(description = "token")
-    private String token;
-    @Schema(description = "url")
-    private String url;
+  @Schema(description = "token")
+  private String token;
+
+  @Schema(description = "url")
+  private String url;
 }

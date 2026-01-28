@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class NameInfo {
 
-    @JsonProperty("Name")
-    private String name;
+  @JsonProperty("Name")
+  private String name;
 }

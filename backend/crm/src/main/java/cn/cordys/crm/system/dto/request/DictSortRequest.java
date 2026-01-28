@@ -8,15 +8,15 @@ import lombok.Data;
 @Data
 public class DictSortRequest {
 
-    @NotEmpty
-    @Schema(description = "字典ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String dragDictId;
+  @NotEmpty
+  @Schema(description = "字典ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String dragDictId;
 
-    @NotNull
-    @Schema(description = "排序前", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long start;
+  @NotNull
+  @Schema(description = "排序前", requiredMode = Schema.RequiredMode.REQUIRED)
+  private Long start;
 
-    @NotNull
-    @Schema(description = "排序后", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long end;
+  @NotNull
+  @Schema(description = "排序后", requiredMode = Schema.RequiredMode.REQUIRED)
+  private Long end;
 }

@@ -22,22 +22,22 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "模块-表单设置")
 public class ModuleFormController {
 
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
-    @Resource
-    private ModuleFormService moduleFormService;
+  @Resource private ModuleFormCacheService moduleFormCacheService;
+  @Resource private ModuleFormService moduleFormService;
 
-    @PostMapping("/save")
-    @Operation(summary = "保存")
-    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-    public ModuleFormConfigDTO save(@Validated @RequestBody ModuleFormSaveRequest request) {
-        return moduleFormCacheService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
+  @PostMapping("/save")
+  @Operation(summary = "保存")
+  @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+  public ModuleFormConfigDTO save(@Validated @RequestBody ModuleFormSaveRequest request) {
+    return moduleFormCacheService.save(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @GetMapping("/config/{formKey}")
-    @Operation(summary = "获取表单配置")
-    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-    public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
-        return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
-    }
+  @GetMapping("/config/{formKey}")
+  @Operation(summary = "获取表单配置")
+  @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+  public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
+    return moduleFormService.getBusinessFormConfig(
+        formKey, OrganizationContext.getOrganizationId());
+  }
 }

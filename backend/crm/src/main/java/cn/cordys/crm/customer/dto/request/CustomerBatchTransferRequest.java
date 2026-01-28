@@ -4,10 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-
 import java.util.List;
-
+import lombok.Data;
 
 /**
  * @author jianxing
@@ -16,12 +14,12 @@ import java.util.List;
 @Data
 public class CustomerBatchTransferRequest {
 
-    @NotEmpty
-    @Schema(description = "ids", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<String> ids;
+  @NotEmpty
+  @Schema(description = "ids", requiredMode = Schema.RequiredMode.REQUIRED)
+  private List<String> ids;
 
-    @NotBlank
-    @Size(max = 32)
-    @Schema(description = "修改负责人", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String owner;
+  @NotBlank
+  @Size(max = 32)
+  @Schema(description = "修改负责人", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String owner;
 }

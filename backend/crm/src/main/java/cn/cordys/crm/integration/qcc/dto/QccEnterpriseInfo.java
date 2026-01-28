@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class QccEnterpriseInfo extends QccBaseResponse {
 
-    @JsonProperty("Result")
-    private EnterpriseInfo result;
+  @JsonProperty("Result")
+  private EnterpriseInfo result;
 }

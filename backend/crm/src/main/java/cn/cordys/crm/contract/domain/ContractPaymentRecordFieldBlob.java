@@ -6,10 +6,9 @@ import lombok.Data;
 
 /**
  * 合同回款记录自定义属性大文本
+ *
  * @author song-cc-rock
  */
 @Data
 @Table(name = "contract_payment_record_field_blob")
-public class ContractPaymentRecordFieldBlob extends BaseResourceField {
-
-}
+public class ContractPaymentRecordFieldBlob extends BaseResourceField {}

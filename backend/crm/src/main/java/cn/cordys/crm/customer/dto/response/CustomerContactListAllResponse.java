@@ -2,11 +2,9 @@ package cn.cordys.crm.customer.dto.response;
 
 import cn.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-
 import java.util.List;
 import java.util.Map;
-
+import lombok.Data;
 
 /**
  * @author jianxing
@@ -14,12 +12,10 @@ import java.util.Map;
  */
 @Data
 public class CustomerContactListAllResponse {
-    @Schema(description = "列表数据")
-    private List<CustomerContactListResponse> list;
+  @Schema(description = "列表数据")
+  private List<CustomerContactListResponse> list;
 
-    /**
-     * 选项集合
-     */
-    @Schema(description = "选项集合")
-    private Map<String, List<OptionDTO>> optionMap;
+  /** 选项集合 */
+  @Schema(description = "选项集合")
+  private Map<String, List<OptionDTO>> optionMap;
 }

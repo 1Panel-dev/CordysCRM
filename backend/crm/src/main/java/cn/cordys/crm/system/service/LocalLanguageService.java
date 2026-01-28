@@ -9,14 +9,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class LocalLanguageService {
 
-    @Resource
-    private BaseMapper<User> userMapper;
+  @Resource private BaseMapper<User> userMapper;
 
-
-    public void localeLanguageChange(LocaleLanguageRequest request, String userId) {
-        User user = new User();
-        user.setId(userId);
-        user.setLanguage(request.getLanguage());
-        userMapper.update(user);
-    }
+  public void localeLanguageChange(LocaleLanguageRequest request, String userId) {
+    User user = new User();
+    user.setId(userId);
+    user.setLanguage(request.getLanguage());
+    userMapper.update(user);
+  }
 }

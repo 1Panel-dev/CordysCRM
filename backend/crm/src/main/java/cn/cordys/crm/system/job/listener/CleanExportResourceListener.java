@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CleanExportResourceListener implements ApplicationListener<ExecuteEvent> {
 
-    @Resource
-    private ExportTaskCenterService exportResourceService;
+  @Resource private ExportTaskCenterService exportResourceService;
 
-
-    @Override
-    public void onApplicationEvent(ExecuteEvent event) {
-        exportResourceService.clean();
-    }
+  @Override
+  public void onApplicationEvent(ExecuteEvent event) {
+    exportResourceService.clean();
+  }
 }

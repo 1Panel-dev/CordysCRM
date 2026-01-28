@@ -11,25 +11,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class OpportunityFieldService extends BaseResourceFieldService<OpportunityField, OpportunityFieldBlob> {
+public class OpportunityFieldService
+    extends BaseResourceFieldService<OpportunityField, OpportunityFieldBlob> {
 
-    @Resource
-    private BaseMapper<OpportunityField> opportunityFieldMapper;
-    @Resource
-    private BaseMapper<OpportunityFieldBlob> opportunityFieldBlobMapper;
+  @Resource private BaseMapper<OpportunityField> opportunityFieldMapper;
+  @Resource private BaseMapper<OpportunityFieldBlob> opportunityFieldBlobMapper;
 
-    @Override
-    protected String getFormKey() {
-        return FormKey.OPPORTUNITY.getKey();
-    }
+  @Override
+  protected String getFormKey() {
+    return FormKey.OPPORTUNITY.getKey();
+  }
 
-    @Override
-    protected BaseMapper<OpportunityField> getResourceFieldMapper() {
-        return opportunityFieldMapper;
-    }
+  @Override
+  protected BaseMapper<OpportunityField> getResourceFieldMapper() {
+    return opportunityFieldMapper;
+  }
 
-    @Override
-    protected BaseMapper<OpportunityFieldBlob> getResourceFieldBlobMapper() {
-        return opportunityFieldBlobMapper;
-    }
+  @Override
+  protected BaseMapper<OpportunityFieldBlob> getResourceFieldBlobMapper() {
+    return opportunityFieldBlobMapper;
+  }
 }

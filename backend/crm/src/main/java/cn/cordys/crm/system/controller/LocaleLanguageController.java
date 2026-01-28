@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.crm.system.dto.request.LocaleLanguageRequest;
 import cn.cordys.crm.system.service.LocalLanguageService;
 import cn.cordys.security.SessionUtils;
@@ -16,13 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class LocaleLanguageController {
 
-    @Resource
-    private LocalLanguageService localLanguageService;
+  @Resource private LocalLanguageService localLanguageService;
 
-
-    @PostMapping("/locale-language/change")
-    @Operation(summary = "修改本地语言")
-    public void localeLanguageChange(@Validated @RequestBody LocaleLanguageRequest request) {
-        localLanguageService.localeLanguageChange(request, SessionUtils.getUserId());
-    }
+  @PostMapping("/locale-language/change")
+  @Operation(summary = "修改本地语言")
+  public void localeLanguageChange(@Validated @RequestBody LocaleLanguageRequest request) {
+    localLanguageService.localeLanguageChange(request, SessionUtils.getUserId());
+  }
 }

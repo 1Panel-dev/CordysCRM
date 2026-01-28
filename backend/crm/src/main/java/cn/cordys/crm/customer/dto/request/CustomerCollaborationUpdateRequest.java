@@ -14,13 +14,15 @@ import lombok.Data;
  */
 @Data
 public class CustomerCollaborationUpdateRequest {
-    @Size(max = 32)
-    @NotBlank
-    @Schema(description = "客户协作人id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+  @Size(max = 32)
+  @NotBlank
+  @Schema(description = "客户协作人id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String id;
 
-    @NotNull
-    @Schema(description = "协作类型(只读 READ_ONLY / 协作 COLLABORATION)", requiredMode = Schema.RequiredMode.REQUIRED)
-    @EnumValue(enumClass = CustomerCollaborationType.class)
-    private String collaborationType;
+  @NotNull
+  @Schema(
+      description = "协作类型(只读 READ_ONLY / 协作 COLLABORATION)",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  @EnumValue(enumClass = CustomerCollaborationType.class)
+  private String collaborationType;
 }

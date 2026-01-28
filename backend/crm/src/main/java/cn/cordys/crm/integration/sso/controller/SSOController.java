@@ -14,50 +14,53 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 @RequestMapping("/sso/callback")
 public class SSOController {
-    @Resource
-    private SSOService ssoService;
+  @Resource private SSOService ssoService;
 
-    @GetMapping(value = "/wecom")
-    @Operation(summary = "获取企业微信登陆验证")
-    public SessionUser callbackWeCom(@RequestParam("code") String code) {
-        return ssoService.exchangeWeComCode(code);
-    }
+  @GetMapping(value = "/wecom")
+  @Operation(summary = "获取企业微信登陆验证")
+  public SessionUser callbackWeCom(@RequestParam("code") String code) {
+    return ssoService.exchangeWeComCode(code);
+  }
 
-    @GetMapping("/oauth/wecom")
-    public SessionUser callbackWeComOauth(@RequestParam("code") String code) {
-        return ssoService.exchangeWeComOauth2(code);
-    }
+  @GetMapping("/oauth/wecom")
+  public SessionUser callbackWeComOauth(@RequestParam("code") String code) {
+    return ssoService.exchangeWeComOauth2(code);
+  }
 
-    @GetMapping(value = "/ding-talk")
-    @Operation(summary = "获取钉钉扫码登陆验证")
-    public SessionUser callbackDingTalk(@RequestParam("code") String code) {
-        return ssoService.exchangeDingTalkCode(code);
-    }
+  @GetMapping(value = "/ding-talk")
+  @Operation(summary = "获取钉钉扫码登陆验证")
+  public SessionUser callbackDingTalk(@RequestParam("code") String code) {
+    return ssoService.exchangeDingTalkCode(code);
+  }
 
-    @GetMapping("/oauth/ding-talk")
-    public SessionUser callbackDingTalkOauth(@RequestParam("code") String code) {
-        return ssoService.exchangeDingTalkOauth2(code);
-    }
+  @GetMapping("/oauth/ding-talk")
+  public SessionUser callbackDingTalkOauth(@RequestParam("code") String code) {
+    return ssoService.exchangeDingTalkOauth2(code);
+  }
 
-    @GetMapping(value = "/lark")
-    @Operation(summary = "获取飞书扫码登陆验证")
-    public SessionUser callbackLark(@RequestParam("code") String code) {
-        return ssoService.exchangeLarkCode(code);
-    }
+  @GetMapping(value = "/lark")
+  @Operation(summary = "获取飞书扫码登陆验证")
+  public SessionUser callbackLark(@RequestParam("code") String code) {
+    return ssoService.exchangeLarkCode(code);
+  }
 
-    @GetMapping("/oauth/lark")
-    public SessionUser callbackLarkOauth(@RequestParam("code") String code) {
-        return ssoService.exchangeLarkOauth2(code, false);
-    }
+  @GetMapping("/oauth/lark")
+  public SessionUser callbackLarkOauth(@RequestParam("code") String code) {
+    return ssoService.exchangeLarkOauth2(code, false);
+  }
 
-    @GetMapping("/oauth/lark-mobile")
-    public SessionUser callbackLarkOauthByMobile(@RequestParam("code") String code) {
-        return ssoService.exchangeLarkOauth2(code, true);
-    }
+  @GetMapping("/oauth/lark-mobile")
+  public SessionUser callbackLarkOauthByMobile(@RequestParam("code") String code) {
+    return ssoService.exchangeLarkOauth2(code, true);
+  }
 
-    @GetMapping("/oauth/github")
-    public ModelAndView callbackOauth(@RequestParam("code") String code) {
-        SessionUser sessionUser = ssoService.exchangeGitOauth2(code);
-        return new ModelAndView("redirect:/#/?_token=" + CodingUtils.base64Encoding(sessionUser.getSessionId()) + "&_csrf=" + sessionUser.getCsrfToken());
-    }
+  @GetMapping("/oauth/github")
+  public ModelAndView callbackOauth(@RequestParam("code") String code) {
+    SessionUser sessionUser = ssoService.exchangeGitOauth2(code);
+    return new ModelAndView(
+        "redirect:/#/?_token="
+            + CodingUtils.base64Encoding(sessionUser.getSessionId())
+            + "&_csrf="
+            + sessionUser.getCsrfToken());
+  }
 }

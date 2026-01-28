@@ -15,114 +15,126 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.registry.ExportThreadRegistry;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Strings;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
 public class ContractInvoiceExportService extends BaseExportService {
 
-    @Resource
-    private ContractInvoiceService contractInvoiceService;
-    @Resource
-    private ExtContractInvoiceMapper extContractInvoiceMapper;
+  @Resource private ContractInvoiceService contractInvoiceService;
+  @Resource private ExtContractInvoiceMapper extContractInvoiceMapper;
 
-    /**
-     * 构建导出的数据
-     *
-     * @return 导出数据列表
-     */
-    @Override
-    public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
-        ContractInvoicePageRequest pageRequest = (ContractInvoicePageRequest) exportDTO.getPageRequest();
-        String orgId = exportDTO.getOrgId();
-        PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
-        //获取数据
-        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, orgId,  exportDTO.getUserId(), exportDTO.getDeptDataPermission());
-        List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
+  /**
+   * 构建导出的数据
+   *
+   * @return 导出数据列表
+   */
+  @Override
+  public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO)
+      throws InterruptedException {
+    ContractInvoicePageRequest pageRequest =
+        (ContractInvoicePageRequest) exportDTO.getPageRequest();
+    String orgId = exportDTO.getOrgId();
+    PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
+    // 获取数据
+    List<ContractInvoiceListResponse> allList =
+        extContractInvoiceMapper.list(
+            pageRequest, orgId, exportDTO.getUserId(), exportDTO.getDeptDataPermission());
+    List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
+    Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
 
-
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ContractInvoiceListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(exportDTO.getHeadList(), response, fieldConfigMap);
-            data.add(value);
-        }
-
-        return data;
+    // 构建导出数据
+    List<List<Object>> data = new ArrayList<>();
+    for (ContractInvoiceListResponse response : dataList) {
+      if (ExportThreadRegistry.isInterrupted(taskId)) {
+        throw new InterruptedException("线程已被中断，主动退出");
+      }
+      List<Object> value = buildData(exportDTO.getHeadList(), response, fieldConfigMap);
+      data.add(value);
     }
 
-    private List<Object> buildData(List<ExportHeadDTO> headList, ContractInvoiceListResponse data,
-                                   Map<String, BaseField> fieldConfigMap) {
-        //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data, fieldConfigMap);
-        //自定义字段map
-        Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
-        //处理数据转换
-        return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
+    return data;
+  }
+
+  private List<Object> buildData(
+      List<ExportHeadDTO> headList,
+      ContractInvoiceListResponse data,
+      Map<String, BaseField> fieldConfigMap) {
+    // 固定字段map
+    LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data, fieldConfigMap);
+    // 自定义字段map
+    Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
+    // 处理数据转换
+    return transModuleFieldValue(
+        headList, systemFiledMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
+  }
+
+  public LinkedHashMap<String, Object> getSystemFieldMap(
+      ContractInvoiceListResponse data, Map<String, BaseField> fieldConfigMap) {
+    LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
+    systemFiledMap.put("contractId", data.getContractName());
+    systemFiledMap.put("owner", data.getOwnerName());
+    systemFiledMap.put("name", data.getName());
+    systemFiledMap.put("departmentId", data.getDepartmentName());
+    systemFiledMap.put("amount", data.getAmount());
+    systemFiledMap.put("taxRate", data.getTaxRate());
+    systemFiledMap.put("businessTitleId", data.getBusinessTitleId());
+    systemFiledMap.put(
+        "approvalStatus",
+        data.getApprovalStatus() == null
+            ? null
+            : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+
+    for (BaseField field : fieldConfigMap.values()) {
+      if (Strings.CS.equals(
+              BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey(), field.getBusinessKey())
+          && field instanceof SelectField invoiceTypeField) {
+        String invoiceTypeName =
+            getOptionLabel(data.getInvoiceType(), invoiceTypeField.getOptions());
+        systemFiledMap.put("invoiceType", invoiceTypeName);
+      }
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data, Map<String, BaseField> fieldConfigMap) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("contractId", data.getContractName());
-        systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
-        systemFiledMap.put("amount", data.getAmount());
-        systemFiledMap.put("taxRate", data.getTaxRate());
-        systemFiledMap.put("businessTitleId", data.getBusinessTitleId());
-        systemFiledMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+    systemFiledMap.put("createUser", data.getCreateUserName());
+    systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+    systemFiledMap.put("updateUser", data.getUpdateUserName());
+    systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+    return systemFiledMap;
+  }
 
-        for (BaseField field : fieldConfigMap.values()) {
-            if (Strings.CS.equals(BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey(), field.getBusinessKey())
-                && field instanceof SelectField invoiceTypeField) {
-                String invoiceTypeName = getOptionLabel(data.getInvoiceType(), invoiceTypeField.getOptions());
-                systemFiledMap.put("invoiceType", invoiceTypeName);
-            }
-        }
-
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-        return systemFiledMap;
+  /**
+   * 选中回款计划数据
+   *
+   * @return 导出数据列表
+   */
+  @Override
+  public List<List<Object>> getSelectExportData(
+      List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
+    String orgId = exportDTO.getOrgId();
+    String userId = exportDTO.getUserId();
+    // 获取数据
+    List<ContractInvoiceListResponse> allList =
+        extContractInvoiceMapper.getListByIds(
+            ids, userId, orgId, exportDTO.getDeptDataPermission());
+    List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
+    Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
+    // 构建导出数据
+    List<List<Object>> data = new ArrayList<>();
+    for (ContractInvoiceListResponse response : dataList) {
+      if (ExportThreadRegistry.isInterrupted(taskId)) {
+        throw new InterruptedException("线程已被中断，主动退出");
+      }
+      List<Object> value = buildData(exportDTO.getHeadList(), response, fieldConfigMap);
+      data.add(value);
     }
-
-
-    /**
-     * 选中回款计划数据
-     *
-     * @return 导出数据列表
-     */
-    @Override
-    public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
-        String orgId = exportDTO.getOrgId();
-        String userId = exportDTO.getUserId();
-        //获取数据
-        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.getListByIds(ids, userId, orgId, exportDTO.getDeptDataPermission());
-        List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ContractInvoiceListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(exportDTO.getHeadList(), response, fieldConfigMap);
-            data.add(value);
-        }
-        return data;
-    }
+    return data;
+  }
 }

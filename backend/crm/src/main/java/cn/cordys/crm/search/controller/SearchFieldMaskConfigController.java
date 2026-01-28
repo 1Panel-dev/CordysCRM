@@ -1,6 +1,5 @@
 package cn.cordys.crm.search.controller;
 
-
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.search.request.FieldMaskConfigDTO;
 import cn.cordys.crm.search.service.SearchFieldMaskConfigService;
@@ -16,20 +15,18 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "脱敏字段配置")
 public class SearchFieldMaskConfigController {
 
-    @Resource
-    private SearchFieldMaskConfigService searchFieldMaskConfigService;
+  @Resource private SearchFieldMaskConfigService searchFieldMaskConfigService;
 
+  @PostMapping("/save")
+  @Operation(summary = "保存配置")
+  public void save(@Validated @RequestBody FieldMaskConfigDTO request) {
+    searchFieldMaskConfigService.save(
+        request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/save")
-    @Operation(summary = "保存配置")
-    public void save(@Validated @RequestBody FieldMaskConfigDTO request) {
-        searchFieldMaskConfigService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-
-    @GetMapping("/get")
-    @Operation(summary = "获取脱敏字段配置")
-    public FieldMaskConfigDTO get() {
-        return searchFieldMaskConfigService.get(OrganizationContext.getOrganizationId());
-    }
+  @GetMapping("/get")
+  @Operation(summary = "获取脱敏字段配置")
+  public FieldMaskConfigDTO get() {
+    return searchFieldMaskConfigService.get(OrganizationContext.getOrganizationId());
+  }
 }

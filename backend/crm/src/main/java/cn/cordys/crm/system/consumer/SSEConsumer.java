@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class SSEConsumer implements TopicConsumer {
 
-    @Resource
-    private SseService sseService;
+  @Resource private SseService sseService;
 
-    @Override
-    public String getChannel() {
-        return TopicConstants.SSE_TOPIC;
-    }
+  @Override
+  public String getChannel() {
+    return TopicConstants.SSE_TOPIC;
+  }
 
-    @Override
-    public void consume(String message) {
-        NoticeRedisMessage noticeRedisMessage = JSON.parseObject(message, NoticeRedisMessage.class);
-        sseService.broadcastPeriodically(noticeRedisMessage.getMessage(), noticeRedisMessage.getNoticeType());
-    }
+  @Override
+  public void consume(String message) {
+    NoticeRedisMessage noticeRedisMessage = JSON.parseObject(message, NoticeRedisMessage.class);
+    sseService.broadcastPeriodically(
+        noticeRedisMessage.getMessage(), noticeRedisMessage.getNoticeType());
+  }
 }

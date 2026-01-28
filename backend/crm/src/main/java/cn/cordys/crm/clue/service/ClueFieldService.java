@@ -21,32 +21,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ClueFieldService extends BaseResourceFieldService<ClueField, ClueFieldBlob> {
-    @Resource
-    private BaseMapper<ClueField> clueFieldMapper;
-    @Resource
-    private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
-    @Resource
-    private ExtClueMapper extClueMapper;
+  @Resource private BaseMapper<ClueField> clueFieldMapper;
+  @Resource private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
+  @Resource private ExtClueMapper extClueMapper;
 
-    @Override
-    protected String getFormKey() {
-        return FormKey.CLUE.getKey();
-    }
+  @Override
+  protected String getFormKey() {
+    return FormKey.CLUE.getKey();
+  }
 
-    @Override
-    protected BaseMapper<ClueField> getResourceFieldMapper() {
-        return clueFieldMapper;
-    }
+  @Override
+  protected BaseMapper<ClueField> getResourceFieldMapper() {
+    return clueFieldMapper;
+  }
 
-    @Override
-    protected BaseMapper<ClueFieldBlob> getResourceFieldBlobMapper() {
-        return clueFieldBlobMapper;
-    }
+  @Override
+  protected BaseMapper<ClueFieldBlob> getResourceFieldBlobMapper() {
+    return clueFieldBlobMapper;
+  }
 
-    @Override
-    protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
-        if (extClueMapper.checkFieldValueRepeat(fieldValue)) {
-            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-        }
+  @Override
+  protected void checkUnique(BaseModuleFieldValue fieldValue, BaseField field) {
+    if (extClueMapper.checkFieldValueRepeat(fieldValue)) {
+      throw new GenericException(
+          Translator.getWithArgs("common.field_value.repeat", field.getName()));
     }
+  }
 }

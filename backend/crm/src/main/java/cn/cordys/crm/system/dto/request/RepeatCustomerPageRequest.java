@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class RepeatCustomerPageRequest extends BasePageRequest {
 
-    @Schema(description = "客户名称", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
+  @Schema(description = "客户名称", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String name;
 }

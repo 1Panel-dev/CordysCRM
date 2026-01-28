@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.service;
 
-
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
@@ -26,11 +25,6 @@ import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Strings;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,353 +35,479 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(rollbackFor = Exception.class)
 @Service
 public class MessageTaskService {
 
-    @Resource
-    private ExtMessageTaskMapper extMessageTaskMapper;
+  @Resource private ExtMessageTaskMapper extMessageTaskMapper;
 
-    @Resource
-    private BaseMapper<MessageTask> messageTaskMapper;
+  @Resource private BaseMapper<MessageTask> messageTaskMapper;
 
-    @Resource
-    private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
+  @Resource private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
 
-    @Resource
-    private ExtUserMapper extUserMapper;
+  @Resource private ExtUserMapper extUserMapper;
 
-    @Resource
-    private ExtRoleMapper extRoleMapper;
+  @Resource private ExtRoleMapper extRoleMapper;
 
+  @Resource private LogService logService;
 
-    @Resource
-    private LogService logService;
-
-
-    private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Boolean weComEnable, Boolean dingTalkEnable, Boolean larkEnable, Map<String, String> eventMap, MessageTaskConfigWithNameDTO nameDTO) {
-        MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
-        newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
-        if (emailEnable != null) {
-            newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setEmailEnable(oldMessageTask.getEmailEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (sysEnable != null) {
-            newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setSysEnable(oldMessageTask.getSysEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (weComEnable != null) {
-            newDTO.setWeComEnable(weComEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setWeComEnable(oldMessageTask.getWeComEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (dingTalkEnable != null) {
-            newDTO.setDingTalkEnable(dingTalkEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setDingTalkEnable(oldMessageTask.getDingTalkEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (larkEnable != null) {
-            newDTO.setLarkEnable(larkEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        } else {
-            newDTO.setLarkEnable(oldMessageTask.getLarkEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        }
-        if (nameDTO != null) {
-            newDTO.setOwnerEnable(nameDTO.isOwnerEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-            newDTO.setOwnerLevel(nameDTO.getOwnerLevel());
-            newDTO.setRoleEnable(nameDTO.isRoleEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-            if (CollectionUtils.isNotEmpty(nameDTO.getUserIdNames())) {
-                newDTO.setUserIdNames(nameDTO.getUserIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
-            } else {
-                newDTO.setUserIdNames(new ArrayList<>());
-            }
-            if (CollectionUtils.isNotEmpty(nameDTO.getRoleIdNames())) {
-                newDTO.setRoleIdNames(nameDTO.getRoleIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
-            } else {
-                newDTO.setRoleIdNames(new ArrayList<>());
-            }
-            if (CollectionUtils.isNotEmpty(nameDTO.getTimeList())) {
-                List<String> times = new ArrayList<>();
-                nameDTO.getTimeList().forEach(timeDTO -> {
-                    if (Strings.CI.equals(timeDTO.getTimeUnit(), "SECOND")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.second"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "MINUTE")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.minute"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "HOUR")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.hour"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "DAY")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.day"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "WEEK")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.week"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "MONTH")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.month"));
-                    } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "YEAR")) {
-                        times.add(timeDTO.getTimeValue() + Translator.get("time.year"));
-                    }
+  private static MessageTaskLogDTO buildLogDTO(
+      MessageTask oldMessageTask,
+      Boolean emailEnable,
+      Boolean sysEnable,
+      Boolean weComEnable,
+      Boolean dingTalkEnable,
+      Boolean larkEnable,
+      Map<String, String> eventMap,
+      MessageTaskConfigWithNameDTO nameDTO) {
+    MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
+    newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
+    if (emailEnable != null) {
+      newDTO.setEmailEnable(
+          emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+    } else {
+      newDTO.setEmailEnable(
+          oldMessageTask.getEmailEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+    }
+    if (sysEnable != null) {
+      newDTO.setSysEnable(
+          sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+    } else {
+      newDTO.setSysEnable(
+          oldMessageTask.getSysEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+    }
+    if (weComEnable != null) {
+      newDTO.setWeComEnable(
+          weComEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+    } else {
+      newDTO.setWeComEnable(
+          oldMessageTask.getWeComEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+    }
+    if (dingTalkEnable != null) {
+      newDTO.setDingTalkEnable(
+          dingTalkEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+    } else {
+      newDTO.setDingTalkEnable(
+          oldMessageTask.getDingTalkEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+    }
+    if (larkEnable != null) {
+      newDTO.setLarkEnable(
+          larkEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+    } else {
+      newDTO.setLarkEnable(
+          oldMessageTask.getLarkEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+    }
+    if (nameDTO != null) {
+      newDTO.setOwnerEnable(
+          nameDTO.isOwnerEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+      newDTO.setOwnerLevel(nameDTO.getOwnerLevel());
+      newDTO.setRoleEnable(
+          nameDTO.isRoleEnable()
+              ? Translator.get("log.enable.true")
+              : Translator.get("log.enable.false"));
+      if (CollectionUtils.isNotEmpty(nameDTO.getUserIdNames())) {
+        newDTO.setUserIdNames(
+            nameDTO.getUserIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
+      } else {
+        newDTO.setUserIdNames(new ArrayList<>());
+      }
+      if (CollectionUtils.isNotEmpty(nameDTO.getRoleIdNames())) {
+        newDTO.setRoleIdNames(
+            nameDTO.getRoleIdNames().stream().map(OptionDTO::getName).collect(Collectors.toList()));
+      } else {
+        newDTO.setRoleIdNames(new ArrayList<>());
+      }
+      if (CollectionUtils.isNotEmpty(nameDTO.getTimeList())) {
+        List<String> times = new ArrayList<>();
+        nameDTO
+            .getTimeList()
+            .forEach(
+                timeDTO -> {
+                  if (Strings.CI.equals(timeDTO.getTimeUnit(), "SECOND")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.second"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "MINUTE")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.minute"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "HOUR")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.hour"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "DAY")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.day"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "WEEK")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.week"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "MONTH")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.month"));
+                  } else if (Strings.CI.equals(timeDTO.getTimeUnit(), "YEAR")) {
+                    times.add(timeDTO.getTimeValue() + Translator.get("time.year"));
+                  }
                 });
-                newDTO.setTimes(times);
-            }
-
-
-        }
-        return newDTO;
+        newDTO.setTimes(times);
+      }
     }
+    return newDTO;
+  }
 
-    public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
-        //检查设置的通知是否存在，如果存在则更新
-        MessageTask messageTask = new MessageTask();
-        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
-        MessageTask messageByModuleAndEvent = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
-        if (messageByModuleAndEvent != null) {
-            return updateMessageTasks(messageTaskRequest, userId, messageByModuleAndEvent, eventMap, organizationId);
-        } else {
-            //不存在则新增
-            messageTask.setId(IDGenerator.nextStr());
-            messageTask.setOrganizationId(organizationId);
-            messageTask.setTaskType(messageTaskRequest.getModule());
-            messageTask.setEvent(messageTaskRequest.getEvent());
-            messageTask.setCreateUser(userId);
-            messageTask.setCreateTime(System.currentTimeMillis());
-            messageTask.setUpdateUser(userId);
-            messageTask.setUpdateTime(System.currentTimeMillis());
-            messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
-            messageTask.setSysEnable(messageTaskRequest.isSysEnable());
-            messageTask.setWeComEnable(messageTaskRequest.isWeComEnable());
-            messageTask.setDingTalkEnable(messageTaskRequest.isDingTalkEnable());
-            messageTask.setLarkEnable(messageTaskRequest.isLarkEnable());
-            String template = MessageTemplateUtils.getTemplate(messageTaskRequest.getEvent());
-            messageTask.setTemplate(template.getBytes(StandardCharsets.UTF_8));
-            messageTaskMapper.insert(messageTask);
-            //新增config
-            if (messageTaskRequest.getConfig() != null) {
-                saveConfig(messageTaskRequest, organizationId);
-            }
-            // 添加日志上下文
-            MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), messageTaskRequest.isDingTalkEnable(), messageTaskRequest.isLarkEnable(), eventMap, null);
-            LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
-            logDTO.setOriginalValue(null);
-            logDTO.setModifiedValue(newDTO);
-            logService.add(logDTO);
-
-        }
-        return messageTask;
+  public MessageTask saveMessageTask(
+      MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
+    // 检查设置的通知是否存在，如果存在则更新
+    MessageTask messageTask = new MessageTask();
+    Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+    MessageTask messageByModuleAndEvent =
+        extMessageTaskMapper.getMessageByModuleAndEvent(
+            messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
+    if (messageByModuleAndEvent != null) {
+      return updateMessageTasks(
+          messageTaskRequest, userId, messageByModuleAndEvent, eventMap, organizationId);
+    } else {
+      // 不存在则新增
+      messageTask.setId(IDGenerator.nextStr());
+      messageTask.setOrganizationId(organizationId);
+      messageTask.setTaskType(messageTaskRequest.getModule());
+      messageTask.setEvent(messageTaskRequest.getEvent());
+      messageTask.setCreateUser(userId);
+      messageTask.setCreateTime(System.currentTimeMillis());
+      messageTask.setUpdateUser(userId);
+      messageTask.setUpdateTime(System.currentTimeMillis());
+      messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
+      messageTask.setSysEnable(messageTaskRequest.isSysEnable());
+      messageTask.setWeComEnable(messageTaskRequest.isWeComEnable());
+      messageTask.setDingTalkEnable(messageTaskRequest.isDingTalkEnable());
+      messageTask.setLarkEnable(messageTaskRequest.isLarkEnable());
+      String template = MessageTemplateUtils.getTemplate(messageTaskRequest.getEvent());
+      messageTask.setTemplate(template.getBytes(StandardCharsets.UTF_8));
+      messageTaskMapper.insert(messageTask);
+      // 新增config
+      if (messageTaskRequest.getConfig() != null) {
+        saveConfig(messageTaskRequest, organizationId);
+      }
+      // 添加日志上下文
+      MessageTaskLogDTO newDTO =
+          buildLogDTO(
+              messageTask,
+              messageTaskRequest.isEmailEnable(),
+              messageTaskRequest.isSysEnable(),
+              messageTaskRequest.isWeComEnable(),
+              messageTaskRequest.isDingTalkEnable(),
+              messageTaskRequest.isLarkEnable(),
+              eventMap,
+              null);
+      LogDTO logDTO =
+          new LogDTO(
+              organizationId,
+              messageTask.getId(),
+              userId,
+              LogType.UPDATE,
+              LogModule.SYSTEM_MESSAGE_MESSAGE,
+              eventMap.get(messageTask.getEvent()));
+      logDTO.setOriginalValue(null);
+      logDTO.setModifiedValue(newDTO);
+      logService.add(logDTO);
     }
+    return messageTask;
+  }
 
-    /**
-     * 检查数据库是否有同类型数据，有则更新
-     *
-     * @param messageTaskRequest 入参
-     * @param userId             当前用户ID
-     */
-    public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask, Map<String, String> eventMap, String organizationId) {
-        MessageTask messageTask = new MessageTask();
-        messageTask.setId(oldMessageTask.getId());
-        messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
-        messageTask.setSysEnable(messageTaskRequest.isSysEnable());
-        messageTask.setWeComEnable(messageTaskRequest.isWeComEnable());
-        messageTask.setDingTalkEnable(messageTaskRequest.isDingTalkEnable());
-        messageTask.setLarkEnable(messageTaskRequest.isLarkEnable());
-        messageTask.setUpdateUser(userId);
-        messageTask.setUpdateTime(System.currentTimeMillis());
-        messageTaskMapper.update(messageTask);
-        // 更新config
-        MessageTaskConfigWithNameDTO messageTaskConfigWithNameOldDTO = getMessageConfig(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
-        if (messageTaskRequest.getConfig() != null) {
-            List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
-                    .eq(MessageTaskConfig::getOrganizationId, organizationId)
-                    .eq(MessageTaskConfig::getTaskType, messageTaskRequest.getModule())
-                    .eq(MessageTaskConfig::getEvent, messageTaskRequest.getEvent()));
-            if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
-                MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
-                checkTimeList(messageTaskRequest);
-                messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
-                messageTaskConfigMapper.update(messageTaskConfig);
-            } else {
-                //不存在则新增
-                saveConfig(messageTaskRequest, organizationId);
-            }
-        }
-        MessageTaskConfigWithNameDTO messageTaskConfigWithNameNewDTO = buildLogMessageTaskConfigWithNameDTO(messageTaskRequest.getConfig());
-        // 添加日志上下文
-        MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), oldMessageTask.getWeComEnable(), oldMessageTask.getDingTalkEnable(), oldMessageTask.getLarkEnable(), eventMap, messageTaskConfigWithNameOldDTO);
-        MessageTaskLogDTO newDTO = buildLogDTO(oldMessageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), messageTaskRequest.isDingTalkEnable(), messageTaskRequest.isLarkEnable(), eventMap, messageTaskConfigWithNameNewDTO);
-        LogDTO logDTO = new LogDTO(oldMessageTask.getOrganizationId(), messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTaskRequest.getEvent()));
-        logDTO.setOriginalValue(oldDTO);
-        logDTO.setModifiedValue(newDTO);
-        logService.add(logDTO);
-
-        return messageTask;
-    }
-
-    private MessageTaskConfigWithNameDTO buildLogMessageTaskConfigWithNameDTO(MessageTaskConfigDTO config) {
-        if (config == null) {
-            return null;
-        }
-        MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO = new MessageTaskConfigWithNameDTO();
-        BeanUtils.copyBean(messageTaskConfigWithNameDTO, config);
-        setUserNames(messageTaskConfigWithNameDTO, config.getUserIds(), config.getRoleIds());
-        return messageTaskConfigWithNameDTO;
-    }
-
-    private void saveConfig(MessageTaskRequest messageTaskRequest, String organizationId) {
-        MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
-        messageTaskConfig.setId(IDGenerator.nextStr());
-        messageTaskConfig.setOrganizationId(organizationId);
-        messageTaskConfig.setTaskType(messageTaskRequest.getModule());
-        messageTaskConfig.setEvent(messageTaskRequest.getEvent());
-        //判断config里的timeList的timeValue是否为null,如果为null则从timeList移除
+  /**
+   * 检查数据库是否有同类型数据，有则更新
+   *
+   * @param messageTaskRequest 入参
+   * @param userId 当前用户ID
+   */
+  public MessageTask updateMessageTasks(
+      MessageTaskRequest messageTaskRequest,
+      String userId,
+      MessageTask oldMessageTask,
+      Map<String, String> eventMap,
+      String organizationId) {
+    MessageTask messageTask = new MessageTask();
+    messageTask.setId(oldMessageTask.getId());
+    messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
+    messageTask.setSysEnable(messageTaskRequest.isSysEnable());
+    messageTask.setWeComEnable(messageTaskRequest.isWeComEnable());
+    messageTask.setDingTalkEnable(messageTaskRequest.isDingTalkEnable());
+    messageTask.setLarkEnable(messageTaskRequest.isLarkEnable());
+    messageTask.setUpdateUser(userId);
+    messageTask.setUpdateTime(System.currentTimeMillis());
+    messageTaskMapper.update(messageTask);
+    // 更新config
+    MessageTaskConfigWithNameDTO messageTaskConfigWithNameOldDTO =
+        getMessageConfig(
+            messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
+    if (messageTaskRequest.getConfig() != null) {
+      List<MessageTaskConfig> messageTaskConfigList =
+          messageTaskConfigMapper.selectListByLambda(
+              new LambdaQueryWrapper<MessageTaskConfig>()
+                  .eq(MessageTaskConfig::getOrganizationId, organizationId)
+                  .eq(MessageTaskConfig::getTaskType, messageTaskRequest.getModule())
+                  .eq(MessageTaskConfig::getEvent, messageTaskRequest.getEvent()));
+      if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
+        MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
         checkTimeList(messageTaskRequest);
         messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
-        messageTaskConfigMapper.insert(messageTaskConfig);
+        messageTaskConfigMapper.update(messageTaskConfig);
+      } else {
+        // 不存在则新增
+        saveConfig(messageTaskRequest, organizationId);
+      }
+    }
+    MessageTaskConfigWithNameDTO messageTaskConfigWithNameNewDTO =
+        buildLogMessageTaskConfigWithNameDTO(messageTaskRequest.getConfig());
+    // 添加日志上下文
+    MessageTaskLogDTO oldDTO =
+        buildLogDTO(
+            oldMessageTask,
+            oldMessageTask.getEmailEnable(),
+            oldMessageTask.getSysEnable(),
+            oldMessageTask.getWeComEnable(),
+            oldMessageTask.getDingTalkEnable(),
+            oldMessageTask.getLarkEnable(),
+            eventMap,
+            messageTaskConfigWithNameOldDTO);
+    MessageTaskLogDTO newDTO =
+        buildLogDTO(
+            oldMessageTask,
+            messageTaskRequest.isEmailEnable(),
+            messageTaskRequest.isSysEnable(),
+            messageTaskRequest.isWeComEnable(),
+            messageTaskRequest.isDingTalkEnable(),
+            messageTaskRequest.isLarkEnable(),
+            eventMap,
+            messageTaskConfigWithNameNewDTO);
+    LogDTO logDTO =
+        new LogDTO(
+            oldMessageTask.getOrganizationId(),
+            messageTask.getId(),
+            userId,
+            LogType.UPDATE,
+            LogModule.SYSTEM_MESSAGE_MESSAGE,
+            eventMap.get(messageTaskRequest.getEvent()));
+    logDTO.setOriginalValue(oldDTO);
+    logDTO.setModifiedValue(newDTO);
+    logService.add(logDTO);
+
+    return messageTask;
+  }
+
+  private MessageTaskConfigWithNameDTO buildLogMessageTaskConfigWithNameDTO(
+      MessageTaskConfigDTO config) {
+    if (config == null) {
+      return null;
+    }
+    MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO = new MessageTaskConfigWithNameDTO();
+    BeanUtils.copyBean(messageTaskConfigWithNameDTO, config);
+    setUserNames(messageTaskConfigWithNameDTO, config.getUserIds(), config.getRoleIds());
+    return messageTaskConfigWithNameDTO;
+  }
+
+  private void saveConfig(MessageTaskRequest messageTaskRequest, String organizationId) {
+    MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
+    messageTaskConfig.setId(IDGenerator.nextStr());
+    messageTaskConfig.setOrganizationId(organizationId);
+    messageTaskConfig.setTaskType(messageTaskRequest.getModule());
+    messageTaskConfig.setEvent(messageTaskRequest.getEvent());
+    // 判断config里的timeList的timeValue是否为null,如果为null则从timeList移除
+    checkTimeList(messageTaskRequest);
+    messageTaskConfig.setValue(JSON.toJSONString(messageTaskRequest.getConfig()));
+    messageTaskConfigMapper.insert(messageTaskConfig);
+  }
+
+  private void checkTimeList(MessageTaskRequest messageTaskRequest) {
+    if (messageTaskRequest.getConfig() != null) {
+      List<TimeDTO> timeList = messageTaskRequest.getConfig().getTimeList();
+      if (timeList != null) {
+        messageTaskRequest
+            .getConfig()
+            .setTimeList(
+                timeList.stream()
+                    .filter(t -> t != null && t.getTimeValue() != null)
+                    .collect(Collectors.toList()));
+      }
+    }
+  }
+
+  /**
+   * 根据项目id 获取当前项目的消息设置
+   *
+   * @param organizationId 组织ID
+   * @return List<MessageTaskDTO>
+   */
+  public List<MessageTaskDTO> getMessageList(String organizationId) {
+    // 获取返回数据结构
+    StringBuilder jsonStr = new StringBuilder();
+    try (InputStream inputStream = getClass().getResourceAsStream("/task/message_task.json")) {
+      assert inputStream != null;
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          jsonStr.append(line);
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    private void checkTimeList(MessageTaskRequest messageTaskRequest) {
-        if (messageTaskRequest.getConfig() != null) {
-            List<TimeDTO> timeList = messageTaskRequest.getConfig().getTimeList();
-            if (timeList != null) {
-                messageTaskRequest.getConfig()
-                        .setTimeList(
-                                timeList.stream()
-                                        .filter(t -> t != null && t.getTimeValue() != null)
-                                        .collect(Collectors.toList())
-                        );
-            }
-        }
+    List<MessageTaskDTO> messageTaskDTOList =
+        JSON.parseArray(jsonStr.toString(), MessageTaskDTO.class);
+    // 查询数据
+    List<MessageTask> messageTasks = extMessageTaskMapper.getMessageTaskList(organizationId);
+    if (CollectionUtils.isEmpty(messageTasks)) {
+      return messageTaskDTOList;
     }
-
-    /**
-     * 根据项目id 获取当前项目的消息设置
-     *
-     * @param organizationId 组织ID
-     * @return List<MessageTaskDTO>
-     */
-    public List<MessageTaskDTO> getMessageList(String organizationId) {
-        //获取返回数据结构
-        StringBuilder jsonStr = new StringBuilder();
-        try (InputStream inputStream = getClass().getResourceAsStream("/task/message_task.json")) {
-            assert inputStream != null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    jsonStr.append(line);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    // 获取默认数据
+    Map<String, String> moduleMap = MessageTemplateUtils.getModuleMap();
+    Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+    Map<String, MessageTask> messageMap =
+        messageTasks.stream().collect(Collectors.toMap(MessageTask::getEvent, t -> t));
+    for (MessageTaskDTO messageTaskDTO : messageTaskDTOList) {
+      messageTaskDTO.setModuleName(moduleMap.get(messageTaskDTO.getModule()));
+      for (MessageTaskDetailDTO messageTaskDetailDTO :
+          messageTaskDTO.getMessageTaskDetailDTOList()) {
+        messageTaskDetailDTO.setEventName(eventMap.get(messageTaskDetailDTO.getEvent()));
+        MessageTask messageTask = messageMap.get(messageTaskDetailDTO.event);
+        if (messageTask != null) {
+          messageTaskDetailDTO.setEmailEnable(messageTask.getEmailEnable());
+          messageTaskDetailDTO.setSysEnable(messageTask.getSysEnable());
+          messageTaskDetailDTO.setWeComEnable(messageTask.getWeComEnable());
+          messageTaskDetailDTO.setDingTalkEnable(messageTask.getDingTalkEnable());
+          messageTaskDetailDTO.setLarkEnable(messageTask.getLarkEnable());
         }
-
-        List<MessageTaskDTO> messageTaskDTOList = JSON.parseArray(jsonStr.toString(), MessageTaskDTO.class);
-        //查询数据
-        List<MessageTask> messageTasks = extMessageTaskMapper.getMessageTaskList(organizationId);
-        if (CollectionUtils.isEmpty(messageTasks)) {
-            return messageTaskDTOList;
-        }
-        //获取默认数据
-        Map<String, String> moduleMap = MessageTemplateUtils.getModuleMap();
-        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
-        Map<String, MessageTask> messageMap = messageTasks.stream().collect(Collectors.toMap(MessageTask::getEvent, t -> t));
-        for (MessageTaskDTO messageTaskDTO : messageTaskDTOList) {
-            messageTaskDTO.setModuleName(moduleMap.get(messageTaskDTO.getModule()));
-            for (MessageTaskDetailDTO messageTaskDetailDTO : messageTaskDTO.getMessageTaskDetailDTOList()) {
-                messageTaskDetailDTO.setEventName(eventMap.get(messageTaskDetailDTO.getEvent()));
-                MessageTask messageTask = messageMap.get(messageTaskDetailDTO.event);
-                if (messageTask != null) {
-                    messageTaskDetailDTO.setEmailEnable(messageTask.getEmailEnable());
-                    messageTaskDetailDTO.setSysEnable(messageTask.getSysEnable());
-                    messageTaskDetailDTO.setWeComEnable(messageTask.getWeComEnable());
-                    messageTaskDetailDTO.setDingTalkEnable(messageTask.getDingTalkEnable());
-                    messageTaskDetailDTO.setLarkEnable(messageTask.getLarkEnable());
-                }
-            }
-
-        }
-        return messageTaskDTOList;
+      }
     }
+    return messageTaskDTOList;
+  }
 
-
-    public void batchSaveMessageTask(MessageTaskBatchRequest messageTaskBatchRequest, String organizationId, String userId) {
-        List<MessageTask> oldMessageList = extMessageTaskMapper.getMessageTaskList(organizationId);
-        extMessageTaskMapper.updateMessageTask(messageTaskBatchRequest, organizationId);
-        // 添加日志上下文
-        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
-        List<LogDTO> logDTOList = new ArrayList<>();
-        for (MessageTask messageTask : oldMessageList) {
-            MessageTaskLogDTO oldDTO = buildLogDTO(messageTask, messageTask.getEmailEnable(), messageTask.getSysEnable(), messageTask.getWeComEnable(), messageTask.getDingTalkEnable(), messageTask.getLarkEnable(), eventMap, null);
-            MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskBatchRequest.getEmailEnable(), messageTaskBatchRequest.getSysEnable(), messageTaskBatchRequest.getWeComEnable(), messageTaskBatchRequest.getDingTalkEnable(), messageTaskBatchRequest.getLarkEnable(), eventMap, null);
-            LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
-            logDTO.setOriginalValue(oldDTO);
-            logDTO.setModifiedValue(newDTO);
-            logDTOList.add(logDTO);
-        }
-        logService.batchAdd(logDTOList);
+  public void batchSaveMessageTask(
+      MessageTaskBatchRequest messageTaskBatchRequest, String organizationId, String userId) {
+    List<MessageTask> oldMessageList = extMessageTaskMapper.getMessageTaskList(organizationId);
+    extMessageTaskMapper.updateMessageTask(messageTaskBatchRequest, organizationId);
+    // 添加日志上下文
+    Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+    List<LogDTO> logDTOList = new ArrayList<>();
+    for (MessageTask messageTask : oldMessageList) {
+      MessageTaskLogDTO oldDTO =
+          buildLogDTO(
+              messageTask,
+              messageTask.getEmailEnable(),
+              messageTask.getSysEnable(),
+              messageTask.getWeComEnable(),
+              messageTask.getDingTalkEnable(),
+              messageTask.getLarkEnable(),
+              eventMap,
+              null);
+      MessageTaskLogDTO newDTO =
+          buildLogDTO(
+              messageTask,
+              messageTaskBatchRequest.getEmailEnable(),
+              messageTaskBatchRequest.getSysEnable(),
+              messageTaskBatchRequest.getWeComEnable(),
+              messageTaskBatchRequest.getDingTalkEnable(),
+              messageTaskBatchRequest.getLarkEnable(),
+              eventMap,
+              null);
+      LogDTO logDTO =
+          new LogDTO(
+              organizationId,
+              messageTask.getId(),
+              userId,
+              LogType.UPDATE,
+              LogModule.SYSTEM_MESSAGE_MESSAGE,
+              eventMap.get(messageTask.getEvent()));
+      logDTO.setOriginalValue(oldDTO);
+      logDTO.setModifiedValue(newDTO);
+      logDTOList.add(logDTO);
     }
+    logService.batchAdd(logDTOList);
+  }
 
-    /**
-     * 获取消息配置的config
-     *
-     * @param module         模块
-     * @param event          事件
-     * @param organizationId 组织ID
-     * @return MessageTaskConfigWithNameDTO
-     */
-    public MessageTaskConfigWithNameDTO getMessageConfig(String module, String event, String organizationId) {
-        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+  /**
+   * 获取消息配置的config
+   *
+   * @param module 模块
+   * @param event 事件
+   * @param organizationId 组织ID
+   * @return MessageTaskConfigWithNameDTO
+   */
+  public MessageTaskConfigWithNameDTO getMessageConfig(
+      String module, String event, String organizationId) {
+    List<MessageTaskConfig> messageTaskConfigList =
+        messageTaskConfigMapper.selectListByLambda(
+            new LambdaQueryWrapper<MessageTaskConfig>()
                 .eq(MessageTaskConfig::getOrganizationId, organizationId)
                 .eq(MessageTaskConfig::getTaskType, module)
                 .eq(MessageTaskConfig::getEvent, event));
-        if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
-            MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
-            MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO = JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigWithNameDTO.class);
-            setUserNames(messageTaskConfigWithNameDTO, messageTaskConfigWithNameDTO.getUserIds(), messageTaskConfigWithNameDTO.getRoleIds());
-            return messageTaskConfigWithNameDTO;
-        }
-        return null;
+    if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
+      MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
+      MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO =
+          JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigWithNameDTO.class);
+      setUserNames(
+          messageTaskConfigWithNameDTO,
+          messageTaskConfigWithNameDTO.getUserIds(),
+          messageTaskConfigWithNameDTO.getRoleIds());
+      return messageTaskConfigWithNameDTO;
     }
+    return null;
+  }
 
-    private void setUserNames(MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO, List<String> userIds, List<String> roleIds) {
-        if (CollectionUtils.isNotEmpty(userIds)) {
-            messageTaskConfigWithNameDTO.setUserIdNames(extUserMapper.selectUserOptionByIds(userIds));
-            if (userIds.contains("OWNER")) {
-                messageTaskConfigWithNameDTO.getUserIdNames().addFirst(new OptionDTO("OWNER", Translator.get("message.owner")));
-            }
-            if (userIds.contains("CREATE_USER")) {
-                messageTaskConfigWithNameDTO.getUserIdNames().addFirst(new OptionDTO("CREATE_USER", Translator.get("message.create_user")));
-            }
-        }
-        if (CollectionUtils.isNotEmpty(roleIds)) {
-            List<String> internalRoleIds = extRoleMapper.getInternalRoleIds();
-            //过滤出非内置角色
-            List<String> nonInternalRoleIds = roleIds.stream()
-                    .filter(roleId -> !internalRoleIds.contains(roleId))
-                    .toList();
-            // 构建角色ID到名称的映射
-            Map<String, String> roleIdToNameMap = new HashMap<>();
-            // 翻译非内置角色名称
-            if (CollectionUtils.isNotEmpty(nonInternalRoleIds)) {
-                List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(nonInternalRoleIds);
-                idNameByIds.forEach(option -> roleIdToNameMap.put(option.getId(), option.getName()));
-            }
-            //过滤出内置角色
-            List<String> internalRoles = roleIds.stream()
-                    .filter(internalRoleIds::contains)
-                    .toList();
-            // 翻译内置角色名称
-            if (CollectionUtils.isNotEmpty(internalRoles)) {
-                for (String internalRole : internalRoles) {
-                    roleIdToNameMap.put(internalRole, Translator.get("role." + internalRole, internalRole));
-                }
-            }
-            // 按照原始getRoleIds()的顺序构建结果列表
-            List<OptionDTO> roleIdNames = new ArrayList<>();
-            for (String roleId : roleIds) {
-                String roleName = roleIdToNameMap.get(roleId);
-                if (roleName != null) {
-                    roleIdNames.add(new OptionDTO(roleId, roleName));
-                }
-            }
-            messageTaskConfigWithNameDTO.setRoleIdNames(roleIdNames);
-        }
+  private void setUserNames(
+      MessageTaskConfigWithNameDTO messageTaskConfigWithNameDTO,
+      List<String> userIds,
+      List<String> roleIds) {
+    if (CollectionUtils.isNotEmpty(userIds)) {
+      messageTaskConfigWithNameDTO.setUserIdNames(extUserMapper.selectUserOptionByIds(userIds));
+      if (userIds.contains("OWNER")) {
+        messageTaskConfigWithNameDTO
+            .getUserIdNames()
+            .addFirst(new OptionDTO("OWNER", Translator.get("message.owner")));
+      }
+      if (userIds.contains("CREATE_USER")) {
+        messageTaskConfigWithNameDTO
+            .getUserIdNames()
+            .addFirst(new OptionDTO("CREATE_USER", Translator.get("message.create_user")));
+      }
     }
+    if (CollectionUtils.isNotEmpty(roleIds)) {
+      List<String> internalRoleIds = extRoleMapper.getInternalRoleIds();
+      // 过滤出非内置角色
+      List<String> nonInternalRoleIds =
+          roleIds.stream().filter(roleId -> !internalRoleIds.contains(roleId)).toList();
+      // 构建角色ID到名称的映射
+      Map<String, String> roleIdToNameMap = new HashMap<>();
+      // 翻译非内置角色名称
+      if (CollectionUtils.isNotEmpty(nonInternalRoleIds)) {
+        List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(nonInternalRoleIds);
+        idNameByIds.forEach(option -> roleIdToNameMap.put(option.getId(), option.getName()));
+      }
+      // 过滤出内置角色
+      List<String> internalRoles = roleIds.stream().filter(internalRoleIds::contains).toList();
+      // 翻译内置角色名称
+      if (CollectionUtils.isNotEmpty(internalRoles)) {
+        for (String internalRole : internalRoles) {
+          roleIdToNameMap.put(internalRole, Translator.get("role." + internalRole, internalRole));
+        }
+      }
+      // 按照原始getRoleIds()的顺序构建结果列表
+      List<OptionDTO> roleIdNames = new ArrayList<>();
+      for (String roleId : roleIds) {
+        String roleName = roleIdToNameMap.get(roleId);
+        if (roleName != null) {
+          roleIdNames.add(new OptionDTO(roleId, roleName));
+        }
+      }
+      messageTaskConfigWithNameDTO.setRoleIdNames(roleIdNames);
+    }
+  }
 }

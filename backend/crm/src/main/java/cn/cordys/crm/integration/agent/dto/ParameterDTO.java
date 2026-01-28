@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class ParameterDTO {
 
-    @Schema(description = "参数")
-    private String parameter;
+  @Schema(description = "参数")
+  private String parameter;
 
-    @Schema(description = "参数值")
-    private String value;
+  @Schema(description = "参数值")
+  private String value;
 }

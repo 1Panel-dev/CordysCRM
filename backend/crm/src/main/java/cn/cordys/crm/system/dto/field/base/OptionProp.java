@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OptionProp {
 
-    @Schema(description = "值")
-    private String value;
-    @Schema(description = "文本")
-    private String label;
+  @Schema(description = "值")
+  private String value;
+
+  @Schema(description = "文本")
+  private String label;
 }

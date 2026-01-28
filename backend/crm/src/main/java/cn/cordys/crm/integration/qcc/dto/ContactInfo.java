@@ -6,9 +6,7 @@ import lombok.Data;
 @Data
 public class ContactInfo {
 
-    /**
-     * 注册电话
-     */
-    @JsonProperty("Tel")
-    private String tel;
+  /** 注册电话 */
+  @JsonProperty("Tel")
+  private String tel;
 }

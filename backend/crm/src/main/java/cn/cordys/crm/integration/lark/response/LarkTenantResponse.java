@@ -13,12 +13,12 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class LarkTenantResponse extends LarkResponseEntity {
 
-    @JsonProperty("data")
-    private LarkTenantData data;
+  @JsonProperty("data")
+  private LarkTenantData data;
 
-    @Data
-    public static class LarkTenantData {
-        @JsonProperty("tenant")
-        private LarkTenant tenant;
-    }
+  @Data
+  public static class LarkTenantData {
+    @JsonProperty("tenant")
+    private LarkTenant tenant;
+  }
 }

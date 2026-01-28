@@ -9,5 +9,6 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ExtClueOwnerMapper {
 
-    void batchAdd(@Param("request") ClueBatchTransferRequest transferRequest, @Param("userId") String userId);
+  void batchAdd(
+      @Param("request") ClueBatchTransferRequest transferRequest, @Param("userId") String userId);
 }

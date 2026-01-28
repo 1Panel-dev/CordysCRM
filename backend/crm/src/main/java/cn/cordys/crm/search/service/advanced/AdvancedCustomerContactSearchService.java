@@ -28,129 +28,160 @@ import cn.cordys.crm.system.service.ModuleFormService;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 @Service
-public class AdvancedCustomerContactSearchService extends BaseSearchService<CustomerContactPageRequest, AdvancedCustomerContactResponse> {
+public class AdvancedCustomerContactSearchService
+    extends BaseSearchService<CustomerContactPageRequest, AdvancedCustomerContactResponse> {
 
-    @Resource
-    private ExtCustomerContactMapper extCustomerContactMapper;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
-    @Resource
-    private ModuleFormService moduleFormService;
-    @Resource
-    private DataScopeService dataScopeService;
-    @Resource
-    private BaseService baseService;
-    @Resource
-    private CustomerContactFieldService customerContactFieldService;
-    @Resource
-    private ExtCustomerMapper extCustomerMapper;
+  @Resource private ExtCustomerContactMapper extCustomerContactMapper;
+  @Resource private ModuleFormCacheService moduleFormCacheService;
+  @Resource private ModuleFormService moduleFormService;
+  @Resource private DataScopeService dataScopeService;
+  @Resource private BaseService baseService;
+  @Resource private CustomerContactFieldService customerContactFieldService;
+  @Resource private ExtCustomerMapper extCustomerMapper;
 
-    @Override
-    public PagerWithOption<List<AdvancedCustomerContactResponse>> startSearch(CustomerContactPageRequest request, String orgId, String userId) {
-        // 查询当前组织下已启用的模块列表
-        List<String> enabledModules = getEnabledModules();
-        // 检查：如果客户模块未启用，抛出异常
-        if (!enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
-            throw new GenericException(SystemResultCode.MODULE_ENABLE);
-        }
-
-        ConditionFilterUtils.parseCondition(request);
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null, false);
-        List<AdvancedCustomerContactResponse> buildListData = buildCustomerContactData(list, orgId, userId);
-        Map<String, List<OptionDTO>> optionMap = buildCustomerContactOptionMap(orgId, buildListData);
-        // 查询重复联系人列表
-        return PageUtils.setPageInfoWithOption(page, buildListData, optionMap);
+  @Override
+  public PagerWithOption<List<AdvancedCustomerContactResponse>> startSearch(
+      CustomerContactPageRequest request, String orgId, String userId) {
+    // 查询当前组织下已启用的模块列表
+    List<String> enabledModules = getEnabledModules();
+    // 检查：如果客户模块未启用，抛出异常
+    if (!enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
+      throw new GenericException(SystemResultCode.MODULE_ENABLE);
     }
 
+    ConditionFilterUtils.parseCondition(request);
+    Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+    List<CustomerContactListResponse> list =
+        extCustomerContactMapper.list(request, userId, orgId, null, false);
+    List<AdvancedCustomerContactResponse> buildListData =
+        buildCustomerContactData(list, orgId, userId);
+    Map<String, List<OptionDTO>> optionMap = buildCustomerContactOptionMap(orgId, buildListData);
+    // 查询重复联系人列表
+    return PageUtils.setPageInfoWithOption(page, buildListData, optionMap);
+  }
 
-    private Map<String, List<OptionDTO>> buildCustomerContactOptionMap(String orgId, List<AdvancedCustomerContactResponse> list) {
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
-        // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, AdvancedCustomerContactResponse::getModuleFields);
-        // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+  private Map<String, List<OptionDTO>> buildCustomerContactOptionMap(
+      String orgId, List<AdvancedCustomerContactResponse> list) {
+    ModuleFormConfigDTO customerFormConfig =
+        moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
+    // 获取所有模块字段的值
+    List<BaseModuleFieldValue> moduleFieldValues =
+        moduleFormService.getBaseModuleFieldValues(
+            list, AdvancedCustomerContactResponse::getModuleFields);
+    // 获取选项值对应的 option
+    Map<String, List<OptionDTO>> optionMap =
+        moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
-        // 补充负责人选项
-        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
-                AdvancedCustomerContactResponse::getOwner, AdvancedCustomerContactResponse::getOwnerName);
-        optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey(), ownerFieldOption);
+    // 补充负责人选项
+    List<OptionDTO> ownerFieldOption =
+        moduleFormService.getBusinessFieldOption(
+            list,
+            AdvancedCustomerContactResponse::getOwner,
+            AdvancedCustomerContactResponse::getOwnerName);
+    optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey(), ownerFieldOption);
 
-        // 补充客户选项
-        List<OptionDTO> customerFieldOption = moduleFormService.getBusinessFieldOption(list,
-                AdvancedCustomerContactResponse::getCustomerId, AdvancedCustomerContactResponse::getCustomerName);
-        optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey(), customerFieldOption);
-        return optionMap;
+    // 补充客户选项
+    List<OptionDTO> customerFieldOption =
+        moduleFormService.getBusinessFieldOption(
+            list,
+            AdvancedCustomerContactResponse::getCustomerId,
+            AdvancedCustomerContactResponse::getCustomerName);
+    optionMap.put(
+        BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey(), customerFieldOption);
+    return optionMap;
+  }
+
+  private List<AdvancedCustomerContactResponse> buildCustomerContactData(
+      List<CustomerContactListResponse> list, String orgId, String userId) {
+    if (CollectionUtils.isEmpty(list)) {
+      return List.of();
     }
 
-    private List<AdvancedCustomerContactResponse> buildCustomerContactData(List<CustomerContactListResponse> list, String orgId, String userId) {
-        if (CollectionUtils.isEmpty(list)) {
-            return List.of();
-        }
+    List<String> customerContactIds =
+        list.stream()
+            .map(CustomerContactListResponse::getId)
+            .distinct()
+            .collect(Collectors.toList());
 
-        List<String> customerContactIds = list.stream().map(CustomerContactListResponse::getId)
-                .distinct()
-                .collect(Collectors.toList());
+    List<String> customerIds =
+        list.stream()
+            .map(CustomerContactListResponse::getCustomerId)
+            .distinct()
+            .collect(Collectors.toList());
 
-        List<String> customerIds = list.stream().map(CustomerContactListResponse::getCustomerId)
-                .distinct()
-                .collect(Collectors.toList());
+    Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap =
+        customerContactFieldService.getResourceFieldMap(customerContactIds, true);
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
+    Map<String, String> customNameMap =
+        extCustomerMapper.selectOptionByIds(customerIds).stream()
+            .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
-        Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
-                .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    List<String> ownerIds =
+        list.stream().map(CustomerContactListResponse::getOwner).distinct().toList();
 
-        List<String> ownerIds = list.stream()
-                .map(CustomerContactListResponse::getOwner)
-                .distinct()
-                .toList();
+    Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+    List<AdvancedCustomerContactResponse> returnList = new ArrayList<>();
+    list.forEach(
+        customerListResponse -> {
+          // 获取自定义字段
+          List<BaseModuleFieldValue> customerFields =
+              caseCustomFiledMap.get(customerListResponse.getId());
+          customerListResponse.setModuleFields(customerFields);
 
-        List<AdvancedCustomerContactResponse> returnList = new ArrayList<>();
-        list.forEach(customerListResponse -> {
-            // 获取自定义字段
-            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
-            customerListResponse.setModuleFields(customerFields);
+          UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
+          if (userDeptDTO != null) {
+            customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
+            customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
+          }
 
-            UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
-            if (userDeptDTO != null) {
-                customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
-                customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
+          customerListResponse.setCustomerName(
+              customNameMap.get(customerListResponse.getCustomerId()));
+          AdvancedCustomerContactResponse advancedCustomerContactResponse =
+              new AdvancedCustomerContactResponse();
+          BeanUtils.copyBean(advancedCustomerContactResponse, customerListResponse);
+          boolean hasPermission =
+              dataScopeService.hasDataPermission(
+                  userId,
+                  orgId,
+                  advancedCustomerContactResponse.getOwner(),
+                  PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+          advancedCustomerContactResponse.setHasPermission(hasPermission);
+          if (!hasPermission) {
+            advancedCustomerContactResponse.setModuleFields(new ArrayList<>());
+            if (StringUtils.isNotBlank(customerListResponse.getCustomerName())) {
+              advancedCustomerContactResponse.setCustomerName(
+                  (String)
+                      getInputFieldValue(
+                          customerListResponse.getCustomerName(),
+                          customerListResponse.getCustomerName().length()));
             }
-
-            customerListResponse.setCustomerName(customNameMap.get(customerListResponse.getCustomerId()));
-            AdvancedCustomerContactResponse advancedCustomerContactResponse = new AdvancedCustomerContactResponse();
-            BeanUtils.copyBean(advancedCustomerContactResponse, customerListResponse);
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, advancedCustomerContactResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-            advancedCustomerContactResponse.setHasPermission(hasPermission);
-            if (!hasPermission) {
-                advancedCustomerContactResponse.setModuleFields(new ArrayList<>());
-                if (StringUtils.isNotBlank(customerListResponse.getCustomerName())) {
-                    advancedCustomerContactResponse.setCustomerName((String) getInputFieldValue(customerListResponse.getCustomerName(), customerListResponse.getCustomerName().length()));
-                }
-                if (StringUtils.isNotBlank(customerListResponse.getName())) {
-                    advancedCustomerContactResponse.setName((String) getInputFieldValue(customerListResponse.getName(), customerListResponse.getName().length()));
-                }
-                if (StringUtils.isNotBlank(customerListResponse.getPhone())) {
-                    advancedCustomerContactResponse.setPhone((String) getPhoneFieldValue(customerListResponse.getPhone(), customerListResponse.getPhone().length()));
-                }
+            if (StringUtils.isNotBlank(customerListResponse.getName())) {
+              advancedCustomerContactResponse.setName(
+                  (String)
+                      getInputFieldValue(
+                          customerListResponse.getName(), customerListResponse.getName().length()));
             }
-            returnList.add(advancedCustomerContactResponse);
+            if (StringUtils.isNotBlank(customerListResponse.getPhone())) {
+              advancedCustomerContactResponse.setPhone(
+                  (String)
+                      getPhoneFieldValue(
+                          customerListResponse.getPhone(),
+                          customerListResponse.getPhone().length()));
+            }
+          }
+          returnList.add(advancedCustomerContactResponse);
         });
 
-        return baseService.setCreateUpdateOwnerUserName(returnList);
-    }
+    return baseService.setCreateUpdateOwnerUserName(returnList);
+  }
 }

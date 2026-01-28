@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 @Component
 class ExportConsumer implements TopicConsumer {
 
-    @Override
-    public String getChannel() {
-        return TopicConstants.DOWNLOAD_TOPIC;
-    }
+  @Override
+  public String getChannel() {
+    return TopicConstants.DOWNLOAD_TOPIC;
+  }
 
-    @Override
-    public void consume(String message) {
-        ExportThreadRegistry.stop(message);
-    }
+  @Override
+  public void consume(String message) {
+    ExportThreadRegistry.stop(message);
+  }
 }

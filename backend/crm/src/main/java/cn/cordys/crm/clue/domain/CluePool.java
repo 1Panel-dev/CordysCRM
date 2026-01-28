@@ -9,21 +9,21 @@ import lombok.Data;
 @Table(name = "clue_pool")
 public class CluePool extends BaseModel {
 
-    @Schema(description = "线索池名称")
-    private String name;
+  @Schema(description = "线索池名称")
+  private String name;
 
-    @Schema(description = "成员ID")
-    private String scopeId;
+  @Schema(description = "成员ID")
+  private String scopeId;
 
-    @Schema(description = "组织ID")
-    private String organizationId;
+  @Schema(description = "组织ID")
+  private String organizationId;
 
-    @Schema(description = "管理员ID")
-    private String ownerId;
+  @Schema(description = "管理员ID")
+  private String ownerId;
 
-    @Schema(description = "启用/禁用")
-    private Boolean enable;
+  @Schema(description = "启用/禁用")
+  private Boolean enable;
 
-    @Schema(description = "自动回收")
-    private Boolean auto;
+  @Schema(description = "自动回收")
+  private Boolean auto;
 }

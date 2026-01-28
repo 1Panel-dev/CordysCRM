@@ -7,7 +7,4 @@ import lombok.Data;
  * @author song-cc-rock
  */
 @Data
-public class ProductPricePageRequest extends BasePageRequest {
-
-
-}
+public class ProductPricePageRequest extends BasePageRequest {}

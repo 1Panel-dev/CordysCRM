@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.agent.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.context.OrganizationContext;
@@ -14,64 +13,61 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
+import java.util.Map;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @Tag(name = "智能体模块")
 @RestController
 @RequestMapping("/agent/module")
 public class AgentModuleController {
 
+  @Resource private AgentModuleService agentModuleService;
 
-    @Resource
-    private AgentModuleService agentModuleService;
+  @PostMapping("/add")
+  @RequiresPermissions(PermissionConstants.AGENT_ADD)
+  @Operation(summary = "智能体-添加文件夹")
+  public AgentModule addFileModule(@Validated @RequestBody AgentModuleAddRequest request) {
+    return agentModuleService.addFileModule(
+        request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+  }
 
+  @PostMapping("/rename")
+  @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
+  @Operation(summary = "智能体-重命名文件夹")
+  public void rename(@Validated @RequestBody AgentModuleRenameRequest request) {
+    agentModuleService.rename(request, SessionUtils.getUserId());
+  }
 
-    @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.AGENT_ADD)
-    @Operation(summary = "智能体-添加文件夹")
-    public AgentModule addFileModule(@Validated @RequestBody AgentModuleAddRequest request) {
-        return agentModuleService.addFileModule(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-    }
+  @PostMapping("/delete")
+  @RequiresPermissions(PermissionConstants.AGENT_DELETE)
+  @Operation(summary = "智能体-刪除文件夹")
+  public void deleteAgentModule(@RequestBody @NotEmpty List<String> ids) {
+    agentModuleService.delete(
+        ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
+  @GetMapping("/tree")
+  @Operation(summary = "智能体-文件树查询")
+  @RequiresPermissions(PermissionConstants.AGENT_READ)
+  public List<BaseTreeNode> getTree() {
+    return agentModuleService.getTree(OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/rename")
-    @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
-    @Operation(summary = "智能体-重命名文件夹")
-    public void rename(@Validated @RequestBody AgentModuleRenameRequest request) {
-        agentModuleService.rename(request, SessionUtils.getUserId());
-    }
+  @GetMapping("/count")
+  @Operation(summary = "智能体-文件树数量")
+  @RequiresPermissions(PermissionConstants.AGENT_READ)
+  public Map<String, Long> moduleCount() {
+    return agentModuleService.moduleCount(
+        SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+  }
 
-    @PostMapping("/delete")
-    @RequiresPermissions(PermissionConstants.AGENT_DELETE)
-    @Operation(summary = "智能体-刪除文件夹")
-    public void deleteAgentModule(@RequestBody @NotEmpty List<String> ids) {
-        agentModuleService.delete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @GetMapping("/tree")
-    @Operation(summary = "智能体-文件树查询")
-    @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public List<BaseTreeNode> getTree() {
-        return agentModuleService.getTree(OrganizationContext.getOrganizationId());
-    }
-
-    @GetMapping("/count")
-    @Operation(summary = "智能体-文件树数量")
-    @RequiresPermissions(PermissionConstants.AGENT_READ)
-    public Map<String, Long> moduleCount() {
-        return agentModuleService.moduleCount(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/move")
-    @Operation(summary = "智能体-文件夹移动")
-    @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
-    public void moveNode(@Validated @RequestBody NodeMoveRequest request) {
-        agentModuleService.moveNode(request, SessionUtils.getUserId());
-    }
-
+  @PostMapping("/move")
+  @Operation(summary = "智能体-文件夹移动")
+  @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
+  public void moveNode(@Validated @RequestBody NodeMoveRequest request) {
+    agentModuleService.moveNode(request, SessionUtils.getUserId());
+  }
 }

@@ -2,9 +2,8 @@ package cn.cordys.crm.system.mapper;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.system.domain.Role;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author jianxing
@@ -12,11 +11,11 @@ import java.util.List;
  */
 public interface ExtRoleMapper {
 
-    boolean checkAddExist(@Param("role") Role role);
+  boolean checkAddExist(@Param("role") Role role);
 
-    boolean checkUpdateExist(@Param("role") Role role);
+  boolean checkUpdateExist(@Param("role") Role role);
 
-    List<String> getInternalRoleIds();
+  List<String> getInternalRoleIds();
 
-    List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
+  List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
 }

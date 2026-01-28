@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class DingTalkTextDTO {
-    private String content;
+  private String content;
 
-    public DingTalkTextDTO(String content) {
-        this.content = content;
-    }
+  public DingTalkTextDTO(String content) {
+    this.content = content;
+  }
 }

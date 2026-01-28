@@ -8,74 +8,80 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class FollowUpPlanLogService extends BaseModuleLogService {
 
-    @Resource
-    private BaseMapper<Customer> customerMapper;
+  @Resource private BaseMapper<Customer> customerMapper;
 
-    @Override
-    public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-        differences = super.handleModuleLogField(differences, orgId, FormKey.FOLLOW_PLAN.getKey());
+  @Override
+  public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+    differences = super.handleModuleLogField(differences, orgId, FormKey.FOLLOW_PLAN.getKey());
 
-        for (JsonDifferenceDTO differ : differences) {
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CUSTOMER.getBusinessKey())) {
-                if (differ.getOldValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
-                    if (customer != null) {
-                        differ.setOldValueName(customer.getName());
-                    }
-                }
-                if (differ.getNewValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getNewValue().toString());
-                    if (customer != null) {
-                        differ.setNewValueName(customer.getName());
-                    }
-                }
-                continue;
-            }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CLUE.getBusinessKey())) {
-                setClueName(differ);
-                continue;
-            }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTENT.getBusinessKey())) {
-                differ.setColumnName(Translator.get("log.follow_record_content"));
-                continue;
-            }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OWNER.getBusinessKey())) {
-                setUserFieldName(differ);
-                continue;
-            }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTACT.getBusinessKey())) {
-                setContactFieldName(differ);
-                continue;
-            }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_ESTIMATED_TIME.getBusinessKey())) {
-                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
-                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
-                continue;
-            }
-
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
-                setOpportunityName(differ);
-            }
-
+    for (JsonDifferenceDTO differ : differences) {
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CUSTOMER.getBusinessKey())) {
+        if (differ.getOldValue() != null) {
+          Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
+          if (customer != null) {
+            differ.setOldValueName(customer.getName());
+          }
         }
-        return differences;
-    }
+        if (differ.getNewValue() != null) {
+          Customer customer = customerMapper.selectByPrimaryKey(differ.getNewValue().toString());
+          if (customer != null) {
+            differ.setNewValueName(customer.getName());
+          }
+        }
+        continue;
+      }
 
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CLUE.getBusinessKey())) {
+        setClueName(differ);
+        continue;
+      }
+
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTENT.getBusinessKey())) {
+        differ.setColumnName(Translator.get("log.follow_record_content"));
+        continue;
+      }
+
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OWNER.getBusinessKey())) {
+        setUserFieldName(differ);
+        continue;
+      }
+
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_CONTACT.getBusinessKey())) {
+        setContactFieldName(differ);
+        continue;
+      }
+
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_ESTIMATED_TIME.getBusinessKey())) {
+        differ.setOldValueName(
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(Long.parseLong(differ.getOldValue().toString())));
+        differ.setNewValueName(
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(Long.parseLong(differ.getNewValue().toString())));
+        continue;
+      }
+
+      if (Strings.CS.equals(
+          differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
+        setOpportunityName(differ);
+      }
+    }
+    return differences;
+  }
 }

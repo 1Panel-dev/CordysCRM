@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class AdvancedCluePoolResponse extends ClueListResponse {
 
-    @Schema(description = "线索池名称")
-    private String poolName;
+  @Schema(description = "线索池名称")
+  private String poolName;
 
-    @Schema(description = "是否有当前数据的权限")
-    private boolean hasPermission;
+  @Schema(description = "是否有当前数据的权限")
+  private boolean hasPermission;
 }

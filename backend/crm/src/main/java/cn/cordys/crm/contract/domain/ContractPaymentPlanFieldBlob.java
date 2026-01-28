@@ -4,7 +4,6 @@ import cn.cordys.common.domain.BaseResourceField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 合同回款自定义属性大文本
  *
@@ -13,5 +12,4 @@ import lombok.Data;
  */
 @Data
 @Table(name = "contract_payment_plan_field_blob")
-public class ContractPaymentPlanFieldBlob extends BaseResourceField {
-}
+public class ContractPaymentPlanFieldBlob extends BaseResourceField {}

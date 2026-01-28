@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.dto.field;
 
-
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,9 +11,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class LinkField extends BaseField {
 
-    @Schema(description = "链接来源")
-    private String linkSource;
+  @Schema(description = "链接来源")
+  private String linkSource;
 
-    @Schema(description = "打开方式")
-    private String openMode;
+  @Schema(description = "打开方式")
+  private String openMode;
 }

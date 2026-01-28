@@ -6,11 +6,9 @@ import lombok.Data;
 @Data
 public class QccBaseResponse {
 
+  @JsonProperty("Status")
+  private String status;
 
-    @JsonProperty("Status")
-    private String status;
-
-    @JsonProperty("Message")
-    private String message;
-
+  @JsonProperty("Message")
+  private String message;
 }

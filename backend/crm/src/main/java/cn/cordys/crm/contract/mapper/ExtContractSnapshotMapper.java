@@ -5,5 +5,5 @@ import org.apache.ibatis.annotations.Param;
 
 public interface ExtContractSnapshotMapper {
 
-    void update(@Param("snapshot") ContractSnapshot snapshot);
+  void update(@Param("snapshot") ContractSnapshot snapshot);
 }

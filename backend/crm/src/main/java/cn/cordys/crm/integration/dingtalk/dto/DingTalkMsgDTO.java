@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class DingTalkMsgDTO {
-    private DingTalkTextDTO text;
-    private String msgtype;
+  private DingTalkTextDTO text;
+  private String msgtype;
 }

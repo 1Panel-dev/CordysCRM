@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class UserBatchEnableRequest extends UserBatchRequest {
 
-    @Schema(description = "禁用/启用", requiredMode = Schema.RequiredMode.REQUIRED)
-    boolean enable;
+  @Schema(description = "禁用/启用", requiredMode = Schema.RequiredMode.REQUIRED)
+  boolean enable;
 }

@@ -8,8 +8,9 @@ import lombok.Data;
 @Builder
 public class BatchAffectResponse {
 
-    @Schema(description = "成功条数")
-    private Integer success;
-    @Schema(description = "失败条数")
-    private Integer fail;
+  @Schema(description = "成功条数")
+  private Integer success;
+
+  @Schema(description = "失败条数")
+  private Integer fail;
 }

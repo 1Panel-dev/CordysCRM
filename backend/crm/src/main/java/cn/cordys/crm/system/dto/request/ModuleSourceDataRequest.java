@@ -7,10 +7,14 @@ import lombok.Data;
 @Data
 public class ModuleSourceDataRequest extends BasePageRequest {
 
-    @Schema(description = "表单Key")
-    private String formKey;
-    @Schema(description = "字段ID")
-    private String fieldId;
-    @Schema(description = "数据来源类型", allowableValues = {"CUSTOMER", "CONTACT", "BUSINESS", "PRODUCT"})
-    private String sourceType;
+  @Schema(description = "表单Key")
+  private String formKey;
+
+  @Schema(description = "字段ID")
+  private String fieldId;
+
+  @Schema(
+      description = "数据来源类型",
+      allowableValues = {"CUSTOMER", "CONTACT", "BUSINESS", "PRODUCT"})
+  private String sourceType;
 }

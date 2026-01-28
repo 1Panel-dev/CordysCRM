@@ -15,24 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class CustomerFieldService extends BaseResourceFieldService<CustomerField, CustomerFieldBlob> {
-    @Resource
-    private BaseMapper<CustomerField> customerFieldMapper;
-    @Resource
-    private BaseMapper<CustomerFieldBlob> customerFieldBlobMapper;
+public class CustomerFieldService
+    extends BaseResourceFieldService<CustomerField, CustomerFieldBlob> {
+  @Resource private BaseMapper<CustomerField> customerFieldMapper;
+  @Resource private BaseMapper<CustomerFieldBlob> customerFieldBlobMapper;
 
-    @Override
-    protected String getFormKey() {
-        return FormKey.CUSTOMER.getKey();
-    }
+  @Override
+  protected String getFormKey() {
+    return FormKey.CUSTOMER.getKey();
+  }
 
-    @Override
-    protected BaseMapper<CustomerField> getResourceFieldMapper() {
-        return customerFieldMapper;
-    }
+  @Override
+  protected BaseMapper<CustomerField> getResourceFieldMapper() {
+    return customerFieldMapper;
+  }
 
-    @Override
-    protected BaseMapper<CustomerFieldBlob> getResourceFieldBlobMapper() {
-        return customerFieldBlobMapper;
-    }
+  @Override
+  protected BaseMapper<CustomerFieldBlob> getResourceFieldBlobMapper() {
+    return customerFieldBlobMapper;
+  }
 }

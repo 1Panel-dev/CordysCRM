@@ -6,5 +6,4 @@ import lombok.Data;
 
 @Data
 @Table(name = "product_field")
-public class ProductField extends BaseResourceField {
-}
+public class ProductField extends BaseResourceField {}

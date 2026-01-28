@@ -3,25 +3,30 @@ package cn.cordys.crm.integration.agent.mapper;
 import cn.cordys.common.dto.BaseTree;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.NodeSortQueryParam;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 public interface ExtAgentModuleMapper {
 
-    int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId, @Param("id") String id);
+  int countByName(
+      @Param("name") String name,
+      @Param("parentId") String parentId,
+      @Param("orgId") String orgId,
+      @Param("id") String id);
 
-    Long getNextPosByOrgId(@Param("orgId") String orgId);
+  Long getNextPosByOrgId(@Param("orgId") String orgId);
 
-    int countAgentByIds(@Param("agentModuleIds") List<String> agentModuleIds, @Param("orgId") String orgId);
+  int countAgentByIds(
+      @Param("agentModuleIds") List<String> agentModuleIds, @Param("orgId") String orgId);
 
-    List<BaseTreeNode> selectTreeNode(@Param("orgId") String orgId);
+  List<BaseTreeNode> selectTreeNode(@Param("orgId") String orgId);
 
-    BaseTree selectBaseModuleById(@Param("dragNodeId") String dragNodeId);
+  BaseTree selectBaseModuleById(@Param("dragNodeId") String dragNodeId);
 
-    BaseTree selectModuleByParentIdAndPosOperator(@Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
+  BaseTree selectModuleByParentIdAndPosOperator(
+      @Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
 
-    List<String> selectChildrenIds(@Param("parentId") String parentId);
+  List<String> selectChildrenIds(@Param("parentId") String parentId);
 
-    void updatePos(@Param("id") String id, @Param("pos") long pos);
+  void updatePos(@Param("id") String id, @Param("pos") long pos);
 }

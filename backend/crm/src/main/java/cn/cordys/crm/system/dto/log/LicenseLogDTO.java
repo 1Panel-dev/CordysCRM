@@ -4,6 +4,4 @@ import cn.cordys.common.domain.BaseModel;
 import lombok.Data;
 
 @Data
-public class LicenseLogDTO extends BaseModel {
-
-}
+public class LicenseLogDTO extends BaseModel {}

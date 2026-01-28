@@ -7,12 +7,11 @@ import lombok.Data;
 @Data
 public class BusinessTitleApprovalRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String id;
 
-
-    @NotBlank
-    @Schema(description = "审核状态", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String approvalStatus;
+  @NotBlank
+  @Schema(description = "审核状态", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String approvalStatus;
 }

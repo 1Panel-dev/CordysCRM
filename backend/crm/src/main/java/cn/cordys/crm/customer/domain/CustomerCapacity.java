@@ -9,15 +9,15 @@ import lombok.Data;
 @Table(name = "customer_capacity")
 public class CustomerCapacity extends BaseModel {
 
-    @Schema(description = "组织架构ID")
-    private String organizationId;
+  @Schema(description = "组织架构ID")
+  private String organizationId;
 
-    @Schema(description = "范围ID")
-    private String scopeId;
+  @Schema(description = "范围ID")
+  private String scopeId;
 
-    @Schema(description = "库容")
-    private Integer capacity;
+  @Schema(description = "库容")
+  private Integer capacity;
 
-    @Schema(description = "过滤条件")
-    private String filter;
+  @Schema(description = "过滤条件")
+  private String filter;
 }

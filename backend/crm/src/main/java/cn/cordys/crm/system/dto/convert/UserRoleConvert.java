@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 public class UserRoleConvert extends OptionDTO {
-    @Schema(description = "选项ID")
-    private String userId;
+  @Schema(description = "选项ID")
+  private String userId;
 }

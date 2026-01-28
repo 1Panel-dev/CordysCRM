@@ -9,7 +9,6 @@ import lombok.Data;
 @Table(name = "sys_license")
 public class License extends BaseModel {
 
-    @Schema(description = "license_code")
-    private String licenseCode;
-
+  @Schema(description = "license_code")
+  private String licenseCode;
 }

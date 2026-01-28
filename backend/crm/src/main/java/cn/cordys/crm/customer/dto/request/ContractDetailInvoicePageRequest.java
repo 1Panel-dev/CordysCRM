@@ -6,17 +6,16 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-11-26  11:35
+ * @Author: jianxing @CreateTime: 2025-11-26 11:35
  */
 @Data
 public class ContractDetailInvoicePageRequest extends ContractInvoicePageRequest {
-    @NotBlank
-    @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String contractId;
+  @NotBlank
+  @Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String contractId;
 
-    @Override
-    public String getContractId() {
-        return contractId;
-    }
+  @Override
+  public String getContractId() {
+    return contractId;
+  }
 }

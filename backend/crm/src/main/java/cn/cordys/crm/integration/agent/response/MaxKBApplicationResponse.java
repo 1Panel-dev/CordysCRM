@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class MaxKBApplicationResponse extends MaxKBResponseEntity {
 
-    @JsonProperty("data")
-    ApplicationDetail data;
+  @JsonProperty("data")
+  ApplicationDetail data;
 }

@@ -1,8 +1,7 @@
 package cn.cordys.crm.system.dto.form;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * @author song-cc-rock
@@ -10,7 +9,7 @@ import java.util.List;
 @Data
 public class IndustryDict {
 
-    private String label;
-    private String value;
-    private List<IndustryDict> children;
+  private String label;
+  private String value;
+  private List<IndustryDict> children;
 }

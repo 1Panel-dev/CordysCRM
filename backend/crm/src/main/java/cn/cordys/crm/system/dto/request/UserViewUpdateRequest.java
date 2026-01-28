@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class UserViewUpdateRequest extends UserViewAddRequest {
 
-    @Schema(description = "id")
-    @NotBlank
-    private String id;
+  @Schema(description = "id")
+  @NotBlank
+  private String id;
 }

@@ -6,5 +6,4 @@ import lombok.Data;
 
 @Data
 @Table(name = "opportunity_field_blob")
-public class OpportunityFieldBlob extends BaseResourceField {
-}
+public class OpportunityFieldBlob extends BaseResourceField {}

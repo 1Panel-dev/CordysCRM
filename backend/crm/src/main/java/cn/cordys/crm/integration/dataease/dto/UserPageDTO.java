@@ -1,28 +1,26 @@
 package cn.cordys.crm.integration.dataease.dto;
 
 import cn.cordys.common.dto.OptionDTO;
+import java.util.List;
 import lombok.Data;
 
-import java.util.List;
-
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  15:54
+ * @Author: jianxing @CreateTime: 2025-08-15 15:54
  */
 @Data
 public class UserPageDTO {
 
-    private String id;
+  private String id;
 
-    private String account;
+  private String account;
 
-    private String name;
+  private String name;
 
-    private String email;
+  private String email;
 
-    private Boolean enable = true;
+  private Boolean enable = true;
 
-    private List<OptionDTO> roleItems;
+  private List<OptionDTO> roleItems;
 
-    private String sysVariable;
+  private String sysVariable;
 }

@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class PoolCustomerPickRequest {
 
-    @NotBlank
-    @Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String customerId;
+  @NotBlank
+  @Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String customerId;
 
-    @NotBlank
-    @Schema(description = "公海ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String poolId;
+  @NotBlank
+  @Schema(description = "公海ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String poolId;
 }

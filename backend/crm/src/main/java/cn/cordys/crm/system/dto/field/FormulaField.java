@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 公式字段
+ *
  * @author song-cc-rock
  */
 @Data
@@ -15,9 +16,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class FormulaField extends BaseField {
 
-	@Schema(description = "公式")
-	private String formula;
+  @Schema(description = "公式")
+  private String formula;
 
-	@Schema(description = "显示千分位")
-	private Boolean showThousandsSeparator;
+  @Schema(description = "显示千分位")
+  private Boolean showThousandsSeparator;
 }

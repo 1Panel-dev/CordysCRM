@@ -11,6 +11,4 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName(value = "INDUSTRY")
 @EqualsAndHashCode(callSuper = true)
-public class IndustryField extends BaseField {
-
-}
+public class IndustryField extends BaseField {}

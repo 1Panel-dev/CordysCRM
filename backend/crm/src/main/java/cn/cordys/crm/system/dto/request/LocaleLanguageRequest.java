@@ -8,8 +8,8 @@ import lombok.Data;
 @Data
 public class LocaleLanguageRequest {
 
-    @Schema(description = "国际化", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Pattern(regexp = "(zh-CN)|(en-US)", message = "locale格式不正确")
-    @NotEmpty
-    private String language;
+  @Schema(description = "国际化", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Pattern(regexp = "(zh-CN)|(en-US)", message = "locale格式不正确")
+  @NotEmpty
+  private String language;
 }

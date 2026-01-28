@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class ThirdSwitchLogDTO {
 
-    @Schema(description = "应用类型")
-    private String thirdType;
-
+  @Schema(description = "应用类型")
+  private String thirdType;
 }

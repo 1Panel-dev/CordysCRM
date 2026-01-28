@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 用户关联角色
  *
@@ -16,9 +15,9 @@ import lombok.Data;
 @Table(name = "sys_user_role")
 public class UserRole extends BaseModel {
 
-    @Schema(description = "角色id")
-    private String roleId;
+  @Schema(description = "角色id")
+  private String roleId;
 
-    @Schema(description = "用户id")
-    private String userId;
+  @Schema(description = "用户id")
+  private String userId;
 }

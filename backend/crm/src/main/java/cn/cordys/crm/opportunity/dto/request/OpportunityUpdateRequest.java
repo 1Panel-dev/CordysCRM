@@ -8,11 +8,10 @@ import lombok.Data;
 @Data
 public class OpportunityUpdateRequest extends OpportunityAddRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Size(max = 32)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Size(max = 32)
+  private String id;
 
-
-    private Boolean agentInvoke = false;
+  private Boolean agentInvoke = false;
 }

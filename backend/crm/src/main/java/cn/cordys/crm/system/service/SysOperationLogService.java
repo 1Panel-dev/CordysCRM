@@ -18,6 +18,12 @@ import cn.cordys.crm.system.mapper.ExtOperationLogMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,160 +31,160 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
 public class SysOperationLogService {
 
-    @Resource
-    private ExtOperationLogMapper extOperationLogMapper;
+  @Resource private ExtOperationLogMapper extOperationLogMapper;
 
-    @Resource
-    private ExtUserMapper extUserMapper;
+  @Resource private ExtUserMapper extUserMapper;
 
-    @Resource
-    private BaseMapper<OperationLogBlob> operationLogBlobMapper;
-    @Resource
-    private BaseMapper<OperationLog> operationLogMapper;
-    @Resource
-    private BaseService baseService;
+  @Resource private BaseMapper<OperationLogBlob> operationLogBlobMapper;
+  @Resource private BaseMapper<OperationLog> operationLogMapper;
+  @Resource private BaseService baseService;
 
-    /**
-     * 操作日志列表查询
-     */
-    public List<OperationLogResponse> list(OperationLogRequest request, String orgId) {
-        checkTime(request.getStartTime(), request.getEndTime());
-        List<OperationLogResponse> list = extOperationLogMapper.list(request, orgId);
-        handleData(list);
-        return list;
+  /** 操作日志列表查询 */
+  public List<OperationLogResponse> list(OperationLogRequest request, String orgId) {
+    checkTime(request.getStartTime(), request.getEndTime());
+    List<OperationLogResponse> list = extOperationLogMapper.list(request, orgId);
+    handleData(list);
+    return list;
+  }
+
+  /**
+   * 处理数据
+   *
+   * @param list 操作日志列表
+   */
+  private void handleData(List<OperationLogResponse> list) {
+    if (CollectionUtils.isNotEmpty(list)) {
+      List<String> userIds =
+          list.stream().map(OperationLogResponse::getOperator).collect(Collectors.toList());
+
+      List<OptionDTO> userList = extUserMapper.selectUserOptionByIds(userIds);
+      Map<String, String> userMap =
+          userList.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+      list.forEach(
+          item ->
+              item.setOperatorName(userMap.getOrDefault(item.getOperator(), StringUtils.EMPTY)));
+    }
+  }
+
+  /**
+   * 时间校验
+   *
+   * @param startTime 开始时间
+   * @param endTime 结束时间
+   */
+  private void checkTime(Long startTime, Long endTime) {
+    if (startTime > endTime) {
+      throw new GenericException(Translator.get("startTime_must_be_less_than_endTime"));
+    }
+  }
+
+  /**
+   * 获取日志详情
+   *
+   * @param id 日志ID
+   * @return 日志详情
+   */
+  public OperationLogDetailResponse getLogDetail(String id, String orgId) {
+    OperationLog operationLog = operationLogMapper.selectByPrimaryKey(id);
+    if (operationLog == null) {
+      throw new GenericException(Translator.get("log.not_found"));
     }
 
-    /**
-     * 处理数据
-     *
-     * @param list 操作日志列表
-     */
-    private void handleData(List<OperationLogResponse> list) {
-        if (CollectionUtils.isNotEmpty(list)) {
-            List<String> userIds = list.stream()
-                    .map(OperationLogResponse::getOperator)
-                    .collect(Collectors.toList());
+    // 构建基础响应对象
+    OperationLogDetailResponse logResponse =
+        BeanUtils.copyBean(new OperationLogDetailResponse(), operationLog);
+    logResponse.setOperator(operationLog.getCreateUser());
+    logResponse.setOperatorName(baseService.getUserName(logResponse.getOperator()));
 
-            List<OptionDTO> userList = extUserMapper.selectUserOptionByIds(userIds);
-            Map<String, String> userMap = userList.stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-
-            list.forEach(item -> item.setOperatorName(userMap.getOrDefault(item.getOperator(), StringUtils.EMPTY)));
-        }
+    OperationLogBlob operationLogBlob = operationLogBlobMapper.selectByPrimaryKey(id);
+    if (operationLogBlob == null) {
+      return logResponse;
     }
 
-    /**
-     * 时间校验
-     *
-     * @param startTime 开始时间
-     * @param endTime   结束时间
-     */
-    private void checkTime(Long startTime, Long endTime) {
-        if (startTime > endTime) {
-            throw new GenericException(Translator.get("startTime_must_be_less_than_endTime"));
+    // 解析旧值和新值
+    String oldString =
+        Optional.ofNullable(operationLogBlob.getOriginalValue())
+            .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
+            .orElse("");
+    String newString =
+        Optional.ofNullable(operationLogBlob.getModifiedValue())
+            .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
+            .orElse("");
+
+    try {
+      List<JsonDifferenceDTO> differences = new ArrayList<>();
+      JsonDifferenceUtils.compareJson(oldString, newString, differences);
+
+      // 过滤掉不需要的字段
+      differences = filterIgnoreFields(differences);
+
+      if (CollectionUtils.isNotEmpty(differences)) {
+        // 获取模块对应处理服务
+        BaseModuleLogService moduleLogService =
+            ModuleLogServiceFactory.getModuleLogService(operationLog.getModule());
+
+        if (moduleLogService != null) {
+          differences = moduleLogService.handleLogField(differences, orgId);
+        } else {
+          handleDefaultDifferences(operationLog, differences);
         }
+      }
+
+      logResponse.setDiffs(differences);
+    } catch (Exception e) {
+      log.error("解析日志差异异常: {}", e.getMessage(), e);
+      throw new GenericException(Translator.get("data_parsing_exception"));
     }
 
-    /**
-     * 获取日志详情
-     *
-     * @param id 日志ID
-     *
-     * @return 日志详情
-     */
-    public OperationLogDetailResponse getLogDetail(String id, String orgId) {
-        OperationLog operationLog = operationLogMapper.selectByPrimaryKey(id);
-        if (operationLog == null) {
-            throw new GenericException(Translator.get("log.not_found"));
-        }
+    return logResponse;
+  }
 
-        // 构建基础响应对象
-        OperationLogDetailResponse logResponse = BeanUtils.copyBean(new OperationLogDetailResponse(), operationLog);
-        logResponse.setOperator(operationLog.getCreateUser());
-        logResponse.setOperatorName(baseService.getUserName(logResponse.getOperator()));
-
-        OperationLogBlob operationLogBlob = operationLogBlobMapper.selectByPrimaryKey(id);
-        if (operationLogBlob == null) {
-            return logResponse;
-        }
-
-        // 解析旧值和新值
-        String oldString = Optional.ofNullable(operationLogBlob.getOriginalValue())
-                .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
-                .orElse("");
-        String newString = Optional.ofNullable(operationLogBlob.getModifiedValue())
-                .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
-                .orElse("");
-
-        try {
-            List<JsonDifferenceDTO> differences = new ArrayList<>();
-            JsonDifferenceUtils.compareJson(oldString, newString, differences);
-
-            // 过滤掉不需要的字段
-            differences = filterIgnoreFields(differences);
-
-            if (CollectionUtils.isNotEmpty(differences)) {
-                // 获取模块对应处理服务
-                BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(operationLog.getModule());
-
-                if (moduleLogService != null) {
-                    differences = moduleLogService.handleLogField(differences, orgId);
-                } else {
-                    handleDefaultDifferences(operationLog, differences);
-                }
+  // 默认差异处理逻辑
+  private void handleDefaultDifferences(
+      OperationLog operationLog, List<JsonDifferenceDTO> differences) {
+    // 特殊处理合同业务更新字段
+    if (Strings.CI.equals(operationLog.getModule(), LogModule.CONTRACT_BUSINESS_TITLE)
+        && Strings.CI.equals(operationLog.getType(), LogType.UPDATE)) {
+      differences.forEach(
+          diff -> {
+            if (Strings.CI.equals(diff.getColumn(), "name")) {
+              diff.setColumn("companyName");
             }
-
-            logResponse.setDiffs(differences);
-        } catch (Exception e) {
-            log.error("解析日志差异异常: {}", e.getMessage(), e);
-            throw new GenericException(Translator.get("data_parsing_exception"));
-        }
-
-        return logResponse;
+          });
     }
+    // 通用翻译
+    differences.forEach(BaseModuleLogService::translatorDifferInfo);
+  }
 
-    // 默认差异处理逻辑
-    private void handleDefaultDifferences(OperationLog operationLog, List<JsonDifferenceDTO> differences) {
-        // 特殊处理合同业务更新字段
-        if (Strings.CI.equals(operationLog.getModule(), LogModule.CONTRACT_BUSINESS_TITLE)
-                && Strings.CI.equals(operationLog.getType(), LogType.UPDATE)) {
-            differences.forEach(diff -> {
-                if (Strings.CI.equals(diff.getColumn(), "name")) {
-                    diff.setColumn("companyName");
-                }
-            });
-        }
-        // 通用翻译
-        differences.forEach(BaseModuleLogService::translatorDifferInfo);
-    }
-
-
-    /**
-     * 过滤掉日志对比无需显示的字段
-     * 例如：organizationId
-     *
-     * @param differences
-     *
-     * @return
-     */
-    private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differences) {
-        differences = differences
-                .stream()
-                .filter(differ -> !Strings.CS.equalsAny(differ.getColumn(),
-                        "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos"))
-                .toList();
-        return differences;
-    }
+  /**
+   * 过滤掉日志对比无需显示的字段 例如：organizationId
+   *
+   * @param differences
+   * @return
+   */
+  private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differences) {
+    differences =
+        differences.stream()
+            .filter(
+                differ ->
+                    !Strings.CS.equalsAny(
+                        differ.getColumn(),
+                        "organizationId",
+                        "createUser",
+                        "updateUser",
+                        "createTime",
+                        "updateTime",
+                        "departmentName",
+                        "supervisorName",
+                        "lastStage",
+                        "pos"))
+            .toList();
+    return differences;
+  }
 }

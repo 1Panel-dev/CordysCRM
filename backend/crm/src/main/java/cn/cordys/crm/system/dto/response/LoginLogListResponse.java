@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class LoginLogListResponse extends LoginLog {
 
-    @Schema(description = "操作人名称")
-    private String operatorName;
+  @Schema(description = "操作人名称")
+  private String operatorName;
 }

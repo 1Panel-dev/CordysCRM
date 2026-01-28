@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class ApplicationDetail {
 
-    @JsonProperty("work_flow")
-    private WorkFlow workflow;
+  @JsonProperty("work_flow")
+  private WorkFlow workflow;
 }

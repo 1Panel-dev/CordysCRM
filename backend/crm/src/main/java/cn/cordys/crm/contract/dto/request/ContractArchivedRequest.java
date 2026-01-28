@@ -7,12 +7,11 @@ import lombok.Data;
 @Data
 public class ContractArchivedRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String id;
 
-
-    @NotBlank
-    @Schema(description = "归档状态", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String archivedStatus;
+  @NotBlank
+  @Schema(description = "归档状态", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String archivedStatus;
 }

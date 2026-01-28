@@ -2,19 +2,21 @@ package cn.cordys.crm.system.mapper;
 
 import cn.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import cn.cordys.crm.system.dto.response.AnnouncementDTO;
+import java.util.List;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-
 public interface ExtAnnouncementMapper {
-    List<AnnouncementDTO> selectByBaseRequest(@Param("request") AnnouncementPageRequest request);
+  List<AnnouncementDTO> selectByBaseRequest(@Param("request") AnnouncementPageRequest request);
 
-    AnnouncementDTO selectById(@Param("id") String id);
+  AnnouncementDTO selectById(@Param("id") String id);
 
-    List<AnnouncementDTO> selectInEffectUnConvertData(@Param("timestamp") long timestamp);
+  List<AnnouncementDTO> selectInEffectUnConvertData(@Param("timestamp") long timestamp);
 
-    List<String> selectFixTimeExpiredIds(@Param("startTime") long startTime, @Param("endTime") long endTime);
+  List<String> selectFixTimeExpiredIds(
+      @Param("startTime") long startTime, @Param("endTime") long endTime);
 
-    int updateNotice(@Param("ids") List<String> ids, @Param("notice") Boolean notice, @Param("organizationId") String organizationId);
-
+  int updateNotice(
+      @Param("ids") List<String> ids,
+      @Param("notice") Boolean notice,
+      @Param("organizationId") String organizationId);
 }

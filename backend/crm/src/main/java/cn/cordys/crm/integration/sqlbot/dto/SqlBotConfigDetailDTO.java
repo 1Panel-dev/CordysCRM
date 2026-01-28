@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class SqlBotConfigDetailDTO {
 
-    @Schema(description = "嵌入脚本", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String appSecret;
+  @Schema(description = "嵌入脚本", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String appSecret;
 
-    @Schema(description = "是否验证通过")
-    private Boolean verify;
+  @Schema(description = "是否验证通过")
+  private Boolean verify;
 }

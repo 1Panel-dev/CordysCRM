@@ -12,10 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ScopeNameDTO {
 
-    @Schema(description = "ID")
-    private String id;
-    @Schema(description = "范围")
-    private String scope;
-    @Schema(description = "名称")
-    private String name;
+  @Schema(description = "ID")
+  private String id;
+
+  @Schema(description = "范围")
+  private String scope;
+
+  @Schema(description = "名称")
+  private String name;
 }

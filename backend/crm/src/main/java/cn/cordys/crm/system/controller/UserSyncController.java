@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "用户(员工)同步")
 public class UserSyncController {
 
-    @Resource
-    private ThirdDepartmentService thirdDepartmentService;
+  @Resource private ThirdDepartmentService thirdDepartmentService;
 
-    @GetMapping("/{type}")
-    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
-    @Operation(summary = "用户(员工)-同步组织架构")
-    public void syncUser(@PathVariable String type) {
-        thirdDepartmentService.syncUser(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), type);
-    }
+  @GetMapping("/{type}")
+  @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
+  @Operation(summary = "用户(员工)-同步组织架构")
+  public void syncUser(@PathVariable String type) {
+    thirdDepartmentService.syncUser(
+        SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), type);
+  }
 }

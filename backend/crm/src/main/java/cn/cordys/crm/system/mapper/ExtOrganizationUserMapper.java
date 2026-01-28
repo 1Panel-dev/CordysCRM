@@ -11,9 +11,8 @@ import cn.cordys.crm.system.dto.response.UserImportDTO;
 import cn.cordys.crm.system.dto.response.UserPageResponse;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.security.UserDTO;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author jianxing
@@ -21,43 +20,57 @@ import java.util.List;
  */
 public interface ExtOrganizationUserMapper {
 
-    int countUserByDepartmentIds(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
+  int countUserByDepartmentIds(
+      @Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
 
-    List<UserPageResponse> list(@Param("request") UserPageRequest request, @Param("orderByClause") String orderByClause);
+  List<UserPageResponse> list(
+      @Param("request") UserPageRequest request, @Param("orderByClause") String orderByClause);
 
-    void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId, @Param("time") long time);
+  void enable(
+      @Param("request") UserBatchEnableRequest request,
+      @Param("operatorId") String operatorId,
+      @Param("time") long time);
 
-    List<User> getUserList(@Param("request") UserBatchRequest request);
+  List<User> getUserList(@Param("request") UserBatchRequest request);
 
-    void deleteUserByOrgId(@Param("orgId") String orgId);
+  void deleteUserByOrgId(@Param("orgId") String orgId);
 
-    UserDTO getEnableUser(@Param("resourceUserId") String resourceUserId);
+  UserDTO getEnableUser(@Param("resourceUserId") String resourceUserId);
 
-    List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
+  List<OptionDTO> selectEnableOrgUser(
+      @Param("ids") List<String> ids, @Param("enable") boolean enable);
 
-    void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
+  void updateUserByIds(
+      @Param("request") UserBatchEditRequest request,
+      @Param("operatorId") String operatorId,
+      @Param("orgId") String orgId);
 
-    List<UserImportDTO> selectSupervisor(@Param("nameList") List<String> nameList, @Param("orgId") String orgId);
+  List<UserImportDTO> selectSupervisor(
+      @Param("nameList") List<String> nameList, @Param("orgId") String orgId);
 
-    List<OrganizationUser> getUserByOrgId(@Param("orgId") String orgId);
+  List<OrganizationUser> getUserByOrgId(@Param("orgId") String orgId);
 
-    void updateOrganizationUser(@Param("organizationUser") OrganizationUser organizationUser);
+  void updateOrganizationUser(@Param("organizationUser") OrganizationUser organizationUser);
 
-    void deleteUserByIds(@Param("ids") List<String> ids);
+  void deleteUserByIds(@Param("ids") List<String> ids);
 
-    List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
+  List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
 
-    List<UserResponse> getUserDepAndPhoneByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+  List<UserResponse> getUserDepAndPhoneByUserIds(
+      @Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
-    String getOrgUserIdByUserId(@Param("orgId") String orgId, @Param("userId") String userId);
+  String getOrgUserIdByUserId(@Param("orgId") String orgId, @Param("userId") String userId);
 
-    List<UserResponse> selectByIds(@Param("ids") List<String> ids);
+  List<UserResponse> selectByIds(@Param("ids") List<String> ids);
 
-    void updateById(@Param("organizationUser") OrganizationUser organizationUser);
+  void updateById(@Param("organizationUser") OrganizationUser organizationUser);
 
-    void disableUser(@Param("organizationUser") OrganizationUser organizationUser);
+  void disableUser(@Param("organizationUser") OrganizationUser organizationUser);
 
-    void updateUserByUserId(@Param("userId") String userId, @Param("time") long time, @Param("operatorId") String operatorId);
+  void updateUserByUserId(
+      @Param("userId") String userId,
+      @Param("time") long time,
+      @Param("operatorId") String operatorId);
 
-    String getDepartmentByUserId(@Param("userId") String userId);
+  String getDepartmentByUserId(@Param("userId") String userId);
 }

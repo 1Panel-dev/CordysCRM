@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class PoolBatchAssignRequest extends PoolBatchRequest {
 
-    @NotBlank
-    @Schema(description = "分配用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String assignUserId;
+  @NotBlank
+  @Schema(description = "分配用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String assignUserId;
 }

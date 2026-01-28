@@ -8,10 +8,12 @@ import lombok.Data;
 @Builder
 public class BatchAffectSkipResponse {
 
-    @Schema(description = "成功条数")
-    private Integer success;
-    @Schema(description = "失败条数")
-    private Integer fail;
-    @Schema(description = "跳过数量")
-    private Integer skip;
+  @Schema(description = "成功条数")
+  private Integer success;
+
+  @Schema(description = "失败条数")
+  private Integer fail;
+
+  @Schema(description = "跳过数量")
+  private Integer skip;
 }

@@ -7,8 +7,9 @@ import lombok.Data;
 @Data
 public class BusinessTitleListResponse extends BusinessTitle {
 
-    @Schema(description = "创建人名称")
-    private String createUserName;
-    @Schema(description = "修改人名称")
-    private String updateUserName;
+  @Schema(description = "创建人名称")
+  private String createUserName;
+
+  @Schema(description = "修改人名称")
+  private String updateUserName;
 }

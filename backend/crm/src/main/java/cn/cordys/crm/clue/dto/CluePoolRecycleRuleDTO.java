@@ -2,12 +2,11 @@ package cn.cordys.crm.clue.dto;
 
 import cn.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -15,9 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class CluePoolRecycleRuleDTO {
 
-    @Schema(description = "操作符")
-    private String operator;
+  @Schema(description = "操作符")
+  private String operator;
 
-    @Schema(description = "规则条件集合")
-    private List<RuleConditionDTO> conditions;
+  @Schema(description = "规则条件集合")
+  private List<RuleConditionDTO> conditions;
 }

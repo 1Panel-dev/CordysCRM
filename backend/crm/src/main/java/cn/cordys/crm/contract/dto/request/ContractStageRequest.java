@@ -8,17 +8,17 @@ import lombok.Data;
 @Data
 public class ContractStageRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Size(max = 32)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Size(max = 32)
+  private String id;
 
+  @Schema(
+      description = "阶段: PENDING_SIGNING/SIGNED/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  private String stage;
 
-    @Schema(description = "阶段: PENDING_SIGNING/SIGNED/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String stage;
-
-
-    @Size(max = 255)
-    @Schema(description = "作废原因")
-    private String voidReason;
+  @Size(max = 255)
+  @Schema(description = "作废原因")
+  private String voidReason;
 }

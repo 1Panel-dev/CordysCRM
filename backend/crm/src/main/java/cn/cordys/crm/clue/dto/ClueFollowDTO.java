@@ -11,12 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClueFollowDTO {
 
-	/**
-	 * 最新跟进人
-	 */
-	private String follower;
-	/**
-	 * 最新跟进时间
-	 */
-	private Long followerTime;
+  /** 最新跟进人 */
+  private String follower;
+
+  /** 最新跟进时间 */
+  private Long followerTime;
 }

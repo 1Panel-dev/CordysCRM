@@ -6,12 +6,12 @@ import lombok.Data;
 @Data
 public class Nodes {
 
-    @JsonProperty("id")
-    private String id;
+  @JsonProperty("id")
+  private String id;
 
-    @JsonProperty("type")
-    private String type;
+  @JsonProperty("type")
+  private String type;
 
-    @JsonProperty("properties")
-    private Properties properties;
+  @JsonProperty("properties")
+  private Properties properties;
 }

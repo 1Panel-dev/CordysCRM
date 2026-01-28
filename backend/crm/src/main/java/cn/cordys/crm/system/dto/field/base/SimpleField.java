@@ -1,43 +1,42 @@
 package cn.cordys.crm.system.dto.field.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Data;
 
-import java.util.List;
-
-/**
- * Mcp表单字段描述信息
- */
+/** Mcp表单字段描述信息 */
 @Data
 public class SimpleField {
 
-    @Schema(description = "ID")
-    private String id;
+  @Schema(description = "ID")
+  private String id;
 
-    @Schema(description = "名称")
-    private String name;
+  @Schema(description = "名称")
+  private String name;
 
-    @Schema(description = "类型")
-    private String type;
+  @Schema(description = "类型")
+  private String type;
 
-    @Schema(description = "业务字段名")
-    private String businessKey;
+  @Schema(description = "业务字段名")
+  private String businessKey;
 
-    @Schema(description = "选项枚举值")
-    private List<OptionProp> options;
+  @Schema(description = "选项枚举值")
+  private List<OptionProp> options;
 
-    @Schema(description = "是否必填")
-    private boolean required;
+  @Schema(description = "是否必填")
+  private boolean required;
 
-    @Schema(description = "数据源类型")
-    private String dataSourceType;
+  @Schema(description = "数据源类型")
+  private String dataSourceType;
 
-    @Schema(description = "地址类型|格式")
-    private String locationType;
+  @Schema(description = "地址类型|格式")
+  private String locationType;
 
-    @Schema(description = "日期类型|格式", allowableValues = {"month", "date", "datetime"})
-    private String dateType;
+  @Schema(
+      description = "日期类型|格式",
+      allowableValues = {"month", "date", "datetime"})
+  private String dateType;
 
-    @Schema(description = "显隐规则")
-    private List<ControlRuleProp> showControlRules;
+  @Schema(description = "显隐规则")
+  private List<ControlRuleProp> showControlRules;
 }

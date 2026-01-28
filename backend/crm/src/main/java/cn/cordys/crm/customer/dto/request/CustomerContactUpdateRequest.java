@@ -4,10 +4,8 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-
 import java.util.List;
-
+import lombok.Data;
 
 /**
  * @author jianxing
@@ -16,29 +14,29 @@ import java.util.List;
 @Data
 public class CustomerContactUpdateRequest {
 
-    @NotBlank
-    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Size(max = 32)
-    private String id;
+  @NotBlank
+  @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Size(max = 32)
+  private String id;
 
-    @Size(max = 32)
-    @Schema(description = "客户id")
-    private String customerId;
+  @Size(max = 32)
+  @Schema(description = "客户id")
+  private String customerId;
 
-    @Size(max = 255)
-    @Schema(description = "联系人姓名")
-    private String name;
+  @Size(max = 255)
+  @Schema(description = "联系人姓名")
+  private String name;
 
-    @Size(max = 30)
-    @Schema(description = "联系人电话")
-    private String phone;
+  @Size(max = 30)
+  @Schema(description = "联系人电话")
+  private String phone;
 
-    @Size(max = 32)
-    @Schema(description = "负责人")
-    private String owner;
+  @Size(max = 32)
+  @Schema(description = "负责人")
+  private String owner;
 
-    @Schema(description = "模块字段值")
-    private List<BaseModuleFieldValue> moduleFields;
+  @Schema(description = "模块字段值")
+  private List<BaseModuleFieldValue> moduleFields;
 
-    private Boolean agentInvoke = false;
+  private Boolean agentInvoke = false;
 }

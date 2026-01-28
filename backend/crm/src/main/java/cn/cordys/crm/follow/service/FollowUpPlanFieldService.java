@@ -11,25 +11,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class FollowUpPlanFieldService extends BaseResourceFieldService<FollowUpPlanField, FollowUpPlanFieldBlob> {
+public class FollowUpPlanFieldService
+    extends BaseResourceFieldService<FollowUpPlanField, FollowUpPlanFieldBlob> {
 
-    @Resource
-    private BaseMapper<FollowUpPlanField> followUpPlanFieldMapper;
-    @Resource
-    private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
+  @Resource private BaseMapper<FollowUpPlanField> followUpPlanFieldMapper;
+  @Resource private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
 
-    @Override
-    protected String getFormKey() {
-        return FormKey.FOLLOW_PLAN.getKey();
-    }
+  @Override
+  protected String getFormKey() {
+    return FormKey.FOLLOW_PLAN.getKey();
+  }
 
-    @Override
-    protected BaseMapper<FollowUpPlanField> getResourceFieldMapper() {
-        return followUpPlanFieldMapper;
-    }
+  @Override
+  protected BaseMapper<FollowUpPlanField> getResourceFieldMapper() {
+    return followUpPlanFieldMapper;
+  }
 
-    @Override
-    protected BaseMapper<FollowUpPlanFieldBlob> getResourceFieldBlobMapper() {
-        return followUpPlanFieldBlobMapper;
-    }
+  @Override
+  protected BaseMapper<FollowUpPlanFieldBlob> getResourceFieldBlobMapper() {
+    return followUpPlanFieldBlobMapper;
+  }
 }

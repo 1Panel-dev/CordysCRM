@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class UserUpdateRequest extends UserAddRequest {
 
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank
-    private String id;
+  @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotBlank
+  private String id;
 }

@@ -1,6 +1,5 @@
 package cn.cordys.crm.opportunity.mapper;
 
-
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
@@ -16,91 +15,125 @@ import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse
 import cn.cordys.crm.search.response.advanced.AdvancedOpportunityResponse;
 import cn.cordys.crm.search.response.advanced.OpportunityRepeatResponse;
 import cn.cordys.crm.search.response.global.GlobalOpportunityResponse;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
-
+import org.apache.ibatis.annotations.Param;
 
 public interface ExtOpportunityMapper {
 
+  List<OpportunityListResponse> list(
+      @Param("request") OpportunityPageRequest request,
+      @Param("orgId") String orgId,
+      @Param("userId") String userId,
+      @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+      @Param("source") boolean source);
 
-    List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,
-                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
+  OpportunitySearchStatisticResponse searchStatistic(
+      @Param("request") OpportunitySearchStatisticRequest request,
+      @Param("orgId") String orgId,
+      @Param("userId") String userId,
+      @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    OpportunitySearchStatisticResponse searchStatistic(@Param("request") OpportunitySearchStatisticRequest request, @Param("orgId") String orgId,
-                                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+  List<String> selectByProducts(
+      @Param("request") OpportunityAddRequest request,
+      @Param("orgId") String orgId,
+      @Param("id") String id);
 
-    List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
+  void batchTransfer(
+      @Param("request") OpportunityTransferRequest request,
+      @Param("userId") String userId,
+      @Param("updateTime") long updateTime,
+      @Param("stage") String stage);
 
-    void batchTransfer(@Param("request") OpportunityTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime, @Param("stage") String stage);
+  OpportunityDetailResponse getDetail(@Param("id") String id);
 
-    OpportunityDetailResponse getDetail(@Param("id") String id);
+  List<OpportunityRepeatResponse> getRepeatList(@Param("customerId") String customerId);
 
-    List<OpportunityRepeatResponse> getRepeatList(@Param("customerId") String customerId);
+  List<OptionDTO> getRepeatCountMap(@Param("customerIds") List<String> customerIds);
 
-    List<OptionDTO> getRepeatCountMap(@Param("customerIds") List<String> customerIds);
+  int countByOwner(@Param("owner") String owner);
 
-    int countByOwner(@Param("owner") String owner);
+  List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 
-    List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
+  List<OptionDTO> getOpportunityOptions(
+      @Param("keyword") String keyword, @Param("orgId") String orgId);
 
-    List<OptionDTO> getOpportunityOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+  List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 
+  Long selectOpportunityCount(
+      @Param("request") HomeStatisticSearchWrapperRequest request,
+      @Param("amount") boolean amount,
+      @Param("success") boolean success);
 
-    List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
+  List<AdvancedOpportunityResponse> advancedSearchList(
+      @Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
 
-    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount") boolean amount, @Param("success") boolean success);
+  List<GlobalOpportunityResponse> globalSearchList(
+      @Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-    List<AdvancedOpportunityResponse> advancedSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
+  long globalSearchListCount(
+      @Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-    List<GlobalOpportunityResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+  List<Opportunity> searchColumnsByIds(
+      @Param("columns") List<String> columns, @Param("ids") List<String> opportunityIds);
 
-    long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+  /**
+   * 全量更新商机
+   *
+   * @param opportunity 商机
+   */
+  void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);
 
-    List<Opportunity> searchColumnsByIds(@Param("columns") List<String> columns, @Param("ids") List<String> opportunityIds);
+  void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
-    /**
-     * 全量更新商机
-     *
-     * @param opportunity 商机
-     */
-    void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);
+  void moveUpOpportunity(
+      @Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
 
-    void batchUpdate(@Param("request") BatchUpdateDbParam request);
+  void moveDownOpportunity(
+      @Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
 
-    void moveUpOpportunity(@Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
+  Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
-    void moveDownOpportunity(@Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);
+  void transfer(
+      @Param("owner") String owner,
+      @Param("userId") String userId,
+      @Param("id") String id,
+      @Param("updateTime") long updateTime,
+      @Param("nextPos") long nextPos,
+      @Param("stage") String stage);
 
-    Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
+  void moveDownStageOpportunity(
+      @Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
-    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime, @Param("nextPos") long nextPos, @Param("stage") String stage);
+  void moveUpStageOpportunity(
+      @Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
-    void moveDownStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+  int countByStage(@Param("stageId") String stageId);
 
-    void moveUpStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+  /**
+   * 批量合并客户商机
+   *
+   * @param request 请求参数
+   * @param userId 用户ID
+   * @param orgId 组织ID
+   */
+  void batchMerge(
+      @Param("request") CustomerMergeRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String orgId);
 
-    int countByStage(@Param("stageId") String stageId);
+  /**
+   * 获取待合并的客户商机列表
+   *
+   * @param request 请求参数
+   * @param orgId 组织ID
+   * @return 客户商机列表
+   */
+  List<Opportunity> getMergeOpportunityList(
+      @Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
 
-    /**
-     * 批量合并客户商机
-     *
-     * @param request 请求参数
-     * @param userId  用户ID
-     * @param orgId   组织ID
-     */
-    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
-
-    /**
-     * 获取待合并的客户商机列表
-     *
-     * @param request 请求参数
-     * @param orgId   组织ID
-     *
-     * @return 客户商机列表
-     */
-    List<Opportunity> getMergeOpportunityList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
-
-    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+  List<ChartResult> chart(
+      @Param("request") ChartAnalysisDbRequest request,
+      @Param("userId") String userId,
+      @Param("orgId") String orgId,
+      @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }

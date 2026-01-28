@@ -7,11 +7,10 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 产品子表字段
+ *
  * @author song-cc-rock
  */
 @Data
 @JsonTypeName(value = "SUB_PRODUCT")
 @EqualsAndHashCode(callSuper = true)
-public class ProductSubField extends SubField {
-
-}
+public class ProductSubField extends SubField {}
