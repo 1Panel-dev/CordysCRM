@@ -1,5 +1,6 @@
 <template>
   <n-form-item
+    ref="crmFormItemRef"
     :label="props.fieldConfig.name"
     :path="props.path"
     :rule="props.fieldConfig.rules"
@@ -33,13 +34,7 @@
       multiple
       directory-dnd
       @before-upload="beforeUpload"
-      @update-file-list="
-        () => {
-          if (fileKeys.length !== 0 || fileKeys.length === fileList.length) {
-            emit('change', fileKeys, fileList);
-          }
-        }
-      "
+      @update-file-list="handleUploadFileListChange"
       @remove="handleFileRemove"
     >
       <n-upload-dragger>
@@ -56,6 +51,7 @@
 
 <script setup lang="ts">
   import {
+    type FormItemInst,
     NDivider,
     NFormItem,
     NUpload,
@@ -96,6 +92,7 @@
   });
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
+  const crmFormItemRef = ref<FormItemInst>();
 
   const getTriggerStyle = computed(() => {
     if (props.isSubTableField || props.isSubTableRender) {
@@ -163,6 +160,7 @@
       onFinish();
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
+      crmFormItemRef.value?.validate();
       emit('change', fileKeys.value, fileList.value);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -183,6 +181,13 @@
     if (index !== -1) {
       fileKeys.value = fileKeys.value.filter((key) => key !== fileKeysMap.value[file.id]);
       delete fileKeysMap.value[file.id];
+    }
+  }
+
+  function handleUploadFileListChange() {
+    if (fileKeys.value.length !== 0 || fileKeys.value.length === fileList.value.length) {
+      crmFormItemRef.value?.validate();
+      emit('change', fileKeys.value, fileList.value);
     }
   }
 

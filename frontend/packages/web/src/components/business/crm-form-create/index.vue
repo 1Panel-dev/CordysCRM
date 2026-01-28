@@ -344,9 +344,6 @@
         dataSourceFormFields
       );
     }
-    if (item.type === FieldTypeEnum.ATTACHMENT) {
-      formRef.value?.validate();
-    }
     if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
       // 数据源显示字段联动
       const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);

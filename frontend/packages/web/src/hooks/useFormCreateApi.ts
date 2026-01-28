@@ -1152,7 +1152,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           staticRule.message = t(staticRule.message as string, { value: t(item.name) });
           staticRule.type = getRuleType(item);
           if (
-            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE, FieldTypeEnum.PICTURE].includes(item.type)
+            [
+              FieldTypeEnum.DATA_SOURCE,
+              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+              FieldTypeEnum.PICTURE,
+              FieldTypeEnum.ATTACHMENT,
+            ].includes(item.type)
           ) {
             staticRule.trigger = 'none';
           }

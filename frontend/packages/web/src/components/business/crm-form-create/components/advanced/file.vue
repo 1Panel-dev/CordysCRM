@@ -1,5 +1,6 @@
 <template>
   <n-form-item
+    ref="crmFormItemRef"
     :label="props.fieldConfig.name"
     :path="props.path"
     :rule="props.fieldConfig.rules"
@@ -52,6 +53,7 @@
 
 <script setup lang="ts">
   import {
+    type FormItemInst,
     NFormItem,
     NUpload,
     NUploadDragger,
@@ -85,6 +87,7 @@
   });
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
+  const crmFormItemRef = ref<FormItemInst>();
 
   async function beforeUpload({
     file,
@@ -151,6 +154,7 @@
       onFinish();
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
+      crmFormItemRef.value?.validate();
       emit('change', fileKeys.value, fileList.value);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -164,6 +168,7 @@
   function handleFileListChange(files: UploadFileInfo[]) {
     if (fileKeys.value.length > files.length) {
       fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
+      crmFormItemRef.value?.validate();
       emit('change', fileKeys.value, fileList.value);
     }
   }

@@ -1,7 +1,7 @@
 <template>
   <n-data-table
     :columns="realColumns"
-    :data="data"
+    :data="data || []"
     :paging="false"
     :pagination="false"
     :scroll-x="scrollXWidth"
@@ -58,6 +58,7 @@
 
   const data = defineModel<Record<string, any>[]>('value', {
     required: true,
+    default: () => [],
   });
 
   function makeTitle(field: FormCreateField) {
@@ -685,6 +686,18 @@
     });
     return summaryRes;
   };
+
+  watch(
+    () => data.value,
+    (val) => {
+      if (val === null || val === undefined) {
+        data.value = [];
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less">
