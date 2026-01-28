@@ -109,9 +109,15 @@
         ct.create_user,
         ct.create_time,
         ct.update_user,
-        ct.update_time
-        FROM
-        contract ct
+        ct.update_time,
+        ct.start_time,
+        ct.end_time,
+        FROM (
+            SELECT ctt.*, CAST(IFNULL(SUM(cpr.record_amount), '0') AS CHAR) AS alreadyPayAmount
+            FROM contract ctt
+            LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
+            GROUP BY ctt.id
+        ) ct
         LEFT JOIN customer c ON ct.customer_id = c.id
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
