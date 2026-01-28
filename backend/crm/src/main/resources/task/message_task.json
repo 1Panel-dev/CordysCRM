@@ -222,14 +222,14 @@
         "weComEnable": false
       },
       {
-        "event": "CONTRACT_EXPIRING",
+        "event": "CONTRACT_EXPIRED",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,
         "weComEnable": false
       },
       {
-        "event": "CONTRACT_EXPIRED",
+        "event": "CONTRACT_EXPIRING",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,
