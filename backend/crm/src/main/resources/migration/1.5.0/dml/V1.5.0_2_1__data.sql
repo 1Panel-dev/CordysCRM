@@ -18,15 +18,23 @@ INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, or
 
 SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  value)
-    VALUE (@customer_addID, '100001', 'BUSINESS_QUOTATION_EXPIRED', 'OPPORTUNITY','{"timeList":[{"timeValue":3,"timeUnit":"DAY"}],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
+    VALUE (@customer_addID, '100001', 'BUSINESS_QUOTATION_EXPIRED', 'OPPORTUNITY','{"timeList":[],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
 
 SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@customer_addID, 'CONTRACT_ARCHIVED', 'CONTRACT', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
 
 SET @customer_addID = UUID_SHORT();
+INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  value)
+    VALUE (@customer_addID, '100001', 'CONTRACT_ARCHIVED', 'CONTRACT','{"timeList":[],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
+
+SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@customer_addID, 'CONTRACT_VOID', 'CONTRACT', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
+
+SET @customer_addID = UUID_SHORT();
+INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  value)
+    VALUE (@customer_addID, '100001', 'CONTRACT_VOID', 'CONTRACT','{"timeList":[],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
 
 SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
@@ -42,7 +50,7 @@ INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, or
 
 SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  value)
-    VALUE (@customer_addID, '100001', 'CONTRACT_EXPIRED', 'CONTRACT','{"timeList":[{"timeValue":3,"timeUnit":"DAY"}],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
+    VALUE (@customer_addID, '100001', 'CONTRACT_EXPIRED', 'CONTRACT','{"timeList":[],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
 
 
 SET @customer_addID = UUID_SHORT();
@@ -59,7 +67,7 @@ INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, or
 
 SET @customer_addID = UUID_SHORT();
 INSERT INTO sys_message_task_config (id, organization_id, event, task_type,  value)
-    VALUE (@customer_addID, '100001', 'CONTRACT_PAYMENT_EXPIRED', 'CONTRACT','{"timeList":[{"timeValue":3,"timeUnit":"DAY"}],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
+    VALUE (@customer_addID, '100001', 'CONTRACT_PAYMENT_EXPIRED', 'CONTRACT','{"timeList":[],"userIds":["OWNER"],"roleIds":[],"ownerEnable":false,"ownerLevel":0,"roleEnable":false}');
 
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
