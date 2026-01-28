@@ -2261,7 +2261,20 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "options": [],
+      "options": [
+        {
+          "label": "银行账号1",
+          "value": "1"
+        },
+        {
+          "label": "银行账号2",
+          "value": "2"
+        },
+        {
+          "label": "银行账号3",
+          "value": "3"
+        }
+      ],
       "rules": [
         {
           "key": "required"
