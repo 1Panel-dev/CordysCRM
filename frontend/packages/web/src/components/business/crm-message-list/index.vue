@@ -147,7 +147,7 @@
   const permissionConfig = {
     OPPORTUNITY_QUOTATION_READ: ['OPPORTUNITY_QUOTATION:READ'],
     CONTRACT_READ: ['CONTRACT:READ'],
-    CONTRACT_PAYMENT_RECORD_READ: ['CONTRACT_PAYMENT_RECORD:READ'],
+    CONTRACT_PAYMENT_PLAN_READ: ['CONTRACT_PAYMENT_PLAN:READ'],
   };
 
   const messageDetailConfig: Record<string, MessageDetailAction> = {
@@ -168,11 +168,11 @@
       action: openNewPageContract,
     },
     CONTRACT_PAYMENT_EXPIRING: {
-      permission: permissionConfig.CONTRACT_PAYMENT_RECORD_READ,
+      permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
       action: openNewPageContractPaymentPlan,
     },
     CONTRACT_PAYMENT_EXPIRED: {
-      permission: permissionConfig.CONTRACT_PAYMENT_RECORD_READ,
+      permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
       action: openNewPageContractPaymentPlan,
     },
   };
