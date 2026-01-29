@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class OrganizationContext {
 
-    private static final String DEFAULT_ORGANIZATION_ID = "100001";
+    public static final String DEFAULT_ORGANIZATION_ID = "100001";
     private static final ThreadLocal<String> ORGANIZATION_ID = new InheritableThreadLocal<>();
 
     /**
