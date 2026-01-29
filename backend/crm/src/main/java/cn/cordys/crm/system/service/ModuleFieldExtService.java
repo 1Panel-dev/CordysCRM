@@ -1,6 +1,9 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.util.JSON;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
@@ -15,6 +18,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +60,26 @@ public class ModuleFieldExtService {
 		});
 	}
 
+	/**
+	 * 刷新回款计划表单字段位置
+	 */
+	public void refreshPlanFieldPos() {
+		ModuleForm example = new ModuleForm();
+		example.setFormKey(FormKey.CONTRACT_PAYMENT_PLAN.getKey());
+		example.setOrganizationId(OrganizationContext.DEFAULT_ORGANIZATION_ID);
+		ModuleForm moduleForm = formMapper.selectOne(example);
+		LambdaQueryWrapper<ModuleField> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.eq(ModuleField::getFormId, moduleForm.getId());
+		List<ModuleField> fields = fieldMapper.selectListByLambda(lambdaQueryWrapper);
+		fields.forEach(field -> {
+			if (Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_PAYMENT_PLAN_NAME.getKey())) {
+				field.setPos(1L);
+			} else {
+				field.setPos(field.getPos() + 1);
+			}
+			fieldMapper.updateById(field);
+		});
+	}
 	/**
 	 * 获取表单附件字段ID集合
 	 * @param formKey 表单Key
