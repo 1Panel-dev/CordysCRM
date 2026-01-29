@@ -113,9 +113,11 @@
         item.checked = selectedMap.value.has(item.id);
       });
 
-      nextTick(() => {
-        loadList(true);
-      });
+      if (!props.loadListApi) {
+        nextTick(() => {
+          loadList(true);
+        });
+      }
     },
     { immediate: true }
   );
