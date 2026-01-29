@@ -255,6 +255,11 @@
         label: t('module.contract'),
         count: messageCount.value[SystemResourceMessageTypeEnum.CONTRACT] || 0,
       },
+      {
+        value: SystemResourceMessageTypeEnum.SYSTEM,
+        label: t('system.message.system'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.SYSTEM] || 0,
+      },
     ];
 
     if (isAnnouncementTab) {

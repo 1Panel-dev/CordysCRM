@@ -19,7 +19,9 @@ import cn.cordys.crm.integration.sso.service.TokenService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.integration.wecom.service.WeComDepartmentService;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
 import jakarta.annotation.Resource;
@@ -32,23 +34,21 @@ import org.redisson.api.RLock;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
-@Transactional(rollbackFor = Exception.class)
 @Slf4j
 public class ThirdDepartmentService {
 
     private static final String LOCK_PREFIX = "orgId_sync_";
+    private static final String SYNC_STATUS_PREFIX = "org_sync_status:";
     private static final String DEPT_TREE_CACHE_KEY = "dept_tree_cache::";
     private static final String PERMISSION_CACHE_PATTERN = "permission_cache*%s";
     private static final int SCAN_COUNT = 100;
+    private static final long SYNC_STATUS_EXPIRE_SECONDS = 3600; // 同步状态过期时间1小时
 
     @Resource
     private TokenService tokenService;
@@ -68,13 +68,17 @@ public class ThirdDepartmentService {
     @Resource
     private IntegrationConfigService integrationConfigService;
 
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+
     /**
-     * 同步组织架构
+     * 同步组织架构（异步执行）
      *
      * @param operatorId 操作人ID
      * @param orgId      组织ID
      * @param type       同步类型(企业微信，钉钉，飞书)
      */
+    @Async
     public void syncUser(String operatorId, String orgId, String type) {
         Redisson redisson = CommonBeanFactory.getBean(Redisson.class);
         assert redisson != null;
@@ -85,12 +89,37 @@ public class ThirdDepartmentService {
             throw new GenericException("当前正在执行同步任务！");
         }
 
+        // 同步开始时存入Redis状态
+        String syncStatusKey = getSyncStatusKey(orgId);
+        setSyncStatus(syncStatusKey, operatorId);
+
         try {
             performSync(operatorId, orgId, type);
             clearCaches(orgId);
         } finally {
+            // 同步完成后删除Redis状态
+            deleteSyncStatus(syncStatusKey);
             lock.unlock();
         }
+    }
+
+    /**
+     * 获取同步状态
+     *
+     * @param orgId 组织ID
+     * @return 同步状态信息，如果没有正在同步则返回null
+     */
+    public Boolean getSyncStatus(String orgId) {
+        try {
+            String syncStatusKey = getSyncStatusKey(orgId);
+            String statusJson = stringRedisTemplate.opsForValue().get(syncStatusKey);
+            if (StringUtils.isNotBlank(statusJson)) {
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("获取同步状态失败", e);
+        }
+        return false;
     }
 
     /**
@@ -159,6 +188,7 @@ public class ThirdDepartmentService {
         Objects.requireNonNull(logService, "LogService 未注入");
         log.info("同步组织架构完成，同步类型：{}", type);
         logSyncOperation(logService, orgId, operatorId);
+        sendSyncSuccessNotice(operatorId, orgId, type);
     }
 
     private ThirdConfigTypeConstants parseDepartmentType(String type) {
@@ -238,6 +268,86 @@ public class ThirdDepartmentService {
                 LogType.SYNC, LogModule.SYSTEM_ORGANIZATION, detail);
         logDTO.setDetail(detail);
         logService.add(logDTO);
+    }
+
+    /**
+     * 发送同步成功通知
+     */
+    private void sendSyncSuccessNotice(String operatorId, String orgId, String type) {
+        try {
+            // 设置通知参数
+            Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put("name", Translator.get("message.sync_organization_structure"));
+            paramMap.put("syncType", getSyncTypeName(type));
+            paramMap.put("organizationId", orgId);
+
+            // 发送通知给操作人
+            commonNoticeSendService.sendNotice(
+                    NotificationConstants.Module.SYSTEM,  // 模块类型
+                    NotificationConstants.Event.SYNC_ORGANIZATION_STRUCTURE,  // 事件类型
+                    paramMap,
+                    operatorId,
+                    orgId,
+                    List.of(operatorId),  // 只发送给操作人
+                    false  // 不排除自己
+            );
+            log.info("组织架构同步成功通知已发送，操作人：{}，同步类型：{}", operatorId, type);
+        } catch (Exception e) {
+            log.error("发送组织架构同步成功通知失败", e);
+        }
+    }
+
+    /**
+     * 获取同步类型名称
+     */
+    private String getSyncTypeName(String type) {
+        return switch (parseDepartmentType(type)) {
+            case WECOM -> "企业微信";
+            case DINGTALK -> "钉钉";
+            case LARK -> "飞书";
+            default -> type;
+        };
+    }
+
+    /**
+     * 获取同步状态Redis Key
+     */
+    private String getSyncStatusKey(String orgId) {
+        return SYNC_STATUS_PREFIX + orgId;
+    }
+
+    /**
+     * 设置同步状态
+     */
+    private void setSyncStatus(String key, String operatorId) {
+        try {
+            Map<String, Object> statusInfo = new HashMap<>();
+            statusInfo.put("startTime", System.currentTimeMillis());
+            statusInfo.put("status", "SYNCING");
+
+            String statusJson = JSON.toJSONString(statusInfo);
+            stringRedisTemplate.opsForValue().set(
+                    key,
+                    statusJson,
+                    SYNC_STATUS_EXPIRE_SECONDS,
+                    java.util.concurrent.TimeUnit.SECONDS
+            );
+            log.info("已存入同步状态到Redis， key: {}, status: {}, operatorId: {}", key, statusJson, operatorId);
+        } catch (Exception e) {
+            log.error("存入同步状态到Redis失败", e);
+        }
+    }
+
+    /**
+     * 删除同步状态
+     */
+    private void deleteSyncStatus(String key) {
+        try {
+            stringRedisTemplate.delete(key);
+            log.info("已从 Redis 删除同步状态， key: {}", key);
+        } catch (Exception e) {
+            log.error("从 Redis 删除同步状态失败", e);
+        }
     }
 
     /**
