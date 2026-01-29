@@ -61,6 +61,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
 			initOneTime(moduleFieldExtService::setDefaultOptionSource, "set.default.option.source");
 			initOneTime(moduleFieldExtService::refreshPlanFieldPos, "refresh.plan.field.pos");
+			initOneTime(moduleFormService::initInvoiceFormScenarioProp, "init.invoice.form.scenario");
         } finally {
             lock.unlock();
         }

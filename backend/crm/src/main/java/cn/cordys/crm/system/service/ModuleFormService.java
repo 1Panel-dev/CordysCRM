@@ -1113,8 +1113,7 @@ public class ModuleFormService {
     private void handleShowFieldsInit(Map<String, Object> initField, List<ModuleField> initFields) {
         if (initField.containsKey(SHOW_FIELD_KEY)) {
             List<String> showFieldKeys = (List<String>) initField.get(SHOW_FIELD_KEY);
-            List<ModuleField> showFields = moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
-                    .in(ModuleField::getInternalKey, showFieldKeys));
+            List<ModuleField> showFields = selectFieldsByInternalKeys(showFieldKeys);
 
             if (CollectionUtils.isEmpty(showFields)) {
                 // initForm 初始化，数据库没有数据，需要从 initFields 中获取
@@ -1138,6 +1137,17 @@ public class ModuleFormService {
                 initField.put(SHOW_FIELD_KEY, showFieldResult);
             }
         }
+    }
+
+    private List<ModuleField> selectFieldsByInternalKeys(List<String> internalKeys) {
+        return moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
+                .in(ModuleField::getInternalKey, internalKeys));
+    }
+
+    private ModuleField selectFieldsByInternalKey(String internalKey) {
+        ModuleField field = new ModuleField();
+        field.setInternalKey(internalKey);
+        return moduleFieldMapper.selectOne(field);
     }
 
     /**
@@ -1829,6 +1839,36 @@ public class ModuleFormService {
         propMap.put("linkProp", dataMap);
         recordFormBlob.setProp(JSON.toJSONString(propMap));
         moduleFormBlobMapper.updateById(recordFormBlob);
+    }
+
+    /**
+     * 初始化发票表单联动场景
+     */
+    @SuppressWarnings("unchecked")
+    public void initInvoiceFormScenarioProp() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ModuleForm::getFormKey, FormKey.INVOICE.getKey());
+        ModuleForm invoiceForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+        ModuleFormBlob invoiceFormBlob = moduleFormBlobMapper.selectByPrimaryKey(invoiceForm.getId());
+        Map<String, Object> propMap = JSON.parseMap(invoiceFormBlob.getProp());
+        Map<String, List<LinkScenario>> linkProp = new HashMap<>(4);
+
+        // 设置默认的 linkFields
+        ModuleField contractNameField = selectFieldsByInternalKey(BusinessModuleField.CONTRACT_NAME.getKey());
+        ModuleField invoiceContractField = selectFieldsByInternalKey(BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
+        List<LinkField> linkFields = new ArrayList<>();
+        if (contractNameField != null && invoiceContractField != null) {
+            LinkField linkField = new LinkField();
+            linkField.setEnable(true);
+            linkField.setCurrent(contractNameField.getId());
+            linkField.setLink(invoiceContractField.getId());
+            linkFields.add(linkField);
+        }
+
+        linkProp.put(FormKey.CONTRACT.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CONTRACT_TO_INVOICE.name()).linkFields(linkFields).build()));
+        propMap.put("linkProp", linkProp);
+        invoiceFormBlob.setProp(JSON.toJSONString(propMap));
+        moduleFormBlobMapper.updateById(invoiceFormBlob);
     }
 
     /**
