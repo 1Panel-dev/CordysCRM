@@ -79,6 +79,16 @@
       >
         <CrmCitySelect v-model:value="form.value" />
       </n-form-item>
+      <n-form-item
+        v-else-if="form.attributes === 'onboardingDate'"
+        :rule="[{ required: true, message: t('common.value.notNull') }]"
+        require-mark-placement="left"
+        label-placement="left"
+        path="onboardingDate"
+        :label="t('common.batchUpdate')"
+      >
+        <n-date-picker v-model:value="form.onboardingDate" type="date" class="w-full"> </n-date-picker>
+      </n-form-item>
     </n-form>
     <template #footer>
       <div class="flex w-full items-center justify-end gap-[12px]">
@@ -99,6 +109,7 @@
     DataTableRowKey,
     FormInst,
     NButton,
+    NDatePicker,
     NForm,
     NFormItem,
     NSelect,
@@ -144,12 +155,14 @@
     attributes: null,
     value: null,
     headers: [],
+    onboardingDate: undefined,
   };
 
   const form = ref<{
     attributes: string | null;
     value: string | null;
     headers: SelectedUsersItem[];
+    onboardingDate: number | undefined;
   }>(cloneDeep(initForm));
 
   const attributesOptions = computed<SelectOption[]>(() => {
@@ -165,6 +178,10 @@
       {
         value: 'workCity',
         label: t('org.workingCity'),
+      },
+      {
+        value: 'onboardingDate',
+        label: t('org.onboardingDate'),
       },
     ];
   });
@@ -182,15 +199,23 @@
     formRef.value?.validate(async (error) => {
       if (!error) {
         try {
-          const { value, attributes, headers } = form.value;
+          const { value, attributes, headers, onboardingDate } = form.value;
 
           if (!attributes) {
             return;
           }
           loading.value = true;
+          let payloadValue;
+          if (attributes === 'supervisorId') {
+            payloadValue = headers[0]?.id;
+          } else if (attributes === 'onboardingDate') {
+            payloadValue = onboardingDate;
+          } else {
+            payloadValue = value;
+          }
           await batchEditUser({
             ids: props.userIds,
-            [attributes]: attributes === 'supervisorId' ? headers[0]?.id : value,
+            [attributes]: payloadValue,
           });
           cancelHandler();
           emit('loadList');
