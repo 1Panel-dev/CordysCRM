@@ -182,7 +182,7 @@ export default {
   'system.business.tender': '标讯平台',
   'system.business.tenderTitle': '大单网',
   'system.business.tenderDescription': '上大单中大单',
-  'system.business.thirdPartyPlatform': '第三方查询平台',
+  'system.business.thirdPartyPlatform': '企业信息查询平台',
   'system.business.thirdQueryQccDescription': '专业的企业信息查询平台',
   'system.business.qichacha': '企查查',
   'system.business.qichachaAddress': '企查查地址',

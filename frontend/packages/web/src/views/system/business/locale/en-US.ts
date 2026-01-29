@@ -192,7 +192,7 @@ export default {
   'system.business.tender': 'Tender platform',
   'system.business.tenderTitle': 'Big Order Network',
   'system.business.tenderDescription': 'On the big order in the big order',
-  'system.business.thirdPartyPlatform': 'Third-party query platform',
+  'system.business.thirdPartyPlatform': 'Enterprise Information Query Platform',
   'system.business.thirdQueryQccDescription': 'Professional enterprise information query platform',
   'system.business.qichacha': 'Qichacha',
   'system.business.qichachaAddress': 'address',
