@@ -3,7 +3,9 @@ package cn.cordys.crm.home.dto.request;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.crm.home.constants.HomeStatisticPeriod;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,6 +19,7 @@ import java.time.ZoneId;
  * @date 2025-02-08 16:24:22
  */
 @Data
+@NoArgsConstructor
 public class HomeStatisticSearchWrapperRequest {
 
     private HomeStatisticSearchRequest staticRequest;
@@ -59,6 +62,7 @@ public class HomeStatisticSearchWrapperRequest {
         return startTime;
     }
 
+    @JsonIgnore
     public void setStartTime(Long startTime) {
         staticRequest.setStartTime(startTime);
     }
@@ -152,6 +156,7 @@ public class HomeStatisticSearchWrapperRequest {
         return endTime;
     }
 
+    @JsonIgnore
     public void setEndTime(Long endTime) {
         staticRequest.setEndTime(endTime);
     }
