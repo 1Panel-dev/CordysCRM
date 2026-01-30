@@ -400,6 +400,7 @@ public class ContractInvoiceService {
 
     /**
      * 从快照中获取合同详情
+     *
      * @param id 合同ID
      * @return 合同详情
      */
@@ -606,7 +607,7 @@ public class ContractInvoiceService {
                 .collect(Collectors.toSet());
 
         for (BaseField field : businessFormConfig.getFields()) {
-            if (businessTitleKeySet.contains(field.getId()) || Strings.CS.equals(field.getId(), BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey())) {
+            if (businessTitleKeySet.contains(field.getId()) || Strings.CS.equals(field.getId(), BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
                 // 特殊表单，设置可见
                 field.setReadable(true);
             }

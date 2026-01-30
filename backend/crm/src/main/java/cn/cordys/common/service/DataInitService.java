@@ -31,8 +31,8 @@ public class DataInitService {
     private ModuleService moduleService;
     @Resource
     private ModuleFormService moduleFormService;
-	@Resource
-	private ModuleFieldExtService moduleFieldExtService;
+    @Resource
+    private ModuleFieldExtService moduleFieldExtService;
     @Resource
     private BaseMapper<Parameter> parameterMapper;
     @Resource
@@ -58,10 +58,11 @@ public class DataInitService {
             initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.4.0");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.0");
-            initOneTime(moduleFormService::initExtFieldsByVer, "1.5.0", "init.ext.fields.v1.5.0");
-			initOneTime(moduleFieldExtService::setDefaultOptionSource, "set.default.option.source");
-			initOneTime(moduleFieldExtService::refreshPlanFieldPos, "refresh.plan.field.pos");
-			initOneTime(moduleFormService::initInvoiceFormScenarioProp, "init.invoice.form.scenario");
+            initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.5.1");
+            initOneTime(moduleFormService::initExtFieldsByVer, "1.5.1", "init.ext.fields.v1.5.1");
+            initOneTime(moduleFieldExtService::setDefaultOptionSource, "set.default.option.source");
+            initOneTime(moduleFieldExtService::refreshPlanFieldPos, "refresh.plan.field.pos");
+            initOneTime(moduleFormService::initInvoiceFormScenarioProp, "init.invoice.form.scenario");
         } finally {
             lock.unlock();
         }
@@ -81,26 +82,27 @@ public class DataInitService {
         }
     }
 
-	/**
-	 * 执行单次接口 (带参数)
-	 * @param onceFunc 执行函数
-	 * @param param 参数
-	 * @param key 执行Key
-	 * @param <P> 参数类型
-	 */
-	private <P> void initOneTime(OnceInterfaceAction<P> onceFunc, P param, final String key) {
-		try {
-			LambdaQueryWrapper<Parameter> queryWrapper = new LambdaQueryWrapper<>();
-			queryWrapper.eq(Parameter::getParamKey, key);
-			List<Parameter> parameters = parameterMapper.selectListByLambda(queryWrapper);
-			if (CollectionUtils.isEmpty(parameters)) {
-				onceFunc.execute(param);
-				insertParameterOnceKey(key);
-			}
-		} catch (Throwable e) {
-			log.error(e.getMessage(), e);
-		}
-	}
+    /**
+     * 执行单次接口 (带参数)
+     *
+     * @param onceFunc 执行函数
+     * @param param    参数
+     * @param key      执行Key
+     * @param <P>      参数类型
+     */
+    private <P> void initOneTime(OnceInterfaceAction<P> onceFunc, P param, final String key) {
+        try {
+            LambdaQueryWrapper<Parameter> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Parameter::getParamKey, key);
+            List<Parameter> parameters = parameterMapper.selectListByLambda(queryWrapper);
+            if (CollectionUtils.isEmpty(parameters)) {
+                onceFunc.execute(param);
+                insertParameterOnceKey(key);
+            }
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 
     private void insertParameterOnceKey(String key) {
         Parameter parameter = new Parameter();

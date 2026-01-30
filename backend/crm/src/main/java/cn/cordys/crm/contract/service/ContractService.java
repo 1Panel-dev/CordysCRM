@@ -63,7 +63,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -102,8 +101,8 @@ public class ContractService {
     private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
     @Resource
     private DataScopeService dataScopeService;
-	@Resource
-	private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
+    @Resource
+    private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
 
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
@@ -144,8 +143,8 @@ public class ContractService {
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(operatorId);
 
-        //计算子产品总金额
-        setAmount(request.getProducts(), contract);
+        //判断总金额
+        setAmount(request.getAmount(), contract);
 
         // 设置子表格字段值
         moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
@@ -253,7 +252,7 @@ public class ContractService {
 
         // 附件信息
         contractGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(contractFormConfig, contractFields));
-		contractGetResponse.setAlreadyPayAmount(sumContractRecordAmount(id));
+        contractGetResponse.setAlreadyPayAmount(sumContractRecordAmount(id));
 
         return contractGetResponse;
     }
@@ -271,24 +270,6 @@ public class ContractService {
         List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(id);
         return get(contract, contractFields, contractFormConfig);
     }
-
-
-    /**
-     * 计算子产品总金额
-     *
-     * @param products 子产品列表
-     * @param contract 合同对象
-     */
-    private void setAmount(List<Map<String, Object>> products, Contract contract) {
-        BigDecimal totalAmount = products.stream()
-                .map(product -> new BigDecimal(product.get("amount").toString()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (totalAmount.compareTo(MAX_AMOUNT) > 0) {
-            throw new GenericException(Translator.get("contract.amount.exceed.max"));
-        }
-        contract.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
-    }
-
 
     /**
      * 编辑合同
@@ -322,12 +303,10 @@ public class ContractService {
             contract.setNumber(oldContract.getNumber());
             contract.setCreateUser(oldContract.getCreateUser());
             contract.setCreateTime(oldContract.getCreateTime());
-            contract.setAmount(oldContract.getAmount());
             contract.setStage(oldContract.getStage());
             contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
-            //计算子产品总金额
-            setAmount(request.getProducts(), contract);
-            // 设置子表格字段值
+            //判断总金额
+            setAmount(request.getAmount(), contract);
             moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
@@ -357,6 +336,14 @@ public class ContractService {
             throw new GenericException(Translator.get("contract.not.exist"));
         });
         return contractMapper.selectByPrimaryKey(request.getId());
+    }
+
+    private void setAmount(String amount, Contract contract) {
+        if (StringUtils.isNotBlank(amount)) {
+            contract.setAmount(new BigDecimal(amount));
+        } else {
+            contract.setAmount(BigDecimal.ZERO);
+        }
     }
 
 
@@ -423,8 +410,8 @@ public class ContractService {
                 response.setInCustomerPool(customer.getInSharedPool());
                 response.setPoolId(customer.getPoolId());
             }
-			response.setAlreadyPayAmount(sumContractRecordAmount(id));
-		}
+            response.setAlreadyPayAmount(sumContractRecordAmount(id));
+        }
         return response;
     }
 
@@ -746,59 +733,61 @@ public class ContractService {
         return formConfig;
     }
 
-	/**
-	 * 通过名称获取合同集合
-	 *
-	 * @param names 名称集合
-	 * @return 合同集合
-	 */
-	public List<Contract> getContractListByNames(List<String> names) {
-		LambdaQueryWrapper<Contract> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-		lambdaQueryWrapper.in(Contract::getName, names);
-		return contractMapper.selectListByLambda(lambdaQueryWrapper);
-	}
+    /**
+     * 通过名称获取合同集合
+     *
+     * @param names 名称集合
+     * @return 合同集合
+     */
+    public List<Contract> getContractListByNames(List<String> names) {
+        LambdaQueryWrapper<Contract> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Contract::getName, names);
+        return contractMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 
-	/**
-	 * 设置默认的数据源搜索条件
-	 * @return 搜索条件
-	 */
-	public List<FilterCondition> getDefaultSourceFilters() {
-		// 只展示状态为通过且非作废/归档阶段的合同
-		List<FilterCondition> conditions = new ArrayList<>();
+    /**
+     * 设置默认的数据源搜索条件
+     *
+     * @return 搜索条件
+     */
+    public List<FilterCondition> getDefaultSourceFilters() {
+        // 只展示状态为通过且非作废/归档阶段的合同
+        List<FilterCondition> conditions = new ArrayList<>();
 
-		FilterCondition statusCondition = new FilterCondition();
-		statusCondition.setMultipleValue(false);
-		statusCondition.setName("approvalStatus");
-		statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
-		statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
-		conditions.add(statusCondition);
+        FilterCondition statusCondition = new FilterCondition();
+        statusCondition.setMultipleValue(false);
+        statusCondition.setName("approvalStatus");
+        statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+        statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
+        conditions.add(statusCondition);
 
-		FilterCondition stageCondition = new FilterCondition();
-		stageCondition.setMultipleValue(false);
-		stageCondition.setName("stage");
-		stageCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
-		stageCondition.setValue(List.of(ContractStage.PENDING_SIGNING.name(), ContractStage.SIGNED.name(),
-				ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name()));
-		conditions.add(stageCondition);
+        FilterCondition stageCondition = new FilterCondition();
+        stageCondition.setMultipleValue(false);
+        stageCondition.setName("stage");
+        stageCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+        stageCondition.setValue(List.of(ContractStage.PENDING_SIGNING.name(), ContractStage.SIGNED.name(),
+                ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name()));
+        conditions.add(stageCondition);
 
-		return conditions;
-	}
+        return conditions;
+    }
 
-	/**
-	 * 计算合同已回款金额
-	 * @param contractId 合同ID
-	 * @return 已回款金额
-	 */
-	private BigDecimal sumContractRecordAmount(String contractId) {
-		LambdaQueryWrapper<ContractPaymentRecord> paymentRecordWrapper = new LambdaQueryWrapper<>();
-		paymentRecordWrapper.eq(ContractPaymentRecord::getContractId, contractId);
-		List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(paymentRecordWrapper);
-		if (CollectionUtils.isNotEmpty(contractPaymentRecords)) {
-			return contractPaymentRecords.stream()
-					.map(ContractPaymentRecord::getRecordAmount)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-		} else {
-			return BigDecimal.ZERO;
-		}
-	}
+    /**
+     * 计算合同已回款金额
+     *
+     * @param contractId 合同ID
+     * @return 已回款金额
+     */
+    private BigDecimal sumContractRecordAmount(String contractId) {
+        LambdaQueryWrapper<ContractPaymentRecord> paymentRecordWrapper = new LambdaQueryWrapper<>();
+        paymentRecordWrapper.eq(ContractPaymentRecord::getContractId, contractId);
+        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(paymentRecordWrapper);
+        if (CollectionUtils.isNotEmpty(contractPaymentRecords)) {
+            return contractPaymentRecords.stream()
+                    .map(ContractPaymentRecord::getRecordAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } else {
+            return BigDecimal.ZERO;
+        }
+    }
 }
