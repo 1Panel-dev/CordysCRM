@@ -25,3 +25,4 @@ export const deleteUserCheckUrl = '/user/delete/check'; // 用户(员工)-删除
 export const checkSyncUserFromThirdUrl = '/user/sync-check'; // 用户(员工)-是否为第三方同步数据
 export const updateUserNameUrl = '/user/update/name'; // 用户(员工)-更新用户名称
 export const getOrgDepartmentUserUrl = '/user/get'; // 用户(员工)-更新用户名称
+export const CheckSyncUrl = '/user/sync/check'; // 检查异步是否完成接口

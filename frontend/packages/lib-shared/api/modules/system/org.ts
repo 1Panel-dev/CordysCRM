@@ -13,6 +13,7 @@ import {
   deleteUserUrl,
   getDepartmentTreeUrl,
   getOrgDepartmentUserUrl,
+  CheckSyncUrl,
   getRoleOptionsUrl,
   getUserDetailUrl,
   getUserListUrl,
@@ -164,6 +165,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<DeptUserTreeNode[]>({ url: `${getOrgDepartmentUserUrl}/${data.id}` });
   }
 
+  function checkSync() {
+    return CDR.get<boolean>({ url: CheckSyncUrl });
+  }
+
   return {
     getDepartmentTree,
     addDepartment,
@@ -190,5 +195,6 @@ export default function useProductApi(CDR: CordysAxios) {
     sortDepartment,
     updateOrgUserName,
     getOrgDepartmentUser,
+    checkSync,
   };
 }
