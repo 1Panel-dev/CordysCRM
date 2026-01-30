@@ -19,6 +19,7 @@ import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.Module;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
+import cn.cordys.crm.system.domain.Parameter;
 import cn.cordys.crm.system.dto.ModuleDTO;
 import cn.cordys.crm.system.dto.request.ModuleRequest;
 import cn.cordys.crm.system.dto.request.ModuleSortRequest;
@@ -60,6 +61,8 @@ public class ModuleService {
     private BaseMapper<OrganizationConfig> organizationConfigMapper;
     @Resource
     private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
+	@Resource
+	private BaseMapper<Parameter> parameterMapper;
 
     /**
      * 获取系统模块配置列表
@@ -194,6 +197,33 @@ public class ModuleService {
         }).collect(Collectors.toList());
         return BaseTreeNode.buildTree(treeNodes);
     }
+
+	/**
+	 * 高级搜索开关设置
+	 * @return 是否开启高级搜索
+	 */
+	public boolean getAdvancedSetting() {
+		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
+		return parameter != null && !Strings.CI.equals(parameter.getParamValue(), BooleanUtils.FALSE);
+	}
+
+	/**
+	 * 切换高级搜索开关设置
+	 */
+	public void switchAdvanced() {
+		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
+		if (parameter == null) {
+			Parameter entity = new Parameter();
+			entity.setParamKey("advance.search.setting");
+			entity.setParamValue(BooleanUtils.FALSE);
+			entity.setType("TEXT");
+			parameterMapper.insert(entity);
+		} else {
+			boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
+			parameter.setParamValue(Boolean.toString(!current));
+			parameterMapper.update(parameter);
+		}
+	}
 
     /**
      * 初始化系统(组织或公司)模块数据

@@ -66,4 +66,17 @@ public class ModuleController {
     public List<RoleUserTreeNode> getRoleTree() {
         return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
     }
+
+	@GetMapping("/advanced-search/settings")
+	@Operation(summary = "高级搜索开关设置")
+	public boolean getAdvancedSetting() {
+		return moduleService.getAdvancedSetting();
+	}
+
+	@GetMapping("/advanced-search/switch")
+	@Operation(summary = "高级搜索开关设置")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+	public void switchAdvanced() {
+		moduleService.switchAdvanced();
+	}
 }
