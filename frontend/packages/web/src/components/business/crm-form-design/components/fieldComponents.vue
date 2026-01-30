@@ -149,6 +149,7 @@
           value: getGenerateId(),
         },
       ];
+      res.customOptions = [...res.options];
     }
     return cloneDeep(res);
   }
