@@ -10,4 +10,6 @@ public class UserBatchEditRequest extends UserBatchRequest {
     private String supervisorId;
 
     private String workCity;
+
+    private String onboardingDate;
 }

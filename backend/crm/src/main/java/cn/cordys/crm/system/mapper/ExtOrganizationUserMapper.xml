@@ -203,6 +203,9 @@
             <if test="request.workCity != null">
                 work_city = #{request.workCity},
             </if>
+            <if test="request.onboardingDate != null">
+                onboarding_date = #{request.onboardingDate},
+            </if>
             update_time = UNIX_TIMESTAMP() * 1000,
             update_user = #{operatorId}
         </set>
