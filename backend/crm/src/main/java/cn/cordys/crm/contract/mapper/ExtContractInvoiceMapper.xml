@@ -437,6 +437,16 @@
         </if>
     </select>
 
+    <select id="hasContractInvoice" resultType="java.lang.Boolean">
+        select
+            CASE WHEN COUNT(1) > 0 THEN TRUE ELSE FALSE END
+        from
+            contract_invoice
+        where
+            contract_id = #{contractId}
+        limit 1;
+    </select>
+
     <update id="updateStatus">
         update contract_invoice
         set approval_status = #{approvalStatus},
