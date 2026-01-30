@@ -33,7 +33,6 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
-import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
@@ -74,8 +73,6 @@ public class OpportunityQuotationService {
     private OpportunityQuotationFieldService opportunityQuotationFieldService;
     @Resource
     private BaseService baseService;
-    @Resource
-    private ExtProductMapper extProductMapper;
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
@@ -130,8 +127,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
-        //计算子产品总金额
-        setAmount(request.getProducts(), opportunityQuotation);
+        //判断总金额
+        setAmount(request.getAmount(), opportunityQuotation);
         // 设置子表格字段值
         moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
 
@@ -578,7 +575,8 @@ public class OpportunityQuotationService {
         opportunityQuotation.setCreateTime(oldOpportunityQuotation.getCreateTime());
         opportunityQuotation.setCreateUser(oldOpportunityQuotation.getCreateUser());
         opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
-        setAmount(request.getProducts(), opportunityQuotation);
+        //判断总金额
+        setAmount(request.getAmount(), opportunityQuotation);
         // 设置子表格字段值
         moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
@@ -606,6 +604,14 @@ public class OpportunityQuotationService {
         // 处理日志上下文
         baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields, moduleFields, id, opportunityQuotation.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         return opportunityQuotationMapper.selectByPrimaryKey(id);
+    }
+
+    private void setAmount(String amount, OpportunityQuotation opportunityQuotation) {
+        if (StringUtils.isNotBlank(amount)) {
+            opportunityQuotation.setAmount(new BigDecimal(amount));
+        } else {
+            opportunityQuotation.setAmount(BigDecimal.ZERO);
+        }
     }
 
     /**

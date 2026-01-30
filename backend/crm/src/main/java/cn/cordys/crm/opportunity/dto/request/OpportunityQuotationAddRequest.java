@@ -25,6 +25,9 @@ public class OpportunityQuotationAddRequest {
     @Schema(description = "有效期至", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long untilTime;
 
+    @Schema(description = "累计金额")
+    private String amount;
+
     @NotEmpty(message = "{opportunity.quotation.field.required}")
     @Schema(description = "自定义字段值", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<BaseModuleFieldValue> moduleFields;

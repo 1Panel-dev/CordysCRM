@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,9 @@ public class ContractAddRequest {
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
 
+    @Schema(description = "累计金额")
+    private String amount;
+
     @Schema(description = "合同开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull
     private Long startTime;
@@ -42,6 +46,6 @@ public class ContractAddRequest {
     @Schema(description = "表单配置")
     private ModuleFormConfigDTO moduleFormConfigDTO;
 
-	@Schema(description = "子产品信息")
-	private List<Map<String, Object>> products;
+    @Schema(description = "子产品信息")
+    private List<Map<String, Object>> products;
 }

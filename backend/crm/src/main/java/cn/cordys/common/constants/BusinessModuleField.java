@@ -212,8 +212,10 @@ public enum BusinessModuleField {
     QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_PRODUCT_AMOUNT("quotationAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_PRODUCT_AMOUNT("quotationAmount", "sumAmount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_TOTAL_AMOUNT("quotationTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+
 
     /*------ start: CONTRACT_PAYMENT_PLAN ------*/
     /**
@@ -247,13 +249,14 @@ public enum BusinessModuleField {
 
     CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
     CONTRACT_PRODUCT_TABLE("contractProducts", "products", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT("contractProduct", "product", Set.of("dataSourceType"), FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", null, FormKey.CONTRACT.getKey()),
-    CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT("contractProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT_AMOUNT("contractProductAmount", "price", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_PRODUCT_SUM_AMOUNT("contractProductSumAmount", "sumAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required", "mobile"), FormKey.CONTRACT.getKey()),
     CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_TOTAL_AMOUNT("contractTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
     /*------ end: CONTRACT ------*/
 

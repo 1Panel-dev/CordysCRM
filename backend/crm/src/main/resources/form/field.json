@@ -1538,6 +1538,26 @@
           "showThousandsSeparator": true
         }
       ]
+    },
+    {
+      "name": "累计金额",
+      "internalKey": "quotationTotalAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true,
+      "ext_ver": "1.5.1"
     }
   ],
   "contractPaymentPlan": [
@@ -1812,6 +1832,26 @@
       ],
       "mobile": true,
       "ext_ver": "1.5.0"
+    },
+    {
+      "name": "累计金额",
+      "internalKey": "contractTotalAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true,
+      "ext_ver": "1.5.1"
     }
   ],
   "invoice": [
