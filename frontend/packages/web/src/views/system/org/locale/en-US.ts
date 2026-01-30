@@ -74,4 +74,5 @@ export default {
   'org.searchByNameAndPhone': 'Search by name/mobile number',
   'org.setDirectSuperiors': 'Set up direct superiors',
   'org.onboardingDate': 'Onboarding Date',
+  'org.Syncing': 'Synchronize organizational structure',
 };

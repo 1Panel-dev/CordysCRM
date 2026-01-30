@@ -634,6 +634,7 @@ export const {
   updateOrgUserName,
   importUserPreCheck,
   getOrgDepartmentUser,
+  checkSync,
   batchToggleStatusUser,
   checkDeleteDepartment,
   batchResetUserPassword,

@@ -71,4 +71,5 @@ export default {
   'org.searchByNameAndPhone': '通过姓名/手机号搜索',
   'org.setDirectSuperiors': '设置直属上级',
   'org.onboardingDate': '入职日期',
+  'org.Syncing': '同步组织架构中',
 };

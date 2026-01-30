@@ -23,7 +23,7 @@
           >
             {{ t('org.addMember') }}
           </n-button>
-          <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
+          <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions" @updateShow="updateShow">
             <n-button type="default" class="outline--secondary">
               {{ t('common.more') }}
               <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
@@ -130,6 +130,7 @@
   import {
     batchResetUserPassword,
     batchToggleStatusUser,
+    checkSync,
     deleteUser,
     deleteUserCheck,
     getConfigSynchronization,
@@ -829,6 +830,16 @@
   const isHasConfig = ref<boolean>(false); // 已配置
   const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
+  const isSyncing = ref<boolean>(false);
+  async function checkSyncing() {
+    try {
+      isSyncing.value = await checkSync();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const moreActions = computed(() => {
     return [
       ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
@@ -837,7 +848,7 @@
               label: t('org.formPlatformSync', { type: platFormName.value }),
               key: 'sync',
               render: renderSyncResult.value,
-              disabled: !isHasConfig.value,
+              disabled: !isHasConfig.value || isSyncing.value,
             },
           ]
         : []),
@@ -855,7 +866,7 @@
   });
 
   async function handleSync() {
-    if (!isHasConfig.value) {
+    if (!isHasConfig.value || isSyncing.value) {
       return false;
     }
 
@@ -989,7 +1000,9 @@
       'div',
       {
         class: `flex items-center ${
-          isHasConfigPermission.value && isHasConfig.value ? 'text-[var(--text-n1)]' : 'text-[var(--text-n6)]'
+          isHasConfigPermission.value && isHasConfig.value && !isSyncing.value
+            ? 'text-[var(--text-n1)]'
+            : 'text-[var(--text-n6)]'
         }`,
         onClick: () => handleSync(),
       },
@@ -999,7 +1012,7 @@
           {
             delay: 300,
             flip: true,
-            disabled: isHasConfigPermission.value && isHasConfig.value,
+            disabled: isHasConfigPermission.value && isHasConfig.value && !isSyncing.value,
           },
           {
             trigger: () => {
@@ -1009,9 +1022,9 @@
               return h(
                 'div',
                 {
-                  class: 'w-[248px]',
+                  class: isSyncing.value ? '' : 'w-[248px]',
                 },
-                t('org.checkIsOpenConfig')
+                isSyncing.value ? t('org.Syncing') : t('org.checkIsOpenConfig')
               );
             },
           }
@@ -1027,6 +1040,13 @@
           : null,
       ]
     );
+  }
+
+  async function updateShow(show: boolean) {
+    if (show && isHasConfigPermission.value && isHasConfig.value) {
+      await checkSyncing();
+      renderSyncResult.value = renderSync();
+    }
   }
 
   // 初始化三方平台配置
