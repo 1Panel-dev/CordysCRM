@@ -32,4 +32,6 @@ public interface ExtContractInvoiceMapper {
 
     BigDecimal calculateContractInvoiceValidAmount(@Param("contractId") String contractId, @Param("userId") String userId,
                                               @Param("orgId") String orgId, @Param("excludeId") String excludeId);
+
+    Boolean hasContractInvoice(@Param("contractId") String contractId);
 }

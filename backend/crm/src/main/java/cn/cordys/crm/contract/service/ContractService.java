@@ -32,6 +32,7 @@ import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
+import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.customer.domain.Customer;
@@ -103,7 +104,8 @@ public class ContractService {
     private DataScopeService dataScopeService;
     @Resource
     private BaseMapper<ContractPaymentRecord> contractPaymentRecordMapper;
-
+    @Resource
+    private ExtContractInvoiceMapper extContractInvoiceMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
@@ -374,6 +376,10 @@ public class ContractService {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
+        }
+
+        if (extContractInvoiceMapper.hasContractInvoice(id)) {
+            throw new GenericException(Translator.get("contract.has.invoice.cannot.delete"));
         }
 
         contractFieldService.deleteByResourceId(id);
