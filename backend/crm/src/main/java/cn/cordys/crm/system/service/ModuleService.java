@@ -212,17 +212,17 @@ public class ModuleService {
 	 */
 	public void switchAdvanced() {
 		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
-		if (parameter == null) {
-			Parameter entity = new Parameter();
-			entity.setParamKey("advance.search.setting");
-			entity.setParamValue(BooleanUtils.FALSE);
-			entity.setType("TEXT");
-			parameterMapper.insert(entity);
-		} else {
+		if (parameter != null) {
+			parameterMapper.deleteByPrimaryKey("advance.search.setting");
 			boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
 			parameter.setParamValue(Boolean.toString(!current));
-			parameterMapper.update(parameter);
+		} else {
+			parameter = new Parameter();
+			parameter.setParamKey("advance.search.setting");
+			parameter.setParamValue(BooleanUtils.FALSE);
+			parameter.setType("TEXT");
 		}
+		parameterMapper.insert(parameter);
 	}
 
     /**
