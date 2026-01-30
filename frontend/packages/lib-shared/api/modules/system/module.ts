@@ -70,6 +70,8 @@ import {
   GetFieldPriceListUrl,
   GetFieldQuotationListUrl,
   GetFieldBusinessTitleListUrl,
+  SetDisplayAdvancedUrl,
+  GetAdvancedSwitchUrl
 } from '@lib/shared/api/requrls/system/module';
 import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -390,6 +392,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<BusinessTitleItem>>({ url: GetFieldBusinessTitleListUrl, data });
   }
 
+  // 设置高级筛选开关
+  function setDisplayAdvanced() {
+    return CDR.get({ url: SetDisplayAdvancedUrl });
+  }
+
+  // 高级筛选开关
+  function getAdvancedSwitch() {
+    return CDR.get({ url: GetAdvancedSwitchUrl });
+  }
+
   return {
     getFieldDisplayList,
     getModuleNavConfigList,
@@ -448,6 +460,8 @@ export default function useProductApi(CDR: CordysAxios) {
     getModuleSearchMaskConfig,
     getModuleTopNavList,
     setTopNavListSort,
+    setDisplayAdvanced,
+    getAdvancedSwitch,
     uploadTempAttachment,
     previewAttachment,
     deleteAttachment,

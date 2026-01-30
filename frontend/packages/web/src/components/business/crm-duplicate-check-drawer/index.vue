@@ -24,7 +24,7 @@
           @init-config-list="initConfigList"
         />
         <n-button
-          v-if="lastScopedOptions.length > 0"
+          v-if="enableAdvanced && lastScopedOptions.length > 0"
           class="n-btn-outline-primary"
           type="primary"
           ghost
@@ -113,7 +113,12 @@
   import RelatedTable from './components/relatedTable.vue';
   import searchSettingButton from './searchConfig/index.vue';
 
-  import { advancedSearchOptDetail, getAdvancedSearchClueDetail, getGlobalModuleCount } from '@/api/modules';
+  import {
+    advancedSearchOptDetail,
+    getAdvancedSearchClueDetail,
+    getAdvancedSwitch,
+    getGlobalModuleCount,
+  } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -350,6 +355,16 @@
     }
   );
 
+  const enableAdvanced = ref(false);
+  async function getEnableAdvanced() {
+    try {
+      enableAdvanced.value = await getAdvancedSwitch();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => visible.value,
     (val) => {
@@ -359,6 +374,7 @@
       nextTick(() => {
         (document.querySelector('.crm-duplicateCheck-search input') as HTMLInputElement)?.focus();
       });
+      getEnableAdvanced();
     }
   );
 

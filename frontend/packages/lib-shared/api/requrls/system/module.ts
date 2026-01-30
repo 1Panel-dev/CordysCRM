@@ -4,6 +4,8 @@ export const moduleNavListSortUrl = '/module/sort'; // 模块-首页-模块排�
 export const toggleModuleNavStatusUrl = '/module/switch'; // 模块-首页-单个模块开启或关闭
 export const ModuleUserDeptTreeUrl = '/module/user/dept/tree'; // 模块-获取部门用户树
 export const ModuleRoleTreeUrl = '/module/role/tree'; // 模块-获取角色树
+export const GetAdvancedSwitchUrl = '/module/advanced-search/settings'; // 高级筛选开关
+export const SetDisplayAdvancedUrl = '/module/advanced-search/switch'; // 设置高级筛选开关
 
 // 模块--商机
 export const getOpportunityListUrl = '/opportunity-rule/page'; // 模块-商机-商机规则列表
