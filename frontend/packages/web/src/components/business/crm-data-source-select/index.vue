@@ -79,7 +79,7 @@
 
   const typeLocaleMap = {
     [FieldDataSourceTypeEnum.CUSTOMER]: 'crmFormDesign.customer',
-    [FieldDataSourceTypeEnum.CONTACT]: 'crmFormDesign.contract',
+    [FieldDataSourceTypeEnum.CONTACT]: 'crmFormDesign.contact',
     [FieldDataSourceTypeEnum.BUSINESS]: 'crmFormDesign.opportunity',
     [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
     [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',

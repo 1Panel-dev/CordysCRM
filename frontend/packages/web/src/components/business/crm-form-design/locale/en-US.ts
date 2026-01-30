@@ -98,7 +98,7 @@ export default {
   'crmFormDesign.serialNumber': 'Serial Number',
   'crmFormDesign.selectDataSource': 'Select {type}',
   'crmFormDesign.customer': 'Account',
-  'crmFormDesign.contract': 'Contact',
+  'crmFormDesign.contact': 'Contact',
   'crmFormDesign.opportunity': 'Opportunity',
   'crmFormDesign.product': 'Product',
   'crmFormDesign.clue': 'Lead',
@@ -202,6 +202,7 @@ export default {
   'crmFormDesign.CUSTOMER_TO_RECORD': 'Write Record',
   'crmFormDesign.OPPORTUNITY_TO_RECORD': 'Write Record',
   'crmFormDesign.PLAN_TO_RECORD': 'Plan to Record',
+  'crmFormDesign.CONTRACT_TO_INVOICE': 'Add Invoice',
   'crmFormDesign.tip.CLUE_TO_CUSTOMER':
     'When converting a lead to an account, fill the lead form field content into the account form field',
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY':
@@ -226,4 +227,5 @@ export default {
   'crmFormDesign.addSubField': 'Add Subfield',
   'crmFormDesign.quotingData': 'Reference other forms',
   'crmFormDesign.currentFormField': 'Current Form Field',
+  'crmFormDesign.contract': 'Contract',
 };

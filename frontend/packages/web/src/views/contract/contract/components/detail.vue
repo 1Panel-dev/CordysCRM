@@ -61,7 +61,8 @@
           is-contract-tab
           :readonly="
             detailInfo?.stage === ContractStatusEnum.VOID ||
-            detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
+            detailInfo?.stage === ContractStatusEnum.ARCHIVED ||
+            detailInfo?.approvalStatus !== QuotationStatusEnum.APPROVED
           "
           @open-business-title-drawer="showBusinessTitleDetail"
         />

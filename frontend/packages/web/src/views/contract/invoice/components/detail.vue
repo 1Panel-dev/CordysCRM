@@ -33,7 +33,6 @@
       :form-key="FormDesignKeyEnum.INVOICE"
       :source-id="props.sourceId"
       need-init-detail
-      :link-form-key="FormDesignKeyEnum.INVOICE"
       @saved="() => handleSaved()"
     />
   </CrmDrawer>
@@ -77,6 +76,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+
   const detailInfo = ref();
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {

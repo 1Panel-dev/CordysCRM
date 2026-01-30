@@ -122,7 +122,7 @@
         <n-form-item :label="t('agent.script')" path="script">
           <n-input v-model:value="form.script" type="textarea" :maxlength="500" />
           <div class="text-[12px] text-[var(--text-n4)]">
-            {{ '<iframe src="https://xxx?ak=${ak}&sk=${sk}&username=${username}" />' }}
+            {{ '<iframe src="https://xxx?ak=${ak}&sk=${sk}&asker=${username}" />' }}
           </div>
         </n-form-item>
         <n-form-item :label="t('common.desc')" path="description">

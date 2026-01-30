@@ -139,7 +139,7 @@ export const fullFormSettingList = [
     formKey: FormDesignKeyEnum.CUSTOMER,
   },
   {
-    label: t('crmFormDesign.contract'),
+    label: t('crmFormDesign.contact'),
     dataSource: FieldDataSourceTypeEnum.CONTACT,
     formKey: FormDesignKeyEnum.CONTACT,
   },

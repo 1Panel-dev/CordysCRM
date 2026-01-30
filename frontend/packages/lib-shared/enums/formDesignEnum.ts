@@ -104,4 +104,5 @@ export enum FormLinkScenarioEnum {
   CUSTOMER_TO_RECORD = 'CUSTOMER_TO_RECORD', // 客户转跟进记录
   OPPORTUNITY_TO_RECORD = 'OPPORTUNITY_TO_RECORD', // 商机转跟进记录
   PLAN_TO_RECORD = 'PLAN_TO_RECORD', // 跟进计划转跟进记录
+  CONTRACT_TO_INVOICE = 'CONTRACT_TO_INVOICE', // 合同开票
 }
