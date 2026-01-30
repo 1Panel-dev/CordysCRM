@@ -254,7 +254,12 @@
 
   const currentFieldOptions = computed(() => {
     return props.formFields
-      .filter((e) => !hiddenTypes.includes(e.type) && e.type !== FieldTypeEnum.SERIAL_NUMBER && !e.resourceFieldId)
+      .filter(
+        (e) =>
+          !hiddenTypes.includes(e.type) &&
+          ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(e.type) &&
+          !e.resourceFieldId
+      )
       .map((f) => ({ label: f.name, value: f.id }));
   });
 
