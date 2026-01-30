@@ -190,7 +190,10 @@
   const fieldOptions = computed(() => {
     return props.formFields
       .filter(
-        (e) => [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(e.type) && e.id !== props.fieldConfig.id
+        (e) =>
+          [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(e.type) &&
+          e.id !== props.fieldConfig.id &&
+          !e.resourceFieldId
       )
       .map((f) => ({ label: f.name, value: f.id }));
   });

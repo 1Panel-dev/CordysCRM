@@ -7,7 +7,14 @@ import { useI18n } from '../hooks/useI18n';
 
 export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];
 export const dataSourceTypes = [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE];
-export const hiddenTypes = [FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT, FieldTypeEnum.LINK];
+export const hiddenTypes = [
+  FieldTypeEnum.DIVIDER,
+  FieldTypeEnum.PICTURE,
+  FieldTypeEnum.ATTACHMENT,
+  FieldTypeEnum.LINK,
+  FieldTypeEnum.SUB_PRICE,
+  FieldTypeEnum.SUB_PRODUCT,
+];
 export const needSameTypes = [
   FieldTypeEnum.PHONE,
   FieldTypeEnum.LOCATION,
