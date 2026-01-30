@@ -891,6 +891,7 @@ public class ModuleFormService {
             field.setBusinessKey(constant.getKey());
             field.setType(FieldType.INPUT.name());
             field.setShowLabel(true);
+            field.setReadable(true);
             fields.add(field);
         }
         return fields;
