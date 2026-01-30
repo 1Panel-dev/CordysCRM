@@ -706,7 +706,7 @@
             <n-button
               type="primary"
               text
-              :disabled="!fieldConfig.formula?.length || !!fieldConfig.resourceFieldId"
+              :disabled="!formulaConfig.source?.length || !!fieldConfig.resourceFieldId"
               @click="handleClearFormulaField"
             >
               {{ t('common.clear') }}
@@ -718,7 +718,7 @@
             :disabled="!!fieldConfig.resourceFieldId"
             @click="handleCalculateFormula"
           >
-            {{ fieldConfig.formula?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
+            {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
           </n-button>
         </div>
       </template>
@@ -1192,7 +1192,7 @@
     v-if="fieldConfig"
     v-model:visible="showCalculateFormulaModal"
     :field-config="fieldConfig"
-    :form-fields="formulaScopedFields"
+    :form-fields="list"
     :is-sub-table-field="isSubTableField"
     @save="handleCalculateFormulaConfigSave"
   />
@@ -1245,6 +1245,7 @@
     FormCreateFieldRule,
     FormCreateFieldShowControlRule,
   } from '@/components/business/crm-form-create/types';
+  import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
   import datasourceLinkModal from './datasourceLinkModal.vue';
@@ -1329,7 +1330,9 @@
       : list.value.some((item) => item.id !== fieldConfig.value?.id && item.name === fieldConfig.value?.name);
   });
 
-  const formulaScopedFields = computed(() => (isSubTableField.value ? parentField.value?.subFields ?? [] : list.value));
+  const formulaConfig = computed(() => {
+    return safeParseFormula(fieldConfig.value.formula);
+  });
 
   function handleRuleChange(val: (string | number)[]) {
     fieldConfig.value.rules = val
@@ -1667,7 +1670,7 @@
     showCalculateFormulaModal.value = true;
   }
 
-  function handleCalculateFormulaConfigSave(astValue: string) {
+  function handleCalculateFormulaConfigSave(astValue?: string) {
     fieldConfig.value.formula = astValue;
     showCalculateFormulaModal.value = false;
   }
