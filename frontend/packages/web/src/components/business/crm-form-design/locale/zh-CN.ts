@@ -96,7 +96,7 @@ export default {
   'crmFormDesign.serialNumber': '流水号',
   'crmFormDesign.selectDataSource': '选择{type}',
   'crmFormDesign.customer': '客户',
-  'crmFormDesign.contract': '联系人',
+  'crmFormDesign.contact': '联系人',
   'crmFormDesign.opportunity': '商机',
   'crmFormDesign.product': '产品',
   'crmFormDesign.clue': '线索',
@@ -198,6 +198,7 @@ export default {
   'crmFormDesign.CUSTOMER_TO_RECORD': '写记录',
   'crmFormDesign.OPPORTUNITY_TO_RECORD': '写记录',
   'crmFormDesign.PLAN_TO_RECORD': '计划转记录',
+  'crmFormDesign.CONTRACT_TO_INVOICE': '新增发票',
   'crmFormDesign.tip.CLUE_TO_CUSTOMER': '线索转换客户时，将线索的表单字段内容填充到客户表单字段',
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY': '线索转商机时，将线索表单字段填充到商机表单字段',
   'crmFormDesign.tip.CUSTOMER_TO_OPPORTUNITY': '在客户详情创建商机时，将客户表单字段填充到商机表单字段',
@@ -215,4 +216,5 @@ export default {
   'crmFormDesign.addSubField': '添加子字段',
   'crmFormDesign.quotingData': '引用其他表单',
   'crmFormDesign.currentFormField': '当前表单字段',
+  'crmFormDesign.contract': '合同',
 };

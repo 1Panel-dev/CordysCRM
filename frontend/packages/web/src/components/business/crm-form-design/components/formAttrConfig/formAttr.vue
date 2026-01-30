@@ -136,6 +136,7 @@
           FormDesignKeyEnum.FOLLOW_RECORD_CLUE,
           FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
           FormDesignKeyEnum.BUSINESS,
+          FormDesignKeyEnum.INVOICE,
         ].includes(props.formKey)
       "
       class="crm-form-design-config-item"
@@ -174,7 +175,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig, FormConfigLinkScenarioItem, FormFieldLinkItem } from '@lib/shared/models/system/module';
+  import { FormConfig, FormConfigLinkScenarioItem } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -208,6 +209,15 @@
         {
           label: t('crmFormDesign.clue'),
           value: FormDesignKeyEnum.CLUE,
+          linkClearPop: false,
+        },
+      ];
+    }
+    if (props.formKey === FormDesignKeyEnum.INVOICE) {
+      return [
+        {
+          label: t('crmFormDesign.contract'),
+          value: FormDesignKeyEnum.CONTRACT,
           linkClearPop: false,
         },
       ];

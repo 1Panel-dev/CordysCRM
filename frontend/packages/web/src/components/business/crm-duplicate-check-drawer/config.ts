@@ -49,7 +49,7 @@ export const scopedOptions = [
   },
 
   {
-    label: t('crmFormDesign.contract'),
+    label: t('crmFormDesign.contact'),
     value: FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT,
     moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
     permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],

@@ -68,7 +68,8 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
-    :link-form-info="linkFormInfo"
+    :link-form-info="linkFormFieldMap"
+    :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_INVOICE"
     @saved="() => searchData()"
   />
   <CrmTableExportModal
@@ -94,7 +95,7 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { ContractInvoiceStatusEnum } from '@lib/shared/enums/contractEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
@@ -160,7 +161,6 @@
 
   const createLoading = ref(false);
   const linkFormKey = ref(FormDesignKeyEnum.CONTRACT);
-  const linkFormInfo = ref();
   const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
     formKey: linkFormKey,
     sourceId: activeSourceId,
@@ -177,7 +177,6 @@
         await initFormConfig();
         await initFormDetail(false, true);
       }
-      linkFormInfo.value = linkFormFieldMap.value;
       formCreateDrawerVisible.value = true;
     } catch (error) {
       // eslint-disable-next-line no-console

@@ -1023,6 +1023,21 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
+    if (props.formKey.value === FormDesignKeyEnum.INVOICE && props.sourceId?.value) {
+      // 合同下创建发票，自动带入合同信息
+      if (field.businessKey === 'contractId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value || props.initialSourceName?.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
       // 数据源类型的字段，默认值需要转为数组
       return {
