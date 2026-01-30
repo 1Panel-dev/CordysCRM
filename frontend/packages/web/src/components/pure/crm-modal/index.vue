@@ -5,6 +5,7 @@
     :show-icon="props.showIcon"
     :preset="props.preset"
     :class="`crm-modal crm-form-modal crm-modal-${props.size || 'medium'}`"
+    :style="{ width: props.width ? props.width + 'px' : undefined }"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
     @after-leave="emit('cancel')"
@@ -87,6 +88,7 @@
       titleClass?: string; // 标题类名
       titleStyle?: Record<string, any>; // 标题样式
       footer?: boolean; // 是否展示footer
+      width?: number;
     }>(),
     {
       preset: 'dialog',
