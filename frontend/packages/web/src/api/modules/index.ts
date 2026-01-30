@@ -578,6 +578,8 @@ export const {
   deleteOpportunity,
   resetSearchConfig,
   setTopNavListSort,
+  setDisplayAdvanced,
+  getAdvancedSwitch,
   previewAttachment,
   addOpportunityRule,
   updateCustomerPool,

@@ -45,15 +45,16 @@
                     <CrmIcon v-else :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
                     <div class="one-line-text">{{ t(item.label) }}</div>
                   </div>
-                  <n-button
+                  <CrmMoreAction
                     v-if="item.key === 'search'"
-                    text
-                    v-bind="item"
-                    type="primary"
-                    @click="handleDesensitization"
+                    :options="searchMoreOptions"
+                    trigger="hover"
+                    @select="(item) => handleMoreSelect(item.key as string)"
                   >
-                    <div class="one-line-text">{{ t('module.desensitizationSet') }}</div>
-                  </n-button>
+                    <n-button type="primary" text :keyboard="false">
+                      {{ t('common.more') }}
+                    </n-button>
+                  </CrmMoreAction>
                   <CrmMoreAction
                     v-if="item.key === 'event'"
                     :options="eventMoreOptions"
@@ -102,7 +103,7 @@
   import followRecordDrawer from './components/customManagement/followRecordDrawer.vue';
   import desensitizationModal from './components/desensitizationModal.vue';
 
-  import { moduleNavListSort, setTopNavListSort } from '@/api/modules';
+  import { getAdvancedSwitch, moduleNavListSort, setDisplayAdvanced, setTopNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import { ActionItem } from '@/store/modules/app/types';
   import useLicenseStore from '@/store/modules/setting/license';
@@ -243,6 +244,58 @@
     }
   }
 
+  const enableAdvanced = ref(false);
+  async function getEnableAdvanced() {
+    try {
+      enableAdvanced.value = await getAdvancedSwitch();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  async function setAdvancedSwitch() {
+    try {
+      await setDisplayAdvanced();
+      enableAdvanced.value = !enableAdvanced.value;
+      Message.success(t('common.operationSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const searchMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      key: 'desensitizationSet',
+      label: t('module.desensitizationSet'),
+    },
+    {
+      key: 'advanced',
+      label: t('workbench.duplicateCheck.advanced'),
+      render: h(
+        'div',
+        {
+          class: 'flex items-center gap-[8px]',
+          onClick: (e: MouseEvent) => {
+            e.stopPropagation();
+          },
+        },
+        [
+          t('workbench.duplicateCheck.advanced'),
+          h(NSwitch, {
+            value: enableAdvanced.value,
+            rubberBand: false,
+            size: 'small',
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation();
+              setAdvancedSwitch();
+            },
+          }),
+        ]
+      ),
+    },
+  ]);
+
   const eventMoreOptions = computed<ActionsItem[]>(() => [
     {
       key: 'followRecord',
@@ -257,8 +310,16 @@
   const customerManagementFollowRecordVisible = ref(false);
   const customerManagementFollowPlanVisible = ref(false);
 
+  const showDesensitizationDrawer = ref(false);
+  function handleDesensitization() {
+    showDesensitizationDrawer.value = true;
+  }
+
   function handleMoreSelect(key: string) {
     switch (key) {
+      case 'desensitizationSet':
+        handleDesensitization();
+        break;
       case 'followRecord':
         customerManagementFollowRecordVisible.value = true;
         break;
@@ -272,6 +333,7 @@
 
   onMounted(() => {
     enable.value = appStore.getMenuIconStatus;
+    getEnableAdvanced();
   });
 
   watch(
@@ -286,11 +348,6 @@
       immediate: true,
     }
   );
-
-  const showDesensitizationDrawer = ref(false);
-  function handleDesensitization() {
-    showDesensitizationDrawer.value = true;
-  }
 </script>
 
 <style lang="less" scoped>
