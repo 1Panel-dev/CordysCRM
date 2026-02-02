@@ -34,7 +34,7 @@
         <n-scrollbar :content-class="`${props.stageConfig.id} h-full`" @scroll="handleReachBottom">
           <div v-for="item in list" :key="item.id" class="opportunity-billboard-item">
             <div class="flex items-center justify-between">
-              <CrmTableButton v-if="item.name" @click="jumpToDetail('opportunity', item.id)">
+              <CrmTableButton v-if="item.name" @click="jumpToDetail('opportunity', item)">
                 <template #trigger>{{ item.name }}</template>
                 {{ item.name }}
               </CrmTableButton>
@@ -86,7 +86,7 @@
                   v-if="item.customerName"
                   size="small"
                   class="text-[14px]"
-                  @click="jumpToDetail('customer', item.customerId)"
+                  @click="jumpToDetail('customer', item)"
                 >
                   <template #trigger>{{ item.customerName }}</template>
                   {{ item.customerName }}
@@ -396,14 +396,20 @@
     return true;
   }
 
-  function jumpToDetail(type: 'customer' | 'opportunity', id: string) {
+  function jumpToDetail(type: 'customer' | 'opportunity', item: any) {
     if (type === 'customer') {
-      openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
-        id,
-      });
+      if (item.inCustomerPool) {
+        openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
+          id: item.customerId,
+        });
+      } else {
+        openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+          id: item,
+        });
+      }
     } else if (type === 'opportunity') {
       openNewPage(OpportunityRouteEnum.OPPORTUNITY_OPT, {
-        id,
+        id: item.id,
       });
     }
   }
