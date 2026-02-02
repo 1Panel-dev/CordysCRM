@@ -58,6 +58,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private final List<Integer> downOffSet = new ArrayList<>();
 	private final List<String> centerCells = new ArrayList<>();
 
+	public static final int MAX_DROPDOWN_LENGTH = 255;
+
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
 		List<BaseField> importFields = fields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport()).toList();
@@ -114,7 +116,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             // set data validation
             DataValidationHelper dataValidationHelper = sheet.getDataValidationHelper();
             validationOptionMap.forEach((k, v) -> {
-                DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(v.toArray(String[]::new));
+				List<String> simpleOps = limitCellDropdown(v);
+				DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(simpleOps.toArray(String[]::new));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k, k));
                 sheet.addValidationData(dataValidation);
             });
@@ -237,4 +240,22 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
         }
         return null;
     }
+
+	private static List<String> limitCellDropdown(List<String> options) {
+		List<String> limitOps = new ArrayList<>();
+		int currentLength = 0;
+		for (String option : options) {
+			if (option == null || option.isEmpty()) {
+				continue;
+			}
+			int optionLength = option.length();
+			int extra = CollectionUtils.isEmpty(limitOps) ? optionLength : optionLength + 1;
+			if (currentLength + extra > MAX_DROPDOWN_LENGTH) {
+				break;
+			}
+			limitOps.add(option);
+			currentLength += extra;
+		}
+		return limitOps;
+	}
 }

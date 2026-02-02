@@ -676,13 +676,18 @@ public class ModuleFormService {
      * @param field 自定义字段
      */
     public void setFieldRefOption(BaseField field) {
+		if (field instanceof SubField subField) {
+			subField.getSubFields().forEach(this::setFieldRefOption);
+		}
         if (!(field instanceof HasOption of)) {
             return;
         }
         if (StringUtils.isEmpty(of.getOptionSource()) || Strings.CS.equals(of.getOptionSource(), OPTION_DEFAULT_SOURCE)) {
             if (CollectionUtils.isEmpty(of.getCustomOptions())) {
                 of.setCustomOptions(of.getOptions());
-            }
+            } else {
+				of.setOptions(of.getCustomOptions());
+			}
         } else {
             // 引用字段选项, 清空再替换
             of.setOptions(new ArrayList<>());
