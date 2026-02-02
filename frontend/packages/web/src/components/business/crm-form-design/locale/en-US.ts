@@ -217,6 +217,8 @@ export default {
     'When writing follow-up records in the opportunity module, fill the opportunity form field content into the record form fields',
   'crmFormDesign.tip.PLAN_TO_RECORD':
     'When performing plan to record operations, fill the plan form field content into the record form fields',
+  'crmFormDesign.tip.CONTRACT_TO_INVOICE':
+    'When creating an invoice in the contract details, fill the contract form fields into the invoice form fields',
   'crmFormDesign.productTable': 'Product Table',
   'crmFormDesign.quotationTable': 'Quotation Table',
   'crmFormDesign.sum': 'Sum',
