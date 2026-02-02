@@ -63,6 +63,7 @@ public class DataInitService {
             initOneTime(moduleFieldExtService::setDefaultOptionSource, "set.default.option.source");
             initOneTime(moduleFieldExtService::refreshPlanFieldPos, "refresh.plan.field.pos");
             initOneTime(moduleFormService::initInvoiceFormScenarioProp, "init.invoice.form.scenario");
+            initOneTime(moduleFieldService::modifyInvoiceShowFields, "init.invoice.show.fields");
         } finally {
             lock.unlock();
         }

@@ -732,13 +732,6 @@ public class ContractService {
         return contractMapper.selectByPrimaryKey(id);
     }
 
-    public ModuleFormConfigDTO getBusinessFormConfig(String orgId) {
-        ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
-        // 添加合同金额字段
-        formConfig.getFields().add(moduleFormService.getContractAmountField());
-        return formConfig;
-    }
-
     /**
      * 通过名称获取合同集合
      *

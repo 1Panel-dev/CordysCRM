@@ -21,6 +21,7 @@ import cn.cordys.crm.customer.dto.request.ContractDetailInvoicePageRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,13 +51,15 @@ public class ContractController {
 	private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
 
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return contractService.getBusinessFormConfig(OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), OrganizationContext.getOrganizationId());
     }
 
 
