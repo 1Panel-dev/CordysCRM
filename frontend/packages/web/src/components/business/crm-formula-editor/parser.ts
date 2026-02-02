@@ -25,6 +25,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
       return {
         type: 'number',
         value: t.value,
+        numberType: 'number',
         startTokenIndex: index - 1,
         endTokenIndex: index - 1,
       };
@@ -37,6 +38,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
         fieldId: t.fieldId,
         name: t.name,
         fieldType: t.fieldType,
+        numberType: t.numberType,
         startTokenIndex: index - 1,
         endTokenIndex: index - 1,
       };

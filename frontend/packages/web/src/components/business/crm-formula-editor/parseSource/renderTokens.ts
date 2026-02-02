@@ -43,6 +43,13 @@ export function createFieldNode(token: Token) {
   node.className = 'formula-tag-wrapper';
   node.contentEditable = 'false';
   node.dataset.nodeType = 'field';
+  if ((token as FieldToken)?.fieldType) {
+    node.dataset.fieldType = (token as FieldToken)?.fieldType;
+  }
+
+  if ((token as FieldToken)?.numberType) {
+    node.dataset.numberType = (token as FieldToken)?.numberType;
+  }
 
   node.style.color = getFormulaNodeColor(token);
 

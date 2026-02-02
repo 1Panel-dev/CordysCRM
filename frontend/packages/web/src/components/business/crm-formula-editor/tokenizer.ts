@@ -1,5 +1,5 @@
 // editorDom->token
-import { NumberToken, Token } from './types';
+import { NumberToken, NumberType, Token } from './types';
 
 export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): Token[] {
   const tokens: Token[] = [];
@@ -24,11 +24,13 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
       }
 
       if (el.classList.contains('formula-tag-wrapper') && el.dataset.nodeType === 'field') {
+        const numberType = (el.dataset?.numberType ?? 'number') as NumberType;
         tokens.push({
           type: 'field',
           fieldId: el.dataset.value || '',
           name: text.trim(),
           fieldType: el.dataset.fieldType,
+          numberType,
           start,
           end,
         });
@@ -66,6 +68,7 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
             tokens.push({
               type: 'number',
               value: Number(char),
+              numberType: 'number',
               start,
               end,
             });

@@ -103,8 +103,7 @@
     if (val === null) return '';
     if (
       (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) ||
-      // TODO 下个版本再调整
-      (props.fieldConfig.type === FieldTypeEnum.FORMULA && props.fieldConfig.showThousandsSeparator)
+      props.fieldConfig.type === FieldTypeEnum.FORMULA
     ) {
       return props.fieldConfig.precision && props.fieldConfig.precision > 0
         ? `${val.toLocaleString('en-US').split('.')[0]}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`

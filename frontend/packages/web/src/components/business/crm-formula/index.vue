@@ -3,7 +3,7 @@
     <template #trigger>
       <inputNumber
         v-model:value="value"
-        path="fieldValue"
+        :path="props.path"
         :field-config="fieldConfig"
         :form-config="props.formConfig"
         :is-sub-table-field="props.isSubTableField"
@@ -26,7 +26,7 @@
   import basicComponents from '@/components/business/crm-form-create/components/basic/index';
 
   import { safeParseFormula } from '../crm-formula-editor/utils';
-  import { normalizeExpression, normalizeToNumber, resolveFunctions } from './index';
+  import evaluateIR from './formula-runtime';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
@@ -50,100 +50,64 @@
     default: 0,
   });
 
-  function calcFormula(formula: string, getter: (id: string) => any, warn: (msg: string) => void = console.warn) {
-    if (!formula) return null;
-
-    // 清洗富文本或特定带入的字符串
-    let express = normalizeExpression(formula);
-
-    // 替换变量
-    express = express.replace(/\$\{(.+?)\}/g, (_, fieldId) => {
-      const fieldIdMatch = fieldId.match(/^\(?([A-Za-z0-9_]+)\)?/);
-      if (!fieldIdMatch) return '0';
-      const realId = fieldIdMatch[1];
-      const rawVal = getter(realId);
-      const val = normalizeToNumber(rawVal);
-      return String(val);
-    });
-
-    express = resolveFunctions(express, { getValue: getter, warn });
-
-    try {
-      //  安全性检查确保表达式只包含数字、运算符、小数点、括号
-      if (/[^0-9+\-*/().\s%]/.test(express)) {
-        // eslint-disable-next-line no-console
-        console.warn('The formula contains an invalid character and terminates the computation:', express);
-        return null;
-      }
-
-      // eslint-disable-next-line no-new-func
-      const result = new Function(`return (${express})`)();
-      return parseFloat(Number(result).toPrecision(12));
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('Formula calculation exception:', formula, err);
-      return null;
-    }
-  }
-
-  function normalizeNumber(val: any): number | null {
-    if (val === null || val === undefined || val === '') return null;
-    // 已经是 number 直接返回
-    if (typeof val === 'number') return val;
-    let str = String(val).trim();
-    // 是否是百分比格式（可能带千分位）
-    if (str.endsWith('%')) {
-      str = str.slice(0, -1); // 去掉 %
-    }
-    // 去除千分位 ","
-    str = str.replace(/,/g, '');
-    // 转数字
-    const num = Number(str);
-    if (Number.isNaN(num)) return null;
-    return num;
-  }
-
-  function getFieldValue(fieldId: string) {
-    // 父级字段
-    if (!props.isSubTableRender) {
-      return props.formDetail?.[fieldId];
-    }
-
-    const pathMatch = props.path.match(/^([^[]+)\[(\d+)\]\.(.+)$/);
-    if (pathMatch) {
-      const [, tableKey, rowIndexStr] = pathMatch;
-      const rowIndex = parseInt(rowIndexStr, 10);
-      const row = props.formDetail?.[tableKey]?.[rowIndex];
-      const rawValue = row?.[fieldId];
-      return normalizeNumber(rawValue);
-    }
-  }
-
-  const defaultFormulaConfig = {
-    source: '',
-    display: '',
-    fields: [],
-  };
-
   const formulaTooltip = computed(
     () => safeParseFormula(props.fieldConfig.formula ?? '').display || t('crmFormDesign.formulaTooltip')
   );
 
-  // // 根据公式实时计算 todo xinxinwu
-  // const updateValue = debounce(() => {
-  //   const { formula } = props.fieldConfig;
-  //   const { source } = safeParseFormula(formula ?? '');
-  //   // if (!formulaValue) return;
-  //   // const result = calcFormula(formulaValue, getFieldValue, (msg) => {
-  //   //   console.warn(msg);
-  //   //   // todo 校验提示
-  //   // });
-  //   // const next = result !== null ? Number(result.toFixed(2)) : 0;
-  //   // // 如果值未变，不需要更新
-  //   // if (Object.is(next, value.value)) return;
-  //   // value.value = next;
-  //   // emit('change', next);
-  // }, 300);
+  function getScalarFieldValue(
+    fieldId: string,
+    context?: {
+      tableKey?: string;
+      rowIndex?: number;
+    }
+  ) {
+    // 子表公式：只取当前行
+    if (context?.tableKey && context.rowIndex != null) {
+      const row = props.formDetail?.[context.tableKey]?.[context.rowIndex];
+      return row?.[fieldId];
+    }
+
+    // 主表字段
+    return props.formDetail?.[fieldId];
+  }
+
+  function getTableColumnValues(path: string): any[] {
+    const [tableKey, fieldKey] = path.split('.');
+    const rows = props.formDetail?.[tableKey];
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row) => row?.[fieldKey]);
+  }
+
+  // 根据公式实时计算 todo xinxinwu
+  const updateValue = debounce(() => {
+    const { formula } = props.fieldConfig;
+    const { ir } = safeParseFormula(formula ?? '');
+
+    if (!ir) return;
+    const contextMatch = props.path.match(/^([^[]+)\[(\d+)\]\./);
+
+    const context = contextMatch
+      ? {
+          tableKey: contextMatch[1],
+          rowIndex: Number(contextMatch[2]),
+        }
+      : undefined;
+    const result = evaluateIR(ir, {
+      context,
+      getScalarFieldValue,
+      getTableColumnValues,
+      warn: (msg: string) => {
+        // eslint-disable-next-line no-console
+        console.warn(msg);
+      },
+    });
+
+    const next = result !== null ? Number(result.toFixed(2)) : 0;
+    // 如果值未变，不需要更新
+    if (Object.is(next, value.value)) return;
+    value.value = next;
+    emit('change', next);
+  }, 300);
 
   watch(
     () => props.fieldConfig.defaultValue,
@@ -159,15 +123,15 @@
       immediate: true,
     }
   );
-  //  todo xinxinwu
-  // watch(
-  //   () => props.formDetail,
-  //   () => {
-  //     updateValue.flush?.();
-  //     updateValue();
-  //   },
-  //   { deep: true }
-  // );
+
+  watch(
+    () => props.formDetail,
+    () => {
+      updateValue.flush?.();
+      updateValue();
+    },
+    { deep: true }
+  );
 
   watch(
     value,

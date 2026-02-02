@@ -1,17 +1,21 @@
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
 import { FormulaFormCreateField } from '../index.vue';
 
-import { ASTNode, Token, TokenType } from '../types';
-
-export interface FormulaSerializeResult {
-  source: string; // SUM(${123}, ${456}) + DAYS(...)
-  display: string; // SUM(报价产品.价格, 订阅表格.价格)
-  fields: string[]; // ["fieldId", ...]
-}
+import { ASTNode, FormulaSerializeResult, Token, TokenType } from '../types';
+import resolveASTToIR from './astToIr';
 
 export function serializeNode(
   node: ASTNode,
   fieldNameMap: Record<string, string>,
-  fields: Set<string>
+  fields: Map<
+    string,
+    {
+      fieldId: string;
+      fieldType?: string;
+      numberType?: 'number' | 'percent' | 'date';
+    }
+  >
 ): { source: string; display: string } {
   switch (node.type) {
     case 'number':
@@ -21,11 +25,23 @@ export function serializeNode(
       };
 
     case 'field': {
-      fields.add(node.fieldId);
+      const { fieldId, name, fieldType, numberType } = node;
+
+      /** 收集字段语义（只收一次，去重） */
+      if (!fields.has(fieldId)) {
+        fields.set(fieldId, {
+          fieldId,
+          fieldType,
+          numberType,
+        });
+      }
 
       return {
-        source: `\${${node.fieldId}}`,
-        display: fieldNameMap[node.fieldId] ?? node.name,
+        // source 永远用 fieldId，和 UI / name 完全解耦
+        source: `\${${fieldId}}`,
+
+        // display 仅用于展示，可被字段重命名覆盖
+        display: fieldNameMap[fieldId] ?? name,
       };
     }
 
@@ -43,6 +59,7 @@ export function serializeNode(
       const right = serializeNode(node.right, fieldNameMap, fields);
 
       return {
+        /** source 中建议保留空格，利于可读 & diff */
         source: `${left.source} ${node.operator} ${right.source}`,
         display: `${left.display} ${node.operator} ${right.display}`,
       };
@@ -67,13 +84,20 @@ export function serializeFormulaFromAst(
   astList: ASTNode[],
   fieldNameMap: Record<string, string> // fieldId -> 中文名
 ): FormulaSerializeResult {
-  const fields = new Set<string>();
+  const fieldMetaMap = new Map<
+    string,
+    {
+      fieldId: string;
+      fieldType?: string;
+      numberType?: 'number' | 'percent' | 'date';
+    }
+  >();
 
   const sourceParts: string[] = [];
   const displayParts: string[] = [];
 
   astList.forEach((node) => {
-    const { source, display } = serializeNode(node, fieldNameMap, fields);
+    const { source, display } = serializeNode(node, fieldNameMap, fieldMetaMap);
     sourceParts.push(source);
     displayParts.push(display);
   });
@@ -81,7 +105,8 @@ export function serializeFormulaFromAst(
   return {
     source: sourceParts.join(''),
     display: displayParts.join(''),
-    fields: Array.from(fields),
+    fields: Array.from(fieldMetaMap.values()),
+    ir: resolveASTToIR(astList[0]),
   };
 }
 
@@ -100,7 +125,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
   const tokens: Token[] = [];
   let i = 0;
 
-  while (i < source.length) {
+  while (i < source?.length) {
     let consumed = 0;
     const char = source[i];
 
@@ -110,12 +135,19 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
       if (end !== -1) {
         const fieldId = source.slice(i + 2, end).trim();
         const field = fieldMap[fieldId];
+        let numberType: 'number' | 'percent' | 'date' = 'number';
+        if ([FieldTypeEnum.INPUT_NUMBER].includes(field?.type as FieldTypeEnum)) {
+          numberType = field?.numberFormat === 'percent' ? 'percent' : 'number';
+        } else if ([FieldTypeEnum.DATE_TIME].includes(field?.type as FieldTypeEnum)) {
+          numberType = 'date';
+        }
 
         tokens.push({
           type: 'field',
           fieldId,
           name: field?.name ?? `字段${fieldId}`,
           fieldType: field?.type,
+          numberType,
           start: i,
           end: end + 1,
         });
@@ -129,7 +161,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
     // ---------- function ----------
     else if (/[A-Z]/.test(char)) {
       let j = i;
-      while (j < source.length && /[A-Z]/.test(source[j])) j++;
+      while (j < source?.length && /[A-Z]/.test(source[j])) j++;
 
       tokens.push({
         type: 'function',
@@ -144,7 +176,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
     // ---------- number ----------
     else if (/\d/.test(char)) {
       let j = i;
-      while (j < source.length && /\d/.test(source[j])) j++;
+      while (j < source?.length && /\d/.test(source[j])) j++;
 
       tokens.push({
         type: 'number',
