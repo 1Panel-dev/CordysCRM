@@ -60,6 +60,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         }
         //查询当前用户搜索配置
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
+        List<String> phoneTypeFieldIds = userSearchConfigs.stream().filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name())).map(UserSearchConfig::getFieldId).toList();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
         List<FilterCondition> conditions = new ArrayList<>();
@@ -101,12 +102,12 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         }
         //获取系统设置的脱敏字段
         List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC);
-        List<GlobalCustomerPoolResponse> buildList = buildListData(customerPoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
+        List<GlobalCustomerPoolResponse> buildList = buildListData(customerPoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, phoneTypeFieldIds);
         return PageUtils.setPageInfo(page, buildList);
     }
 
 
-    public List<GlobalCustomerPoolResponse> buildListData(List<GlobalCustomerPoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
+    public List<GlobalCustomerPoolResponse> buildListData(List<GlobalCustomerPoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, List<String> phoneTypeFieldIds) {
         List<String> customerIds = list.stream().map(GlobalCustomerPoolResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
@@ -132,6 +133,12 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
                     }
                 });
             }
+
+            customerPoolResponse.getModuleFields().stream().forEach(moduleField -> {
+                if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                    moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                }
+            });
 
             customerPoolResponse.setHasPermission(hasPermission);
         });

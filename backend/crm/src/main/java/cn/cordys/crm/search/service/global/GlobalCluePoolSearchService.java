@@ -62,6 +62,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         }
         //查询当前用户搜索配置
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
+        List<String> phoneTypeFieldIds = userSearchConfigs.stream().filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name())).map(UserSearchConfig::getFieldId).toList();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
         //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
@@ -120,12 +121,12 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         }
         //获取系统设置的脱敏字段
         List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
-        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap);
+        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap, phoneTypeFieldIds);
         return PageUtils.setPageInfo(page, buildList);
     }
 
 
-    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap) {
+    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap, List<String> phoneTypeFieldIds) {
         List<String> clueIds = list.stream().map(GlobalCluePoolResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> clueFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
@@ -170,20 +171,27 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             //固定展示列脱敏设置
             List<String> productNames = getProductNames(globalClueResponse.getProducts(), productNameMap);
             globalClueResponse.setProducts(productNames);
-            if (!hasPermission) {
-                searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
-                        globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(), globalClueResponse.getName().length()));
-                    }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products")) {
-                        List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
-                        globalClueResponse.setProducts(maskProductNames);
-                    }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(globalClueResponse.getPhone())) {
-                        globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
-                    }
-                });
-            }
+
+            globalClueResponse.getModuleFields().stream().forEach(moduleField -> {
+                if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                    moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                }
+            });
+
+            searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
+                if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name") && !hasPermission) {
+                    globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(), globalClueResponse.getName().length()));
+                }
+                if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products") && !hasPermission) {
+                    List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
+                    globalClueResponse.setProducts(maskProductNames);
+                }
+                if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(globalClueResponse.getPhone())) {
+                    globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
+                }
+            });
+
+
             globalClueResponse.setHasPermission(hasPermission);
         });
         return list;
