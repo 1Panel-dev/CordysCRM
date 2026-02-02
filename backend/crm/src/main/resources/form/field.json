@@ -1910,7 +1910,7 @@
       "showFields": [
         "contractCustomer",
         "contractNo",
-        "contractProductSumAmount"
+        "contractTotalAmount"
       ]
     },
     {

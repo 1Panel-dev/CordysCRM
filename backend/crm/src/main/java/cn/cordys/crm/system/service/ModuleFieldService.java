@@ -10,6 +10,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
@@ -122,5 +123,46 @@ public class ModuleFieldService {
             repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), value, currentOrg);
         }
         return FieldRepeatCheckResponse.builder().name(repeatName).repeat(StringUtils.isNotBlank(repeatName)).build();
+    }
+
+    public void modifyInvoiceShowFields() {
+        LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
+        ModuleField example = new ModuleField();
+        example.setInternalKey(BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
+        ModuleField contractField = moduleFieldMapper.selectOne(example);
+        if (contractField != null) {
+            ModuleFieldBlob contractFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(contractField.getId());
+            String prop = contractFieldBlob.getProp();
+            DatasourceField datasourceField = JSON.parseObject(prop, DatasourceField.class);
+            List<String> showFields = datasourceField.getShowFields();
+            if (CollectionUtils.isNotEmpty(showFields)) {
+                for (int i = 0; i < showFields.size(); i++) {
+                    // 合同总金额字段初始化之后，显示字段替换成字段ID
+                    if (Strings.CI.equalsAny(showFields.get(i),
+                            BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey(),
+                            BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
+                        ModuleField contractNameField = selectFieldsByInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
+                        if (contractNameField != null) {
+                            showFields.set(i, contractNameField.getId());
+                            contractFieldBlob.setProp(JSON.toJSONString(datasourceField));
+                            moduleFieldBlobMapper.updateById(contractFieldBlob);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public List<ModuleField> selectFieldsByInternalKeys(List<String> internalKeys) {
+        return moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
+                .in(ModuleField::getInternalKey, internalKeys));
+    }
+
+    public ModuleField selectFieldsByInternalKey(String internalKey) {
+        ModuleField field = new ModuleField();
+        field.setInternalKey(internalKey);
+        return moduleFieldMapper.selectOne(field);
     }
 }

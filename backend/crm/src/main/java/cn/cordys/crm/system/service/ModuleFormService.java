@@ -127,6 +127,8 @@ public class ModuleFormService {
     @Lazy
     @Resource
     private FieldSourceServiceProvider fieldSourceServiceProvider;
+    @Resource
+    private ModuleFieldService moduleFieldService;
 
     /**
      * 获取模块表单配置
@@ -188,10 +190,6 @@ public class ModuleFormService {
                 .peek(this::setFieldBusinessParam)
                 .collect(Collectors.toList())
         );
-
-        if (Strings.CI.equals(formKey, FormKey.CONTRACT.getKey())) {
-            businessModuleFormConfig.getFields().add(getContractAmountField());
-        }
         return businessModuleFormConfig;
     }
 
@@ -844,26 +842,10 @@ public class ModuleFormService {
     }
 
     private List<BaseField> getSystemExtendFiles(String dataSourceType) {
-        if (Strings.CI.equals(dataSourceType, FieldSourceType.CONTRACT.name())) {
-            return List.of(getContractAmountField());
-        } else if (Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
+        if (Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
             return initBusinessTitleFields();
         }
         return List.of();
-    }
-
-    public InputNumberField getContractAmountField() {
-        InputNumberField amountField = new InputNumberField();
-        amountField.setId(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
-        amountField.setInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
-        amountField.setName("合同金额");
-        amountField.setBusinessKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getBusinessKey());
-        amountField.setReadable(false);
-        amountField.setEditable(false);
-        amountField.setType(FieldType.FORMULA.name());
-        amountField.setShowLabel(true);
-        amountField.setFieldWidth(1F);
-        return amountField;
     }
 
     public List<BaseField> initBusinessTitleFields() {
@@ -1104,7 +1086,7 @@ public class ModuleFormService {
     private void handleShowFieldsInit(Map<String, Object> initField, List<ModuleField> initFields) {
         if (initField.containsKey(SHOW_FIELD_KEY)) {
             List<String> showFieldKeys = (List<String>) initField.get(SHOW_FIELD_KEY);
-            List<ModuleField> showFields = selectFieldsByInternalKeys(showFieldKeys);
+            List<ModuleField> showFields = moduleFieldService.selectFieldsByInternalKeys(showFieldKeys);
 
             if (CollectionUtils.isEmpty(showFields)) {
                 // initForm 初始化，数据库没有数据，需要从 initFields 中获取
@@ -1130,16 +1112,7 @@ public class ModuleFormService {
         }
     }
 
-    private List<ModuleField> selectFieldsByInternalKeys(List<String> internalKeys) {
-        return moduleFieldMapper.selectListByLambda(new LambdaQueryWrapper<ModuleField>()
-                .in(ModuleField::getInternalKey, internalKeys));
-    }
 
-    private ModuleField selectFieldsByInternalKey(String internalKey) {
-        ModuleField field = new ModuleField();
-        field.setInternalKey(internalKey);
-        return moduleFieldMapper.selectOne(field);
-    }
 
     /**
      * 组装字段基础信息
@@ -1827,8 +1800,8 @@ public class ModuleFormService {
         Map<String, List<LinkScenario>> linkProp = new HashMap<>(4);
 
         // 设置默认的 linkFields
-        ModuleField contractNameField = selectFieldsByInternalKey(BusinessModuleField.CONTRACT_NAME.getKey());
-        ModuleField invoiceContractField = selectFieldsByInternalKey(BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
+        ModuleField contractNameField = moduleFieldService.selectFieldsByInternalKey(BusinessModuleField.CONTRACT_NAME.getKey());
+        ModuleField invoiceContractField = moduleFieldService.selectFieldsByInternalKey(BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
         List<LinkField> linkFields = new ArrayList<>();
         if (contractNameField != null && invoiceContractField != null) {
             LinkField linkField = new LinkField();
