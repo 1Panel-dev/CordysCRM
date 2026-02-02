@@ -8,6 +8,7 @@
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
+    :hiddenBackToTop="activeShowType === 'billboard'"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -681,7 +682,7 @@
       },
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE', 'OPPORTUNITY_MANAGEMENT:TRANSFER'],
-    hiddenTotal: computed(() => !!props.hiddenTotal || activeShowType.value === 'billboard'),
+    hiddenTotal: computed(() => !!props.hiddenTotal),
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],
   });
@@ -705,7 +706,7 @@
   });
 
   const showStatisticInfo = computed(
-    () => propsRes.value.columns.find((i) => i.key === 'amount') && activeShowType.value !== 'billboard'
+    () => propsRes.value.columns.find((i) => i.key === 'amount') || activeShowType.value === 'billboard'
   );
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {

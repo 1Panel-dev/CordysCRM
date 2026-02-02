@@ -125,6 +125,14 @@
       >
         {{ t('crmTable.tableScrollFinishedTip') }}
       </div>
+      <div v-if="!attrs.hiddenBackToTop" class="flex items-center">
+        <n-button size="small" type="primary" text class="text-btn-primary" @click="backToTop">
+          <template #icon>
+            <CrmIcon type="iconicon_backtop" :size="14" />
+          </template>
+          <div class="text-[14px]">{{ t('common.backToTop') }}</div>
+        </n-button>
+      </div>
     </div>
   </div>
 </template>
@@ -807,6 +815,10 @@
       return prev + Math.max(width, typeof minWidth === 'number' ? minWidth : 0);
     }, 0)
   );
+
+  function backToTop() {
+    scrollTo({ top: 0 });
+  }
 
   defineExpose({
     scrollTo,
