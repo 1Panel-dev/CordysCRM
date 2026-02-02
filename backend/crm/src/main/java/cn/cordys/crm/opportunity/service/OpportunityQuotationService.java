@@ -60,7 +60,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -148,19 +147,6 @@ public class OpportunityQuotationService {
 
         return opportunityQuotation;
 
-    }
-
-    /**
-     * 计算子产品总金额
-     *
-     * @param products             子产品列表
-     * @param opportunityQuotation 报价单实体
-     */
-    private void setAmount(List<Map<String, Object>> products, OpportunityQuotation opportunityQuotation) {
-        BigDecimal totalAmount = products.stream()
-                .map(product -> new BigDecimal(product.get("amount").toString()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        opportunityQuotation.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
     }
 
     /**
@@ -632,7 +618,7 @@ public class OpportunityQuotationService {
             throw new GenericException(Translator.get("opportunity.quotation.product.required"));
         }
         for (Map<String, Object> product : request) {
-            if (product.get("amount") == null) {
+            if (product.get("sumAmount") == null) {
                 throw new GenericException(Translator.get("opportunity.quotation.product.amount.invalid"));
             }
         }
