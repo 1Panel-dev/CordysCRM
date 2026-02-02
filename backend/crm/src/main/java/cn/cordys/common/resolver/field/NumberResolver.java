@@ -39,6 +39,9 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
         if (Strings.CS.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
             text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
         }
+		if (field.getShowThousandsSeparator()) {
+			text = text.replace(",", StringUtils.EMPTY).replace("，", StringUtils.EMPTY);
+		}
         try {
 			BigDecimal bd = new BigDecimal(text);
 			boolean illegal = checkIllegalDecimal(bd);
