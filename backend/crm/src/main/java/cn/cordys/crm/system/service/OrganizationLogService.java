@@ -8,6 +8,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,9 @@ public class OrganizationLogService extends BaseModuleLogService {
                 Translator.get("log.employeeType"), differ -> {
                     differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
                     differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                },
+                Translator.get("log.onboardingDate"), differ -> {
+                    setFormatDataTimeFieldValueName(differ,new SimpleDateFormat("yyyy-MM-dd"));
                 }
         );
 

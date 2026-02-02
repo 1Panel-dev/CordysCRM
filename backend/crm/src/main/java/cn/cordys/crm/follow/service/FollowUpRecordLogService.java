@@ -12,6 +12,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Service
@@ -63,7 +64,7 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_TIME.getBusinessKey())) {
-                setFormatDataTimeFieldValueName(differ);
+                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
                 continue;
             }
 

@@ -281,12 +281,12 @@ public abstract class BaseModuleLogService {
         }
     }
 
-    public void setFormatDataTimeFieldValueName(JsonDifferenceDTO differ) {
+    public void setFormatDataTimeFieldValueName(JsonDifferenceDTO differ, SimpleDateFormat simpleDateFormat) {
         if (differ.getOldValue() != null) {
-            differ.setOldValueName(formatDataTime(differ.getOldValue().toString()));
+            differ.setOldValueName(formatDataTime(differ.getOldValue().toString(), simpleDateFormat));
         }
         if (differ.getNewValue() != null) {
-            differ.setNewValueName(formatDataTime(differ.getNewValue().toString()));
+            differ.setNewValueName(formatDataTime(differ.getNewValue().toString(), simpleDateFormat));
         }
     }
 
@@ -296,11 +296,11 @@ public abstract class BaseModuleLogService {
         return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
     }
 
-    private String formatDataTime(String value) {
+    private String formatDataTime(String value, SimpleDateFormat simpleDateFormat) {
         if (StringUtils.isBlank(value) || Strings.CI.equals(value, "null")) {
             return StringUtils.EMPTY;
         }
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
+        return simpleDateFormat.format(Long.parseLong(value));
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {

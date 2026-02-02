@@ -8,6 +8,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Service
@@ -22,7 +23,7 @@ public class CustomerLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "collectionTime")) {
-                setFormatDataTimeFieldValueName(differ);
+                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
             }
         }
         return differences;
