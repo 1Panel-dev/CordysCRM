@@ -12,6 +12,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Service
@@ -77,11 +78,11 @@ public class OpportunityLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumn(), "expectedEndTime")) {
-                setFormatDataTimeFieldValueName(differ);
+                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
             }
 
             if (Strings.CS.equals(differ.getColumn(), "actualEndTime")) {
-                setFormatDataTimeFieldValueName(differ);
+                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
             }
 
             if (Strings.CS.equals(differ.getColumn(), "failureReason")) {
