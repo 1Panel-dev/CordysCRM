@@ -1,5 +1,9 @@
+import { IRNode } from '@/components/business/crm-formula/formula-runtime/types';
+
 // ----token类型----
 export type TokenType = 'function' | 'field' | 'number' | 'operator' | 'comma' | 'paren' | 'text';
+
+export type NumberType = 'number' | 'percent' | 'date';
 
 // todo viewStart&sourceStart
 export interface BaseToken {
@@ -18,6 +22,7 @@ export interface FieldToken extends BaseToken {
   fieldId: string;
   name: string;
   fieldType?: string;
+  numberType?: NumberType; // 字段的数值类型
 }
 
 export interface TextToken extends BaseToken {
@@ -28,6 +33,7 @@ export interface TextToken extends BaseToken {
 export interface NumberToken extends BaseToken {
   type: 'number';
   value: number;
+  numberType?: NumberType;
 }
 
 export type OperatorValue = '+' | '-' | '*' | '/';
@@ -74,11 +80,13 @@ export interface FieldNode extends ASTNodeBase {
   fieldId: string;
   name: string;
   fieldType?: string;
+  numberType?: NumberType;
 }
 
 export interface NumberNode extends ASTNodeBase {
   type: 'number';
   value: number;
+  numberType?: NumberType;
 }
 
 export interface BinaryExpressionNode extends ASTNodeBase {
@@ -112,3 +120,16 @@ export type FormulaFunctionRule = {
   name: string;
   diagnose(ctx: { fnNode: FunctionNode; args: ASTNode[] }): FormulaDiagnostic[]; // 诊断函数
 };
+
+export interface FormulaFieldMeta {
+  fieldId: string;
+  fieldType?: string;
+  numberType?: NumberType;
+}
+
+export interface FormulaSerializeResult {
+  source: string; // SUM(${123}, ${456}) + DAYS(...)
+  display: string; // SUM(报价产品.价格, 订阅表格.价格)
+  fields: FormulaFieldMeta[];
+  ir: IRNode; // 公式 IR
+}

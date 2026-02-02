@@ -144,7 +144,7 @@
   import { renderTokensToEditor } from './parseSource/renderTokens';
   import { serializeFormulaFromAst, tokenizeFromSource } from './parseSource/serializeFormulaFromAst';
   import tokenizeFromEditor from './tokenizer';
-  import { FormulaDiagnostic } from './types';
+  import { FormulaDiagnostic, FormulaFieldMeta } from './types';
   import { applyDiagnosticsHighlight, safeParseFormula } from './utils';
 
   const { t } = useI18n();
@@ -184,36 +184,42 @@
     },
   };
 
-  function resolveFieldId(e: FormCreateField) {
+  function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
     const id = e.id.split('_').pop() ?? '';
     if (e.resourceFieldId) {
       return id;
     }
-    return e.businessKey || id;
+    if (inSubTable) {
+      return e.businessKey || id;
+    }
+    return id;
   }
 
   const allowFormulaType = [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME];
 
-  function pushByType(field: FormCreateField, numberGroup: FormCreateField[], dateGroup: FormCreateField[]) {
+  function pushByType(
+    field: FormCreateField,
+    numberGroup: FormCreateField[],
+    dateGroup: FormCreateField[],
+    isSubTable?: boolean
+  ) {
     if (field.type === FieldTypeEnum.INPUT_NUMBER) {
       numberGroup.push({
         ...field,
-        id: field.numberFormat === 'percent' ? `(${resolveFieldId(field)} / 100)` : resolveFieldId(field),
+        id: resolveFieldId(field, isSubTable),
       });
     }
 
     if (field.type === FieldTypeEnum.DATE_TIME) {
       dateGroup.push({
         ...field,
-        id: resolveFieldId(field),
+        id: resolveFieldId(field, isSubTable),
       });
     }
   }
 
   function flatAllFields(fields: FormCreateField[]) {
     const result: (FormCreateField & { parentId?: string; parentName?: string; inSubTable?: boolean })[] = [];
-    console.log(fields, 'fields');
-
     fields.forEach((field) => {
       if (field.subFields) {
         field.subFields.forEach((sub) => {
@@ -236,8 +242,10 @@
     return result;
   }
 
+  const allFormFields = computed(() => flatAllFields(props.formFields));
+
   function isSameSubTableNumberField(field: FormulaFormCreateField) {
-    const currentField = flatAllFields(props.formFields).find((e) => e.id === props.fieldConfig.id);
+    const currentField = allFormFields.value.find((e) => e.id === resolveFieldId(props.fieldConfig));
     return field.inSubTable && field.parentId === currentField?.parentId && field.type === FieldTypeEnum.INPUT_NUMBER;
   }
 
@@ -245,12 +253,11 @@
     const numberGroup: FormulaFormCreateField[] = [];
     const dateGroup: FormulaFormCreateField[] = [];
     const arrayGroup: FormulaFormCreateField[] = [];
-
     allFields.forEach((field) => {
       // 当前在子表内
       if (props.isSubTableField) {
         if (field.inSubTable && [FieldTypeEnum.INPUT_NUMBER].includes(field.type) && isSameSubTableNumberField(field)) {
-          pushByType(field, numberGroup, dateGroup);
+          pushByType(field, numberGroup, dateGroup, true);
         }
         return;
       }
@@ -263,7 +270,7 @@
         // 生成路径字段
         arrayGroup.push({
           ...field,
-          id: `${field.parentId}.${resolveFieldId(field)}`,
+          id: `${field.parentId}.${resolveFieldId(field, field.inSubTable)}`,
           name: `${field.parentName}.${field.name}`,
         });
       }
@@ -273,9 +280,7 @@
   }
 
   const allFieldListSource = computed(() => {
-    const { numberGroup, dateGroup, arrayGroup } = classifyFields(flatAllFields(props.formFields));
-    console.log({ numberGroup, dateGroup, arrayGroup }, 'xinxinwu 🏷');
-
+    const { numberGroup, dateGroup, arrayGroup } = classifyFields(allFormFields.value);
     return [
       {
         name: t('crmFormDesign.inputNumber'),
@@ -454,6 +459,16 @@
     });
   }
 
+  function getNumberType(field: FormCreateField) {
+    if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+      return field.numberFormat === 'percent' ? 'percent' : 'number';
+    }
+    if (field.type === FieldTypeEnum.DATE_TIME) {
+      return 'date';
+    }
+    return undefined;
+  }
+
   // 插入对应的字段
   function insertField(item: FormCreateField & { isFunction?: boolean }) {
     if (item.isFunction) {
@@ -486,6 +501,10 @@
     wrapper.dataset.value = item.id;
     wrapper.dataset.nodeType = 'field';
     wrapper.dataset.fieldType = item.type;
+    const numberType = getNumberType(item);
+    if (numberType) {
+      wrapper.dataset.numberType = numberType;
+    }
     wrapper.textContent = item.name;
 
     range.insertNode(wrapper);
@@ -540,9 +559,9 @@
       if (editor.value) {
         const { source, fields } = safeParseFormula(props.fieldConfig.formula ?? '');
         const fieldMap: Record<string, FormulaFormCreateField> = {};
-        const { numberGroup, dateGroup, arrayGroup } = classifyFields(flatAllFields(props.formFields));
+        const { numberGroup, dateGroup, arrayGroup } = classifyFields(allFormFields.value);
         [...numberGroup, ...dateGroup, ...arrayGroup].forEach((item) => {
-          if (fields.includes(item.id)) {
+          if (fields?.map((f: FormulaFieldMeta) => f.fieldId)?.includes(item.id)) {
             fieldMap[item.id] = item;
           }
         });
@@ -605,7 +624,6 @@
       top: 0;
       left: 0;
       padding: 16px 16px 0;
-      color: var(--text-n1);
       gap: 8px;
       pointer-events: none; /* 不阻止输入 */
       @apply flex;

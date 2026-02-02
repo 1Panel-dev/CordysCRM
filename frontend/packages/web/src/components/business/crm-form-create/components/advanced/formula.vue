@@ -1,13 +1,13 @@
 <template>
   <CrmFormula
     v-model:value="value"
-    path="fieldValue"
-    :field-config="props.fieldConfig"
-    :form-config="props.formConfig"
-    :form-detail="props.formDetail"
-    :need-init-detail="props.needInitDetail"
-    :is-sub-table-field="props.isSubTableField"
-    :is-sub-table-render="props.isSubTableRender"
+    :path="path"
+    :field-config="fieldConfig"
+    :form-config="formConfig"
+    :form-detail="formDetail"
+    :need-init-detail="needInitDetail"
+    :is-sub-table-field="isSubTableField"
+    :is-sub-table-render="isSubTableRender"
     @change="handleChange"
   />
 </template>
@@ -40,13 +40,6 @@
   function handleChange(val: number | null) {
     emit('change', val);
   }
-
-  watch(
-    () => props.formDetail,
-    (val) => {
-      console.log(val);
-    }
-  );
 </script>
 
 <style lang="less" scoped></style>
