@@ -3,6 +3,7 @@ package cn.cordys.crm.integration.sqlbot.service;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
+import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.RoleDataScopeDTO;
@@ -114,7 +115,7 @@ public class DataSourceService {
             // 验证是否启用了 SQL Bot 功能
             List<OrganizationConfigDetail> organizationConfigDetails = organizationConfigDetailMapper.selectListByLambda(
                     new LambdaQueryWrapper<OrganizationConfigDetail>()
-                            .eq(OrganizationConfigDetail::getType, ThirdConfigTypeConstants.SQLBOT.name())
+                            .eq(OrganizationConfigDetail::getType, ThirdDetailType.SQLBOT_CHAT.name())
                             .eq(OrganizationConfigDetail::getEnable, true)
             );
             if (CollectionUtils.isEmpty(organizationConfigDetails)) {
