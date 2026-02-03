@@ -728,7 +728,7 @@
 
         where c.organization_id = #{request.orgId}
         <if test="request.stageScenario != null and request.stageScenario != ''">
-            and c.stage = (
+            and c.stage in (
                 select id
                 from opportunity_stage_config osc
                 where osc.organization_id = #{request.orgId}
@@ -741,7 +741,7 @@
                     and rate = 0
                 </if>
                 <if test="request.stageScenario == 'UNDERWAY'">
-                    and osc.`type` == 'AFOOT'
+                    and osc.`type` = 'AFOOT'
                 </if>
             )
         </if>
