@@ -47,6 +47,7 @@ public class SearchFieldMaskConfigService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void save(FieldMaskConfigDTO request, String userId, String orgId) {
+        FieldMaskConfigDTO fieldMaskConfigDTO = get(orgId);
         deleteFieldMaskConfig(orgId);
         request.getSearchFields().forEach((key, value) -> {
             switch (key) {
@@ -76,8 +77,8 @@ public class SearchFieldMaskConfigService {
                 LogContextInfo.builder()
                         .resourceId(orgId)
                         .resourceName(Translator.get("module.desensitization_set"))
-                        .originalValue(null)
-                        .modifiedValue(null)
+                        .originalValue(fieldMaskConfigDTO.getSearchFields())
+                        .modifiedValue(request.getSearchFields())
                         .build()
         );
     }

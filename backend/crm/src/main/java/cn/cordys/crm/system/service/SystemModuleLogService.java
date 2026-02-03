@@ -3,10 +3,12 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,9 +64,49 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
             }
+
+
+            searchSetting(differ);
         });
 
         return differences;
+    }
+
+    private void searchSetting(JsonDifferenceDTO differ) {
+        List<String> oldValues = parseFieldList(differ.getOldValue()).stream().map(String::valueOf).toList();
+        List<String> newValues = parseFieldList(differ.getNewValue()).stream().map(String::valueOf).toList();
+        if (CollectionUtils.isNotEmpty(oldValues)) {
+            List<ModuleField> moduleFields = moduleFieldMapper.selectByIds(oldValues);
+            differ.setOldValueName(moduleFields.stream()
+                    .map(ModuleField::getName)
+                    .toList());
+        }
+        if (CollectionUtils.isNotEmpty(newValues)) {
+            List<ModuleField> moduleFields = moduleFieldMapper.selectByIds(newValues);
+            differ.setNewValueName(moduleFields.stream()
+                    .map(ModuleField::getName)
+                    .toList());
+        }
+        switch (differ.getColumn()) {
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
+                differ.setColumnName(Translator.get("clue"));
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
+                differ.setColumnName(Translator.get("customer"));
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
+                differ.setColumnName(Translator.get("contact"));
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
+                differ.setColumnName(Translator.get("customer_pool"));
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
+                differ.setColumnName(Translator.get("clue_pool"));
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
+                differ.setColumnName(Translator.get("opportunity"));
+                break;
+        }
     }
 
     private void handleModuleMainNav(JsonDifferenceDTO differ) {
