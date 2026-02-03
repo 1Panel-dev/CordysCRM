@@ -1,18 +1,22 @@
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import { FormulaErrorCode } from '../../config';
 import { FormulaDiagnostic, FormulaFunctionRule } from '../../types';
-// todo 国际化没加
+
+const { t } = useI18n();
+
 const DAYS_RULE: FormulaFunctionRule = {
   name: 'DAYS',
 
   diagnose({ fnNode, args }) {
     const diagnostics: FormulaDiagnostic[] = [];
 
-    if (args.length !== 2) {
+    if (args?.length !== 2) {
       diagnostics.push({
         type: 'error',
         code: FormulaErrorCode.ARG_COUNT_ERROR,
         functionName: fnNode.name,
-        message: '参数个数错误，必须为两个参数',
+        message: t('formulaEditor.diagnostics.argCountErrorOfDAYS'),
         highlight: {
           tokenRange: [fnNode.startTokenIndex, fnNode.endTokenIndex],
         },

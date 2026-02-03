@@ -54,6 +54,7 @@ function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
   }
 }
 
+// 解析 AST -> IR,用于运行执行器计算
 export default function resolveASTToIR(ast: ASTNode): IRNode {
   return resolveNode(ast, { allowColumn: false });
 }

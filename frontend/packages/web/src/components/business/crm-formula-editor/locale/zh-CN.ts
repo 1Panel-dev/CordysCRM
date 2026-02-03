@@ -1,0 +1,15 @@
+export default {
+  'formulaEditor.diagnostics.emptyParams': '参数个数不能为空',
+  'formulaEditor.diagnostics.duplicateSeparator': '函数参数末尾存在多余的分隔符',
+  'formulaEditor.diagnostics.duplicateSeparatorOfCenter': '函数参数中存在多余的分隔符',
+  'formulaEditor.diagnostics.missingSeparator': '语法错误，缺少分隔符',
+  'formulaEditor.diagnostics.duplicateOperator': '连续的操作符',
+  'formulaEditor.diagnostics.illegalCharacter': '存在非法字符',
+  'formulaEditor.diagnostics.duplicateSeparatorOfBeginning': '请勿连续使用分隔符',
+  'formulaEditor.diagnostics.argCountErrorOfDAYS': '参数个数错误，必须为两个参数',
+  'formulaEditor.function.argFirst': '参数1',
+  'formulaEditor.function.argSecond': '参数2',
+  'formulaEditor.diagnostics.expressionNotComplete': '参数表达式不完整',
+  'formulaEditor.diagnostics.operatorLeftMissingExpression': '运算符左侧缺少表达式',
+  'formulaEditor.diagnostics.operatorRightMissingExpression': '运算符右侧缺少表达式',
+};

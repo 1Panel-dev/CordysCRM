@@ -121,6 +121,12 @@ const CHAR_TOKEN_TYPE_MAP: Record<string, TokenType> = {
   '/': 'operator',
 };
 
+/**
+ * 用于回显解析公式
+ * @param source 公式
+ * @param fieldMap 字段值映射
+ * @returns 公式的token列表
+ */
 export function tokenizeFromSource(source: string, fieldMap: Record<string, FormulaFormCreateField>): Token[] {
   const tokens: Token[] = [];
   let i = 0;
