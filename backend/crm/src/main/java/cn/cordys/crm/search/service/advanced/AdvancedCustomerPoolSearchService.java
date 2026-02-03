@@ -20,9 +20,11 @@ import cn.cordys.crm.customer.service.CustomerPoolService;
 import cn.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse;
 import cn.cordys.crm.search.service.BaseSearchService;
 import cn.cordys.crm.system.constants.DictModule;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -34,6 +36,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
@@ -145,6 +148,8 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
 
         //获取用户公海
         Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
+        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream().filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId).toList();
 
         list.forEach(customerListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, customerListResponse, userPoolMap);
@@ -182,6 +187,14 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
                 customerListResponse.setRecyclePoolName(null);
             }
             customerListResponse.setPoolName(userPoolMap.get(customerListResponse.getPoolId()));
+
+            if (CollectionUtils.isNotEmpty(customerListResponse.getModuleFields())) {
+                customerListResponse.getModuleFields().stream().forEach(moduleField -> {
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    }
+                });
+            }
         });
 
         return list;

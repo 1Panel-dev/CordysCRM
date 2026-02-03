@@ -11,6 +11,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.clue.domain.CluePoolRecycleRule;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
@@ -21,9 +22,11 @@ import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.search.response.advanced.AdvancedCluePoolResponse;
 import cn.cordys.crm.search.service.BaseSearchService;
 import cn.cordys.crm.system.constants.DictModule;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -35,6 +38,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
@@ -144,6 +148,8 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
 
         //获取用户线索池
         Map<String, String> userPoolMap = getUserCluePool(orgId, userId);
+        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
+        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream().filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId).toList();
 
         list.forEach(clueListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, clueListResponse, userPoolMap);
@@ -181,6 +187,17 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
 
             clueListResponse.setHasPermission(hasPermission);
             clueListResponse.setPoolName(userPoolMap.get(clueListResponse.getPoolId()));
+
+            if (StringUtils.isNotBlank(clueListResponse.getPhone())) {
+                clueListResponse.setPhone((String) getPhoneFieldValue(clueListResponse.getPhone(), clueListResponse.getPhone().length()));
+            }
+            if (CollectionUtils.isNotEmpty(clueListResponse.getModuleFields())) {
+                clueListResponse.getModuleFields().stream().forEach(moduleField -> {
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    }
+                });
+            }
         });
 
         return list;
