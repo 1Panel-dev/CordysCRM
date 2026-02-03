@@ -560,12 +560,6 @@
         h(quotationStatus, {
           status: row.approvalStatus,
         }),
-      amount: (row: QuotationItem) => {
-        return formatNumberValue(row.amount ?? 0, {
-          ...inputNumberDefaultFieldConfig,
-          showThousandsSeparator: true,
-        });
-      },
     },
     permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,

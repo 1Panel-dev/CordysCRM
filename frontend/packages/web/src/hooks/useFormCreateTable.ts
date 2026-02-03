@@ -748,17 +748,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filter: true,
         render: props.specialRender?.approvalStatus,
       },
-      {
-        title: t('opportunity.quotation.amount'),
-        width: 120,
-        key: 'amount',
-        sortOrder: false,
-        sorter: true,
-        ellipsis: {
-          tooltip: true,
-        },
-        render: props.specialRender?.amount,
-      },
     ],
     [FormDesignKeyEnum.CONTRACT]: [
       {
