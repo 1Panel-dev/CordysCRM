@@ -298,7 +298,7 @@
       // 删除引用的数据源字段时，同时删除数据源配置的字段 id
       const relatedField = list.value.find((e) => e.id === item.resourceFieldId);
       if (relatedField && relatedField.showFields) {
-        relatedField.showFields = relatedField.showFields.filter((id) => id !== item.id);
+        relatedField.showFields = relatedField.showFields.filter((id) => id !== item.id.split('_ref_')[1]); // 数据源显示字段 id 是拼接_ref_的
       }
     }
     if (

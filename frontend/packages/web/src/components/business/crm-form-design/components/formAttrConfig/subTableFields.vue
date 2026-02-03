@@ -184,7 +184,7 @@
     if (item.resourceFieldId) {
       const resourceField = fieldConfig.value.subFields?.find((field) => field.id === item.resourceFieldId);
       if (resourceField) {
-        resourceField.showFields = resourceField.showFields?.filter((id) => id !== item.id);
+        resourceField.showFields = resourceField.showFields?.filter((id) => id !== item.id.split('_ref_')[1]); // 数据源显示字段 id 是拼接_ref_的
       }
     }
   }
