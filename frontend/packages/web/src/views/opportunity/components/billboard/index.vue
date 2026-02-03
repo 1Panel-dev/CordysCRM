@@ -21,6 +21,7 @@
       :fail-id="stageConfig?.stageConfigList.slice(-1)[0].id"
       @fail="handleFailItem"
       @change="refreshList"
+      @open-detail="(type, item) => emit('openDetail', type, item)"
     />
   </n-scrollbar>
   <CrmModal
@@ -68,6 +69,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
+    (e: 'openDetail', type: 'customer' | 'opportunity', item: any): void;
   }>();
 
   const { t } = useI18n();

@@ -99,6 +99,7 @@
         :view-id="activeTab"
         :advance-filter="advanceFilter"
         @change="getStatistic()"
+        @open-detail="handleOpenDetail"
       />
     </template>
     <template v-if="showStatisticInfo" #totalRight>
@@ -1005,6 +1006,17 @@
       showOverviewDrawer.value = false;
     } else {
       emit('openCustomerDrawer', params, true);
+    }
+  }
+
+  function handleOpenDetail(type: 'customer' | 'opportunity', item: any) {
+    if (type === 'customer') {
+      showCustomerDrawer(item);
+    } else if (type === 'opportunity') {
+      activeSourceId.value = item.id;
+      activeOpportunity.value = item;
+      realFormKey.value = FormDesignKeyEnum.BUSINESS;
+      showOverviewDrawer.value = true;
     }
   }
 
