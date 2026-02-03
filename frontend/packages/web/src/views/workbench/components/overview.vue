@@ -68,6 +68,17 @@
                 <div class="unit">{{ abbreviateNumber(item.value, item.unit).unit }}</div>
               </div>
             </countPopover>
+            <div class="flex items-center gap-[4px] text-[12px]">
+              <div class="text-[var(--text-n2)]">
+                {{ t('common.inProgress') }}
+              </div>
+              <div
+                :class="`${hasOptPermission ? 'cursor-pointer  text-[var(--info-blue)]' : 'text-[var(--text-n4)]'}`"
+                @click="goDetail(dim, defaultOpportunityUnderwayData[dim])"
+              >
+                {{ defaultOpportunityUnderwayData[dim].value ?? 0 }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -141,7 +152,12 @@
   import categoryCard from './categoryCard.vue';
   import countPopover from './countPopover.vue';
 
-  import { getHomeFollowOpportunity, getHomeLeadStatistic, getHomeSuccessOptStatistic } from '@/api/modules';
+  import {
+    getHomeFollowOpportunity,
+    getHomeLeadStatistic,
+    getHomeOpportunityUnderwayStatistic,
+    getHomeSuccessOptStatistic,
+  } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { useUserStore } from '@/store';
   import useOverviewStore from '@/store/modules/overview';
@@ -224,6 +240,15 @@
     },
   });
 
+  const defaultOpportunityUnderwayData = ref<Record<string, Record<string, any>>>({});
+  const createOpportunityUnderwayBlock = () => ({
+    value: hasOptPermission.value ? 0 : '-',
+    routeName: AppRouteEnum.OPPORTUNITY_OPT,
+    hasPermission: hasOptPermission.value,
+    unit: t('workbench.dataOverview.countUnit'),
+    status: 'AFOOT',
+  });
+
   const defaultWinOrderData = ref<Record<string, any>>({});
   const createWinOrderBlock = () => ({
     successOpportunity: {
@@ -297,6 +322,11 @@
       return acc;
     }, {} as Record<string, any>);
 
+    defaultOpportunityUnderwayData.value = dateKey.value.reduce((acc, key) => {
+      acc[key] = createOpportunityUnderwayBlock();
+      return acc;
+    }, {} as Record<string, any>);
+
     defaultOpportunityData.value = dateKey.value.reduce((acc, key) => {
       acc[key] = createOpportunityBlock();
       return acc;
@@ -326,6 +356,27 @@
           defaultLeadData.value[k] = {
             ...defaultLeadData.value[k],
             ...result[leadKey as keyof HomeLeadStatisticDetail],
+          };
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initOptUnderwayDetail(params: GetHomeStatisticParams) {
+    if (!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])) return;
+    try {
+      const result = await getHomeOpportunityUnderwayStatistic(params);
+      Object.keys(defaultOpportunityUnderwayData.value).forEach((k) => {
+        const resultArr: string[] = Object.keys(result);
+        const optKeys: string[] = resultArr.filter((e) => e.toLocaleUpperCase().includes(k.toLocaleUpperCase()));
+        if (optKeys?.length) {
+          const [newKey] = optKeys;
+          defaultOpportunityUnderwayData.value[k] = {
+            ...defaultOpportunityUnderwayData.value[k],
+            ...result[newKey as keyof FollowOptStatisticDetail],
           };
         }
       });
@@ -399,7 +450,12 @@
     initDefaultData();
     try {
       loading.value = true;
-      await Promise.all([initLeadDetail(params), initOptDetail(params), initSuccessOptDetail(params)]);
+      await Promise.all([
+        initLeadDetail(params),
+        initOptDetail(params),
+        initSuccessOptDetail(params),
+        initOptUnderwayDetail(params),
+      ]);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

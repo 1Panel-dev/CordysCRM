@@ -8,7 +8,7 @@ import { getSessionStorageTempState } from '@lib/shared/method/local-storage';
 import type { TransferParams } from '@lib/shared/models/customer/index';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
-import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+import { ConditionsItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
 
 import { getOpportunityStageConfig } from '@/api/modules';
 
@@ -45,40 +45,54 @@ export const getOptHomeConditions = async (
   await initStageConfig();
   const successStage = stageConfig.value?.stageConfigList?.find((i) => i.type === 'END' && i.rate === '100');
   const isSuccess = computed(() => status === successStage?.id);
+  const afootStageValues = stageConfig.value?.stageConfigList?.filter((i) => i.type === 'AFOOT').map((i) => i.id) || [];
+  const isAfoot = computed(() => status === 'AFOOT');
+  // 构建过滤条件
+  const conditions: ConditionsItem[] = [
+    {
+      value: dim,
+      operator: OperatorEnum.DYNAMICS,
+      name: timeFiledKeyMap[timeField],
+      multipleValue: false,
+      type: FieldTypeEnum.TIME_RANGE_PICKER,
+    },
+  ];
+
+  // 添加阶段过滤条件
+  if (isSuccess.value) {
+    // 成功阶段
+    conditions.push({
+      value: [successStage?.id],
+      operator: OperatorEnum.IN,
+      name: 'stage',
+      multipleValue: true,
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+    });
+  } else if (isAfoot.value && afootStageValues.length > 0) {
+    // 进行中阶段
+    conditions.push({
+      value: afootStageValues,
+      operator: OperatorEnum.IN,
+      name: 'stage',
+      multipleValue: true,
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+    });
+  }
+
+  // 添加部门过滤条件
+  if (depIds?.length) {
+    conditions.push({
+      value: depIds,
+      operator: OperatorEnum.IN,
+      name: 'departmentId',
+      multipleValue: false,
+      type: FieldTypeEnum.TREE_SELECT,
+    });
+  }
 
   return {
     searchMode: 'AND',
-    conditions: [
-      {
-        value: dim,
-        operator: OperatorEnum.DYNAMICS,
-        name: timeFiledKeyMap[timeField],
-        multipleValue: false,
-        type: FieldTypeEnum.TIME_RANGE_PICKER,
-      },
-      ...(isSuccess.value
-        ? [
-            {
-              value: [successStage?.id],
-              operator: OperatorEnum.IN,
-              name: 'stage',
-              multipleValue: true,
-              type: FieldTypeEnum.SELECT_MULTIPLE,
-            },
-          ]
-        : []),
-      ...(depIds?.length
-        ? [
-            {
-              value: depIds,
-              operator: OperatorEnum.IN,
-              name: 'departmentId',
-              multipleValue: false,
-              type: FieldTypeEnum.TREE_SELECT,
-            },
-          ]
-        : []),
-    ],
+    conditions,
   };
 };
 
