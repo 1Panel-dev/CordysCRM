@@ -172,11 +172,13 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             List<String> productNames = getProductNames(globalClueResponse.getProducts(), productNameMap);
             globalClueResponse.setProducts(productNames);
 
-            globalClueResponse.getModuleFields().stream().forEach(moduleField -> {
-                if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
-                    moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
-                }
-            });
+            if (CollectionUtils.isNotEmpty(globalClueResponse.getModuleFields())) {
+                globalClueResponse.getModuleFields().stream().forEach(moduleField -> {
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    }
+                });
+            }
 
             searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                 if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name") && !hasPermission) {
