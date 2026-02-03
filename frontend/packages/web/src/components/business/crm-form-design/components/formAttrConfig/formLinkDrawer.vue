@@ -278,6 +278,7 @@
   function getLinkFieldOptions(currentFieldId: string) {
     const currentField = props.formFields.find((f) => f.id === currentFieldId);
     if (!currentField) return [];
+    const hiddenCondition = (f: FormCreateField) => hiddenTypes.includes(f.type) || f.resourceFieldId;
     if (dataSourceTypes.includes(currentField.type)) {
       // 左侧是数据源，右侧也只能选择数据源
       if (currentField.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
@@ -286,61 +287,58 @@
             (f) =>
               dataSourceTypes.includes(f.type) &&
               f.dataSourceType === currentField.dataSourceType &&
-              !hiddenTypes.includes(f.type)
+              !hiddenCondition(f)
           )
           .map((f) => ({ label: f.name, value: f.id }));
       }
       return fieldList.value
         .filter(
-          (f) =>
-            f.type === currentField.type &&
-            f.dataSourceType === currentField.dataSourceType &&
-            !hiddenTypes.includes(f.type)
+          (f) => f.type === currentField.type && f.dataSourceType === currentField.dataSourceType && !hiddenCondition(f)
         )
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (needSameTypes.includes(currentField.type)) {
       // 两侧需要保持一致的类型
       return fieldList.value
-        .filter((f) => f.type === currentField.type && !hiddenTypes.includes(f.type))
+        .filter((f) => f.type === currentField.type && !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (multipleTypes.includes(currentField.type)) {
       // 多选类型，也可接受单选类型值
       return fieldList.value
-        .filter((f) => [...multipleTypes, ...singleTypes].includes(f.type) && !hiddenTypes.includes(f.type))
+        .filter((f) => [...multipleTypes, ...singleTypes].includes(f.type) && !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (singleTypes.includes(currentField.type)) {
       // 单选类型
       return fieldList.value
-        .filter((f) => singleTypes.includes(f.type) && !hiddenTypes.includes(f.type))
+        .filter((f) => singleTypes.includes(f.type) && !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (memberTypes.includes(currentField.type)) {
       // 成员类型
       if (currentField.type === FieldTypeEnum.MEMBER_MULTIPLE) {
         return fieldList.value
-          .filter((f) => memberTypes.includes(f.type) && !hiddenTypes.includes(f.type))
+          .filter((f) => memberTypes.includes(f.type) && !hiddenCondition(f))
           .map((f) => ({ label: f.name, value: f.id }));
       }
       return fieldList.value
-        .filter((f) => f.type === currentField.type && !hiddenTypes.includes(f.type))
+        .filter((f) => f.type === currentField.type && !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (departmentTypes.includes(currentField.type)) {
       // 部门类型
       if (currentField.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
         return fieldList.value
-          .filter((f) => departmentTypes.includes(f.type) && !hiddenTypes.includes(f.type))
+          .filter((f) => departmentTypes.includes(f.type) && !hiddenCondition(f))
           .map((f) => ({ label: f.name, value: f.id }));
       }
       return fieldList.value
-        .filter((f) => f.type === currentField.type && !hiddenTypes.includes(f.type))
+        .filter((f) => f.type === currentField.type && !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id }));
     }
     if (linkAllAcceptTypes.includes(currentField.type)) {
-      return fieldList.value.filter((f) => !hiddenTypes.includes(f.type)).map((f) => ({ label: f.name, value: f.id }));
+      return fieldList.value.filter((f) => !hiddenCondition(f)).map((f) => ({ label: f.name, value: f.id }));
     }
     return [];
   }
