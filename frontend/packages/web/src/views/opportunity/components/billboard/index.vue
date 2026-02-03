@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NForm, NFormItem, NScrollbar, NSelect } from 'naive-ui';
+  import { NForm, NFormItem, NScrollbar, NSelect } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -65,6 +65,9 @@
     advanceFilter?: FilterResult;
     viewId?: string;
     keyword?: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change'): void;
   }>();
 
   const { t } = useI18n();
@@ -94,12 +97,12 @@
   function refreshList(stage: string) {
     const index = stageConfig.value?.stageConfigList.findIndex((item) => item.id === stage) || 0;
     listRef.value?.[index].refreshList();
+    emit('change');
   }
 
   const form = ref({
     failureReason: null,
   });
-  const formRef = ref<FormInst | null>(null);
   const updateStatusModal = ref<boolean>(false);
   const updateStageLoading = ref(false);
   const updateOptItem = ref<any>({});

@@ -93,7 +93,13 @@
       />
     </template>
     <template v-if="activeShowType === 'billboard'" #other>
-      <billboard ref="billboardRef" :keyword="keyword" :view-id="activeTab" :advance-filter="advanceFilter" />
+      <billboard
+        ref="billboardRef"
+        :keyword="keyword"
+        :view-id="activeTab"
+        :advance-filter="advanceFilter"
+        @change="getStatistic()"
+      />
     </template>
     <template v-if="showStatisticInfo" #totalRight>
       <div class="ml-[24px]">
@@ -751,6 +757,7 @@
     setAdvanceFilter(filter);
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
+      getStatistic();
     } else {
       loadList();
       getStatistic();
@@ -831,6 +838,7 @@
     });
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
+      getStatistic(_keyword);
     } else {
       loadList();
       getStatistic(_keyword);
