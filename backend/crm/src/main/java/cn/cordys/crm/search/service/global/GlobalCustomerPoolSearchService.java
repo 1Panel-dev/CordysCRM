@@ -134,11 +134,13 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
                 });
             }
 
-            customerPoolResponse.getModuleFields().stream().forEach(moduleField -> {
-                if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
-                    moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
-                }
-            });
+            if (CollectionUtils.isNotEmpty(customerPoolResponse.getModuleFields())) {
+                customerPoolResponse.getModuleFields().stream().forEach(moduleField -> {
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    }
+                });
+            }
 
             customerPoolResponse.setHasPermission(hasPermission);
         });
