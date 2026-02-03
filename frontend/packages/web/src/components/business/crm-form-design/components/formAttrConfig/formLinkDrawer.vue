@@ -257,7 +257,12 @@
       .filter(
         (e) =>
           !hiddenTypes.includes(e.type) &&
-          ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(e.type) &&
+          ![
+            FieldTypeEnum.SERIAL_NUMBER,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
+            FieldTypeEnum.FORMULA,
+          ].includes(e.type) &&
           !e.resourceFieldId
       )
       .map((f) => ({ label: f.name, value: f.id }));
