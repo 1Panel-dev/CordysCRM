@@ -235,7 +235,7 @@
     if (item.resourceFieldId) {
       const sourceField = fieldConfig.value.subFields?.find((f) => f.id === item.resourceFieldId);
       if (sourceField) {
-        sourceField.showFields = sourceField.showFields?.filter((id) => id !== item.id);
+        sourceField.showFields = sourceField.showFields?.filter((id) => id !== item.id.split('_ref_')[1]); // 数据源显示字段 id 是拼接_ref_的
       }
     }
     if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
