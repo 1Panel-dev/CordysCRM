@@ -1,0 +1,15 @@
+export default {
+  'formulaEditor.diagnostics.emptyParams': 'Parameter count cannot be empty',
+  'formulaEditor.diagnostics.duplicateSeparator': 'There are extra separators at the end of the function parameters',
+  'formulaEditor.diagnostics.duplicateSeparatorOfCenter': 'There are extra separators in the function parameters',
+  'formulaEditor.diagnostics.missingSeparator': 'Syntax error, missing separator',
+  'formulaEditor.diagnostics.duplicateOperator': 'Consecutive operators',
+  'formulaEditor.diagnostics.illegalCharacter': 'Illegal character present',
+  'formulaEditor.diagnostics.duplicateSeparatorOfBeginning': 'Please do not use consecutive separators',
+  'formulaEditor.diagnostics.argCountErrorOfDAYS': 'Parameter count error, must be two parameters',
+  'formulaEditor.function.argFirst': 'Parameter 1',
+  'formulaEditor.function.argSecond': 'Parameter 2',
+  'formulaEditor.diagnostics.expressionNotComplete': 'Incomplete parameter expression',
+  'formulaEditor.diagnostics.operatorLeftMissingExpression': 'Operator is missing an expression on the left side',
+  'formulaEditor.diagnostics.operatorRightMissingExpression': 'Operator is missing an expression on the right side',
+};

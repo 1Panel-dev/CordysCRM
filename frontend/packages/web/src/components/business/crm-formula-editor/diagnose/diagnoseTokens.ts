@@ -1,6 +1,14 @@
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import { FormulaErrorCode } from '../config';
 import { FormulaDiagnostic, Token } from '../types';
-// todo 国际化没加
+
+const { t } = useI18n();
+/**
+ *
+ * @param tokens 公式 Token 列表
+ * @returns 诊断错误信息列表
+ */
 export default function diagnoseTokens(tokens: Token[]): FormulaDiagnostic[] {
   const diagnostics: FormulaDiagnostic[] = [];
 
@@ -13,7 +21,7 @@ export default function diagnoseTokens(tokens: Token[]): FormulaDiagnostic[] {
       diagnostics.push({
         type: 'error',
         code: FormulaErrorCode.SYNTAX_ERROR,
-        message: '连续的操作符',
+        message: t('formulaEditor.diagnostics.duplicateOperator'),
         highlight: {
           tokenRange: [i - 1, i],
         },
@@ -21,11 +29,11 @@ export default function diagnoseTokens(tokens: Token[]): FormulaDiagnostic[] {
     }
 
     /** text token 直接报错（AST 层已忽略） */
-    if (cur.type === 'text') {
+    if (cur.type === 'text' && prev?.type !== 'text') {
       diagnostics.push({
         type: 'error',
         code: FormulaErrorCode.INVALID_CHAR,
-        message: `存在非法字符 "${cur.value}"`,
+        message: `${t('formulaEditor.diagnostics.illegalCharacter')} "${cur.value}"`,
         highlight: {
           tokenRange: [i, i],
         },
@@ -37,7 +45,7 @@ export default function diagnoseTokens(tokens: Token[]): FormulaDiagnostic[] {
         diagnostics.push({
           type: 'error',
           code: FormulaErrorCode.DUPLICATE_SEPARATOR,
-          message: '请勿连续使用分隔符',
+          message: t('formulaEditor.diagnostics.duplicateSeparatorOfBeginning'),
           highlight: {
             tokenRange: [i - 1, i],
           },
@@ -47,7 +55,7 @@ export default function diagnoseTokens(tokens: Token[]): FormulaDiagnostic[] {
         diagnostics.push({
           type: 'error',
           code: FormulaErrorCode.INVALID_CHAR,
-          message: `存在非法字符 "${cur.value}"`,
+          message: `${t('formulaEditor.diagnostics.illegalCharacter')} "${cur.value}"`,
           highlight: {
             tokenRange: [i, i],
           },

@@ -78,7 +78,7 @@
     return rows.map((row) => row?.[fieldKey]);
   }
 
-  // 根据公式实时计算 todo xinxinwu
+  // 根据公式实时计算
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
     const { ir } = safeParseFormula(formula ?? '');

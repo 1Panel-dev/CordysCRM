@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar class="max-h-[60vh]">
+  <n-scrollbar>
     <div class="crm-form-design-formula-header">
       <div class="ph-prefix">{{ props.fieldConfig.name }} = </div>
       <n-button type="primary" text @click="handleClearFormulaField">
@@ -34,43 +34,46 @@
             class="field-search-input !w-[calc(100%+2px)]"
             :placeholder="t('crmFormDesign.formulaByNameSearchPlaceholder')"
           />
-          <div class="field-item-content">
-            <!-- <n-scrollbar class="max-h-[60%]"> -->
-            <CrmCollapse
-              v-for="ele of allFieldList"
-              :default-expand="true"
-              :name-key="ele.type"
-              class="field-item-collapse"
-            >
-              <template #header>
-                <div class="px-[4px] text-[14px] font-medium text-[var(--text-n2)]">
-                  {{ t(ele.name) }}（{{ ele.children.length }}）
-                </div>
-              </template>
-              <template v-if="ele.children.length > 0">
-                <div
-                  v-for="item of ele.children"
-                  class="flex h-[32px] items-center justify-between rounded px-[4px] hover:bg-[var(--text-n9)]"
-                  @mousedown.prevent="insertField(item)"
-                >
-                  <n-tooltip trigger="hover" :delay="300" placement="top-start">
-                    <template #trigger>
-                      <div class="one-line-text flex-1 cursor-pointer">
-                        {{ item.name }}
-                      </div>
-                    </template>
-                    {{ item.name }}
-                  </n-tooltip>
+          <div class="field-item-content max-h-[400px]">
+            <n-scrollbar>
+              <CrmCollapse
+                v-for="(ele, index) of allFieldList"
+                :default-expand="true"
+                :name-key="ele.type"
+                class="field-item-collapse"
+              >
+                <template #header>
+                  <div class="px-[4px] text-[14px] font-medium text-[var(--text-n2)]">
+                    {{ t(ele.name) }}（{{ ele.children.length }}）
+                  </div>
+                </template>
+                <template v-if="ele.children.length > 0">
+                  <div
+                    v-for="item of ele.children"
+                    class="flex h-[32px] items-center justify-between rounded px-[4px] hover:bg-[var(--text-n9)]"
+                    @mousedown.prevent="insertField(item)"
+                  >
+                    <n-tooltip trigger="hover" :delay="300" placement="top-start">
+                      <template #trigger>
+                        <div class="one-line-text flex-1 cursor-pointer">
+                          {{ item.name }}
+                        </div>
+                      </template>
+                      {{ item.name }}
+                    </n-tooltip>
 
-                  <CrmTag :type="colorThemeMap[ele.type]?.type || 'default'" class="flex-shrink-0" theme="light">
-                    {{ colorThemeMap[ele.type]?.label }}
-                  </CrmTag>
-                </div>
-              </template>
-              <div v-else class="px-[4px] text-[var(--text-n4)]">{{ t('common.noData') }}</div>
-              <n-divider v-if="ele.children.length !== 0" class="!mb-0 !mt-[16px]" />
-            </CrmCollapse>
-            <!-- </n-scrollbar> -->
+                    <CrmTag :type="colorThemeMap[ele.type]?.type || 'default'" class="flex-shrink-0" theme="light">
+                      {{ colorThemeMap[ele.type]?.label }}
+                    </CrmTag>
+                  </div>
+                </template>
+                <div v-else class="px-[4px] text-[var(--text-n4)]">{{ t('common.noData') }}</div>
+                <n-divider
+                  v-if="ele.children.length !== 0 && index !== allFieldList.length - 1"
+                  class="!mb-0 !mt-[16px]"
+                />
+              </CrmCollapse>
+            </n-scrollbar>
           </div>
         </div>
         <div class="field-item">
@@ -102,9 +105,10 @@
               </div>
               <div v-if="activeFun?.name === 'SUM'">
                 <div class="flex items-center">
-                  <!-- TODO 文案不确定 -->
-                  <div :class="`text-[${FUN_COLOR}]`">SUM</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`"> 值1 </div
-                  >, <div :class="`text-[${INPUT_NUMBER_COLOR}]`">值2</div>, ... )
+                  <div :class="`text-[${FUN_COLOR}]`">SUM</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                    {{ t('formulaEditor.function.argFirst') }} </div
+                  >, <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.argSecond') }} </div>,
+                  ... )
                 </div>
               </div>
             </div>

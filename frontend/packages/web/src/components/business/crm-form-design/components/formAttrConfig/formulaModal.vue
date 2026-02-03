@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="visible"
     :title="t('crmFormDesign.formulaSetting')"
-    :positive-text="t('common.confirm')"
+    :positive-text="t('common.save')"
     :maskClosable="false"
     footer
     :width="800"

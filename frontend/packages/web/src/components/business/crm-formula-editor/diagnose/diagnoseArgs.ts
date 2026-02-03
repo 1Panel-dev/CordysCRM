@@ -1,6 +1,16 @@
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import { FormulaErrorCode } from '../config';
 import { ASTNode, FormulaDiagnostic, FunctionNode, Token } from '../types';
-// todo 国际化没加
+
+const { t } = useI18n();
+/**
+ *
+ * @param fnNode 函数的ast节点
+ * @param args 函数的ast参数列表
+ * @param tokens 公式的token列表
+ * @returns 诊断错误信息列表
+ */
 export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], tokens: Token[]): FormulaDiagnostic[] {
   const diagnostics: FormulaDiagnostic[] = [];
 
@@ -10,14 +20,14 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
   const innerTokens = tokens.slice(startTokenIndex + 1, endTokenIndex);
 
   // 所有逗号 token
-  const commaTokens = innerTokens.filter((t) => t.type === 'comma');
+  const commaTokens = innerTokens.filter((item) => item.type === 'comma');
 
-  if (args.length === 0) {
+  if (args?.length === 0) {
     diagnostics.push({
       type: 'warning',
       functionName: fnNode.name,
       code: FormulaErrorCode.EMPTY_ARGS,
-      message: '参数个数不能为空',
+      message: t('formulaEditor.diagnostics.emptyParams'),
       highlight: {
         tokenRange: [fnNode.startTokenIndex, fnNode.endTokenIndex],
       },
@@ -35,7 +45,7 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
         type: 'error',
         code: FormulaErrorCode.DUPLICATE_SEPARATOR,
         functionName: fnNode.name,
-        message: '函数参数末尾存在多余的分隔符',
+        message: t('formulaEditor.diagnostics.duplicateSeparator'),
         highlight: {
           tokenRange: [innerTokens[innerTokens.length - 1].start, innerTokens[innerTokens.length - 1].start],
         },
@@ -50,7 +60,7 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
           type: 'error',
           code: FormulaErrorCode.DUPLICATE_SEPARATOR,
           functionName: fnNode.name,
-          message: '函数参数中存在多余的分隔符',
+          message: t('formulaEditor.diagnostics.duplicateSeparatorOfCenter'),
           highlight: {
             tokenRange: [innerTokens[i].start, innerTokens[i + 1].start + 1],
           },
@@ -60,12 +70,12 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
     }
   }
 
-  if (args.length >= 2 && commaTokens.length === 0) {
+  if (args?.length >= 2 && commaTokens.length === 0) {
     diagnostics.push({
       type: 'error',
       code: FormulaErrorCode.MISSING_SEPARATOR,
       functionName: fnNode.name,
-      message: '语法错误，缺少分隔符',
+      message: t('formulaEditor.diagnostics.missingSeparator'),
       highlight: {
         tokenRange: [args[0].endTokenIndex, args[1].startTokenIndex],
       },
