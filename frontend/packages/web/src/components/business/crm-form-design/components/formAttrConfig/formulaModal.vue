@@ -85,9 +85,16 @@
       .filter((e) => e.type === FieldTypeEnum.INPUT_NUMBER)
       .map((e) => {
         const fieldId = resolveFieldId(e);
+        let id = fieldId;
+        if (e.resourceFieldId) {
+          [, id] = id.split('_ref_'); // 数据源显示字段 id 是拼接_ref_的
+        }
+        if (e.numberFormat === 'percent') {
+          id = `(${id} / 100)`;
+        }
         return {
           ...e,
-          id: e.numberFormat === 'percent' ? `(${fieldId} / 100)` : fieldId,
+          id,
         };
       })
   );
