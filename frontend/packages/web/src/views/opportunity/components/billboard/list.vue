@@ -151,8 +151,6 @@
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
-
   const props = defineProps<{
     keyword?: string;
     refreshTimeStamp?: number;
@@ -168,6 +166,7 @@
   const emit = defineEmits<{
     (e: 'fail', item: OpportunityItem): void;
     (e: 'change', stage: string): void;
+    (e: 'openDetail', type: 'customer' | 'opportunity', item: any): void;
   }>();
 
   const { t } = useI18n();
@@ -397,21 +396,7 @@
   }
 
   function jumpToDetail(type: 'customer' | 'opportunity', item: any) {
-    if (type === 'customer') {
-      if (item.inCustomerPool) {
-        openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
-          id: item.customerId,
-        });
-      } else {
-        openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
-          id: item,
-        });
-      }
-    } else if (type === 'opportunity') {
-      openNewPage(OpportunityRouteEnum.OPPORTUNITY_OPT, {
-        id: item.id,
-      });
-    }
+    emit('openDetail', type, item);
   }
 
   onBeforeMount(() => {
