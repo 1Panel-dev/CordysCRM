@@ -179,6 +179,9 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                     }
                 });
             }
+            if (StringUtils.isNotBlank(globalClueResponse.getPhone())) {
+                globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
+            }
 
             searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                 if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name") && !hasPermission) {
@@ -187,9 +190,6 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                 if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products") && !hasPermission) {
                     List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
                     globalClueResponse.setProducts(maskProductNames);
-                }
-                if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(globalClueResponse.getPhone())) {
-                    globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
                 }
             });
 
