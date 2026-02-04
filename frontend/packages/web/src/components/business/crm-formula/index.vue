@@ -83,7 +83,10 @@
     const { formula } = props.fieldConfig;
     const { ir } = safeParseFormula(formula ?? '');
 
-    if (!ir) return;
+    if (!ir) {
+      value.value = 0;
+      return;
+    }
     const contextMatch = props.path.match(/^([^[]+)\[(\d+)\]\./);
 
     const context = contextMatch
