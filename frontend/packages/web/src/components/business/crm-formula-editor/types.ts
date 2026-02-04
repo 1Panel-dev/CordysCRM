@@ -133,3 +133,28 @@ export interface FormulaSerializeResult {
   fields: FormulaFieldMeta[];
   ir: IRNode; // 公式 IR
 }
+
+export interface DiagnoseContext {
+  tokens: Token[];
+  index: number;
+  diagnostics: FormulaDiagnostic[];
+  coveredRanges: Array<[number, number]>;
+
+  // 扫描期状态
+  parenBalance: number;
+  hasUnexpectedRightParen: boolean;
+  cur?: Token;
+  prev?: Token;
+
+  push(diag: FormulaDiagnostic): void;
+}
+
+export interface DiagnoseRule {
+  name: string;
+
+  // 每个 token 扫描时执行
+  check(ctx: DiagnoseContext): void;
+
+  // 扫描结束后执行（可选）
+  afterAll?(ctx: DiagnoseContext): void;
+}

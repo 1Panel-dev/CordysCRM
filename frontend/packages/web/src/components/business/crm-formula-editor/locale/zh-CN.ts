@@ -12,4 +12,12 @@ export default {
   'formulaEditor.diagnostics.expressionNotComplete': '参数表达式不完整',
   'formulaEditor.diagnostics.operatorLeftMissingExpression': '运算符左侧缺少表达式',
   'formulaEditor.diagnostics.operatorRightMissingExpression': '运算符右侧缺少表达式',
+  'formulaEditor.diagnostics.unexpectedCommaAtEnd': '表达式末尾不能出现逗号',
+  'formulaEditor.diagnostics.unexpectedOperatorAtBeginning': '表达式开头不能出现操作符',
+  'formulaEditor.diagnostics.unexpectedTokenAtBeginning': '表达式开头出现未知符号',
+  'formulaEditor.diagnostics.unexpectedTokenAtEnd': '表达式末尾出现未知符号',
+  'formulaEditor.diagnostics.missingRightParen': '缺少右括号',
+  'formulaEditor.diagnostics.unexpectedRightParen': '出现多余的右括号',
+  'formulaEditor.diagnostics.invalidFunctionCall': '非法的函数调用：表达式不能被再次调用',
+  'formulaEditor.diagnostics.missingOperator': '缺少运算符',
 };
