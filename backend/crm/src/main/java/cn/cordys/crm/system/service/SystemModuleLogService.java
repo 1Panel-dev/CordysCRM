@@ -2,9 +2,11 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.dto.ScopeNameDTO;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -23,6 +25,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
     public static final String LINK_KEY_SPILT = "-";
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private UserExtendService userExtendService;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
@@ -53,7 +57,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
 
             if (Strings.CI.equalsAny(differ.getColumn(),
-                    "rate", "stage", "afootRollBack", "endRollBack")) {
+                    "rate", "stage", "afootRollBack", "endRollBack","name")) {
                 differ.setColumnName(Translator.get("log.".concat(differ.getColumn())));
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
@@ -65,11 +69,30 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setOldValueName(differ.getOldValue());
             }
 
+            handlePoolConfig(differ);
 
             searchSetting(differ);
         });
 
         return differences;
+    }
+
+    private void handlePoolConfig(JsonDifferenceDTO differ) {
+        if (Strings.CS.equals("scopeId", differ.getColumn())) {
+            differ.setColumnName(Translator.get("log.pool.members"));
+            handlePoolOwnerOrMember(differ);
+        }
+
+        if (Strings.CS.equals("ownerId", differ.getColumn())) {
+            differ.setColumnName(Translator.get("log.pool.owner"));
+            handlePoolOwnerOrMember(differ);
+        }
+
+        if (Strings.CS.equals("auto", differ.getColumn())) {
+            differ.setColumnName(Translator.get("log.pool.auto"));
+            differ.setNewValueName(differ.getNewValue());
+            differ.setOldValueName(differ.getOldValue());
+        }
     }
 
     private void searchSetting(JsonDifferenceDTO differ) {
@@ -106,6 +129,19 @@ public class SystemModuleLogService extends BaseModuleLogService {
             case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
                 differ.setColumnName(Translator.get("opportunity"));
                 break;
+        }
+    }
+
+    private void handlePoolOwnerOrMember(JsonDifferenceDTO differ) {
+
+        if (differ.getOldValue() != null) {
+            List<ScopeNameDTO> oldScope = userExtendService.getScope(JSON.parseArray((String) differ.getOldValue(), String.class));
+            differ.setOldValueName(JSON.toJSONString(oldScope.stream().map(ScopeNameDTO::getName).toList()));
+        }
+
+        if (differ.getNewValue() != null) {
+            List<ScopeNameDTO> newScope = userExtendService.getScope(JSON.parseArray((String) differ.getNewValue(), String.class));
+            differ.setNewValue(JSON.toJSONString(newScope.stream().map(ScopeNameDTO::getName).toList()));
         }
     }
 
