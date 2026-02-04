@@ -169,6 +169,8 @@
     (e: 'save', astVal: string): void;
   }>();
 
+  const FUNCTION_NAMES = ['SUM', 'DAYS'];
+
   const formulaDiagnostics = ref<FormulaDiagnostic[]>([]);
   const keyword = ref('');
   const activeFun = ref<FormCreateField | null>(null);
@@ -531,7 +533,80 @@
     });
   }
 
+  function replaceWithFunctionNode(range: Range, fnName: string) {
+    range.deleteContents();
+
+    /** 函数名 */
+    const fnNode = document.createElement('span');
+    fnNode.className = 'formula-fn';
+    fnNode.style.color = FUN_COLOR;
+    fnNode.contentEditable = 'false';
+    fnNode.dataset.nodeType = 'function';
+    fnNode.dataset.fnName = fnName;
+    fnNode.textContent = fnName;
+
+    // 左括号
+    const leftParen = document.createTextNode('(');
+
+    // 参数区
+    const argsNode = document.createElement('span');
+    argsNode.className = 'formula-args';
+    argsNode.appendChild(document.createTextNode('\u200B'));
+
+    // 右括号
+    const rightParen = document.createTextNode(')');
+
+    range.insertNode(rightParen);
+    range.insertNode(argsNode);
+    range.insertNode(leftParen);
+    range.insertNode(fnNode);
+
+    // 光标放进参数区
+    const caret = document.createRange();
+    const text = argsNode.firstChild!;
+    caret.setStart(text, 1);
+    caret.setEnd(text, 1);
+
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(caret);
+  }
+
+  function upgradePlainFunction(root: HTMLElement) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+
+    const toProcess: Text[] = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode as Text;
+      if (node.parentElement) {
+        // 已经在函数节点里的不要动
+        if (!(node.parentElement.closest('.formula-fn') || node.parentElement.closest('.formula-args'))) {
+          toProcess.push(node);
+        }
+      }
+    }
+    toProcess.forEach((textNode) => {
+      const text = textNode.nodeValue ?? '';
+      FUNCTION_NAMES.forEach((fn) => {
+        const reg = new RegExp(`\\b${fn}\\(`);
+        const match = reg.exec(text);
+        if (!match) return;
+
+        const start = match.index;
+        const end = start + fn.length + 1;
+
+        const range = document.createRange();
+        range.setStart(textNode, start);
+        range.setEnd(textNode, end);
+
+        replaceWithFunctionNode(range, fn);
+      });
+    });
+  }
+
   function handleEditorInput() {
+    upgradePlainFunction(editor.value!);
     validateCurrentFormula();
   }
 

@@ -12,4 +12,13 @@ export default {
   'formulaEditor.diagnostics.expressionNotComplete': 'Incomplete parameter expression',
   'formulaEditor.diagnostics.operatorLeftMissingExpression': 'Operator is missing an expression on the left side',
   'formulaEditor.diagnostics.operatorRightMissingExpression': 'Operator is missing an expression on the right side',
+  'formulaEditor.diagnostics.unexpectedCommaAtEnd': 'Comma cannot appear at the end of the expression',
+  'formulaEditor.diagnostics.unexpectedOperatorAtBeginning':
+    'Operator cannot appear at the beginning of the expression',
+  'formulaEditor.diagnostics.unexpectedTokenAtBeginning': 'Unexpected token at the beginning of the expression',
+  'formulaEditor.diagnostics.unexpectedTokenAtEnd': 'Unexpected token at the end of the expression',
+  'formulaEditor.diagnostics.missingRightParen': 'Missing right parenthesis',
+  'formulaEditor.diagnostics.unexpectedRightParen': 'Unexpected right parenthesis',
+  'formulaEditor.diagnostics.invalidFunctionCall': 'Invalid function call: expression cannot be called again',
+  'formulaEditor.diagnostics.missingOperator': 'Missing operator',
 };
