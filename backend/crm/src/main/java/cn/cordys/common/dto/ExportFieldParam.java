@@ -5,6 +5,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,9 +16,9 @@ import java.util.Map;
 public class ExportFieldParam {
 
 	/**
-	 * 子表格字段ID (目前唯一, 后续扩展)
+	 * 子表格ID集合
 	 */
-	private String subId;
+	private List<String> subIds;
 
 	/**
 	 * 字段配置
