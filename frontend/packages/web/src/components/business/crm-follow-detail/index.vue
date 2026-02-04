@@ -39,6 +39,9 @@
       >
         <template #headerAction="{ item }">
           <div v-if="getShowAction(item)" class="flex items-center gap-[12px]">
+            <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
+              {{ t('common.detail') }}
+            </n-button>
             <n-button
               v-if="
                 props.activeType === 'followPlan' &&
@@ -96,6 +99,17 @@
       :other-save-params="props.activeType === 'followPlan' ? otherFollowRecordSaveParams : undefined"
       @saved="handleAfterSave"
     />
+
+    <DetailDrawer
+      v-model:show="showDetailDrawer"
+      :form-key="realFormKey"
+      :source-id="sourceId"
+      :source-name="sourceName"
+      :refresh-key="refreshDetailKey"
+      @delete="handleDelete(activeItem as FollowDetailItem)"
+      @edit="handleEdit(activeItem as FollowDetailItem)"
+    />
+    />
   </div>
 </template>
 
@@ -111,6 +125,7 @@
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import DetailDrawer from '@/components/business/crm-follow-drawer/components/detailDrawer.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
 
@@ -142,6 +157,22 @@
     showAction: true,
   });
 
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const refreshDetailKey = ref(0);
+
+  const sourceId = ref('');
+  const sourceName = ref('');
+  const showDetailDrawer = ref(false);
+  const activeItem = ref<FollowDetailItem>();
+  function handleDetail(row: FollowDetailItem) {
+    sourceId.value = row.id;
+    realFormKey.value =
+      props.activeType === 'followRecord' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN;
+    sourceName.value = row.type === 'CLUE' && row.clueId?.length ? row.clueName : row.customerName;
+    activeItem.value = row;
+    showDetailDrawer.value = true;
+  }
+
   const formDrawerVisible = ref(false);
 
   const {
@@ -160,6 +191,12 @@
     type: toRef(props, 'activeType'),
     followApiKey: props.followApiKey,
     sourceId: toRef(props, 'sourceId'),
+    onDeleteSuccess: () => {
+      // 确认删除成功后关闭详情弹窗
+      if (showDetailDrawer.value) {
+        showDetailDrawer.value = false;
+      }
+    },
   });
 
   const needInitDetail = ref(false);
@@ -168,7 +205,6 @@
     converted: false,
   });
 
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const linkFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const linkScenario = ref(FormLinkScenarioEnum.PLAN_TO_RECORD);
   watch(
@@ -326,6 +362,9 @@
       updatePlan();
     } else {
       loadFollowList();
+    }
+    if (showDetailDrawer.value) {
+      refreshDetailKey.value += 1;
     }
   }
 

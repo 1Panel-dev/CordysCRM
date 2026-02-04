@@ -43,6 +43,11 @@ export const descriptionList: Description[] = [
     value: 'phone',
   },
   {
+    key: 'ownerName',
+    label: t('crmFollowRecord.follower'),
+    value: 'ownerName',
+  },
+  {
     key: 'createTime',
     label: t('common.createTime'),
     value: 'createTime',

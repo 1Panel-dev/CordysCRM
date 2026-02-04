@@ -780,13 +780,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
       },
       {
-        title: t('opportunity.quotation.amount'),
-        width: 120,
-        key: 'amount',
-        sortOrder: false,
-        sorter: true,
-      },
-      {
         title: t('contract.alreadyPayAmount'),
         width: 120,
         key: 'alreadyPayAmount',

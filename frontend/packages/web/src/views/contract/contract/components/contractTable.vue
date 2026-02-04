@@ -274,11 +274,6 @@
       type: FieldTypeEnum.INPUT_NUMBER,
     },
     {
-      title: t('opportunity.quotation.amount'),
-      dataIndex: 'amount',
-      type: FieldTypeEnum.INPUT_NUMBER,
-    },
-    {
       title: t('contract.approvalStatus'),
       dataIndex: 'approvalStatus',
       operatorOption: COMMON_SELECTION_OPERATORS,

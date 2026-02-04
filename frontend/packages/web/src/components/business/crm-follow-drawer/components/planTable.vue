@@ -69,6 +69,9 @@
                 <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
                   {{ t('common.detail') }}
                 </n-button>
+                <n-button type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
+                  {{ t('common.edit') }}
+                </n-button>
                 <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
                   {{ t('common.delete') }}
                 </n-button>
@@ -89,12 +92,22 @@
       </template>
     </CrmTable>
 
+    <CrmFormCreateDrawer
+      v-model:visible="formDrawerVisible"
+      :form-key="FormDesignKeyEnum.FOLLOW_PLAN"
+      :source-id="realFollowSourceId"
+      need-init-detail
+      :other-save-params="otherFollowRecordSaveParams"
+      @saved="handleAfterSave"
+    />
     <DetailDrawer
       v-model:show="showDetailDrawer"
       :form-key="FormDesignKeyEnum.FOLLOW_PLAN"
       :source-id="sourceId"
       :source-name="sourceName"
+      :refresh-key="refreshKey"
       @delete="handleDelete(sourceId)"
+      @edit="handleEdit(activeItem)"
     />
   </CrmCard>
 </template>
@@ -120,6 +133,7 @@
   import { descriptionList, statusTabList } from '@/components/business/crm-follow-detail/config';
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detailDrawer.vue';
@@ -128,12 +142,14 @@
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
+  import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
 
   const { t } = useI18n();
   const Message = useMessage();
   const { setItem, getItem } = useLocalForage();
   const { goDetail } = useOpenDetailPage();
+  const { openModal } = useModal();
 
   const activeTab = ref('');
 
@@ -183,24 +199,16 @@
       key: 'detail',
     },
     {
+      label: t('common.edit'),
+      key: 'edit',
+    },
+    {
       label: t('common.delete'),
       key: 'delete',
     },
   ];
 
   const tableRefreshId = ref(0);
-
-  // 删除
-  async function handleDelete(id: string) {
-    try {
-      await deleteFollowPlan(id);
-      Message.success(t('common.deleteSuccess'));
-      tableRefreshId.value += 1;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
 
   async function changePlanStatus(item: any) {
     try {
@@ -216,13 +224,59 @@
     }
   }
 
+  const refreshKey = ref(0);
   const sourceId = ref('');
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
+  const activeItem = ref<any>();
+
   function handleDetail(row: any) {
     sourceId.value = row.id;
+    activeItem.value = row;
     sourceName.value = row.resourceType === 'CLUE' ? row.clueName : row.customerName;
     showDetailDrawer.value = true;
+  }
+
+  // 删除
+  async function handleDelete(id: string) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirm'),
+      positiveText: t('common.confirmDelete'),
+      content: t('common.deleteConfirmContent'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteFollowPlan(id);
+          Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
+          if (showDetailDrawer.value) {
+            showDetailDrawer.value = false;
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
+  const formDrawerVisible = ref(false);
+  const otherFollowRecordSaveParams = ref({
+    converted: false,
+  });
+  const realFollowSourceId = ref<string | undefined>('');
+  function handleEdit(item: any) {
+    realFollowSourceId.value = item.id;
+    formDrawerVisible.value = true;
+    otherFollowRecordSaveParams.value.converted = item.converted;
+  }
+
+  function handleAfterSave() {
+    if (showDetailDrawer.value) {
+      refreshKey.value += 1;
+    }
+    tableRefreshId.value += 1;
   }
 
   function handleActionSelect(row: any, actionKey: string) {
@@ -232,6 +286,9 @@
         break;
       case 'delete':
         handleDelete(row.id);
+        break;
+      case 'edit':
+        handleEdit(row);
         break;
       default:
         break;
@@ -244,7 +301,7 @@
     hiddenRefresh: true,
     operationColumn: {
       key: 'operation',
-      width: 100,
+      width: 140,
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {

@@ -2,6 +2,8 @@ export default {
   'crmFormCreate.drawer.clue': 'Lead',
   'crmFormCreate.drawer.customer': 'Account',
   'crmFormCreate.drawer.contact': 'Contact',
+  'crmFormCreate.drawer.followRecord': 'Follow-up record',
+  'crmFormCreate.drawer.followPlan': 'Follow-up plan',
   'crmFormCreate.drawer.record': 'Follow-up record',
   'crmFormCreate.drawer.plan': 'Follow-up plan',
   'crmFormCreate.drawer.recordBusiness': 'Follow-up record',

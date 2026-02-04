@@ -9,7 +9,10 @@
     :footer="false"
   >
     <template #titleRight>
-      <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleDelete">
+      <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleEdit">
+        {{ t('common.edit') }}
+      </n-button>
+      <n-button type="error" ghost class="n-btn-outline-error ml-[12px]" @click="handleDelete">
         {{ t('common.delete') }}
       </n-button>
     </template>
@@ -19,6 +22,7 @@
           <CrmFormDescription
             :form-key="props.formKey"
             :source-id="props.sourceId"
+            :refresh-key="props.refreshKey"
             :column="3"
             label-width="auto"
             value-align="start"
@@ -43,6 +47,7 @@
     sourceId: string;
     formKey: FormDesignKeyEnum;
     sourceName: string;
+    refreshKey: number;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -51,12 +56,16 @@
 
   const emit = defineEmits<{
     (e: 'delete'): void;
+    (e: 'edit'): void;
   }>();
 
   const { t } = useI18n();
 
   function handleDelete() {
-    showDrawer.value = false;
     emit('delete');
+  }
+
+  function handleEdit() {
+    emit('edit');
   }
 </script>

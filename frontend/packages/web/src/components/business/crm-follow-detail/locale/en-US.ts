@@ -5,4 +5,5 @@ export default {
   'crmFollowRecord.noFollowRecord': 'No follow up records',
   'crmFollowRecord.noFollowPlan': 'No follow up plan',
   'crmFollowRecord.companyName': 'Company name',
+  'crmFollowRecord.follower': 'Follower',
 };
