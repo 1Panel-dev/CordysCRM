@@ -20,4 +20,5 @@ export default {
   'formulaEditor.diagnostics.unexpectedRightParen': '出现多余的右括号',
   'formulaEditor.diagnostics.invalidFunctionCall': '非法的函数调用：表达式不能被再次调用',
   'formulaEditor.diagnostics.missingOperator': '缺少运算符',
+  'formulaEditor.diagnostics.invalidArgOfDAYS': '第{index}个参数类型错误，必须为数字或日期类型',
 };

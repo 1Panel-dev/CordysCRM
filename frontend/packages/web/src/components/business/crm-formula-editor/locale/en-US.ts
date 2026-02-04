@@ -21,4 +21,6 @@ export default {
   'formulaEditor.diagnostics.unexpectedRightParen': 'Unexpected right parenthesis',
   'formulaEditor.diagnostics.invalidFunctionCall': 'Invalid function call: expression cannot be called again',
   'formulaEditor.diagnostics.missingOperator': 'Missing operator',
+  'formulaEditor.diagnostics.invalidArgOfDAYS':
+    'The {index}th parameter type error, parameter must be of number or date type',
 };
