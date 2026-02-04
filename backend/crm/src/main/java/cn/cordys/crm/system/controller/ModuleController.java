@@ -77,6 +77,6 @@ public class ModuleController {
 	@Operation(summary = "高级搜索开关设置")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void switchAdvanced() {
-		moduleService.switchAdvanced();
+		moduleService.switchAdvanced(SessionUtils.getUserId());
 	}
 }

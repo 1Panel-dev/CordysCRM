@@ -210,8 +210,12 @@ public class ModuleService {
 	/**
 	 * 切换高级搜索开关设置
 	 */
-	public void switchAdvanced() {
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
+	public void switchAdvanced(String currentUser) {
 		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
+
+		Map<String, String> originalVal = new HashMap<>(1);
+		originalVal.put("module.switch", parameter != null && Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
 		if (parameter != null) {
 			parameterMapper.deleteByPrimaryKey("advance.search.setting");
 			boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
@@ -223,6 +227,16 @@ public class ModuleService {
 			parameter.setType("TEXT");
 		}
 		parameterMapper.insert(parameter);
+
+		//日志上下文
+		Map<String, String> modifiedVal = new HashMap<>(1);
+		modifiedVal.put("module.switch", Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.originalValue(originalVal)
+				.resourceName(Translator.get("log.global.search"))
+				.modifiedValue(modifiedVal)
+				.resourceId(parameter.getParamKey())
+				.build());
 	}
 
     /**
