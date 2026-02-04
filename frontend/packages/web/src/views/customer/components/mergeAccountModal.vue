@@ -7,6 +7,11 @@
     @confirm="confirmHandler"
     @cancel="cancelHandler"
   >
+    <template #titleRight>
+      <div class="ml-[8px] text-[14px] text-[var(--text-n2)]">
+        ({{ t('customer.selectedMergeAccountNumber', { number: selectedRows.length }) }})
+      </div>
+    </template>
     <n-form ref="formRef" :label-width="70" :model="form" label-placement="left" require-mark-placement="left">
       <n-form-item path="selectedAccount" :label="t('customer.mergeTo')">
         <n-radio-group v-model:value="form.selectedAccount" name="radiogroup" @change="handleChange">

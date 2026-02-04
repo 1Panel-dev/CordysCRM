@@ -65,4 +65,5 @@ export default {
     '3. The account after the merger, merged account contact, follow up plan, follow up records, business information, collaboration members later merge to the account',
   'customer.selectedMergeAccountTooltip':
     "Selected accounts: chosen from list; Other accounts: visible accounts; Owner assignment: only selected accounts' owners can be chosen; other accounts' owners remain unchanged",
+  'customer.selectedMergeAccountNumber': 'Selected {number} accounts',
 };
