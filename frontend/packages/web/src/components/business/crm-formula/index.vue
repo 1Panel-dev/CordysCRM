@@ -105,7 +105,7 @@
       },
     });
 
-    const next = result !== null ? Number(result.toFixed(2)) : 0;
+    const next = result != null && typeof result === 'number' ? Number(result.toFixed(2)) : 0;
     // 如果值未变，不需要更新
     if (Object.is(next, value.value)) return;
     value.value = next;
