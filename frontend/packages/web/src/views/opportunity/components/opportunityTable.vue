@@ -9,6 +9,7 @@
     :action-config="actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :hiddenBackToTop="activeShowType === 'billboard'"
+    :customTotal="activeShowType === 'billboard'"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -100,9 +101,13 @@
         :advance-filter="advanceFilter"
         @change="getStatistic()"
         @open-detail="handleOpenDetail"
+        @init="handleBillboardInit"
       />
     </template>
     <template v-if="showStatisticInfo" #totalRight>
+      <div v-if="activeShowType === 'billboard'">
+        {{ t('crmPagination.total', { count: billboardTotalCount }) }}
+      </div>
       <div class="ml-[24px]">
         {{ t('opportunity.averageAmount') }}
         <span class="ml-[4px]">
@@ -258,6 +263,7 @@
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
+  const billboardTotalCount = ref(0);
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -1018,6 +1024,10 @@
       realFormKey.value = FormDesignKeyEnum.BUSINESS;
       showOverviewDrawer.value = true;
     }
+  }
+
+  function handleBillboardInit(total: number) {
+    billboardTotalCount.value = total;
   }
 
   onBeforeUnmount(() => {

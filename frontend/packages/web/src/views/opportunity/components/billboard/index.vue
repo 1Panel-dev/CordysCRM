@@ -22,6 +22,7 @@
       @fail="handleFailItem"
       @change="refreshList"
       @open-detail="(type, item) => emit('openDetail', type, item)"
+      @init="(total) => handleListInit(item.id, total)"
     />
   </n-scrollbar>
   <CrmModal
@@ -69,6 +70,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
+    (e: 'init', total: number): void;
     (e: 'openDetail', type: 'customer' | 'opportunity', item: any): void;
   }>();
 
@@ -100,6 +102,17 @@
     const index = stageConfig.value?.stageConfigList.findIndex((item) => item.id === stage) || 0;
     listRef.value?.[index].refreshList();
     emit('change');
+  }
+
+  const totalMap = ref<Record<string, number>>({});
+  const sumTotal = computed(() => {
+    return Object.values(totalMap.value).reduce((acc, curr) => acc + curr, 0);
+  });
+  function handleListInit(id: string, total: number) {
+    totalMap.value[id] = total;
+    nextTick(() => {
+      emit('init', sumTotal.value);
+    });
   }
 
   const form = ref({
