@@ -360,15 +360,15 @@
             width:
               maxPictureCountMap.value[field.id] > 0 && field.type === FieldTypeEnum.PICTURE
                 ? maxPictureCountMap.value[field.id] * 112
-                : 120,
+                : 'auto',
             key,
             fieldId: key,
-            ellipsis:
-              field.type === FieldTypeEnum.PICTURE
-                ? undefined
-                : {
-                    tooltip: true,
-                  },
+            // ellipsis:
+            //   field.type === FieldTypeEnum.PICTURE
+            //     ? undefined
+            //     : {
+            //         tooltip: true,
+            //       },
             render: (row: any) =>
               field.type === FieldTypeEnum.PICTURE
                 ? h(
@@ -386,8 +386,7 @@
                     { trigger: 'hover' },
                     {
                       default: () => initFieldValueText(field, key, row[key]),
-                      trigger: () =>
-                        h('div', { class: 'one-line-text max-w-[200px]' }, initFieldValueText(field, key, row[key])),
+                      trigger: () => h('div', { class: '' }, initFieldValueText(field, key, row[key])),
                     }
                   ),
             filedType: field.type,
@@ -646,10 +645,12 @@
     return cols as TableColumns;
   });
   const scrollXWidth = computed(() =>
-    realColumns.value.reduce((prev, curr) => {
-      const width = typeof curr.width === 'number' ? curr.width : 0;
-      return prev + width;
-    }, 0)
+    props.readonly
+      ? undefined
+      : realColumns.value.reduce((prev, curr) => {
+          const width = typeof curr.width === 'number' ? curr.width : 0;
+          return prev + width;
+        }, 0)
   );
 
   const summary: DataTableCreateSummary = (pageData) => {
@@ -704,13 +705,16 @@
   .crm-sub-table {
     .n-data-table-th {
       padding: 12px 4px;
-      .n-data-table-th__title {
-        width: 100%;
-        .n-ellipsis {
-          max-width: 100%;
-          span {
-            overflow: hidden;
-            text-overflow: ellipsis;
+      .n-data-table-th__title-wrapper {
+        height: auto;
+        .n-data-table-th__title {
+          width: 100%;
+          .n-ellipsis {
+            max-width: 100%;
+            span {
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
           }
         }
       }
