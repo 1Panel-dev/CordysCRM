@@ -794,7 +794,10 @@
           :show-button="false"
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
-          :fieldConfig="fieldConfig"
+          :fieldConfig="{
+            ...fieldConfig,
+            rules: [],
+          }"
           path=""
         />
         <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
