@@ -1802,22 +1802,8 @@ public class ModuleFormService {
         ModuleForm invoiceForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
         ModuleFormBlob invoiceFormBlob = moduleFormBlobMapper.selectByPrimaryKey(invoiceForm.getId());
         Map<String, Object> propMap = JSON.parseMap(invoiceFormBlob.getProp());
-        Map<String, List<LinkScenario>> linkProp = new HashMap<>(4);
-
-        // 设置默认的 linkFields
-        ModuleField contractNameField = moduleFieldService.selectFieldsByInternalKey(BusinessModuleField.CONTRACT_NAME.getKey());
-        ModuleField invoiceContractField = moduleFieldService.selectFieldsByInternalKey(BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
-        List<LinkField> linkFields = new ArrayList<>();
-        if (contractNameField != null && invoiceContractField != null) {
-            LinkField linkField = new LinkField();
-            linkField.setEnable(true);
-            linkField.setCurrent(contractNameField.getId());
-            linkField.setLink(invoiceContractField.getId());
-            linkFields.add(linkField);
-        }
-
-        linkProp.put(FormKey.CONTRACT.getKey(), List.of(LinkScenario.builder().key(LinkScenarioKey.CONTRACT_TO_INVOICE.name()).linkFields(linkFields).build()));
-        propMap.put("linkProp", linkProp);
+        List<LinkScenario> contractLinkProp = List.of(LinkScenario.builder().key(LinkScenarioKey.CONTRACT_TO_INVOICE.name()).linkFields(List.of()).build());
+        propMap.put("linkProp", Map.of(FormKey.CONTRACT.getKey(), contractLinkProp));
         invoiceFormBlob.setProp(JSON.toJSONString(propMap));
         moduleFormBlobMapper.updateById(invoiceFormBlob);
     }
